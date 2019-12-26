@@ -279,8 +279,17 @@ export class ColorDef {
     this.fromString(val);
   }
 
-  /** Make a copy of this ColorDef */
-  public clone(): ColorDef { return new ColorDef(this._tbgr); }
+  /** Make a copy of this ColorDef.
+   * @param result If supplied, the supplied ColorDef will be modified to match this ColorDef and returned.
+   * @returns result if supplied; otherwise a new ColorDef equivalent to this one.
+   */
+  public clone(result?: ColorDef): ColorDef {
+    if (undefined === result)
+      return new ColorDef(this._tbgr);
+
+    result.tbgr = this._tbgr;
+    return result;
+  }
 
   /** Set the color of this ColorDef from another ColorDef */
   public setFrom(other: ColorDef) { this._tbgr = other._tbgr; }

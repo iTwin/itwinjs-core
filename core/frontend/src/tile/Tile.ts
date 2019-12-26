@@ -26,6 +26,7 @@ import {
 import {
   BoundingSphere,
   ColorDef,
+  computeChildTileRanges,
   ElementAlignedBox3d,
   Frustum,
   FrustumPlanes,
@@ -44,9 +45,11 @@ import {
 } from "../render/System";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
-import { ViewFrustum } from "../Viewport";
+import { ViewingSpace } from "../Viewport";
 import { TileRequest } from "./TileRequest";
 import { TileLoader, TileTree, TraversalSelectionContext, TraversalDetails } from "./TileTree";
+
+// cSpell:ignore undisplayable bitfield
 
 const scratchRange2d = [new Point2d(), new Point2d(), new Point2d(), new Point2d()];
 function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void {
@@ -62,58 +65,6 @@ function addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean)
   pts[2].set(range.high.x, range.high.y);
   pts[3].set(range.low.x, range.high.y);
   builder.addLineString2d(pts, 0);
-}
-
-/** @internal */
-export function bisectRange3d(range: Range3d, takeUpper: boolean): void {
-  const diag = range.diagonal();
-  const pt = takeUpper ? range.high : range.low;
-  if (diag.x > diag.y && diag.x > diag.z)
-    pt.x = (range.low.x + range.high.x) / 2.0;
-  else if (diag.y > diag.z)
-    pt.y = (range.low.y + range.high.y) / 2.0;
-  else
-    pt.z = (range.low.z + range.high.z) / 2.0;
-}
-
-/** @internal */
-export function bisectRange2d(range: Range3d, takeUpper: boolean): void {
-  const diag = range.diagonal();
-  const pt = takeUpper ? range.high : range.low;
-  if (diag.x > diag.y)
-    pt.x = (range.low.x + range.high.x) / 2.0;
-  else
-    pt.y = (range.low.y + range.high.y) / 2.0;
-}
-
-/**
- * Given a Tile, compute the ranges which would result from sub-dividing its range a la IModelTile.getChildrenProps().
- * This function exists strictly for debugging purposes.
- */
-function computeChildRanges(tile: Tile): Array<{ range: Range3d, isEmpty: boolean }> {
-  const emptyMask = tile.emptySubRangeMask;
-  const is2d = tile.root.is2d;
-  const bisectRange = is2d ? bisectRange2d : bisectRange3d;
-
-  const ranges: Array<{ range: Range3d, isEmpty: boolean }> = [];
-  for (let i = 0; i < 2; i++) {
-    for (let j = 0; j < 2; j++) {
-      for (let k = 0; k < (is2d ? 1 : 2); k++) {
-        const emptyBit = 1 << (i + j * 2 + k * 4);
-        const isEmpty = 0 !== (emptyMask & emptyBit);
-
-        const range = tile.range.clone();
-        bisectRange(range, 0 === i);
-        bisectRange(range, 0 === j);
-        if (!is2d)
-          bisectRange(range, 0 === k);
-
-        ranges.push({ range, isEmpty });
-      }
-    }
-  }
-
-  return ranges;
 }
 
 /** A 3d tile within a [[TileTree]].
@@ -274,7 +225,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     this._state = TileState.Abandoned;
   }
 
-  public get maximumSize(): number { return this._maximumSize * this.sizeMultiplier; }
+  public get maximumSize(): number {
+    return undefined !== this.sizeMultiplier ? this._maximumSize * this.sizeMultiplier : this._maximumSize;
+  }
   public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && !this.hasChildren; }
   public get hasChildren(): boolean { return !this.isLeaf; }
   public get contentRange(): ElementAlignedBox3d {
@@ -294,7 +247,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
   public get graphics(): RenderGraphic | undefined { return this._graphic; }
   public get hasGraphics(): boolean { return undefined !== this.graphics; }
-  public get sizeMultiplier(): number { return undefined !== this._sizeMultiplier ? this._sizeMultiplier : 1.0; }
+  public get sizeMultiplier(): number | undefined { return this._sizeMultiplier; }
   public get hasSizeMultiplier(): boolean { return undefined !== this._sizeMultiplier; }
   public get children(): Tile[] | undefined { return this._children; }
   public get iModel(): IModelConnection { return this.root.iModel; }
@@ -322,7 +275,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
           addRangeGraphic(builder, this.contentRange, this.root.is2d);
         }
       } else if (Tile.DebugBoundingBoxes.ChildVolumes === type) {
-        const ranges = computeChildRanges(this);
+        const ranges = computeChildTileRanges(this, this.root);
         for (const range of ranges) {
           const color = range.isEmpty ? ColorDef.blue : ColorDef.green;
           const pixels = !range.isEmpty ? LinePixels.HiddenLine : LinePixels.Solid;
@@ -415,6 +368,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     if (TileTree.LoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
       this._childrenLastUsed = args.now;
+      traversalDetails.childrenLoading = true;
       return;
     }
 
@@ -480,10 +434,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       }
     } else {
       this.selectRealityChildren(context, args, traversalDetails);
-      if (this.isDisplayable) {
-        if (0 !== traversalDetails.queuedChildren.length && this.isReady) {
-          context.selectOrQueue(this, traversalDetails);
-        }
+      if (this.isDisplayable && this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
+        context.selectOrQueue(this, traversalDetails);
       }
     }
   }
@@ -810,7 +762,7 @@ export namespace Tile {
     public readonly root: TileTree;
     public clipVolume?: RenderClipVolume;
     public readonly context: SceneContext;
-    public viewFrustum?: ViewFrustum;
+    public viewFrustum?: ViewingSpace;
     public readonly graphics: GraphicBranch = new GraphicBranch();
     public readonly now: BeTimePoint;
     public readonly purgeOlderThan: BeTimePoint;
@@ -834,7 +786,7 @@ export namespace Tile {
       return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
     }
     protected get worldToViewMap(): Map4d {
-      return this.viewFrustum ? this.viewFrustum!.worldToViewMap : this.context.viewport.viewFrustum.worldToViewMap;
+      return this.viewFrustum ? this.viewFrustum!.worldToViewMap : this.context.viewport.viewingSpace.worldToViewMap;
     }
 
     public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume, parentsAndChildrenExclusive = true) {
@@ -845,7 +797,7 @@ export namespace Tile {
       this.now = now;
       this.purgeOlderThan = purgeOlderThan;
       this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
-      this.viewFrustum = context.viewFrustum;
+      this.viewFrustum = context.viewingSpace;
       if (this.viewFrustum !== undefined)
         this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
 

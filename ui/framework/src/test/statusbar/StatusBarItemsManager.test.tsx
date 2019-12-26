@@ -5,9 +5,9 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { StatusBarSection } from "@bentley/ui-abstract";
 
 import { StatusBarItem, StatusBarItemUtilities, StatusBarItemsManager } from "../../ui-framework";
-import { StatusBarSection } from "../../ui-framework/statusbar/StatusBarItem";
 
 describe("StatusBarItemsManager", () => {
 

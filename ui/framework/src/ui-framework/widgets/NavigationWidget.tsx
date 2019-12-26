@@ -6,8 +6,8 @@
 
 import * as React from "react";
 
-import { IModelConnection, PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
-import { UiError } from "@bentley/ui-abstract";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { UiError, PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
 import { Tools as NZ_ToolsWidget, Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";

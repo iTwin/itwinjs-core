@@ -22,17 +22,6 @@ export interface OidcDesktopClientConfiguration {
   scope: string;
 
   /**
-   * After sucessfully signing in with desktop applications, the browser is redirected to this URI.
-   * Typically includes a message to close the browser window, and use the desktop application.
-   */
-  postSigninSuccessUri?: string;
-
-  /**
-   * If there's an error signing in with desktop applications, the browser is redirected to this URI.
-   */
-  postSigninErrorUri?: string;
-
-  /**
    * Time in seconds that's used as a buffer to check the token for validity/expiry.
    * The checks for authorization, and refreshing access tokens all use this buffer - i.e., the token is considered expired if the current time is within the specified
    * time of the actual expiry.

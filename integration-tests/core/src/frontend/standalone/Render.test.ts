@@ -215,6 +215,10 @@ describe("Render mirukuru", () => {
         expect(oob).to.not.be.undefined;
         expect(oob.array.length).to.equal(0);
       }
+
+      // We run this test twice. The second time, the tiles will already be available so the view will NOT be empty. Purge them now.
+      await imodel.tiles.purgeTileTrees(undefined);
+      vp.refreshForModifiedModels(undefined);
     });
   });
 

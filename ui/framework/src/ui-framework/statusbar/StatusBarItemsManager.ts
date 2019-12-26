@@ -5,13 +5,13 @@
 /** @module StatusBar */
 
 import { UiEvent } from "@bentley/ui-core";
-import { StatusBarItem, StatusBarItemId } from "./StatusBarItem";
+import { CommonStatusBarItem, StatusBarItemId } from "@bentley/ui-abstract";
 
 /** StatusBar Items Changed Event arguments.
  * @beta
  */
 export interface StatusBarItemsChangedEventArgs {
-  items: ReadonlyArray<StatusBarItem>;
+  items: ReadonlyArray<CommonStatusBarItem>;
 }
 
 /** StatusBar Items Changed Event class.
@@ -29,18 +29,18 @@ const isInstance = <T extends any>(args: InstanceOrArray<T>): args is T => {
  * @beta
  */
 export class StatusBarItemsManager {
-  private _items: ReadonlyArray<StatusBarItem> = [];
+  private _items: ReadonlyArray<CommonStatusBarItem> = [];
 
   /** Event raised when StatusBar items are changed. */
   public readonly onItemsChanged = new StatusBarItemsChangedEvent();
 
   /** Get an array of the StatusBar items  */
-  public get items(): ReadonlyArray<StatusBarItem> {
+  public get items(): ReadonlyArray<CommonStatusBarItem> {
     return this._items;
   }
 
   /** @internal */
-  public set items(items: ReadonlyArray<StatusBarItem>) {
+  public set items(items: ReadonlyArray<CommonStatusBarItem>) {
     if (this._items === items)
       return;
     this._items = items;
@@ -48,7 +48,7 @@ export class StatusBarItemsManager {
   }
 
   /** Add a StatusBar item or an array of the StatusBar items  */
-  public add(itemOrItems: StatusBarItem | ReadonlyArray<StatusBarItem>) {
+  public add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>) {
     let itemsToAdd;
     if (isInstance(itemOrItems))
       itemsToAdd = [itemOrItems];

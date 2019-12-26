@@ -28,8 +28,24 @@ describe("Sign in", () => {
       redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
     };
 
-    const token = await getToken(userCredentials.email, userCredentials.password, userCredentials.scope, config, 102);
+    const token = await getToken(userCredentials.email, userCredentials.password, userCredentials.scope, config, Config.App.getNumber("imjs_buddi_resolve_url_using_region"));
     assert.exists(token);
+  });
+
+  it("failure with invalid Bentley federated user", async () => {
+    const userCredentials = {
+      email: "invalid@bentley.com",
+      password: "invalid",
+      scope: Config.App.getString("imjs_oidc_browser_test_scopes"),
+    };
+
+    const config: OidcConfiguration = {
+      clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
+      redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
+    };
+
+    await expect(getToken(userCredentials.email, userCredentials.password, userCredentials.scope, config, Config.App.getNumber("imjs_buddi_resolve_url_using_region")))
+      .to.be.rejectedWith(Error, `Failed OIDC signin for ${userCredentials.email}.\nError: Incorrect user ID or password. Type the correct user ID and password, and try again.`);
   });
 
   it("failure with invalid user", async () => {
@@ -42,6 +58,7 @@ describe("Sign in", () => {
       clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
     };
-    await expect(getToken(userCredentials.email, userCredentials.password, userCredentials.scope, config, 102)).to.be.rejectedWith(Error, `Failed OIDC signin for ${userCredentials.email}.\nUser name not found or incorrect password.`);
+    await expect(getToken(userCredentials.email, userCredentials.password, userCredentials.scope, config, Config.App.getNumber("imjs_buddi_resolve_url_using_region")))
+      .to.be.rejectedWith(Error, `Failed OIDC signin for ${userCredentials.email}.\nError: User name not found or incorrect password.`);
   });
 });

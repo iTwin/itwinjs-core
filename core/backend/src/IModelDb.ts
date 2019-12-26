@@ -34,8 +34,9 @@ import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { IModelHost } from "./IModelHost";
+import { IModelHost, ApplicationType } from "./IModelHost";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
+import { EventSink, EventSinkManager } from "./rpc-impl/EventSourceRpcImpl";
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** A string that identifies a Txn.
@@ -115,7 +116,6 @@ export class OpenParams {
     return other.openMode === this.openMode && other.syncMode === this.syncMode;
   }
 }
-
 /** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
  *
  * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
@@ -141,13 +141,17 @@ export class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
+  private _eventSink?: EventSink;
   protected _fontMap?: FontMap;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
 
   public readFontJson(): string { return this.nativeDb.readFontMap(); }
   public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
-
+  /** Return event sink for associated [[IModelDb]].
+   * @internal
+   */
+  public get eventSink(): EventSink | undefined { return this._eventSink; }
   /** Get the parameters used to open this iModel */
   public readonly openParams: OpenParams;
 
@@ -194,8 +198,18 @@ export class IModelDb extends IModel {
     this.setupBriefcaseEntry(briefcaseEntry);
     this.setDefaultConcurrentControlAndPolicy();
     this.initializeIModelDb();
+    this.initalizeEventSink();
   }
-
+  private clearEventSink() {
+    if (this._eventSink) {
+      EventSinkManager.delete(this._eventSink.id);
+    }
+  }
+  private initalizeEventSink() {
+    if (this.iModelToken.key) {
+      this._eventSink = EventSinkManager.get(this.iModelToken.key);
+    }
+  }
   private initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
@@ -341,21 +355,31 @@ export class IModelDb extends IModel {
       throw new RpcPendingResponse();
     }
 
-    const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
-    try {
-      const client = new UlasClient();
-      const ulasEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, contextId);
-      await client.logUsage(requestContext, ulasEntry);
-      requestContext.enter();
-    } catch (error) {
-      requestContext.enter();
-      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: imodelDb.iModelToken }));
-    }
-    imodelDb.setDefaultConcurrentControlAndPolicy();
-    IModelDb.onOpened.raiseEvent(requestContext, imodelDb);
+    const iModelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
+    await this.logUsage(requestContext, contextId, iModelDb);
+    iModelDb.setDefaultConcurrentControlAndPolicy();
+    IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
 
     perfLogger.dispose();
-    return imodelDb;
+    return iModelDb;
+  }
+
+  private static _ulasClient: UlasClient;
+  /** Log usage when opening the iModel */
+  private static async logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb) {
+    requestContext.enter();
+    if (IModelHost.configuration && IModelHost.configuration.applicationType === ApplicationType.WebAgent)
+      return; // We do not log usage for agents, since the usage logging service cannot handle them.
+
+    this._ulasClient = this._ulasClient || new UlasClient();
+    const ulasEntry = new UsageLogEntry(os.hostname(), UsageType.Trial, contextId);
+    try {
+      await this._ulasClient.logUsage(requestContext, ulasEntry);
+    } catch (error) {
+      // Note: We do not treat usage logging
+      requestContext.enter();
+      Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: iModelDb.iModelToken }));
+    }
   }
 
   /** Returns true if this is a standalone iModel
@@ -413,6 +437,7 @@ export class IModelDb extends IModel {
     } finally {
       requestContext.enter();
       this.clearBriefcaseEntry();
+      this.clearEventSink();
     }
   }
 
@@ -1313,13 +1338,26 @@ export namespace IModelDb {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
-    /** Get the Model with the specified identifier.
+    /** Get the ModelProps with the specified identifier.
      * @param modelId The Model identifier.
-     * @throws [[IModelError]]
+     * @throws [IModelError]($common) if the model is not found or cannot be loaded.
+     * @see tryGetModelProps
      */
     public getModelProps<T extends ModelProps>(modelId: Id64String): T {
       const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
       return JSON.parse(json) as T;
+    }
+
+    /** Get the ModelProps with the specified identifier.
+     * @param modelId The Model identifier.
+     * @returns The ModelProps or `undefined` if the model is not found.
+     * @throws [IModelError]($common) if the model cannot be loaded.
+     * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
+     * @see getModelProps
+     */
+    public tryGetModelProps<T extends ModelProps>(modelId: Id64String): T | undefined {
+      const json: string | undefined = this.tryGetModelJson(JSON.stringify({ id: modelId.toString() }));
+      return undefined !== json ? JSON.parse(json) as T : undefined;
     }
 
     /** Query for the last modified time of the specified Model.
@@ -1338,34 +1376,83 @@ export namespace IModelDb {
 
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
-     * @throws [[IModelError]]
+     * @throws [IModelError]($common) if the model is not found or cannot be loaded.
+     * @see tryGetModel
      */
     public getModel<T extends Model>(modelId: Id64String): T {
       return this._iModel.constructEntity<T>(this.getModelProps(modelId));
     }
 
+    /** Get the Model with the specified identifier.
+     * @param modelId The Model identifier.
+     * @returns The Model or `undefined` if the model is not found.
+     * @throws [IModelError]($common) if the model cannot be loaded.
+     * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
+     * @see getModel
+     */
+    public tryGetModel<T extends Model>(modelId: Id64String): T | undefined {
+      const modelProps: ModelProps | undefined = this.tryGetModelProps(modelId);
+      return undefined !== modelProps ? this._iModel.constructEntity<T>(modelProps) : undefined;
+    }
+
     /** Read the properties for a Model as a json string.
      * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
-     * @return a json string with the properties of the model.
+     * @returns a json string with the properties of the model.
+     * @throws [IModelError]($common) if the model is not found or cannot be loaded.
+     * @see tryGetModelJson
+     * @internal
      */
     public getModelJson(modelIdArg: string): string {
-      const val = this._iModel.nativeDb.getModel(modelIdArg);
-      if (val.error)
+      const modelJson: string | undefined = this.tryGetModelJson(modelIdArg);
+      if (undefined === modelJson) {
+        throw new IModelError(IModelStatus.NotFound, "Model=" + modelIdArg);
+      }
+      return modelJson;
+    }
+
+    /** Read the properties for a Model as a json string.
+     * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
+     * @returns a json string with the properties of the model or `undefined` if the model is not found.
+     * @throws [IModelError]($common) if the model exists, but cannot be loaded.
+     * @see getModelJson
+     */
+    private tryGetModelJson(modelIdArg: string): string | undefined {
+      const val: IModelJsNative.ErrorStatusOrResult<any, string> = this._iModel.nativeDb.getModel(modelIdArg);
+      if (undefined !== val.error) {
+        if (IModelStatus.NotFound === val.error.status) {
+          return undefined;
+        }
         throw new IModelError(val.error.status, "Model=" + modelIdArg);
+      }
       return val.result!;
     }
 
     /** Get the sub-model of the specified Element.
      * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
      * @param modeledElementId Identifies the modeled element.
-     * @throws [[IModelError]]
+     * @throws [IModelError]($common) if the sub-model is not found or cannot be loaded.
+     * @see tryGetSubModel
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T {
-      const modeledElement = this._iModel.elements.getElement(modeledElementId);
-      if (modeledElement.id === IModel.rootSubjectId)
+      const modeledElementProps: ElementProps = this._iModel.elements.getElementProps(modeledElementId);
+      if (modeledElementProps.id === IModel.rootSubjectId) {
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggerCategory);
+      }
+      return this.getModel<T>(modeledElementProps.id!);
+    }
 
-      return this.getModel<T>(modeledElement.id);
+    /** Get the sub-model of the specified Element.
+     * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
+     * @param modeledElementId Identifies the modeled element.
+     * @returns The sub-model or `undefined` if the specified element does not have a sub-model.
+     * @see getSubModel
+     */
+    public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T | undefined {
+      const modeledElementProps: ElementProps | undefined = this._iModel.elements.tryGetElementProps(modeledElementId);
+      if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id)) {
+        return undefined;
+      }
+      return this.tryGetModel<T>(modeledElementProps.id!);
     }
 
     /** Create a new model in memory.
@@ -1437,40 +1524,93 @@ export namespace IModelDb {
     /** @internal */
     public constructor(private _iModel: IModelDb) { }
 
-    /** Read element data from iModel as a json string
+    /** Read element data from the iModel as JSON
      * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
-     * @return a json string with the properties of the element.
+     * @returns The JSON properties of the element.
+     * @throws [IModelError]($common) if the element is not found or cannot be loaded.
+     * @see tryGetElementJson
+     * @internal
      */
     public getElementJson<T extends ElementProps>(elementIdArg: string): T {
-      const val = this._iModel.nativeDb.getElement(elementIdArg);
-      if (val.error)
+      const elementProps: T | undefined = this.tryGetElementJson(elementIdArg);
+      if (undefined === elementProps) {
+        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
+      }
+      return elementProps;
+    }
+
+    /** Read element data from the iModel as JSON
+     * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
+     * @returns The JSON properties of the element or `undefined` if the element is not found.
+     * @throws [IModelError]($common) if the element exists, but cannot be loaded.
+     * @see getElementJson
+     */
+    private tryGetElementJson<T extends ElementProps>(elementIdArg: string): T | undefined {
+      const val: IModelJsNative.ErrorStatusOrResult<any, any> = this._iModel.nativeDb.getElement(elementIdArg);
+      if (undefined !== val.error) {
+        if (IModelStatus.NotFound === val.error.status) {
+          return undefined;
+        }
         throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggerCategory);
+      }
       return BinaryPropertyTypeConverter.decodeBinaryProps(val.result)! as T;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
-     * @throws [[IModelError]] if the element is not found.
+     * @throws [IModelError]($common) if the element is not found or cannot be loaded.
+     * @see tryGetElementProps
      */
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      if (typeof elementId === "string")
-        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
-      else if (elementId instanceof Code)
-        elementId = { code: elementId };
+      const elementProps: T | undefined = this.tryGetElementProps(elementId);
+      if (undefined === elementProps) {
+        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementId, Logger.logWarning, loggerCategory);
+      }
+      return elementProps;
+    }
 
-      return this.getElementJson<T>(JSON.stringify(elementId));
+    /** Get properties of an Element by Id, FederationGuid, or Code
+     * @returns The properties of the element or `undefined` if the element is not found.
+     * @throws [IModelError]($common) if the element exists, but cannot be loaded.
+     * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
+     * @see getElementProps
+     */
+    public tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+      if (typeof elementId === "string") {
+        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
+      } else if (elementId instanceof Code) {
+        elementId = { code: elementId };
+      }
+      return this.tryGetElementJson<T>(JSON.stringify(elementId));
     }
 
     /** Get an element by Id, FederationGuid, or Code
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @throws [[IModelError]] if the element is not found.
+     * @throws [IModelError]($common) if the element is not found or cannot be loaded.
+     * @see tryGetElement
      */
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      if (typeof elementId === "string")
-        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
-      else if (elementId instanceof Code)
-        elementId = { code: elementId };
+      const element: T | undefined = this.tryGetElement(elementId);
+      if (undefined === element) {
+        throw new IModelError(IModelStatus.NotFound, "reading element=" + elementId, Logger.logWarning, loggerCategory);
+      }
+      return element;
+    }
 
-      return this._iModel.constructEntity<T>(this.getElementJson(JSON.stringify(elementId)));
+    /** Get an element by Id, FederationGuid, or Code
+     * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
+     * @returns The element or `undefined` if the element is not found.
+     * @throws [IModelError]($common) if the element exists, but cannot be loaded.
+     * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
+     * @see getElement
+     */
+    public tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined {
+      if (typeof elementId === "string") {
+        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
+      } else if (elementId instanceof Code) {
+        elementId = { code: elementId };
+      }
+      const elementProps: T | undefined = this.tryGetElementJson(JSON.stringify(elementId));
+      return undefined !== elementProps ? this._iModel.constructEntity<T>(elementProps) : undefined;
     }
 
     /** Query for the Id of the element that has a specified code.
@@ -1750,7 +1890,7 @@ export namespace IModelDb {
     /** Iterate all ViewDefinitions matching the supplied query.
      * @param params Specifies the query by which views are selected.
      * @param callback Function invoked for each ViewDefinition matching the query. Return false to terminate iteration, true to continue.
-     * @return true if all views were iterated, false if iteration was terminated early due to callback returning false.
+     * @returns true if all views were iterated, false if iteration was terminated early due to callback returning false.
      *
      * **Example: Finding all views of a specific DrawingModel**
      * ``` ts
@@ -1804,7 +1944,7 @@ export namespace IModelDb {
 
     /** Get the thumbnail for a view.
      * @param viewDefinitionId The Id of the view for thumbnail
-     * @return the ThumbnailProps, or undefined if no thumbnail exists.
+     * @returns the ThumbnailProps, or undefined if no thumbnail exists.
      */
     public getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);

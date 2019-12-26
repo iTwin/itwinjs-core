@@ -10,7 +10,8 @@ import { QParams3d, QParams2d } from "@bentley/imodeljs-common";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { System } from "./System";
 import { Point3d } from "@bentley/geometry-core";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
+import { SyncToken } from "./Sync";
 
 /** @internal */
 export type BufferData = number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer;
@@ -75,7 +76,7 @@ export class BufferParameters {
  * An abstract class which specifies an interface for binding and unbinding vertex buffers and their associated state.
  * @internal
  */
-export abstract class BuffersContainer implements WebGlDisposable {
+export abstract class BuffersContainer implements WebGLDisposable {
   protected _linkages: BufferHandleLinkage[] = [];
 
   protected constructor() { }
@@ -201,7 +202,7 @@ export class VBOContainer extends BuffersContainer {
  * The WebGLVertexArrayObjectOES is allocated by the constructor and should be freed by a call to dispose().
  * @internal
  */
-export class VertexArrayObjectHandle implements WebGlDisposable {
+export class VertexArrayObjectHandle implements WebGLDisposable {
   private _vaoExt: OES_vertex_array_object;
   private _arrayObject?: WebGLVertexArrayObjectOES;
 
@@ -248,7 +249,7 @@ export class VertexArrayObjectHandle implements WebGlDisposable {
  * The WebGLBuffer is allocated by the constructor and should be freed by a call to dispose().
  * @internal
  */
-export class BufferHandle implements WebGlDisposable {
+export class BufferHandle implements WebGLDisposable {
   private _target: GL.Buffer.Target;
   private _glBuffer?: WebGLBuffer;
   private _bytesUsed = 0;
@@ -432,6 +433,7 @@ export class UniformHandle {
   private readonly _location: WebGLUniformLocation;
   private _type: DataType = DataType.Undefined;
   private readonly _data: number[] = [];
+  public syncToken?: SyncToken;
 
   private constructor(location: WebGLUniformLocation) { this._location = location; }
 

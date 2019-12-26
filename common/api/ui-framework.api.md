@@ -9,12 +9,17 @@ import { AbstractConditionalItemProps } from '@bentley/ui-abstract';
 import { AbstractGroupItemProps } from '@bentley/ui-abstract';
 import { AbstractItemProps } from '@bentley/ui-abstract';
 import { AbstractMenuItemProps } from '@bentley/ui-abstract';
+import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { AutoSuggestData } from '@bentley/ui-core';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
+import { BackstageActionItem as BackstageActionItem_2 } from '@bentley/ui-abstract';
+import { BackstageItem } from '@bentley/ui-abstract';
+import { BackstageItemsManager } from '@bentley/ui-abstract';
+import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@bentley/ui-abstract';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BaseItemState as BaseItemState_2 } from '@bentley/ui-abstract';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
@@ -27,6 +32,7 @@ import { ColorDef } from '@bentley/imodeljs-common';
 import { CommandHandler as CommandHandler_2 } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-core';
+import { CommonStatusBarItem } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DescriptionProps as DescriptionProps_2 } from '@bentley/ui-abstract';
@@ -79,6 +85,7 @@ import { Orientation } from '@bentley/ui-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PlaybackSettings } from '@bentley/ui-components';
+import { PluginStatusBarItemsManager } from '@bentley/ui-abstract';
 import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
@@ -104,6 +111,8 @@ import { SolarDataProvider } from '@bentley/ui-components';
 import { StagePanelType } from '@bentley/ui-ninezone';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { Status } from '@bentley/ui-ninezone';
+import { StatusBarItemId } from '@bentley/ui-abstract';
+import { StatusBarSection } from '@bentley/ui-abstract';
 import { Store } from 'redux';
 import { StringGetter as StringGetter_2 } from '@bentley/ui-abstract';
 import { SyncUiProps as SyncUiProps_2 } from '@bentley/ui-abstract';
@@ -126,7 +135,6 @@ import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
-import { UiItemNode } from '@bentley/imodeljs-frontend';
 import { UiSettings } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
@@ -337,10 +345,8 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     readonly state: BackstageState;
 }
 
-// @beta
-export interface BackstageActionItem extends CommonBackstageItem {
-    // (undocumented)
-    readonly execute: () => void;
+// @beta @deprecated
+export interface BackstageActionItem extends BackstageActionItem_2 {
     // (undocumented)
     readonly type: BackstageItemType.ActionItem;
 }
@@ -354,7 +360,7 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
 // @internal (undocumented)
 export interface BackstageComposerActionItemProps {
     // (undocumented)
-    readonly item: BackstageActionItem;
+    readonly item: BackstageActionItem_2;
 }
 
 // @beta
@@ -380,7 +386,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
 // @internal (undocumented)
 export interface BackstageComposerStageLauncherProps {
     // (undocumented)
-    readonly item: BackstageStageLauncher;
+    readonly item: BackstageStageLauncher_2;
 }
 
 // @public
@@ -393,10 +399,7 @@ export interface BackstageEventArgs {
     isVisible: boolean;
 }
 
-// @beta
-export type BackstageItem = BackstageActionItem | BackstageStageLauncher;
-
-// @public
+// @public @deprecated
 export interface BackstageItemProps extends LabelProps_2, DescriptionProps_2, TooltipProps_2, IconProps_2 {
     isActive?: boolean;
     isEnabled?: boolean;
@@ -404,28 +407,7 @@ export interface BackstageItemProps extends LabelProps_2, DescriptionProps_2, To
     stateSyncIds?: string[];
 }
 
-// @beta
-export interface BackstageItemsChangedArgs {
-    // (undocumented)
-    readonly items: ReadonlyArray<BackstageItem>;
-}
-
-// @beta
-export class BackstageItemsManager {
-    // (undocumented)
-    add(itemOrItems: BackstageItem | ReadonlyArray<BackstageItem>): void;
-    // @internal (undocumented)
-    items: ReadonlyArray<BackstageItem>;
-    readonly onChanged: BeEvent<(args: BackstageItemsChangedArgs) => void>;
-    // (undocumented)
-    remove(itemIdOrItemIds: BackstageItem["id"] | ReadonlyArray<BackstageItem["id"]>): void;
-    // (undocumented)
-    setIsEnabled(id: BackstageItem["id"], isEnabled: boolean): void;
-    // (undocumented)
-    setIsVisible(id: BackstageItem["id"], isVisible: boolean): void;
-}
-
-// @public
+// @public @deprecated
 export interface BackstageItemState {
     // (undocumented)
     iconSpec: IconSpec_2;
@@ -441,7 +423,7 @@ export interface BackstageItemState {
     tooltip: string;
 }
 
-// @beta
+// @beta @deprecated
 export enum BackstageItemType {
     ActionItem = 1,
     StageLauncher = 2
@@ -449,7 +431,9 @@ export enum BackstageItemType {
 
 // @beta
 export class BackstageItemUtilities {
+    // @deprecated
     static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, itemProps?: Partial<BackstageActionItem> | undefined) => BackstageActionItem;
+    // @deprecated
     static createStageLauncher: (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, itemProps?: Partial<BackstageStageLauncher> | undefined) => BackstageStageLauncher;
     static getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 }
@@ -483,10 +467,8 @@ export interface BackstageProps extends CommonProps {
     showOverlay?: boolean;
 }
 
-// @beta
-export interface BackstageStageLauncher extends CommonBackstageItem {
-    // (undocumented)
-    readonly stageId: string;
+// @beta @deprecated
+export interface BackstageStageLauncher extends BackstageStageLauncher_2 {
     // (undocumented)
     readonly type: BackstageItemType.StageLauncher;
 }
@@ -698,8 +680,6 @@ export interface CategoryTreeState {
     dataProvider?: IPresentationTreeDataProvider;
     // (undocumented)
     filterInfo?: FilterInfo;
-    // (undocumented)
-    selectedNodes: string[];
 }
 
 // @internal
@@ -785,21 +765,6 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
 // @public
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler_2 {
     commandId: string;
-}
-
-// @beta
-export interface CommonBackstageItem {
-    readonly badge?: BadgeType;
-    readonly groupPriority: number;
-    readonly icon?: string;
-    readonly id: string;
-    readonly isEnabled: boolean;
-    readonly isVisible: boolean;
-    readonly itemPriority: number;
-    readonly label: string;
-    readonly subtitle?: string;
-    readonly tooltip?: string;
-    readonly type: BackstageItemType;
 }
 
 // @public
@@ -2632,14 +2597,11 @@ export enum InputStatus {
     Valid = 0
 }
 
-// @beta
-export const isActionItem: (item: BackstageItem) => item is BackstageActionItem;
-
 // @internal (undocumented)
 export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open;
 
-// @beta
-export const isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher;
+// @alpha
+export const isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem;
 
 // @internal (undocumented)
 export const isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps;
@@ -4269,22 +4231,12 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps>;
 
 // @beta
-export class StatusBarComposer extends React.PureComponent<StatusBarComposerProps, StatusBarComposerState> {
-    // @internal (undocumented)
-    componentDidMount(): void;
-    // @internal (undocumented)
-    componentDidUpdate(prevProps: StatusBarComposerProps): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    render(): JSX.Element;
-    // @internal (undocumented)
-    readonly state: StatusBarComposerState;
-}
+export const StatusBarComposer: React.FC<StatusBarComposerProps>;
 
 // @beta
 export interface StatusBarComposerProps {
     itemsManager: StatusBarItemsManager;
+    pluginItemsManager?: PluginStatusBarItemsManager;
 }
 
 // @internal
@@ -4294,16 +4246,9 @@ export const StatusBarContext: React.Context<StatusBarWidgetControlArgs>;
 export type StatusBarFieldId = string | null;
 
 // @beta
-export interface StatusBarItem {
-    readonly component: React.ReactNode;
-    readonly id: string;
-    readonly isVisible: boolean;
-    readonly itemPriority: number;
-    readonly section: StatusBarSection;
+export interface StatusBarItem extends AbstractStatusBarCustomItem {
+    readonly reactNode: React.ReactNode;
 }
-
-// @beta
-export type StatusBarItemId = StatusBarItem["id"];
 
 // @beta
 export class StatusBarItemsChangedEvent extends UiEvent<StatusBarItemsChangedEventArgs> {
@@ -4312,14 +4257,14 @@ export class StatusBarItemsChangedEvent extends UiEvent<StatusBarItemsChangedEve
 // @beta
 export interface StatusBarItemsChangedEventArgs {
     // (undocumented)
-    items: ReadonlyArray<StatusBarItem>;
+    items: ReadonlyArray<CommonStatusBarItem>;
 }
 
 // @beta
 export class StatusBarItemsManager {
-    add(itemOrItems: StatusBarItem | ReadonlyArray<StatusBarItem>): void;
+    add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>): void;
     // @internal (undocumented)
-    items: ReadonlyArray<StatusBarItem>;
+    items: ReadonlyArray<CommonStatusBarItem>;
     readonly onItemsChanged: StatusBarItemsChangedEvent;
     remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>): void;
     // @internal (undocumented)
@@ -4329,7 +4274,7 @@ export class StatusBarItemsManager {
 
 // @beta
 export class StatusBarItemUtilities {
-    static createStatusBarItem: (id: string, section: StatusBarSection, itemPriority: number, component: React.ReactNode, itemProps?: Partial<StatusBarItem> | undefined) => StatusBarItem;
+    static createStatusBarItem: (id: string, section: StatusBarSection, itemPriority: number, reactNode: React.ReactNode, itemProps?: Partial<StatusBarItem> | undefined) => StatusBarItem;
 }
 
 // @beta
@@ -4354,16 +4299,6 @@ export interface StatusBarProps extends CommonProps {
 
 // @beta
 export const StatusBarRightSection: React.FunctionComponent<CommonDivProps>;
-
-// @beta
-export enum StatusBarSection {
-    // (undocumented)
-    Center = 1,
-    // (undocumented)
-    Left = 0,
-    // (undocumented)
-    Right = 2
-}
 
 // @beta
 export const StatusBarSpaceBetween: React.FunctionComponent<CommonDivProps>;
@@ -4719,7 +4654,6 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[], insertAtStart?: boolean): ItemList;
     // (undocumented)
     generateMergedItemLists(): void;
-    protected getItemHierarchy(parentNode: UiItemNode, items: ItemDefBase[]): void;
     // (undocumented)
     horizontalDirection: Direction;
     // (undocumented)
@@ -4973,6 +4907,8 @@ export class UiFramework {
     static openCursorMenu(menuData: CursorMenuData | undefined): void;
     // @internal (undocumented)
     static readonly packageName: string;
+    // @beta
+    static readonly pluginStatusBarItemsManager: PluginStatusBarItemsManager;
     // @internal (undocumented)
     static readonly projectServices: ProjectServices;
     // @deprecated (undocumented)
@@ -5046,7 +4982,10 @@ export function useActiveIModelConnection(): IModelConnection | undefined;
 // @beta
 export function useActiveViewport(): ScreenViewport | undefined;
 
-// @beta
+// @internal
+export function useAvailablePluginUiProviders(): readonly string[];
+
+// @internal
 export const useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
 // @beta
@@ -5057,6 +4996,9 @@ export const useGroupedItems: (manager: BackstageItemsManager) => readonly (read
 
 // @beta
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
+
+// @beta
+export const usePluginStatusBarItems: (manager: PluginStatusBarItemsManager | undefined) => readonly CommonStatusBarItem[];
 
 // @public
 export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {
@@ -5071,6 +5013,9 @@ export interface UserProfileBackstageItemProps extends CommonProps {
     // (undocumented)
     onOpenSignOut?: () => void;
 }
+
+// @beta
+export const useStageStatusBarItems: (manager: StatusBarItemsManager) => readonly CommonStatusBarItem[];
 
 // @alpha
 export class ValidationTextbox extends React.PureComponent<ValidationTextboxProps, ValidationTextboxState> {

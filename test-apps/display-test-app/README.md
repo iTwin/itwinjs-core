@@ -145,6 +145,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * **vp clone** *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
 * **dta version compare** - emulate version comparison.
 * **dta save image** - open a new window containing a snapshot of the contents of the selected viewport.
+* **dta record fps** *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
 * **dta zoom selected** - zoom the selected viewport to the elements in the selection set.
 * **dta incident markers** - toggle incident marker demo in the selected viewport.
 * **dta markup** - toggle markup on the selected viewport.

@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { IModelApp } from "../IModelApp";
-import { ViewRect } from "../Viewport";
+import { ViewRect } from "../ViewRect";
 import { RenderGraphic, RenderTarget } from "../render/System";
 import { MockRender } from "../render/MockRender";
 

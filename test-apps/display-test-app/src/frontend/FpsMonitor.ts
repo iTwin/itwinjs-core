@@ -5,7 +5,13 @@
 
 import {
   IModelApp,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  PerformanceMetrics,
   ScreenViewport,
+  Target,
+  Tool,
+  Viewport,
 } from "@bentley/imodeljs-frontend";
 
 export interface FpsMonitorProps {
@@ -67,5 +73,63 @@ export class FpsMonitor {
     }
 
     requestAnimationFrame(() => this.update());
+  }
+}
+
+export class RecordFpsTool extends Tool {
+  public static toolId = "RecordFps";
+  public static get minArgs() { return 0; }
+  public static get maxArgs() { return 1; }
+
+  private _hadContinuousRendering = false;
+  private _numFramesToRecord = 0;
+  private _numFramesRecorded = 0;
+  private _metrics?: PerformanceMetrics;
+  private _dispose?: () => void;
+
+  public run(numFramesToRecord = 150): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined === vp || 0 >= numFramesToRecord)
+      return true;
+
+    this._numFramesToRecord = numFramesToRecord;
+    this._hadContinuousRendering = vp.continuousRendering;
+    vp.continuousRendering = true;
+
+    this._metrics = new PerformanceMetrics(false, true);
+    (vp.target as Target).performanceMetrics = this._metrics;
+
+    this._dispose = vp.onRender.addListener((viewport) => this.update(viewport));
+
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Recording..."));
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    let numFramesToRecord;
+    if (1 === args.length) {
+      numFramesToRecord = parseInt(args[0], 10);
+      if (Number.isNaN(numFramesToRecord))
+        return true;
+    }
+
+    return this.run(numFramesToRecord);
+  }
+
+  private update(vp: Viewport): void {
+    if (++this._numFramesRecorded < this._numFramesToRecord)
+      return;
+
+    if (undefined !== this._dispose)
+      this._dispose();
+
+    (vp.target as Target).performanceMetrics = undefined;
+    vp.continuousRendering = this._hadContinuousRendering;
+
+    const metrics = this._metrics!;
+    const fps = (metrics.spfTimes.length / metrics.spfSum).toFixed(2);
+
+    const msg = new NotifyMessageDetails(OutputMessagePriority.Info, "FPS " + fps);
+    IModelApp.notifications.outputMessage(msg);
   }
 }

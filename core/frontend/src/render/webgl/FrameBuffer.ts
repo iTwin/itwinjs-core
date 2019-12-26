@@ -9,7 +9,7 @@ import { TextureHandle } from "./Texture";
 import { RenderBuffer } from "./RenderBuffer";
 import { GL } from "./GL";
 import { System } from "./System";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 /** @internal */
 export type DepthBuffer = RenderBuffer | TextureHandle;
@@ -24,7 +24,7 @@ export const enum FrameBufferBindState {
 }
 
 /** @internal */
-export class FrameBuffer implements WebGlDisposable {
+export class FrameBuffer implements WebGLDisposable {
   private _fbo?: WebGLFramebuffer;
   private _bindState: FrameBufferBindState = FrameBufferBindState.Unbound;
   private readonly _colorTextures: TextureHandle[] = [];

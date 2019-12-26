@@ -4,11 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { BeDuration, Dictionary, Id64Array, SortedArray, PriorityQueue, assert } from "@bentley/bentleyjs-core";
-import { RpcOperation, RpcResponseCacheControl, IModelTileRpcInterface, TileTreeProps } from "@bentley/imodeljs-common";
+import {
+  BeDuration,
+  Dictionary,
+  Id64Array,
+  PriorityQueue,
+  SortedArray,
+  assert,
+} from "@bentley/bentleyjs-core";
+import {
+  CurrentImdlVersion,
+  getMaximumMajorTileFormatVersion,
+  IModelTileRpcInterface,
+  RpcOperation,
+  RpcResponseCacheControl,
+  TileTreeProps,
+} from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { IModelTileIO } from "./IModelTileIO";
 import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
 import { Viewport } from "../Viewport";
@@ -71,11 +84,13 @@ export abstract class TileAdmin {
   public abstract get contextPreloadParentDepth(): number;
   /** @internal */
   public abstract get contextPreloadParentSkip(): number;
+  /** @internal */
+  public abstract get maximumMajorTileFormatVersion(): number;
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
    * @see [[TileAdmin.Props.maximumMajorTileFormatVersion]]
-   * @see [[IModelTileIO.CurrentVersion]]
+   * @see [[CurrentImdlVersion]]
    * @see [TileTreeProps.formatVersion]($common)
    * @internal
    */
@@ -151,7 +166,7 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract onTileFailed(tile: Tile): void;
   /** @internal */
-  public abstract onTileElided(): void;
+  public abstract onTilesElided(numElided: number): void;
   /** @internal */
   public abstract onCacheMiss(): void;
 }
@@ -226,7 +241,7 @@ export namespace TileAdmin {
      */
     retryInterval?: number;
 
-    /** If defined, specifies the maximum MAJOR tile format version to request. For example, if IModelTileIO.CurrentVersion.Major = 3, and maximumMajorTileFormatVersion = 2,
+    /** If defined, specifies the maximum MAJOR tile format version to request. For example, if CurrentImdlVersion.Major = 3, and maximumMajorTileFormatVersion = 2,
      * requests for tile content will obtain tile content in some version 2.x of the format, never of some version 3.x.
      * Note that the actual maximum major version is also dependent on the backend which fulfills the requests - if the backend only knows how to produce tiles of format version 1.5, for example,
      * requests for tiles in format version 2.1 will still return content in format version 1.5.
@@ -498,7 +513,7 @@ class Admin extends TileAdmin {
     this._enableInstancing = false !== options.enableInstancing;
     this._enableImprovedElision = true === options.enableImprovedElision;
     this._disableMagnification = true === options.disableMagnification;
-    this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
+    this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
     this._useProjectExtents = true === options.useProjectExtents;
 
     const clamp = (seconds: number | undefined, min: number, max: number): BeDuration | undefined => {
@@ -535,22 +550,9 @@ class Admin extends TileAdmin {
   public get tileTreeExpirationTime() { return this._treeExpirationTime; }
   public get contextPreloadParentDepth() { return this._contextPreloadParentDepth; }
   public get contextPreloadParentSkip() { return this._contextPreloadParentSkip; }
+  public get maximumMajorTileFormatVersion() { return this._maxMajorVersion; }
   public getMaximumMajorTileFormatVersion(formatVersion?: number): number {
-    // The input is from the backend, telling us precisely the maximum major+minor version it can produce.
-    // Ensure front-end does not request tiles of a newer major version than backend can supply or it can read; and also limit major version
-    // to that optionally configured by the app.
-    let majorVersion = this._maxMajorVersion;
-    if (undefined !== formatVersion)
-      majorVersion = Math.min((formatVersion >>> 0x10), majorVersion);
-
-    // Version number less than 1 is invalid - ignore
-    majorVersion = Math.max(majorVersion, 1);
-
-    // Version number greater than current known version ignored
-    majorVersion = Math.min(majorVersion, IModelTileIO.CurrentVersion.Major);
-
-    // Version numbers are integers - round down
-    return Math.max(Math.floor(majorVersion), 1);
+    return getMaximumMajorTileFormatVersion(this.maximumMajorTileFormatVersion, formatVersion);
   }
 
   public get maxActiveRequests() { return this._maxActiveRequests; }
@@ -739,7 +741,7 @@ class Admin extends TileAdmin {
 
   public onTileFailed(_tile: Tile) { ++this._totalFailed; }
   public onTileTimedOut(_tile: Tile) { ++this._totalTimedOut; }
-  public onTileElided() { ++this._totalElided; }
+  public onTilesElided(numElided: number) { this._totalElided += numElided; }
   public onCacheMiss() { ++this._totalCacheMisses; }
   public onTileCompleted(tile: Tile) {
     ++this._totalCompleted;

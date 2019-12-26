@@ -23,7 +23,14 @@ import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySync
 import { PrimitiveValue } from "../properties/Value";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { IModelConnection } from "../IModelConnection";
-import { AuthorizedFrontendRequestContext, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "../imodeljs-frontend";
+import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
+import {
+  ToolAssistance,
+  ToolAssistanceInstruction,
+  ToolAssistanceImage,
+  ToolAssistanceInputMethod,
+  ToolAssistanceSection,
+} from "./ToolAssistance";
 import { SettingsResult, SettingsStatus, SettingsMapResult } from "@bentley/imodeljs-clients";
 
 /** @alpha An object that can react to a view's clip being changed by tools or modify handles. */
@@ -1420,16 +1427,16 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     if (index < 0 || index >= this._controlIds.length)
       return false;
 
+    const vp = this._clipView;
     const anchorRay = ViewClipTool.getClipRayTransformed(this._controls[index].origin, this._controls[index].direction, undefined !== this._clipShape ? this._clipShape.transformFromClip : undefined);
     const matrix = Matrix3d.createRigidHeadsUp(anchorRay.direction);
-    const targetMatrix = matrix.multiplyMatrixMatrix(this._clipView.rotation);
+    const targetMatrix = matrix.multiplyMatrixMatrix(vp.rotation);
     const rotateTransform = Transform.createFixedPointAndMatrix(anchorRay.origin, targetMatrix);
-    const startFrustum = this._clipView.getFrustum();
-    const newFrustum = startFrustum.clone();
+    const newFrustum = vp.getFrustum();
     newFrustum.multiply(rotateTransform);
-    this._clipView.view.setupFromFrustum(newFrustum);
-    this._clipView.synchWithView(true);
-    this._clipView.animateToCurrent(startFrustum);
+    vp.view.setupFromFrustum(newFrustum);
+    vp.synchWithView(true);
+    vp.animateToCurrent();
     return true;
   }
 

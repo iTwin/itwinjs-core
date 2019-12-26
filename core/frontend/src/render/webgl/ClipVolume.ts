@@ -11,14 +11,14 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target } from "./Target";
 import { RenderMemory, RenderClipVolume, ClippingType } from "../System";
 import { ClipMaskGeometry } from "./CachedGeometry";
-import { ViewRect } from "../../Viewport";
+import { ViewRect } from "../../ViewRect";
 import { FrameBuffer } from "./FrameBuffer";
 import { TextureHandle, Texture2DData, Texture2DHandle } from "./Texture";
 import { GL } from "./GL";
 import { System } from "./System";
 import { RenderState } from "./RenderState";
 import { DrawParams } from "./DrawCommand";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 /** @internal */
 interface ClipPlaneSets {
@@ -36,7 +36,7 @@ interface ClipPlaneTexture {
 /** Maintains a texture representing clipping planes. Updated when view matrix changes.
  * @internal
  */
-abstract class ClippingPlanes implements WebGlDisposable {
+abstract class ClippingPlanes implements WebGLDisposable {
   /** Most recently-applied view matrix. */
   private readonly _transform = Transform.createZero();
   private readonly _texture: ClipPlaneTexture;
@@ -189,7 +189,7 @@ class PackedPlanes extends ClippingPlanes {
 /** A 3D clip volume defined as a texture derived from a set of planes.
  * @internal
  */
-export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.Consumer, WebGlDisposable {
+export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.Consumer, WebGLDisposable {
   private _planes?: ClippingPlanes; // not read-only because dispose()...
 
   private constructor(clip: ClipVector, planes?: ClippingPlanes) {
@@ -244,7 +244,7 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
   /** Push this ClipPlanesVolume clipping onto a target. */
   public pushToTarget(target: Target) {
     if (undefined !== this._planes) {
-      const texture = this._planes.getTexture(target.viewMatrix);
+      const texture = this._planes.getTexture(target.uniforms.frustum.viewMatrix);
       target.clips.set(texture.height, texture);
     }
   }
@@ -268,7 +268,7 @@ export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.C
 /** A 2D clip volume defined as a texture derived from a masked set of planes.
  * @internal
  */
-export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Consumer, WebGlDisposable {
+export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Consumer, WebGLDisposable {
   public readonly geometry: ClipMaskGeometry;
   public readonly frustum: Frustum;
   public readonly rect: ViewRect;
@@ -414,7 +414,6 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
     // Render clip geometry as a mask
     System.instance.frameBufferStack.execute(this._fbo, true, () => {
       const prevState = System.instance.currentRenderState.clone();
-      const target = exec.target;
       System.instance.applyRenderState(state);
 
       const context = System.instance.context;
@@ -425,7 +424,7 @@ export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Con
         ClipMaskVolume._drawParams = new DrawParams();
 
       const params = ClipMaskVolume._drawParams!;
-      params.init(exec.params, this.geometry, target.currentTransform);
+      params.init(exec.params, this.geometry);
       exec.drawInterrupt(params);
 
       // Restore previous render state

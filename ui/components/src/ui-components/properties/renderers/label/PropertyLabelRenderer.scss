@@ -25,9 +25,8 @@
   margin-bottom: auto;
 }
 
-.components-property-label-renderer-colon{
-  margin: auto auto auto 3px;
-  margin-left: 3px;
+.components-property-label-renderer-colon {
+  margin: auto 3px auto 3px;
 }
 
 @mixin specific-property-label-renderer {

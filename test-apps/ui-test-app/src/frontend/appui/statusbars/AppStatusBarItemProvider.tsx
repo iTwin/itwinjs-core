@@ -5,11 +5,12 @@
 import * as React from "react";
 
 import { FooterSeparator } from "@bentley/ui-ninezone";
+import { StatusBarSection } from "@bentley/ui-abstract";
 import {
   ToolAssistanceField, ActivityCenterField, MessageCenterField,
   SnapModeField, ViewAttributesStatusField, SectionsStatusField,
   SelectionScopeField, SelectionInfoField, ClearEmphasisStatusField,
-  StatusBarItem, StatusBarSection, StatusBarItemUtilities, withStatusFieldProps, withMessageCenterFieldProps,
+  StatusBarItem, StatusBarItemUtilities, withStatusFieldProps, withMessageCenterFieldProps,
   BooleanSyncUiListener, TileLoadingIndicator, FooterModeField,
 } from "@bentley/ui-framework";
 import { DisplayStyleField } from "../statusfields/DisplayStyleField";

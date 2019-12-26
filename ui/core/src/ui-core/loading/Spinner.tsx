@@ -37,7 +37,8 @@ export interface SpinnerProps {
 export class Spinner extends React.PureComponent<SpinnerProps> {
 
   public render() {
-    let sizeClass = "core-spinner-medium";
+    let sizeClass: string;
+
     if (this.props.sizeClass)
       sizeClass = this.props.sizeClass;
     else {

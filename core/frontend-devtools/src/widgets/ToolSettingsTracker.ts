@@ -6,7 +6,7 @@
 /** @module Widgets */
 
 import {
-  Viewport, ToolSettings, IModelApp,
+  Viewport, ToolSettings, IModelApp, ScreenViewport,
 } from "@bentley/imodeljs-frontend";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { createCheckBox } from "../ui/CheckBox";
@@ -55,8 +55,8 @@ export class ToolSettingsTracker {
       display: "inline",
       min: 0,
       step: 1,
-      value: ToolSettings.viewAnimate.time.normal.milliseconds,
-      handler: (value, _input) => { ToolSettings.viewAnimate.time.normal = BeDuration.fromMilliseconds(value); IModelApp.toolAdmin.exitViewTool(); },
+      value: ScreenViewport.animation.time.normal.milliseconds,
+      handler: (value, _input) => { ScreenViewport.animation.time.normal = BeDuration.fromMilliseconds(value); IModelApp.toolAdmin.exitViewTool(); },
     });
     div.style.display = "block";
     div.style.textAlign = "left";

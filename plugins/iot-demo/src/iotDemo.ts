@@ -12,10 +12,10 @@ import {
   RenderScheduleState,
   ToolTipProvider,
   ScreenViewport,
-  PluginUiManager,
 } from "@bentley/imodeljs-frontend";
 import { Gradient, ColorDef } from "@bentley/imodeljs-common";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
+import { PluginUiManager } from "@bentley/ui-abstract";
 import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 
@@ -225,7 +225,7 @@ export abstract class IoTAnimation {
       return undefined;
 
     // here we have a scheduleScript.
-    const animationFraction = this._selectedView.animationFraction;
+    const animationFraction = this._selectedView.scheduleScriptFraction;
     const scheduleMap: Map<Id64String, ColorTime[]> = this.scheduleMap;
     const elementTimeList = scheduleMap.get(hit.sourceId);
     if (undefined === elementTimeList)

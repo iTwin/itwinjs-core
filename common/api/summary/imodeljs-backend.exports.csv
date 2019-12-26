@@ -1,8 +1,15 @@
 sep=;
 Release Tag;API Item
 beta;AliCloudStorageService 
+beta;class AnalyticalElement 
+beta;class AnalyticalModel 
+beta;AnalyticalPartition 
+beta;AnalyticalSchema 
+beta;AnalyticalSimulatesSpatialElement 
+beta;class AnalyticalType 
 public;AnnotationElement2d 
 beta;AppActivityMonitor
+alpha;ApplicationType
 public;AuthorizedBackendRequestContext 
 beta;AutoPush
 beta;AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void
@@ -40,7 +47,6 @@ beta;CloudStorageServiceCredentials
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
 public;CodeSpecs
-beta;ComparisonOption
 beta;ConcurrencyControl
 beta;ConcurrencyControl
 alpha;CrashReportingConfig
@@ -101,6 +107,7 @@ public;ElementUniqueAspect
 public;ElevationCallout 
 public;EmbeddedFileLink 
 public;Entity 
+internal;EventSinkOptions
 public;ExportGraphics
 beta;areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
@@ -191,7 +198,6 @@ internal;LightLocation
 beta;LinearElement
 beta;LinearLocation 
 beta;class LinearLocationElement 
-beta;LinearLocationReference
 beta;LinearlyLocated
 beta;class LinearlyLocatedAttribution 
 beta;LinearlyLocatedBase
@@ -204,7 +210,6 @@ beta;LinearlyReferencedAtPositionRefersToReferent
 beta;LinearlyReferencedFromPositionRefersToReferent 
 beta;LinearlyReferencedFromToLocation 
 beta;LinearlyReferencedLocation 
-beta;LinearlyReferencedLocationType
 beta;LinearlyReferencedToPositionRefersToReferent 
 beta;class LinearPhysicalElement 
 beta;LinearReferencingSchema 
@@ -229,7 +234,6 @@ public;PhysicalPartition
 public;class PhysicalType 
 public;PlanCallout 
 public;Platform
-beta;QueryParams
 internal;class RecipeDefinitionElement 
 beta;Referent 
 beta;class ReferentElement 

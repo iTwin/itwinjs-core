@@ -220,31 +220,66 @@ export class Relationships {
       throw new IModelError(error, "", Logger.logWarning, loggerCategory);
   }
 
-  /** Get the props of a Relationship instance */
-  public getInstanceProps<T extends RelationshipProps>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
-    let props: T;
+  /** Get the props of a Relationship instance
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria Either the relationship instanceId or the source and target Ids
+   * @throws [IModelError]($common) if the relationship is not found or cannot be loaded.
+   * @see tryGetInstanceProps
+   */
+  public getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T {
+    const relationshipProps: T | undefined = this.tryGetInstanceProps(relClassFullName, criteria);
+    if (undefined === relationshipProps) {
+      throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
+    }
+    return relationshipProps;
+  }
+
+  /** Get the props of a Relationship instance
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria Either the relationship instanceId or the source and target Ids
+   * @returns The RelationshipProps or `undefined` if the relationship is not found.
+   * @note Useful for cases when a relationship may or may not exist and throwing an `Error` would be overkill.
+   * @see getInstanceProps
+   */
+  public tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
+    let props: T | undefined;
     if (typeof criteria === "string") {
-      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassSqlName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
+      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria);
-        if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
-        return stmt.getRow() as T;
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
       });
     } else {
-      props = this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE SourceECInstanceId=? AND TargetECInstanceId=?", (stmt: ECSqlStatement) => {
+      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria.sourceId);
         stmt.bindId(2, criteria.targetId);
-        if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggerCategory);
-        return stmt.getRow() as T;
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
       });
     }
-    props.classFullName = (props as any).className.replace(".", ":");
+    if (undefined !== props) {
+      props.classFullName = (props as any).className.replace(".", ":");
+    }
     return props;
   }
 
-  /** Get a Relationship instance */
+  /** Get a Relationship instance
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria Either the relationship instanceId or the source and target Ids
+   * @throws [IModelError]($common) if the relationship is not found or cannot be loaded.
+   * @see tryGetInstance
+   */
   public getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
     return this._iModel.constructEntity<T>(this.getInstanceProps(relClassSqlName, criteria));
+  }
+
+  /** Get a Relationship instance
+   * @param relClassFullName The full class name of the relationship in the form of "schema:class"
+   * @param criteria Either the relationship instanceId or the source and target Ids
+   * @returns The relationship or `undefined` if the relationship is not found.
+   * @note Useful for cases when a relationship may or may not exist and throwing an `Error` would be overkill.
+   * @see getInstance
+   */
+  public tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
+    const relationshipProps: T | undefined = this.tryGetInstanceProps(relClassFullName, criteria);
+    return undefined !== relationshipProps ? this._iModel.constructEntity<T>(relationshipProps) : undefined;
   }
 }

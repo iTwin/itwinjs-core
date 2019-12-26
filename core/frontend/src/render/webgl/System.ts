@@ -4,10 +4,34 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
 import {
-  ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
-  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
+  ColorDef,
+  ElementAlignedBox3d,
+  Gradient,
+  IModelError,
+  ImageBuffer,
+  PackedFeatureTable,
+  QParams3d,
+  QPoint3d,
+  QPoint3dList,
+  RenderMaterial,
+  RenderTexture,
+} from "@bentley/imodeljs-common";
+import {
+  ClipUtilities,
+  ClipVector,
+  HalfEdge,
+  HalfEdgeGraph,
+  HalfEdgeMask,
+  IndexedPolyface,
+  IndexedPolyfaceVisitor,
+  Point2d,
+  Point3d,
+  PolyfaceBuilder,
+  Range3d,
+  StrokeOptions,
+  Transform,
+  Triangulator,
 } from "@bentley/geometry-core";
 import {
   GLTimerResultCallback,
@@ -15,7 +39,6 @@ import {
   GraphicBranchOptions,
   GraphicList,
   InstancedGraphicParams,
-  PackedFeatureTable,
   RenderClipVolume,
   RenderDiagnostics,
   RenderGraphic,
@@ -38,7 +61,8 @@ import { IModelConnection } from "../../IModelConnection";
 import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
 import { IModelApp } from "../../IModelApp";
-import { ViewRect, Viewport } from "../../Viewport";
+import { Viewport } from "../../Viewport";
+import { ViewRect } from "../../ViewRect";
 import { WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus } from "../../RenderCompatibility";
 import { RenderState } from "./RenderState";
 import { FrameBufferStack, DepthBuffer } from "./FrameBuffer";
@@ -62,7 +86,7 @@ import { TileTree } from "../../tile/TileTree";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
 import { ToolAdmin } from "../../tools/ToolAdmin";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 // tslint:disable:no-const-enum
 
@@ -394,7 +418,7 @@ export class Capabilities {
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
  * @internal
  */
-export class IdMap implements WebGlDisposable {
+export class IdMap implements WebGLDisposable {
   /** Mapping of materials by their key values. */
   public readonly materials: Map<string, RenderMaterial>;
   /** Mapping of textures by their key values. */
@@ -549,7 +573,7 @@ function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGe
 }
 
 /** @internal */
-export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGlDisposable {
+export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGLDisposable {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
   public readonly context: WebGLRenderingContext;
@@ -995,18 +1019,28 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return sheetTileGraphics;
   }
 
-  private bindTexture(unit: TextureUnit, target: GL.Texture.Target, texture: TextureBinding): void {
+  private bindTexture(unit: TextureUnit, target: GL.Texture.Target, texture: TextureBinding, makeActive: boolean): void {
     const index = unit - TextureUnit.Zero;
-    if (this._textureBindings[index] === texture)
+    if (this._textureBindings[index] === texture) {
+      if (makeActive)
+        this.context.activeTexture(unit);
+
       return;
+    }
 
     this._textureBindings[index] = texture;
     this.context.activeTexture(unit);
     this.context.bindTexture(target, undefined !== texture ? texture : null);
   }
 
-  public bindTexture2d(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDee, texture); }
-  public bindTextureCubeMap(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.CubeMap, texture); }
+  /** Bind the specified texture to the specified unit. This may *or may not* make the texture *active* */
+  public bindTexture2d(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDee, texture, false); }
+  /** Bind the specified texture to the specified unit. This may *or may not* make the texture *active* */
+  public bindTextureCubeMap(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.CubeMap, texture, false); }
+  /** Bind the specified texture to the specified unit. This *always* makes the texture *active* */
+  public activateTexture2d(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDee, texture, true); }
+  /** Bind the specified texture to the specified unit. This *always* makes the texture *active* */
+  public activateTextureCubeMap(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.CubeMap, texture, true); }
 
   // Ensure *something* is bound to suppress 'no texture assigned to unit x' warnings.
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {

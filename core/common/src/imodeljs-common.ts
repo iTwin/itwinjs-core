@@ -2,44 +2,47 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+export * from "./ChangedElements";
+export * from "./CloudStorage";
+export * from "./CloudStorageTileCache";
 export * from "./Code";
 export * from "./ColorDef";
+export * from "./CommonLoggerCategory";
 export * from "./ECSqlTypes";
 export * from "./ElementProps";
 export * from "./EntityProps";
 export * from "./FeatureGates";
 export * from "./FeatureIndex";
-export * from "./Frustum";
 export * from "./Fonts";
+export * from "./Frustum";
 export * from "./GeoCoordinateServices";
-export * from "./RpcInterface";
-export * from "./RpcManager";
-export * from "./TextureProps";
-export * from "./Image";
+export * from "./GeometrySummary";
 export * from "./IModel";
 export * from "./IModelError";
 export * from "./IModelVersion";
+export * from "./Image";
 export * from "./Lighting";
-export * from "./CommonLoggerCategory";
-export * from "./MaterialProps";
 export * from "./MassProperties";
-export * from "./GeometrySummary";
+export * from "./MaterialProps";
 export * from "./ModelProps";
 export * from "./OctEncodedNormal";
-export * from "./QPoint";
-export * from "./SubCategoryAppearance";
-export * from "./Snapping";
-export * from "./TileProps";
-export * from "./SpatialClassificationProps";
-export * from "./Thumbnail";
-export * from "./ViewProps";
-export * from "./Render";
 export * from "./Paging";
+export * from "./QPoint";
+export * from "./Render";
 export * from "./RenderSchedule";
+export * from "./RpcInterface";
+export * from "./RpcManager";
+export * from "./Snapping";
+export * from "./SpatialClassificationProps";
+export * from "./SubCategoryAppearance";
+export * from "./TextureProps";
+export * from "./Thumbnail";
+export * from "./TileProps";
 export * from "./Tween";
-export * from "./ChangedElements";
+export * from "./ViewProps";
 export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";
+export * from "./domains/LinearReferencingCommon";
 export * from "./domains/LinearReferencingElementProps";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/Cartographic";
@@ -47,40 +50,47 @@ export * from "./geometry/GeometryStream";
 export * from "./geometry/LineStyle";
 export * from "./geometry/Placement";
 export * from "./geometry/TextString";
+export * from "./oidc/OidcDesktopClientConfiguration";
+export * from "./rpc/DevToolsRpcInterface";
+export * from "./rpc/IModelReadRpcInterface";
+export * from "./rpc/IModelTileRpcInterface";
+export * from "./rpc/IModelWriteRpcInterface";
+export * from "./rpc/EventSourceRpcInterface";
+export * from "./rpc/SnapshotIModelRpcInterface";
 export * from "./rpc/TestRpcManager";
 export * from "./rpc/WipRpcInterface";
-export * from "./rpc/DevToolsRpcInterface";
-export * from "./rpc/core/RpcConstants";
 export * from "./rpc/core/RpcConfiguration";
+export * from "./rpc/core/RpcConstants";
+export * from "./rpc/core/RpcControl";
 export * from "./rpc/core/RpcInvocation";
+export * from "./rpc/core/RpcMarshaling";
 export * from "./rpc/core/RpcOperation";
+export * from "./rpc/core/RpcPendingQueue";
 export * from "./rpc/core/RpcProtocol";
 export * from "./rpc/core/RpcRegistry";
 export * from "./rpc/core/RpcRequest";
 export * from "./rpc/core/RpcRequestContext";
-export * from "./rpc/core/RpcControl";
-export * from "./rpc/core/RpcMarshaling";
-export * from "./rpc/core/RpcPendingQueue";
 export * from "./rpc/electron/ElectronRpcManager";
 export * from "./rpc/electron/ElectronRpcProtocol";
 export * from "./rpc/electron/ElectronRpcRequest";
+export * from "./rpc/mobile/MobileRpcManager";
 export * from "./rpc/mobile/MobileRpcManager";
 export * from "./rpc/mobile/MobileRpcProtocol";
 export * from "./rpc/mobile/MobileRpcRequest";
 export * from "./rpc/web/BentleyCloudRpcManager";
 export * from "./rpc/web/BentleyCloudRpcProtocol";
 export * from "./rpc/web/OpenAPI";
-export * from "./rpc/web/WebAppRpcProtocol";
 export * from "./rpc/web/RpcMultipart";
+export * from "./rpc/web/WebAppRpcProtocol";
 export * from "./rpc/web/WebAppRpcRequest";
-export * from "./rpc/mobile/MobileRpcManager";
-export * from "./rpc/IModelReadRpcInterface";
-export * from "./rpc/IModelTileRpcInterface";
-export * from "./rpc/IModelWriteRpcInterface";
-export * from "./rpc/SnapshotIModelRpcInterface";
-export * from "./CloudStorage";
-export * from "./CloudStorageTileCache";
-export * from "./oidc/OidcDesktopClientConfiguration";
+export * from "./tile/B3dmTileIO";
+export * from "./tile/CompositeTileIO";
+export * from "./tile/GltfTileIO";
+export * from "./tile/I3dmTileIO";
+export * from "./tile/IModelTileIO";
+export * from "./tile/PntsTileIO";
+export * from "./tile/TileIO";
+export * from "./tile/TileMetadata";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
@@ -144,4 +154,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Tween
  * Tweening library adapted from tween.js
+ */
+/**
+ * @docs-group-description Tile
+ * Classes for working with 3d tile formats.
  */

@@ -57,7 +57,7 @@ export abstract class RpcConfiguration {
   public static requestContext: RpcRequestContext = {
     getId: (_request: RpcRequest): string => "",
     serialize: async (_request: RpcRequest): Promise<SerializedClientRequestContext> => ({
-      id: "",
+      id: _request.id,
       applicationId: "",
       applicationVersion: "",
       sessionId: "",

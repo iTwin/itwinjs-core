@@ -5,12 +5,11 @@
 
 import { IDisposable } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
-import { ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { expect } from "chai";
 import {
   GraphicBranch,
   GraphicBranchOptions,
-  PackedFeatureTable,
   RenderGraphic,
 } from "../../render/System";
 import { MockRender } from "../../render/MockRender";

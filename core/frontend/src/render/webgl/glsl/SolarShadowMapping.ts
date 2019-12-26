@@ -7,9 +7,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { VariableType, ProgramBuilder, FragmentShaderBuilder, FragmentShaderComponent } from "../ShaderBuilder";
 import { TextureUnit } from "../RenderFlags";
 import { addInstancedRtcMatrix } from "./Vertex";
-import { Vector3d, Matrix4d } from "@bentley/geometry-core";
 import { RenderType, System } from "../System";
-import { Matrix4 } from "../Matrix";
 
 const computeShadowPos = `
   vec4 shadowProj = u_shadowProj * rawPosition;
@@ -21,13 +19,6 @@ const computeInstancedShadowPos = `
   v_shadowPos = shadowProj.xyz/shadowProj.w;
   v_shadowPos.z = 1.0 - v_shadowPos.z;
 `;
-
-const scratchShadowParams = new Float32Array(4);   // Color RGB, Shadow bias.
-const scratchShadowDir = new Float32Array(3);
-const scratchDirection = new Vector3d();
-const scratchMatrix = new Matrix4();
-const scratchModel = Matrix4d.createIdentity();
-const scratchModelProjection = Matrix4d.createIdentity();
 
 // for 32-bit float, max exponent should be 44.36, for 16-bit should be 5.545
 const evsm32Exp = 42.0;
@@ -77,7 +68,7 @@ const applySolarShadowMap = `
   vec3 toEye = mix(vec3(0.0, 0.0, -1.0), normalize(v_eyeSpace), float(kFrustumType_Perspective == u_frustum.z));
   vec3 normal = normalize(v_n);
   normal = (dot(normal, toEye) > 0.0) ? -normal : normal;
-  float visible = (isSurfaceBitSet(kSurfaceBit_HasNormals) && (dot(normal, u_shadowDir) > 0.0)) ? 0.0 : shadowMapEVSM(v_shadowPos);
+  float visible = (isSurfaceBitSet(kSurfaceBit_HasNormals) && (dot(normal, u_sunDir) < 0.0)) ? 0.0 : shadowMapEVSM(v_shadowPos);
   return vec4(baseColor.rgb * mix(u_shadowParams.rgb, vec3(1.0), visible), baseColor.a);
   `;
 
@@ -105,40 +96,19 @@ export function addSolarShadowMap(builder: ProgramBuilder) {
 
   frag.addUniform("u_shadowParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_shadowParams", (uniform, params) => {
-      const shadowMap = params.target.solarShadowMap;
-      assert(undefined !== shadowMap!.settings);
-      const colors = shadowMap.settings!.color.colors;
-      scratchShadowParams[0] = colors.r / 255.0;
-      scratchShadowParams[1] = colors.g / 255.0;
-      scratchShadowParams[2] = colors.b / 255.0;
-      scratchShadowParams[3] = shadowMap!.settings!.bias;
-      uniform.setUniform4fv(scratchShadowParams);
+      params.target.uniforms.shadow.bindColorAndBias(uniform);
     });
   });
 
-  frag.addUniform("u_shadowDir", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_shadowDir", (uniform, params) => {
-      const shadowMap = params.target.solarShadowMap;
-      const mv = params.modelViewMatrix;
-      const worldDirection = shadowMap.direction!;
-      scratchDirection.x = mv.m00 * worldDirection.x + mv.m01 * worldDirection.y + mv.m02 * worldDirection.z;
-      scratchDirection.y = mv.m10 * worldDirection.x + mv.m11 * worldDirection.y + mv.m12 * worldDirection.z;
-      scratchDirection.z = mv.m20 * worldDirection.x + mv.m21 * worldDirection.y + mv.m22 * worldDirection.z;
-      scratchDirection.normalizeInPlace();
-
-      scratchShadowDir[0] = scratchDirection.x;
-      scratchShadowDir[1] = scratchDirection.y;
-      scratchShadowDir[2] = scratchDirection.z;
-      uniform.setUniform3fv(scratchShadowDir);
+  frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_sunDir", (uniform, params) => {
+      params.target.uniforms.shadow.bindSunDirection(uniform);
     });
   });
 
   vert.addUniform("u_shadowProj", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_shadowProj", (uniform, params) => {
-      const shadowMap = params.target.solarShadowMap;
-      shadowMap.projectionMatrix.multiplyMatrixMatrix(Matrix4d.createTransform(params.target.currentTransform, scratchModel), scratchModelProjection);
-      scratchMatrix.initFromMatrix4d(scratchModelProjection);
-      uniform.setMatrix4(scratchMatrix);
+      params.target.uniforms.shadow.bindProjectionMatrix(uniform);
     });
   });
 

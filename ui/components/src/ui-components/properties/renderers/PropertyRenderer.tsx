@@ -13,6 +13,7 @@ import { PrimitiveRendererProps, PrimitivePropertyRenderer } from "./PrimitivePr
 import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { UiComponents } from "../../UiComponents";
+import { ActionButtonRenderer } from "./ActionButtonRenderer";
 
 /** Properties shared by all renderers and PropertyView
  * @public
@@ -42,6 +43,8 @@ export interface SharedRendererProps {
   isSelectable?: boolean;
   /** Width of the whole property element */
   width?: number;
+  /** Array of action button renderers @beta */
+  actionButtonRenderers?: ActionButtonRenderer[];
 }
 
 /** Properties of [[PropertyRenderer]] React component
@@ -52,7 +55,6 @@ export interface PropertyRendererProps extends SharedRendererProps {
   propertyValueRendererManager?: PropertyValueRendererManager;
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
-
   /** Indicates property is being edited @beta */
   isEditing?: boolean;
   /** Called when property edit is committed. @beta */

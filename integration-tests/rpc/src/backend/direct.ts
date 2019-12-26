@@ -4,6 +4,5 @@
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { BackendTestCallbacks } from "../common/SideChannels";
-import "./CommonBackendSetup";
 
 registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "direct");

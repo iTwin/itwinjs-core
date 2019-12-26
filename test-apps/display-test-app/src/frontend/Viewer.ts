@@ -255,7 +255,7 @@ export class Viewer extends Window {
 
     const walk = createImageButton({
       src: "walk.svg",
-      click: () => IModelApp.tools.run("View.Walk", this.viewport),
+      click: () => IModelApp.tools.run("View.LookAndMove", this.viewport),
       tooltip: "Walk",
     });
     this._3dOnly.push(walk);

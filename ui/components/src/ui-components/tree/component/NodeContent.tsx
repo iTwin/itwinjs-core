@@ -150,7 +150,9 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
       this.updateLabel(this.props);
     }
 
-    this.setState((_, props) => ({ renderInfo: createRenderInfo(props.node) }));
+    const renderInfo = createRenderInfo(this.props.node);
+    if (renderInfo !== this.state.renderInfo)
+      this.setState({ renderInfo });
   }
 
   public componentWillUnmount() {

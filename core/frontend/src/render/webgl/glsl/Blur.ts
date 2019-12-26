@@ -21,7 +21,7 @@ const computeBlur = `
   float texelStepSize = u_blurSettings.z;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-  vec2 step = texelStepSize / u_viewport.zw;
+  vec2 step = texelStepSize / u_viewport;
 
   vec3 gaussian;
   const float twoPi = 6.283185307179586;

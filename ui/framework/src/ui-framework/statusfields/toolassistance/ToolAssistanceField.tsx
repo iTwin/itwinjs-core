@@ -22,10 +22,12 @@ import {
   ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, ToolAssistanceSeparator, ToolAssistanceItem, TitleBarButton,
 } from "@bentley/ui-ninezone";
 
-import {
-  UiFramework, StatusFieldProps, StatusBarFieldId, MessageManager,
-  FrontstageManager, ToolAssistanceChangedEventArgs, ToolIconChangedEventArgs, CursorPrompt,
-} from "../../../ui-framework";
+import { StatusFieldProps } from "../StatusFieldProps";
+import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
+import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
+import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
+import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
+import { UiFramework } from "../../UiFramework";
 
 import "./ToolAssistanceField.scss";
 import acceptPointIcon from "./accept-point.svg";

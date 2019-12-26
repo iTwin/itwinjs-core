@@ -51,7 +51,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
           this.state.dataProvider.onAnimationFractionChanged(0);
 
         if (this.props.viewport)
-          this.props.viewport.animationFraction = 0;
+          this.props.viewport.scheduleScriptFraction = 0;
       }
       this._setTimelineDataProvider(this.props.viewport as ScreenViewport);
     });
@@ -97,7 +97,7 @@ export class DefaultViewOverlay extends React.Component<Props, State> {
 
     const activeContentControl = ContentViewManager.getActiveContentControl();
     if (activeContentControl && activeContentControl.viewport) {
-      activeContentControl.viewport.animationFraction = 0;
+      activeContentControl.viewport.scheduleScriptFraction = 0;
     }
     if (this._removeListener)
       this._removeListener();

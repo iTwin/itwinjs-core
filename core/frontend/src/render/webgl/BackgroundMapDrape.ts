@@ -15,7 +15,7 @@ import { Frustum, FrustumPlanes, RenderTexture, ColorDef } from "@bentley/imodel
 import { Matrix4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { BatchState, BranchStack } from "./BranchState";
-import { RenderCommands } from "./DrawCommand";
+import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { ViewState3d } from "../../ViewState";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
@@ -41,6 +41,8 @@ export class BackgroundMapDrape extends TextureDrape {
   private _debugFrustum?: Frustum;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private readonly _symbologyOverrides = new FeatureSymbology.Overrides();
+  private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
+
   private constructor(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
     super();
     this._drapedTree = drapedTree;
@@ -64,10 +66,10 @@ export class BackgroundMapDrape extends TextureDrape {
 
   public collectGraphics(context: SceneContext) {
     this._graphics.length = 0;
-    if (undefined === context.viewFrustum)
+    if (undefined === context.viewingSpace)
       return;
 
-    const viewState = context.viewFrustum!.view as ViewState3d;
+    const viewState = context.viewingSpace!.view as ViewState3d;
     if (undefined === viewState)
       return;
 
@@ -85,7 +87,7 @@ export class BackgroundMapDrape extends TextureDrape {
     this._height = requiredHeight;
 
     const plane = this._mapTree.plane;
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewFrustum, this._drapedTree, tileTree, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewingSpace, this._drapedTree, tileTree, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -100,7 +102,7 @@ export class BackgroundMapDrape extends TextureDrape {
       this._debugFrustumGraphic = dispose(this._debugFrustumGraphic);
       const builder = context.createSceneGraphicBuilder();
       builder.setSymbology(ColorDef.green, ColorDef.green, 1);
-      builder.addFrustum(context.viewFrustum.getFrustum());
+      builder.addFrustum(context.viewingSpace.getFrustum());
       builder.setSymbology(ColorDef.red, ColorDef.red, 1);
       builder.addFrustum(this._debugFrustum!);
       builder.setSymbology(ColorDef.white, ColorDef.white, 1);
@@ -143,12 +145,14 @@ export class BackgroundMapDrape extends TextureDrape {
     const batchState = new BatchState(stack);
     System.instance.applyRenderState(drawingParams.state);
     const prevPlan = target.plan;
-    const prevBgColor = target.bgColor.tbgr;
 
-    target.bgColor.set(0, 0, 0, 0); // Avoid white on white reversal.
+    target.uniforms.style.changeBackgroundColor(this._bgColor); // Avoid white on white reversal. Will be reset below in changeRenderPlan().
     target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
-    target.projectionMatrix.setFrom(BackgroundMapDrape._postProjectionMatrix.multiplyMatrixMatrix(target.projectionMatrix));
-    target.branchStack.pushState(stack.top);
+
+    const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
+    target.uniforms.frustum.changeProjectionMatrix(BackgroundMapDrape._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix));
+
+    target.uniforms.branch.pushState(stack.top);
 
     const renderCommands = new RenderCommands(target, stack, batchState);
     renderCommands.addGraphics(this._graphics, RenderPass.OpaqueGeneral);
@@ -164,12 +168,10 @@ export class BackgroundMapDrape extends TextureDrape {
       target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
 
-    target.branchStack.pop();
+    target.uniforms.branch.pop();
 
     batchState.reset();   // Reset the batch Ids...
-    target.bgColor.setTbgr(prevBgColor);
-    if (prevPlan)
-      target.changeRenderPlan(prevPlan);
+    target.changeRenderPlan(prevPlan);
 
     system.applyRenderState(prevState);
     gl.viewport(0, 0, target.viewRect.width, target.viewRect.height); // Restore viewport

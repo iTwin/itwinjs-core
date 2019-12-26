@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Vector3d, Point3d } from "../../geometry3d/Point3dVector3d";
-import { Matrix3d, InverseMatrixState } from "../../geometry3d/Matrix3d";
+import { Matrix3d, InverseMatrixState, PackedMatrix3dOps } from "../../geometry3d/Matrix3d";
 import { Transform } from "../../geometry3d/Transform";
 import { AxisOrder, Geometry, AxisIndex } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
@@ -799,4 +799,170 @@ describe("InverseVariants", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+});
+
+function checkInverseRelationship(ck: Checker, name: string, matrix: Matrix3d | undefined, expectedInverseState: InverseMatrixState | undefined) {
+  if (matrix !== undefined) {
+    if (Checker.noisy.matrixMultiplyAliasing) {
+      console.log("-------------------------------");
+      console.log(name + "    " + matrix.coffs, " inverse state " + matrix.inverseState);
+      console.log("                                                 cached inverse    " + matrix.inverseCoffs);
+    }
+    if (expectedInverseState !== undefined)
+      ck.testExactNumber(expectedInverseState, matrix.inverseState, name + "inverse state");
+    if (matrix.inverseState === InverseMatrixState.inverseStored) {
+      const product = Matrix3d.createScale(2, 4, 3);
+      PackedMatrix3dOps.multiplyMatrixMatrix(matrix.coffs, matrix.inverseCoffs!, product.coffs);
+      ck.testTrue(product.isIdentity, "Confirm inverseCoffs", product);
+    }
+  }
+}
+
+function testProductCombinations(ck: Checker,
+  matrixA0: Matrix3d,
+  matrixB0: Matrix3d,
+  expectInvertible: boolean,
+  f: (matrixA: Matrix3d, matrixB: Matrix3d, result?: Matrix3d) => Matrix3d | undefined,
+  expectedInverseState: InverseMatrixState | undefined) {
+  const matrixA = matrixA0.clone();
+  const matrixB = matrixB0.clone();
+  const masterResult = f(matrixA, matrixB);
+  if (masterResult !== undefined) {
+    checkInverseRelationship(ck, "AB 1", masterResult, expectedInverseState);
+    const matrixAInverse = matrixA.inverse();
+    const matrixBInverse = matrixB.inverse();
+    if (expectedInverseState !== undefined)
+      ck.testExactNumber(expectedInverseState, masterResult.inverseState, "master state");
+    if (expectInvertible) {
+      ck.testDefined(matrixAInverse, "expect invertible A");
+      ck.testDefined(matrixBInverse, "expect invertible B");
+      const masterResultInverse = masterResult.inverse();
+      if (ck.testDefined(masterResultInverse) && masterResultInverse) {
+        const inverseTest = masterResultInverse.multiplyMatrixMatrix(masterResult);
+        ck.testDefined(inverseTest);
+      }
+    }
+
+    const expectProductInverseCoffs = expectInvertible && matrixA.hasCachedInverse && matrixB.hasCachedInverse;
+    ck.testBoolean(expectProductInverseCoffs, masterResult.hasCachedInverse);
+    if (masterResult) {
+      // pre-allocate result, no aliasing ...
+      {
+        const matrixA1 = matrixA.clone();
+        const matrixB1 = matrixB.clone();
+        const matrixC1 = Matrix3d.createZero();
+        const result1 = f(matrixA1, matrixB1, matrixC1);
+        checkInverseRelationship(ck, "AB 1", result1, expectedInverseState);
+        if (ck.testDefined(result1) && result1) {
+          ck.testMatrix3d(masterResult, result1, "(A,B) vs (A,B,result)");
+          ck.testMatrix3d(masterResult, matrixC1, "(A,B) vs (A,B,result)");
+          ck.testBoolean(expectProductInverseCoffs, result1.hasCachedInverse);
+        }
+      }
+      // reuse A:
+      {
+        const matrixA2 = matrixA.clone();
+        const matrixB2 = matrixB.clone();
+        // const matrixC2 = Matrix3d.createZero();
+        const result2 = f(matrixA2, matrixB2, matrixA2);
+        checkInverseRelationship(ck, "AB 2", result2, expectedInverseState);
+
+        if (ck.testDefined(result2) && result2) {
+          ck.testMatrix3d(masterResult, result2, "(A,B) vs (A,B,A)");
+          ck.testMatrix3d(masterResult, matrixA2, "(A,B) vs (A,B,A)");
+          ck.testBoolean(expectProductInverseCoffs, result2.hasCachedInverse);
+        }
+      }
+      // reuse B:
+      {
+        const matrixA3 = matrixA.clone();
+        const matrixB3 = matrixB.clone();
+        // const matrixC3 = Matrix3d.createZero();
+        const result3 = f(matrixA3, matrixB3, matrixB3);
+        checkInverseRelationship(ck, "AB 3", result3, expectedInverseState);
+        if (ck.testDefined(result3) && result3) {
+          ck.testMatrix3d(masterResult, result3, "(A,B) vs (A,B,B)");
+          ck.testMatrix3d(masterResult, matrixB3, "(A,B) vs (A,B,B)");
+          ck.testBoolean(expectProductInverseCoffs, result3.hasCachedInverse);
+        }
+      }
+    }
+  }
+}
+describe("MatrixProductAliasing", () => {
+  it("CachedInverse", () => {
+    const ck = new Checker();
+    /*
+    const matrix = Matrix3d.createRowValues(
+      0.9996204009003555, 0.027550936532400754, 0,
+      - 0.027550936532400754, 0.9996204009003555, 0,
+      0, 0, 1);
+    */
+    const matrixA = Matrix3d.createRowValues(10, 1, 2, -3, 12, 4, 3, 5, 15);
+    const matrixB = Matrix3d.createRowValues(9, 0.2, 2.2, -3.5, 12.5, 4.1, 3.9, -2.1, 17.8);
+    const matrixAB0 = matrixA.multiplyMatrixMatrix(matrixB);
+    ck.testExactNumber(InverseMatrixState.unknown, matrixAB0.inverseState);
+    const matrixABT0 = matrixA.multiplyMatrixMatrixTranspose(matrixB);
+    ck.testExactNumber(InverseMatrixState.unknown, matrixABT0.inverseState);
+    const matrixATB0 = matrixA.multiplyMatrixTransposeMatrix(matrixB);
+    ck.testExactNumber(InverseMatrixState.unknown, matrixATB0.inverseState);
+    // confirm that multiplies without inversion did not introduce inverse
+    ck.testExactNumber(InverseMatrixState.unknown, matrixA.inverseState);
+    ck.testExactNumber(InverseMatrixState.unknown, matrixB.inverseState);
+
+    const vectorU = Vector3d.create(1.4, 2.3, 9.1);
+    ck.testUndefined(matrixA.inverseCoffs);
+
+    // This forces inverse coffs to appear !!!
+    matrixA.multiplyInverse(vectorU);
+
+    ck.testDefined(matrixA.inverseCoffs, "inverseCoffs appear after multiplyInverseXYZ");
+    matrixB.multiplyInverse(vectorU);
+
+    testProductCombinations(ck, matrixA, matrixB, true, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d => matrixA1.multiplyMatrixMatrix(matrixB1, result1), InverseMatrixState.inverseStored);
+    testProductCombinations(ck, matrixA, matrixB, true, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixInverseMatrix(matrixB1, result1), InverseMatrixState.inverseStored);
+    testProductCombinations(ck, matrixA, matrixB, true, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixMatrixInverse(matrixB1, result1), InverseMatrixState.inverseStored);
+
+    testProductCombinations(ck, matrixA, matrixB, true, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixTransposeMatrix(matrixB1, result1), InverseMatrixState.inverseStored);
+    testProductCombinations(ck, matrixA, matrixB, true, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixMatrixTranspose(matrixB1, result1), InverseMatrixState.inverseStored);
+    const singularMatrix = Matrix3d.createScale(1, 0, 1);
+    testProductCombinations(ck, matrixA, singularMatrix, false, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d => matrixA1.multiplyMatrixMatrix(matrixB1, result1), InverseMatrixState.singular);
+    testProductCombinations(ck, matrixA, singularMatrix, false, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixTransposeMatrix(matrixB1, result1), InverseMatrixState.singular);
+    testProductCombinations(ck, matrixA, singularMatrix, false, (matrixA1: Matrix3d, matrixB1: Matrix3d, result1?: Matrix3d): Matrix3d | undefined => matrixA1.multiplyMatrixMatrixTranspose(matrixB1, result1), InverseMatrixState.singular);
+    ck.testUndefined(matrixA.multiplyMatrixMatrixInverse(singularMatrix), "singular product");
+    ck.testUndefined(singularMatrix.multiplyMatrixInverseMatrix(matrixA), "singular product");
+
+    const matrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(20))!;
+
+    for (const result of [undefined, Matrix3d.createIdentity()]) {
+      checkInverseRelationship(ck, "inverse", matrix.inverse(result)!, InverseMatrixState.inverseStored);
+      if (result)
+        result.setZero();
+      const angle = Angle.createRadians(Math.atan2(0.027550936532400754, 0.9996204009003555));
+      checkInverseRelationship(ck, "zRotation", Matrix3d.createRotationAroundAxisIndex(2, angle), InverseMatrixState.inverseStored);
+      if (result)
+        result.setZero();
+
+      checkInverseRelationship(ck, "zRotation", Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)!, InverseMatrixState.inverseStored);
+      if (result)
+        result.setZero();
+
+      checkInverseRelationship(ck, "AB", matrix.multiplyMatrixMatrix(matrixB, result), InverseMatrixState.inverseStored);
+      if (result)
+        result.setZero();
+      checkInverseRelationship(ck, "ABInverse", matrix.multiplyMatrixMatrixInverse(matrixB, result)!, InverseMatrixState.inverseStored);
+      if (result)
+        result.setZero();
+      checkInverseRelationship(ck, "AInverseB", matrix.multiplyMatrixInverseMatrix(matrixB, result)!, InverseMatrixState.inverseStored);
+      if (result)
+        result.setZero();
+      checkInverseRelationship(ck, "ABTranspose", matrix.multiplyMatrixMatrixTranspose(matrixB, result), InverseMatrixState.inverseStored);
+      if (result)
+        result.setZero();
+      checkInverseRelationship(ck, "ATransposeB", matrix.multiplyMatrixMatrixTranspose(matrixB, result), InverseMatrixState.inverseStored);
+      if (result)
+        result.setZero();
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

@@ -28,8 +28,6 @@ import { System } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
 import { addOverrideClassifierColor, addColorPlanarClassifier, addHilitePlanarClassifier, addFeaturePlanarClassifier } from "./PlanarClassification";
 import { addSolarShadowMap } from "./SolarShadowMapping";
-import { FloatRgb, FloatRgba } from "../FloatRGBA";
-import { ColorDef } from "@bentley/imodeljs-common";
 import { AttributeMap } from "../AttributeMap";
 import { TechniqueId } from "../TechniqueId";
 import { unpackFloat } from "./Clipping";
@@ -420,18 +418,15 @@ function addTexture(builder: ProgramBuilder, animated: IsAnimated) {
       const surfGeom = params.geometry.asSurface!;
       const surfFlags = surfGeom.computeSurfaceFlags(params.programParams);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-        const texture = (params.target.analysisTexture ? params.target.analysisTexture : surfGeom.texture) as Texture;
+        const texture = (params.geometry.hasAnimation && params.target.analysisTexture) ? (params.target.analysisTexture as Texture) : surfGeom.texture;
         assert(undefined !== texture);
-        texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
+        texture!.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else {
         System.instance.ensureSamplerBound(uniform, TextureUnit.SurfaceTexture);
       }
     });
   });
 }
-
-const scratchBgColor = FloatRgb.fromColorDef(ColorDef.white);
-const blackColor = FloatRgba.fromColorDef(ColorDef.black);
 
 const discardClassifiedByAlpha = `
   if (u_no_classifier_discard)
@@ -469,9 +464,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   builder.frag.set(FragmentShaderComponent.FinalizeBaseColor, applyBackgroundColor);
   builder.frag.addUniform("u_bgColor", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_bgColor", (uniform, params) => {
-      const bgColor = params.target.bgColor.alpha === 0.0 ? blackColor : params.target.bgColor;
-      scratchBgColor.set(bgColor.red, bgColor.green, bgColor.blue);
-      scratchBgColor.bind(uniform);
+      params.target.uniforms.style.bindBackgroundRgb(uniform);
     });
   });
 
@@ -530,7 +523,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
 
     // Do not discard transparent classified geometry if we're trying to do a pick...
     builder.frag.addUniform("u_no_classifier_discard", VariableType.Boolean, (prog) => {
-      prog.addGraphicUniform("u_no_classifier_discard", (uniform, params) => {
+      prog.addProgramUniform("u_no_classifier_discard", (uniform, params) => {
         uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
       });
     });

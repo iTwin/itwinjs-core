@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import {
   ConfigurableUiManager, ConfigurableCreateInfo, UiFramework,
   StatusBarWidgetControl, StatusBarWidgetControlArgs, StatusBarComposer,
@@ -20,7 +19,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     const itemsManager = UiFramework.statusBarManager.getItemsManager("main");
     if (itemsManager)
       return (
-        <StatusBarComposer itemsManager={itemsManager} />
+        <StatusBarComposer itemsManager={itemsManager} pluginItemsManager={UiFramework.pluginStatusBarItemsManager} />
       );
     return null;
   }

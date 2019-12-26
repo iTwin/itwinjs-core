@@ -14,10 +14,10 @@ import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
 import { GL } from "./GL";
 import { AttributeMap } from "./AttributeMap";
 import { TechniqueId } from "./TechniqueId";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 /** @internal */
-export class InstanceBuffers implements WebGlDisposable {
+export class InstanceBuffers implements WebGLDisposable {
   public readonly numInstances: number;
   public readonly transforms: BufferHandle;
   public readonly featureIds?: BufferHandle;

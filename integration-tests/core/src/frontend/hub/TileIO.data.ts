@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
+import { ImdlFlags } from "@bentley/imodeljs-common";
 
 // Describes a single tile.
 export interface TileTestCase {
   readonly bytes: Uint8Array;
-  readonly flags: IModelTileIO.Flags;
+  readonly flags: ImdlFlags;
 }
 
 // Describes a set of tiles generated for a particular version of the tile format from a set of simple iModels.

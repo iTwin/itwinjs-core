@@ -49,7 +49,7 @@ class PopupToolbarManager {
         PopupToolbarManager._itemExecuted, PopupToolbarManager._cancel)) {
       PopupToolbarManager._current = PopupToolbarManager._provider;
       PopupToolbarManager._provider = undefined;
-      PopupToolbarManager.closeAfterTimout();
+      PopupToolbarManager.closeAfterTimeout();
       return true;
     }
     return false;
@@ -59,16 +59,16 @@ class PopupToolbarManager {
   private static _cancel = () => { if (undefined === PopupToolbarManager._current || !PopupToolbarManager._current.overToolbarHotspot) PopupToolbarManager.close(); }; // Don't hide when click is over hotspot...
   private static close(): boolean { PopupToolbarManager._current = undefined; return IModelApp.uiAdmin.hideToolbar(); }
 
-  private static closeAfterTimout() {
+  private static closeAfterTimeout() {
     if (undefined === PopupToolbarManager._current)
       return;
     if (PopupToolbarManager._current.overToolbarHotspot || undefined === IModelApp.toolAdmin.cursorView)
-      setTimeout(() => { PopupToolbarManager.closeAfterTimout(); }, 500); // Cursor not in view or over hotspot, check again...
+      setTimeout(() => { PopupToolbarManager.closeAfterTimeout(); }, 500); // Cursor not in view or over hotspot, check again...
     else
       PopupToolbarManager.close();
   }
 
-  public static toolbarShowAfterTimout(provider: PopupToolbarProvider) {
+  public static toolbarShowAfterTimeout(provider: PopupToolbarProvider) {
     if (PopupToolbarManager._current === provider)
       return;
     PopupToolbarManager._provider = provider;
@@ -166,7 +166,7 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
       return;
     vp.view.setupFromFrustum(newFrustum);
     vp.synchWithView(true);
-    vp.animateToCurrent(startFrustum);
+    vp.animateToCurrent();
   }
 
   public toolbarProps: AbstractToolbarProps = {
@@ -215,7 +215,7 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
 
   public onMouseEnter(ev: BeButtonEvent) {
     super.onMouseEnter(ev);
-    PopupToolbarManager.toolbarShowAfterTimout(this);
+    PopupToolbarManager.toolbarShowAfterTimeout(this);
   }
 
   public onMouseButton(ev: BeButtonEvent): boolean {

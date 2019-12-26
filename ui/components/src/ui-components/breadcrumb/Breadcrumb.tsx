@@ -554,7 +554,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
   private _findChildUserInput = async (p: string): Promise<BeInspireTreeNode<TreeNodeItem> | undefined> => {
     const delimiter = this.props.delimiter!;
-    if (p.lastIndexOf(delimiter) === p.length - delimiter.length) // strip last delimiter if at end
+    if (p.endsWith(delimiter)) // strip last delimiter if at end
       p = p.substr(0, p.length - delimiter.length);
     const root = this.props.tree.nodes();
     for (const node of root) {

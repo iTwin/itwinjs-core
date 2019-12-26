@@ -4,12 +4,49 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { assert, BeDuration, dispose, Id64String, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, ClipVector, Constant, IndexedPolyface, IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 import {
-  ColorDef, ElementAlignedBox2d, ElementAlignedBox3d, Feature, FeatureTable, Gradient, GraphicParams, ImageBuffer,
-  Placement2d, RenderMode, RenderTexture, SheetProps, TileProps, TileTreeProps, ViewAttachmentProps, ViewDefinition2dProps, ViewFlag,
-  ViewFlags, ViewStateProps,
+  assert,
+  BeDuration,
+  dispose,
+  Id64,
+  Id64Array,
+  Id64String,
+  JsonUtils,
+} from "@bentley/bentleyjs-core";
+import {
+  Angle,
+  ClipVector,
+  Constant,
+  IndexedPolyface,
+  IndexedPolyfaceVisitor,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Range2d,
+  Range3d,
+  Transform,
+} from "@bentley/geometry-core";
+import {
+  ColorDef,
+  ElementAlignedBox2d,
+  ElementAlignedBox3d,
+  Feature,
+  FeatureTable,
+  Gradient,
+  GraphicParams,
+  ImageBuffer,
+  PackedFeatureTable,
+  Placement2d,
+  RenderMode,
+  RenderTexture,
+  SheetProps,
+  TileProps,
+  TileTreeProps,
+  ViewAttachmentProps,
+  ViewDefinition2dProps,
+  ViewFlag,
+  ViewFlags,
+  ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
@@ -17,13 +54,16 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
-import { GraphicList, PackedFeatureTable, RenderClipVolume, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
+import { GraphicList, RenderClipVolume, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
 import { Tile } from "./tile/Tile";
-import { TileLoader, TileTree, TileTreeSet } from "./tile/TileTree";
+import { TileLoader, TileTree, TileTreeReference, TileTreeSet } from "./tile/TileTree";
 import { TileRequest } from "./tile/TileRequest";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { CoordSystem, OffScreenViewport, Viewport, ViewRect } from "./Viewport";
+import { ChangeFlags, CoordSystem, OffScreenViewport, Viewport } from "./Viewport";
+import { ViewRect } from "./ViewRect";
 import { SpatialViewState, ViewState, ViewState2d, ViewState3d } from "./ViewState";
+
+// cSpell:ignore ovrs
 
 /** Describes the geometry and styling of a sheet border decoration.
  * The sheet border decoration mimics a sheet of paper with a drop shadow.
@@ -113,14 +153,20 @@ export class SheetBorder {
 /** @internal */
 export namespace Attachments {
   /** @internal */
-  export class AttachmentViewport extends OffScreenViewport {
+  export class AttachmentViewport {
+    public readonly vp: OffScreenViewport;
     public rendering: boolean = false;
     public toParent: Transform = Transform.createIdentity();  // attachment NPC to sheet world
     private _texture?: RenderTexture;
     private _sceneDepth: number = 0xffffffff;
     private _scene?: GraphicList;
 
+    public constructor(view: ViewState3d) {
+      this.vp = OffScreenViewport.create(view);
+    }
+
     public get texture(): RenderTexture | undefined { return this._texture; }
+    private get _changeFlags(): ChangeFlags { return (this.vp as any)._changeFlags; } // ###TODO gross.
 
     public createScene(currentState: State): State {
       if (currentState === State.Empty || currentState === State.Ready) {
@@ -129,38 +175,38 @@ export namespace Attachments {
       }
 
       if (this._changeFlags.areFeatureOverridesDirty) {
-        const ovrs = new FeatureSymbology.Overrides(this.view);
-        this.target.overrideFeatureSymbology(ovrs);
+        const ovrs = new FeatureSymbology.Overrides(this.vp.view);
+        this.vp.target.overrideFeatureSymbology(ovrs);
         this._changeFlags.clear();
       }
 
-      if (!this.sync.isValidController)
-        this.setupFromView();
+      if (!this.vp.controllerValid)
+        this.vp.setupFromView();
 
       this._scene = [];
-      const sceneContext = this.createSceneContext();
-      this.view.createScene(sceneContext);
+      const sceneContext = this.vp.createSceneContext();
+      this.vp.view.createScene(sceneContext);
 
       sceneContext.requestMissingTiles();
 
       // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-      if (!this.view.areAllTileTreesLoaded || sceneContext.hasMissingTiles)
+      if (!this.vp.view.areAllTileTreesLoaded || sceneContext.hasMissingTiles)
         return State.Loading;
 
       return State.Ready;
     }
 
     public renderImage(): ImageBuffer | undefined {
-      if (!this.sync.isValidRenderPlan) {
-        this.target.changeRenderPlan(RenderPlan.createFromViewport(this));
-        this.sync.setValidRenderPlan();
+      if (!this.vp.renderPlanValid) {
+        this.vp.target.changeRenderPlan(RenderPlan.createFromViewport(this.vp));
+        this.vp.setRenderPlanValid();
       }
 
-      this.target.changeScene(this._scene! /* TODO: Pass view state's active volume... */);
-      this.renderFrame();
+      this.vp.target.changeScene(this._scene! /* TODO: Pass view state's active volume... */);
+      this.vp.renderFrame();
 
       this._texture = undefined;
-      return this.readImage();
+      return this.vp.readImage();
     }
 
     public renderTexture() {
@@ -169,7 +215,7 @@ export namespace Attachments {
         return;   // image most likely consisted entirely of background pixels... don't bother creating graphic
 
       const params = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
-      this._texture = this.target.renderSystem.createTextureFromImageBuffer(image, this.view.iModel, params);
+      this._texture = this.vp.target.renderSystem.createTextureFromImageBuffer(image, this.vp.view.iModel, params);
       assert(this._texture !== undefined);
     }
 
@@ -180,13 +226,13 @@ export namespace Attachments {
           tree.setState(this._sceneDepth, State.NotLoaded);
 
         // Discard any tiles/graphics used for previous level-of-detail - we'll generate them at the new LOD
-        this.sync.invalidateScene();
+        this.vp.invalidateScene();
         // ###TODO this.view.cancelAllTileLoads();
 
         this._sceneDepth = depth;
         let dim = QUERY_SHEET_TILE_PIXELS;
         dim = dim * Math.pow(2, depth); // doubling the rect dimensions for every level of depth
-        this.setRect(new ViewRect(0, 0, dim, dim), true);
+        this.vp.setRect(new ViewRect(0, 0, dim, dim), true);
       }
     }
 
@@ -471,7 +517,7 @@ export namespace Attachments {
 
       if (currentState !== State.Ready) {
         viewport.setSceneDepth(this.depth - 1, tree);
-        viewport.setupFromView();
+        viewport.vp.setupFromView();
 
         // Create the scene and if the scene is complete, mark the state as ready
         currentState = viewport.createScene(currentState);
@@ -491,20 +537,20 @@ export namespace Attachments {
             viewport.rendering = true;
 
             // render the texture then create graphics from the polys and the rendered texture
-            const frustumToRestore = viewport.getFrustum();
+            const frustumToRestore = viewport.vp.getFrustum();
 
             // Scene rect does not match this. That rect increases with depth. This rect is constant, because it is the rect of the final texture
             const dim = QUERY_SHEET_TILE_PIXELS;
-            viewport.setRect(new ViewRect(0, 0, dim, dim));
+            viewport.vp.setRect(new ViewRect(0, 0, dim, dim));
 
             // Change the frustum so it looks at only the visible (after clipping) portion of the scene.
             // Also only look at the relevant corner of the scene
-            const frust = viewport.getFrustum(CoordSystem.Npc);
+            const frust = viewport.vp.getFrustum(CoordSystem.Npc);
             frust.initFromRange(this.range);  // use unclipped range of tile to change the frustum (this is what we're looking at)
 
-            const rootToNpc = viewport.viewFrustum.worldToNpcMap;
+            const rootToNpc = viewport.vp.viewingSpace.worldToNpcMap;
             rootToNpc.transform1.multiplyPoint3dArrayQuietNormalize(frust.points);
-            viewport.setupViewFromFrustum(frust);
+            viewport.vp.setupViewFromFrustum(frust);
 
             viewport.renderTexture();
             if (viewport.texture === undefined) {
@@ -516,7 +562,7 @@ export namespace Attachments {
             }
 
             // restore frustum
-            viewport.setupViewFromFrustum(frustumToRestore);
+            viewport.vp.setupViewFromFrustum(frustumToRestore);
           }
 
           break;
@@ -750,12 +796,12 @@ export namespace Attachments {
 
       // now expand the frustum in one direction so that the view is square (so we can use square tiles)
       const dim = QUERY_SHEET_TILE_PIXELS;
-      this.viewport.setRect(new ViewRect(0, 0, dim, dim));
-      this.viewport.setupFromView();
+      this.viewport.vp.setRect(new ViewRect(0, 0, dim, dim));
+      this.viewport.vp.setupFromView();
 
-      const frust = this.viewport.getFrustum(CoordSystem.Npc).transformBy(Transform.createOriginAndMatrix(Point3d.create(), Matrix3d.createScale(scale.x, scale.y, 1)));
-      this.viewport.npcToWorldArray(frust.points);
-      this.viewport.setupViewFromFrustum(frust);
+      const frust = this.viewport.vp.getFrustum(CoordSystem.Npc).transformBy(Transform.createOriginAndMatrix(Point3d.create(), Matrix3d.createScale(scale.x, scale.y, 1)));
+      this.viewport.vp.npcToWorldArray(frust.points);
+      this.viewport.vp.setupViewFromFrustum(frust);
 
       const style = view.displayStyle;
 
@@ -794,7 +840,7 @@ export namespace Attachments {
 
     public static create(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext): Tree3d {
       const view = attachment.view as ViewState3d;
-      const viewport = AttachmentViewport.create(view) as AttachmentViewport;
+      const viewport = new AttachmentViewport(view);
       return new Tree3d(sheetView, attachment, sceneContext, viewport, view);
     }
 
@@ -885,7 +931,7 @@ export namespace Attachments {
 
     public discloseTileTrees(trees: TileTreeSet): void {
       // ###TODO: An Attachment.Tree is *NOT* owned by a TileTree.Owner. It should be.
-      // We disclose it for purposese of tracking memory consumption - but it will not be affected by tile tree purging (that only handles trees registered with IModelConnection.tiles)
+      // We disclose it for purpose of tracking memory consumption - but it will not be affected by tile tree purging (that only handles trees registered with IModelConnection.tiles)
       if (undefined !== this._tree)
         trees.add(this._tree);
     }
@@ -954,7 +1000,7 @@ export namespace Attachments {
 
   /** @internal */
   export class Attachment2d extends Attachment {
-    public treeRef?: TileTree.Reference;
+    public treeRef?: TileTreeReference;
 
     public discloseTileTrees(trees: TileTreeSet): void {
       super.discloseTileTrees(trees);
@@ -990,7 +1036,7 @@ export namespace Attachments {
       super.discloseTileTrees(trees);
       const tree = this._tree as Tree3d;
       if (undefined !== tree)
-        trees.disclose(tree.viewport);
+        trees.disclose(tree.viewport.vp);
     }
 
     /** Returns the load state of this attachment's tile tree at a given depth. */
@@ -1165,7 +1211,7 @@ export class SheetViewState extends ViewState2d {
    */
   public onRenderFrame(_viewport: Viewport) {
     if (!this._attachments.allReady || !this._all3dAttachmentTilesLoaded)
-      _viewport.sync.invalidateScene();
+      _viewport.invalidateScene();
   }
 
   /** Adds the Sheet view to the scene, along with any of this sheet's attachments.

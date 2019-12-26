@@ -3,10 +3,25 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
-import { assert, utf8ToString } from "@bentley/bentleyjs-core";
-import { Matrix4d, Point4dProps, Range3d, Transform } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, ColorDef } from "@bentley/imodeljs-common";
-import { TileIO } from "./TileIO";
+import {
+  assert,
+  ByteStream,
+  utf8ToString,
+} from "@bentley/bentleyjs-core";
+import {
+  Matrix4d,
+  Point3d,
+  Point4dProps,
+  Range3d,
+  Transform,
+} from "@bentley/geometry-core";
+import {
+  AxisAlignedBox3d,
+  ColorDef,
+  nextPoint3d64FromByteStream,
+  TileFormat,
+  TileHeader,
+} from "@bentley/imodeljs-common";
 
 /** Types used for deserializing A3X (Agency9 / CityPlanner) binary tile format.
  * @internal
@@ -320,7 +335,7 @@ export namespace A3xTileIO {
     otherBuffers: MeshData[];
   }
 
-  export class StreamReader extends TileIO.StreamBuffer {
+  export class StreamReader extends ByteStream {
     public constructor(bytes: Uint8Array) {
       super(bytes.buffer, { byteOffset: bytes.byteOffset, byteLength: bytes.byteLength });
     }
@@ -371,6 +386,10 @@ export namespace A3xTileIO {
       const ptr = this.nextBufferPointer;
       const length = this.nextVarInt;
       return { ...ptr, length };
+    }
+
+    public get nextPoint3d64(): Point3d {
+      return nextPoint3d64FromByteStream(this);
     }
 
     public get nextAxisAlignedBox3d(): AxisAlignedBox3d {
@@ -669,7 +688,7 @@ export namespace A3xTileIO {
     }
   }
 
-  export class Header extends TileIO.Header {
+  export class Header extends TileHeader {
     public readonly byteOrder: ByteOrder; // byte
     public readonly options: Option[] = [];
     public readonly upAxis: UpAxis; // byte
@@ -678,7 +697,7 @@ export namespace A3xTileIO {
 
     public get isValid(): boolean {
       // ###TODO Check number of chunks?
-      return TileIO.Format.A3x === this.format && ByteOrder.LittleEndian === this.byteOrder && UpAxis.Z === this.upAxis;
+      return TileFormat.A3x === this.format && ByteOrder.LittleEndian === this.byteOrder && UpAxis.Z === this.upAxis;
     }
 
     public constructor(stream: StreamReader) {

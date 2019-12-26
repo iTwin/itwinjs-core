@@ -8,6 +8,7 @@ import {
   assert,
   BeDuration,
   BeTimePoint,
+  ByteStream,
   dispose,
   Id64,
   Id64String,
@@ -27,35 +28,20 @@ import {
 } from "@bentley/geometry-core";
 import {
   BatchType,
+  bisectTileRange2d,
+  bisectTileRange3d,
+  ColorDef,
+  CompositeTileHeader,
   ElementAlignedBox3d,
   Frustum,
   FrustumPlanes,
   RenderMode,
+  TileFormat,
   TileProps,
   TileTreeProps,
   ViewFlag,
   ViewFlags,
-  ColorDef,
 } from "@bentley/imodeljs-common";
-import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
-import { GraphicBranch, RenderClipVolume, RenderMemory } from "../render/System";
-import { DecorateContext, SceneContext } from "../ViewContext";
-import { B3dmTileIO } from "./B3dmTileIO";
-import { CompositeTileIO } from "./CompositeTileIO";
-import { GltfTileIO } from "./GltfTileIO";
-import { HitDetail } from "../HitDetail";
-import { I3dmTileIO } from "./I3dmTileIO";
-import { IModelTileIO } from "./IModelTileIO";
-import { PntsTileIO } from "./PntsTileIO";
-import { TileIO } from "./TileIO";
-import { TileRequest } from "./TileRequest";
-import {
-  bisectRange2d,
-  bisectRange3d,
-  Tile,
-} from "./Tile";
-import { CoordSystem, Viewport } from "../Viewport";
 
 function pointIsContained(point: Point3d, range: Range3d): boolean {
   const tol = 1.0e-6;
@@ -77,7 +63,7 @@ function pointsAreContained(points: Point3d[], range: Range3d): boolean {
 
 /** Sub-divide tile range until we find range of smallest tile containing all the points. */
 function computeTileRangeContainingPoints(parentRange: Range3d, points: Point3d[], is2d: boolean): Range3d {
-  const bisect = is2d ? bisectRange2d : bisectRange3d;
+  const bisect = is2d ? bisectTileRange2d : bisectTileRange3d;
   const maxK = is2d ? 1 : 2;
   for (let i = 0; i < 2; i++) {
     for (let j = 0; j < 2; j++) {
@@ -97,9 +83,68 @@ function computeTileRangeContainingPoints(parentRange: Range3d, points: Point3d[
   return parentRange;
 }
 
+/** A reference to a [[TileTree]] suitable for drawing within a [[Viewport]]. Does not *own* its TileTree - the tree is owned by a [[TileTree.Owner]].
+ * The specific [[TileTree]] referenced by this object may change based on the current state of the Viewport in which it is drawn - for example,
+ * as a result of changing the RenderMode, or animation settings, or classification settings, etc.
+ * A reference to a TileTree is typically associated with a ViewState, a DisplayStyleState, or a ViewState.
+ * Multiple references can refer to the same TileTree with different parameters and logic - for example, the same background map tiles can be displayed in two viewports with
+ * differing levels of transparency.
+ * @internal
+ */
+export abstract class TileTreeReference implements RenderMemory.Consumer {
+  /** The owner of the currently-referenced [[TileTree]]. Do not store a direct reference to it, because it may change or become disposed. */
+  public abstract get treeOwner(): TileTree.Owner;
+
+  /** Disclose *all* TileTrees use by this reference. This may include things like map tiles used for draping on terrain.
+   * Override this and call super if you have such auxiliary trees.
+   * @note Any tree *NOT* disclosed becomes a candidate for *purging* (being unloaded from memory along with all of its tiles and graphics).
+   */
+  public discloseTileTrees(trees: TileTreeSet): void {
+    const tree = this.treeOwner.tileTree;
+    if (undefined !== tree)
+      trees.add(tree);
+  }
+
+  /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.drawScene]] on the referenced TileTree, if it is loaded. */
+  public addToScene(context: SceneContext): void {
+    const tree = this.treeOwner.load();
+    if (undefined !== tree)
+      tree.drawScene(context);
+  }
+
+  /** Optionally return a tooltip describing the hit. */
+  public getToolTip(_hit: HitDetail): HTMLElement | string | undefined { return undefined; }
+
+  /** Optionally add any decorations specific to this reference. For example, map tile trees may add a logo image and/or copyright attributions.
+   * @note This is only invoked for background maps and TiledGraphicsProviders - others have no decorations, but if they did implement this it would not be called.
+   */
+  public decorate(_context: DecorateContext): void { }
+
+  /** Unions this reference's range with the supplied range to help compute a volume in world space for fitting a viewport to its contents.
+   * Override this function if a reference's range should not be included in the fit range, or a range different from its tile tree's range should be used.
+   */
+  public unionFitRange(union: Range3d): void {
+    const tree = this.treeOwner.load();
+    if (undefined === tree || undefined === tree.rootTile)
+      return;
+
+    const contentRange = tree.rootTile.computeWorldContentRange();
+    if (!contentRange.isNull)
+      union.extendRange(contentRange);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    const tree = this.treeOwner.tileTree;
+    if (undefined !== tree)
+      tree.collectStatistics(stats);
+  }
+
+  public addPlanes(_planes: Plane3dByOriginAndUnitNormal[]): void { }
+}
+
 /** Divide range in half until we find smallest sub-range containing all the points. */
 function computeSubRangeContainingPoints(parentRange: Range3d, points: Point3d[], is2d: boolean): Range3d {
-  const bisect = is2d ? bisectRange2d : bisectRange3d;
+  const bisect = is2d ? bisectTileRange2d : bisectTileRange3d;
   const range = parentRange.clone();
   bisect(range, false);
   if (pointsAreContained(points, range))
@@ -116,9 +161,11 @@ function computeSubRangeContainingPoints(parentRange: Range3d, points: Point3d[]
 /** @internal */
 export class TraversalDetails {
   public queuedChildren = new Array<Tile>();
+  public childrenLoading = false;
 
   public initialize() {
     this.queuedChildren.length = 0;
+    this.childrenLoading = false;
   }
 }
 
@@ -139,7 +186,9 @@ export class TraversalChildrenDetails {
 
   public combine(parentDetails: TraversalDetails) {
     parentDetails.queuedChildren.length = 0;
+    parentDetails.childrenLoading = false;
     for (const child of this._childDetails) {
+      parentDetails.childrenLoading = parentDetails.childrenLoading || child.childrenLoading;
       for (const queuedChild of child.queuedChildren)
         parentDetails.queuedChildren.push(queuedChild);
     }
@@ -157,6 +206,7 @@ export class TraversalSelectionContext {
       this.selected.push(tile);
       this.displayedDescendants.push(traversalDetails.queuedChildren.slice());
       traversalDetails.queuedChildren.length = 0;
+      traversalDetails.childrenLoading = false;
     } else if (!tile.isNotFound) {
       traversalDetails.queuedChildren.push(tile);
       this.missing.push(tile);
@@ -504,11 +554,11 @@ export abstract class TileLoader {
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content> {
     assert(data instanceof Uint8Array);
     const blob = data as Uint8Array;
-    const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
+    const streamBuffer = new ByteStream(blob.buffer);
     return this.loadTileContentFromStream(tile, streamBuffer, isCanceled);
   }
 
-  public async loadTileContentFromStream(tile: Tile, streamBuffer: TileIO.StreamBuffer, isCanceled?: () => boolean): Promise<Tile.Content> {
+  public async loadTileContentFromStream(tile: Tile, streamBuffer: ByteStream, isCanceled?: () => boolean): Promise<Tile.Content> {
     const position = streamBuffer.curPos;
     const format = streamBuffer.nextUint32;
     streamBuffer.curPos = position;
@@ -516,23 +566,23 @@ export abstract class TileLoader {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 
-    let reader: GltfTileIO.Reader | undefined;
+    let reader: GltfReader | undefined;
     switch (format) {
-      case TileIO.Format.Pnts:
+      case TileFormat.Pnts:
         this._containsPointClouds = true;
-        return { graphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp) };
+        return { graphic: readPointCloudTileContent(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp) };
 
-      case TileIO.Format.B3dm:
-        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap());
+      case TileFormat.B3dm:
+        reader = B3dmReader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap());
         break;
-      case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, this._loadEdges, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined, tile.contentId);
+      case TileFormat.IModel:
+        reader = ImdlReader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, this._loadEdges, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined, tile.contentId);
         break;
-      case TileIO.Format.I3dm:
-        reader = I3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
+      case TileFormat.I3dm:
+        reader = I3dmReader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
         break;
-      case TileIO.Format.Cmpt:
-        const header = new CompositeTileIO.Header(streamBuffer);
+      case TileFormat.Cmpt:
+        const header = new CompositeTileHeader(streamBuffer);
         if (!header.isValid) return {};
         const branch = new GraphicBranch();
         for (let i = 0; i < header.tileCount; i++) {
@@ -609,7 +659,7 @@ export interface TileTreeDiscloser {
   discloseTileTrees: (trees: TileTreeSet) => void;
 }
 
-/** A set of TileTrees, populated by a call to a `discloseTileTrees` function on an object like a [[Viewport]], [[ViewState]], or [[TileTree.Reference]].
+/** A set of TileTrees, populated by a call to a `discloseTileTrees` function on an object like a [[Viewport]], [[ViewState]], or [[TileTreeReference]].
  * @internal
  */
 export class TileTreeSet {
@@ -721,7 +771,7 @@ export namespace TileTree {
     createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
   }
 
-  /** Describes the type of graphics produced by a [[TileTree.Reference]].
+  /** Describes the type of graphics produced by a [[TileTreeReference]].
    * @internal
    */
   export enum GraphicType {
@@ -732,63 +782,20 @@ export namespace TileTree {
     /** Renders overlaid on all other geometry. */
     Overlay = 2,
   }
-
-  /** A reference to a [[TileTree]] suitable for drawing within a [[Viewport]]. Does not *own* its TileTree - the tree is owned by a [[TileTree.Owner]].
-   * The specific [[TileTree]] referenced by this object may change based on the current state of the Viewport in which it is drawn - for example,
-   * as a result of changing the RenderMode, or animation settings, or classification settings, etc.
-   * A reference to a TileTree is typically associated with a ViewState, a DisplayStyleState, or a ViewState.
-   * Multiple references can refer to the same TileTree with different parameters and logic - for example, the same background map tiles can be displayed in two viewports with
-   * differing levels of transparency.
-   * @internal
-   */
-  export abstract class Reference implements RenderMemory.Consumer {
-    /** The owner of the currently-referenced [[TileTree]]. Do not store a direct reference to it, because it may change or become disposed. */
-    public abstract get treeOwner(): Owner;
-
-    /** Disclose *all* TileTrees use by this reference. This may include things like map tiles used for draping on terrain.
-     * Override this and call super if you have such auxiliary trees.
-     * @note Any tree *NOT* disclosed becomes a candidate for *purging* (being unloaded from memory along with all of its tiles and graphics).
-     */
-    public discloseTileTrees(trees: TileTreeSet): void {
-      const tree = this.treeOwner.tileTree;
-      if (undefined !== tree)
-        trees.add(tree);
-    }
-
-    /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.drawScene]] on the referenced TileTree, if it is loaded. */
-    public addToScene(context: SceneContext): void {
-      const tree = this.treeOwner.load();
-      if (undefined !== tree)
-        tree.drawScene(context);
-    }
-
-    /** Optionally return a tooltip describing the hit. */
-    public getToolTip(_hit: HitDetail): HTMLElement | string | undefined { return undefined; }
-
-    /** Optionally add any decorations specific to this reference. For example, map tile trees may add a logo image and/or copyright attributions.
-     * @note This is only invoked for background maps and TiledGraphicsProviders - others have no decorations, but if they did implement this it would not be called.
-     */
-    public decorate(_context: DecorateContext): void { }
-
-    /** Unions this reference's range with the supplied range to help compute a volume in world space for fitting a viewport to its contents.
-     * Override this function if a reference's range should not be included in the fit range, or a range different from its tile tree's range should be used.
-     */
-    public unionFitRange(union: Range3d): void {
-      const tree = this.treeOwner.load();
-      if (undefined === tree || undefined === tree.rootTile)
-        return;
-
-      const contentRange = tree.rootTile.computeWorldContentRange();
-      if (!contentRange.isNull)
-        union.extendRange(contentRange);
-    }
-
-    public collectStatistics(stats: RenderMemory.Statistics): void {
-      const tree = this.treeOwner.tileTree;
-      if (undefined !== tree)
-        tree.collectStatistics(stats);
-    }
-
-    public addPlanes(_planes: Plane3dByOriginAndUnitNormal[]): void { }
-  }
 }
+
+import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { GraphicBranch, RenderClipVolume, RenderMemory } from "../render/System";
+import { DecorateContext, SceneContext } from "../ViewContext";
+import { B3dmReader } from "./B3dmReader";
+import { GltfReader } from "./GltfReader";
+import { HitDetail } from "../HitDetail";
+import { I3dmReader } from "./I3dmReader";
+import { ImdlReader } from "./ImdlReader";
+import { readPointCloudTileContent } from "./PntsReader";
+import { TileRequest } from "./TileRequest";
+import {
+  Tile,
+} from "./Tile";
+import { CoordSystem, Viewport } from "../Viewport";

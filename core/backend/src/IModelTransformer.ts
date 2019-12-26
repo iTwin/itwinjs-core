@@ -170,17 +170,14 @@ export class IModelTransformer extends IModelExportHandler {
    * @note This method is called from [[processAll]] and is not needed by [[processChanges]], so it only needs to be called directly when processing a subset of an iModel.
    */
   public detectElementDeletes(): void {
-    const targetElementIds: Id64String[] = [];
+    const targetElementsToDelete: Id64String[] = [];
     this.forEachExternalSourceAspect((sourceElementId: Id64String, targetElementId: Id64String) => {
-      try {
-        this.sourceDb.elements.getElementProps(sourceElementId);
-      } catch (error) {
-        if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
-          targetElementIds.push(targetElementId);
-        }
+      if (undefined === this.sourceDb.elements.tryGetElementProps(sourceElementId)) {
+        // if the sourceElement is not found, then it must have been deleted, so propagate the delete to the target iModel
+        targetElementsToDelete.push(targetElementId);
       }
     });
-    targetElementIds.forEach((targetElementId: Id64String) => {
+    targetElementsToDelete.forEach((targetElementId: Id64String) => {
       this.importer.deleteElement(targetElementId);
     });
   }
@@ -472,17 +469,13 @@ export class IModelTransformer extends IModelExportHandler {
       statement.bindString("kind", ExternalSourceAspect.Kind.Relationship);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const sourceRelInstanceId: Id64String = Id64.fromJSON(statement.getValue(1).getString());
-        try {
-          this.sourceDb.relationships.getInstanceProps(ElementRefersToElements.classFullName, sourceRelInstanceId);
-        } catch (error) {
-          if ((error instanceof IModelError) && (error.errorNumber === IModelStatus.NotFound)) {
-            const json: any = JSON.parse(statement.getValue(2).getString());
-            if (undefined !== json.targetRelInstanceId) {
-              const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
-              this.importer.deleteRelationship(targetRelationship);
-            }
-            aspectDeleteIds.push(statement.getValue(0).getId());
+        if (undefined === this.sourceDb.relationships.tryGetInstanceProps(ElementRefersToElements.classFullName, sourceRelInstanceId)) {
+          const json: any = JSON.parse(statement.getValue(2).getString());
+          if (undefined !== json.targetRelInstanceId) {
+            const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
+            this.importer.deleteRelationship(targetRelationship);
           }
+          aspectDeleteIds.push(statement.getValue(0).getId());
         }
       }
     });
@@ -574,7 +567,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Override of [IModelExportHandler.onExportFont]($backend) that imports a font into the target iModel when it is exported from the source iModel. */
-  protected onExportFont(font: FontProps): void {
+  protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void {
     this.context.importFont(font.id);
   }
 

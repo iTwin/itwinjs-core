@@ -15,6 +15,7 @@ import {
   RpcResponseCacheControl,
   WipRpcInterface,
   RpcOperationPolicy,
+  RpcRequestStatus,
 } from "@bentley/imodeljs-common";
 import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import {
@@ -60,25 +61,25 @@ describe("RpcInterface", () => {
     assert.strictEqual(remoteSum, params.a + params.b);
   });
 
-  it("should report aggregate operation load profile information #FIXME-direct", async () => {
+  it("should report aggregate operation load profile information", async () => {
     const load = RpcRequest.aggregateLoad;
     const frontendInitialReq = load.lastRequest;
     const frontendInitialResp = load.lastResponse;
 
-    await timeout(1);
+    await timeout(10);
 
     const backendAggregate1 = await TestRpcInterface.getClient().op7();
     assert.isAbove(load.lastRequest, frontendInitialReq);
     assert.isAbove(load.lastResponse, frontendInitialResp);
 
-    await timeout(1);
+    await timeout(10);
 
     const backendAggregate2 = await TestRpcInterface.getClient().op7();
     assert.isAbove(backendAggregate2.lastRequest, backendAggregate1.lastRequest);
     assert.isAbove(backendAggregate2.lastResponse, backendAggregate1.lastResponse);
   });
 
-  it("should support pending operations #FIXME-direct", async () => {
+  it("should support pending operations", async () => {
     const op8 = RpcOperation.lookup(TestRpcInterface, "op8");
 
     let receivedPending = false;
@@ -130,7 +131,7 @@ describe("RpcInterface", () => {
     assert(await executeBackendCallback(BackendTestCallbacks.unregisterTestRpcImpl2Class));
   });
 
-  it("should allow access to request and invocation objects and allow a custom request id #FIXME-direct", async () => {
+  it("should allow access to request and invocation objects and allow a custom request id", async () => {
     const customId = "customId";
     let expectedRequest: RpcRequest = undefined as any;
     const backupFn = RpcConfiguration.requestContext.getId;
@@ -153,7 +154,7 @@ describe("RpcInterface", () => {
     RpcConfiguration.requestContext.getId = backupFn;
   });
 
-  it("should marshal errors over the wire #FIXME-direct", async () => {
+  it("should marshal errors over the wire", async () => {
     try {
       await TestRpcInterface.getClient().op10();
       assert(false);
@@ -179,7 +180,7 @@ describe("RpcInterface", () => {
     terminateLocalInterface();
   });
 
-  it("should allow resolving a 'not found' state for a request #FIXME-direct", async () => {
+  it("should allow resolving a 'not found' state for a request", async () => {
     const removeResolver = RpcRequest.notFoundHandlers.addListener((request, _response, resubmit, reject) => {
       if (!(_response.hasOwnProperty("isTestNotFoundResponse")))
         return;
@@ -211,10 +212,11 @@ describe("RpcInterface", () => {
     removeResolver();
   });
 
-  it("should describe available RPC endpoints from the frontend #FIXME-direct", async () => {
+  it("should describe available RPC endpoints from the frontend", async () => {
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
     const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
     const originalName = controlInterface.interfaceName;
+    const originalVersion = IModelReadRpcInterface.interfaceVersion;
     const controlPolicy = RpcOperation.lookup(controlInterface, "describeEndpoints").policy;
 
     const simulateIncompatible = () => {
@@ -223,7 +225,11 @@ describe("RpcInterface", () => {
         interfaces.push(definition.interfaceName === "IModelReadRpcInterface" ? `${definition.interfaceName}@0.0.0` : `${definition.interfaceName}@${definition.interfaceVersion}`);
       });
 
-      return btoa(interfaces.sort().join(","));
+      const id = interfaces.sort().join(",");
+      if (typeof (btoa) !== "undefined")
+        return btoa(id);
+
+      return Buffer.from(id, "binary").toString("base64");
     };
 
     const endpoints = await RpcManager.describeAvailableEndpoints();
@@ -232,11 +238,17 @@ describe("RpcInterface", () => {
     assert(typeof (endpoints[0].interfaceVersion) === "string");
     assert.isTrue(endpoints[0].compatible);
 
-    controlPolicy.sentCallback = () => Object.defineProperty(controlInterface, "interfaceName", { value: simulateIncompatible() });
+    const removeListener = RpcRequest.events.addListener((type: RpcRequestEvent, req: RpcRequest) => {
+      if (type === RpcRequestEvent.StatusChanged && req.status === RpcRequestStatus.Resolved) {
+        Object.defineProperty(controlInterface, "interfaceName", { value: simulateIncompatible() });
+        IModelReadRpcInterface.interfaceVersion = originalVersion;
+      }
+    });
     assert(await executeBackendCallback(BackendTestCallbacks.setIncompatibleInterfaceVersion));
 
     const endpointsMismatch = await RpcManager.describeAvailableEndpoints();
     assert.isFalse(endpointsMismatch[0].compatible);
+    removeListener();
 
     controlPolicy.sentCallback = () => { };
     Object.defineProperty(controlInterface, "interfaceName", { value: originalName });
@@ -269,37 +281,37 @@ describe("RpcInterface", () => {
     await TestRpcInterface.getClient().op13(data);
   });
 
-  it("should reject a mismatched RPC interface request #FIXME-direct", async () => {
+  it("should reject a mismatched RPC interface request", async () => {
     const realVersion = TestRpcInterface.interfaceVersion;
     const realVersionZ = ZeroMajorRpcInterface.interfaceVersion;
 
-    const test = async (code: string | null, expectValid: boolean, c: TestRpcInterface | ZeroMajorRpcInterface) => {
-      return new Promise(async (resolve, reject) => {
-        if (code === null) {
-          reject();
-        }
+    // Wait until after each test request is serialized before resetting the interfaceVersions
+    const originalSerialize = TestRpcInterface.getClient().configuration.protocol.serialize;
+    TestRpcInterface.getClient().configuration.protocol.serialize = async (request) => {
+      const retVal = await originalSerialize(request);
+      TestRpcInterface.interfaceVersion = realVersion;
+      ZeroMajorRpcInterface.interfaceVersion = realVersionZ;
+      return retVal;
+    };
 
-        TestRpcInterface.interfaceVersion = code as string;
-        ZeroMajorRpcInterface.interfaceVersion = code as string;
-        try {
-          await c.op1({ a: 0, b: 0 });
-          TestRpcInterface.interfaceVersion = realVersion;
-          ZeroMajorRpcInterface.interfaceVersion = realVersionZ;
-          if (expectValid) {
-            resolve();
-          } else {
-            reject();
-          }
-        } catch (err) {
-          TestRpcInterface.interfaceVersion = realVersion;
-          ZeroMajorRpcInterface.interfaceVersion = realVersionZ;
-          if (expectValid) {
-            reject();
-          } else {
-            resolve();
-          }
-        }
-      });
+    const test = async (code: string | null, expectValid: boolean, c: TestRpcInterface | ZeroMajorRpcInterface) => {
+      assert(code !== null);
+
+      TestRpcInterface.interfaceVersion = code as string;
+      ZeroMajorRpcInterface.interfaceVersion = code as string;
+
+      let err: Error | undefined;
+      try {
+        await c.op1({ a: 0, b: 0 });
+      } catch (error) {
+        err = error;
+      }
+
+      if (err && expectValid)
+        assert(false, "Unexpected error: " + err.stack);
+
+      if (!err && !expectValid)
+        assert(false, "Expected error, but none was thrown.");
     };
 
     const client = TestRpcInterface.getClient();
@@ -376,6 +388,8 @@ describe("RpcInterface", () => {
 
     await (test(decPatch.format(), true, client));
     await (test(decPatchZ.format(), true, clientZ));
+
+    TestRpcInterface.getClient().configuration.protocol.serialize = originalSerialize;
   });
 
   it("should validate transport method", async () => {
@@ -437,12 +451,12 @@ describe("RpcInterface", () => {
     assert.equal(s, "placeholder");
   });
 
-  it("should send app version to backend #FIXME-direct", async () => {
+  it("should send app version to backend", async () => {
     const backupFn = RpcConfiguration.requestContext.serialize;
 
     RpcConfiguration.requestContext.serialize = async (_request): Promise<SerializedClientRequestContext> => {
       const serializedContext: SerializedClientRequestContext = {
-        id: "",
+        id: _request.id,
         applicationId: "",
         applicationVersion: "testbed1",
         sessionId: "",

@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Viewport, ViewRect } from "../Viewport";
+import { Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
 import {
   Decorations,
   GraphicBranch,
   GraphicBranchOptions,
   GraphicList,
-  PackedFeatureTable,
   Pixel,
   RenderGraphic,
   RenderMemory,
@@ -23,7 +23,7 @@ import { IModelConnection } from "../IModelConnection";
 import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
 import { MeshParams, PolylineParams, PointStringParams } from "./primitives/VertexTable";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
-import { ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Id64String, dispose } from "@bentley/bentleyjs-core";
 
@@ -44,7 +44,6 @@ export namespace MockRender {
     protected constructor(private readonly _system: System) { super(); }
 
     public get renderSystem(): RenderSystem { return this._system; }
-    public get cameraFrustumNearScaleLimit() { return 0; }
     public get wantInvertBlackBackground() { return false; }
     public get animationFraction() { return 0; }
     public set animationFraction(_fraction: number) { }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { RenderSystem, RenderTarget, AnimationBranchStates } from "./rendering";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { ViewRect } from "./Viewport";
+import { ViewRect } from "./ViewRect";
 
 /**
  * A RenderTarget for applications that must run in environments where WebGL is not present.
@@ -15,7 +15,6 @@ export class NullTarget extends RenderTarget {
   public get animationFraction(): number { return 0; }
   public set animationFraction(_fraction: number) { }
   public get renderSystem() { return undefined as any; }
-  public get cameraFrustumNearScaleLimit(): number { return 0; }
   public get viewRect(): ViewRect { return new ViewRect(); }
   public get wantInvertBlackBackground(): boolean { return false; }
   public get animationBranches(): AnimationBranchStates | undefined { return undefined; }

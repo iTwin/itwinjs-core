@@ -26,7 +26,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
 
   public async loadTimelineData(): Promise<boolean> {
     if (this._viewport)
-      this.animationFraction = this._viewport.animationFraction;
+      this.animationFraction = this._viewport.scheduleScriptFraction;
 
     if (this.supportsTimelineAnimation && this._viewState.scheduleScript) {
       // for now just initial settings
@@ -54,7 +54,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
   public onAnimationFractionChanged = (animationFraction: number) => {
     this.animationFraction = animationFraction;
     if (this._viewport)
-      this._viewport.animationFraction = animationFraction;
+      this._viewport.scheduleScriptFraction = animationFraction;
   }
 
   public onPlaybackSettingChanged = (settings: PlaybackSettings) => {

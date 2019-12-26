@@ -18,8 +18,9 @@ import {
   MobileRpcConfiguration,
   MobileRpcManager,
   TileContentIdentifier,
+  OidcDesktopClientConfiguration,
 } from "@bentley/imodeljs-common";
-import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import {
   FrontendRequestContext,
   IModelApp,
@@ -28,6 +29,7 @@ import {
   RenderDiagnostics,
   RenderSystem,
   WebGLExtensionName,
+  OidcDesktopClientRenderer,
 } from "@bentley/imodeljs-frontend";
 import { showStatus } from "./Utils";
 import { SVTConfiguration } from "../common/SVTConfiguration";
@@ -74,41 +76,48 @@ async function openSnapshotIModel(filename: string): Promise<IModelConnection> {
   return iModelConnection;
 }
 
-async function initializeOidc(requestContext: FrontendRequestContext): Promise<OidcBrowserClient> {
-  let oidcConfiguration: OidcFrontendClientConfiguration;
+function createOidcClient(): IOidcFrontendClient {
+  let oidcClient: IOidcFrontendClient;
   const scope = "openid email profile organization imodelhub context-registry-service:read-only reality-data:read product-settings-service projectwise-share urlps-third-party";
   if (ElectronRpcConfiguration.isElectron) {
     const clientId = "imodeljs-electron-test";
-    const redirectUri = "electron://frontend/signin-callback";
-    oidcConfiguration = { clientId, redirectUri, scope: scope + " offline_access", responseType: "code" };
+    const redirectUri = "http://localhost:3000/signin-callback";
+    const oidcConfiguration: OidcDesktopClientConfiguration = { clientId, redirectUri, scope: scope + " offline_access" };
+    oidcClient = new OidcDesktopClientRenderer(oidcConfiguration);
   } else {
     const clientId = "imodeljs-spa-test";
     const redirectUri = "http://localhost:3000/signin-callback";
-    oidcConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    const oidcConfiguration: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: scope + " imodeljs-router", responseType: "code" };
+    oidcClient = new OidcBrowserClient(oidcConfiguration);
   }
-
-  const oidcClient = new OidcBrowserClient(oidcConfiguration);
-  await oidcClient.initialize(requestContext);
-  IModelApp.authorizationClient = oidcClient;
   return oidcClient;
 }
 
 // Wraps the signIn process
+// In the case of use in web applications:
 // - called the first time to start the signIn process - resolves to false
 // - called the second time as the Authorization provider redirects to cause the application to refresh/reload - resolves to false
 // - called the third time as the application redirects back to complete the authorization - finally resolves to true
+// In the case of use in electron applications:
+// - promise wraps around a registered call back and resolves to true when the sign in is complete
 // @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
 async function signIn(): Promise<boolean> {
+  const oidcClient: IOidcFrontendClient = createOidcClient();
+
   const requestContext = new FrontendRequestContext();
-  const oidcClient = await initializeOidc(requestContext);
+  await oidcClient.initialize(requestContext);
+  IModelApp.authorizationClient = oidcClient;
+  if (oidcClient.isAuthorized)
+    return true;
 
-  if (!oidcClient.hasSignedIn) {
-    await oidcClient.signIn(new FrontendRequestContext());
-    return false;
-  }
+  const retPromise = new Promise<boolean>((resolve, _reject) => {
+    oidcClient.onUserStateChanged.addListener((token: AccessToken | undefined) => {
+      resolve(token !== undefined);
+    });
+  });
 
-  await oidcClient.getAccessToken(requestContext);
-  return true;
+  await oidcClient.signIn(requestContext);
+  return retPromise;
 }
 
 class FakeTileCache extends CloudStorageTileCache {

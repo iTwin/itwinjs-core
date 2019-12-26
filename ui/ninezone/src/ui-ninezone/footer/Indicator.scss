@@ -15,6 +15,14 @@
   padding-bottom: $nz-footer-indicator-vertical-padding;
   box-sizing: border-box;
 
+  .nz-icon-padding-left {
+    padding-left: $nz-footer-indicator-space-between-text-and-icon;
+  }
+
+  .nz-icon-padding-right {
+    padding-right: $nz-footer-indicator-space-between-text-and-icon;
+  }
+
   .nz-icon {
     font-size: $icon-size;
 

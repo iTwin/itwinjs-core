@@ -22,7 +22,13 @@ import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
 import { Id64String, Id64Array, Id64 } from "@bentley/bentleyjs-core";
 import { ToolAssistance, ToolAssistanceSection, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 import { EditManipulator } from "./EditManipulator";
-import { ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, ToolSettingsPropertySyncItem, PropertyDescription } from "../imodeljs-frontend";
+import {
+  ToolSettingsPropertyRecord,
+  ToolSettingsPropertySyncItem,
+  ToolSettingsValue,
+} from "../properties/ToolSettingsValue";
+import { PrimitiveValue } from "../properties/Value";
+import { PropertyDescription } from "../properties/Description";
 
 function translateBold(key: string) { return "<b>" + CoreTools.translate("Measure.Labels." + key) + ":</b> "; }
 

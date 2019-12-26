@@ -20,7 +20,6 @@ import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./QuantityFormatter";
 import { FrontendRequestContext } from "./FrontendRequestContext";
 import { RenderSystem } from "./render/System";
-import { System } from "./render/webgl/System";
 import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
@@ -33,6 +32,7 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { PluginAdmin } from "./plugin/Plugin";
 import { UiAdmin } from "@bentley/ui-abstract";
 import { FeatureTrackingManager } from "./FeatureTrackingManager";
+import { System } from "./render/webgl/System";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
@@ -107,7 +107,15 @@ export interface IModelAppOptions {
   /** if present, supplies the [[FeatureTrackingManager]] for this session */
   features?: FeatureTrackingManager;
 }
-
+/** Setting for [[EventSource]]
+ * @internal
+ */
+export interface EventSourceOptions {
+  /** Poll interval in milliseconds use to poll backend for events */
+  pollInterval: number;
+  /** Prefetch limit set limit on number of event returned by backend */
+  prefetchLimit: number;
+}
 /** Options for [[IModelApp.makeModalDiv]]
  *  @internal
  */
@@ -172,6 +180,10 @@ export class IModelApp {
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
 
+  /** Global event source options
+   * @internal
+   */
+  public static eventSourceOptions: EventSourceOptions = { pollInterval: 3000, prefetchLimit: 512 };
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: IAuthorizationClient;
   /** The [[ToolRegistry]] for this session. */

@@ -212,6 +212,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run ecschema2ts Tests",
+      "program": "${workspaceFolder}/core/bentley/node_modules/@bentley/build-tools/scripts/test-tsnode.js",
+      "cwd": "${workspaceFolder}/tools/ecschema2ts",
+      "args": [
+        "--testDir=${workspaceFolder}/tools/ecschema2ts/src/test",
+        "--debug"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Run OIDC Signin Tool Tests (Integration)",
       "program": "${workspaceFolder}/tools/oidc-signin-tool/node_modules/@bentley/build-tools/scripts/test.js",
       "cwd": "${workspaceFolder}/tools/oidc-signin-tool",
@@ -813,6 +827,7 @@
       "runtimeArgs": [
         "run-script",
         "test:${input:rpcTestEnvironment}",
+        "--",
         "--grep",
         "#integration",
         "--invert",

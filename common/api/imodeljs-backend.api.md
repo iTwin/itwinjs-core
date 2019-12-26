@@ -91,6 +91,7 @@ import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { LightLocationProps } from '@bentley/imodeljs-common';
+import { LinearLocationReference } from '@bentley/imodeljs-common';
 import { LinearlyLocatedAttributionProps } from '@bentley/imodeljs-common';
 import { LinearlyReferencedAtLocationAspectProps } from '@bentley/imodeljs-common';
 import { LinearlyReferencedAtLocationProps } from '@bentley/imodeljs-common';
@@ -117,9 +118,11 @@ import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PropertyCallback } from '@bentley/imodeljs-common';
 import { QueryLimit } from '@bentley/imodeljs-common';
+import { QueryParams } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
 import { QueryQuota } from '@bentley/imodeljs-common';
 import { QueryResponse } from '@bentley/imodeljs-common';
+import { QueuedEvent } from '@bentley/imodeljs-common';
 import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
@@ -173,6 +176,50 @@ export class AliCloudStorageService extends CloudStorageService {
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
 
+// @beta
+export abstract class AnalyticalElement extends GeometricElement3d {
+    // @internal
+    constructor(props: GeometricElement3dProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export abstract class AnalyticalModel extends GeometricModel3d {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export class AnalyticalPartition extends InformationPartitionElement {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export class AnalyticalSchema extends Schema {
+    // (undocumented)
+    static registerSchema(): void;
+    // (undocumented)
+    static readonly schemaFilePath: string;
+    // (undocumented)
+    static readonly schemaName: string;
+}
+
+// @beta
+export class AnalyticalSimulatesSpatialElement extends ElementRefersToElements {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export abstract class AnalyticalType extends TypeDefinitionElement {
+    // @internal
+    constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
 // @public
 export class AnnotationElement2d extends GraphicalElement2d {
     // @internal
@@ -184,6 +231,14 @@ export class AnnotationElement2d extends GraphicalElement2d {
 // @beta
 export interface AppActivityMonitor {
     isIdle: boolean;
+}
+
+// @alpha
+export enum ApplicationType {
+    // (undocumented)
+    WebAgent = 0,
+    // (undocumented)
+    WebApplicationBackend = 1
 }
 
 // @public
@@ -319,6 +374,7 @@ export enum BackendLoggerCategory {
     // @internal
     DevTools = "imodeljs-backend.DevTools",
     ECDb = "imodeljs-backend.ECDb",
+    EventSink = "imodeljs-backend.EventSink",
     Functional = "imodeljs-backend.Functional",
     IModelDb = "imodeljs-backend.IModelDb",
     // @beta
@@ -667,14 +723,6 @@ export class CodeSpecs {
     insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
-}
-
-// @beta
-export enum ComparisonOption {
-    // (undocumented)
-    Exclusive = 1,
-    // (undocumented)
-    Inclusive = 0
 }
 
 // @beta
@@ -1451,6 +1499,14 @@ export class Entity implements EntityProps {
     toJSON(): EntityProps;
 }
 
+// @internal
+export interface EventSinkOptions {
+    // (undocumented)
+    maxNamespace: number;
+    // (undocumented)
+    maxQueueSize: number;
+}
+
 // @public
 export namespace ExportGraphics {
     // @beta @deprecated
@@ -1978,6 +2034,8 @@ export class IModelDb extends IModel {
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
+    // @internal
+    readonly eventSink: EventSink | undefined;
     // @deprecated
     executeQuery(ecsql: string, bindings?: any[] | object): any[];
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
@@ -2080,6 +2138,7 @@ export namespace IModelDb {
         deleteElement(ids: Id64Arg): void;
         getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
         getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
+        // @internal
         getElementJson<T extends ElementProps>(elementIdArg: string): T;
         getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
         getRootSubject(): Subject;
@@ -2090,6 +2149,8 @@ export namespace IModelDb {
         queryElementIdByCode(code: Code): Id64String | undefined;
         // @internal
         queryLastModifiedTime(elementId: Id64String): string;
+        tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
+        tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
         updateElement(elProps: ElementProps): void;
     }
@@ -2099,12 +2160,16 @@ export namespace IModelDb {
         createModel<T extends Model>(modelProps: ModelProps): T;
         deleteModel(ids: Id64Arg): void;
         getModel<T extends Model>(modelId: Id64String): T;
+        // @internal
         getModelJson(modelIdArg: string): string;
         getModelProps<T extends ModelProps>(modelId: Id64String): T;
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T;
         insertModel(props: ModelProps): Id64String;
         // @internal
         queryLastModifiedTime(modelId: Id64String): string;
+        tryGetModel<T extends Model>(modelId: Id64String): T | undefined;
+        tryGetModelProps<T extends ModelProps>(modelId: Id64String): T | undefined;
+        tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T | undefined;
         updateModel(props: UpdateModelOptions): void;
     }
     // @internal
@@ -2177,7 +2242,7 @@ export abstract class IModelExportHandler {
     protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
     protected onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
     protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
-    protected onExportFont(_font: FontProps): void;
+    protected onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
@@ -2227,6 +2292,8 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: string;
+    // @alpha
+    applicationType?: ApplicationType;
     briefcaseCacheDir: string;
     // @beta
     compressCachedTiles?: boolean;
@@ -2240,6 +2307,8 @@ export class IModelHostConfiguration {
     static defaultLogTileSizeThreshold: number;
     // @internal
     static defaultTileRequestTimeout: number;
+    // @internal
+    eventSinkOptions: EventSinkOptions;
     imodelClient?: IModelClient;
     // @internal
     logTileLoadTimeThreshold: number;
@@ -2343,7 +2412,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportElement(sourceElement: Element): void;
     protected onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
     protected onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void;
-    protected onExportFont(font: FontProps): void;
+    protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
     protected onTransformElement(sourceElement: Element): ElementProps;
@@ -2517,21 +2586,6 @@ export abstract class LinearLocationElement extends SpatialLocationElement imple
     getLinearElementId(): Id64String | undefined;
 }
 
-// @beta (undocumented)
-export class LinearLocationReference {
-    constructor(startDistanceAlong: number, stopDistanceAlong: number, linearlyLocatedId: Id64String, linearlyLocatedClassFullName: string, locationAspectId: Id64String);
-    // (undocumented)
-    readonly linearlyLocatedClassFullName: string;
-    // (undocumented)
-    readonly linearlyLocatedId: Id64String;
-    // (undocumented)
-    readonly locationAspectId: Id64String;
-    // (undocumented)
-    readonly startDistanceAlong: number;
-    // (undocumented)
-    readonly stopDistanceAlong: number;
-}
-
 // @beta
 export class LinearlyLocated {
     static getAtLocation(iModel: IModelDb, linearlyLocatedElementId: Id64String): LinearlyReferencedAtLocation | undefined;
@@ -2646,16 +2700,6 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
 export class LinearlyReferencedLocation extends ElementMultiAspect {
     // @internal (undocumented)
     static readonly className: string;
-}
-
-// @beta
-export enum LinearlyReferencedLocationType {
-    // (undocumented)
-    Any = 2,
-    // (undocumented)
-    At = 0,
-    // (undocumented)
-    FromTo = 1
 }
 
 // @beta
@@ -3057,23 +3101,6 @@ export class Platform {
     static readonly platformName: string;
 }
 
-// @beta (undocumented)
-export class QueryParams {
-    constructor(fromDistanceAlong?: number | undefined, fromComparisonOption?: ComparisonOption | undefined, toDistanceAlong?: number | undefined, toComparisonOption?: ComparisonOption | undefined, linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType | undefined, linearlyLocatedClassFullNames?: string[] | undefined);
-    // (undocumented)
-    fromComparisonOption?: ComparisonOption | undefined;
-    // (undocumented)
-    fromDistanceAlong?: number | undefined;
-    // (undocumented)
-    linearlyLocatedClassFullNames?: string[] | undefined;
-    // (undocumented)
-    linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType | undefined;
-    // (undocumented)
-    toComparisonOption?: ComparisonOption | undefined;
-    // (undocumented)
-    toDistanceAlong?: number | undefined;
-}
-
 // @internal
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     constructor(props: ElementProps, iModel: IModelDb);
@@ -3142,8 +3169,10 @@ export class Relationships {
     createInstance(props: RelationshipProps): Relationship;
     deleteInstance(props: RelationshipProps): void;
     getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T;
-    getInstanceProps<T extends RelationshipProps>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T;
+    getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T;
     insertInstance(props: RelationshipProps): Id64String;
+    tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
+    tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     updateInstance(props: RelationshipProps): void;
 }
 

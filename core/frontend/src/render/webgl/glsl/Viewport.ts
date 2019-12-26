@@ -5,64 +5,23 @@
 /** @module WebGL */
 
 import { ShaderBuilder, VariableType, VertexShaderBuilder } from "../ShaderBuilder";
-import { Matrix4 } from "../Matrix";
-import { ViewRect } from "../../../Viewport";
 import { addModelViewProjectionMatrix } from "./Vertex";
 import { addRenderPass } from "./RenderPass";
 
 /** @internal */
 export function addViewport(shader: ShaderBuilder) {
-  shader.addUniform("u_viewport", VariableType.Vec4, (prog) => {
+  shader.addUniform("u_viewport", VariableType.Vec2, (prog) => {
     prog.addProgramUniform("u_viewport", (uniform, params) => {
-      const rect = params.target.viewRect;
-      const vp: number[] = [rect.left, rect.bottom, rect.width, rect.height];
-      uniform.setUniform4fv(vp);
+      params.target.uniforms.viewRect.bindDimensions(uniform);
     });
   });
-}
-
-const viewportMatrix = new Matrix4();
-const prevViewRect = new ViewRect();
-const nearDepthRange = 0.0;
-const farDepthRange = 1.0;
-
-function computeViewportTransformation(viewRect: ViewRect): Matrix4 {
-  if (viewRect.equals(prevViewRect))
-    return viewportMatrix;
-
-  prevViewRect.setFrom(viewRect);
-
-  const x = viewRect.left;
-  const y = viewRect.top;
-  const width = viewRect.width;
-  const height = viewRect.height;
-
-  const halfWidth = width * 0.5;
-  const halfHeight = height * 0.5;
-  const halfDepth = (farDepthRange - nearDepthRange) * 0.5;
-
-  const column0Row0 = halfWidth;
-  const column1Row1 = halfHeight;
-  const column2Row2 = halfDepth;
-  const column3Row0 = x + halfWidth;
-  const column3Row1 = y + halfHeight;
-  const column3Row2 = nearDepthRange + halfDepth;
-  const column3Row3 = 1.0;
-
-  const mat = Matrix4.fromValues(
-    column0Row0, 0.0, 0.0, column3Row0,
-    0.0, column1Row1, 0.0, column3Row1,
-    0.0, 0.0, column2Row2, column3Row2,
-    0.0, 0.0, 0.0, column3Row3, viewportMatrix);
-
-  return mat;
 }
 
 /** @internal */
 export function addViewportTransformation(shader: ShaderBuilder) {
   shader.addUniform("u_viewportTransformation", VariableType.Mat4, (prog) => {
     prog.addProgramUniform("u_viewportTransformation", (uniform, params) => {
-      uniform.setMatrix4(computeViewportTransformation(params.target.viewRect));
+      params.target.uniforms.viewRect.bindViewportMatrix(uniform);
     });
   });
 }

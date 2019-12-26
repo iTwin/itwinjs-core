@@ -6,9 +6,10 @@
 
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
+import { BackstageItem, BackstageItemsManager } from "@bentley/ui-abstract";
 import { Backstage as NZ_Backstage, BackstageSeparator } from "@bentley/ui-ninezone";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { useBackstageItems, BackstageItem, BackstageItemsManager } from "./BackstageItemsManager";
+import { useBackstageItems } from "./useBackstageItems";
 import { useBackstageManager, useIsBackstageOpen } from "./BackstageManager";
 import { BackstageComposerItem } from "./BackstageComposerItem";
 

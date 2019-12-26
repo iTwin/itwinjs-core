@@ -17,7 +17,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, TransformProps, Range3dProps, Range3d, Transform, Vector3d, Matrix3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
-import { TileTree, TileTreeSet, ContextTileLoader, BatchedTileIdMap } from "./TileTree";
+import { TileTree, TileTreeReference, TileTreeSet, ContextTileLoader, BatchedTileIdMap } from "./TileTree";
 import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
@@ -317,7 +317,7 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiers;
   }
 
-  export abstract class Reference extends TileTree.Reference {
+  export abstract class Reference extends TileTreeReference {
     public abstract get classifiers(): SpatialClassifiers | undefined;
   }
 
@@ -381,7 +381,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   private readonly _name: string;
   private readonly _url: string;
   private readonly _classifier?: SpatialClassifierTileTreeReference;
-  private _mapDrapeTree?: TileTree.Reference;
+  private _mapDrapeTree?: TileTreeReference;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super();

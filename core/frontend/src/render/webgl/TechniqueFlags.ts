@@ -86,13 +86,7 @@ export class TechniqueFlags {
       this.isShadowable = shadowable;
       this.hasMaterialAtlas = hasMaterialAtlas;
       this.usesLogZ = target.wantLogZ;
-
-      if (undefined !== target.currentOverrides)
-        this.featureMode = FeatureMode.Overrides;
-      else if (0 !== target.currentBatchId)
-        this.featureMode = FeatureMode.Pick;
-      else
-        this.featureMode = FeatureMode.None;
+      this.featureMode = target.uniforms.batch.featureMode;
 
       // Determine if we should use the shaders which support discarding surfaces in favor of their edges (and discarding non-planar surfaces in favor of coincident planar surfaces).
       // These are only useful if the geometry defines feature Ids.

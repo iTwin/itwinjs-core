@@ -37,7 +37,7 @@ const computeAmbientOcclusion = `
 
   vec3 viewPos = computePositionFromDepth(tc, nonLinearDepth).xyz;
 
-  vec2 pixelSize = 1.0 / u_viewport.zw; // could use uniform for this
+  vec2 pixelSize = 1.0 / u_viewport;
   vec3 viewNormal = computeNormalFromDepth(viewPos, tc, pixelSize);
 
   vec2 sampleDirection = vec2(1.0, 0.0);
@@ -46,7 +46,7 @@ const computeAmbientOcclusion = `
   // Grab some random noise
   // Multiply screen UV (range 0..1) with size of viewport divided by 4 in order to tile the 4x4 noise texture across the screen.
   // Multiply the random 0..1 vec3 by 2 and then substract 1.  This puts the components of the vec3 in the range -1..1.
-  vec3 noiseVec = (TEXTURE(u_noise, tc * vec2(u_viewport.z / 4.0, u_viewport.w / 4.0)).rgb + 1.0) / 2.0;
+  vec3 noiseVec = (TEXTURE(u_noise, tc * vec2(u_viewport.x / 4.0, u_viewport.y / 4.0)).rgb + 1.0) / 2.0;
 
   float bias = u_hbaoSettings.x; // Represents an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges.
   float zLengthCap = u_hbaoSettings.y; // If the distance in linear Z from the current sample to first sample is greater than this value, sampling stops in the current direction.
@@ -193,7 +193,7 @@ export function createAmbientOcclusionProgram(context: WebGLRenderingContext): S
 
   frag.addUniform("u_frustumPlanes", VariableType.Vec4, (prog) => {
     prog.addProgramUniform("u_frustumPlanes", (uniform, params) => {
-      uniform.setUniform4fv(params.target.frustumUniforms.frustumPlanes);
+      uniform.setUniform4fv(params.target.uniforms.frustum.planes);
     });
   });
 

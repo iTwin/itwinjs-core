@@ -9,7 +9,7 @@ import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
 import { HasMaterialAtlas, IsInstanced, IsAnimated, IsClassified, IsShadowable, TechniqueFlags, FeatureMode, ClipDef, IsEdgeTestNeeded } from "./TechniqueFlags";
 import { ProgramBuilder, ClippingShaders } from "./ShaderBuilder";
-import { DrawParams, DrawCommands, OmitStatus } from "./DrawCommand";
+import { DrawParams, DrawCommands } from "./DrawCommand";
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
@@ -38,12 +38,12 @@ import { createBlurProgram } from "./glsl/Blur";
 import { createCombineTexturesProgram } from "./glsl/CombineTextures";
 import { addLogDepth } from "./glsl/LogarithmicDepthBuffer";
 import { System } from "./System";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 /** Defines a rendering technique implemented using one or more shader programs.
  * @internal
  */
-export interface Technique extends WebGlDisposable {
+export interface Technique extends WebGLDisposable {
   getShader(flags: TechniqueFlags): ShaderProgram;
 
   // Chiefly for tests - compiles all shader programs - more generally programs are compiled on demand.
@@ -521,7 +521,7 @@ class PointCloudTechnique extends VariedTechnique {
 /** A collection of rendering techniques accessed by ID.
  * @internal
  */
-export class Techniques implements WebGlDisposable {
+export class Techniques implements WebGLDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
 
@@ -548,99 +548,20 @@ export class Techniques implements WebGlDisposable {
     return TechniqueId.NumBuiltIn + this._dynamicTechniqueIds.length - 1;
   }
 
-  private readonly _scratchTechniqueFlags = new TechniqueFlags();
-
   /** Execute each command in the list */
   public execute(target: Target, commands: DrawCommands, renderPass: RenderPass) {
     assert(RenderPass.None !== renderPass, "invalid render pass");
 
-    const flags = this._scratchTechniqueFlags;
     using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
-      let omitCounter = 0;
-      for (const command of commands) {
-        const omitStatus = command.getOmitStatus(target);
-        if ((omitCounter += omitStatus) !== 0 || omitStatus !== OmitStatus.Neutral)
-          continue;
-
-        command.preExecute(executor);
-        const techniqueId = command.techniqueId;
-        if (TechniqueId.Invalid !== techniqueId) {
-          // A primitive command.
-          assert(command.isPrimitiveCommand, "expected primitive command");
-
-          const shadowable = techniqueId === TechniqueId.Surface && target.solarShadowMap.isReady && target.currentViewFlags.shadows;   // TBD - Avoid shadows for pick?
-          const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
-          const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
-
-          flags.init(target, renderPass, IsInstanced.No, IsAnimated.No, isClassified, isShadowable);
-          flags.setAnimated(command.hasAnimation);
-          flags.setInstanced(command.isInstanced);
-          flags.setHasMaterialAtlas(target.currentViewFlags.materials && command.hasMaterialAtlas);
-
-          const tech = this.getTechnique(techniqueId);
-          const program = tech.getShader(flags);
-          if (executor.setProgram(program)) {
-            command.execute(executor);
-          }
-        } else {
-          // A branch command.
-          assert(!command.isPrimitiveCommand, "expected non-primitive command");
-          command.execute(executor);
-        }
-
-        command.postExecute(executor);
-      }
+      for (const command of commands)
+        command.execute(executor);
     });
   }
 
   /** Execute the commands for a single given classification primitive (the first 3 commands should be a push, the primitive, then a pop) */
-  public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass, techId?: TechniqueId) {
-    assert(RenderPass.None !== renderPass, "invalid render pass");
-    // There should be at least 3 commands in the cmdsByIndex array.
-    if (cmdsByIndex.length < 3)
-      return; // not enough commands
-
-    const pushCmd = cmdsByIndex[0];
-    const primCmd = cmdsByIndex[1];
-    const popCmd = cmdsByIndex[2];
-
-    const flags = this._scratchTechniqueFlags;
-    using(new ShaderProgramExecutor(target, renderPass), (executor: ShaderProgramExecutor) => {
-
-      // First execute the push.
-      pushCmd.preExecute(executor);
-      let techniqueId = pushCmd.techniqueId;
-      assert(TechniqueId.Invalid === techniqueId);
-      assert(!pushCmd.isPrimitiveCommand, "expected non-primitive command");
-      pushCmd.execute(executor);
-      pushCmd.postExecute(executor);
-
-      // Execute the command for the given classification primitive.
-      primCmd.preExecute(executor);
-      techniqueId = primCmd.techniqueId;
-      assert(TechniqueId.Invalid !== techniqueId);
-      // A primitive command.
-      assert(primCmd.isPrimitiveCommand, "expected primitive command");
-      const isClassified = (undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
-      flags.init(target, renderPass, IsInstanced.No, IsAnimated.No, isClassified, IsShadowable.No);
-      flags.setAnimated(primCmd.hasAnimation);
-      flags.setInstanced(primCmd.isInstanced);
-      flags.setHasMaterialAtlas(target.currentViewFlags.materials && primCmd.hasMaterialAtlas);
-      const tech = this.getTechnique(undefined !== techId ? techId : techniqueId);
-      const program = tech.getShader(flags);
-      if (executor.setProgram(program)) {
-        primCmd.execute(executor);
-      }
-      primCmd.postExecute(executor);
-
-      // Execute the batch pop.
-      popCmd.preExecute(executor);
-      techniqueId = popCmd.techniqueId;
-      assert(TechniqueId.Invalid === techniqueId);
-      assert(!popCmd.isPrimitiveCommand, "expected non-primitive command");
-      popCmd.execute(executor);
-      popCmd.postExecute(executor);
-    });
+  public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass) {
+    // ###TODO: Disable shadows. Probably in the ClassifierTileTree's ViewFlag.Overrides.
+    this.execute(target, cmdsByIndex, renderPass);
   }
 
   /** Draw a single primitive. Usually used for special-purpose rendering techniques. */

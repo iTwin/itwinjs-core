@@ -1,0 +1,39 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+div.modal-dialog2 {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  width: 100%;
+  overflow-y: scroll;
+
+  .color-picker-text {
+    justify-self: center;
+  }
+
+  div.list-contents {
+    width: fit-content;
+    display: grid;
+    grid-template-columns: 100px 2fr;
+    align-content: baseline;
+  }
+
+  span.list-header {
+    text-align: center;
+    font-weight: bold;
+    font-size: large;
+    grid-column: 1/span 2;
+    padding: 10px 0 0 0;
+    height: 24px;
+  }
+
+  span.label-data {
+    margin-left: 10px;
+    min-width: 200px;
+    height: 24px;
+  }
+}

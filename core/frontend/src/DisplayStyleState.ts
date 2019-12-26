@@ -28,7 +28,7 @@ import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, TextureImage, AnimationBranchStates } from "./render/System";
 import { BackgroundMapTileTreeReference } from "./tile/WebMapTileTree";
 import { BackgroundTerrainTileTreeReference } from "./tile/BackgroundTerrainTileTree";
-import { TileTree } from "./tile/TileTree";
+import { TileTreeReference } from "./tile/TileTree";
 import { Plane3dByOriginAndUnitNormal, Vector3d, Point3d } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
@@ -140,12 +140,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public forEachRealityTileTreeRef(func: (ref: TileTree.Reference) => void): void {
+  public forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.forEachRealityModel((model) => func(model.treeRef));
   }
 
   /** @internal */
-  public forEachTileTreeRef(func: (ref: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     this.forEachRealityTileTreeRef(func);
     if (this.viewFlags.backgroundMap)
       func(this._backgroundMap);

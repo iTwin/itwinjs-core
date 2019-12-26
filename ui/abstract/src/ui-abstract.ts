@@ -6,6 +6,9 @@
 export * from "./ui-abstract/UiAbstract";
 export * from "./ui-abstract/UiAdmin";
 
+export * from "./ui-abstract/backstage/BackstageItem";
+export * from "./ui-abstract/backstage/BackstageItemsManager";
+
 export * from "./ui-abstract/items/AbstractConditionalItemProps";
 export * from "./ui-abstract/items/AbstractGroupItemProps";
 export * from "./ui-abstract/items/AbstractItemProps";
@@ -16,8 +19,13 @@ export * from "./ui-abstract/items/BadgeType";
 export * from "./ui-abstract/items/BaseItemState";
 export * from "./ui-abstract/items/ConditionalDisplayType";
 export * from "./ui-abstract/items/RelativePosition";
+export * from "./ui-abstract/items/StatusBarItem";
 
+export * from "./ui-abstract/plugins/PluginStatusBarItemsManager";
 export * from "./ui-abstract/plugins/PluginUi";
+export * from "./ui-abstract/plugins/PluginUiManager";
+
+export * from "./ui-abstract/stage/Stage";
 
 export * from "./ui-abstract/utils/getClassName";
 export * from "./ui-abstract/utils/IconSpecUtilities";
@@ -39,6 +47,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Admin
  * Abstractions for UI controls, such as toolbars, buttons and menus and are callable from IModelApp.uiAdmin in imodeljs-frontend.
+ */
+/**
+ * @docs-group-description Backstage
+ * Abstractions used by ui-framework package to create and manage the display Backstage menu items.
  */
 /**
  * @docs-group-description Item

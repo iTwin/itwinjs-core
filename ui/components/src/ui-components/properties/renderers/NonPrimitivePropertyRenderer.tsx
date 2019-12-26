@@ -115,6 +115,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
         indentation={this.props.indentation ? this.props.indentation + 1 : 1}
         orientation={this.props.orientation}
         columnRatio={this.props.columnRatio}
+        actionButtonRenderers={this.props.actionButtonRenderers}
       />
     );
   }

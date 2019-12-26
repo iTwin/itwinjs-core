@@ -5,9 +5,46 @@
 /** @module StatusBar */
 
 import * as React from "react";
-import { StatusBarSpaceBetween, StatusBarLeftSection, StatusBarCenterSection, StatusBarRightSection } from "./StatusBar";
-import { StatusBarSection, StatusBarItem } from "./StatusBarItem";
+import {
+  PluginStatusBarItemsManager, CommonStatusBarItem, isAbstractStatusBarActionItem, AbstractStatusBarActionItem,
+  isAbstractStatusBarLabelItem, AbstractStatusBarLabelItem, StatusbarLabelSide, StatusBarSection,
+} from "@bentley/ui-abstract";
+import { Icon } from "@bentley/ui-core";
+import { FooterIndicator } from "@bentley/ui-ninezone";
+import { StatusBarSpaceBetween, StatusBarLeftSection, StatusBarCenterSection, StatusBarRightSection, StatusBarContext } from "./StatusBar";
+import { isStatusBarItem } from "./StatusBarItem";
 import { StatusBarItemsManager } from "./StatusBarItemsManager";
+import { useStageStatusBarItems } from "./useStageStatusBarItems";
+import { usePluginStatusBarItems } from "./usePluginStatusBarItems";
+import { Indicator } from "../statusfields/Indicator";
+
+/** function to produce a StatusBarItem component from an AbstractStatusBarLabelItem */
+function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem, isInFooterMode: boolean): React.ReactNode {
+  const iconPaddingClass = item.labelSide === StatusbarLabelSide.Left ? "nz-icon-padding-right" : "nz-icon-padding-left";
+  return (<FooterIndicator
+    isInFooterMode={isInFooterMode}
+  >
+    {item.icon && <Icon iconSpec={item.icon} />}
+    {item.label && <span className={iconPaddingClass}>{item.label}</span>}
+  </FooterIndicator>
+  );
+}
+
+/** function to produce a StatusBarItem component from an AbstractStatusBarActionItem */
+function generateActionStatusBarItem(item: AbstractStatusBarActionItem, isInFooterMode: boolean): React.ReactNode {
+  return <Indicator toolTip={item.tooltip ? item.tooltip : item.label} opened={false} onClick={item.execute} iconName={item.icon}
+    isInFooterMode={isInFooterMode} />;
+}
+
+/** local function to combine items from Stage and from Plugins */
+function combineItems(stageItems: ReadonlyArray<CommonStatusBarItem>, pluginItems: ReadonlyArray<CommonStatusBarItem>) {
+  const items: CommonStatusBarItem[] = [];
+  if (stageItems.length)
+    items.push(...stageItems);
+  if (pluginItems.length)
+    items.push(...pluginItems);
+  return items;
+}
 
 /** Properties for the [[StatusBarComposer]] React components
  * @beta
@@ -15,76 +52,65 @@ import { StatusBarItemsManager } from "./StatusBarItemsManager";
 export interface StatusBarComposerProps {
   /** StatusBar items manager containing status fields */
   itemsManager: StatusBarItemsManager;
+  /** If specified is used to managed statusbar items provided from plugins */
+  pluginItemsManager?: PluginStatusBarItemsManager;
 }
 
-/** @internal */
-interface StatusBarComposerState {
-  statusBarItems: ReadonlyArray<StatusBarItem>;
-}
-
-/** StatusBar component composed from [[StatusBarItem]]s.
+/** Component to load components into the [[StatusBar]].
  * @beta
  */
-export class StatusBarComposer extends React.PureComponent<StatusBarComposerProps, StatusBarComposerState> {
-  /** @internal */
-  public readonly state: StatusBarComposerState = {
-    statusBarItems: [],
+// tslint:disable-next-line: variable-name
+export const StatusBarComposer: React.FC<StatusBarComposerProps> = (props) => {
+  const statusBarContext = React.useContext(StatusBarContext);
+  const { itemsManager, pluginItemsManager } = props;
+  const stageItems = useStageStatusBarItems(itemsManager);
+  const pluginItems = usePluginStatusBarItems(pluginItemsManager);
+  const statusBarItems = React.useMemo(() => combineItems(stageItems, pluginItems), [stageItems, pluginItems]);
+
+  const getComponent = (item: CommonStatusBarItem): React.ReactNode => {
+    if (isStatusBarItem(item)) {
+      return item.reactNode;
+    }
+
+    if (isAbstractStatusBarActionItem(item))
+      return generateActionStatusBarItem(item, statusBarContext.isInFooterMode);
+
+    // istanbul ignore if
+    if (!isAbstractStatusBarLabelItem(item))
+      return null;
+
+    return generateActionStatusLabelItem(item, statusBarContext.isInFooterMode);
   };
 
-  /** @internal */
-  public componentDidMount() {
-    this.props.itemsManager.onItemsChanged.addListener(this._handleStatusBarItemsChanged);
-    this.setState((_, props) => ({ statusBarItems: props.itemsManager.items }));
-  }
-
-  /** @internal */
-  public componentWillUnmount() {
-    this.props.itemsManager.onItemsChanged.removeListener(this._handleStatusBarItemsChanged);
-  }
-
-  /** @internal */
-  public componentDidUpdate(prevProps: StatusBarComposerProps) {
-    if (this.props.itemsManager !== prevProps.itemsManager) {
-      prevProps.itemsManager.onItemsChanged.removeListener(this._handleStatusBarItemsChanged);
-      this.props.itemsManager.onItemsChanged.addListener(this._handleStatusBarItemsChanged);
-      this.setState((_, props) => ({ statusBarItems: props.itemsManager.items }));
-    }
-  }
-
-  private _handleStatusBarItemsChanged = () => {
-    this.setState((_, props) => ({ statusBarItems: props.itemsManager.items }));
-  }
-
-  private getSectionItems(section: StatusBarSection): React.ReactNode[] {
-    const sectionItems = this.state.statusBarItems
-      .filter((item) => item.section === section && item.isVisible)
+  const getSectionItems = (section: StatusBarSection): React.ReactNode[] => {
+    const sectionItems = statusBarItems
+      .filter((item) => item.section as number === section && item.isVisible)
       .sort((a, b) => a.itemPriority - b.itemPriority);
 
     return sectionItems.map((sectionItem) => (
       <React.Fragment key={sectionItem.id}>
-        {sectionItem.component}
+        {getComponent(sectionItem)}
       </React.Fragment>
     ));
-  }
+  };
 
-  /** @internal */
-  public render() {
-    const leftItems = this.getSectionItems(StatusBarSection.Left);
-    const centerItems = this.getSectionItems(StatusBarSection.Center);
-    const rightItems = this.getSectionItems(StatusBarSection.Right);
+  const leftItems = getSectionItems(StatusBarSection.Left);
+  const centerItems = getSectionItems(StatusBarSection.Center);
+  const rightItems = getSectionItems(StatusBarSection.Right);
+  const contextItems = getSectionItems(StatusBarSection.Context);
 
-    return (
-      <StatusBarSpaceBetween>
-        <StatusBarLeftSection>
-          {leftItems}
-        </StatusBarLeftSection>
-        <StatusBarCenterSection>
-          {centerItems}
-        </StatusBarCenterSection>
-        <StatusBarRightSection>
-          {rightItems}
-        </StatusBarRightSection>
-      </StatusBarSpaceBetween>
-    );
-  }
-}
+  return (
+    <StatusBarSpaceBetween>
+      <StatusBarLeftSection>
+        {leftItems}
+      </StatusBarLeftSection>
+      <StatusBarCenterSection>
+        {centerItems}
+        {contextItems}
+      </StatusBarCenterSection>
+      <StatusBarRightSection>
+        {rightItems}
+      </StatusBarRightSection>
+    </StatusBarSpaceBetween>
+  );
+};

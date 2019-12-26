@@ -24,6 +24,7 @@ import {
   Tool,
   Viewport,
   ViewState3d,
+  ViewState,
 } from "@bentley/imodeljs-frontend";
 import { parseToggle } from "./parseToggle";
 
@@ -47,7 +48,7 @@ class FrustumDecoration {
     this._worldFrustum = vp.getFrustum(CoordSystem.World, false);
     this._adjustedWorldFrustum = vp.getFrustum(CoordSystem.World, true);
     this._npcFrustum = vp.getFrustum(CoordSystem.Npc, true);
-    this._worldToNpcMap = vp.viewFrustum.worldToNpcMap.clone();
+    this._worldToNpcMap = vp.viewingSpace.worldToNpcMap.clone();
     this._eyePoint = view.camera.getEyePoint().clone();
     this._focalPlane = vp.worldToNpc(view.getTargetPoint()).z;
     this._isCameraOn = vp.isCameraOn;
@@ -266,7 +267,7 @@ class SelectedViewFrustumDecoration {
     if (this._targetVp.isCameraOn) {
       const npcFrustum = this._targetVp.getFrustum(CoordSystem.Npc, true);
       const focalPlane = this._targetVp.worldToNpc(this._targetVp.view.getTargetPoint()).z;
-      FrustumDecoration.drawEyePositionAndFocalPlane(builder, npcFrustum, this._targetVp.viewFrustum.worldToNpcMap, this._targetVp.view.camera.getEyePoint(), focalPlane, context.viewport);
+      FrustumDecoration.drawEyePositionAndFocalPlane(builder, npcFrustum, this._targetVp.viewingSpace.worldToNpcMap, this._targetVp.view.camera.getEyePoint(), focalPlane, context.viewport);
     }
 
     const worldFrustum = this._targetVp.getFrustum(CoordSystem.World, false);
@@ -309,8 +310,14 @@ export class ToggleSelectedViewFrustumTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
-    if (SelectedViewFrustumDecoration.toggle(vp, enable))
-      vp.onChangeView.addOnce(() => SelectedViewFrustumDecoration.toggle(vp, false));
+    if (SelectedViewFrustumDecoration.toggle(vp, enable)) {
+      const remove = vp.onChangeView.addListener((_vp: Viewport, prev: ViewState) => {
+        if (!prev.hasSameCoordinates(vp.view)) {
+          SelectedViewFrustumDecoration.toggle(vp, false);
+          remove();
+        }
+      });
+    }
 
     return true;
   }

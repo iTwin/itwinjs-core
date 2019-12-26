@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import { IModelApp, QuantityType } from "../imodeljs-frontend";
+import { IModelApp } from "../IModelApp";
+import { QuantityType } from "../QuantityFormatter";
 import { BaseQuantityDescription } from "./BaseQuantityDescription";
 
 /**

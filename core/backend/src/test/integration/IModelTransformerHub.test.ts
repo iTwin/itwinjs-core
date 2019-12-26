@@ -108,7 +108,7 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(sourceDbChanges.relationship.deleteIds.size, 0);
 
         const transformer = new TestIModelTransformer(sourceDb, targetDb);
-        transformer.processAll();
+        await transformer.processChanges(requestContext);
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
@@ -126,7 +126,6 @@ describe("IModelTransformerHub (#integration)", () => {
         // expect inserts and a few updates from transforming the result of populateSourceDb
         assert.isAtLeast(targetDbChanges.codeSpec.insertIds.size, 1);
         assert.isAtLeast(targetDbChanges.element.insertIds.size, 1);
-        assert.equal(targetDbChanges.element.updateIds.size, 2, "Expect FederationGuid updates for the Dictionary and RealityDataSources InformationPartitionElements");
         assert.isAtLeast(targetDbChanges.aspect.insertIds.size, 1);
         assert.isAtLeast(targetDbChanges.model.insertIds.size, 1);
         assert.equal(targetDbChanges.model.updateIds.size, 1, "Expect the RepositoryModel to be updated");
@@ -135,6 +134,7 @@ describe("IModelTransformerHub (#integration)", () => {
         // expect no other changes from transforming the result of populateSourceDb
         assert.equal(targetDbChanges.codeSpec.updateIds.size, 0);
         assert.equal(targetDbChanges.codeSpec.deleteIds.size, 0);
+        assert.equal(targetDbChanges.element.updateIds.size, 0);
         assert.equal(targetDbChanges.element.deleteIds.size, 0);
         assert.equal(targetDbChanges.aspect.updateIds.size, 0);
         assert.equal(targetDbChanges.aspect.deleteIds.size, 0);

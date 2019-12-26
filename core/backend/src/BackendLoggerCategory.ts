@@ -96,4 +96,8 @@ export enum BackendLoggerCategory {
    * - [[PromiseMemoizer]]
    */
   PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
+  /** The logger category used by the following classes:
+   * - [[EventSink]]
+   */
+  EventSink = "imodeljs-backend.EventSink",
 }

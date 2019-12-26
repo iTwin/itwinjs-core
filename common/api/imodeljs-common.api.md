@@ -13,6 +13,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BriefcaseStatus } from '@bentley/bentleyjs-core';
+import { ByteStream } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
@@ -21,6 +22,7 @@ import { DbResult } from '@bentley/bentleyjs-core';
 import { GeometryQuery } from '@bentley/geometry-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GuidString } from '@bentley/bentleyjs-core';
+import { Id64 } from '@bentley/bentleyjs-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -273,6 +275,27 @@ export type AxisAlignedBox3d = Range3d;
 // @public
 export type AxisAlignedBox3dProps = Range3dProps;
 
+// @internal
+export class B3dmHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly batchTableBinaryLength: number;
+    // (undocumented)
+    readonly batchTableJson: any;
+    // (undocumented)
+    readonly batchTableJsonLength: number;
+    // (undocumented)
+    readonly featureTableBinaryLength: number;
+    // (undocumented)
+    readonly featureTableJson: any;
+    // (undocumented)
+    readonly featureTableJsonLength: number;
+    // (undocumented)
+    readonly isValid: boolean;
+    // (undocumented)
+    readonly length: number;
+}
+
 // @public (undocumented)
 export class BackendError extends IModelError {
     constructor(errorNumber: number, name: string, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
@@ -439,6 +462,12 @@ export enum BisCodeSpec {
     // (undocumented)
     viewDefinition = "bis:ViewDefinition"
 }
+
+// @internal (undocumented)
+export function bisectTileRange2d(range: Range3d, takeUpper: boolean): void;
+
+// @internal (undocumented)
+export function bisectTileRange3d(range: Range3d, takeUpper: boolean): void;
 
 // @internal
 export class BoundingSphere {
@@ -630,6 +659,16 @@ export { ChangeSetStatus }
 
 // @internal (undocumented)
 export const CHANNEL = "@bentley/imodeljs-mobilegateway";
+
+// @internal
+export interface ClassifierTileTreeId {
+    // (undocumented)
+    animationId?: Id64String;
+    // (undocumented)
+    expansion: number;
+    // (undocumented)
+    type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
+}
 
 // @beta (undocumented)
 export abstract class CloudStorageCache<TContentId, TContentType> {
@@ -1096,7 +1135,7 @@ export class ColorDef {
     adjustForContrast(other: ColorDef, alpha?: number): ColorDef;
     static readonly black: ColorDef;
     static readonly blue: ColorDef;
-    clone(): ColorDef;
+    clone(result?: ColorDef): ColorDef;
     readonly colors: {
         b: number;
         g: number;
@@ -1163,6 +1202,61 @@ export enum CommonLoggerCategory {
     RpcInterfaceFrontend = "imodeljs-frontend.RpcInterface"
 }
 
+// @internal
+export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number;
+
+// @beta
+export enum ComparisonOption {
+    // (undocumented)
+    Exclusive = 1,
+    // (undocumented)
+    Inclusive = 0
+}
+
+// @internal
+export class CompositeTileHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly isValid: boolean;
+    // (undocumented)
+    readonly length: number;
+    // (undocumented)
+    readonly tileCount: number;
+    // (undocumented)
+    readonly tilePosition: number;
+}
+
+// @internal
+export function computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata): {
+    children: TileProps[];
+    numEmpty: number;
+};
+
+// @internal
+export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadata): Array<{
+    range: Range3d;
+    isEmpty: boolean;
+}>;
+
+// @internal
+export abstract class ContentIdProvider {
+    // (undocumented)
+    protected abstract computeId(depth: number, i: number, j: number, k: number, mult: number): string;
+    static create(allowInstancing: boolean, options: TileOptions, formatVersion?: number): ContentIdProvider;
+    // (undocumented)
+    idFromParentAndMultiplier(parentId: string, multiplier: number): string;
+    // (undocumented)
+    idFromSpec(spec: ContentIdSpec): string;
+    // (undocumented)
+    protected join(depth: number, i: number, j: number, k: number, mult: number): string;
+    // (undocumented)
+    readonly rootContentId: string;
+    // (undocumented)
+    protected abstract readonly _separator: string;
+    // (undocumented)
+    specFromId(id: string): ContentIdSpec;
+}
+
 // @public
 export interface ContextRealityModelProps {
     // @beta (undocumented)
@@ -1188,6 +1282,13 @@ export const CURRENT_INVOCATION: unique symbol;
 
 // @internal (undocumented)
 export const CURRENT_REQUEST: unique symbol;
+
+// @internal
+export const enum CurrentImdlVersion {
+    Combined = 458752,
+    Major = 7,
+    Minor = 0
+}
 
 // @beta
 export interface CustomAttribute {
@@ -1218,6 +1319,8 @@ export interface DefinitionElementProps extends ElementProps {
 
 // @internal
 export abstract class DevToolsRpcInterface extends RpcInterface {
+    // (undocumented)
+    echo(_iModelToken: IModelTokenProps, _id: GuidString, _message: string): Promise<void>;
     static getClient(): DevToolsRpcInterface;
     static readonly interfaceName = "DevToolsRpcInterface";
     static interfaceVersion: string;
@@ -1524,8 +1627,6 @@ export class ElectronRpcProtocol extends RpcProtocol {
     constructor(configuration: ElectronRpcConfiguration);
     // (undocumented)
     static instances: Map<string, ElectronRpcProtocol>;
-    // (undocumented)
-    static obtainInstance(request: SerializedRpcRequest): ElectronRpcProtocol;
     // @internal (undocumented)
     onRpcClientInitialized(definition: RpcInterfaceDefinition, _client: RpcInterface): void;
     // @internal (undocumented)
@@ -1538,6 +1639,8 @@ export class ElectronRpcProtocol extends RpcProtocol {
     requests: Map<string, ElectronRpcRequest>;
     readonly requestType: typeof ElectronRpcRequest;
     transferChunkThreshold: number;
+    // @internal (undocumented)
+    readonly transport: ElectronIpcTransport<IpcTransportMessage, IpcTransportMessage>;
 }
 
 // @beta (undocumented)
@@ -1645,6 +1748,15 @@ export interface EnvironmentProps {
     sky?: SkyBoxProps;
 }
 
+// @internal
+export abstract class EventSourceRpcInterface extends RpcInterface {
+    // (undocumented)
+    fetch(_iModelToken: IModelTokenProps, _limit: number): Promise<QueuedEvent[]>;
+    static getClient(): EventSourceRpcInterface;
+    static readonly interfaceName = "EventSourceRpcInterface";
+    static interfaceVersion: string;
+}
+
 // @public
 export interface ExternalSourceAspectProps extends ElementAspectProps {
     checksum?: string;
@@ -1727,6 +1839,20 @@ export class FeatureTable extends IndexMap<Feature> {
     // (undocumented)
     readonly type: BatchType;
     readonly uniform: Feature | undefined;
+}
+
+// @internal
+export class FeatureTableHeader {
+    // (undocumented)
+    readonly count: number;
+    // (undocumented)
+    readonly length: number;
+    // (undocumented)
+    readonly maxFeatures: number;
+    // (undocumented)
+    static readFrom(stream: ByteStream): FeatureTableHeader | undefined;
+    // (undocumented)
+    static sizeInBytes: number;
 }
 
 // @public (undocumented)
@@ -1827,7 +1953,7 @@ export class Frustum {
     toMap4d(): Map4d | undefined;
     toRange(range?: Range3d): Range3d;
     transformBy(trans: Transform, result?: Frustum): Frustum;
-    translate(offset: Vector3d): void;
+    translate(offset: XYAndZ): void;
 }
 
 // @internal
@@ -2163,7 +2289,121 @@ export enum GeometrySummaryVerbosity {
     Full = 30
 }
 
+// @internal (undocumented)
+export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
+
 export { GetMetaDataFunction }
+
+// @internal
+export class GltfBufferData {
+    constructor(buffer: GltfDataBuffer, count: number);
+    // (undocumented)
+    readonly buffer: GltfDataBuffer;
+    // (undocumented)
+    readonly count: number;
+    static create(bytes: Uint8Array, actualType: GltfDataType, expectedType: GltfDataType, count: number): GltfBufferData | undefined;
+    }
+
+// @internal
+export class GltfBufferView {
+    constructor(data: Uint8Array, count: number, type: GltfDataType, accessor: any);
+    // (undocumented)
+    readonly accessor: any;
+    // (undocumented)
+    readonly byteLength: number;
+    // (undocumented)
+    readonly count: number;
+    // (undocumented)
+    readonly data: Uint8Array;
+    // (undocumented)
+    toBufferData(desiredType: GltfDataType): GltfBufferData | undefined;
+    // (undocumented)
+    readonly type: GltfDataType;
+}
+
+// @internal (undocumented)
+export const enum GltfConstants {
+    // (undocumented)
+    ArrayBuffer = 34962,
+    // (undocumented)
+    ClampToEdge = 33071,
+    // (undocumented)
+    CullFace = 2884,
+    // (undocumented)
+    DepthTest = 2929,
+    // (undocumented)
+    ElementArrayBuffer = 34963,
+    // (undocumented)
+    FragmentShader = 35632,
+    // (undocumented)
+    Linear = 9729,
+    // (undocumented)
+    LinearMipmapLinear = 9987,
+    // (undocumented)
+    Nearest = 9728,
+    // (undocumented)
+    VertexShader = 35633
+}
+
+// @internal (undocumented)
+export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
+
+// @internal (undocumented)
+export const enum GltfDataType {
+    // (undocumented)
+    Float = 5126,
+    // (undocumented)
+    UInt32 = 5125,
+    // (undocumented)
+    UnsignedByte = 5121,
+    // (undocumented)
+    UnsignedShort = 5123
+}
+
+// @internal
+export class GltfHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly binaryPosition: number;
+    // (undocumented)
+    readonly gltfLength: number;
+    // (undocumented)
+    readonly isValid: boolean;
+    // (undocumented)
+    readonly scenePosition: number;
+    // (undocumented)
+    readonly sceneStrLength: number;
+}
+
+// @internal (undocumented)
+export const enum GltfMeshMode {
+    // (undocumented)
+    Lines = 1,
+    // (undocumented)
+    LineStrip = 3,
+    // (undocumented)
+    Triangles = 4
+}
+
+// @internal (undocumented)
+export const enum GltfV2ChunkTypes {
+    // (undocumented)
+    Binary = 5130562,
+    // (undocumented)
+    JSON = 1313821514
+}
+
+// @internal
+export const enum GltfVersions {
+    // (undocumented)
+    CurrentVersion = 1,
+    // (undocumented)
+    Gltf1SceneFormat = 0,
+    // (undocumented)
+    Version1 = 1,
+    // (undocumented)
+    Version2 = 2
+}
 
 // @beta (undocumented)
 export namespace Gradient {
@@ -2415,6 +2655,8 @@ export namespace HiddenLine {
 
 // @public
 export namespace Hilite {
+    export function cloneSettings(settings: Settings): Settings;
+    export function equalSettings(lhs: Settings, rhs: Settings): boolean;
     export class Settings {
         constructor(color?: ColorDef, visibleRatio?: number, hiddenRatio?: number, silhouette?: Silhouette);
         readonly color: ColorDef;
@@ -2516,6 +2758,29 @@ export interface HttpServerResponse extends Writable {
     status(code: number): HttpServerResponse;
 }
 
+// @internal
+export class I3dmHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly batchTableBinaryLength: number;
+    // (undocumented)
+    readonly batchTableJson: any;
+    // (undocumented)
+    readonly batchTableJsonLength: number;
+    // (undocumented)
+    readonly featureTableBinaryLength: number;
+    // (undocumented)
+    readonly featureTableJsonLength: number;
+    // (undocumented)
+    readonly featureTableJsonPosition: number;
+    // (undocumented)
+    readonly gltfVersion: number;
+    // (undocumented)
+    readonly isValid: boolean;
+    // (undocumented)
+    readonly length: number;
+}
+
 // @beta
 export interface ILinearElementProps extends GeometricElement3dProps {
     // (undocumented)
@@ -2582,6 +2847,34 @@ export enum ImageSourceFormat {
     Jpeg = 0,
     Png = 2,
     Svg = 3
+}
+
+// @internal
+export const enum ImdlFlags {
+    ContainsCurves = 1,
+    Incomplete = 4,
+    None = 0
+}
+
+// @internal
+export class ImdlHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    readonly contentRange: ElementAlignedBox3d;
+    readonly emptySubRanges: number;
+    readonly flags: ImdlFlags;
+    readonly headerLength: number;
+    // (undocumented)
+    readonly isReadableVersion: boolean;
+    // (undocumented)
+    readonly isValid: boolean;
+    readonly numElementsExcluded: number;
+    readonly numElementsIncluded: number;
+    readonly tileLength: number;
+    readonly tolerance: number;
+    // (undocumented)
+    readonly versionMajor: number;
+    // (undocumented)
+    readonly versionMinor: number;
 }
 
 // @public
@@ -2717,6 +3010,12 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     requestTileTreeProps(_tokenProps: IModelTokenProps, _id: string): Promise<TileTreeProps>;
 }
 
+// @internal
+export type IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId;
+
+// @internal
+export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string;
+
 // @public
 export class IModelToken implements IModelTokenProps {
     constructor(key?: string, contextId?: string, iModelid?: string, changesetId?: string, openMode?: OpenMode);
@@ -2803,6 +3102,9 @@ export interface IReferentProps {
     // (undocumented)
     referencedElement?: RelatedElementProps;
 }
+
+// @internal
+export function isKnownTileFormat(format: number): boolean;
 
 // @public
 export function isPowerOfTwo(num: number): boolean;
@@ -2904,6 +3206,20 @@ export enum LightType {
 }
 
 // @beta
+export interface LinearLocationReference {
+    // (undocumented)
+    linearlyLocatedClassFullName: string;
+    // (undocumented)
+    linearlyLocatedId: Id64String;
+    // (undocumented)
+    locationAspectId: Id64String;
+    // (undocumented)
+    startDistanceAlong: number;
+    // (undocumented)
+    stopDistanceAlong: number;
+}
+
+// @beta
 export interface LinearlyLocatedAttributionProps extends GeometricElement3dProps, ILinearlyLocatedAttributionProps {
 }
 
@@ -2933,6 +3249,16 @@ export interface LinearlyReferencedFromToLocationProps {
     toPosition: DistanceExpressionProps;
     // (undocumented)
     toPositionFromReferent?: RelatedElementProps;
+}
+
+// @beta
+export enum LinearlyReferencedLocationType {
+    // (undocumented)
+    Any = 2,
+    // (undocumented)
+    At = 0,
+    // (undocumented)
+    FromTo = 1
 }
 
 // @public
@@ -3218,6 +3544,9 @@ export interface NavigationValue {
 // @public
 export function nextHighestPowerOfTwo(num: number): number;
 
+// @internal
+export function nextPoint3d64FromByteStream(stream: ByteStream, result?: Point3d): Point3d;
+
 // @internal (undocumented)
 export class NonUniformColor {
     constructor(colors: Uint32Array, indices: number[], hasAlpha: boolean);
@@ -3292,8 +3621,6 @@ export class OctEncodedNormalPair {
 export interface OidcDesktopClientConfiguration {
     clientId: string;
     expiryBuffer?: number;
-    postSigninErrorUri?: string;
-    postSigninSuccessUri?: string;
     redirectUri: string;
     scope: string;
 }
@@ -3459,6 +3786,56 @@ export interface OpenAPISchema {
 // @internal (undocumented)
 export const OPERATION: unique symbol;
 
+// @internal (undocumented)
+export interface PackedFeature {
+    // (undocumented)
+    animationNodeId: number;
+    // (undocumented)
+    elementId: Id64.Uint32Pair;
+    // (undocumented)
+    geometryClass: GeometryClass;
+    // (undocumented)
+    subCategoryId: Id64.Uint32Pair;
+}
+
+// @internal
+export class PackedFeatureTable {
+    constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array);
+    // (undocumented)
+    readonly anyDefined: boolean;
+    // (undocumented)
+    readonly byteLength: number;
+    findElementId(featureIndex: number): Id64String | undefined;
+    findFeature(featureIndex: number): Feature | undefined;
+    // (undocumented)
+    getAnimationNodeId(featureIndex: number): number;
+    // (undocumented)
+    getElementIdPair(featureIndex: number): Id64.Uint32Pair;
+    getFeature(featureIndex: number): Feature;
+    // (undocumented)
+    getPackedFeature(featureIndex: number): PackedFeature;
+    // (undocumented)
+    getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair;
+    // (undocumented)
+    readonly isClassifier: boolean;
+    // (undocumented)
+    readonly isPlanarClassifier: boolean;
+    readonly isUniform: boolean;
+    // (undocumented)
+    readonly isVolumeClassifier: boolean;
+    // (undocumented)
+    readonly maxFeatures: number;
+    // (undocumented)
+    readonly modelId: Id64String;
+    // (undocumented)
+    readonly numFeatures: number;
+    static pack(featureTable: FeatureTable): PackedFeatureTable;
+    // (undocumented)
+    readonly type: BatchType;
+    readonly uniform: Feature | undefined;
+    unpack(): FeatureTable;
+}
+
 // @public
 export class Placement2d implements Placement2dProps {
     constructor(origin: Point2d, angle: Angle, bbox: ElementAlignedBox2d);
@@ -3519,6 +3896,23 @@ export interface Placement3dProps {
 
 // @public (undocumented)
 export type PlacementProps = Placement2dProps | Placement3dProps;
+
+// @internal
+export class PntsHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly batchTableBinaryLength: number;
+    // (undocumented)
+    readonly batchTableJsonLength: number;
+    // (undocumented)
+    readonly featureTableBinaryLength: number;
+    // (undocumented)
+    readonly featureTableJsonLength: number;
+    // (undocumented)
+    readonly isValid: boolean;
+    // (undocumented)
+    readonly length: number;
+}
 
 // @beta
 export interface PointWithStatus {
@@ -3600,6 +3994,16 @@ export enum PolylineTypeFlags {
     Normal = 0,
     // (undocumented)
     Outline = 2
+}
+
+// @internal
+export interface PrimaryTileTreeId {
+    // (undocumented)
+    animationId?: Id64String;
+    // (undocumented)
+    edgesRequired: boolean;
+    // (undocumented)
+    type: BatchType.Primary;
 }
 
 // @beta
@@ -3849,6 +4253,22 @@ export interface QueryLimit {
     startRowOffset?: number;
 }
 
+// @beta
+export interface QueryParams {
+    // (undocumented)
+    fromComparisonOption?: ComparisonOption;
+    // (undocumented)
+    fromDistanceAlong?: number;
+    // (undocumented)
+    linearlyLocatedClassFullNames?: string[];
+    // (undocumented)
+    linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType;
+    // (undocumented)
+    toComparisonOption?: ComparisonOption;
+    // (undocumented)
+    toDistanceAlong?: number;
+}
+
 // @public
 export enum QueryPriority {
     // (undocumented)
@@ -3887,6 +4307,18 @@ export enum QueryResponseStatus {
     Timeout = 4
 }
 
+// @internal
+export interface QueuedEvent {
+    // (undocumented)
+    data: any;
+    // (undocumented)
+    eventId: number;
+    // (undocumented)
+    eventName: string;
+    // (undocumented)
+    namespace: string;
+}
+
 // @public
 export enum Rank {
     Application = 2,
@@ -3902,6 +4334,9 @@ export interface ReadableFormData extends Readable {
         [key: string]: any;
     };
 }
+
+// @internal
+export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription;
 
 // @beta
 export interface ReferentElementProps extends GeometricElement3dProps, IReferentProps {
@@ -5261,6 +5696,12 @@ export interface ThumbnailProps extends ThumbnailFormatProps {
     image: Uint8Array;
 }
 
+// @internal (undocumented)
+export interface TileContentDescription extends TileContentMetadata {
+    // (undocumented)
+    readonly featureTableStartPos: number;
+}
+
 // @beta (undocumented)
 export interface TileContentIdentifier {
     // (undocumented)
@@ -5273,6 +5714,80 @@ export interface TileContentIdentifier {
     treeId: string;
 }
 
+// @internal
+export interface TileContentMetadata {
+    // (undocumented)
+    readonly contentRange: Range3d;
+    // (undocumented)
+    readonly emptySubRangeMask: number;
+    // (undocumented)
+    readonly isLeaf: boolean;
+    // (undocumented)
+    readonly sizeMultiplier?: number;
+}
+
+// @internal
+export const enum TileFormat {
+    // (undocumented)
+    A3x = 5780289,
+    // (undocumented)
+    B3dm = 1835283298,
+    // (undocumented)
+    Cmpt = 1953525091,
+    // (undocumented)
+    Gltf = 1179937895,
+    // (undocumented)
+    I3dm = 1835283305,
+    // (undocumented)
+    IModel = 1818512745,
+    // (undocumented)
+    Pnts = 1937010288,
+    // (undocumented)
+    Unknown = 0
+}
+
+// @internal
+export function tileFormatFromNumber(formatNumber: number): TileFormat;
+
+// @internal
+export abstract class TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly format: TileFormat;
+    protected invalidate(): void;
+    abstract readonly isValid: boolean;
+    // (undocumented)
+    version: number;
+}
+
+// @internal
+export interface TileMetadata extends TileContentMetadata {
+    // (undocumented)
+    readonly contentId: string;
+    // (undocumented)
+    readonly range: Range3d;
+}
+
+// @internal
+export class TileMetadataReader {
+    constructor(type: BatchType, is2d: boolean, options: TileOptions);
+    read(stream: ByteStream, props: TileProps): TileMetadata;
+}
+
+// @internal (undocumented)
+export interface TileOptions {
+    // (undocumented)
+    readonly disableMagnification: boolean;
+    // (undocumented)
+    readonly enableImprovedElision: boolean;
+    // (undocumented)
+    readonly enableInstancing: boolean;
+    // (undocumented)
+    readonly maximumMajorTileFormatVersion: number;
+    // (undocumented)
+    readonly useProjectExtents: boolean;
+}
+
 // @internal (undocumented)
 export interface TileProps {
     contentId: string;
@@ -5282,6 +5797,43 @@ export interface TileProps {
     range: Range3dProps;
     sizeMultiplier?: number;
     transformToRoot?: TransformProps;
+}
+
+// @internal
+export class TileReadError extends BentleyError {
+    constructor(status: TileReadStatus, message?: string);
+    // (undocumented)
+    readonly wasCanceled: boolean;
+}
+
+// @internal
+export const enum TileReadStatus {
+    // (undocumented)
+    Canceled = 7,
+    // (undocumented)
+    InvalidBatchTable = 3,
+    // (undocumented)
+    InvalidFeatureTable = 5,
+    // (undocumented)
+    InvalidHeader = 2,
+    // (undocumented)
+    InvalidScene = 4,
+    // (undocumented)
+    InvalidTileData = 1,
+    // (undocumented)
+    NewerMajorVersion = 6,
+    // (undocumented)
+    Success = 0
+}
+
+// @internal
+export interface TileTreeMetadata {
+    // (undocumented)
+    readonly contentRange?: Range3d;
+    // (undocumented)
+    readonly is2d: boolean;
+    // (undocumented)
+    readonly modelId: Id64String;
 }
 
 // @internal (undocumented)
@@ -5319,7 +5871,7 @@ export class Tween {
     // (undocumented)
     readonly isPlaying: boolean;
     // (undocumented)
-    onComplete(callback: TweenCallback): this;
+    onComplete(callback?: TweenCallback): this;
     // (undocumented)
     onRepeat(callback: TweenCallback): this;
     // (undocumented)
@@ -5361,6 +5913,7 @@ export class Tweens {
         to: any;
         duration: number;
         onUpdate: UpdateCallback;
+        onComplete?: TweenCallback;
         delay?: number;
         start?: boolean;
         easing?: EasingFunction;

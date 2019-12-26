@@ -3,13 +3,38 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { TileIO, IModelTileIO, IModelTile } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
-import { CloudStorageTileCache, ModelProps, RelatedElementProps, BatchType, ServerTimeoutError, TileContentIdentifier } from "@bentley/imodeljs-common";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import {
+  BatchType,
+  CloudStorageTileCache,
+  CurrentImdlVersion,
+  ImdlFlags,
+  ImdlHeader,
+  IModelTileTreeId,
+  iModelTileTreeIdToString,
+  ModelProps,
+  RelatedElementProps,
+  ServerTimeoutError,
+  TileContentIdentifier,
+  TileFormat,
+  TileReadStatus,
+} from "@bentley/imodeljs-common";
+import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
 import * as path from "path";
-import { ViewState, MockRender, RenderGraphic, IModelApp, IModelConnection, GeometricModelState, TileAdmin, TileRequest, TileTree } from "@bentley/imodeljs-frontend";
+import {
+  GeometricModelState,
+  ImdlReader,
+  IModelApp,
+  IModelConnection,
+  IModelTileLoader,
+  MockRender,
+  RenderGraphic,
+  TileAdmin,
+  TileRequest,
+  TileTree,
+  ViewState,
+} from "@bentley/imodeljs-frontend";
 import { TileTestCase, TileTestData } from "./TileIO.data";
 import { TILE_DATA_1_1 } from "./TileIO.data.1.1";
 import { TILE_DATA_1_2 } from "./TileIO.data.1.2";
@@ -61,11 +86,11 @@ function delta(a: number, b: number): number { return Math.abs(a - b); }
 type ProcessGraphic = (graphic: RenderGraphic) => void;
 
 function processHeader(data: TileTestData, test: TileTestCase, numElements: number) {
-  const stream = new TileIO.StreamBuffer(test.bytes.buffer);
+  const stream = new ByteStream(test.bytes.buffer);
   stream.reset();
-  const header = new IModelTileIO.Header(stream);
+  const header = new ImdlHeader(stream);
   expect(header.isValid).to.be.true;
-  expect(header.format).to.equal(TileIO.Format.IModel);
+  expect(header.format).to.equal(TileFormat.IModel);
   expect(header.versionMajor).to.equal(data.versionMajor);
   expect(header.versionMinor).to.equal(data.versionMinor);
   expect(header.headerLength).to.equal(data.headerLength);
@@ -76,10 +101,10 @@ function processHeader(data: TileTestData, test: TileTestCase, numElements: numb
   expect(header.isReadableVersion).to.equal(!data.unreadable);
 }
 
-function createReader(imodel: IModelConnection, data: TileTestData, test: TileTestCase): IModelTileIO.Reader | undefined {
+function createReader(imodel: IModelConnection, data: TileTestData, test: TileTestCase): ImdlReader | undefined {
   const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-  const stream = new TileIO.StreamBuffer(test.bytes.buffer);
-  const reader = IModelTileIO.Reader.create(stream, imodel, model.id, model.is3d, IModelApp.renderSystem);
+  const stream = new ByteStream(test.bytes.buffer);
+  const reader = ImdlReader.create(stream, imodel, model.id, model.is3d, IModelApp.renderSystem);
   expect(undefined === reader).to.equal(!!data.unreadable);
   return reader;
 }
@@ -89,7 +114,7 @@ async function processRectangle(data: TileTestData, imodel: IModelConnection, pr
   const reader = createReader(imodel, data, data.rectangle);
   if (undefined !== reader) {
     const result = await reader.read();
-    expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
+    expect(result.readStatus).to.equal(TileReadStatus.Success);
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -119,7 +144,7 @@ async function processTriangles(data: TileTestData, imodel: IModelConnection, pr
   const reader = createReader(imodel, data, data.triangles);
   if (undefined !== reader) {
     const result = await reader.read();
-    expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
+    expect(result.readStatus).to.equal(TileReadStatus.Success);
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -149,7 +174,7 @@ async function processLineString(data: TileTestData, imodel: IModelConnection, p
   const reader = createReader(imodel, data, data.lineString);
   if (undefined !== reader) {
     const result = await reader.read();
-    expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
+    expect(result.readStatus).to.equal(TileReadStatus.Success);
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -179,7 +204,7 @@ async function processLineStrings(data: TileTestData, imodel: IModelConnection, 
   const reader = createReader(imodel, data, data.lineStrings);
   if (undefined !== reader) {
     const result = await reader.read();
-    expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
+    expect(result.readStatus).to.equal(TileReadStatus.Success);
     expect(result.isLeaf).to.be.true;
     expect(result.contentRange).not.to.be.undefined;
 
@@ -209,7 +234,7 @@ async function processCylinder(data: TileTestData, imodel: IModelConnection, pro
   const reader = createReader(imodel, data, data.cylinder);
   if (undefined !== reader) {
     const result = await reader.read();
-    expect(result.readStatus).to.equal(TileIO.ReadStatus.Success);
+    expect(result.readStatus).to.equal(TileReadStatus.Success);
     expect(result.isLeaf).to.be.false; // cylinder contains curves - not a leaf - can be refined to higher-resolution single child.
     expect(result.contentRange).not.to.be.undefined;
 
@@ -421,12 +446,12 @@ describe("TileIO (mock render)", () => {
   it("should support canceling operation", async () => {
     if (IModelApp.initialized) {
       const model = new FakeGMState(new FakeModelProps(new FakeREProps()), imodel);
-      const stream = new TileIO.StreamBuffer(currentTestCase.rectangle.bytes.buffer);
-      const reader = IModelTileIO.Reader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, true, (_) => true);
+      const stream = new ByteStream(currentTestCase.rectangle.bytes.buffer);
+      const reader = ImdlReader.create(stream, model.iModel, model.id, model.is3d, IModelApp.renderSystem, BatchType.Primary, true, (_) => true);
       expect(reader).not.to.be.undefined;
 
       const result = await reader!.read();
-      expect(result.readStatus).to.equal(TileIO.ReadStatus.Canceled);
+      expect(result.readStatus).to.equal(TileReadStatus.Canceled);
     }
   });
 
@@ -601,7 +626,7 @@ describe("mirukuru TileTree", () => {
     const rootTile = treeProps.rootTile;
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
-    const loader = new IModelTile.Loader(imodel, treeProps.formatVersion, BatchType.Primary, true, true, undefined);
+    const loader = new IModelTileLoader(imodel, treeProps.formatVersion, BatchType.Primary, true, true, undefined);
     const tree = new TileTree(TileTree.paramsFromJSON(treeProps, imodel, true, loader, "0x1c"));
 
     const response: TileRequest.Response = await loader.requestTileContent(tree.rootTile, () => false);
@@ -633,14 +658,14 @@ describe("mirukuru TileTree", () => {
       expect(response).instanceof(Uint8Array);
 
       // The model contains a single rectangular element.
-      const stream = new TileIO.StreamBuffer((response as Uint8Array).buffer);
-      const header = new IModelTileIO.Header(stream);
+      const stream = new ByteStream((response as Uint8Array).buffer);
+      const header = new ImdlHeader(stream);
       expect(header.isValid).to.be.true;
-      expect(header.format).to.equal(TileIO.Format.IModel);
+      expect(header.format).to.equal(TileFormat.IModel);
       expect(header.version).to.equal(expectedVersion);
       expect(header.versionMajor).to.equal(expectedVersion >> 0x10);
       expect(header.versionMinor).to.equal(expectedVersion & 0xffff);
-      expect(header.flags).to.equal(IModelTileIO.Flags.None);
+      expect(header.flags).to.equal(ImdlFlags.None);
       expect(header.numElementsIncluded).to.equal(1);
       expect(header.numElementsExcluded).to.equal(0);
 
@@ -652,12 +677,12 @@ describe("mirukuru TileTree", () => {
 
     // Test current version of tile tree by asking model to load it
     const modelTree = await getTileTree(imodel, "0x1c");
-    await test(modelTree, IModelTileIO.CurrentVersion.Combined, "-1-0-0-0-0-1");
+    await test(modelTree, CurrentImdlVersion.Combined, "-1-0-0-0-0-1");
 
     // Test directly loading a tile tree of version 3.0
     const v3Props = await imodel.tiles.getTileTreeProps("0x1c");
     expect(v3Props).not.to.be.undefined;
-    const loader = new IModelTile.Loader(imodel, v3Props.formatVersion, BatchType.Primary, false, false, undefined);
+    const loader = new IModelTileLoader(imodel, v3Props.formatVersion, BatchType.Primary, false, false, undefined);
     v3Props.rootTile.contentId = loader.rootContentId;
     const v3Tree = new TileTree(TileTree.paramsFromJSON(v3Props, imodel, true, loader, "0x1c"));
     await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
@@ -757,14 +782,14 @@ describe("mirukuru TileTree", () => {
     const model = await getGeometricModel(imodel, "0x1c");
     expect(model.geometryGuid).to.be.undefined;
     let tree = await getPrimaryTileTree(model, true);
-    let loader = tree.loader as IModelTile.Loader;
+    let loader = tree.loader as IModelTileLoader;
 
     const getGuid = () => (loader as any)._guid;
     expect(getGuid()).to.be.undefined;
 
     model.geometryGuid = "abcdef";
     tree = await getPrimaryTileTree(model, false);
-    loader = tree.loader as IModelTile.Loader;
+    loader = tree.loader as IModelTileLoader;
     expect(getGuid()).not.to.be.undefined;
     expect(getGuid()).to.equal("abcdef");
 
@@ -848,8 +873,8 @@ describe("TileAdmin", () => {
           expectedTreeIdStrNoEdges = expectedTreeIdStr.substring(0, lastIndex) + "E:0_" + expectedTreeIdStr.substring(lastIndex);
         }
 
-        const treeId: IModelTile.TreeId = { type: BatchType.Primary, edgesRequired: false, animationId };
-        let actualTreeIdStr = IModelTile.treeIdToString("0x1c", treeId);
+        const treeId: IModelTileTreeId = { type: BatchType.Primary, edgesRequired: false, animationId };
+        let actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
 
         const treePropsNoEdges = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
@@ -865,7 +890,7 @@ describe("TileAdmin", () => {
 
         // Test with edges
         treeId.edgesRequired = true;
-        actualTreeIdStr = IModelTile.treeIdToString("0x1c", treeId);
+        actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
 
         const treeProps = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
@@ -889,7 +914,7 @@ describe("TileAdmin", () => {
 
       /* ###TODO rework this so it compiles again
       private static async testClassifierTree(imodel: IModelConnection, expectedTreeIdStr: string, treeId: IModelTile.ClassifierTreeId) {
-        const actualTreeIdStr = IModelTile.treeIdToString("0x1c", treeId);
+        const actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
         expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
 
         const treeProps = await imodel.tiles.getTileTreeProps(actualTreeIdStr);
@@ -918,8 +943,8 @@ describe("TileAdmin", () => {
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
-        const stream = new TileIO.StreamBuffer(response.buffer);
-        const reader = IModelTileIO.Reader.create(stream, imodel, "0x1c", true, IModelApp.renderSystem)!;
+        const stream = new ByteStream(response.buffer);
+        const reader = ImdlReader.create(stream, imodel, "0x1c", true, IModelApp.renderSystem)!;
         expect(reader).not.to.be.undefined;
 
         const meshes = (reader as any)._meshes;
@@ -958,7 +983,7 @@ describe("TileAdmin", () => {
         const imodel = await App.start({ maximumMajorTileFormatVersion });
         let treeId = "0x1c";
         if (undefined === maximumMajorTileFormatVersion || maximumMajorTileFormatVersion >= 4) {
-          const v = undefined !== maximumMajorTileFormatVersion ? maximumMajorTileFormatVersion : IModelTileIO.CurrentVersion.Major;
+          const v = undefined !== maximumMajorTileFormatVersion ? maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
           treeId = v.toString() + "_0-0x1c";
         }
 
@@ -986,6 +1011,6 @@ describe("TileAdmin", () => {
     await App.testMajorVersion(4, 4);
     // Request whatever the current major version is.
     // If the below test fails, we probably bumped current major version in native code and did not do so in typescript.
-    await App.testMajorVersion(undefined, IModelTileIO.CurrentVersion.Major);
+    await App.testMajorVersion(undefined, CurrentImdlVersion.Major);
   });
 });

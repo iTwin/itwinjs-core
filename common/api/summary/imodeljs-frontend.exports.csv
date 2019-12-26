@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item
+internal;A3xTile
+internal;A3xTileIO
 internal;AccuDraw
 internal;AccuDrawChangeModeTool 
 internal;AccudrawData
@@ -32,7 +34,6 @@ internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 beta;AppearanceOverrideProps
-internal;areViewportsCompatible(vp: Viewport, targetVp: Viewport): boolean
 beta;ArrayValue 
 internal;Attachments
 public;AuthorizedFrontendRequestContext 
@@ -56,8 +57,6 @@ public;BeTouchEventProps
 public;BeWheelEvent 
 public;BeWheelEventProps 
 internal;BingElevationProvider
-internal;bisectRange2d(range: Range3d, takeUpper: boolean): void
-internal;bisectRange3d(range: Range3d, takeUpper: boolean): void
 beta;BlankConnectionProps
 beta;ButtonGroupEditorParams 
 internal;CachedIModelCoordinatesResponseProps
@@ -89,7 +88,7 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;CoreTools
-internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
+internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise
 alpha;cssPixelsToDevicePixels(cssPixels: number): number
 internal;CurrentInputState
@@ -130,6 +129,7 @@ public;Environment
 internal;ErrorNums
 public;EventController
 public;EventHandled
+internal;EventSourceOptions
 public;ExtentLimits
 public;extractImageSourceDimensions(source: ImageSource): Promise
 public;FeatureOverrideProvider
@@ -140,11 +140,8 @@ alpha;findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelCon
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
-internal;fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d): Point3d
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
-internal;FrustumUniforms
-internal;enum FrustumUniformType
 public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
@@ -159,6 +156,9 @@ beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, m
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
+internal;class GltfReader
+internal;GltfReaderProps
+internal;GltfReaderResult 
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GraphicBranch 
@@ -191,11 +191,13 @@ public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string): Promise
 internal;class ImageryProvider
 internal;class ImageryProviderEPSG3857 
+internal;ImdlReader 
 public;IModelApp
 public;IModelAppOptions
 public;IModelConnection 
 public;IModelConnection
 internal;Tiles
+internal;IModelTileLoader 
 public;class InputCollector 
 beta;InputEditorSizeParams 
 public;InputSource
@@ -215,6 +217,7 @@ public;LocateFilterStatus
 public;LocateOptions
 public;LocateResponse
 internal;LockedStates
+beta;LookAndMoveTool 
 public;LookViewTool 
 alpha;ManipulatorToolEvent
 internal;MapImageryTileTreeReference 
@@ -261,8 +264,6 @@ public;OrthographicViewState
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
-internal;PackedFeature
-internal;PackedFeatureTable
 public;PanViewTool 
 beta;ParseResults
 internal;PerformanceMetrics
@@ -274,8 +275,6 @@ internal;PlanarClassifierMap = Map
 beta;class Plugin
 beta;PluginAdmin
 beta;PluginLoadResults = Plugin | undefined | string | string[]
-alpha;PluginUiManager
-alpha;PluginUiProvider
 beta;Primitives
 public;class PrimitiveTool 
 beta;PrimitiveValue 
@@ -335,6 +334,7 @@ alpha;SetupCameraTool
 internal;SheetBorder
 public;SheetModelState 
 public;SheetViewState 
+internal;ShouldAbortReadGltf = (reader: GltfReader) => boolean
 public;class SkyBox 
 public;SkyBox
 internal;SkyBoxParams = Promise
@@ -367,7 +367,6 @@ beta;SuppressLabelEditorParams
 alpha;SuppressUnitLabelEditorParams 
 beta;SurveyLengthDescription 
 internal;SuspendedToolState
-internal;SyncFlags
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
@@ -388,6 +387,7 @@ internal;TileRequest
 internal;TileTree 
 internal;TileTree
 internal;TileTreeDiscloser
+internal;class TileTreeReference 
 internal;TileTreeSet
 public;Tool
 public;ToolAdmin
@@ -415,8 +415,6 @@ internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
 alpha;TwoWayViewportSync
-alpha;UiItemNode
-alpha;UiProviderRegisteredEventArgs
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection
@@ -436,19 +434,21 @@ alpha;ViewClipPlanesModifyTool
 alpha;ViewClipSettingsProvider
 alpha;ViewClipShapeModifyTool 
 alpha;ViewClipTool 
-internal;ViewFrustum
 internal;ViewHandleArray
 internal;enum ViewHandleType
+internal;ViewingSpace
 internal;class ViewingToolHandle
 public;ViewManager
 public;class ViewManip 
 public;class Viewport 
+public;class ViewPose
+internal;ViewPose2d 
+internal;ViewPose3d 
 public;ViewRect
 public;ViewRedoTool 
 public;class ViewState 
 public;class ViewState2d 
 public;class ViewState3d 
-internal;class ViewStateUndo
 public;ViewStatus
 public;ViewToggleCameraTool 
 public;class ViewTool 

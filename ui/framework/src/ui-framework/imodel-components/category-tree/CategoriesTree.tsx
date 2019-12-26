@@ -35,7 +35,6 @@ export interface FilterInfo {
 export interface CategoryTreeState {
   checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
   filterInfo?: FilterInfo;
-  selectedNodes: string[];
   dataProvider?: IPresentationTreeDataProvider;
   categories: Category[];
   activeView?: Viewport;

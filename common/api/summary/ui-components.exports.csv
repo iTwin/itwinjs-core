@@ -1,5 +1,9 @@
 sep=;
 Release Tag;API Item
+beta;ActionButtonList 
+beta;ActionButtonListProps
+beta;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
+beta;ActionButtonRendererProps
 beta;ActiveMatchInfo
 beta;AlphaSlider 
 beta;AlphaSliderProps 

@@ -125,7 +125,7 @@ export class AnimationPanel extends ToolBarDropDown {
   }
 
   private setAnimationFraction(fraction: number) {
-    this._vp.animationFraction = fraction;
+    this._vp.scheduleScriptFraction = fraction;
     // If solar shadow testing.  Remove when solar UI is available.
     const displayStyle = this._vp.view.displayStyle as DisplayStyle3dState;
     if (displayStyle && displayStyle.viewFlags.shadows) {
@@ -141,7 +141,7 @@ export class AnimationPanel extends ToolBarDropDown {
       const sunrise = calculateSunriseOrSunset(today, cartoCenter, true);
       const sunset = calculateSunriseOrSunset(today, cartoCenter, false);
       displayStyle.setSunTime(sunrise.getTime() + fraction * (sunset.getTime() - sunrise.getTime()));
-      this._vp.sync.invalidateScene();
+      this._vp.invalidateScene();
     }
   }
 
@@ -153,7 +153,7 @@ export class AnimationPanel extends ToolBarDropDown {
 
     const curTime = (new Date()).getTime();
     this.setAnimationFraction((curTime - this._startTime) / (this._endTime - this._startTime));
-    this._slider.value = (this._vp.animationFraction * 1000).toString();
+    this._slider.value = (this._vp.scheduleScriptFraction * 1000).toString();
 
     const userHitStop = !this._isAnimating;
     if (curTime >= this._endTime || !this._isAnimating) {

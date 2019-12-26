@@ -28,6 +28,7 @@ import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileTree } from "./tile/TileTree";
 import { ViewState } from "./ViewState";
+import { EventSource, EventSourceManager } from "./EventSource";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -59,6 +60,10 @@ export class IModelConnection extends IModel {
   public readonly codeSpecs: IModelConnection.CodeSpecs;
   /** The [[ViewState]]s in this IModelConnection. */
   public readonly views: IModelConnection.Views;
+  /** The event source that listen for backend generated events
+   * @internal
+   */
+  public readonly eventSource: EventSource | undefined;
   /** The set of currently hilited elements for this IModelConnection.
    * @alpha
    */
@@ -184,6 +189,9 @@ export class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
+    if (iModel.iModelToken && iModel.iModelToken.key) {
+      this.eventSource = EventSourceManager.get(iModel.iModelToken.key, this.iModelToken);
+    }
   }
 
   /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
@@ -339,6 +347,9 @@ export class IModelConnection extends IModel {
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     requestContext.useContextForRpc = true;
     const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't awaited right away.
+    if (this.eventSource) {
+      EventSourceManager.delete(this.iModelToken.key!);
+    }
     try {
       await closePromise;
     } finally {
@@ -994,7 +1005,7 @@ export namespace IModelConnection {
 
     /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */
     public purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void {
-      // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTree.References exist pointing to a given Owner.
+      // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTreeReferences exist pointing to a given Owner.
       for (const entry of this._treesBySupplier) {
         const dict = entry[1];
         dict.forEach((_treeId, owner) => {

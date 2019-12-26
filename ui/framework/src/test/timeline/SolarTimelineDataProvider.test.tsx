@@ -32,7 +32,7 @@ describe("SolarTimelineDataProvider", () => {
     viewMock.setup((view) => view.iModel).returns(() => imodelMock.object);
     viewportMock.reset();
     viewportMock.setup((viewport) => viewport.view).returns(() => viewMock.object);
-    viewportMock.setup((viewport) => viewport.animationFraction).returns(() => 0.3);
+    viewportMock.setup((viewport) => viewport.scheduleScriptFraction).returns(() => 0.3);
   });
 
   it("SolarTimelineDataProvider can provide timeline data", async () => {

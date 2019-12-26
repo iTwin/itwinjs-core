@@ -6,15 +6,25 @@
 
 import { compareBooleans, compareStrings, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { BatchType, GeometricModel2dProps, ModelProps, GeometricModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import {
+  BatchType,
+  compareIModelTileTreeIds,
+  GeometricModel2dProps,
+  GeometricModelProps,
+  iModelTileTreeIdToString,
+  ModelProps,
+  PrimaryTileTreeId,
+  RelatedElement,
+} from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
-import { IModelTile } from "./tile/IModelTile";
+import { IModelTileLoader } from "./tile/IModelTileLoader";
 import { createRealityTileTreeReference } from "./tile/RealityModelTileTree";
-import { TileTree } from "./tile/TileTree";
+import { TileTree, TileTreeReference } from "./tile/TileTree";
 import { HitDetail } from "./HitDetail";
 import { ViewState } from "./ViewState";
 import { SpatialClassifiers } from "./SpatialClassification";
+import { IModelApp } from "./IModelApp";
 
 /** Represents the front-end state of a [Model]($backend).
  * @public
@@ -110,7 +120,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   }
 
   /** @internal */
-  public createTileTreeReference(view: ViewState): TileTree.Reference {
+  public createTileTreeReference(view: ViewState): TileTreeReference {
     // If this is a reality model, its tile tree is obtained from reality data service URL.
     const url = this.jsonProperties.tilesetUrl;
     if (undefined !== url) {
@@ -130,7 +140,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 }
 
 interface PrimaryTreeId {
-  readonly treeId: IModelTile.PrimaryTreeId;
+  readonly treeId: PrimaryTileTreeId;
   readonly modelId: Id64String;
   readonly is3d: boolean;
   readonly guid: string | undefined;
@@ -143,7 +153,7 @@ class PrimaryTreeSupplier implements TileTree.Supplier {
     if (0 === cmp) {
       cmp = compareBooleans(lhs.is3d, rhs.is3d);
       if (0 === cmp) {
-        cmp = IModelTile.compareTreeIds(lhs.treeId, rhs.treeId);
+        cmp = compareIModelTileTreeIds(lhs.treeId, rhs.treeId);
       }
     }
 
@@ -152,13 +162,13 @@ class PrimaryTreeSupplier implements TileTree.Supplier {
 
   public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     const treeId = id.treeId;
-    const idStr = IModelTile.treeIdToString(id.modelId, treeId);
+    const idStr = iModelTileTreeIdToString(id.modelId, treeId, IModelApp.tileAdmin);
     const props = await iModel.tiles.getTileTreeProps(idStr);
 
     const allowInstancing = undefined === treeId.animationId;
     const edgesRequired = treeId.edgesRequired;
 
-    const loader = new IModelTile.Loader(iModel, props.formatVersion, BatchType.Primary, edgesRequired, allowInstancing, id.guid);
+    const loader = new IModelTileLoader(iModel, props.formatVersion, BatchType.Primary, edgesRequired, allowInstancing, id.guid);
     props.rootTile.contentId = loader.rootContentId;
     const params = TileTree.paramsFromJSON(props, iModel, id.is3d, loader, id.modelId);
     return new TileTree(params);
@@ -171,7 +181,7 @@ class PrimaryTreeSupplier implements TileTree.Supplier {
 
 const primaryTreeSupplier = new PrimaryTreeSupplier();
 
-class PrimaryTreeReference extends TileTree.Reference {
+class PrimaryTreeReference extends TileTreeReference {
   private readonly _view: ViewState;
   private readonly _model: GeometricModelState;
   private _id: PrimaryTreeId;
@@ -192,7 +202,7 @@ class PrimaryTreeReference extends TileTree.Reference {
 
   public get treeOwner(): TileTree.Owner {
     const newId = PrimaryTreeReference.createTreeId(this._view, this._id.modelId);
-    if (0 !== IModelTile.compareTreeIds(newId, this._id.treeId)) {
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
       this._id = {
         modelId: this._id.modelId,
         is3d: this._id.is3d,
@@ -206,7 +216,7 @@ class PrimaryTreeReference extends TileTree.Reference {
     return this._owner;
   }
 
-  private static createTreeId(view: ViewState, modelId: Id64String): IModelTile.PrimaryTreeId {
+  private static createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
     const script = view.scheduleScript;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
     const edgesRequired = view.viewFlags.edgesRequired();

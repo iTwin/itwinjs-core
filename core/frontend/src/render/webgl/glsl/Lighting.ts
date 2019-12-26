@@ -11,7 +11,6 @@ import {
   VariablePrecision,
 } from "../ShaderBuilder";
 import { addFrustum } from "./Common";
-import { Vector3d, Transform } from "@bentley/geometry-core";
 
 const computeSimpleLighting = `
 void computeSimpleLight (inout float diffuse, inout float specular, vec3 normal, vec3 toEye, vec3 lightDir, float lightIntensity, float specularExponent) {
@@ -42,10 +41,8 @@ const applyLighting = `
 
     float diffuseIntensity = 0.0, specularIntensity = 0.0;
 
-    // Use a pair of lights that is something in-between portrait lighting & something more out-doorsy with a slightly more overhead main light.
-    // This will make more sense in a wider variety of scenes since this is the only lighting currently supported.
     computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, u_sunDir, 1.0, specularExp);
-    computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, normalize(vec3(-0.3, 0.0, 0.3)), .30, specularExp);
+    computeSimpleLight (diffuseIntensity, specularIntensity, normal, toEye, vec3(-0.7071, 0.0, 0.7071), .30, specularExp);
 
     const float directionalIntensity = 0.92;
     const float ambientIntensity = 0.2;
@@ -61,13 +58,12 @@ const applyLighting = `
   return baseColor;
 `;
 
+// Replaces the sun direction when solar shadows are turned off.
+const defaultSunDirection = new Float32Array([ 0.272166, 0.680414, 0.680414 ]);
+
 /** NB: addMaterial() sets up the mat_* variables used by applyLighting.
  * @internal
  */
-const scratch3Floats = new Float32Array(3);
-const scratchDirection = new Vector3d();
-const scratchTransform = Transform.createIdentity();
-
 export function addLighting(builder: ProgramBuilder) {
   addFrustum(builder);
 
@@ -77,26 +73,10 @@ export function addLighting(builder: ProgramBuilder) {
   frag.set(FragmentShaderComponent.ApplyLighting, applyLighting);
   frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_sunDir", (uniform, params) => {
-      const shadowMap = params.target.compositor.solarShadowMap;
-      if (shadowMap && shadowMap.isEnabled && undefined !== shadowMap.direction) {
-        // replace first light dir with solar direction (relative to model instead of view)
-        let mvt = params.target.viewMatrix.clone(scratchTransform);
-        mvt = mvt.multiplyTransformTransform(params.target.currentTransform, mvt);
-        const coffs = mvt.matrix.coffs;
-        scratchDirection.x = coffs[0] * shadowMap.direction.x + coffs[1] * shadowMap.direction.y + coffs[2] * shadowMap.direction.z;
-        scratchDirection.y = coffs[3] * shadowMap.direction.x + coffs[4] * shadowMap.direction.y + coffs[5] * shadowMap.direction.z;
-        scratchDirection.z = coffs[6] * shadowMap.direction.x + coffs[7] * shadowMap.direction.y + coffs[8] * shadowMap.direction.z;
-        scratchDirection.normalizeInPlace();
-        scratch3Floats[0] = -scratchDirection.x;
-        scratch3Floats[1] = -scratchDirection.y;
-        scratch3Floats[2] = -scratchDirection.z;
-      } else {
-        // use current hardcoded direction for first light
-        scratch3Floats[0] = 0.272166;
-        scratch3Floats[1] = 0.680414;
-        scratch3Floats[2] = 0.680414;
-      }
-      uniform.setUniform3fv(scratch3Floats);
+      if (params.target.solarShadowMap.isEnabled)
+        params.target.uniforms.shadow.bindSunDirection(uniform);
+      else
+        uniform.setUniform3fv(defaultSunDirection);
     });
   }, VariablePrecision.High);
 }

@@ -293,6 +293,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       return null;
 
     const activeModalFrontstage: ModalFrontstageInfo | undefined = FrontstageManager.activeModalFrontstage;
+    // istanbul ignore next
     if (!activeModalFrontstage)
       return null;
 
@@ -374,7 +375,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   }
 
   public handleResize = (zoneId: WidgetZoneId, resizeBy: number, handle: ResizeHandle, filledHeightDiff: number) => {
-    // istanbul ignore else
+    // istanbul ignore next
     if (this._isMounted)
       this.setState((prevState) => {
         const zones = FrontstageManager.NineZoneManager.getZonesManager().handleWidgetResize({ zoneId, resizeBy, handle, filledHeightDiff }, prevState.nineZone.zones);
@@ -394,6 +395,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     if (this._isMounted)
       this.setState((prevState) => {
         const nineZone = FrontstageManager.NineZoneManager.handleWidgetTabClick(widgetId, tabIndex, prevState.nineZone);
+        // istanbul ignore next
         if (nineZone === prevState.nineZone)
           return null;
         return {

@@ -8,13 +8,10 @@ import {
   ClipPlaneContainment,
   ClipUtilities,
   ClipVector,
-  InverseMatrixState,
-  Matrix4d,
   Point2d,
   Point3d,
   Range3d,
   Transform,
-  Vector3d,
   XAndY,
 } from "@bentley/geometry-core";
 import {
@@ -22,7 +19,6 @@ import {
   IDisposable,
   Id64,
   Id64String,
-  StopWatch,
   assert,
   dispose,
   disposeArray,
@@ -39,7 +35,6 @@ import {
   RenderMemory,
   RenderPlan,
   RenderPlanarClassifier,
-  RenderSystem,
   RenderTarget,
   RenderTargetDebugControl,
   RenderTextureDrape,
@@ -50,7 +45,6 @@ import {
   AnalysisStyle,
   ColorDef,
   Frustum,
-  Hilite,
   ImageBuffer,
   ImageBufferFormat,
   Npc,
@@ -65,12 +59,13 @@ import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
 import { System } from "./System";
-import { BranchStack, BranchState, BatchState } from "./BranchState";
+import { BranchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch, WorldDecorations, FeatureOverrides, Batch } from "./Graphic";
+import { Branch, WorldDecorations, Batch } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
-import { ViewRect } from "../../Viewport";
-import { RenderCommands, DrawParams, ShaderProgramParams } from "./DrawCommand";
+import { ViewRect } from "../../ViewRect";
+import { DrawParams, ShaderProgramParams } from "./DrawCommand";
+import { RenderCommands } from "./RenderCommands";
 import { ColorInfo } from "./ColorInfo";
 import { RenderPass } from "./RenderFlags";
 import { RenderState } from "./RenderState";
@@ -83,75 +78,14 @@ import { TextureDrape } from "./TextureDrape";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
-import { FloatRgba } from "./FloatRGBA";
 import { SolarShadowMap } from "./SolarShadowMap";
 import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer } from "../../ImageUtil";
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
-import { GLTimerResultCallback } from "./../System";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 import { cssPixelsToDevicePixels, queryDevicePixelRatio } from "../DevicePixelRatio";
-
-// tslint:disable:no-const-enum
-
-/** @internal */
-export const enum FrustumUniformType {
-  TwoDee,
-  Orthographic,
-  Perspective,
-}
-
-const enum Plane {
-  kTop,
-  kBottom,
-  kLeft,
-  kRight,
-}
-
-const enum FrustumData {
-  kNear,
-  kFar,
-  kType,
-}
-
-/** Represents the frustum for use in glsl as a pair of uniforms.
- * @internal
- */
-export class FrustumUniforms {
-  private readonly _planeData: Float32Array = new Float32Array(4);
-  private readonly _frustumData: Float32Array = new Float32Array(3);
-  private readonly _logZData = new Float32Array(2);
-  private _useLogZ = false;
-
-  public constructor() { }
-
-  public get frustumPlanes(): Float32Array { return this._planeData; }  // uniform vec4 u_frustumPlanes; // { top, bottom, left, right }
-  public get frustum(): Float32Array { return this._frustumData; } // uniform vec3 u_frustum; // { near, far, type }
-  public get nearPlane(): number { return this._frustumData[FrustumData.kNear]; }
-  public get farPlane(): number { return this._frustumData[FrustumData.kFar]; }
-  public get type(): FrustumUniformType { return this.frustum[FrustumData.kType] as FrustumUniformType; }
-  public get is2d(): boolean { return FrustumUniformType.TwoDee === this.type; }
-
-  // uniform vec2 u_logZ where x = 1/near and y = log(far/near)
-  public get logZ(): Float32Array | undefined { return this._useLogZ ? this._logZData : undefined; }
-
-  public setPlanes(top: number, bottom: number, left: number, right: number): void {
-    this._planeData[Plane.kTop] = top;
-    this._planeData[Plane.kBottom] = bottom;
-    this._planeData[Plane.kLeft] = left;
-    this._planeData[Plane.kRight] = right;
-  }
-  public setFrustum(nearPlane: number, farPlane: number, type: FrustumUniformType, useLogZ: boolean): void {
-    this._frustumData[FrustumData.kNear] = nearPlane;
-    this._frustumData[FrustumData.kFar] = farPlane;
-    this._frustumData[FrustumData.kType] = type as number;
-    this._useLogZ = useLogZ && (FrustumUniformType.Perspective === type);
-    if (this._useLogZ) {
-      this._logZData[0] = 0 !== nearPlane ? 1 / nearPlane : 0;
-      this._logZData[1] = 0 !== nearPlane ? Math.log(farPlane / nearPlane) : 1;
-    }
-  }
-}
+import { TargetUniforms } from "./TargetUniforms";
+import { PerformanceMetrics } from "./PerformanceMetrics";
 
 /** Interface for 3d GPU clipping.
  * @internal
@@ -184,84 +118,6 @@ export class Clips {
   }
 }
 
-interface AllTimePoints {
-  begin: BeTimePoint;
-  end: BeTimePoint;
-  name: string;
-}
-
-/** @internal */
-export class PerformanceMetrics {
-  private _beginTimePoints: BeTimePoint[] = []; // stack of time points
-  private _operationNames: string[] = []; // stack of operation names
-  private _allTimePoints1: AllTimePoints[] = []; // queue 1 of data needed to make frameTimings; use 2 copies for double buffering
-  private _allTimePoints2: AllTimePoints[] = []; // queue 2 of data needed to make frameTimings; use 2 copies for double buffering
-  private _updateallTimePoints1 = true; // determine which buffer to use for the frame timings; used for double buffering the frame timings
-  public frameTimings = new Map<string, number>();
-  public gatherGlFinish = false;
-  public gatherCurPerformanceMetrics = false;
-  public curSpfTimeIndex = 0;
-  public spfTimes: number[] = [];
-  public spfSum: number = 0;
-  public renderSpfTimes: number[] = [];
-  public renderSpfSum: number = 0;
-  public loadTileTimes: number[] = [];
-  public loadTileSum: number = 0;
-  public fpsTimer: StopWatch = new StopWatch(undefined, true);
-  public fpsTimerStart: number = 0;
-
-  public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false, gpuResults?: GLTimerResultCallback) {
-    this.gatherGlFinish = gatherGlFinish;
-    this.gatherCurPerformanceMetrics = gatherCurPerformanceMetrics;
-    if (gpuResults) System.instance.debugControl.resultsCallback = gpuResults;
-  }
-
-  public beginFrame(sceneTime: number = 0) {
-    this._beginTimePoints = [];
-    this._operationNames = [];
-    this.frameTimings = new Map<string, number>();
-    this.frameTimings.set("Scene Time", sceneTime);
-    this._operationNames.push("Total Time");
-    this._operationNames.push("CPU Total Time");
-    const now = BeTimePoint.now();
-    this._beginTimePoints.push(now); // this first time point used to calculate total time at the end
-    this._beginTimePoints.push(now); // this second time point used to calculate total cpu time at the end
-  }
-
-  public beginOperation(operationName: string) {
-    this._operationNames.push(operationName);
-    this._beginTimePoints.push(BeTimePoint.now());
-  }
-
-  public endOperation() {
-    const endTimePoint = BeTimePoint.now();
-    const beginTimePoint = this._beginTimePoints.length > 0 ? this._beginTimePoints.pop()! : endTimePoint;
-    const operationName = this._operationNames.pop();
-    if (operationName) { // Add data to queue now, calculate time later; helps eliminate time spent timing things in 'Total Time'
-      if (this._updateallTimePoints1) // Push to currently active allTimePoints buffer
-        this._allTimePoints1.push({ begin: beginTimePoint, end: endTimePoint, name: operationName });
-      else
-        this._allTimePoints2.push({ begin: beginTimePoint, end: endTimePoint, name: operationName });
-    }
-  }
-
-  public endFrame() {
-    this.endOperation();
-
-    // Use double buffering here to ensure that we grab a COMPLETE set of timings from a SINGLE run when grabbing timing data while continuously rendering
-    this._updateallTimePoints1 = !this._updateallTimePoints1; // Switch to other allTimePoints buffer
-    if (this._updateallTimePoints1) { // Get data from the old buffer that was just completed
-      this._allTimePoints2.forEach((record: AllTimePoints) => { this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds); });
-      this._allTimePoints2 = []; // Reset to empty
-    } else {
-      this._allTimePoints1.forEach((record: AllTimePoints) => { this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds); });
-      this._allTimePoints1 = []; // Reset to empty
-    }
-    this._beginTimePoints = []; // This should be back to [] at this point
-    this._operationNames = []; // This should be back to [] at this point
-  }
-}
-
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
   image.data[i0] = image.data[i1];
@@ -290,10 +146,8 @@ class EmptyHiliteSet {
 }
 
 /** @internal */
-export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGlDisposable {
+export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
   protected _decorations?: Decorations;
-  private _stack = new BranchStack();
-  private _batchState = new BatchState(this._stack);
   private _scene: GraphicList = [];
   private _backgroundMap: GraphicList = [];
   private _overlayGraphics: GraphicList = [];
@@ -318,28 +172,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   protected _dcAssigned: boolean = false;
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
-  public readonly frustumUniforms = new FrustumUniforms();
-  public readonly bgColor = FloatRgba.fromColorDef(ColorDef.red);
-  public readonly monoColor = FloatRgba.fromColorDef(ColorDef.white);
-  public hiliteSettings = new Hilite.Settings();
-  public hiliteColor = FloatRgba.fromColorDef(this.hiliteSettings.color);
-  public emphasisSettings = new Hilite.Settings();
-  public emphasisColor = FloatRgba.fromColorDef(this.emphasisSettings.color);
-  public readonly planFrustum = new Frustum();
+  public readonly uniforms = new TargetUniforms(this);
   public readonly renderRect = new ViewRect();
-  private _planFraction: number = 0;
-  public readonly nearPlaneCenter = new Point3d();
-  public readonly viewMatrix = Transform.createIdentity();
-  public readonly projectionMatrix = Matrix4d.createIdentity();
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
   private readonly _hiddenEdgeOverrides = new EdgeOverrides();
   public analysisStyle?: AnalysisStyle;
   public analysisTexture?: RenderTexture;
-  private _currentOverrides?: FeatureOverrides;
   public ambientOcclusionSettings = AmbientOcclusion.Settings.defaults;
   private _wantAmbientOcclusion = false;
   private _batches: Batch[] = [];
-  public plan?: RenderPlan;
+  public plan = RenderPlan.createEmpty();
   private _animationBranches?: AnimationBranchStates;
   private _isReadPixelsInProgress = false;
   private _readPixelsSelector = Pixel.Selector.None;
@@ -365,7 +207,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   protected constructor(rect?: ViewRect) {
     super();
-    this._renderCommands = new RenderCommands(this, this._stack, this._batchState);
+    this._renderCommands = this.uniforms.branch.createRenderCommands(this.uniforms.batch.state);
     this._overlayRenderState = new RenderState();
     this._overlayRenderState.flags.depthMask = false;
     this._overlayRenderState.flags.blend = true;
@@ -378,19 +220,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
   public get readPixelsSelector(): Pixel.Selector { return this._readPixelsSelector; }
   public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
-  public get wantLogZ(): boolean { return undefined !== this.frustumUniforms.logZ; }
-
-  public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
-  public set currentOverrides(ovr: FeatureOverrides | undefined) {
-    // Don't bother setting up overrides if they don't actually override anything - wastes time doing texture lookups in shaders.
-    if (undefined !== ovr && ovr.anyOverridden)
-      this._currentOverrides = ovr;
-    else
-      this._currentOverrides = undefined;
-  }
+  public get wantLogZ(): boolean { return undefined !== this.uniforms.frustum.logZ; }
 
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
-  public get techniques(): Techniques { return System.instance.techniques!; }
+  public get techniques(): Techniques { return this.renderSystem.techniques!; }
 
   public get hilites(): Hilites { return this._hilites; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
@@ -408,7 +241,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
   public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
-  public get branchStack(): BranchStack { return this._stack; }
   public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
   public get isDrawingShadowMap(): boolean { return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing; }
   public getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
@@ -439,14 +271,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this._worldDecorations;
   }
 
-  public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
-  public get currentTransform(): Transform { return this._stack.top.transform; }
+  public get currentViewFlags(): ViewFlags { return this.uniforms.branch.top.viewFlags; }
+  public get currentTransform(): Transform { return this.uniforms.branch.top.transform; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
-  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
-  public get currentPlanarClassifier(): PlanarClassifier | undefined { return this._stack.top.planarClassifier; }
+  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.uniforms.branch.top.symbologyOverrides; }
+  public get currentPlanarClassifier(): PlanarClassifier | undefined { return this.uniforms.branch.top.planarClassifier; }
   public get currentlyDrawingClassifier(): PlanarClassifier | undefined { return this._currentlyDrawingClassifier; }
   public get currentTextureDrape(): TextureDrape | undefined {
-    const drape = this._stack.top.textureDrape;
+    const drape = this.uniforms.branch.top.textureDrape;
     return undefined !== drape && drape.isReady ? drape : undefined;
   }
   public get currentPlanarClassifierOrDrape(): PlanarClassifier | TextureDrape | undefined {
@@ -462,7 +294,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     else
       return new ClipDef();
   }
-  public get hasClipVolume(): boolean { return this.clips.isValid && this._stack.top.showClipVolume; }
+  public get hasClipVolume(): boolean { return this.clips.isValid && this.uniforms.branch.top.showClipVolume; }
   public get hasClipMask(): boolean { return undefined !== this.clipMask; }
   public get clipMask(): TextureHandle | undefined { return this._clipMask; }
   public set clipMask(mask: TextureHandle | undefined) {
@@ -471,7 +303,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._clipMask = mask;
   }
 
-  public get is2d(): boolean { return this.frustumUniforms.is2d; }
+  public get is2d(): boolean { return this.uniforms.frustum.is2d; }
   public get is3d(): boolean { return !this.is2d; }
 
   private _isDisposed = false;
@@ -498,22 +330,22 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public pushBranch(exec: ShaderProgramExecutor, branch: Branch): void {
-    this._stack.pushBranch(branch);
-    const clip = this._stack.top.clipVolume;
+    this.uniforms.branch.pushBranch(branch);
+    const clip = this.uniforms.branch.top.clipVolume;
     if (undefined !== clip)
       clip.pushToShaderExecutor(exec);
   }
   public pushState(state: BranchState) {
     assert(undefined === state.clipVolume);
-    this._stack.pushState(state);
+    this.uniforms.branch.pushState(state);
 
   }
   public popBranch(): void {
-    const clip = this._stack.top.clipVolume;
+    const clip = this.uniforms.branch.top.clipVolume;
     if (undefined !== clip)
       clip.pop(this);
 
-    this._stack.pop();
+    this.uniforms.branch.pop();
   }
 
   public pushActiveVolume(): void {
@@ -536,7 +368,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // ###TODO: We may want to compare differing ClipVectors to determine if they are logically equivalent to avoid reallocating clip volume.
     if (undefined === this._activeClipVolume || this._activeClipVolume.clipVector !== clip) {
       this._activeClipVolume = dispose(this._activeClipVolume);
-      this._activeClipVolume = System.instance.createClipVolume(clip) as ClipVolume;
+      this._activeClipVolume = this.renderSystem.createClipVolume(clip) as ClipVolume;
     }
   }
 
@@ -560,7 +392,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
-    if (undefined === this._activeClipVolume || !this._stack.top.showClipVolume || !this.clips.isValid)
+    if (undefined === this._activeClipVolume || !this.uniforms.branch.top.showClipVolume || !this.clips.isValid)
       return false;
 
     range = this.currentTransform.multiplyRange(range, range);
@@ -580,22 +412,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private readonly _scratchRange = new Range3d();
   /** @internal */
   public isGeometryOutsideActiveVolume(geom: CachedGeometry): boolean {
-    if (undefined === this._activeClipVolume || !this._stack.top.showClipVolume || !this.clips.isValid)
+    if (undefined === this._activeClipVolume || !this.uniforms.branch.top.showClipVolume || !this.clips.isValid)
       return false;
 
     const range = geom.computeRange(this._scratchRange);
     return this.isRangeOutsideActiveVolume(range);
   }
 
-  public get batchState(): BatchState { return this._batchState; }
-  public get currentBatchId(): number { return this._batchState.currentBatchId; }
   public pushBatch(batch: Batch) {
-    this._batchState.push(batch, false);
-    this.currentOverrides = batch.getOverrides(this);
+    this.uniforms.batch.setCurrentBatch(batch);
   }
   public popBatch() {
-    this.currentOverrides = undefined;
-    this._batchState.pop();
+    this.uniforms.batch.setCurrentBatch(undefined);
   }
 
   public addBatch(batch: Batch) {
@@ -619,11 +447,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   // ---- Implementation of RenderTarget interface ---- //
 
-  public get renderSystem(): RenderSystem { return System.instance; }
-  public get cameraFrustumNearScaleLimit() {
-    return 0; // ###TODO
-  }
-  public get planFraction() { return this._planFraction; }
+  public get renderSystem(): System { return System.instance; }
+
+  public get planFraction() { return this.uniforms.frustum.planFraction; }
+  public get planFrustum() { return this.uniforms.frustum.planFrustum; }
 
   public changeDecorations(decs: Decorations): void {
     dispose(this._decorations);
@@ -675,7 +502,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._dynamics = dynamics;
   }
   public overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void {
-    this._stack.setSymbologyOverrides(ovr);
+    this.uniforms.branch.overrideFeatureSymbology(ovr);
   }
   public setHiliteSet(hilite: HiliteSet): void {
     this._hilites = hilite;
@@ -690,90 +517,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this._flashIntensity = intensity;
   }
-  private static _scratch = {
-    viewFlags: new ViewFlags(),
-    nearCenter: new Point3d(),
-    viewX: new Vector3d(),
-    viewY: new Vector3d(),
-    viewZ: new Vector3d(),
-    vec3: new Vector3d(),
-    point3: new Point3d(),
-    //  visibleEdges: new HiddenLine.Style({}),
-    // hiddenEdges: new HiddenLine.Style({ ovrColor: false, color: new ColorDef(ColorByName.white), width: 1, pattern: LinePixels.HiddenLine }),
-    animationDisplay: undefined,
-  };
 
   public changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void {
-    newFrustum.clone(this.planFrustum);
-
-    const farLowerLeft = newFrustum.getCorner(Npc.LeftBottomRear);
-    const farLowerRight = newFrustum.getCorner(Npc.RightBottomRear);
-    const farUpperLeft = newFrustum.getCorner(Npc.LeftTopRear);
-    const farUpperRight = newFrustum.getCorner(Npc.RightTopRear);
-    const nearLowerLeft = newFrustum.getCorner(Npc.LeftBottomFront);
-    const nearLowerRight = newFrustum.getCorner(Npc.RightBottomFront);
-    const nearUpperLeft = newFrustum.getCorner(Npc.LeftTopFront);
-    const nearUpperRight = newFrustum.getCorner(Npc.RightTopFront);
-
-    const scratch = Target._scratch;
-    const nearCenter = nearLowerLeft.interpolate(0.5, nearUpperRight, scratch.nearCenter);
-
-    const viewX = normalizedDifference(nearLowerRight, nearLowerLeft, scratch.viewX);
-    const viewY = normalizedDifference(nearUpperLeft, nearLowerLeft, scratch.viewY);
-    const viewZ = viewX.crossProduct(viewY, scratch.viewZ).normalize()!;
-
-    this._planFraction = newFraction;
-
-    if (!is3d) {
-      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
-      const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
-      const depth = 2 * RenderTarget.frustumDepth2d;
-
-      this.nearPlaneCenter.set(nearCenter.x, nearCenter.y, RenderTarget.frustumDepth2d);
-
-      lookIn(this.nearPlaneCenter, viewX, viewY, viewZ, this.viewMatrix);
-      ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
-
-      this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.TwoDee, false);
-    } else if (newFraction > 0.999) { // ortho
-      const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, scratch.vec3).magnitude() * 0.5;
-      const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
-      const depth = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3).magnitude();
-
-      lookIn(nearCenter, viewX, viewY, viewZ, this.viewMatrix);
-      ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, 0, depth, this.projectionMatrix);
-
-      this.nearPlaneCenter.setFrom(nearLowerLeft);
-      this.nearPlaneCenter.interpolate(0.5, nearUpperRight, this.nearPlaneCenter);
-
-      this.frustumUniforms.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
-      this.frustumUniforms.setFrustum(0, depth, FrustumUniformType.Orthographic, false);
-    } else { // perspective
-      const scale = 1.0 / (1.0 - newFraction);
-      const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratch.vec3);
-      const cameraPosition = fromSumOf(farLowerLeft, zVec, scale, scratch.point3);
-
-      const frustumLeft = dotDifference(farLowerLeft, cameraPosition, viewX) * newFraction;
-      const frustumRight = dotDifference(farLowerRight, cameraPosition, viewX) * newFraction;
-      const frustumBottom = dotDifference(farLowerLeft, cameraPosition, viewY) * newFraction;
-      const frustumTop = dotDifference(farUpperLeft, cameraPosition, viewY) * newFraction;
-      const frustumFront = -dotDifference(nearLowerLeft, cameraPosition, viewZ);
-      const frustumBack = -dotDifference(farLowerLeft, cameraPosition, viewZ);
-
-      lookIn(cameraPosition, viewX, viewY, viewZ, this.viewMatrix);
-      frustum(frustumLeft, frustumRight, frustumBottom, frustumTop, frustumFront, frustumBack, this.projectionMatrix);
-
-      this.nearPlaneCenter.setFrom(nearLowerLeft);
-      this.nearPlaneCenter.interpolate(0.5, nearUpperRight, this.nearPlaneCenter);
-
-      this.frustumUniforms.setPlanes(frustumTop, frustumBottom, frustumLeft, frustumRight);
-      this.frustumUniforms.setFrustum(frustumFront, frustumBack, FrustumUniformType.Perspective, this.useLogZ);
-    }
-
-    this.viewMatrix.matrix.inverseState = InverseMatrixState.unknown;
+    this.uniforms.frustum.changeFrustum(newFrustum, newFraction, is3d);
   }
 
+  private readonly _scratchViewFlags = new ViewFlags();
   public changeRenderPlan(plan: RenderPlan): void {
     this.plan = plan;
 
@@ -792,12 +541,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
     }
 
-    this.bgColor.setColorDef(plan.bgColor);
-    this.monoColor.setColorDef(plan.monoColor);
-    this.hiliteSettings = plan.hiliteSettings;
-    this.hiliteColor.setColorDef(this.hiliteSettings.color);
-    this.emphasisSettings = plan.emphasisSettings;
-    this.emphasisColor.setColorDef(this.emphasisSettings.color);
+    this.uniforms.style.update(plan);
+    this.uniforms.hilite.update(plan.hiliteSettings, plan.emphasisSettings);
     this.isFadeOutActive = plan.isFadeOutActive;
     this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
     this.analysisTexture = plan.analysisTexture;
@@ -814,11 +559,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.updateActiveVolume(plan.activeVolume);
 
-    const scratch = Target._scratch;
     let visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible : undefined;
     let hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden : undefined;
 
-    const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
+    const vf = ViewFlags.createFrom(plan.viewFlags, this._scratchViewFlags);
     if (!plan.is3d)
       vf.renderMode = RenderMode.Wireframe;
 
@@ -866,20 +610,20 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);
     this._hiddenEdgeOverrides.init(forceEdgesOpaque, hidEdgeOvrs);
 
-    this._stack.setViewFlags(vf);
+    this.uniforms.branch.changeViewFlags(vf);
 
     this.changeFrustum(plan.frustum, plan.fraction, plan.is3d);
   }
 
   public drawFrame(sceneMilSecElapsed?: number): void {
-    assert(System.instance.frameBufferStack.isEmpty);
+    assert(this.renderSystem.frameBufferStack.isEmpty);
     if (undefined === this._scene) {
       return;
     }
 
     this.paintScene(sceneMilSecElapsed);
     this.drawOverlayDecorations();
-    assert(System.instance.frameBufferStack.isEmpty);
+    assert(this.renderSystem.frameBufferStack.isEmpty);
   }
 
   protected drawOverlayDecorations(): void { }
@@ -958,66 +702,33 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public beginPerfMetricFrame(sceneMilSecElapsed?: number) {
-    if (System.instance.isGLTimerSupported)
-      System.instance.glTimer.beginFrame();
+    if (this.renderSystem.isGLTimerSupported)
+      this.renderSystem.glTimer.beginFrame();
     if (this.performanceMetrics)
       this.performanceMetrics.beginFrame(sceneMilSecElapsed);
   }
 
-  public endPerfMetricFrame(sceneMilSecElapsed?: number) {
-    if (System.instance.isGLTimerSupported)
-      System.instance.glTimer.endFrame();
+  public endPerfMetricFrame() {
+    if (this.renderSystem.isGLTimerSupported)
+      this.renderSystem.glTimer.endFrame();
 
-    if (this.performanceMetrics) {
-      this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
-      if (this.performanceMetrics.gatherCurPerformanceMetrics) {
-        const perfMet = this.performanceMetrics;
-        const fpsTimerElapsed = perfMet.fpsTimer.currentSeconds - perfMet.fpsTimerStart;
-        if (perfMet.spfTimes[perfMet.curSpfTimeIndex]) perfMet.spfSum -= perfMet.spfTimes[perfMet.curSpfTimeIndex];
-        perfMet.spfSum += fpsTimerElapsed;
-        perfMet.spfTimes[perfMet.curSpfTimeIndex] = fpsTimerElapsed;
+    if (undefined === this.performanceMetrics)
+      return;
 
-        let renderTimeElapsed = 0;
-        perfMet.frameTimings.forEach((val) => {
-          renderTimeElapsed += val;
-        });
-        if (perfMet.renderSpfTimes[perfMet.curSpfTimeIndex]) perfMet.renderSpfSum -= perfMet.renderSpfTimes[perfMet.curSpfTimeIndex];
-        perfMet.renderSpfSum += renderTimeElapsed;
-        perfMet.renderSpfTimes[perfMet.curSpfTimeIndex] = renderTimeElapsed;
-
-        if (sceneMilSecElapsed !== undefined) {
-          if (perfMet.loadTileTimes[perfMet.curSpfTimeIndex]) perfMet.loadTileSum -= perfMet.loadTileTimes[perfMet.curSpfTimeIndex];
-          perfMet.loadTileSum += sceneMilSecElapsed;
-          perfMet.loadTileTimes[perfMet.curSpfTimeIndex] = sceneMilSecElapsed;
-        }
-        perfMet.curSpfTimeIndex++;
-        if (perfMet.curSpfTimeIndex >= 50) perfMet.curSpfTimeIndex = 0;
-        perfMet.fpsTimerStart = perfMet.fpsTimer.currentSeconds;
-      }
-      if (this.performanceMetrics.gatherGlFinish && !System.instance.isGLTimerSupported) {
-        this.performanceMetrics.beginOperation("Finish GPU Queue");
-        // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
-        const bytes = new Uint8Array(4);
-        const gl = System.instance.context;
-        System.instance.frameBufferStack.execute(this._fbo!, true, () => {
-          gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
-        });
-        this.performanceMetrics.endOperation();
-      }
-      this.performanceMetrics.endFrame();
-    }
+    this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
+    this.performanceMetrics.completeFrameTimings(this._fbo!);
   }
 
   public beginPerfMetricRecord(operation: string): void {
-    if (System.instance.isGLTimerSupported)
-      System.instance.glTimer.beginOperation(operation);
+    if (this.renderSystem.isGLTimerSupported)
+      this.renderSystem.glTimer.beginOperation(operation);
     if (this.performanceMetrics)
       this.performanceMetrics.beginOperation(operation);
   }
 
   public endPerfMetricRecord(): void {
-    if (System.instance.isGLTimerSupported)
-      System.instance.glTimer.endOperation();
+    if (this.renderSystem.isGLTimerSupported)
+      this.renderSystem.glTimer.endOperation();
     if (this.performanceMetrics)
       this.performanceMetrics.endOperation();
   }
@@ -1032,7 +743,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._beginPaint();
     this.endPerfMetricRecord();
 
-    const gl = System.instance.context;
+    const gl = this.renderSystem.context;
     const rect = this.viewRect;
     gl.viewport(0, 0, rect.width, rect.height);
 
@@ -1042,14 +753,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._readPixelsSelector = Pixel.Selector.Feature;
 
       const vf = this.getViewFlagsForReadPixels();
-      const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
+      const state = BranchState.create(this.uniforms.branch.top.symbologyOverrides, vf);
       this.pushState(state);
 
       this.beginPerfMetricRecord("Init Commands");
       this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
       this.endPerfMetricRecord();
+
       this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
-      this._stack.pop();
+      this.uniforms.branch.pop();
 
       this._isReadPixelsInProgress = false;
     } else {
@@ -1058,6 +770,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       // SceneCompositor.draw() checks this, but solar shadow maps, planar classifiers, and texture drapes try to draw
       // before then. So do it now.
       this.compositor.preDraw();
+
       this.beginPerfMetricRecord("Planar Classifiers");
       this.drawPlanarClassifiers();
       this.endPerfMetricRecord();
@@ -1077,7 +790,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
       this.beginPerfMetricRecord("Overlay Draws");
-      this._stack.pushState(this.decorationState);
+      this.uniforms.branch.pushState(this.decorationState);
 
       this.beginPerfMetricRecord("World Overlays");
       this.drawPass(RenderPass.WorldOverlay);
@@ -1086,22 +799,23 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.beginPerfMetricRecord("View Overlays");
       this.drawPass(RenderPass.ViewOverlay);
       this.endPerfMetricRecord();
-      this._stack.pop();
 
+      this.uniforms.branch.pop();
       this.endPerfMetricRecord(); // End "Overlay Draws"
     }
 
     // Reset the batch IDs in all batches drawn for this call.
-    this._batchState.reset();
+    this.uniforms.batch.resetBatchState();
 
     this.beginPerfMetricRecord("End Paint");
     this._endPaint();
     this.endPerfMetricRecord();
-    this.endPerfMetricFrame(sceneMilSecElapsed);
+
+    this.endPerfMetricFrame();
   }
 
   private drawPass(pass: RenderPass): void {
-    System.instance.applyRenderState(this.getRenderState(pass));
+    this.renderSystem.applyRenderState(this.getRenderState(pass));
     this.techniques.execute(this, this._renderCommands.getCommands(pass), pass);
   }
 
@@ -1114,6 +828,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private assignDC(): boolean {
     if (!this._dcAssigned) {
       this._dcAssigned = this._assignDC();
+      const rect = this.viewRect;
+      this.uniforms.viewRect.update(rect.width, rect.height);
     }
 
     assert(this._dcAssigned);
@@ -1140,7 +856,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     let result: Pixel.Buffer | undefined;
     const fbo = FrameBuffer.create([texture]);
     if (undefined !== fbo) {
-      System.instance.frameBufferStack.execute(fbo, true, () => {
+      this.renderSystem.frameBufferStack.execute(fbo, true, () => {
         this._drawNonLocatable = !excludeNonLocatable;
         result = this.readPixelsFromFbo(rect, selector);
         this._drawNonLocatable = true;
@@ -1154,7 +870,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     receiver(result);
 
     // Reset the batch IDs in all batches drawn for this call.
-    this._batchState.reset();
+    this.uniforms.batch.resetBatchState();
   }
 
   private getViewFlagsForReadPixels(): ViewFlags {
@@ -1173,16 +889,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private readonly _scratchTmpFrustum = new Frustum();
   private readonly _scratchRectFrustum = new Frustum();
-  private readonly _scratchViewFlags = new ViewFlags();
   private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
     this.beginPerfMetricRecord("Init Commands");
+
     this._isReadPixelsInProgress = true;
     this._readPixelsSelector = selector;
 
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
     const vf = this.getViewFlagsForReadPixels();
-    const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
+    const state = BranchState.create(this.uniforms.branch.top.symbologyOverrides, vf);
     this.pushState(state);
 
     // Create a culling frustum based on the input rect.
@@ -1214,7 +930,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
 
     // If a clip has been applied to the view, trivially do nothing if aperture does not intersect
-    if (undefined !== this._activeClipVolume && this._stack.top.showClipVolume && this.clips.isValid)
+    if (undefined !== this._activeClipVolume && this.uniforms.branch.top.showClipVolume && this.clips.isValid)
       if (ClipPlaneContainment.StronglyOutside === this._activeClipVolume.clipVector.classifyPointContainment(rectFrust.points))
         return undefined;
 
@@ -1223,18 +939,20 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._renderCommands.setCheckRange(rectFrust);
     this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
     this._renderCommands.clearCheckRange();
+
     this.endPerfMetricRecord(); // End "Init Commands"
 
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
+
     if (this.performanceMetrics) {
       this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
-      if (this.performanceMetrics.gatherGlFinish && !System.instance.isGLTimerSupported) {
+      if (this.performanceMetrics.gatherGlFinish && !this.renderSystem.isGLTimerSupported) {
         // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
         this.performanceMetrics.beginOperation("Finish GPU Queue");
-        const gl = System.instance.context;
+        const gl = this.renderSystem.context;
         const bytes = new Uint8Array(4);
-        System.instance.frameBufferStack.execute(this._fbo!, true, () => {
+        this.renderSystem.frameBufferStack.execute(this._fbo!, true, () => {
           gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
         });
         this.performanceMetrics.endOperation();
@@ -1242,14 +960,17 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     }
 
     // Restore the state
-    this._stack.pop();
+    this.uniforms.branch.pop();
 
     this.beginPerfMetricRecord("Read Pixels");
     const result = this.compositor.readPixels(rect, selector);
     this.endPerfMetricRecord();
-    if (System.instance.isGLTimerSupported)
-      System.instance.glTimer.endFrame();
-    if (this.performanceMetrics) this.performanceMetrics.endFrame();
+
+    if (this.renderSystem.isGLTimerSupported)
+      this.renderSystem.glTimer.endFrame();
+    if (this.performanceMetrics)
+      this.performanceMetrics.endFrame();
+
     this._isReadPixelsInProgress = false;
     return result;
   }
@@ -1259,9 +980,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     if (this._fbo === undefined)
       return false;
 
-    const context = System.instance.context;
+    const context = this.renderSystem.context;
     let didSucceed = true;
-    System.instance.frameBufferStack.execute(this._fbo, true, () => {
+    this.renderSystem.frameBufferStack.execute(this._fbo, true, () => {
       try {
         context.readPixels(x, y, w, h, context.RGBA, context.UNSIGNED_BYTE, out);
       } catch (e) {
@@ -1321,7 +1042,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       // They indicate this by supplying a background color with full transparency
       // Any other pixels are treated as fully-opaque as alpha has already been blended
       // ###TODO: This introduces a defect in that we are not preserving alpha of translucent pixels, and therefore the returned image cannot be blended
-      const preserveBGAlpha = 0.0 === this.bgColor.alpha;
+      const preserveBGAlpha = 0.0 === this.uniforms.style.backgroundAlpha;
 
       // Optimization for view attachments: if image consists entirely of background pixels, return an undefined
       let isEmptyImage = true;
@@ -1340,7 +1061,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         return undefined;
 
       const adjustedTargetSize = Target._applyAspectRatioCorrection(new Point2d(wantRect.width, wantRect.height), targetSize);
-      const resizedCanvas = canvasToResizedCanvasWithBars(canvas, adjustedTargetSize, new Point2d(targetSize.x - adjustedTargetSize.x, targetSize.y - adjustedTargetSize.y), this.bgColor.toColorDef().toHexString());
+      const resizedCanvas = canvasToResizedCanvasWithBars(canvas, adjustedTargetSize, new Point2d(targetSize.x - adjustedTargetSize.x, targetSize.y - adjustedTargetSize.y), this.uniforms.style.backgroundHexString);
 
       const resizedImage = canvasToImageBuffer(resizedCanvas);
       if (undefined !== resizedImage)
@@ -1457,7 +1178,7 @@ export class OnScreenTarget extends Target {
   public constructor(canvas: HTMLCanvasElement) {
     super();
     this._2dCanvas = new CanvasState(canvas);
-    this._webglCanvas = new CanvasState(System.instance.canvas);
+    this._webglCanvas = new CanvasState(this.renderSystem.canvas);
   }
 
   public get isDisposed(): boolean {
@@ -1522,7 +1243,7 @@ export class OnScreenTarget extends Target {
     assert(undefined !== this._fbo);
 
     // Render to our framebuffer
-    const system = System.instance;
+    const system = this.renderSystem;
     system.frameBufferStack.push(this._fbo!, true);
 
     const viewRect = this.viewRect;
@@ -1552,7 +1273,7 @@ export class OnScreenTarget extends Target {
     if (undefined === this._blitGeom)
       return;
 
-    const system = System.instance;
+    const system = this.renderSystem;
     const drawParams = this.getDrawParams(this, this._blitGeom);
 
     system.frameBufferStack.pop();
@@ -1673,67 +1394,16 @@ export class OffScreenTarget extends Target {
 
   protected _beginPaint(): void {
     assert(this._fbo !== undefined);
-    System.instance.frameBufferStack.push(this._fbo!, true);
+    this.renderSystem.frameBufferStack.push(this._fbo!, true);
   }
 
   protected _endPaint(): void {
-    System.instance.frameBufferStack.pop();
+    this.renderSystem.frameBufferStack.pop();
   }
 
   public readImageToCanvas(): HTMLCanvasElement {
     return this.copyImageToCanvas();
   }
-}
-
-function normalizedDifference(p0: Point3d, p1: Point3d, out?: Vector3d): Vector3d {
-  const result = undefined !== out ? out : new Vector3d();
-  result.x = p0.x - p1.x;
-  result.y = p0.y - p1.y;
-  result.z = p0.z - p1.z;
-  result.normalizeInPlace();
-  return result;
-}
-
-/** @internal */
-export function fromSumOf(p: Point3d, v: Vector3d, scale: number, out?: Point3d) {
-  const result = undefined !== out ? out : new Point3d();
-  result.x = p.x + v.x * scale;
-  result.y = p.y + v.y * scale;
-  result.z = p.z + v.z * scale;
-  return result;
-}
-
-function dotDifference(pt: Point3d, origin: Point3d, vec: Vector3d): number {
-  return (pt.x - origin.x) * vec.x + (pt.y - origin.y) * vec.y + (pt.z - origin.z) * vec.z;
-}
-
-function lookIn(eye: Point3d, viewX: Vector3d, viewY: Vector3d, viewZ: Vector3d, result: Transform) {
-  const rot = result.matrix.coffs;
-  rot[0] = viewX.x; rot[1] = viewX.y; rot[2] = viewX.z;
-  rot[3] = viewY.x; rot[4] = viewY.y; rot[5] = viewY.z;
-  rot[6] = viewZ.x; rot[7] = viewZ.y; rot[8] = viewZ.z;
-
-  result.origin.x = -viewX.dotProduct(eye);
-  result.origin.y = -viewY.dotProduct(eye);
-  result.origin.z = -viewZ.dotProduct(eye);
-}
-
-function ortho(left: number, right: number, bottom: number, top: number, near: number, far: number, result: Matrix4d) {
-  Matrix4d.createRowValues(
-    2.0 / (right - left), 0.0, 0.0, -(right + left) / (right - left),
-    0.0, 2.0 / (top - bottom), 0.0, -(top + bottom) / (top - bottom),
-    0.0, 0.0, -2.0 / (far - near), -(far + near) / (far - near),
-    0.0, 0.0, 0.0, 1.0,
-    result);
-}
-
-function frustum(left: number, right: number, bottom: number, top: number, near: number, far: number, result: Matrix4d) {
-  Matrix4d.createRowValues(
-    (2.0 * near) / (right - left), 0.0, (right + left) / (right - left), 0.0,
-    0.0, (2.0 * near) / (top - bottom), (top + bottom) / (top - bottom), 0.0,
-    0.0, 0.0, -(far + near) / (far - near), -(2.0 * far * near) / (far - near),
-    0.0, 0.0, -1.0, 0.0,
-    result);
 }
 
 function interpolatePoint(p0: Point3d, fraction: number, p1: Point3d, out: Point3d): Point3d {

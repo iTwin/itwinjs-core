@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, PolygonOps, Angle, Constant } from "@bentley/geometry-core";
-import { GeometryStreamProps, IModelError, Easing } from "@bentley/imodeljs-common";
+import { Point2d, Point3d, PolygonOps } from "@bentley/geometry-core";
+import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
 import { I18NNamespace, I18N } from "@bentley/imodeljs-i18n";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
@@ -14,75 +13,7 @@ import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { ScreenViewport, Viewport } from "../Viewport";
-
-/** Settings that control the behavior of built-in tools. Applications may modify these values.
- * @public
- */
-export class ToolSettings {
-  /** @deprecated */
-  public static get animationTime() { return ToolSettings.viewAnimate.time.normal; }
-  /** @deprecated */
-  public static set animationTime(val: BeDuration) { ToolSettings.viewAnimate.time.normal = val; }
-
-  /** @beta */
-  public static viewAnimate = {
-    easing: Easing.Cubic.InOut,
-    /** Duration of animations of viewing operations. */
-    time: {
-      fast: BeDuration.fromSeconds(.75),
-      normal: BeDuration.fromSeconds(1.5),
-      slow: BeDuration.fromSeconds(3.0),
-    },
-  };
-  /** Two tap must be within this period to be a double tap. */
-  public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
-  /** Two clicks must be within this period to be a double click. */
-  public static doubleClickTimeout = BeDuration.fromMilliseconds(500);
-  /** Number of screen inches of movement allowed between clicks to still qualify as a double-click.  */
-  public static doubleClickToleranceInches = 0.05;
-  /** If true, view rotation tool keeps the up vector (worldZ) aligned with screenY. */
-  public static preserveWorldUp = true;
-  /** Delay with a touch on the surface before a move operation begins. */
-  public static touchMoveDelay = BeDuration.fromMilliseconds(50);
-  /** Delay with the mouse down before a drag operation begins. */
-  public static startDragDelay = BeDuration.fromMilliseconds(110);
-  /** Distance in screen inches a touch point must move before being considered motion. */
-  public static touchMoveDistanceInches = 0.15;
-  /** Distance in screen inches the cursor must move before a drag operation begins. */
-  public static startDragDistanceInches = 0.15;
-  /** Distance in screen inches touch points must move apart to be considered a change in zoom scale. */
-  public static touchZoomChangeThresholdInches = 0.20;
-  /** Radius in screen inches to search for elements that anchor viewing operations. */
-  public static viewToolPickRadiusInches = 0.20;
-  /** Camera angle enforced for walk tool. */
-  public static walkCameraAngle = Angle.createDegrees(75.6);
-  /** Whether the walk tool enforces worldZ be aligned with screenY */
-  public static walkEnforceZUp = false;
-  /** Speed, in meters per second, for the walk tool. */
-  public static walkVelocity = 3.5;
-  /** Scale factor applied for wheel events with "per-line" modifier. */
-  public static wheelLineFactor = 40;
-  /** Scale factor applied for wheel events with "per-page" modifier. */
-  public static wheelPageFactor = 120;
-  /** When the zoom-with-wheel tool (with camera enabled) gets closer than this distance to an obstacle, it "bumps" through. */
-  public static wheelZoomBumpDistance = Constant.oneCentimeter;
-  /** the speed to scroll for the "scroll view" tool (distance per second). */
-  public static scrollSpeed = .75;
-  /** the speed to zoom for the "zoom view" tool. */
-  public static zoomSpeed = 10;
-  /** Scale factor for zooming with mouse wheel. */
-  public static wheelZoomRatio = 1.5;
-  /** Parameters for viewing operations with *inertia* (i.e. they continue briefly if used with a *throwing action*) */
-  public static viewingInertia = {
-    /** Flag to enable inertia. */
-    enabled: true,
-    /** How quickly the inertia decays. The smaller the damping value the faster the inertia decays. Must be less than 1.0 */
-    damping: .96,
-    /** Maximum duration of the inertia operation. Important when frame rates are low. */
-    duration: BeDuration.fromMilliseconds(500),
-  };
-}
+import { ScreenViewport } from "../Viewport";
 
 /** @public */
 export type ToolType = typeof Tool;
@@ -349,20 +280,24 @@ export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
  */
 export interface BeWheelEventProps extends BeButtonEventProps {
   wheelDelta?: number;
+  time?: number;
 }
 /** A BeButtonEvent generated by movement of a mouse wheel.
  * @note wheel events include mouse location.
  * @public
  */
 export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
-  public wheelDelta: number = 0;
+  public wheelDelta: number;
+  public time: number;
   public constructor(props?: BeWheelEventProps) {
     super(props);
-    if (props && props.wheelDelta !== undefined) this.wheelDelta = props.wheelDelta;
+    this.wheelDelta = (props && props.wheelDelta !== undefined) ? props.wheelDelta : 0;
+    this.time = (props && props.time) ? props.time : Date.now();
   }
   public setFrom(src: BeWheelEvent): this {
     super.setFrom(src);
     this.wheelDelta = src.wheelDelta;
+    this.time = src.time;
     return this;
   }
 }
@@ -645,7 +580,7 @@ export abstract class InteractiveTool extends Tool {
    */
   public async onTouchTap(_ev: BeTouchEvent): Promise<EventHandled> { return EventHandled.No; }
 
-  public isCompatibleViewport(_vp: Viewport, _isSelectedViewChange: boolean): boolean { return true; }
+  public isCompatibleViewport(_vp: ScreenViewport, _isSelectedViewChange: boolean): boolean { return true; }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; }
 
   /**
@@ -653,7 +588,7 @@ export abstract class InteractiveTool extends Tool {
    * @param previous The previously active view.
    * @param current The new active view.
    */
-  public onSelectedViewportChanged(_previous: Viewport | undefined, _current: Viewport | undefined): void { }
+  public onSelectedViewportChanged(_previous: ScreenViewport | undefined, _current: ScreenViewport | undefined): void { }
 
   /**
    * Invoked before the locate tooltip is displayed to retrieve the information about the located element. Allows the tool to override the toolTip.

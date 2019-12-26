@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ECSchema schemaName="Formats" alias="f" version="01.00.00" description="Standard Set of Format definitions" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="Units" version="01.00.00" alias="u"/>
+
+    <Format typeName="DefaultReal" displayLabel="real" type="decimal" precision="6" formatTraits="keepSingleZero|keepDecimalPoint"/>
+    <Format typeName="DefaultRealU" displayLabel="realu" type="decimal" precision="6" formatTraits="keepSingleZero|keepDecimalPoint|showUnitLabel"/>
+    <Format typeName="DefaultRealUNS" type="decimal" precision="6" uomSeparator="" formatTraits="keepSingleZero|keepDecimalPoint|showUnitLabel"/>
+
+    <Format typeName="Fractional" displayLabel="fract" type="fractional" precision="64" formatTraits="keepSingleZero|keepDecimalPoint"/>
+
+    <Format typeName="StationZ_100_2" type="station" precision="2" stationOffsetSize="2" minWidth="2" formatTraits="keepSingleZero|keepDecimalPoint|trailZeroes"/>
+    <Format typeName="StationZ_1000_3" type="station" precision="2" stationOffsetSize="3" minWidth="3" formatTraits="keepSingleZero|keepDecimalPoint|trailZeroes"/>
+
+    <Format typeName="AngleDMS" displayLabel="DegreesMinutesSeconds" type="decimal" precision="4" uomSeparator="" formatTraits="keepSingleZero|keepDecimalPoint|showUnitLabel">
+        <Composite spacer="">
+            <Unit label="&#176;">u:ARC_DEG</Unit>
+            <Unit label="'">u:ARC_MINUTE</Unit>
+            <Unit label="&quot;">u:ARC_SECOND</Unit>
+        </Composite>
+    </Format>
+
+    <Format typeName="AmerFI" displayLabel="FeetInches" type="fractional" precision="8" uomSeparator="" formatTraits="keepSingleZero|keepDecimalPoint|showUnitLabel">
+        <Composite spacer="">
+            <Unit label="'">u:FT</Unit>
+            <Unit label="&quot;">u:IN</Unit>
+        </Composite>
+    </Format>
+
+    <Format typeName="AmerI" displayLabel="Inches" type="fractional" precision="8" uomSeparator="" formatTraits="keepSingleZero|showUnitLabel">
+        <Composite spacer="">
+            <Unit label="&quot;">u:IN</Unit>
+        </Composite>
+    </Format>
+
+    <Format typeName="HMS" displayLabel="HoursMinutesSeconds" type="decimal" precision="2" formatTraits="keepSingleZero|keepDecimalPoint|showUnitLabel">
+        <Composite>
+            <Unit label="hour(s)">u:HR</Unit>
+            <Unit label="min">u:MIN</Unit>
+            <Unit label="sec">u:S</Unit>
+        </Composite>
+    </Format>
+</ECSchema>

@@ -129,6 +129,32 @@ export enum BriefcaseStatus {
     VersionNotFound = 131077
 }
 
+// @beta
+export class ByteStream {
+    constructor(buffer: ArrayBuffer | SharedArrayBuffer, subView?: {
+        byteOffset: number;
+        byteLength: number;
+    });
+    advance(numBytes: number): boolean;
+    readonly arrayBuffer: ArrayBuffer | SharedArrayBuffer;
+    curPos: number;
+    readonly isPastTheEnd: boolean;
+    readonly length: number;
+    nextBytes(numBytes: number): Uint8Array;
+    readonly nextFloat32: number;
+    readonly nextFloat64: number;
+    readonly nextId64: Id64String;
+    readonly nextInt32: number;
+    readonly nextUint16: number;
+    readonly nextUint32: number;
+    // (undocumented)
+    nextUint32s(numUint32s: number): Uint32Array;
+    readonly nextUint8: number;
+    readBytes(readPos: number, numBytes: number): Uint8Array;
+    reset(): void;
+    rewind(numBytes: number): boolean;
+    }
+
 // @public
 export enum ChangeSetApplyOption {
     Merge = 1,

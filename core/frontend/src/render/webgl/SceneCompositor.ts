@@ -22,21 +22,28 @@ import {
 import { Vector2d, Vector3d, Transform } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
-import { PackedFeatureTable, Pixel, GraphicList, RenderMemory } from "../System";
-import { ViewRect } from "../../Viewport";
+import { Pixel, GraphicList, RenderMemory } from "../System";
+import { ViewRect } from "../../ViewRect";
 import { IModelConnection } from "../../IModelConnection";
-import { assert, Id64, dispose } from "@bentley/bentleyjs-core";
+import { assert, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
-import { RenderCommands, DrawCommands, BatchPrimitiveCommand, DrawCommand } from "./DrawCommand";
+import {
+  DrawCommands,
+  extractFlashedVolumeClassifierCommands,
+  extractHilitedVolumeClassifierCommands,
+} from "./DrawCommand";
+import { RenderCommands } from "./RenderCommands";
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder, TextureUnit } from "./RenderFlags";
 import { BatchState, BranchState } from "./BranchState";
-import { Feature, ViewFlags, RenderMode, SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { Feature, ViewFlags, PackedFeatureTable, RenderMode, SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { FloatRgba } from "./FloatRGBA";
 import { Debug } from "./Diagnostics";
 import { getDrawParams } from "./ScratchDrawParams";
 import { SolarShadowMap } from "./SolarShadowMap";
 import { SceneContext } from "../../ViewContext";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
+import { Matrix4 } from "./Matrix";
 
 function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -44,7 +51,7 @@ function collectTextureStatistics(texture: TextureHandle | undefined, stats: Ren
 }
 
 // Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
-class Textures implements WebGlDisposable, RenderMemory.Consumer {
+class Textures implements WebGLDisposable, RenderMemory.Consumer {
   public accumulation?: TextureHandle;
   public revealage?: TextureHandle;
   public color?: TextureHandle;
@@ -160,7 +167,7 @@ class Textures implements WebGlDisposable, RenderMemory.Consumer {
 }
 
 // Maintains the framebuffers used by a SceneCompositor. The color attachments are supplied by a Textures object.
-class FrameBuffers implements WebGlDisposable {
+class FrameBuffers implements WebGLDisposable {
   public opaqueColor?: FrameBuffer;
   public opaqueAndCompositeColor?: FrameBuffer;
   public depthAndOrder?: FrameBuffer;
@@ -254,7 +261,7 @@ function collectGeometryStatistics(geom: CachedGeometry | undefined, stats: Rend
 }
 
 // Maintains the geometry used to execute screenspace operations for a SceneCompositor.
-class Geometry implements WebGlDisposable, RenderMemory.Consumer {
+class Geometry implements WebGLDisposable, RenderMemory.Consumer {
   public composite?: CompositeGeometry;
   public volClassColorStencil?: ViewportQuadGeometry;
   public volClassCopyZ?: SingleTexturedViewportQuadGeometry;
@@ -493,7 +500,7 @@ class PixelBuffer implements Pixel.Buffer {
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {
     this._rect = rect.clone();
     this._selector = selector;
-    this._batchState = compositor.target.batchState;
+    this._batchState = compositor.target.uniforms.batch.state;
 
     if (Pixel.Selector.None !== (selector & Pixel.Selector.GeometryAndDistance)) {
       const depthAndOrderBytes = compositor.readDepthAndOrder(rect);
@@ -524,9 +531,9 @@ class PixelBuffer implements Pixel.Buffer {
  * This base class exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
  * @internal
  */
-export abstract class SceneCompositor implements WebGlDisposable, RenderMemory.Consumer {
+export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.Consumer {
   public readonly target: Target;
-  public readonly solarShadowMap = new SolarShadowMap();
+  public readonly solarShadowMap: SolarShadowMap;
 
   public abstract get currentRenderTargetIndex(): number;
   public abstract set currentRenderTargetIndex(_index: number);
@@ -543,7 +550,10 @@ export abstract class SceneCompositor implements WebGlDisposable, RenderMemory.C
   public abstract get featureIds(): TextureHandle;
   public abstract get depthAndOrder(): TextureHandle;
 
-  protected constructor(target: Target) { this.target = target; }
+  protected constructor(target: Target) {
+    this.target = target;
+    this.solarShadowMap = new SolarShadowMap(target);
+  }
 
   public static create(target: Target): SceneCompositor {
     return System.instance.capabilities.supportsDrawBuffers ? new MRTCompositor(target) : new MPCompositor(target);
@@ -576,6 +586,7 @@ abstract class Compositor extends SceneCompositor {
   protected _vcAltDepthStencil?: DepthBuffer;
   protected _vcAltDepthStencilCopied: boolean = false;
   protected _haveVolumeClassifier: boolean = false;
+  protected readonly _viewProjectionMatrix = new Matrix4();
 
   public abstract get currentRenderTargetIndex(): number;
   public abstract set currentRenderTargetIndex(_index: number);
@@ -926,16 +937,12 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
-    this.target.changeFrustum(this.target.plan!.frustum, this.target.plan!.fraction, this.target.plan!.is3d);
-
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
       System.instance.applyRenderState(this.getRenderState(RenderPass.BackgroundMap));
       this.target.techniques.execute(this.target, cmds, RenderPass.BackgroundMap);
     });
-
-    this.target.changeFrustum(this.target.plan!.frustum, this.target.plan!.fraction, this.target.plan!.is3d);
   }
 
   private renderSkyBox(commands: RenderCommands, needComposite: boolean) {
@@ -956,9 +963,8 @@ abstract class Compositor extends SceneCompositor {
 
   private renderBackground(commands: RenderCommands, needComposite: boolean) {
     const cmds = commands.getCommands(RenderPass.Background);
-    if (0 === cmds.length) {
+    if (0 === cmds.length)
       return;
-    }
 
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
@@ -973,14 +979,14 @@ abstract class Compositor extends SceneCompositor {
   private createVolumeClassifierStates() {
     // If we have already created a branch state for use in rendering the volume classifiers we must at least swap out its symbology overrides for the current one.
     if (undefined !== this._vcBranchState) {
-      this._vcBranchState.symbologyOverrides = this.target.branchStack.top.symbologyOverrides;
+      this._vcBranchState.symbologyOverrides = this.target.uniforms.branch.top.symbologyOverrides;
       return;
     }
 
     // Create a BranchState and several RenderStates to use when drawing the classifier volumes.
     // The BranchState needs to be created every time in case the symbology overrides changes.
     // It is based off of the curent state, but turns off unnecessary and unwanted options, lighting being the most important.
-    const top = this.target.branchStack.top;
+    const top = this.target.uniforms.branch.top;
     const vf = ViewFlags.createFrom(top.viewFlags);
     vf.renderMode = RenderMode.SmoothShade;
     vf.lighting = false;
@@ -1076,42 +1082,6 @@ abstract class Compositor extends SceneCompositor {
     state.stencil.backOperation.zPass = op;
   }
 
-  private findFlashedVolumeClassifier(cmdsByIndex: DrawCommands): DrawCommands | undefined {
-    if (!Id64.isValid(this.target.flashedId))
-      return undefined; // nothing flashed
-    for (let i = 1; i < cmdsByIndex.length; i += 3) {
-      const command = cmdsByIndex[i];
-      if (command.isPrimitiveCommand) {
-        if (command instanceof BatchPrimitiveCommand) {
-          const batch = command as BatchPrimitiveCommand;
-          if (batch.computeIsFlashed(this.target.flashedId)) {
-            return cmdsByIndex.slice(i - 1, i + 2); // return array of this, the previous and next commands (push, primitive, pop)
-          }
-        }
-      }
-    }
-    return undefined; // couldn't find it
-  }
-
-  private findHilitedVolumeClassifiers(cmds: DrawCommands): DrawCommands {
-    // TODO: This could really be done at the time the HiliteClassification render pass commands are being generated
-    //       by just not putting the ones which are not hilited into the ClassificationHilite command list.
-    const selectedCmds: DrawCommand[] = [];
-    for (const command of cmds) {
-      if (command.isPrimitiveCommand) {
-        if (command instanceof BatchPrimitiveCommand) {
-          const batch = command as BatchPrimitiveCommand;
-          if (batch.computeIsHilited(this.target.hilites)) {
-            selectedCmds.push(command);
-          }
-        }
-      } else {
-        selectedCmds.push(command);
-      }
-    }
-    return selectedCmds;
-  }
-
   private renderIndexedVolumeClassifier(cmdsByIndex: DrawCommands, needComposite: boolean) {
     // Set the stencil for the given classifier stencil volume.
     System.instance.frameBufferStack.execute(this._frameBuffers.stencilSet!, false, () => {
@@ -1125,6 +1095,15 @@ abstract class Compositor extends SceneCompositor {
   }
 
   private renderVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
+    // We need to render the classifier stencil volumes one at a time,
+    // so draw them from the cmdsByIndex list which is organized as follows for each primitive:
+    // push branch
+    //  push batch
+    //    draw primitive
+    //  pop batch
+    // pop branch
+    const numCmdsPerClassifier = 5;
+
     const cmds = commands.getCommands(RenderPass.Classification);
     const cmdsByIndex = commands.getCommands(RenderPass.ClassificationByIndex);
     const cmdsForVC = commands.getCommands(RenderPass.VolumeClassifiedRealityData);
@@ -1164,10 +1143,10 @@ abstract class Compositor extends SceneCompositor {
         System.instance.context.clearStencil(0);
         System.instance.context.clear(GL.BufferBit.Stencil);
       });
-      // We need to render the classifier stencil volumes one at a time,
-      // so draw them from the cmdsByIndex list where each primitive has a branch push & pop around it.
-      for (let i = 0; i < cmdsByIndex.length; i += 3)
-        this.renderIndexedVolumeClassifier(cmdsByIndex.slice(i, i + 3), needComposite);
+
+      for (let i = 0; i < cmdsByIndex.length; i += numCmdsPerClassifier)
+        this.renderIndexedVolumeClassifier(cmdsByIndex.slice(i, i + numCmdsPerClassifier), needComposite);
+
       return;
     }
 
@@ -1293,8 +1272,8 @@ abstract class Compositor extends SceneCompositor {
         });
       } else if (doColorByElementForIntersectingVolumes) {
         // If we have intersecting classifier volumes, then we must stencil them individually to get their colors in the blend texture.
-        for (let i = 0; i < cmdsByIndex.length; i += 3) {
-          const nxtCmds = cmdsByIndex.slice(i, i + 3);
+        for (let i = 0; i < cmdsByIndex.length; i += numCmdsPerClassifier) {
+          const nxtCmds = cmdsByIndex.slice(i, i + numCmdsPerClassifier);
           // Set the stencil for this one classifier.
           fbStack.execute(zOnlyFbo!, false, () => {
             this.target.pushState(this._vcBranchState!);
@@ -1351,7 +1330,7 @@ abstract class Compositor extends SceneCompositor {
     // and this stage can be skipped.  In order for this to work the list of command needs to get reduced to only the ones which draw hilited volumes.
     // We cannot use the hillite shader to draw them since it doesn't handle logZ properly (it doesn't need to since it is only used elsewhere when Z write is turned off)
     // and we don't really want another whole set of hilite shaders just for this.
-    const cmdsSelected = this.findHilitedVolumeClassifiers(commands.getCommands(RenderPass.HiliteClassification));
+    const cmdsSelected = extractHilitedVolumeClassifierCommands(this.target.hilites, commands.getCommands(RenderPass.HiliteClassification));
     commands.replaceCommands(RenderPass.HiliteClassification, cmdsSelected); // replace the hilite command list for use in hilite pass as well.
     // if (cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== this.target.activeVolumeClassifierProps!.flags.selected) {
     if (!doColorByElement && cmdsSelected.length > 0 && this.target.activeVolumeClassifierProps!.flags.inside !== SpatialClassificationProps.Display.Hilite) { // assume selected ones are always hilited
@@ -1395,7 +1374,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Process the flashed classifier if there is one.
     // Like the selected volumes, we do not need to do this step if we used by-element-color since the flashing is included in the element color.
-    const flashedClassifierCmds = this.findFlashedVolumeClassifier(cmdsByIndex);
+    const flashedClassifierCmds = extractFlashedVolumeClassifierCommands(this.target.flashedId, cmdsByIndex);
     if (undefined !== flashedClassifierCmds && !doColorByElement) {
       // Set the stencil for this one classifier.
       fbStack.execute(this._frameBuffers.stencilSet!, false, () => {
@@ -1404,6 +1383,7 @@ abstract class Compositor extends SceneCompositor {
         this.target.techniques.executeForIndexedClassifier(this.target, flashedClassifierCmds, RenderPass.OpaqueGeneral);
         this.target.popBranch();
       });
+
       // Process the stencil to flash the contents.
       fbStack.execute(fboColorAndZ!, true, () => {
         this.target.pushState(this.target.decorationState);
@@ -1834,6 +1814,7 @@ class MPCompositor extends Compositor {
   private _currentRenderTargetIndex: number = 0;
   private _drawMultiPassDepth: boolean = true;
   private readonly _opaqueRenderStateNoZWt = new RenderState();
+  private readonly _scratchBgColor = new FloatRgba();
 
   public constructor(target: Target) {
     super(target, new MPFrameBuffers(), new MPGeometry());
@@ -1867,7 +1848,8 @@ class MPCompositor extends Compositor {
   protected disableVolumeClassifierFbos(): void { this._fbos.disableVolumeClassifier(); }
 
   protected clearOpaque(needComposite: boolean): void {
-    const bg = this.target.bgColor;
+    const bg = this._scratchBgColor;
+    this.target.uniforms.style.cloneBackgroundRgba(bg);
     this.clearFbo(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
     this.clearFbo(this._fbos.depthAndOrder!, 0, 0, 0, 0, false);
     this.clearFbo(this._fbos.featureId!, 0, 0, 0, 0, false);

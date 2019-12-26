@@ -14,7 +14,7 @@ import {
   TreeModelSource, TreeEvents, TreeModel, from, TreeCheckboxStateChangeEvent, CheckboxStateChange, Observable,
   TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem, TreeSelectionReplacementEvent, MutableTreeModel,
 } from "@bentley/ui-components";
-import { KeySet, NodeKey } from "@bentley/presentation-common";
+import { KeySet, NodeKey, Keys } from "@bentley/presentation-common";
 import {
   SelectionManager, Presentation, SelectionChangeEvent, SelectionHandler,
   SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider, SelectionHelper,
@@ -233,6 +233,31 @@ describe("UnifiedSelectionEventHandler", () => {
         .verify((x) => x.addToSelection(selectionKeys), moq.Times.once());
     });
 
+    it("applies unified selection after event is handled", () => {
+      const nodeKey = createRandomECInstancesNodeKey();
+      const nodes: MutableTreeModelNode[] = [createNode(() => nodeKey), createNode(() => nodeKey)];
+      nodes[0].isSelected = false;
+      nodes[1].isSelected = false;
+
+      treeModelSourceMock.setup((x) => x.modifyModel(moq.It.isAny())).callback((action) => action(treeModelMock.object));
+      treeModelMock.setup((x) => x.getNode(nodes[0].item.id)).returns(() => nodes[0]);
+      treeModelMock.setup((x) => x.getNode(nodes[1].item.id)).returns(() => nodes[1]);
+      treeModelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => nodes[Symbol.iterator]());
+
+      selectionHandlerMock.setup((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny()))
+        .callback((keys: Keys) => {
+          selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet(keys));
+        });
+
+      const event: TreeSelectionModificationEvent = {
+        modifications: from([{ selectedNodeItems: [nodes[0].item], deselectedNodeItems: [] }]),
+      };
+      unifiedEventHandler.onSelectionModified(event);
+
+      expect(nodes[0].isSelected).to.be.true;
+      expect(nodes[1].isSelected).to.be.true;
+    });
+
   });
 
   describe("onSelectionReplaced", () => {
@@ -315,6 +340,31 @@ describe("UnifiedSelectionEventHandler", () => {
       (unifiedEventHandler as any)._ongoingSubscriptions.add(previousSubscription);
       unifiedEventHandler.onSelectionReplaced({ replacements: from([{ selectedNodeItems: [] }]) });
       expect(spy).to.be.called;
+    });
+
+    it("applies unified selection after event is handled", () => {
+      const nodeKey = createRandomECInstancesNodeKey();
+      const nodes: MutableTreeModelNode[] = [createNode(() => nodeKey), createNode(() => nodeKey)];
+      nodes[0].isSelected = false;
+      nodes[1].isSelected = false;
+
+      treeModelSourceMock.setup((x) => x.modifyModel(moq.It.isAny())).callback((action) => action(treeModelMock.object));
+      treeModelMock.setup((x) => x.getNode(nodes[0].item.id)).returns(() => nodes[0]);
+      treeModelMock.setup((x) => x.getNode(nodes[1].item.id)).returns(() => nodes[1]);
+      treeModelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => nodes[Symbol.iterator]());
+
+      selectionHandlerMock.setup((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny()))
+        .callback((keys: Keys) => {
+          selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet(keys));
+        });
+
+      const event: TreeSelectionReplacementEvent = {
+        replacements: from([{ selectedNodeItems: [nodes[0].item] }]),
+      };
+      unifiedEventHandler.onSelectionReplaced(event);
+
+      expect(nodes[0].isSelected).to.be.true;
+      expect(nodes[1].isSelected).to.be.true;
     });
 
   });

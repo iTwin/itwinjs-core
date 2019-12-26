@@ -7,27 +7,28 @@
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Guid, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext, Config, IAuthorizationClient, IModelClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError, MobileRpcConfiguration, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
-import { BackendRequestContext } from "./BackendRequestContext";
-import { BisCoreSchema } from "./BisCore";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { FunctionalSchema } from "./domains/Functional";
-import { GenericSchema } from "./domains/Generic";
-import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BackendRequestContext } from "./BackendRequestContext";
+import { BisCoreSchema } from "./BisCoreSchema";
+import { BriefcaseManager } from "./BriefcaseManager";
+import { AzureBlobStorage, CloudStorageService, CloudStorageServiceCredentials, CloudStorageTileUploader } from "./CloudStorageBackend";
+import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
+import { FunctionalSchema } from "./domains/FunctionalSchema";
+import { GenericSchema } from "./domains/GenericSchema";
+import { IModelJsFs } from "./IModelJsFs";
+import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
+import { EventSourceRpcImpl } from "./rpc-impl/EventSourceRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { CloudStorageService, CloudStorageServiceCredentials, AzureBlobStorage, CloudStorageTileUploader } from "./CloudStorageBackend";
-import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
-import { Config as ConcurrentQueryConfig } from "./ConcurrentQuery";
-import { AliCloudStorageService } from "./AliCloudStorageService";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 /** @alpha */
@@ -61,6 +62,22 @@ export interface CrashReportingConfig {
   dumpProcessorScriptFileName?: string;
   /** Upload crash dump and node-reports to Bentley's crash-reporting service? Defaults to false */
   uploadToBentley?: boolean;
+}
+/** Configuration for event sink
+ * @internal
+ */
+export interface EventSinkOptions {
+  maxQueueSize: number;
+  maxNamespace: number;
+}
+
+/**
+ * Type of the backend application
+ * @alpha
+ */
+export enum ApplicationType {
+  WebAgent,
+  WebApplicationBackend,
 }
 
 /** Configuration of imodeljs-backend.
@@ -134,7 +151,10 @@ export class IModelHostConfiguration {
    * @alpha
    */
   public crashReportingConfig?: CrashReportingConfig;
-
+  /** Configuration for event sink
+   * @internal
+   */
+  public eventSinkOptions: EventSinkOptions = { maxQueueSize: 5000, maxNamespace: 255 };
   public concurrentQuery: ConcurrentQueryConfig = {
     concurrent: (os.cpus().length - 1),
     autoExpireTimeForCompletedQuery: 2 * 60, // 2 minutes
@@ -150,6 +170,12 @@ export class IModelHostConfiguration {
       maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes
     },
   };
+
+  /**
+   * Application (host) type
+   * @alpha
+   */
+  public applicationType?: ApplicationType;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -179,7 +205,7 @@ export class IModelHost {
   /** The version of this backend application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
   public static applicationVersion: string;
 
-  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
+  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
   public static get authorizationClient(): IAuthorizationClient | undefined { return IModelHost._authorizationClient; }
   public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
 
@@ -230,7 +256,7 @@ export class IModelHost {
 
   private static getApplicationVersion(): string { return require("../package.json").version; }
 
-  private static _setupRpcRequestContext() {
+  private static setupRpcRequestContext() {
     RpcConfiguration.requestContext.deserialize = async (serializedContext: SerializedRpcRequest): Promise<ClientRequestContext> => {
       // Setup a ClientRequestContext if authorization is NOT required for the RPC operation
       if (!serializedContext.authorization)
@@ -301,13 +327,6 @@ export class IModelHost {
       }
     }
 
-    // if (configuration.crashReportingConfig === undefined) {
-    //   configuration.crashReportingConfig = {
-    //     crashDir: path.resolve(configuration.briefcaseCacheDir, "..", "Crashes"),
-    //     enableCrashDumps: false,
-    //   };
-    // }
-
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
 
@@ -327,7 +346,7 @@ export class IModelHost {
     if (configuration.imodelClient)
       BriefcaseManager.imodelClient = configuration.imodelClient;
 
-    IModelHost._setupRpcRequestContext();
+    IModelHost.setupRpcRequestContext();
 
     IModelReadRpcImpl.register();
     IModelTileRpcImpl.register();
@@ -335,7 +354,7 @@ export class IModelHost {
     SnapshotIModelRpcImpl.register();
     WipRpcImpl.register();
     DevToolsRpcImpl.register();
-
+    EventSourceRpcImpl.register();
     BisCoreSchema.registerSchema();
     GenericSchema.registerSchema();
     FunctionalSchema.registerSchema();

@@ -4,292 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { Id64, BeTimePoint, dispose, assert } from "@bentley/bentleyjs-core";
-import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { dispose, assert } from "@bentley/bentleyjs-core";
+import { ViewFlags, ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
 import { IModelConnection } from "../../IModelConnection";
-import { RenderGraphic, GraphicBranch, GraphicBranchOptions, GraphicList, PackedFeature, PackedFeatureTable, RenderMemory } from "../System";
-import { RenderCommands } from "./DrawCommand";
+import { RenderGraphic, GraphicBranch, GraphicBranchOptions, GraphicList, RenderMemory } from "../System";
+import { RenderCommands } from "./RenderCommands";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
-import { LUTDimensions, LUTParams } from "./FeatureDimensions";
-import { Hilites, Target } from "./Target";
-import { OvrFlags, RenderPass } from "./RenderFlags";
-import { LineCode } from "./EdgeOverrides";
-import { GL } from "./GL";
+import { FeatureOverrides } from "./FeatureOverrides";
+import { Target } from "./Target";
+import { RenderPass } from "./RenderFlags";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureDrape } from "./TextureDrape";
-import { DisplayParams } from "../primitives/DisplayParams";
-import { WebGlDisposable } from "./Disposable";
-
-export function isFeatureHilited(feature: PackedFeature, hilites: Hilites): boolean {
-  if (hilites.isEmpty)
-    return false;
-
-  return hilites.elements.has(feature.elementId.lower, feature.elementId.upper) ||
-    hilites.subcategories.has(feature.subCategoryId.lower, feature.subCategoryId.upper);
-}
+import { WebGLDisposable } from "./Disposable";
 
 /** @internal */
-export class FeatureOverrides implements WebGlDisposable {
-  public lut?: TextureHandle;
-  public readonly target: Target;
-  private _mostRecentSymbologyOverrides?: FeatureSymbology.Overrides;
-  private _lastFlashUpdated: BeTimePoint = BeTimePoint.now();
-  private _lastHiliteUpdated: BeTimePoint = BeTimePoint.now();
-  public lutParams: LUTParams = new LUTParams(1, 1);
-  public anyOverridden: boolean = true;
-  public allHidden: boolean = true;
-  public anyTranslucent: boolean = true;
-  public anyOpaque: boolean = true;
-  public anyHilited: boolean = true;
-
-  public get byteLength(): number { return undefined !== this.lut ? this.lut.bytesUsed : 0; }
-  public get isUniform() { return 2 === this.lutParams.width && 1 === this.lutParams.height; }
-  public get isUniformFlashed() {
-    if (!this.isUniform || undefined === this.lut)
-      return false;
-
-    const lut = this.lut as Texture2DHandle;
-    const flags = lut.dataBytes![0];
-    return 0 !== (flags & OvrFlags.Flashed);
-  }
-
-  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Hilites, flashed?: Id64.Uint32Pair): TextureHandle | undefined {
-    const nFeatures = map.numFeatures;
-    const dims: LUTDimensions = LUTDimensions.computeWidthAndHeight(nFeatures, 2);
-    const width = dims.width;
-    const height = dims.height;
-    assert(width * height >= nFeatures);
-
-    this.lutParams = new LUTParams(width, height);
-
-    const data = new Uint8Array(width * height * 4);
-    const creator = new Texture2DDataUpdater(data);
-    this.buildLookupTable(creator, map, ovrs, flashed, hilite);
-
-    return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
-  }
-
-  private _update(map: PackedFeatureTable, lut: TextureHandle, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
-    const updater = new Texture2DDataUpdater(lut.dataBytes!);
-
-    if (undefined === ovrs) {
-      this.updateFlashedAndHilited(updater, map, flashed, hilites);
-    } else {
-      assert(undefined !== hilites);
-      this.buildLookupTable(updater, map, ovrs, flashed, hilites!);
-    }
-
-    (lut as Texture2DHandle).update(updater);
-  }
-
-  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, flashedIdParts: Id64.Uint32Pair | undefined, hilites: Hilites) {
-    const modelIdParts = Id64.getUint32Pair(map.modelId);
-    const isModelHilited = hilites.models.has(modelIdParts.lower, modelIdParts.upper);
-
-    this.anyOpaque = this.anyTranslucent = this.anyHilited = false;
-
-    let nHidden = 0;
-    let nOverridden = 0;
-
-    // NB: We currently use 2 RGBA values per feature as follows:
-    //  [0]
-    //      RG = override flags (see OvrFlags enum)
-    //      B = line code
-    //      A = line weight (if we need an extra byte in future, could combine code+weight into a single byte).
-    //  [1]
-    //      RGB = rgb
-    //      A = alpha
-    for (let i = 0; i < map.numFeatures; i++) {
-      const feature = map.getPackedFeature(i);
-      const dataIndex = i * 4 * 2;
-
-      const app = ovr.getAppearance(
-        feature.elementId.lower, feature.elementId.upper,
-        feature.subCategoryId.lower, feature.subCategoryId.upper,
-        feature.geometryClass,
-        modelIdParts.lower, modelIdParts.upper, map.type, feature.animationNodeId);
-
-      if (undefined === app || app.isFullyTransparent) {
-        // The feature is not visible. We don't care about any of the other overrides, because we're not going to render it.
-        data.setOvrFlagsAtIndex(dataIndex, OvrFlags.Visibility);
-        nHidden++;
-        nOverridden++;
-        continue;
-      }
-
-      let flags = app.nonLocatable ? OvrFlags.NonLocatable : OvrFlags.None;
-      if (isModelHilited || isFeatureHilited(feature, hilites)) {
-        flags |= OvrFlags.Hilited;
-        this.anyHilited = true;
-      }
-
-      if (app.emphasized) {
-        flags |= OvrFlags.Emphasized;
-        this.anyHilited = true;
-      }
-
-      if (app.overridesRgb && app.rgb) {
-        flags |= OvrFlags.Rgb;
-        const rgb = app.rgb;
-        data.setByteAtIndex(dataIndex + 4, rgb.r);
-        data.setByteAtIndex(dataIndex + 5, rgb.g);
-        data.setByteAtIndex(dataIndex + 6, rgb.b);
-      }
-
-      if (undefined !== app.transparency) {
-        // transparency in range [0, 1]...convert to byte and invert so 0=transparent...
-        flags |= OvrFlags.Alpha;
-        let alpha = 1.0 - app.transparency;
-        alpha = Math.floor(0xff * alpha + 0.5);
-        if ((0xff - alpha) < DisplayParams.minTransparency)
-          alpha = 0xff;
-
-        data.setByteAtIndex(dataIndex + 7, alpha);
-        if (0xff === alpha)
-          this.anyOpaque = true;
-        else
-          this.anyTranslucent = true;
-      }
-
-      if (app.overridesWeight && app.weight) {
-        flags |= OvrFlags.Weight;
-        let weight = app.weight;
-        weight = Math.min(31, weight);
-        weight = Math.max(1, weight);
-        data.setByteAtIndex(dataIndex + 3, weight);
-      }
-
-      if (app.overridesLinePixels && app.linePixels) {
-        flags |= OvrFlags.LineCode;
-        const lineCode = LineCode.valueFromLinePixels(app.linePixels);
-        data.setByteAtIndex(dataIndex + 2, lineCode);
-      }
-
-      if (app.ignoresMaterial)
-        flags |= OvrFlags.IgnoreMaterial;
-
-      if (undefined !== flashedIdParts && feature.elementId.lower === flashedIdParts.lower && feature.elementId.upper === flashedIdParts.upper)
-        flags |= OvrFlags.Flashed;
-
-      data.setOvrFlagsAtIndex(dataIndex, flags);
-      if (OvrFlags.None !== flags)
-        nOverridden++;
-    }
-
-    this.allHidden = (nHidden === map.numFeatures);
-    this.anyOverridden = (nOverridden > 0);
-  }
-
-  // NB: If hilites is undefined, it means that the hilited set has not changed.
-  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, flashed?: Id64.Uint32Pair, hilites?: Hilites) {
-    this.anyOverridden = this.anyHilited = false;
-
-    let isModelHilited = false;
-    let needElemId = undefined !== flashed;
-    let needSubCatId = false;
-    if (undefined !== hilites) {
-      const modelId = Id64.getUint32Pair(map.modelId);
-      isModelHilited = hilites.models.has(modelId.lower, modelId.upper);
-      needSubCatId = !isModelHilited && !hilites.subcategories.isEmpty;
-      needElemId = needElemId || (!isModelHilited && !hilites.elements.isEmpty);
-    }
-
-    for (let i = 0; i < map.numFeatures; i++) {
-      const dataIndex = i * 4 * 2;
-      const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
-      if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
-        // Do the same thing as when applying feature overrides - if it's invisible, none of the other flags matter
-        // (and if we don't check this we can end up rendering silhouettes around invisible elements in selection set)
-        this.anyOverridden = true;
-        continue;
-      }
-
-      let isFlashed = false;
-      let isHilited = undefined !== hilites ? isModelHilited : (0 !== (oldFlags & OvrFlags.Hilited));
-
-      if (needElemId) {
-        const elemId = map.getElementIdPair(i);
-        if (undefined !== flashed)
-          isFlashed = elemId.lower === flashed.lower && elemId.upper === flashed.upper;
-
-        if (!isHilited && undefined !== hilites)
-          isHilited = hilites.elements.has(elemId.lower, elemId.upper);
-      }
-
-      if (needSubCatId && !isHilited) {
-        const subcat = map.getSubCategoryIdPair(i);
-        isHilited = hilites!.subcategories.has(subcat.lower, subcat.upper);
-      }
-
-      let newFlags = isFlashed ? (oldFlags | OvrFlags.Flashed) : (oldFlags & ~OvrFlags.Flashed);
-      newFlags = isHilited ? (newFlags | OvrFlags.Hilited) : (newFlags & ~OvrFlags.Hilited);
-
-      data.setOvrFlagsAtIndex(dataIndex, newFlags);
-      if (OvrFlags.None !== newFlags) {
-        this.anyOverridden = true;
-        this.anyHilited = this.anyHilited || isHilited || OvrFlags.None !== (newFlags & OvrFlags.Emphasized);
-      }
-    }
-  }
-
-  private constructor(target: Target) {
-    this.target = target;
-  }
-
-  public static createFromTarget(target: Target) {
-    return new FeatureOverrides(target);
-  }
-
-  public get isDisposed(): boolean { return undefined === this.lut; }
-
-  public dispose() {
-    this.lut = dispose(this.lut);
-  }
-
-  public initFromMap(map: PackedFeatureTable) {
-    const nFeatures = map.numFeatures;
-    assert(0 < nFeatures);
-
-    this.lut = undefined;
-
-    const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
-    this._mostRecentSymbologyOverrides = ovrs;
-    const hilite = this.target.hilites;
-    this.lut = this._initialize(map, ovrs, hilite, this.target.flashed);
-    this._lastFlashUpdated = this._lastHiliteUpdated = BeTimePoint.now();
-  }
-
-  public update(features: PackedFeatureTable) {
-    let ovrs: FeatureSymbology.Overrides | undefined = this.target.currentFeatureSymbologyOverrides;
-    const ovrsUpdated = ovrs !== this._mostRecentSymbologyOverrides;
-    if (ovrsUpdated)
-      this._mostRecentSymbologyOverrides = ovrs;
-    else
-      ovrs = undefined;
-
-    const flashLastUpdated = this.target.flashedUpdateTime;
-    const hiliteLastUpdated = this.target.hiliteUpdateTime;
-    const hiliteUpdated = this._lastHiliteUpdated.before(hiliteLastUpdated);
-
-    const hilite = this.target.hilites;
-    if (ovrsUpdated || hiliteUpdated || this._lastFlashUpdated.before(flashLastUpdated)) {
-      this._update(features, this.lut!, this.target.flashed, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
-
-      this._lastFlashUpdated = flashLastUpdated;
-      this._lastHiliteUpdated = hiliteLastUpdated;
-    }
-  }
-}
-
-/** @internal */
-export abstract class Graphic extends RenderGraphic implements WebGlDisposable {
+export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
   public abstract addCommands(_commands: RenderCommands): void;
   public abstract get isDisposed(): boolean;
   public get isPickable(): boolean { return false; }
-  public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { assert(false); }
+  public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
 }
 
@@ -319,8 +54,8 @@ export class GraphicOwner extends Graphic {
   public get isPickable(): boolean {
     return this._graphic.isPickable;
   }
-  public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void {
-    this._graphic.addHiliteCommands(commands, batch, pass);
+  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+    this._graphic.addHiliteCommands(commands, pass);
   }
   public toPrimitive(): Primitive | undefined {
     return this._graphic.toPrimitive();
@@ -471,7 +206,7 @@ export class Branch extends Graphic {
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
-  public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void { commands.addHiliteBranch(this, batch, pass); }
+  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void { commands.addHiliteBranch(this, pass); }
 }
 
 /** @internal */
@@ -509,9 +244,9 @@ export class GraphicsArray extends Graphic {
     }
   }
 
-  public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void {
+  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     for (const graphic of this.graphics) {
-      (graphic as Graphic).addHiliteCommands(commands, batch, pass);
+      (graphic as Graphic).addHiliteCommands(commands, pass);
     }
   }
 

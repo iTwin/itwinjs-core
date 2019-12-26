@@ -7,7 +7,6 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Checker } from "../Checker";
-// import { prettyPrint } from "./testFunctions";
 import { Sample } from "../../serialization/GeometrySamples";
 import { expect } from "chai";
 import { AxisOrder } from "../../Geometry";

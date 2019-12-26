@@ -4,16 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module SpatialClassification */
 import { compareStrings, compareStringsOrUndefined, Id64String, Id64 } from "@bentley/bentleyjs-core";
+import {
+  BatchType,
+  ClassifierTileTreeId,
+  compareIModelTileTreeIds,
+  iModelTileTreeIdToString,
+  SpatialClassificationProps,
+} from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { SceneContext } from "./ViewContext";
-import { BatchType, SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { IModelTile } from "./tile/IModelTile";
-import { TileTree, TileTreeSet } from "./tile/TileTree";
+import { TileTree, TileTreeReference, TileTreeSet } from "./tile/TileTree";
+import { IModelTileLoader } from "./tile/IModelTileLoader";
 import { ViewState } from "./ViewState";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { GeometricModelState } from "./ModelState";
+import { IModelApp } from "./IModelApp";
 
-interface ClassifierTreeId extends IModelTile.ClassifierTreeId {
+interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;
 }
 
@@ -22,7 +29,7 @@ function compareIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
   if (0 === cmp)
     cmp = compareStringsOrUndefined(lhs.animationId, rhs.animationId);
 
-  return 0 === cmp ? IModelTile.compareTreeIds(lhs, rhs) : cmp;
+  return 0 === cmp ? compareIModelTileTreeIds(lhs, rhs) : cmp;
 }
 
 class ClassifierTreeSupplier implements TileTree.Supplier {
@@ -44,10 +51,10 @@ class ClassifierTreeSupplier implements TileTree.Supplier {
     if (undefined === model || !(model instanceof GeometricModelState))
       return undefined;
 
-    const idStr = IModelTile.treeIdToString(id.modelId, id);
+    const idStr = iModelTileTreeIdToString(id.modelId, id, IModelApp.tileAdmin);
     const props = await iModel.tiles.getTileTreeProps(idStr);
 
-    const loader = new IModelTile.Loader(iModel, props.formatVersion, id.type, false, false, model.geometryGuid);
+    const loader = new IModelTileLoader(iModel, props.formatVersion, id.type, false, false, model.geometryGuid);
     props.rootTile.contentId = loader.rootContentId;
     const params = TileTree.paramsFromJSON(props, iModel, true, loader, id.modelId);
     return new TileTree(params);
@@ -61,7 +68,7 @@ class ClassifierTreeSupplier implements TileTree.Supplier {
 const classifierTreeSupplier = new ClassifierTreeSupplier();
 
 /** @internal */
-export abstract class SpatialClassifierTileTreeReference extends TileTree.Reference {
+export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
   public abstract get classifiers(): SpatialClassifiers;
 }
 
@@ -71,10 +78,10 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private readonly _classifiers: SpatialClassifiers;
   private readonly _source: ViewState | DisplayStyleState;
   private readonly _iModel: IModelConnection;
-  private readonly _classifiedTree: TileTree.Reference;
+  private readonly _classifiedTree: TileTreeReference;
   private _owner: TileTree.Owner;
 
-  public constructor(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
+  public constructor(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
     super();
     this._id = this.createId(classifiers, source);
     this._source = source;
@@ -144,7 +151,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 }
 
 /** @internal */
-export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTree.Reference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
+export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
   return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
 }
 

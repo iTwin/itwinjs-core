@@ -15,6 +15,7 @@ public;BentleyStatus
 public;BeTimePoint
 beta;BeUiEvent
 beta;BriefcaseStatus
+beta;ByteStream
 public;ChangeSetApplyOption
 beta;ChangeSetStatus
 public;ClientRequestContext 

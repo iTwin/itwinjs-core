@@ -23,6 +23,18 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
+      "name": "@bentley/ecschema-locaters",
+      "allowedCategories": [ "backend", "tools" ]
+    },
+    {
+      "name": "@bentley/ecschema-metadata",
+      "allowedCategories": [ "backend", "common", "tools" ]
+    },
+    {
+      "name": "@bentley/ecschema2ts",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@bentley/electron-manager",
       "allowedCategories": [ "internal" ]
     },
@@ -224,7 +236,7 @@
     },
     {
       "name": "chai-string",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "chalk",
@@ -623,6 +635,10 @@
       "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
+      "name": "react-async-hook",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "react-autosuggest",
       "allowedCategories": [ "frontend" ]
     },
@@ -760,7 +776,7 @@
     },
     {
       "name": "spdy",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "ssri",
@@ -920,7 +936,7 @@
     },
     {
       "name": "xmldom",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "xmlhttprequest",

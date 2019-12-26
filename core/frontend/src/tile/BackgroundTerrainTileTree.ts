@@ -5,7 +5,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 import { BackgroundMapSettings, TerrainProviderName, TerrainHeightOriginMode, TerrainSettings, ViewFlag, RenderMode } from "@bentley/imodeljs-common";
-import { TileTree, TileTreeSet } from "./TileTree";
+import { TileTree, TileTreeReference, TileTreeSet } from "./TileTree";
 import { Tile } from "./Tile";
 import { IModelConnection } from "../IModelConnection";
 import {
@@ -129,10 +129,10 @@ const backgroundTerrainTreeSupplier = new BackgroundTerrainTreeSupplier();
  * an alternative to a planar background map
  * @internal
  */
-export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
+export class BackgroundTerrainTileTreeReference extends TileTreeReference {
   public settings: BackgroundMapSettings;
   private readonly _iModel: IModelConnection;
-  private _mapDrapeTree?: TileTree.Reference;
+  private _mapDrapeTree?: TileTreeReference;
   private _overrides?: FeatureSymbology.Overrides;
   private _doDrape = true;                      // Current settings configuration doesn't allow a terrain without a background drape...
 

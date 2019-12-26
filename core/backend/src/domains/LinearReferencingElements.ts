@@ -8,7 +8,8 @@ import { Id64String, assert, DbResult } from "@bentley/bentleyjs-core";
 import {
   ElementProps, GeometricElement3dProps, LinearlyLocatedAttributionProps, LinearlyReferencedAtLocationProps,
   LinearlyReferencedAtLocationAspectProps, LinearlyReferencedFromToLocationProps, LinearlyReferencedFromToLocationAspectProps,
-  ReferentElementProps, RelatedElement, IModelError, Code,
+  ReferentElementProps, RelatedElement, IModelError, Code, LinearLocationReference, QueryParams, ComparisonOption,
+  LinearlyReferencedLocationType,
 } from "@bentley/imodeljs-common";
 import { PhysicalElement, SpatialLocationElement } from "../Element";
 import { ElementAspect } from "../ElementAspect";
@@ -179,39 +180,6 @@ export class Referent extends ReferentElement {
 
   public insertAt(iModel: IModelDb, linearElementId: Id64String, atPosition: LinearlyReferencedAtLocationProps): Id64String {
     return LinearlyLocated.insertAt(iModel, this, linearElementId, atPosition);
-  }
-}
-
-/** @beta */
-export class LinearLocationReference {
-  public constructor(
-    public readonly startDistanceAlong: number,
-    public readonly stopDistanceAlong: number,
-    public readonly linearlyLocatedId: Id64String,
-    public readonly linearlyLocatedClassFullName: string,
-    public readonly locationAspectId: Id64String) {
-  }
-}
-
-/** Enum capturing range-comparison options for from/to distanceAlong in QueryParams
- * @beta
- */
-export enum ComparisonOption { Inclusive, Exclusive }
-
-/** Enum enabling LinearElement.queryLinearLocations performance optimization when the target Linearly-Located classes are all either At or FromTo.
- * @beta
- */
-export enum LinearlyReferencedLocationType { At, FromTo, Any }
-
-/** @beta */
-export class QueryParams {
-  public constructor(
-    public fromDistanceAlong?: number,
-    public fromComparisonOption?: ComparisonOption,
-    public toDistanceAlong?: number,
-    public toComparisonOption?: ComparisonOption,
-    public linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType,
-    public linearlyLocatedClassFullNames?: string[]) {
   }
 }
 

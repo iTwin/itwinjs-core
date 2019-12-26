@@ -21,7 +21,7 @@ import {
   SpatialModelTileTrees,
   SpatialViewState,
   TiledGraphicsProvider,
-  TileTree,
+  TileTreeReference,
   Tool,
   Viewport,
 } from "@bentley/imodeljs-frontend";
@@ -83,7 +83,7 @@ class Trees extends SpatialModelTileTrees {
 
   protected get _iModel() { return this._provider.iModel; }
 
-  protected createTileTreeReference(model: SpatialModelState): TileTree.Reference | undefined {
+  protected createTileTreeReference(model: SpatialModelState): TileTreeReference | undefined {
     // ###TODO: If model contains no deleted elements, ignore
     return new Reference(model.createTileTreeReference(this._provider.viewport.view), this._provider);
   }
@@ -150,7 +150,7 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
     }
   }
 
-  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(_vp: Viewport, func: (ref: TileTreeReference) => void): void {
     this._trees.forEach(func);
   }
 
@@ -212,12 +212,12 @@ class Provider implements TiledGraphicsProvider, FeatureOverrideProvider {
   }
 }
 
-/** A proxy reference to a TileTree.Reference originating from the secondary IModelConnection. */
-class Reference extends TileTree.Reference {
-  private readonly _ref: TileTree.Reference;
+/** A proxy reference to a TileTreeReference originating from the secondary IModelConnection. */
+class Reference extends TileTreeReference {
+  private readonly _ref: TileTreeReference;
   private readonly _provider: Provider;
 
-  public constructor(ref: TileTree.Reference, provider: Provider) {
+  public constructor(ref: TileTreeReference, provider: Provider) {
     super();
     this._ref = ref;
     this._provider = provider;

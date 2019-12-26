@@ -9,9 +9,9 @@ import { Texture } from "./Texture";
 import { Target } from "./Target";
 import { Matrix4d } from "@bentley/geometry-core";
 import { SceneContext } from "../../ViewContext";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
-export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.Consumer, WebGlDisposable {
+export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.Consumer, WebGLDisposable {
   protected _texture?: Texture;
   protected _projectionMatrix = Matrix4d.createIdentity();
   public get texture(): Texture | undefined { return this._texture; }

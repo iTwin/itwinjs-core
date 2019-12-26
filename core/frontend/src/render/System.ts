@@ -4,13 +4,34 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { assert, base64StringToUint8Array, dispose, disposeArray, Id64, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { base64StringToUint8Array, dispose, disposeArray, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY } from "@bentley/geometry-core";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndexType, FeatureTable, Frustum, Gradient,
-  HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d,
-  QPoint3dList, RenderMaterial, RenderTexture, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion, SpatialClassificationProps,
+  AmbientOcclusion,
+  AnalysisStyle,
+  BatchType,
+  ColorDef,
+  ElementAlignedBox3d,
+  Feature,
+  FeatureIndexType,
+  Frustum,
+  GeometryClass,
+  Gradient,
+  HiddenLine,
+  Hilite,
+  ImageBuffer,
+  ImageSource,
+  ImageSourceFormat,
+  isValidImageSourceFormat,
+  PackedFeatureTable,
+  QParams3d,
+  QPoint3dList,
+  RenderMaterial,
+  RenderTexture,
+  SpatialClassificationProps,
   TextureProps,
+  ViewFlag,
+  ViewFlags,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -18,7 +39,8 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
-import { ViewFrustum, Viewport, ViewRect } from "../Viewport";
+import { Viewport } from "../Viewport";
+import { ViewRect } from "../ViewRect";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
@@ -29,6 +51,7 @@ import { SceneContext } from "../ViewContext";
 import { BackgroundMapTileTreeReference } from "../tile/WebMapTileTree";
 
 // tslint:disable:no-const-enum
+// cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
 /** Contains metadata about memory consumed by the render system or aspect thereof.
  * @internal
@@ -185,7 +208,6 @@ export namespace RenderMemory {
 export class RenderPlan {
   public readonly is3d: boolean;
   public readonly viewFlags: ViewFlags;
-  public readonly viewFrustum: ViewFrustum;
   public readonly bgColor: ColorDef;
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
@@ -196,37 +218,50 @@ export class RenderPlan {
   public readonly ao?: AmbientOcclusion.Settings;
   public readonly isFadeOutActive: boolean;
   public readonly analysisTexture?: RenderTexture;
-  public classificationTextures?: Map<Id64String, RenderTexture>;
-  private _curFrustum: ViewFrustum;
-
-  public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
-  public get fraction(): number { return this._curFrustum.frustFraction; }
-
-  public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
+  public readonly classificationTextures?: Map<Id64String, RenderTexture>;
+  public readonly frustum: Frustum;
+  public readonly fraction: number;
 
   public static createFromViewport(vp: Viewport): RenderPlan {
     return new RenderPlan(vp);
   }
 
-  private constructor(vp: Viewport) {
-    const view = vp.view;
-    const style = view.displayStyle;
+  public static createEmpty(): RenderPlan {
+    return new RenderPlan();
+  }
 
-    this.is3d = view.is3d();
-    this.viewFlags = style.viewFlags;
-    this.bgColor = view.backgroundColor;
-    this.monoColor = style.monochromeColor;
-    this.hiliteSettings = vp.hilite;
-    this.emphasisSettings = vp.emphasisSettings;
-    this._curFrustum = this.viewFrustum = vp.viewFrustum;
-    this.isFadeOutActive = vp.isFadeOutActive;
-    this.activeVolume = view.getViewClip();
-    this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
-    this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
-    this.analysisStyle = style.analysisStyle;
+  private constructor(vp?: Viewport) {
+    if (undefined !== vp) {
+      const view = vp.view;
+      const style = view.displayStyle;
 
-    if (undefined !== this.analysisStyle && undefined !== this.analysisStyle.scalarThematicSettings)
-      this.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(this.analysisStyle.scalarThematicSettings), vp.iModel);
+      this.is3d = view.is3d();
+      this.frustum = vp.viewingSpace.getFrustum();
+      this.fraction = vp.viewingSpace.frustFraction;
+      this.viewFlags = style.viewFlags;
+      this.bgColor = view.backgroundColor;
+      this.monoColor = style.monochromeColor;
+      this.hiliteSettings = vp.hilite;
+      this.emphasisSettings = vp.emphasisSettings;
+      this.isFadeOutActive = vp.isFadeOutActive;
+      this.activeVolume = view.getViewClip();
+      this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
+      this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
+      this.analysisStyle = style.analysisStyle;
+
+      if (undefined !== this.analysisStyle && undefined !== this.analysisStyle.scalarThematicSettings)
+        this.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(this.analysisStyle.scalarThematicSettings), vp.iModel);
+    } else {
+      this.is3d = true;
+      this.viewFlags = new ViewFlags();
+      this.bgColor = ColorDef.white.clone();
+      this.monoColor = ColorDef.white.clone();
+      this.hiliteSettings = new Hilite.Settings();
+      this.emphasisSettings = new Hilite.Settings();
+      this.frustum = new Frustum();
+      this.fraction = 0;
+      this.isFadeOutActive = false;
+    }
   }
 }
 
@@ -570,190 +605,6 @@ export namespace Pixel {
   export type Receiver = (pixels: Buffer | undefined) => void;
 }
 
-/** @internal */
-export interface PackedFeature {
-  elementId: Id64.Uint32Pair;
-  subCategoryId: Id64.Uint32Pair;
-  geometryClass: GeometryClass;
-  animationNodeId: number;
-}
-
-/**
- * An immutable, packed representation of a [[FeatureTable]]. The features are packed into a single array of 32-bit integer values,
- * wherein each feature occupies 3 32-bit integers.
- * @internal
- */
-export class PackedFeatureTable {
-  private readonly _data: Uint32Array;
-  public readonly modelId: Id64String;
-  public readonly maxFeatures: number;
-  public readonly numFeatures: number;
-  public readonly anyDefined: boolean;
-  public readonly type: BatchType;
-  private readonly _animationNodeIds?: Uint8Array | Uint16Array | Uint32Array;
-
-  public get byteLength(): number { return this._data.byteLength; }
-
-  /** Construct a PackedFeatureTable from the packed binary data.
-   * This is used internally when deserializing Tiles in iMdl format.
-   * @internal
-   */
-  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType, animationNodeIds?: Uint8Array | Uint16Array | Uint32Array) {
-    this._data = data;
-    this.modelId = modelId;
-    this.maxFeatures = maxFeatures;
-    this.numFeatures = numFeatures;
-    this.type = type;
-    this._animationNodeIds = animationNodeIds;
-
-    switch (this.numFeatures) {
-      case 0:
-        this.anyDefined = false;
-        break;
-      case 1:
-        this.anyDefined = this.getFeature(0).isDefined;
-        break;
-      default:
-        this.anyDefined = true;
-        break;
-    }
-
-    assert(this._data.length >= this._subCategoriesOffset);
-    assert(this.maxFeatures >= this.numFeatures);
-    assert(undefined === this._animationNodeIds || this._animationNodeIds.length === this.numFeatures);
-  }
-
-  /** Create a packed feature table from a [[FeatureTable]]. */
-  public static pack(featureTable: FeatureTable): PackedFeatureTable {
-    // We must determine how many subcategories we have ahead of time to compute the size of the Uint32Array, as
-    // the array cannot be resized after it is created.
-    // We are not too worried about this as FeatureTables created on the front-end will contain few if any features; those obtained from the
-    // back-end arrive within tiles already in the packed format.
-    const subcategories = new Map<string, number>();
-    for (const iv of featureTable.getArray()) {
-      const found = subcategories.get(iv.value.subCategoryId.toString());
-      if (undefined === found)
-        subcategories.set(iv.value.subCategoryId, subcategories.size);
-    }
-
-    // We need 3 32-bit integers per feature, plus 2 32-bit integers per subcategory.
-    const subCategoriesOffset = 3 * featureTable.length;
-    const nUint32s = subCategoriesOffset + 2 * subcategories.size;
-    const uint32s = new Uint32Array(nUint32s);
-
-    for (const iv of featureTable.getArray()) {
-      const feature = iv.value;
-      const index = iv.index * 3;
-
-      let subCategoryIndex = subcategories.get(feature.subCategoryId)!;
-      assert(undefined !== subCategoryIndex); // we inserted it above...
-      subCategoryIndex |= (feature.geometryClass << 24);
-
-      uint32s[index + 0] = Id64.getLowerUint32(feature.elementId);
-      uint32s[index + 1] = Id64.getUpperUint32(feature.elementId);
-      uint32s[index + 2] = subCategoryIndex;
-    }
-
-    subcategories.forEach((index: number, id: string, _map) => {
-      const index32 = subCategoriesOffset + 2 * index;
-      uint32s[index32 + 0] = Id64.getLowerUint32(id);
-      uint32s[index32 + 1] = Id64.getUpperUint32(id);
-    });
-
-    return new PackedFeatureTable(uint32s, featureTable.modelId, featureTable.length, featureTable.maxFeatures, featureTable.type);
-  }
-
-  /** Retrieve the Feature associated with the specified index. */
-  public getFeature(featureIndex: number): Feature {
-    const packed = this.getPackedFeature(featureIndex);
-    const elemId = Id64.fromUint32Pair(packed.elementId.lower, packed.elementId.upper);
-    const subcatId = Id64.fromUint32Pair(packed.subCategoryId.lower, packed.subCategoryId.upper);
-    return new Feature(elemId, subcatId, packed.geometryClass);
-  }
-
-  /** Returns the Feature associated with the specified index, or undefined if the index is out of range. */
-  public findFeature(featureIndex: number): Feature | undefined {
-    return featureIndex < this.numFeatures ? this.getFeature(featureIndex) : undefined;
-  }
-
-  /** @internal */
-  public getElementIdPair(featureIndex: number): Id64.Uint32Pair {
-    assert(featureIndex < this.numFeatures);
-    const offset = 3 * featureIndex;
-    return {
-      lower: this._data[offset],
-      upper: this._data[offset + 1],
-    };
-  }
-
-  /** @internal */
-  public getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair {
-    const index = 3 * featureIndex;
-    let subCatIndex = this._data[index + 2];
-    subCatIndex = (subCatIndex & 0x00ffffff) >>> 0;
-    subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
-    return { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
-  }
-
-  /** @internal */
-  public getAnimationNodeId(featureIndex: number): number {
-    return undefined !== this._animationNodeIds ? this._animationNodeIds[featureIndex] : 0;
-  }
-
-  /** @internal */
-  public getPackedFeature(featureIndex: number): PackedFeature {
-    assert(featureIndex < this.numFeatures);
-
-    const index32 = 3 * featureIndex;
-    const elementId = { lower: this._data[index32], upper: this._data[index32 + 1] };
-
-    const subCatIndexAndClass = this._data[index32 + 2];
-    const geometryClass = (subCatIndexAndClass >>> 24) & 0xff;
-
-    let subCatIndex = (subCatIndexAndClass & 0x00ffffff) >>> 0;
-    subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
-    const subCategoryId = { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
-
-    const animationNodeId = this.getAnimationNodeId(featureIndex);
-    return { elementId, subCategoryId, geometryClass, animationNodeId };
-  }
-
-  /** Returns the element ID of the Feature associated with the specified index, or undefined if the index is out of range. */
-  public findElementId(featureIndex: number): Id64String | undefined {
-    if (featureIndex >= this.numFeatures)
-      return undefined;
-    else
-      return this.readId(3 * featureIndex);
-  }
-
-  /** Return true if this table contains exactly 1 feature. */
-  public get isUniform(): boolean { return 1 === this.numFeatures; }
-
-  /** If this table contains exactly 1 feature, return it. */
-  public get uniform(): Feature | undefined { return this.isUniform ? this.getFeature(0) : undefined; }
-
-  public get isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
-  public get isPlanarClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
-  public get isClassifier(): boolean { return this.isVolumeClassifier || this.isPlanarClassifier; }
-
-  /** Unpack the features into a [[FeatureTable]]. */
-  public unpack(): FeatureTable {
-    const table = new FeatureTable(this.maxFeatures, this.modelId);
-    for (let i = 0; i < this.numFeatures; i++) {
-      const feature = this.getFeature(i);
-      table.insertWithIndex(feature, i);
-    }
-
-    return table;
-  }
-
-  private get _subCategoriesOffset(): number { return this.numFeatures * 3; }
-
-  private readId(offset32: number): Id64String {
-    return Id64.fromUint32Pair(this._data[offset32], this._data[offset32 + 1]);
-  }
-}
-
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].
  * @alpha
@@ -803,7 +654,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   }
 
   public abstract get renderSystem(): RenderSystem;
-  public abstract get cameraFrustumNearScaleLimit(): number;
   public abstract get viewRect(): ViewRect;
   public abstract get wantInvertBlackBackground(): boolean;
 
@@ -1301,7 +1151,7 @@ export namespace RenderSystem {
      *
      * Default value: true
      *
-     * @alpha
+     * @beta
      */
     dpiAwareViewports?: boolean;
 

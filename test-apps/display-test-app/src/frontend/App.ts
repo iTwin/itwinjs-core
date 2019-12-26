@@ -29,6 +29,7 @@ import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
 import { ToggleFrustumIntersectionTool } from "./FrustumIntersectionDecoration";
 import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
+import { RecordFpsTool } from "./FpsMonitor";
 import {
   CloneViewportTool,
   CloseIModelTool,
@@ -239,6 +240,7 @@ export class DisplayTestApp {
       MaximizeWindowTool,
       OpenIModelTool,
       PurgeTileTreesTool,
+      RecordFpsTool,
       RefreshTilesTool,
       ReopenIModelTool,
       ResizeWindowTool,
