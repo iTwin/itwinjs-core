@@ -215,7 +215,7 @@ export interface ViewAnimationOptions {
   animationTime?: number;
   /** if animation is aborted, don't move to end, leave at current point instead. */
   cancelOnAbort?: boolean;
-  /** easing function for animation */
+  /** easing function for animation. Default is Easing.Cubic.Out */
   easingFunction?: EasingFunction;
 }
 
@@ -223,9 +223,9 @@ export interface ViewAnimationOptions {
  * @public
  */
 export interface ViewChangeOptions extends ViewAnimationOptions {
-  /** Whether to save the result of this change into the view undo stack. Default is yes. */
-  saveInUndo?: boolean;
-  /** Whether the change should be animated or not. Default is yes. */
+  /** Whether to save the result of this change into the view undo stack. Default is to save in undo. */
+  noSaveInUndo?: boolean;
+  /** Whether the change should be animated or not. Default is to not animate frustum change. */
   animateFrustumChange?: boolean;
   /** The percentage of the view to leave blank around the edges. */
   marginPercent?: MarginPercent;
@@ -1784,7 +1784,7 @@ export abstract class Viewport implements IDisposable {
   public markSelectionSetDirty() { this._selectionSetDirty = true; }
 
   /** True if this is a 3d view with the camera turned on. */
-  public get isCameraOn(): boolean { return this.view.is3d() && this.view.isCameraOn; }
+  public get isCameraOn(): boolean { return this.view.isCameraEnabled(); }
 
   /** @internal */
   public changeDynamics(dynamics: GraphicList | undefined): void {
@@ -1977,8 +1977,11 @@ export abstract class Viewport implements IDisposable {
     return this.doSetupFromView(this.view);
   }
 
-  /** Call [[setupFromView]] on this Viewport and optionally save previous state in view undo stack */
-  public synchWithView(_saveInUndo: boolean): void { this.setupFromView(); }
+  /** Call [[setupFromView]] on this Viewport and then apply optional behavior.
+   * @param options _options for behavior of view change. If undefined, all options have their default values (see [[ViewChangeOptions]] for details.)
+   * @note In previous versions, the argument was a boolean `saveInUndo`. For backwards compatibility, if `_options` is a boolean, it is interpreted as "{ noSaveInUndo: !_options }"
+   */
+  public synchWithView(_options?: ViewChangeOptions | boolean): void { this.setupFromView(); }
 
   /** Convert an array of points from CoordSystem.View to CoordSystem.Npc */
   public viewToNpcArray(pts: Point3d[]): void { this._viewingSpace.viewToNpcArray(pts); }
@@ -2061,10 +2064,6 @@ export abstract class Viewport implements IDisposable {
   /** Get a copy of the current (unadjusted) frustum of this viewport, in world coordinates. */
   public getWorldFrustum(box?: Frustum): Frustum { return this.getFrustum(CoordSystem.World, false, box); }
 
-  protected finishViewChange(options?: ViewChangeOptions) {
-    this.synchWithView(options === undefined || options.saveInUndo === undefined || options.saveInUndo);
-  }
-
   /** Scroll the view by a given number of pixels.
    * @param screenDist distance to scroll, in pixels
    */
@@ -2074,7 +2073,7 @@ export abstract class Viewport implements IDisposable {
       return;
 
     const distXYZ = new Point3d(screenDist.x, screenDist.y, 0);
-    if (view.is3d() && view.isCameraOn) {
+    if (view.isCameraEnabled()) {
       const frust = this.getFrustum(CoordSystem.View, false)!;
       frust.translate(distXYZ);
       this.viewToWorldArray(frust.points);
@@ -2087,19 +2086,20 @@ export abstract class Viewport implements IDisposable {
       view.setOrigin(view.getOrigin().plus(dist));
     }
 
-    this.finishViewChange(options);
+    this.synchWithView(options);
   }
 
-  /** Zoom the view by a scale factor, placing the new center at the projection of the given point (world coordinates)
-   * on the focal plane.
-   * Updates ViewState and re-synchs Viewport. Does not save in view undo buffer.
+  /** Zoom the view by a scale factor, placing the new center at the given point (world coordinates).
+   * @param newCenter The new center point of the view, in world coordinates. If undefined, use current center.
+   * @param factor the zoom factor.
+   * @param options options for behavior of view change
    */
   public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions): void {
     const view = this.view;
-    if (!view)
+    if (undefined === view)
       return;
 
-    if (view.is3d() && view.isCameraOn) {
+    if (view.isCameraEnabled()) {
       const centerNpc = newCenter ? this.worldToNpc(newCenter) : NpcCenter.clone();
       const scaleTransform = Transform.createFixedPointAndMatrix(centerNpc, Matrix3d.createScale(factor, factor, 1.0));
 
@@ -2118,32 +2118,23 @@ export abstract class Viewport implements IDisposable {
     } else {
       // for non-camera views, do the zooming by adjusting the origin and delta directly so there can be no
       // chance of the rotation changing due to numerical precision errors calculating it from the frustum corners.
-      const delta = view.getExtents().clone();
-      delta.x *= factor;
-      delta.y *= factor;
+      const delta = view.getExtents().scale(factor);
 
       // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
       if (ViewStatus.Success !== view.validateViewDelta(delta, true))
         return;
 
-      const center = newCenter ? newCenter.clone() : view.getCenter().clone();
+      const rot = view.getRotation();
+      const center = rot.multiplyVector(newCenter ? newCenter : view.getCenter());
 
       if (!view.allow3dManipulations())
         center.z = 0.0;
 
-      const newOrg = view.getOrigin().clone();
-      this.toViewOrientation(newOrg);
-      this.toViewOrientation(center);
-
+      view.setOrigin(rot.multiplyTransposeVector(delta.scale(.5).vectorTo(center)));
       view.setExtents(delta);
-
-      newOrg.x = center.x - delta.x / 2.0;
-      newOrg.y = center.y - delta.y / 2.0;
-      this.fromViewOrientation(newOrg);
-      view.setOrigin(newOrg);
     }
 
-    this.finishViewChange(options);
+    this.synchWithView(options);
   }
 
   /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
@@ -2161,20 +2152,21 @@ export abstract class Viewport implements IDisposable {
     if (-1 === indexOfFirstValidPlacement)
       return;
 
+    const view = this.view;
     if (undefined !== options) {
       if (undefined !== options.standardViewId) {
-        this.view.setStandardRotation(options.standardViewId);
+        view.setStandardRotation(options.standardViewId);
       } else if (undefined !== options.placementRelativeId) {
         const firstPlacement = toPlacement(placementProps[indexOfFirstValidPlacement]);
         const viewRotation = StandardView.getStandardRotation(options.placementRelativeId).clone();
         viewRotation.multiplyMatrixMatrixTranspose(firstPlacement.transform.matrix, viewRotation);
-        this.view.setRotation(viewRotation);
+        view.setRotation(viewRotation);
       } else if (undefined !== options.viewRotation) {
-        this.view.setRotation(options.viewRotation);
+        view.setRotation(options.viewRotation);
       }
     }
 
-    const viewTransform = Transform.createOriginAndMatrix(undefined, this.view.getRotation());
+    const viewTransform = Transform.createOriginAndMatrix(undefined, view.getRotation());
     const frust = new Frustum();
     const viewRange = new Range3d();
     for (let i = indexOfFirstValidPlacement; i < placementProps.length; i++) {
@@ -2183,8 +2175,8 @@ export abstract class Viewport implements IDisposable {
         viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
     }
 
-    this.view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(options);
+    view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, options ? options.marginPercent : undefined);
+    this.synchWithView(options);
   }
 
   /** Zoom the view to a show the tightest box around a given set of ElementProps. Optionally, change view rotation.
@@ -2217,7 +2209,7 @@ export abstract class Viewport implements IDisposable {
    */
   public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
     this.view.lookAtVolume(volume, this.viewRect.aspect, options ? options.marginPercent : undefined);
-    this.finishViewChange(options);
+    this.synchWithView(options);
   }
 
   /** Shortcut to call view.setupFromFrustum and then [[setupFromView]]
@@ -2259,7 +2251,7 @@ export abstract class Viewport implements IDisposable {
     this._view = val;
     this.updateChangeFlags(val);
     this._viewingSpace.view = val;
-    this.synchWithView(false);
+    this.synchWithView({ noSaveInUndo: true });
   }
 
   /** Invoked from finishUndoRedo, applyViewState, and changeView to potentially recompute change flags based on differences between current and new ViewState. */
@@ -2345,10 +2337,10 @@ export abstract class Viewport implements IDisposable {
     const planeNormal = rMatrix.getRow(2);
 
     let eyeVec: Vector3d;
-    if (this.view.is3d() && this.isCameraOn)
+    if (this.view.isCameraEnabled())
       eyeVec = this.view.camera.eye.vectorTo(point);
     else
-      eyeVec = this._viewingSpace.rotation.getRow(2).clone();
+      eyeVec = this._viewingSpace.rotation.getRow(2);
 
     eyeVec.normalizeInPlace();
     linePlaneIntersect(point, point, eyeVec, origin, planeNormal, false);
@@ -2749,6 +2741,7 @@ export class ScreenViewport extends Viewport {
       fast: BeDuration.fromSeconds(.75),
       normal: BeDuration.fromSeconds(1.25),
       slow: BeDuration.fromSeconds(2.0),
+      wheel: BeDuration.fromSeconds(.175), // zooming with the wheel
     },
     /** The easing function to use for view animations. */
     easing: Easing.Cubic.Out,
@@ -2929,8 +2922,6 @@ export class ScreenViewport extends Viewport {
    * @returns The point, in world coordinates, on the element closest to `pickPoint`, or undefined if no elements within `radius`.
    */
   public pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable = true, out?: Point3d): Point3d | undefined {
-    if (undefined === radius)
-      radius = this.pixelsFromInches(ToolSettings.viewToolPickRadiusInches);
     const depthResult = this.pickDepthPoint(pickPoint, radius, { excludeNonLocatable: !allowNonLocatable });
     if (DepthPointSource.TargetPoint === depthResult.source)
       return undefined;
@@ -2948,9 +2939,12 @@ export class ScreenViewport extends Viewport {
    * @note The result plane normal is valid when the source is not geometry or a reality model.
    * @alpha
    */
-  public pickDepthPoint(pickPoint: Point3d, radius: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, sourceId?: string } {
+  public pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): { plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource, sourceId?: string } {
     if (!this.view.is3d())
       return { plane: Plane3dByOriginAndUnitNormal.createXYPlane(pickPoint), source: DepthPointSource.ACS };
+
+    if (undefined === radius)
+      radius = this.pixelsFromInches(ToolSettings.viewToolPickRadiusInches);
 
     const picker = new ElementPicker();
     const locateOpts = new LocateOptions();
@@ -3003,24 +2997,9 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public animateFrustumChange(options: ViewAnimationOptions) {
+  public animateFrustumChange(options?: ViewAnimationOptions) {
     if (this._lastPose && this._currentBaseline)
-      this.setAnimator(new FrustumAnimator(options, this, this._lastPose, this.view.savePose()));
-  }
-
-  /** Animate the view frustum from a starting frustum to the current view frustum.
-   * @internal
-   */
-  public animateToCurrent(options?: ViewAnimationOptions) {
-    options = options ? options : {};
-    this.animateFrustumChange(options);
-  }
-
-  protected finishViewChange(options?: ViewChangeOptions) {
-    options = options === undefined ? {} : options;
-    this.synchWithView(options.saveInUndo === undefined || options.saveInUndo);
-    if (options.animateFrustumChange === undefined || options.animateFrustumChange)
-      this.animateToCurrent(options);
+      this.setAnimator(new FrustumAnimator(options ? options : {}, this, this._lastPose, this.view.savePose()));
   }
 
   /** @internal */
@@ -3049,10 +3028,16 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public synchWithView(saveInUndo: boolean): void {
-    super.setupFromView();
-    if (saveInUndo)
+  public synchWithView(options?: ViewChangeOptions | boolean): void {
+    options = (undefined === options) ? {} :
+      (typeof options !== "boolean") ? options : { noSaveInUndo: !options }; // for backwards compatibility, was "saveInUndo"
+
+    super.synchWithView(options);
+
+    if (true !== options.noSaveInUndo)
       this.saveViewUndo();
+    if (true === options.animateFrustumChange)
+      this.animateFrustumChange(options);
   }
 
   /** @internal */
@@ -3082,7 +3067,7 @@ export class ScreenViewport extends Viewport {
     this.saveViewUndo();
 
     if (doAnimate)
-      this.animateToCurrent(opts);
+      this.animateFrustumChange(opts);
   }
 
   /** @internal */

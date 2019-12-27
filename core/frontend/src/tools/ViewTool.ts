@@ -109,8 +109,11 @@ export abstract class ViewTool extends InteractiveTool {
 /** @internal */
 export abstract class ViewingToolHandle {
   protected readonly _lastPtNpc = new Point3d();
+  protected _depthPoint?: Point3d;
 
-  constructor(public viewTool: ViewManip) { }
+  constructor(public viewTool: ViewManip) {
+    this._depthPoint = undefined;
+  }
   public onReinitialize(): void { }
   public focusOut(): void { }
   public motion(_ev: BeButtonEvent): boolean { return false; }
@@ -143,6 +146,17 @@ export abstract class ViewingToolHandle {
         return isValid; // Sources with visible geometry/graphics are considered valid by default...
       default:
         return false; // Sources without visible geometry/graphics are NOT considered valid by default...
+    }
+  }
+  protected pickDepthPoint(ev: BeButtonEvent) {
+    this._depthPoint = this.viewTool.pickDepthPoint(ev);
+  }
+  // if we have a valid depth point, set the focus distance to
+  protected changeFocusFromDepthPoint() {
+    if (undefined !== this._depthPoint) {
+      const view = this.viewTool.viewport!.view;
+      if (view.isCameraEnabled())
+        view.changeFocusFromPoint(this._depthPoint); // set the focus distance to the depth point
     }
   }
 }
@@ -336,7 +350,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   /** @internal */
-  public getDepthPoint(ev: BeButtonEvent, isPreview: boolean = false): Point3d | undefined {
+  public pickDepthPoint(ev: BeButtonEvent, isPreview: boolean = false): Point3d | undefined {
     if (!isPreview && ev.viewport && undefined !== this.getDepthPointGeometryId())
       ev.viewport.setFlashed(undefined, 0.0);
 
@@ -378,7 +392,7 @@ export abstract class ViewManip extends ViewTool {
 
   public onReinitialize(): void {
     if (undefined !== this.viewport) {
-      this.viewport.synchWithView(true); // make sure we store any changes in view undo buffer.
+      this.viewport.synchWithView(); // make sure we store any changes in view undo buffer.
       this.viewHandles.setFocus(-1);
     }
 
@@ -476,7 +490,7 @@ export abstract class ViewManip extends ViewTool {
     this.viewHandles.motion(ev);
 
     const prevSourceId = this.getDepthPointGeometryId();
-    const showDepthChanged = (undefined !== this.getDepthPoint(ev, true) || this.clearDepthPoint());
+    const showDepthChanged = (undefined !== this.pickDepthPoint(ev, true) || this.clearDepthPoint());
     if (ev.viewport && (showDepthChanged || prevSourceId)) {
       const currSourceId = this.getDepthPointGeometryId();
       if (currSourceId !== prevSourceId)
@@ -594,7 +608,7 @@ export abstract class ViewManip extends ViewTool {
 
     const vp = this.viewport;
     if (undefined !== vp) {
-      vp.synchWithView(true);
+      vp.synchWithView();
 
       if (restorePrevious)
         vp.doUndo(ScreenViewport.animation.time.normal);
@@ -639,7 +653,7 @@ export abstract class ViewManip extends ViewTool {
             const ev = new BeButtonEvent();
             IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
             this.targetCenterLocked = false; // Depth preview won't be active (or requested) if target is currently locked...
-            this.getDepthPoint(ev, true);
+            this.pickDepthPoint(ev, true);
           }
           if (undefined !== this._depthPreview && !this._depthPreview.isDefaultDepth)
             tentPt = this._depthPreview.plane.getOriginRef(); // Prefer valid depth preview point to unsnapped tentative location...
@@ -736,8 +750,7 @@ export abstract class ViewManip extends ViewTool {
     return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
   }
 
-  protected static _useViewAlignedVolume: boolean = false;
-  public static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent) {
+  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent) {
     const range = viewport.computeViewRange();
     const aspect = viewport.viewRect.aspect;
 
@@ -748,22 +761,15 @@ export abstract class ViewManip extends ViewTool {
         range.setFrom(clipRange);
     }
 
-    if (this._useViewAlignedVolume)
-      viewport.view.lookAtViewAlignedVolume(range, aspect, marginPercent);
-    else
-      viewport.view.lookAtVolume(range, aspect, marginPercent);
-
-    viewport.synchWithView(true);
+    viewport.view.lookAtVolume(range, aspect, marginPercent);
+    viewport.synchWithView({ animateFrustumChange });
     viewport.viewCmdTargetCenter = undefined;
-
-    if (doAnimate)
-      viewport.animateToCurrent();
   }
 
-  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): Promise<boolean> {
+  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent): Promise<boolean> {
     if (!viewport.isAlwaysDrawnExclusive || undefined === viewport.alwaysDrawn || 0 === viewport.alwaysDrawn.size)
       return false;
-    await viewport.zoomToElements(viewport.alwaysDrawn, { animateFrustumChange: doAnimate, marginPercent });
+    await viewport.zoomToElements(viewport.alwaysDrawn, { animateFrustumChange, marginPercent });
     return true;
   }
 
@@ -773,7 +779,7 @@ export abstract class ViewManip extends ViewTool {
       return ViewStatus.InvalidViewport;
 
     const view = vp.view;
-    if (!view || !view.is3d() || !view.allow3dManipulations())
+    if (!view.is3d() || !view.allow3dManipulations())
       return ViewStatus.InvalidViewport;
 
     const result = (retainEyePoint && view.isCameraOn) ?
@@ -783,7 +789,7 @@ export abstract class ViewManip extends ViewTool {
     if (result !== ViewStatus.Success)
       return result;
 
-    vp.synchWithView(false);
+    vp.setupFromView();
     return ViewStatus.Success;
   }
 
@@ -928,8 +934,8 @@ class ViewTargetCenter extends ViewingToolHandle {
     if (inDynamics || ev.viewport !== this.viewTool.viewport)
       return false;
 
-    const visiblePoint = this.viewTool.getDepthPoint(ev);
-    this.viewTool.setTargetCenterWorld(undefined !== visiblePoint ? visiblePoint : ev.point, true, ev.isControlKey); // Lock target for just this tool instance, only save if control is down...
+    this.pickDepthPoint(ev);
+    this.viewTool.setTargetCenterWorld(undefined !== this._depthPoint ? this._depthPoint : ev.point, true, ev.isControlKey); // Lock target for just this tool instance, only save if control is down...
 
     return false; // false means don't do screen update
   }
@@ -1005,21 +1011,23 @@ class ViewPan extends HandleWithInertia {
   public getHandleCursor() { return this.viewTool.inHandleModify ? IModelApp.viewManager.grabbingCursor : IModelApp.viewManager.grabCursor; }
 
   public firstPoint(ev: BeButtonEvent) {
-    this._inertiaVec = undefined;
-    const vp = ev.viewport!;
+    const tool = this.viewTool;
+    const vp = tool.viewport!;
     vp.worldToNpc(ev.point, this._lastPtNpc);
+
+    this._inertiaVec = undefined;
 
     // if the camera is on, we need to find the element under the starting point to get the z
     if (this.needDepthPoint(ev, false)) {
-      const visiblePoint = this.viewTool.getDepthPoint(ev);
-      if (undefined !== visiblePoint)
-        vp.worldToNpc(visiblePoint, this._lastPtNpc);
+      this.pickDepthPoint(ev);
+      if (undefined !== this._depthPoint)
+        vp.worldToNpc(this._depthPoint, this._lastPtNpc);
       else
         this._lastPtNpc.z = ViewManip.getFocusPlaneNpc(vp);
     }
 
-    this.viewTool.beginDynamicUpdate();
-    this.viewTool.provideToolAssistance("Pan.Prompts.NextPoint");
+    tool.beginDynamicUpdate();
+    tool.provideToolAssistance("Pan.Prompts.NextPoint");
     return true;
   }
 
@@ -1031,12 +1039,15 @@ class ViewPan extends HandleWithInertia {
 
   /** perform the view pan operation */
   protected perform(thisPtNpc: Point3d) {
-    const vp = this.viewTool.viewport!;
-    const dist = vp.npcToWorld(thisPtNpc).vectorTo(vp.npcToWorld(this._lastPtNpc));
+    const tool = this.viewTool;
+    const vp = tool.viewport!;
     const view = vp.view;
+    const dist = vp.npcToWorld(thisPtNpc).vectorTo(vp.npcToWorld(this._lastPtNpc));
+
     if (view.is3d()) {
       if (ViewStatus.Success !== view.moveCameraWorld(dist))
         return false;
+      this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
     } else {
       view.setOrigin(view.getOrigin().plus(dist));
     }
@@ -1072,9 +1083,9 @@ class ViewRotate extends HandleWithInertia {
     const tool = this.viewTool;
     const vp = ev.viewport!;
 
-    const visiblePoint = tool.getDepthPoint(ev);
-    if (undefined !== visiblePoint)
-      tool.setTargetCenterWorld(visiblePoint, false, false);
+    this.pickDepthPoint(ev);
+    if (undefined !== this._depthPoint)
+      tool.setTargetCenterWorld(this._depthPoint, false, false);
 
     vp.worldToNpc(ev.rawPoint, this._anchorPtNpc);
     this._lastPtNpc.setFrom(this._anchorPtNpc);
@@ -1107,10 +1118,11 @@ class ViewRotate extends HandleWithInertia {
     if (frustumChange)
       this._anchorPtNpc.setFrom(ptNpc);
 
+    const view = vp.view;
     let angle: Angle;
     let worldAxis: Vector3d;
     const worldPt = tool.targetCenterWorld;
-    if (!vp.view.allow3dManipulations()) {
+    if (!view.allow3dManipulations()) {
       const centerPt = vp.worldToView(worldPt);
       const firstPt = vp.npcToView(this._anchorPtNpc);
       const vector0 = Vector2d.createStartEnd(centerPt, firstPt);
@@ -1140,20 +1152,19 @@ class ViewRotate extends HandleWithInertia {
       worldAxis = result.axis;
     }
 
-    this.rotateViewWorld(worldPt, worldAxis, angle);
+    const worldMatrix = Matrix3d.createRotationAroundVector(worldAxis, angle);
+    if (undefined !== worldMatrix) {
+      const worldTransform = Transform.createFixedPointAndMatrix(worldPt, worldMatrix);
+      const frustum = this._frustum.transformBy(worldTransform);
+      view.setupFromFrustum(frustum);
+      this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
+      vp.setupFromView();
+    }
+
     vp.getWorldFrustum(this._activeFrustum);
     this._lastPtNpc.setFrom(ptNpc);
 
     return true;
-  }
-
-  private rotateViewWorld(worldPt: Point3d, worldAxis: Vector3d, angle: Angle) {
-    const worldMatrix = Matrix3d.createRotationAroundVector(worldAxis, angle);
-    if (!worldMatrix)
-      return;
-    const worldTransform = Transform.createFixedPointAndMatrix(worldPt, worldMatrix!);
-    const frustum = this._frustum.transformBy(worldTransform);
-    this.viewTool.viewport!.setupViewFromFrustum(frustum);
   }
 
   public onWheel(ev: BeWheelEvent): void {
@@ -1283,9 +1294,9 @@ abstract class AnimatedHandle extends ViewingToolHandle {
     const tool = this.viewTool;
     tool.inDynamicUpdate = true;
     if (vp && this.needDepthPoint(ev, false)) {
-      const visiblePoint = this.viewTool.getDepthPoint(ev);
-      if (undefined !== visiblePoint) {
-        vp.worldToView(visiblePoint, this._anchorPtView);
+      this.pickDepthPoint(ev);
+      if (undefined !== this._depthPoint) {
+        vp.worldToView(this._depthPoint, this._anchorPtView);
       } else {
         vp.worldToNpc(ev.point, this._anchorPtView);
         this._anchorPtView.z = ViewManip.getFocusPlaneNpc(vp);
@@ -1410,7 +1421,7 @@ class ViewScroll extends AnimatedHandle {
       frustum.transformBy(offsetTransform, frustum);
       viewport.setupViewFromFrustum(frustum);
     } else {
-      viewport.scroll(dist, { saveInUndo: false, animateFrustumChange: false });
+      viewport.scroll(dist, { noSaveInUndo: true });
     }
 
     return false;
@@ -1473,9 +1484,9 @@ class ViewZoom extends ViewingToolHandle {
     const vp = ev.viewport!;
     this.viewTool.inDynamicUpdate = true;
     if (this.needDepthPoint(ev, false)) {
-      const visiblePoint = this.viewTool.getDepthPoint(ev);
-      if (undefined !== visiblePoint) {
-        vp.worldToView(visiblePoint, this._anchorPtView);
+      this.pickDepthPoint(ev);
+      if (undefined !== this._depthPoint) {
+        vp.worldToView(this._depthPoint, this._anchorPtView);
       } else {
         vp.worldToNpc(ev.point, this._anchorPtView);
         this._anchorPtView.z = ViewManip.getFocusPlaneNpc(vp);
@@ -1490,7 +1501,7 @@ class ViewZoom extends ViewingToolHandle {
     vp.viewToWorld(this._anchorPtView, this._anchorPtWorld);
     this._startFrust = vp.getWorldFrustum();
 
-    if (vp.view.is3d() && vp.view.isCameraOn)
+    if (vp.view.isCameraEnabled())
       this._startEyePoint.setFrom(vp.view.getEyePoint());
 
     this.viewTool.provideToolAssistance("Zoom.Prompts.NextPoint");
@@ -1520,7 +1531,7 @@ class ViewZoom extends ViewingToolHandle {
     const frustum = this._startFrust.clone();
     const transform = Transform.createFixedPointAndMatrix(this._anchorPtWorld, Matrix3d.createScale(zoomRatio, zoomRatio, view.is3d() ? zoomRatio : 1.0));
 
-    if (view.is3d() && view.isCameraOn) {
+    if (view.isCameraEnabled()) {
       const oldEyePoint = this._startEyePoint;
       const newEyePoint = transform.multiplyPoint3d(oldEyePoint);
       const cameraOffset = Vector3d.createStartEnd(oldEyePoint, newEyePoint);
@@ -1722,7 +1733,7 @@ abstract class ViewNavigate extends AnimatedHandle {
     if (ToolSettings.walkEnforceZUp)
       tool.enforceZUp(view.getTargetPoint());
 
-    vp.animateToCurrent();
+    vp.animateFrustumChange();
   }
 
   public drawHandle(context: DecorateContext, hasFocus: boolean): void {
@@ -2470,8 +2481,7 @@ export class StandardViewTool extends ViewTool {
         const newFrustum = vp.getFrustum();
         newFrustum.multiply(rotateTransform);
         vp.view.setupFromFrustum(newFrustum);
-        vp.synchWithView(true);
-        vp.animateToCurrent();
+        vp.synchWithView({ animateFrustumChange: true });
       }
     }
     this.exitTool();
@@ -2666,7 +2676,7 @@ export class WindowAreaTool extends ViewTool {
     const view = vp.view;
     vp.viewToWorldArray(corners);
 
-    if (view.is3d() && view.isCameraOn) {
+    if (view.isCameraEnabled()) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
 
@@ -2688,7 +2698,7 @@ export class WindowAreaTool extends ViewTool {
       const range = Range3d.createArray(viewPts);
       delta = Vector3d.createStartEnd(range.low, range.high);
 
-      const focusDist = Math.max(delta.x, delta.y) / (2.0 * Math.tan(lensAngle.radians / 2));
+      const focusDist = delta.x / (2.0 * Math.tan(lensAngle.radians / 2));
 
       const newTarget = corners[0].interpolate(.5, corners[1]);
       const newEye = newTarget.plusScaled(view.getZVector(), focusDist);
@@ -2713,8 +2723,7 @@ export class WindowAreaTool extends ViewTool {
       view.setOrigin(Point3d.createFrom(originVec));
     }
 
-    vp.synchWithView(true);
-    vp.animateToCurrent();
+    vp.synchWithView({ animateFrustumChange: true });
   }
 }
 
@@ -2822,7 +2831,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 
   private handle2dPan() {
     const screenDist = Point2d.create(this._startPtView.x - this._lastPtView.x, this._startPtView.y - this._lastPtView.y);
-    this.viewport!.scroll(screenDist, { saveInUndo: false, animateFrustumChange: false });
+    this.viewport!.scroll(screenDist, { noSaveInUndo: true });
   }
 
   private handle2dRotateZoom(ev?: BeTouchEvent): void {
@@ -2901,7 +2910,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     offset.multiplyTransformTransform(transform, transform);
     transform.multiplyPoint3d(viewCenter, viewCenter);
     vp.npcToWorld(viewCenter, viewCenter);
-    vp.zoom(viewCenter, zoomRatio, { saveInUndo: false, animateFrustumChange: false });
+    vp.zoom(viewCenter, zoomRatio, { noSaveInUndo: true });
   }
 
   private handleEvent(ev: BeTouchEvent): void {
@@ -2924,7 +2933,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     if (this._startPtView.isAlmostEqualXY(thisPt, smallDistance)) {
       this._lastPtView.setFrom(this._startPtView);
     } else {
-      // Don't add inertia if the viewing operation included zoom, only do this for pan and rotate...
+      // Don't add inertia if the viewing operation included zoom, only do this for pan and rotate.
       if (!samePoint && !this._hasZoom) {
         this._inertiaVec = this._lastPtView.vectorTo(thisPt);
         this._inertiaVec.z = 0;
@@ -3011,8 +3020,7 @@ export class ViewToggleCameraTool extends ViewTool {
       else
         vp.turnCameraOn();
 
-      vp.synchWithView(true);
-      vp.animateToCurrent();
+      vp.synchWithView();
     }
     this.exitTool();
   }
@@ -3206,8 +3214,7 @@ export class SetupCameraTool extends PrimitiveTool {
     if (ViewStatus.Success !== view.lookAtUsingLensAngle(eyePtWorld, targetPtWorld, Vector3d.unitZ(), lensAngle))
       return;
 
-    vp.synchWithView(true);
-    vp.animateToCurrent();
+    vp.synchWithView();
   }
 
   private _useCameraHeightValue = new ToolSettingsValue(false);

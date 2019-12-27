@@ -70,7 +70,7 @@ export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldSt
         if (enabled)  // also ensure render mode is set to smooth, this is required to display shadows.
           vf.renderMode = RenderMode.SmoothShade;
         vp.viewFlags = vf;
-        vp.synchWithView(true);
+        vp.synchWithView();
         this.forceUpdate();
       }
     }

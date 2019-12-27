@@ -320,6 +320,8 @@ export abstract class ViewState extends ElementState {
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
   /** Returns true if this ViewState is-a [[ViewState2d]] */
   public is2d(): this is ViewState2d { return this instanceof ViewState2d; }
+  /** Returns true if this ViewState is-a [[ViewState3d]] with the camera currently on. */
+  public isCameraEnabled(): this is ViewState3d { return this.is3d() && this.isCameraOn; }
   /** Returns true if this ViewState is-a [[SpatialViewState]] */
   public isSpatialView(): this is SpatialViewState { return this instanceof SpatialViewState; }
   /** Returns true if this ViewState is-a [[DrawingViewState]] */
@@ -348,7 +350,7 @@ export abstract class ViewState extends ElementState {
   public abstract getRotation(): Matrix3d;
 
   /** Set the origin of this view in [[CoordSystem.World]] coordinates. */
-  public abstract setOrigin(viewOrg: Point3d): void;
+  public abstract setOrigin(viewOrg: XYAndZ): void;
 
   /** Set the extents of this view in [[CoordSystem.World]] coordinates. */
   public abstract setExtents(viewDelta: Vector3d): void;
@@ -467,7 +469,7 @@ export abstract class ViewState extends ElementState {
     let origin: Point3d;
 
     // Compute root vectors along edges of view frustum.
-    if (this.is3d() && this.isCameraOn) {
+    if (this.isCameraEnabled()) {
       const camera = this.camera;
       const eyeToOrigin = Vector3d.createStartEnd(camera.eye, inOrigin); // vector from origin on backplane to eye
       viewRot.multiplyVectorInPlace(eyeToOrigin);                        // align with view coordinates.
@@ -911,8 +913,7 @@ export abstract class ViewState extends ElementState {
       newDelta.z = minimumDepth;
     }
 
-    const isCameraOn = this.is3d() && this.isCameraOn;
-    if (isCameraOn) {
+    if (this.isCameraEnabled()) {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
       // the front or back of the view. For this reason, don't attempt to add any "margin" to camera views.
@@ -1277,12 +1278,35 @@ export abstract class ViewState3d extends ViewState {
     return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance);
   }
 
+  /** Change the focus distance for this ViewState3d. Preserves the content of the view.
+   * @internal
+   */
+  public changeFocusDistance(newDist: number): ViewStatus {
+    if (newDist <= Constant.oneMillimeter)
+      return ViewStatus.InvalidTargetPoint;
+
+    const oldExtents = this.extents.clone(); // save current extents so we can keep frustum unchanged
+    this.extents.x = 2.0 * Math.tan(this.camera.lens.radians / 2.0) * newDist; // new width based on focus distance and lens angle.
+    this.extents.y = this.extents.y * (this.extents.x / oldExtents.x); // preserve aspect ratio
+    this.origin.addScaledInPlace(this.rotation.multiplyTransposeVector(this.extents.vectorTo(oldExtents)), .5); // move origin by half the change in extents
+    this.camera.focusDist = newDist; // save new focus distance
+    return ViewStatus.Success;
+  }
+
+  /** Change the focus distance for this ViewState3d to be defined by the the supplied point, if it is in front of the camera.
+   * Preserves the content of the view.
+   * @internal
+   */
+  public changeFocusFromPoint(pt: Point3d) {
+    return this.changeFocusDistance(this.getZVector().dotProduct(pt.vectorTo(this.camera.eye)));
+  }
+
   /** Move the camera relative to its current location by a distance in camera coordinates.
    * @param distance to move camera. Length is in world units, direction relative to current camera orientation.
    * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
    */
   public moveCameraLocal(distance: Vector3d): ViewStatus {
-    const distWorld = this.getRotation().multiplyTransposeVector(distance);
+    const distWorld = this.rotation.multiplyTransposeVector(distance);
     return this.moveCameraWorld(distWorld);
   }
 
