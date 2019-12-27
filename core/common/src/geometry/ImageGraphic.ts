@@ -12,7 +12,7 @@ import {
   XYZProps,
 } from "@bentley/geometry-core";
 
-/** JSON representation of the 4 corners of an [[ImageGraphicProps]]. Must contain exactly 4 points.
+/** JSON representation of the 4 corners of an [[ImageGraphicProps]]. @see [[ImageGraphicCorners]].
  * @beta
  */
 export type ImageGraphicCornersProps = [ XYZProps, XYZProps, XYZProps, XYZProps ];
@@ -22,15 +22,23 @@ export type ImageGraphicCornersProps = [ XYZProps, XYZProps, XYZProps, XYZProps 
  * @beta
  */
 export interface ImageGraphicProps {
-  /** The 4 corners of defining the rectangle on which the image is displayed. */
+  /** The 4 corners of defining the quadrilateral on which the image is displayed. */
   corners: ImageGraphicCornersProps;
-  /** The Id of the persistent [[Texture]] element defining the image to be displayed on the rectangle. */
+  /** The Id of the persistent [[Texture]] element defining the image to be displayed on the quadrilateral. */
   textureId: Id64String;
   /** Whether or not to draw a border around the image. */
   hasBorder: boolean;
 }
 
-/** Defines the 4 corners of an [[ImageGraphic]].
+/** Defines the 4 corners of an [[ImageGraphic]]. The points are expected to lie in a single plane and define a (possibly-skewed) quadrilateral.
+ * The points map to the corners of the image as follows:
+ * `
+ *  3____2
+ *  |    |
+ *  |____|
+ *  0    1
+ * `
+ * The image can be flipped and/or rotated by specifying the points in a different order.
  * @beta
  */
 export class ImageGraphicCorners {
@@ -63,21 +71,21 @@ export class ImageGraphicCorners {
   }
 }
 
-/** A geometric primitive that displays an image mapped to the corners of a rectangle, with an optional border.
+/** A geometric primitive that displays an image mapped to the corners of a quadrilateral, with an optional border.
  * The image is always displayed regardless of [[RenderMode]] or [[ViewFlags]], and is displayed without lighting.
  * @beta
  */
 export class ImageGraphic {
-  /** The 4 corners of defining the rectangle on which the image is displayed. */
+  /** The 4 corners of defining the quadrilateral on which the image is displayed. */
   public readonly corners: ImageGraphicCorners;
-  /** The Id of the persistent [[Texture]] element defining the image to be displayed on the rectangle. */
+  /** The Id of the persistent [[Texture]] element defining the image to be displayed on the quadrilateral. */
   public readonly textureId: Id64String;
   /** Whether or not to draw a border around the image. */
   public readonly hasBorder: boolean;
 
   /** Construct a new ImageGraphic.
-   * @param corners Defines the 4 corners of the rectangle on which the image is to be displayed. The ImageGraphic takes ownership of this input.
-   * @param textureId Identifies a persistent [[Texture]] element defining the image to be mapped onto the rectangle.
+   * @param corners Defines the 4 corners of the quadrilateral on which the image is to be displayed. The ImageGraphic takes ownership of this input.
+   * @param textureId Identifies a persistent [[Texture]] element defining the image to be mapped onto the quadrilateral.
    * @param hasBorder Whether or not to display a border around the image.
    */
   public constructor(corners: ImageGraphicCorners, textureId: Id64String, hasBorder = false) {
@@ -123,7 +131,7 @@ export class ImageGraphic {
     return result;
   }
 
-  /** Apply a transform to the corners of the rectangle. */
+  /** Apply a transform to the corners of the quadrilateral. */
   public transformInPlace(transform: Transform): void {
     transform.multiplyPoint3d(this.corners[0], this.corners[0]);
     transform.multiplyPoint3d(this.corners[1], this.corners[1]);
