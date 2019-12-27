@@ -87,7 +87,8 @@ function convertToImageGraphics(args: Yargs.Arguments<Args>): boolean {
   // ImageGraphicTransformer throws on any error.
   let transformed = true;
   try {
-    ImageGraphicTransformer.transform(srcDb, dstDb, { data, format, width: args.width, height: args.height });
+    const border = args.border ? true : undefined;
+    ImageGraphicTransformer.transform(srcDb, dstDb, { data, format, width: args.width, height: args.height, border });
     dstDb.saveChanges();
   } catch (ex) {
     logError("Conversion failed", ex);
@@ -109,7 +110,7 @@ function main(): void {
   Yargs.required("height", "Height of the texture image");
   Yargs.number(["width", "height"]);
   Yargs.default("border", false, "Enable display of a border around the image");
-  Yargs.boolean(["border"]);
+  Yargs.boolean("border");
 
   const args = Yargs.parse() as Yargs.Arguments<Args>;
 

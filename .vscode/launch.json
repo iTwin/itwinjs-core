@@ -604,10 +604,11 @@
       ],
       "args": [
         "--input=d:/bim/text2.ibim",
-        "--output=d:/bim/image-graphics.bim",
-        "--texture=C:/Users/paul.connelly/Pictures/cookie3.jpg",
+        "--output=d:/bim/img/text2.bim",
+        "--texture=d:/bim/img/cookie3.jpg",
         "--width=303",
-        "--height=404"
+        "--height=404",
+        "--border"
       ]
     },
     {
