@@ -12,15 +12,10 @@ import {
   XYZProps,
 } from "@bentley/geometry-core";
 
-/** JSON representation of the 4 corners of an [[ImageGraphicProps]].
+/** JSON representation of the 4 corners of an [[ImageGraphicProps]]. Must contain exactly 4 points.
  * @beta
  */
-export interface ImageGraphicCornersProps {
-  0: XYZProps;
-  1: XYZProps;
-  2: XYZProps;
-  3: XYZProps;
-}
+export type ImageGraphicCornersProps = [ XYZProps, XYZProps, XYZProps, XYZProps ];
 
 /** JSON representation of an [[ImageGraphic].
  * @see [[GeometryStreamEntryProps]].
@@ -64,7 +59,7 @@ export class ImageGraphicCorners {
   }
 
   public toJSON(): ImageGraphicCornersProps {
-    return { 0: this[0].toJSON(), 1: this[1].toJSON(), 2: this[2].toJSON(), 3: this[3].toJSON() };
+    return [ this[0].toJSON(), this[1].toJSON(), this[2].toJSON(), this[3].toJSON() ];
   }
 }
 

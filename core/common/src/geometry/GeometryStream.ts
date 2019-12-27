@@ -336,7 +336,7 @@ export class GeometryStreamBuilder {
     if (undefined !== this._worldToLocal)
       image = image.cloneTransformed(this._worldToLocal);
 
-    this.geometryStream.push({ image });
+    this.geometryStream.push({ image: image.toJSON() });
     return true;
   }
 

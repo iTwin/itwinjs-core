@@ -24,8 +24,9 @@ interface Args {
   input: string;
   output: string;
   texture: string;
-  width: string;
-  height: string;
+  width: number;
+  height: number;
+  border: boolean;
 }
 
 function logError(msg: string, ex?: Error): void {
@@ -86,7 +87,7 @@ function convertToImageGraphics(args: Yargs.Arguments<Args>): boolean {
   // ImageGraphicTransformer throws on any error.
   let transformed = true;
   try {
-    ImageGraphicTransformer.transform(srcDb, dstDb, { data, format, width: args.width as any, height: args.height as any });
+    ImageGraphicTransformer.transform(srcDb, dstDb, { data, format, width: args.width, height: args.height });
     dstDb.saveChanges();
   } catch (ex) {
     logError("Conversion failed", ex);
@@ -107,6 +108,8 @@ function main(): void {
   Yargs.required("width", "Width of the texture image");
   Yargs.required("height", "Height of the texture image");
   Yargs.number(["width", "height"]);
+  Yargs.default("border", false, "Enable display of a border around the image");
+  Yargs.boolean(["border"]);
 
   const args = Yargs.parse() as Yargs.Arguments<Args>;
 
