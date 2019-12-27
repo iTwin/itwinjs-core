@@ -605,7 +605,9 @@
       "args": [
         "--input=d:/bim/text2.ibim",
         "--output=d:/bim/image-graphics.bim",
-        "--texture=C:/Users/paul.connelly/Pictures/cookie.jpg"
+        "--texture=C:/Users/paul.connelly/Pictures/cookie3.jpg",
+        "--width=303",
+        "--height=404"
       ]
     },
     {

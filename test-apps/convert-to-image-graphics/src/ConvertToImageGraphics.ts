@@ -16,12 +16,16 @@ import {
   IModelHostConfiguration,
   IModelJsFs,
 } from "@bentley/imodeljs-backend";
-import { ImageGraphicTransformer } from "./ImageGraphicTransformer";
+import {
+  ImageGraphicTransformer,
+} from "./ImageGraphicTransformer";
 
 interface Args {
   input: string;
   output: string;
   texture: string;
+  width: string;
+  height: string;
 }
 
 function logError(msg: string, ex?: Error): void {
@@ -33,12 +37,12 @@ function logError(msg: string, ex?: Error): void {
 }
 
 function convertToImageGraphics(args: Yargs.Arguments<Args>): boolean {
-  let fmt = ImageSourceFormat.Jpeg;
+  let format = ImageSourceFormat.Jpeg;
   const dotPos = args.texture.lastIndexOf(".");
   if (-1 !== dotPos) {
     switch (args.texture.substring(dotPos + 1).toLowerCase()) {
       case "png":
-        fmt = ImageSourceFormat.Png;
+        format = ImageSourceFormat.Png;
         break;
       case "jpg":
       case "jpeg":
@@ -54,10 +58,10 @@ function convertToImageGraphics(args: Yargs.Arguments<Args>): boolean {
     return false;
   }
 
-  let textureBytes64;
+  let data;
   try {
     const textureBytes = IModelJsFs.readFileSync(args.texture) as Buffer;
-    textureBytes64 = textureBytes.toString("base64");
+    data = textureBytes.toString("base64");
   } catch (ex) {
     logError("Failed to read texture image", ex);
     return false;
@@ -82,7 +86,7 @@ function convertToImageGraphics(args: Yargs.Arguments<Args>): boolean {
   // ImageGraphicTransformer throws on any error.
   let transformed = true;
   try {
-    ImageGraphicTransformer.transform(srcDb, dstDb, textureBytes64, fmt);
+    ImageGraphicTransformer.transform(srcDb, dstDb, { data, format, width: args.width as any, height: args.height as any });
     dstDb.saveChanges();
   } catch (ex) {
     logError("Conversion failed", ex);
@@ -100,6 +104,10 @@ function main(): void {
   Yargs.required("input", "Path to the existing input iModel");
   Yargs.required("output", "Path to the output iModel to be created");
   Yargs.required("texture", "Path to the .png or .jpeg image to import");
+  Yargs.required("width", "Width of the texture image");
+  Yargs.required("height", "Height of the texture image");
+  Yargs.number(["width", "height"]);
+
   const args = Yargs.parse() as Yargs.Arguments<Args>;
 
   IModelHost.startup(new IModelHostConfiguration());
