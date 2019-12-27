@@ -428,6 +428,11 @@ export class SurfaceGeometry extends MeshGeometry {
     }
   }
 
+  public wantMixMonochromeColor(target: Target): boolean {
+    // Text relies on white-on-white reversal.
+    return !this.isGlyph && (this.isLitSurface || this.wantTextures(target, this.isTextured));
+  }
+
   public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
   public get isLitSurface() { return this.isLit; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }

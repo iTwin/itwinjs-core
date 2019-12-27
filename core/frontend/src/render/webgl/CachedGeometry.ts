@@ -131,6 +131,8 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
     return vf.lighting ? FlashMode.Brighten : FlashMode.MixHiliteColor;
   }
 
+  public wantMixMonochromeColor(_target: Target): boolean { return false; }
+
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 
   public computeRange(output?: Range3d): Range3d {
