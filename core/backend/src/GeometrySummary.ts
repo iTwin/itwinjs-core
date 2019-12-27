@@ -12,10 +12,10 @@ import {
   BRepEntity,
   GeometryParams,
   GeometryStreamIterator,
+  GeometryStreamIteratorEntry,
   GeometrySummaryRequestProps,
   GeometrySummaryVerbosity,
   IModelError,
-  TextString,
   GeometricElement3dProps,
 } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
@@ -115,7 +115,8 @@ class ResponseGenerator {
         const prim = entry.primitive;
         switch (prim.type) {
           case "textString":
-            this.summarizeTextString(lines, prim.textString);
+          case "image":
+            this.summarizePrimitive(lines, prim);
             break;
           case "brep":
             this.summarizeBRep(lines, prim.brep);
@@ -179,14 +180,14 @@ class ResponseGenerator {
     return "SubGraphicRange: " + this.stringify(range);
   }
 
-  public summarizeTextString(lines: string[], text: TextString): void {
-    const summary = "textString";
+  public summarizePrimitive(lines: string[], primitive: GeometryStreamIteratorEntry.TextStringPrimitive | GeometryStreamIteratorEntry.ImagePrimitive): void {
+    const summary = primitive.type;
     if (GeometrySummaryVerbosity.Basic >= this.verbosity) {
       lines.push(summary);
       return;
     }
 
-    const json = this.stringify(text);
+    const json = this.stringify(primitive.type === "textString" ? primitive.textString : primitive.image);
     if (GeometrySummaryVerbosity.Detailed >= this.verbosity) {
       lines.push(summary + ": " + json);
       return;
