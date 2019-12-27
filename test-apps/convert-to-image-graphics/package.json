@@ -7,6 +7,7 @@
     "build": "npm run build-code && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "lint": "tslint -p . 1>&2",
     "build-code": "tsc 1>&2",
+    "start": "node ./lib/ConvertToImageGraphics.js",
     "clean": "rimraf lib .rush package-deps.json ../../generated-docs",
     "test": "",
     "docs": "",
