@@ -295,6 +295,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "convert-to-image-graphics",
+      "projectFolder": "test-apps/convert-to-image-graphics",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "export-gltf",
       "projectFolder": "test-apps/export-gltf",
       "reviewCategory": "internal",
