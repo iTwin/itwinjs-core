@@ -8,12 +8,17 @@ import {
   using,
 } from "@bentley/bentleyjs-core";
 import {
+  LowAndHighXY,
+  LowAndHighXYZ,
   Point2d,
   Point3d,
 } from "@bentley/geometry-core";
 import {
   ElementProps,
   GeometricElement2dProps,
+  GeometricElement3dProps,
+  GeometricElementProps,
+  GeometryStreamProps,
   ImageGraphic,
   ImageGraphicCorners,
   ImageSourceFormat,
@@ -47,19 +52,42 @@ class Importer extends IModelImporter {
   }
 
   public onInsertElement(elemProps: ElementProps): Id64String {
-    const props2d = elemProps as GeometricElement2dProps;
-    this.convertToImageGraphic2d(props2d);
+    const geomProps = elemProps as GeometricElementProps;
+    const geom = geomProps.geom;
+    if (geom) {
+      const props2d = elemProps as GeometricElement2dProps;
+      if (props2d.placement && props2d.placement.bbox) {
+        geomProps.geom = this.convertToImageGraphic2d(geom, props2d.placement.bbox);
+      } else {
+        const props3d = elemProps as GeometricElement3dProps;
+        if (props3d.placement && props3d.placement.bbox)
+          geomProps.geom = this.convertToImageGraphic3d(geom, props3d.placement.bbox);
+      }
+    }
 
     return super.onInsertElement(elemProps);
   }
 
-  private convertToImageGraphic2d(props: GeometricElement2dProps): void {
-    if (undefined === props.placement || undefined === props.geom || undefined === props.placement.bbox)
-      return;
+  private convertToImageGraphic2d(geom: GeometryStreamProps, bbox: LowAndHighXY): GeometryStreamProps {
+    const low2d = Point2d.fromJSON(bbox.low);
+    const high2d = Point2d.fromJSON(bbox.high);
+    const corners = new ImageGraphicCorners(new Point3d(low2d.x, low2d.y, 0), new Point3d(high2d.x, low2d.y, 0), new Point3d(high2d.x, high2d.y, 0), new Point3d(low2d.x, high2d.y, 0));
+    return this.convertToImageGraphic(geom, corners);
+  }
 
+  private convertToImageGraphic3d(geom: GeometryStreamProps, bbox: LowAndHighXYZ): GeometryStreamProps {
+    const low = Point3d.fromJSON(bbox.low);
+    const high = Point3d.fromJSON(bbox.high);
+    const lx = low.x, ly = low.y, lz = low.z;
+    const hx = high.x, hy = high.y, hz = high.z;
+    const corners = new ImageGraphicCorners(low, new Point3d(hx, ly, lz), high, new Point3d(lx, hy, hz));
+    return this.convertToImageGraphic(geom, corners);
+  }
+
+  private convertToImageGraphic(oldGeom: GeometryStreamProps, corners: ImageGraphicCorners): GeometryStreamProps {
     const newGeom = [];
     let imageGraphic;
-    for (const entry of props.geom) {
+    for (const entry of oldGeom) {
       if (undefined !== entry.geomPart || undefined !== entry.point || undefined !== entry.subRange)
         continue;
 
@@ -72,15 +100,11 @@ class Importer extends IModelImporter {
       if (undefined !== imageGraphic)
         continue;
 
-      const low2d = Point2d.fromJSON(props.placement.bbox.low);
-      const high2d = Point2d.fromJSON(props.placement.bbox.high);
-      const corners = new ImageGraphicCorners(new Point3d(low2d.x, low2d.y, 0), new Point3d(high2d.x, low2d.y, 0), new Point3d(high2d.x, high2d.y, 0), new Point3d(low2d.x, high2d.y, 0));
       imageGraphic = new ImageGraphic(corners, this._textureId, this._wantBorder);
-
       newGeom.push({ image: imageGraphic.toJSON() });
     }
 
-    props.geom = newGeom;
+    return newGeom;
   }
 }
 

@@ -603,8 +603,8 @@
         "${workspaceFolder}/lib/**/*.js"
       ],
       "args": [
-        "--input=d:/bim/text2.ibim",
-        "--output=d:/bim/img/text2.bim",
+        "--input=d:/bim/small_building_2.ibim",
+        "--output=d:/bim/img/small_building_2.bim",
         "--texture=d:/bim/img/cookie3.jpg",
         "--width=303",
         "--height=404",
