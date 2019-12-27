@@ -4,22 +4,39 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
+  Id64String,
   using,
 } from "@bentley/bentleyjs-core";
 import {
   ImageSourceFormat,
   IModel,
+  TextureFlags,
 } from "@bentley/imodeljs-common";
 import {
   GeometricElement,
   IModelDb,
   IModelTransformer,
   IModelImporter,
+  Texture,
 } from "@bentley/imodeljs-backend";
 
-export class ImageGraphicTransformer /* extends IModelTransformer */ {
-  public static transform(src: IModelDb, dst: IModelDb, _textureBytes: string, _textureFormat: ImageSourceFormat): void {
-    using (new IModelTransformer(src, dst), (transformer) => {
+class Importer extends IModelImporter {
+  private readonly _textureId: Id64String;
+
+  public constructor(db: IModelDb, textureBytes: string, textureFormat: ImageSourceFormat) {
+    super(db);
+    this._textureId = Texture.insert(this.targetDb, IModel.dictionaryId, "ImageGraphicTexture", textureFormat, textureBytes, 100, 100, "", TextureFlags.None);
+  }
+}
+
+export class ImageGraphicTransformer extends IModelTransformer {
+  public constructor(src: IModelDb, dst: IModelDb, textureBytes: string, textureFormat: ImageSourceFormat) {
+    const importer = new Importer(dst, textureBytes, textureFormat);
+    super(src, importer);
+  }
+
+  public static transform(src: IModelDb, dst: IModelDb, textureBytes: string, textureFormat: ImageSourceFormat): void {
+    using (new ImageGraphicTransformer(src, dst, textureBytes, textureFormat), (transformer) => {
       // Want to use transformer.processAll(), but it chokes on exportRelationships.
       transformer.initFromExternalSourceAspects();
       transformer.exporter.exportCodeSpecs();

@@ -83,6 +83,7 @@ function convertToImageGraphics(args: Yargs.Arguments<Args>): boolean {
   let transformed = true;
   try {
     ImageGraphicTransformer.transform(srcDb, dstDb, textureBytes64, fmt);
+    dstDb.saveChanges();
   } catch (ex) {
     logError("Conversion failed", ex);
     transformed = false;
@@ -105,7 +106,7 @@ function main(): void {
   if (convertToImageGraphics(args))
     process.stdout.write("Conversion complete.\n");
   else
-    process.stderr.write("uh-oh");
+    process.stderr.write("Unknown exception occurred.\n");
 }
 
 main();
