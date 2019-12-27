@@ -590,8 +590,23 @@
       ],
       "args": [
         "--input=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
-        "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json",
+        "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug convert-to-image-graphics",
+      "program": "${workspaceRoot}/test-apps/convert-to-image-graphics/lib/ConvertToImageGraphics.js",
+      "cwd": "${workspaceRoot}/test-apps/convert-to-image-graphics/",
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
       ],
+      "args": [
+        "--input=d:/bim/text2.ibim",
+        "--output=d:/bim/image-graphics.bim",
+        "--texture=C:/Users/paul.connelly/Pictures/cookie.jpg"
+      ]
     },
     {
       "type": "node",

@@ -16,6 +16,7 @@ import {
   IModelHostConfiguration,
   IModelJsFs,
 } from "@bentley/imodeljs-backend";
+import { ImageGraphicTransformer } from "./ImageGraphicTransformer";
 
 interface Args {
   input: string;
@@ -32,7 +33,7 @@ function logError(msg: string, ex?: Error): void {
 }
 
 function convertToImageGraphics(args: Yargs.Arguments<Args>): boolean {
-  let fmt;
+  let fmt = ImageSourceFormat.Jpeg;
   const dotPos = args.texture.lastIndexOf(".");
   if (-1 !== dotPos) {
     switch (args.texture.substring(dotPos + 1).toLowerCase()) {
@@ -41,7 +42,6 @@ function convertToImageGraphics(args: Yargs.Arguments<Args>): boolean {
         break;
       case "jpg":
       case "jpeg":
-        fmt = ImageSourceFormat.Jpeg;
         break;
       default:
         logError("Supported image types: .jpg, .jpeg, or .png");
@@ -79,7 +79,19 @@ function convertToImageGraphics(args: Yargs.Arguments<Args>): boolean {
     return false;
   }
 
-  return true;
+  // ImageGraphicTransformer throws on any error.
+  let transformed = true;
+  try {
+    ImageGraphicTransformer.transform(srcDb, dstDb, textureBytes64, fmt);
+  } catch (ex) {
+    logError("Conversion failed", ex);
+    transformed = false;
+  } finally {
+    dstDb.closeSnapshot();
+    srcDb.closeStandalone();
+  }
+
+  return transformed;
 }
 
 function main(): void {
@@ -91,7 +103,9 @@ function main(): void {
 
   IModelHost.startup(new IModelHostConfiguration());
   if (convertToImageGraphics(args))
-    process.stdout.write("Conversion complete.");
+    process.stdout.write("Conversion complete.\n");
+  else
+    process.stderr.write("uh-oh");
 }
 
 main();
