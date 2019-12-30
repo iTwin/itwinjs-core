@@ -32,7 +32,7 @@ export function addMonochrome(frag: FragmentShaderBuilder): void {
 
   frag.addUniform("u_mixMonoColor", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_mixMonoColor", (uniform, params) => {
-      uniform.setUniform1f(params.geometry.isLitSurface ? 1.0 : 0.0);
+      uniform.setUniform1f(params.geometry.wantMixMonochromeColor(params.target) ? 1.0 : 0.0);
     });
   });
 }

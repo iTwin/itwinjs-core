@@ -590,8 +590,8 @@
       ],
       "args": [
         "--input=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
-        "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json",
-      ],
+        "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
+      ]
     },
     {
       "type": "node",
