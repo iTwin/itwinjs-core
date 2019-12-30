@@ -680,8 +680,8 @@ export class AccuDrawShortcuts {
     newFrustum.multiply(rotateTransform);
 
     vp.view.setupFromFrustum(newFrustum);
-    vp.synchWithView(true);
-    vp.animateToCurrent();
+    vp.synchWithView();
+    vp.animateFrustumChange();
 
     accudraw.refreshDecorationsAndDynamics();
   }

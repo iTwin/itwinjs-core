@@ -844,6 +844,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     rect.bottom = cssPixelsToDevicePixels(rect.bottom);
     rect.top = cssPixelsToDevicePixels(rect.top);
 
+    const gl = this.renderSystem.context;
+    const viewRect = this.viewRect;
+    gl.viewport(0, 0, viewRect.width, viewRect.height);
+
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.

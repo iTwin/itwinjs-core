@@ -33,6 +33,8 @@ import {
 } from "./ToolAssistance";
 import { SettingsResult, SettingsStatus, SettingsMapResult } from "@bentley/imodeljs-clients";
 
+// cSpell:ignore geti
+
 /** @alpha An object that can react to a view's clip being changed by tools or modify handles. */
 export interface ViewClipEventHandler {
   selectOnCreate(): boolean; // Add newly created clip geometry to selection set and show modify controls.
@@ -1435,8 +1437,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
     const newFrustum = vp.getFrustum();
     newFrustum.multiply(rotateTransform);
     vp.view.setupFromFrustum(newFrustum);
-    vp.synchWithView(true);
-    vp.animateToCurrent();
+    vp.synchWithView();
+    vp.animateFrustumChange();
     return true;
   }
 

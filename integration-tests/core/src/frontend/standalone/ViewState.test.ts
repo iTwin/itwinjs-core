@@ -327,14 +327,20 @@ describe("ViewState", () => {
     };
 
     viewState.setOrigin(Point3d.create(100, 23, -18));
-    viewState.setExtents(Vector3d.create(55, 0.01, 23));
+    viewState.setExtents(Vector3d.create(55, 40.01, 23));
     viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toMatrix3d());
-    viewState.setLensAngle(Angle.createDegrees(11));
+    viewState.setLensAngle(Angle.createDegrees(65));
     viewState.setFocusDistance(191);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
     const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "lookAtUsingLensAngle", testParams);
     viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
     compareView(viewState, cppView, "lookAtUsingLensAngle");
+
+    // changing the focus distance shouldn't change the viewing frustum
+    const oldFrust = viewState.calculateFrustum()!;
+    viewState.changeFocusDistance(200);
+    assert.isTrue(oldFrust.isSame(viewState.calculateFrustum()!));
+    assert.equal(200, viewState.camera.focusDist);
   });
 
   it("should ignore 2d models in model selector", async () => {

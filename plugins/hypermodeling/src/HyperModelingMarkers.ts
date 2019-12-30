@@ -30,6 +30,8 @@ import { HyperModelingPlugin } from "./HyperModeling";
 import { createSectionGraphicsProvider } from "./SectionGraphicsProvider";
 import { AbstractToolbarProps, BadgeType } from "@bentley/ui-abstract";
 
+// cSpell:ignore hotspot sectionmarkersprite detailmarkersprite elevationmarkersprite planmarkersprite
+
 interface PopupToolbarProvider {
   toolbarProps: AbstractToolbarProps;
   overToolbarHotspot: boolean;
@@ -165,8 +167,8 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
     if (startFrustum.equals(newFrustum))
       return;
     vp.view.setupFromFrustum(newFrustum);
-    vp.synchWithView(true);
-    vp.animateToCurrent();
+    vp.synchWithView();
+    vp.animateFrustumChange();
   }
 
   public toolbarProps: AbstractToolbarProps = {

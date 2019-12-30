@@ -115,7 +115,7 @@ class BackgroundTerrainTreeSupplier implements TileTree.Supplier {
     const loader = await getCesiumWorldTerrainLoader(iModel, modelId, heightBias, heightRange, id.wantSkirts);
     const treeProps = new WebMapTileTreeProps(heightBias, modelId, heightRange, 12);
 
-    if (undefined === loader || undefined === treeProps) {
+    if (undefined === loader) {
       assert(false, "Invalid Terrain Provider");
       return undefined;
     }

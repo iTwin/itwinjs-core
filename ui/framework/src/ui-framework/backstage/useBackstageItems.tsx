@@ -19,7 +19,7 @@ export const useBackstageItems = (manager: BackstageItemsManager): readonly Back
     else {
       setItems(manager.items);
     }
-  }, [manager]);
+  }, [manager, manager.items]);
   React.useEffect(() => {
     const handleChanged = (args: BackstageItemsChangedArgs) => {
       setItems(args.items);

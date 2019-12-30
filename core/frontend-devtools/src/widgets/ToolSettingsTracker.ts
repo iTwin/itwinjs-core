@@ -126,7 +126,6 @@ export class ToolSettingsTracker {
 
     div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
     label = IModelApp.makeHTMLElement("label", { innerText: "Wheel Zoom Bump Distance (meters): ", parent: div });
-    label = document.createElement("label") as HTMLLabelElement;
     label.style.display = "inline";
     label.htmlFor = "ts_wheelZoomBumpDistance";
     createNumericInput({

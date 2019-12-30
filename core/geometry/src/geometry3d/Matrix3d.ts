@@ -1286,7 +1286,7 @@ export class Matrix3d implements BeJSONFunctions {
   /** Multiply the matrix * vector, i.e. the vector is a column vector on the right.
    * @return the vector result
    */
-  public multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d {
+  public multiplyVector(vector: XYAndZ, result?: Vector3d): Vector3d {
     const x = vector.x;
     const y = vector.y;
     const z = vector.z;

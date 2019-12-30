@@ -105,7 +105,7 @@ export class SetAspectRatioSkewTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp) {
       vp.view.setAspectRatioSkew(skew);
-      vp.synchWithView(false);
+      vp.synchWithView();
     }
 
     return true;

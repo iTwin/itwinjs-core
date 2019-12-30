@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Point2d, Point3d, PolygonOps } from "@bentley/geometry-core";
+import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
 import { I18NNamespace, I18N } from "@bentley/imodeljs-i18n";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
@@ -127,6 +127,7 @@ export class BeButtonEvent implements BeButtonEventProps {
   private readonly _point: Point3d = new Point3d();
   private readonly _rawPoint: Point3d = new Point3d();
   private readonly _viewPoint: Point3d = new Point3d();
+  private _movement?: XAndY;
   /** The [[ScreenViewport]] from which this BeButtonEvent was generated. If undefined, this event is invalid. */
   public viewport?: ScreenViewport;
   /** How the coordinate values were generated (either from an action by the user or from a program.) */
@@ -163,6 +164,12 @@ export class BeButtonEvent implements BeButtonEventProps {
    */
   public get viewPoint() { return this._viewPoint; }
   public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
+  /** The difference in screen coordinates from previous motion event
+   * @internal
+   */
+  public get movement(): XAndY | undefined { return this._movement; }
+  /** @internal */
+  public set movement(mov: XAndY | undefined) { this._movement = mov; }
 
   /** Mark this BeButtonEvent as invalid. Can only become valid again by calling [[init]] */
   public invalidate() { this.viewport = undefined; }

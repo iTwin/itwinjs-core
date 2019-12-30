@@ -446,6 +446,10 @@ export class ToolAdmin {
     return event.vp!.mousePosFromEvent(event.ev as MouseEvent);
   }
 
+  private getMouseMovement(event: ToolEvent): XAndY {
+    return event.vp!.mouseMovementFromEvent(event.ev as MouseEvent);
+  }
+
   private getMouseButton(button: number) {
     switch (button) {
       case MouseButton.Middle: return BeButton.Middle;
@@ -850,7 +854,7 @@ export class ToolAdmin {
     return decoration;
   }
 
-  private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false): Promise<any> {
+  private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false, movement?: XAndY): Promise<any> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
 
@@ -879,6 +883,7 @@ export class ToolAdmin {
 
     current.fromButton(vp, pt2d, inputSource, true);
     current.toEvent(ev, true);
+    ev.movement = movement;
 
     IModelApp.accuDraw.onMotion(ev);
 
@@ -912,6 +917,7 @@ export class ToolAdmin {
   private async onMouseMove(event: ToolEvent): Promise<any> {
     const vp = event.vp!;
     const pos = this.getMousePosition(event);
+    const mov = this.getMouseMovement(event);
 
     // Sometimes the mouse goes down in a view, but we lose focus while its down so we never receive the up event.
     // That makes it look like the motion is a drag. Fix that by clearing the "isDown" based on the buttons member of the MouseEvent.
@@ -919,7 +925,7 @@ export class ToolAdmin {
     if (!(buttonMask & 1))
       this.currentInputState.button[BeButton.Data].isDown = false;
 
-    return this.onMotion(vp, pos, InputSource.Mouse);
+    return this.onMotion(vp, pos, InputSource.Mouse, false, mov);
   }
 
   public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {
@@ -1517,8 +1523,8 @@ export class ToolAdmin {
   }
 
   public setLocateCursor(enableLocate: boolean): void {
-    const { viewManager } = IModelApp;
-    this.setCursor(viewManager.inDynamicsMode ? IModelApp.viewManager.dynamicsCursor : IModelApp.viewManager.crossHairCursor);
+    const viewManager = IModelApp.viewManager;
+    this.setCursor(viewManager.inDynamicsMode ? viewManager.dynamicsCursor : viewManager.crossHairCursor);
     this.setLocateCircleOn(enableLocate);
     viewManager.invalidateDecorationsAllViews();
   }
@@ -1574,10 +1580,9 @@ export class WheelEventProcessor {
     }
 
     const animationOptions: ViewChangeOptions = {
-      saveInUndo: true,
       animateFrustumChange: true,
       cancelOnAbort: true,
-      animationTime: 175,
+      animationTime: ScreenViewport.animation.time.wheel.milliseconds,
       easingFunction: Easing.Cubic.Out,
     };
 
@@ -1595,11 +1600,11 @@ export class WheelEventProcessor {
           lastEvent.time = now;
         } else {
           const newTarget = vp.pickNearestVisibleGeometry(target);
-          if (undefined !== newTarget)
+          if (undefined !== newTarget) {
             target.setFrom(newTarget);
-          else
+          } else {
             view.getTargetPoint(target);
-
+          }
           currentInputState.lastWheelEvent = lastEvent = ev.clone();
           lastEvent.point.setFrom(target);
         }
@@ -1616,21 +1621,19 @@ export class WheelEventProcessor {
         offset.scaleToLength(bumpDist, offset); // move bump distance, just to get to the other side.
         target.addInPlace(offset);
         newEye.setFrom(eye.plus(offset));
-        currentInputState.lastWheelEvent = undefined; // we need to search on the "other side"
+        currentInputState.lastWheelEvent = undefined; // we need to search on the "other side" of what we were bumping into
       }
 
       const zDir = view.getZVector();
       target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
 
       status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens);
-      vp.synchWithView(true);
-      vp.animateToCurrent(animationOptions);
+      vp.synchWithView(animationOptions);
     } else {
       const targetNpc = vp.worldToNpc(target);
       const trans = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1));
-      const viewCenter = Point3d.create(.5, .5, .5);
 
-      trans.multiplyPoint3d(viewCenter, viewCenter);
+      const viewCenter = trans.multiplyPoint3d(Point3d.create(.5, .5, .5));
       vp.npcToWorld(viewCenter, viewCenter);
       vp.zoom(viewCenter, zoomRatio, animationOptions);
       status = ViewStatus.Success;

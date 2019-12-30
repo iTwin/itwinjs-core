@@ -475,8 +475,8 @@ export class ViewAttributes {
     }
   }
 
-  private sync(saveUndo = false): void {
-    this._vp.synchWithView(saveUndo);
+  private sync(saveInUndo = false): void {
+    this._vp.synchWithView({ noSaveInUndo: !saveInUndo });
   }
 
   private get _nextId(): string {

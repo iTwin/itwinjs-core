@@ -1999,6 +1999,8 @@ export class BeButtonEvent implements BeButtonEventProps {
     readonly isShiftKey: boolean;
     readonly isValid: boolean;
     keyModifiers: BeModifierKeys;
+    // @internal (undocumented)
+    movement: XAndY | undefined;
     point: Point3d;
     rawPoint: Point3d;
     setFrom(src: BeButtonEvent): this;
@@ -6939,15 +6941,14 @@ export class ScreenViewport extends Viewport {
     // @internal (undocumented)
     addNewDiv(className: string, overflowHidden: boolean, z: number): HTMLDivElement;
     // @internal (undocumented)
-    animateFrustumChange(options: ViewAnimationOptions): void;
-    // @internal
-    animateToCurrent(options?: ViewAnimationOptions): void;
+    animateFrustumChange(options?: ViewAnimationOptions): void;
     // @beta
     static animation: {
         time: {
             fast: BeDuration;
             normal: BeDuration;
             slow: BeDuration;
+            wheel: BeDuration;
         };
         easing: (k: number) => number;
         zoomOut: {
@@ -6968,8 +6969,6 @@ export class ScreenViewport extends Viewport {
     doUndo(animationTime?: BeDuration): void;
     // @internal (undocumented)
     drawLocateCursor(context: DecorateContext, viewPt: Point3d, aperture: number, isLocateCircleOn: boolean, hit?: HitDetail): void;
-    // (undocumented)
-    protected finishViewChange(options?: ViewChangeOptions): void;
     getClientRect(): ClientRect;
     readonly isRedoPossible: boolean;
     readonly isUndoPossible: boolean;
@@ -6977,13 +6976,15 @@ export class ScreenViewport extends Viewport {
     readonly logo: HTMLImageElement;
     maxUndoSteps: number;
     // @internal (undocumented)
+    mouseMovementFromEvent(ev: MouseEvent): XAndY;
+    // @internal (undocumented)
     mousePosFromEvent(ev: MouseEvent): XAndY;
     openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)
     pickCanvasDecoration(pt: XAndY): import("./render/System").CanvasDecoration | undefined;
     // @alpha
-    pickDepthPoint(pickPoint: Point3d, radius: number, options?: DepthPointOptions): {
+    pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): {
         plane: Plane3dByOriginAndUnitNormal;
         source: DepthPointSource;
         sourceId?: string;
@@ -7000,7 +7001,7 @@ export class ScreenViewport extends Viewport {
     // @internal
     static setToParentSize(div: HTMLElement): void;
     // @internal (undocumented)
-    synchWithView(saveInUndo: boolean): void;
+    synchWithView(options?: ViewChangeOptions | boolean): void;
     readonly toolTipDiv: HTMLDivElement;
     // @internal (undocumented)
     protected validateRenderPlan(): void;
@@ -9236,7 +9237,7 @@ export interface ViewAnimationOptions {
 export interface ViewChangeOptions extends ViewAnimationOptions {
     animateFrustumChange?: boolean;
     marginPercent?: MarginPercent;
-    saveInUndo?: boolean;
+    noSaveInUndo?: boolean;
 }
 
 // @alpha
@@ -9759,6 +9760,8 @@ export class ViewHandleArray {
     // (undocumented)
     motion(ev: BeButtonEvent): void;
     // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     onWheel(ev: BeWheelEvent): void;
@@ -9849,7 +9852,11 @@ export abstract class ViewingToolHandle {
     // (undocumented)
     adjustDepthPoint(isValid: boolean, _vp: Viewport, _plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean;
     // (undocumented)
+    protected changeFocusFromDepthPoint(): void;
+    // (undocumented)
     checkOneShot(): boolean;
+    // (undocumented)
+    protected _depthPoint?: Point3d;
     // (undocumented)
     abstract doManipulation(ev: BeButtonEvent, inDynamics: boolean): boolean;
     // (undocumented)
@@ -9870,6 +9877,8 @@ export abstract class ViewingToolHandle {
     motion(_ev: BeButtonEvent): boolean;
     // (undocumented)
     needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean;
+    // (undocumented)
+    onCleanup(): void;
     // (undocumented)
     onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): boolean;
     // (undocumented)
@@ -9892,6 +9901,8 @@ export abstract class ViewingToolHandle {
     onTouchTap(_ev: BeTouchEvent): boolean;
     // (undocumented)
     onWheel(_ev: BeWheelEvent): void;
+    // (undocumented)
+    protected pickDepthPoint(ev: BeButtonEvent): void;
     // (undocumented)
     abstract testHandleForHit(ptScreen: Point3d, out: {
         distance: number;
@@ -10010,15 +10021,13 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     enforceZUp(pivotPoint: Point3d): boolean;
     // (undocumented)
-    static fitView(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): void;
+    static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent): void;
     // @internal (undocumented)
     forcedHandle: ViewHandleType;
     // (undocumented)
     frustumValid: boolean;
     // (undocumented)
     static getDefaultTargetPointWorld(vp: Viewport): Point3d;
-    // @internal (undocumented)
-    getDepthPoint(ev: BeButtonEvent, isPreview?: boolean): Point3d | undefined;
     // @internal (undocumented)
     getDepthPointGeometryId(): string | undefined;
     // (undocumented)
@@ -10077,6 +10086,8 @@ export abstract class ViewManip extends ViewTool {
     // (undocumented)
     onTouchTap(ev: BeTouchEvent): Promise<EventHandled>;
     // @internal (undocumented)
+    pickDepthPoint(ev: BeButtonEvent, isPreview?: boolean): Point3d | undefined;
+    // @internal (undocumented)
     previewDepthPoint(context: DecorateContext): void;
     // (undocumented)
     processFirstPoint(ev: BeButtonEvent): boolean;
@@ -10097,12 +10108,10 @@ export abstract class ViewManip extends ViewTool {
     readonly targetCenterWorld: Point3d;
     // (undocumented)
     updateTargetCenter(): void;
-    // (undocumented)
-    protected static _useViewAlignedVolume: boolean;
     // @internal (undocumented)
     viewHandles: ViewHandleArray;
     // (undocumented)
-    static zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, doAnimate: boolean, marginPercent?: MarginPercent): Promise<boolean>;
+    static zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent): Promise<boolean>;
 }
 
 // @public
@@ -10169,8 +10178,6 @@ export abstract class Viewport implements IDisposable {
     // @beta
     emphasisSettings: Hilite.Settings;
     featureOverrideProvider: FeatureOverrideProvider | undefined;
-    // (undocumented)
-    protected finishViewChange(options?: ViewChangeOptions): void;
     // @internal
     flashDuration: number;
     // @internal
@@ -10325,7 +10332,7 @@ export abstract class Viewport implements IDisposable {
     setViewedCategoriesPerModelChanged(): void;
     // @internal (undocumented)
     readonly subcategories: SubCategoriesCache.Queue;
-    synchWithView(_saveInUndo: boolean): void;
+    synchWithView(_options?: ViewChangeOptions | boolean): void;
     // @internal (undocumented)
     readonly target: RenderTarget;
     // @alpha
@@ -10554,6 +10561,7 @@ export abstract class ViewState extends ElementState {
     hasSameCoordinates(other: ViewState): boolean;
     is2d(): this is ViewState2d;
     is3d(): this is ViewState3d;
+    isCameraEnabled(): this is ViewState3d;
     isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isPrivate?: boolean;
@@ -10587,7 +10595,7 @@ export abstract class ViewState extends ElementState {
     setDisplayStyle(style: DisplayStyleState): void;
     abstract setExtents(viewDelta: Vector3d): void;
     setGridSettings(orientation: GridOrientationType, spacing: Point2d, gridsPerRef: number): void;
-    abstract setOrigin(viewOrg: Point3d): void;
+    abstract setOrigin(viewOrg: XYAndZ): void;
     abstract setRotation(viewRot: Matrix3d): void;
     setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void;
     setStandardRotation(id: StandardViewId): void;
@@ -10674,6 +10682,10 @@ export abstract class ViewState3d extends ViewState {
     protected _cameraOn: boolean;
     centerEyePoint(backDistance?: number): void;
     centerFocusDistance(): void;
+    // @internal
+    changeFocusDistance(newDist: number): ViewStatus;
+    // @internal
+    changeFocusFromPoint(pt: Point3d): ViewStatus;
     // @internal (undocumented)
     static readonly className: string;
     // (undocumented)

@@ -476,7 +476,7 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
           mapType: this.state.bingMapType,
         },
       });
-      this._vp!.synchWithView(false);
+      this._vp!.synchWithView();
     }
 
     this.setState({
@@ -644,7 +644,7 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
       return;
 
     this._vp!.changeBackgroundMapProps({ providerData: { mapType } });
-    this._vp!.synchWithView(false);
+    this._vp!.synchWithView();
 
     this._vp!.invalidateScene();
     this.setState({ showMapTypes: false, bingMapType: mapType });
@@ -728,7 +728,7 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
           mapType: this.state.bingMapType,
         },
       });
-      this._vp!.synchWithView(false);
+      this._vp!.synchWithView();
     }
 
     this.setState({
