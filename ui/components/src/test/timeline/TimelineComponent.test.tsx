@@ -83,11 +83,13 @@ class TestTimelineDataProvider extends BaseTimelineDataProvider {
 }
 
 describe("<TimelineComponent showDuration={true} />", () => {
+  let fakeTimers: sinon.SinonFakeTimers | undefined;
   const rafSpy = sinon.spy((cb: FrameRequestCallback) => {
     return window.setTimeout(cb, 0);
   });
 
   before(async () => {
+    sinon.restore();
     // need to initialize to get localized strings
     await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
 
@@ -97,13 +99,19 @@ describe("<TimelineComponent showDuration={true} />", () => {
   });
 
   afterEach(() => {
+    fakeTimers && fakeTimers.restore();
     afterEach(cleanup);
     rafSpy.resetHistory();
+  });
+
+  after(() => {
+    sinon.restore();
   });
 
   it("should render without milestones - minimized", async () => {
     const dataProvider = new TestTimelineDataProvider(false);
     expect(dataProvider.loop).to.be.false;
+    fakeTimers = sinon.useFakeTimers();
 
     const renderedComponent = render(<TimelineComponent
       startDate={dataProvider.start}
@@ -126,20 +134,31 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.pointerCallbackCalled).to.be.false;
 
     fireEvent.click(playButton);
+    // Wait for animation.
+    fakeTimers.tick(600);
+    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await new Promise((r) => { setTimeout(r, 40); });
+    // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.playing).to.be.true;
 
     // hit play/pause button to pause animation
     fireEvent.click(playButton);
+    // Wait for animation.
+    fakeTimers.tick(600);
+    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await new Promise((r) => { setTimeout(r, 40); });
+    // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.playing).to.be.false;
     expect(dataProvider.pointerCallbackCalled).to.be.true;
   });
 
   it("should render with milestones - minimized", async () => {
     const dataProvider = new TestTimelineDataProvider(true);
+    fakeTimers = sinon.useFakeTimers();
 
     const renderedComponent = render(<TimelineComponent
       startDate={dataProvider.start}
@@ -160,14 +179,24 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.pointerCallbackCalled).to.be.false;
 
     fireEvent.click(playButton);
+    // Wait for animation.
+    fakeTimers.tick(600);
+    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await new Promise((r) => { setTimeout(r, 40); });
+    // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.playing).to.be.true;
 
     // hit play/pause button to pause animation
     fireEvent.click(playButton);
+    // Wait for animation.
+    fakeTimers.tick(600);
+    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await new Promise((r) => { setTimeout(r, 40); });
+    // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.playing).to.be.false;
     expect(dataProvider.pointerCallbackCalled).to.be.true;
   });
@@ -191,6 +220,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
   it("should render with milestones - expanded", async () => {
     const dataProvider = new TestTimelineDataProvider(true);
+    fakeTimers = sinon.useFakeTimers();
 
     const renderedComponent = render(<TimelineComponent
       startDate={dataProvider.start}
@@ -212,21 +242,35 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.pointerCallbackCalled).to.be.false;
 
     fireEvent.click(jumpForwardButton);
+
+    // Wait for animation.
+    fakeTimers.tick(600);
+    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await new Promise((r) => { setTimeout(r, 40); });
+    // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.forwardCallbackCalled).to.be.true;
 
     const jumpBackwardButton = renderedComponent.getByTestId("play-backward");
     expect(dataProvider.backwardCallbackCalled).to.be.false;
     fireEvent.click(jumpBackwardButton);
+
+    // Wait for animation.
+    fakeTimers.tick(600);
+    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await new Promise((r) => { setTimeout(r, 40); });
+    // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.backwardCallbackCalled).to.be.true;
   });
 
   it("timeline with short duration - expanded", async () => {
     const dataProvider = new TestTimelineDataProvider(true);
     dataProvider.getSettings().duration = 20;  // make sure this is shorter than 40 so we get to end of animation
+
+    fakeTimers = sinon.useFakeTimers();
 
     const renderedComponent = render(<TimelineComponent
       startDate={dataProvider.start}
@@ -249,8 +293,13 @@ describe("<TimelineComponent showDuration={true} />", () => {
     fireEvent.click(playButton);
     expect(dataProvider.playing).to.be.true;
 
+    // Wait for animation.
+    fakeTimers.tick(600);
+    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await new Promise((r) => { setTimeout(r, 40); });
+    // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.playing).to.be.false;
   });
 
@@ -258,6 +307,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
     const dataProvider = new TestTimelineDataProvider(true);
     dataProvider.getSettings().duration = 30;  // make sure this is shorter than 40 so we get to end of animation
     dataProvider.getSettings().loop = true;
+    fakeTimers = sinon.useFakeTimers();
 
     const renderedComponent = render(<TimelineComponent
       startDate={dataProvider.start}
@@ -281,8 +331,13 @@ describe("<TimelineComponent showDuration={true} />", () => {
     fireEvent.click(playButton);
     expect(dataProvider.playing).to.be.true;
 
+    // Wait for animation.
+    fakeTimers.tick(600);
+    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await new Promise((r) => { setTimeout(r, 40); });
+    // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.playing).to.be.true;
 
     fireEvent.click(playButton);
@@ -294,6 +349,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
     dataProvider.getSettings().duration = 30;  // make sure this is shorter than 40 so we get to end of animation
     dataProvider.getSettings().loop = true;
     dataProvider.animationFraction = 1.0;
+    fakeTimers = sinon.useFakeTimers();
 
     const renderedComponent = render(<TimelineComponent
       startDate={dataProvider.start}
@@ -316,8 +372,13 @@ describe("<TimelineComponent showDuration={true} />", () => {
     fireEvent.click(playButton);
     expect(dataProvider.playing).to.be.true;
 
+    // Wait for animation.
+    fakeTimers.tick(600);
+    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await new Promise((r) => { setTimeout(r, 40); });
+    // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.playing).to.be.true;
 
     fireEvent.click(playButton);
@@ -327,6 +388,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
   it("timeline with no dates (Analysis animation", async () => {
     const dataProvider = new TestTimelineDataProvider(false);
     dataProvider.getSettings().duration = 30;  // make sure this is shorter than the timeout of 40 so we get to end of animation
+    fakeTimers = sinon.useFakeTimers();
 
     const renderedComponent = render(<TimelineComponent
       initialDuration={dataProvider.initialDuration}
@@ -346,8 +408,13 @@ describe("<TimelineComponent showDuration={true} />", () => {
     fireEvent.click(playButton);
     expect(dataProvider.playing).to.be.true;
 
+    // Wait for animation.
+    fakeTimers.tick(600);
+    // Wait for 1st raf cb.
+    fakeTimers.tick(1);
+
     // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    await new Promise((r) => { setTimeout(r, 40); });
+    // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.playing).to.be.false;
   });
 
@@ -480,18 +547,18 @@ describe("<TimelineComponent showDuration={true} />", () => {
     // trigger call to componentDidUpdate
     renderedComponent.rerender(
       <TimelineComponent
-      startDate={dataProvider.start}
-      endDate={dataProvider.end}
-      initialDuration={50000}
-      totalDuration={dataProvider.duration}
-      milestones={dataProvider.getMilestones()}
-      minimized={true}
-      showDuration={true}
-      onChange={dataProvider.onAnimationFractionChanged}
-      onSettingsChange={dataProvider.onPlaybackSettingChanged}
-      onPlayPause={dataProvider.onPlayPause}
-      alwaysMinimized={false}
-    />,
+        startDate={dataProvider.start}
+        endDate={dataProvider.end}
+        initialDuration={50000}
+        totalDuration={dataProvider.duration}
+        milestones={dataProvider.getMilestones()}
+        minimized={true}
+        showDuration={true}
+        onChange={dataProvider.onAnimationFractionChanged}
+        onSettingsChange={dataProvider.onPlaybackSettingChanged}
+        onPlayPause={dataProvider.onPlayPause}
+        alwaysMinimized={false}
+      />,
     );
   });
 });
