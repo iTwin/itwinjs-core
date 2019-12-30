@@ -694,8 +694,13 @@ export class IModelDb extends IModel {
         result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
       }
 
-      if (result.status === QueryResponseStatus.Error)
-        throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows.length > 0 ? result.rows[0] : "Failed to execute ECSQL");
+      if (result.status === QueryResponseStatus.Error) {
+        if (result.rows[0] === undefined) {
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
+        } else {
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows[0]);
+        }
+      }
 
       if (rowsToGet > 0) {
         rowsToGet -= result.rows.length;

@@ -2932,7 +2932,7 @@ export class Matrix3d implements BeJSONFunctions {
     multiplyTransposeVector(vector: Vector3d, result?: Vector3d): Vector3d;
     multiplyTransposeVectorInPlace(xyzData: XYZ): void;
     multiplyTransposeXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
-    multiplyVector(vector: Vector3d, result?: Vector3d): Vector3d;
+    multiplyVector(vector: XYAndZ, result?: Vector3d): Vector3d;
     multiplyVectorArrayInPlace(data: XYZ[]): void;
     multiplyVectorInPlace(xyzData: XYZ): void;
     multiplyXY(x: number, y: number, result?: Vector3d): Vector3d;

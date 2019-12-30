@@ -129,7 +129,7 @@ export class SettingsModalDialog extends React.Component<SettingsModalDialogProp
   private _setGroundBias = () => {
     const vp = IModelApp.viewManager.selectedView as ScreenViewport;
     vp.changeBackgroundMapProps({ groundBias: this._newElevation });
-    vp.synchWithView(false);
+    vp.synchWithView();
     this.setState({ elevation: this._newElevation });
     this._saveSetting(); // tslint:disable-line:no-floating-promises
   }
