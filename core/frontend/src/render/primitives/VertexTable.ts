@@ -502,7 +502,10 @@ export interface SurfaceParams {
   readonly fillFlags: FillFlags;
   readonly hasBakedLighting: boolean;
   readonly hasFixedNormals: boolean;
-  readonly texture?: RenderTexture;
+  readonly textureMapping?: {
+    texture: RenderTexture;
+    alwaysDisplayed: boolean;
+  };
   readonly material?: SurfaceMaterial;
 }
 
@@ -704,7 +707,7 @@ export class MeshParams {
       fillFlags: args.fillFlags,
       hasBakedLighting: args.hasBakedLighting,
       hasFixedNormals: args.hasFixedNormals,
-      texture: args.texture,
+      textureMapping: undefined !== args.texture ? { texture: args.texture, alwaysDisplayed: false } : undefined,
       material: createSurfaceMaterial(args.material),
     };
 
