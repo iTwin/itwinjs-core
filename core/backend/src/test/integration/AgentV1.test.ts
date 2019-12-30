@@ -14,13 +14,17 @@ import { HubUtility } from "./HubUtility";
 describe("AgentV1 (#integration)", () => {
   // Agent test is not supported on ios
   if (!MobileRpcConfiguration.isMobileBackend) {
-    let agentConfiguration: OidcAgentClientConfigurationV1;
+    let testProjectId: string;
+
+    let testReadIModelId: string;
+    let testWriteIModelId: string;
+    let requestContext: AuthorizedBackendRequestContext;
 
     before(async () => {
       IModelTestUtils.setupLogging();
       // IModelTestUtils.setupDebugLogLevels();
 
-      agentConfiguration = {
+      const agentConfiguration: OidcAgentClientConfigurationV1 = {
         clientId: Config.App.getString("imjs_agent_v1_test_client_id"),
         clientSecret: Config.App.getString("imjs_agent_v1_test_client_secret"),
         serviceUserEmail: Config.App.getString("imjs_agent_v1_test_service_user_email"),
@@ -28,29 +32,28 @@ describe("AgentV1 (#integration)", () => {
         scope: "openid email profile organization context-registry-service imodelhub",
       };
 
+      const agentClient = new OidcAgentClientV1(agentConfiguration);
+      const jwt: AccessToken = await agentClient.getToken(new ClientRequestContext());
+      requestContext = new AuthorizedBackendRequestContext(jwt);
+
+      testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
+      testReadIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadOnlyTest");
+      testWriteIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadWriteTest");
+    });
+
+    after(async () => {
+      // Purge briefcases that are close to reaching the aquire limit
+      await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
+      await HubUtility.purgeAcquiredBriefcases(requestContext, "iModelJsIntegrationTest", "ReadWriteTest");
     });
 
     it("Agent should be able to open an iModel Readonly", async () => {
-      const agentClient = new OidcAgentClientV1(agentConfiguration);
-      const jwt: AccessToken = await agentClient.getToken(new ClientRequestContext());
-      const requestContext = new AuthorizedBackendRequestContext(jwt);
-
-      const testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
-      const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadOnlyTest");
-
-      const iModelDb = await IModelDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+      const iModelDb = await IModelDb.open(requestContext, testProjectId, testReadIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
       assert.isDefined(iModelDb);
     });
 
     it("Agent should be able to open an iModel ReadWrite", async () => {
-      const agentClient = new OidcAgentClientV1(agentConfiguration);
-      const jwt: AccessToken = await agentClient.getToken(new ClientRequestContext());
-      const requestContext = new AuthorizedBackendRequestContext(jwt);
-
-      const testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
-      const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, "ReadWriteTest");
-
-      const iModelDb = await IModelDb.open(requestContext, testProjectId, testIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+      const iModelDb = await IModelDb.open(requestContext, testProjectId, testWriteIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
       assert.isDefined(iModelDb);
     });
   } else {
