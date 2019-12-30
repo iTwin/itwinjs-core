@@ -31,6 +31,12 @@ See the [iModel Transformation and Data Exchange]($docs/learning/backend/IModelT
   * `detail.inverseInterpolateFraction (f, defaultLocalFraction)` maps input fraction f to local fraction of the `fraction, fraction1` interval of the detail.
   * `detail.swapFractionsAndPoints ()` swaps the `[fraction,point]` and `[fraction1, point1]` values (if both defined)
 
+### Viewing tools
+
+* New walk tool 'LookAndMoveTool'
+  * Supports mouse look and keyboard (wasd) for movement.
+  * Touch screen control sticks for look and move.
+
 ### Miscellaneous
 
 * New `Arc3d` method `arc.scaleAboutCenterInPlace (scaleFactor);`

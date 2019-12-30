@@ -1999,6 +1999,8 @@ export class BeButtonEvent implements BeButtonEventProps {
     readonly isShiftKey: boolean;
     readonly isValid: boolean;
     keyModifiers: BeModifierKeys;
+    // @internal (undocumented)
+    movement: XAndY | undefined;
     point: Point3d;
     rawPoint: Point3d;
     setFrom(src: BeButtonEvent): this;
@@ -6974,6 +6976,8 @@ export class ScreenViewport extends Viewport {
     readonly logo: HTMLImageElement;
     maxUndoSteps: number;
     // @internal (undocumented)
+    mouseMovementFromEvent(ev: MouseEvent): XAndY;
+    // @internal (undocumented)
     mousePosFromEvent(ev: MouseEvent): XAndY;
     openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     readonly parentDiv: HTMLDivElement;
@@ -9756,6 +9760,8 @@ export class ViewHandleArray {
     // (undocumented)
     motion(ev: BeButtonEvent): void;
     // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
     onReinitialize(): void;
     // (undocumented)
     onWheel(ev: BeWheelEvent): void;
@@ -9871,6 +9877,8 @@ export abstract class ViewingToolHandle {
     motion(_ev: BeButtonEvent): boolean;
     // (undocumented)
     needDepthPoint(_ev: BeButtonEvent, _isPreview: boolean): boolean;
+    // (undocumented)
+    onCleanup(): void;
     // (undocumented)
     onKeyTransition(_wentDown: boolean, _keyEvent: KeyboardEvent): boolean;
     // (undocumented)

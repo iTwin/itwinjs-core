@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry, Constant, Arc3d, AngleSweep, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
+import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry, Constant, Arc3d, AngleSweep, Plane3dByOriginAndUnitNormal, XAndY } from "@bentley/geometry-core";
 import { ColorDef, Frustum, Npc, NpcCenter, LinePixels } from "@bentley/imodeljs-common";
 import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
 import { TentativeOrAccuSnap } from "../AccuSnap";
@@ -14,7 +14,7 @@ import { DecorateContext } from "../ViewContext";
 import { CoordSystem, ScreenViewport, Viewport, Animator, DepthPointSource } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { MarginPercent, ViewState3d, ViewStatus } from "../ViewState";
-import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InteractiveTool, CoreTools, BeModifierKeys } from "./Tool";
+import { BeButton, BeButtonEvent, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InteractiveTool, CoreTools, BeModifierKeys, InputSource } from "./Tool";
 import { ToolSettings } from "./ToolSettings";
 import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
@@ -115,6 +115,7 @@ export abstract class ViewingToolHandle {
     this._depthPoint = undefined;
   }
   public onReinitialize(): void { }
+  public onCleanup(): void { }
   public focusOut(): void { }
   public motion(_ev: BeButtonEvent): boolean { return false; }
   public checkOneShot(): boolean { return true; }
@@ -264,6 +265,7 @@ export class ViewHandleArray {
   }
 
   public onReinitialize() { this.handles.forEach((handle) => handle.onReinitialize()); }
+  public onCleanup() { this.handles.forEach((handle) => handle.onCleanup()); }
   public motion(ev: BeButtonEvent) { this.handles.forEach((handle) => handle.motion(ev)); }
   public onWheel(ev: BeWheelEvent) { this.handles.forEach((handle) => handle.onWheel(ev)); }
 
@@ -615,6 +617,7 @@ export abstract class ViewManip extends ViewTool {
 
       vp.invalidateDecorations();
     }
+    this.viewHandles.onCleanup();
     this.viewHandles.empty();
   }
 
@@ -1600,6 +1603,32 @@ class NavigateMotion {
     return newAngle; // almost at the limit, but still can go a little bit closer
   }
 
+  public generateMouseLookTransform(accumulator: Vector3d, movement: XAndY, result?: Transform): Transform {
+    const vp = this.viewport;
+    const view = vp.view;
+    if (!view.is3d() || !vp.isCameraOn)
+      return Transform.createIdentity();
+    const viewRect = this.viewport.viewRect;
+    const xExtent = viewRect.width;
+    const yExtent = viewRect.height;
+    accumulator.z += this._seconds; // accumulate time delta since start...
+    const snappiness = 10.0; // larger values are more responsive...
+    const fraction = Geometry.clamp(snappiness * accumulator.z, 0.0, 1.0);
+    accumulator.x = Geometry.interpolate(accumulator.x, fraction, movement.x);
+    accumulator.y = Geometry.interpolate(accumulator.y, fraction, movement.y);
+    const xAngle = -(accumulator.x / xExtent) * Math.PI * 2.0;
+    const yAngle = -(accumulator.y / yExtent) * Math.PI;
+    const viewRot = vp.rotation;
+    const invViewRot = viewRot.inverse()!;
+    const pitchAngle = Angle.createRadians(this.modifyPitchAngleToPreventInversion(yAngle));
+    const pitchMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitX(), pitchAngle)!;
+    const pitchTimesView = pitchMatrix.multiplyMatrixMatrix(viewRot);
+    const inverseViewTimesPitchTimesView = invViewRot.multiplyMatrixMatrix(pitchTimesView);
+    const yawMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createRadians(xAngle))!;
+    const yawTimesInverseViewTimesPitchTimesView = yawMatrix.multiplyMatrixMatrix(inverseViewTimesPitchTimesView);
+    return Transform.createFixedPointAndMatrix(view.getEyePoint(), yawTimesInverseViewTimesPitchTimesView, result);
+  }
+
   public generateRotationTransform(yawRate: number, pitchRate: number, result?: Transform): Transform {
     const vp = this.viewport;
     const view = vp.view;
@@ -1647,6 +1676,13 @@ class NavigateMotion {
 
     xDir.plus(yDir, xDir).plus(zDir, xDir);
     return Transform.createTranslation(xDir, result);
+  }
+
+  public moveAndMouseLook(accumulator: Vector3d, linearVelocity: Vector3d, movement: XAndY, isConstrainedToXY: boolean): boolean {
+    const rotateTrans = this.generateMouseLookTransform(accumulator, movement);
+    const dollyTrans = this.generateTranslationTransform(linearVelocity, isConstrainedToXY);
+    this.transform.setMultiplyTransformTransform(rotateTrans, dollyTrans);
+    return (accumulator.x >= movement.x && accumulator.y >= movement.y);
   }
 
   public moveAndLook(linearVelocity: Vector3d, angularVelocityX: number, angularVelocityY: number, isConstrainedToXY: boolean): void {
@@ -1755,10 +1791,12 @@ abstract class ViewNavigate extends AnimatedHandle {
   }
 }
 
-/** ViewingToolHandle for looking around and moving through a model using mouse+wasd or dual on-screen control sticks for touch */
+/** ViewingToolHandle for looking around and moving through a model using mouse+wasd or on-screen control sticks for touch */
 class ViewLookAndMove extends ViewNavigate {
   private _navigateMotion: NavigateMotion;
   protected readonly _positionInput = new Vector3d();
+  protected readonly _accumulator = new Vector3d();
+  protected _lastMovement?: XAndY;
   protected _speedChangeStartTime: number = 0;
   protected _speedChange?: boolean;
   protected _touchStartL?: BeTouchEvent;
@@ -1776,7 +1814,7 @@ class ViewLookAndMove extends ViewNavigate {
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
-    out.priority = ViewManipPriority.High; // Always prefer over pan and look handles which are only force enabled...
+    out.priority = ViewManipPriority.Medium; // Always prefer over pan handle which is only force enabled by IdleTool middle button action...
     return true;
   }
 
@@ -1787,14 +1825,35 @@ class ViewLookAndMove extends ViewNavigate {
     this._touchElevate = false;
     if (this.viewTool.viewHandles.testHit(Point3d.createZero(), ViewHandleType.LookAndMove))
       this.viewTool.viewHandles.focusHitHandle(); // Ensure key events go to this handle by default w/o requiring motion...
+    this.onCleanup();
+  }
+
+  public onCleanup(): void {
+    super.onCleanup();
+    document.exitPointerLock();
   }
 
   public firstPoint(ev: BeButtonEvent): boolean {
     this.viewTool.provideToolAssistance("LookAndMove.Prompts.NextPoint");
     if (!super.firstPoint(ev))
       return false;
-    this._deadZone = Math.pow(ev.viewport!.pixelsFromInches(0.5), 2);
+
+    ev.viewport!.npcToView(NpcCenter, this._anchorPtView); // Display indicator in the middle of the view...
+    if (InputSource.Mouse === ev.inputSource) {
+      this._lastPtView.setFrom(this._anchorPtView);
+      ev.viewport!.canvas.requestPointerLock();
+    }
     return true;
+  }
+
+  public doManipulation(ev: BeButtonEvent): boolean {
+    if (InputSource.Mouse === ev.inputSource)
+      this._lastMovement = ev.movement;
+    else
+      this._lastMovement = this._lastPtView.vectorTo(ev.viewPoint).scale(2.0);
+    this._accumulator.setZero();
+
+    return super.doManipulation(ev);
   }
 
   public getMaxLinearVelocity() {
@@ -1847,11 +1906,6 @@ class ViewLookAndMove extends ViewNavigate {
       return angularInput;
     }
 
-    const input = this.getInputVector();
-    if (undefined !== input) {
-      angularInput.x = input.x * -this.getMaxAngularVelocityX();
-      angularInput.y = input.y * -this.getMaxAngularVelocityY();
-    }
     return angularInput;
   }
 
@@ -1882,10 +1936,16 @@ class ViewLookAndMove extends ViewNavigate {
     const positionInput = this.getLinearVelocity();
     const angularInput = this.getAngularVelocity();
 
-    if (0.0 === angularInput.magnitude() && 0.0 === positionInput.magnitude())
+    if (0.0 === angularInput.magnitude() && 0.0 === positionInput.magnitude() && undefined === this._lastMovement)
       return;
 
-    motion.moveAndLook(positionInput, angularInput.x, angularInput.y, true);
+    if (undefined !== this._lastMovement) {
+      if (motion.moveAndMouseLook(this._accumulator, positionInput, this._lastMovement, true))
+        this._lastMovement = undefined;
+    } else {
+      motion.moveAndLook(positionInput, angularInput.x, angularInput.y, true);
+    }
+
     return motion;
   }
 
@@ -2065,7 +2125,7 @@ class ViewLookAndMove extends ViewNavigate {
 
   public onTouchMove(ev: BeTouchEvent): boolean {
     if (undefined === ev.viewport || !this.viewTool.inDynamicUpdate || (undefined === this._touchStartL && undefined === this._touchStartR))
-      return true;
+      return false;
 
     let changed = false;
 
@@ -2087,12 +2147,9 @@ class ViewLookAndMove extends ViewNavigate {
     if (undefined === ev.viewport)
       return false;
 
-    if (undefined === this._touchStartL && undefined === this._touchStartR) {
-      if (this.viewTool.viewHandles.hasHandle(ViewHandleType.Look)) {
-        this.viewTool.forcedHandle = ViewHandleType.Look;
-        return false;
-      }
-    }
+    if (undefined === this._touchStartL && undefined === this._touchStartR)
+      return false;
+
     this.enableDynamicUpdate(ev.viewport);
     return true;
   }
@@ -2317,7 +2374,7 @@ export class LookAndMoveTool extends ViewManip {
   public static toolId = "View.LookAndMove";
   public static iconSpec = "icon-walk";
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
-    super(vp, ViewHandleType.LookAndMove | ViewHandleType.Pan | ViewHandleType.Look, oneShot, isDraggingRequired);
+    super(vp, ViewHandleType.LookAndMove | ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
   public onReinitialize(): void { super.onReinitialize(); this.provideToolAssistance("LookAndMove.Prompts.FirstPoint"); }
 

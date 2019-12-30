@@ -446,6 +446,10 @@ export class ToolAdmin {
     return event.vp!.mousePosFromEvent(event.ev as MouseEvent);
   }
 
+  private getMouseMovement(event: ToolEvent): XAndY {
+    return event.vp!.mouseMovementFromEvent(event.ev as MouseEvent);
+  }
+
   private getMouseButton(button: number) {
     switch (button) {
       case MouseButton.Middle: return BeButton.Middle;
@@ -850,7 +854,7 @@ export class ToolAdmin {
     return decoration;
   }
 
-  private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false): Promise<any> {
+  private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false, movement?: XAndY): Promise<any> {
     const current = this.currentInputState;
     current.onMotion(pt2d);
 
@@ -879,6 +883,7 @@ export class ToolAdmin {
 
     current.fromButton(vp, pt2d, inputSource, true);
     current.toEvent(ev, true);
+    ev.movement = movement;
 
     IModelApp.accuDraw.onMotion(ev);
 
@@ -912,6 +917,7 @@ export class ToolAdmin {
   private async onMouseMove(event: ToolEvent): Promise<any> {
     const vp = event.vp!;
     const pos = this.getMousePosition(event);
+    const mov = this.getMouseMovement(event);
 
     // Sometimes the mouse goes down in a view, but we lose focus while its down so we never receive the up event.
     // That makes it look like the motion is a drag. Fix that by clearing the "isDown" based on the buttons member of the MouseEvent.
@@ -919,7 +925,7 @@ export class ToolAdmin {
     if (!(buttonMask & 1))
       this.currentInputState.button[BeButton.Data].isDown = false;
 
-    return this.onMotion(vp, pos, InputSource.Mouse);
+    return this.onMotion(vp, pos, InputSource.Mouse, false, mov);
   }
 
   public adjustPointToACS(pointActive: Point3d, vp: Viewport, perpendicular: boolean): void {

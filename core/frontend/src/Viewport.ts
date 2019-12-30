@@ -2906,6 +2906,11 @@ export class ScreenViewport extends Viewport {
     return { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
   }
 
+  /** @internal */
+  public mouseMovementFromEvent(ev: MouseEvent): XAndY {
+    return { x: ev.movementX, y: ev.movementY };
+  }
+
   /** Set the event controller for this Viewport. Destroys previous controller, if one was defined. */
   public setEventController(controller?: EventController) {
     if (this._evController)
