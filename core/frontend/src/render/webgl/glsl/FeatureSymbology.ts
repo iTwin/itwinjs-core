@@ -353,12 +353,13 @@ const checkForEarlySurfaceDiscard = `
 
 const checkForEarlySurfaceDiscardWithFeatureID = `
   // No normals => unlt => reality model => no edges.
-  bool neverDiscard = u_renderPass > kRenderPass_Translucent || !isSurfaceBitSet(kSurfaceBit_HasNormals);
-  bool alwaysDiscard = false;
+  if (u_renderPass > kRenderPass_Translucent || !isSurfaceBitSet(kSurfaceBit_HasNormals))
+    return false;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec2 depthAndOrder = readDepthAndOrder(tc);
-  bool discardByOrder = depthAndOrder.x > u_renderOrder;
+  if (depthAndOrder.x <= u_renderOrder)
+    return false;
 
   // Calculate depthTolerance for letting edges show through their own surfaces
   float perspectiveFrustum = step(kFrustumType_Perspective, u_frustum.z);
@@ -385,7 +386,8 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 
   float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
   float depthDelta = abs(depthAndOrder.y - surfaceDepth);
-  bool withinDepthTolerance = depthDelta <= depthTolerance;
+  if (depthDelta > depthTolerance)
+    return false;
 
   // Does pick buffer contain same feature?
   vec4 featId = TEXTURE(u_pickFeatureId, tc);
@@ -393,11 +395,15 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
   // Converting to ints to test since varying floats can be interpolated incorrectly
   ivec4 featId_i = ivec4(featId * 255.0 + 0.5);
   ivec4 feature_id_i = ivec4(feature_id * 255.0 + 0.5);
-  bool isSameFeature = featId_i == feature_id_i;
+  if (featId_i == feature_id_i)
+    return true;
 
-  // If what was in the pick buffer is a planar line/edge/silhouette then we've already tested the depth so return true to discard.
-  // If it was a planar surface then use a tighter and constant tolerance to see if we want to let it show through since we're only fighting roundoff error.
-  return alwaysDiscard || (!neverDiscard && discardByOrder && withinDepthTolerance && (isSameFeature || ((depthAndOrder.x > kRenderOrder_PlanarLitSurface) || ((depthAndOrder.x == kRenderOrder_PlanarUnlitSurface || depthAndOrder.x == kRenderOrder_PlanarLitSurface) && (depthDelta <= 4.0e-5)))));
+  // In 2d, display priority controls draw order of different elements.
+  if (kFrustumType_Ortho2d == u_frustum.z)
+    return false;
+
+  // Use a tighter tolerance for two different elements since we're only fighting roundoff error.
+  return depthDelta <= 4.0e-5;
 `;
 
 // This only adds the constants that are actually used in shader code.
