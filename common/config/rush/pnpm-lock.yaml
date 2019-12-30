@@ -9,7 +9,6 @@ dependencies:
   '@rush-temp/build-tools': 'file:projects/build-tools.tgz'
   '@rush-temp/certa': 'file:projects/certa.tgz'
   '@rush-temp/config-loader': 'file:projects/config-loader.tgz'
-  '@rush-temp/convert-to-image-graphics': 'file:projects/convert-to-image-graphics.tgz'
   '@rush-temp/core-integration-tests': 'file:projects/core-integration-tests.tgz'
   '@rush-temp/display-performance-test-app': 'file:projects/display-performance-test-app.tgz'
   '@rush-temp/display-test-app': 'file:projects/display-test-app.tgz'
@@ -1319,10 +1318,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-CXlavd8Q7ZQkB7sMpx9QKC/B7gUsjtftxMHNr7qGJaDiZZ+Qmhwe4Zt3aS9aXF7cn6BYQuFlKU1UlrebyKsh9g==
-  /@types/yargs/12.0.14:
-    dev: false
-    resolution:
-      integrity: sha512-AoVBCxg1PQpEE4HUnHpagMFrGzogywNJElZVg+aFmvOYUiz7y74CKS9/8G9J8hrYM4xu+rJR69ulmoTMKgWSWQ==
   /@types/yargs/13.0.3:
     dependencies:
       '@types/yargs-parser': 13.1.0
@@ -14902,22 +14897,6 @@ packages:
       integrity: sha512-0OZPS9LnWXStaepgHvMppACLayhM8yVcGBa26ZTwLEbQyMQpMatLACj01KB+RtbNEqkHdehlom+YCgxxi6kT5w==
       tarball: 'file:projects/config-loader.tgz'
     version: 0.0.0
-  'file:projects/convert-to-image-graphics.tgz':
-    dependencies:
-      '@types/lodash': 4.14.149
-      '@types/node': 10.14.1
-      '@types/yargs': 12.0.14
-      rimraf: 2.7.1
-      tslint: 5.20.1_typescript@3.6.4
-      tslint-etc: 1.10.0_tslint@5.20.1+typescript@3.6.4
-      typescript: 3.6.4
-      yargs: 12.0.5
-    dev: false
-    name: '@rush-temp/convert-to-image-graphics'
-    resolution:
-      integrity: sha512-v7a1jki/5Si1dwV8M2WcfWXODKdmrPficqWb8LD+77z+yqDO2HuJXntccx33H/+5sizlwf4rLByjQoktbn9xCg==
-      tarball: 'file:projects/convert-to-image-graphics.tgz'
-    version: 0.0.0
   'file:projects/core-integration-tests.tgz':
     dependencies:
       '@types/chai': 4.2.7
@@ -16531,7 +16510,6 @@ specifiers:
   '@rush-temp/build-tools': 'file:./projects/build-tools.tgz'
   '@rush-temp/certa': 'file:./projects/certa.tgz'
   '@rush-temp/config-loader': 'file:./projects/config-loader.tgz'
-  '@rush-temp/convert-to-image-graphics': 'file:./projects/convert-to-image-graphics.tgz'
   '@rush-temp/core-integration-tests': 'file:./projects/core-integration-tests.tgz'
   '@rush-temp/display-performance-test-app': 'file:./projects/display-performance-test-app.tgz'
   '@rush-temp/display-test-app': 'file:./projects/display-test-app.tgz'
