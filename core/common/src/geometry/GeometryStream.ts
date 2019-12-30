@@ -482,11 +482,10 @@ export namespace GeometryStreamIteratorEntry {
     readonly textString: TextString;
   }
 
-  /** Represents an image within a GeometryStream.
-   * @beta
-   */
+  /** Represents an image within a GeometryStream. */
   export interface ImagePrimitive {
     type: "image";
+    /** @beta */
     readonly image: ImageGraphic;
   }
 

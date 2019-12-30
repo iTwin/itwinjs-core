@@ -2150,6 +2150,8 @@ export class GeometryStreamBuilder {
     appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean;
     appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean;
     appendGeometryRanges(): void;
+    // @beta
+    appendImage(image: ImageGraphic): boolean;
     appendSubCategoryChange(subCategoryId: Id64String): boolean;
     appendTextString(textString: TextString): boolean;
     readonly geometryStream: GeometryStreamProps;
@@ -2175,6 +2177,8 @@ export interface GeometryStreamEntryProps extends IModelJson.GeometryProps {
     geomPart?: GeometryPartInstanceProps;
     // (undocumented)
     header?: GeometryStreamHeaderProps;
+    // @beta (undocumented)
+    image?: ImageGraphicProps;
     // (undocumented)
     material?: MaterialProps;
     // (undocumented)
@@ -2225,6 +2229,8 @@ export class GeometryStreamIteratorEntry {
     brep?: BRepEntity.DataProps;
     geometryQuery?: AnyGeometryQuery;
     geomParams: GeometryParams;
+    // @beta
+    image?: ImageGraphic;
     localRange?: Range3d;
     localToWorld?: Transform;
     partId?: Id64String;
@@ -2247,6 +2253,12 @@ export namespace GeometryStreamIteratorEntry {
         // (undocumented)
         type: "geometryQuery";
     }
+    export interface ImagePrimitive {
+        // @beta (undocumented)
+        readonly image: ImageGraphic;
+        // (undocumented)
+        type: "image";
+    }
     export interface PartReference {
         // (undocumented)
         part: {
@@ -2256,7 +2268,7 @@ export namespace GeometryStreamIteratorEntry {
         // (undocumented)
         type: "partReference";
     }
-    export type Primitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive;
+    export type Primitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive;
     export interface TextStringPrimitive {
         // (undocumented)
         readonly textString: TextString;
@@ -2819,6 +2831,55 @@ export enum ImageBufferFormat {
     Alpha = 5,
     Rgb = 2,
     Rgba = 0
+}
+
+// @beta
+export class ImageGraphic {
+    constructor(corners: ImageGraphicCorners, textureId: Id64String, hasBorder?: boolean);
+    // (undocumented)
+    clone(): ImageGraphic;
+    // (undocumented)
+    cloneTransformed(transform: Transform): ImageGraphic;
+    computeRange(result?: Range3d): Range3d;
+    readonly corners: ImageGraphicCorners;
+    // (undocumented)
+    static fromJSON(props: ImageGraphicProps): ImageGraphic;
+    readonly hasBorder: boolean;
+    readonly textureId: Id64String;
+    // (undocumented)
+    toJSON(): ImageGraphicProps;
+    transformInPlace(transform: Transform): void;
+}
+
+// @beta
+export class ImageGraphicCorners {
+    // (undocumented)
+    readonly 0: Point3d;
+    // (undocumented)
+    readonly 1: Point3d;
+    // (undocumented)
+    readonly 2: Point3d;
+    // (undocumented)
+    readonly 3: Point3d;
+    constructor(p0: Point3d, p1: Point3d, p2: Point3d, p3: Point3d);
+    // (undocumented)
+    clone(): ImageGraphicCorners;
+    // (undocumented)
+    static from4Points(points: [Point3d, Point3d, Point3d, Point3d]): ImageGraphicCorners;
+    // (undocumented)
+    static fromJSON(props: ImageGraphicCornersProps): ImageGraphicCorners;
+    // (undocumented)
+    toJSON(): ImageGraphicCornersProps;
+}
+
+// @beta
+export type ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps];
+
+// @beta
+export interface ImageGraphicProps {
+    corners: ImageGraphicCornersProps;
+    hasBorder: boolean;
+    textureId: Id64String;
 }
 
 // @internal (undocumented)
