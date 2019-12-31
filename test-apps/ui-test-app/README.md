@@ -1,6 +1,6 @@
 ﻿# ui-test-app Test Application
 
-Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 The ui-test-app iModel.js test application provides an easy way to test the React components in the iModel.js UI packages, including the 9-zone components, along with other iModel.js packages.
 
