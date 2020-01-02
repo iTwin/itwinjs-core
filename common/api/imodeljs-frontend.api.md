@@ -4284,6 +4284,7 @@ export class IModelConnection extends IModel {
     static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     // @beta
     readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
+    static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
     static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<IModelConnection>;
     readonly openMode: OpenMode;
     // @beta

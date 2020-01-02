@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
@@ -120,6 +120,9 @@ export class IModelConnection extends IModel {
    */
   public static readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
+  /** Event called immediately after *any* IModelConnection is opened. */
+  public static readonly onOpen = new BeEvent<(_imodel: IModelConnection) => void>();
+
   /** Event called immediately before *this* IModelConnection is closed.
    * @note This event is called only for this IModelConnection. To monitor *all* IModelConnections,use the static event.
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
@@ -226,6 +229,7 @@ export class IModelConnection extends IModel {
     const connection = new IModelConnection(openResponse, openMode);
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
 
+    IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
 
@@ -365,7 +369,9 @@ export class IModelConnection extends IModel {
   public static async openSnapshot(fileName: string): Promise<IModelConnection> {
     const openResponse: IModelProps = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
     Logger.logTrace(loggerCategory, "IModelConnection.openSnapshot", () => ({ fileName }));
-    return new IModelConnection(openResponse, OpenMode.Readonly);
+    const connection = new IModelConnection(openResponse, OpenMode.Readonly);
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
   }
 
   /** Close this IModelConnection to a read-only iModel *snapshot*.

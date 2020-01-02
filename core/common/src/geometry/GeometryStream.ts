@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
@@ -26,6 +26,7 @@ import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
 import { TextStringProps, TextString } from "./TextString";
+import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
 import { AreaPattern } from "./AreaPattern";
 import { GeometricElement3dProps, GeometricElement2dProps, GeometryPartProps } from "../ElementProps";
@@ -179,6 +180,8 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   textString?: TextStringProps;
   /** @beta */
   brep?: BRepEntity.DataProps;
+  /** @beta */
+  image?: ImageGraphicProps;
   subRange?: LowAndHighXYZ;
 }
 
@@ -326,6 +329,17 @@ export class GeometryStreamBuilder {
     return true;
   }
 
+  /** Append an [[ImageGraphic]] supplied in either local or world coordinates.
+   * @beta
+   */
+  public appendImage(image: ImageGraphic): boolean {
+    if (undefined !== this._worldToLocal)
+      image = image.cloneTransformed(this._worldToLocal);
+
+    this.geometryStream.push({ image: image.toJSON() });
+    return true;
+  }
+
   /** Append a [[GeometryQuery]] supplied in either local or world coordinates to the [[GeometryStreamProps]] array */
   public appendGeometry(geometry: GeometryQuery): boolean {
     if (undefined === this._worldToLocal) {
@@ -428,6 +442,11 @@ export class GeometryStreamIteratorEntry {
    * @note Can also use [[primitive]] and switch on the primitive type.
    */
   public textString?: TextString;
+  /** Current iterator entry is an [[ImageGraphic]] when `image` is not undefined.
+   * @note Can also use [[primitive]] and switch on the primitive type.
+   * @beta
+   */
+  public image?: ImageGraphic;
   /** Current iterator entry is a [[BRepEntity.DataProps]] when brep is not undefined.
    * @note Can also use [[primitive]] and switch on the primitive type.
    * @beta
@@ -444,6 +463,8 @@ export class GeometryStreamIteratorEntry {
       return { type: "textString", textString: this.textString };
     else if (undefined !== this.brep)
       return { type: "brep", brep: this.brep };
+    else if (undefined !== this.image)
+      return { type: "image", image: this.image };
     else
       return { type: "partReference", part: { id: this.partId!, toLocal: this.partToLocal } };
   }
@@ -459,6 +480,13 @@ export namespace GeometryStreamIteratorEntry {
   export interface TextStringPrimitive {
     type: "textString";
     readonly textString: TextString;
+  }
+
+  /** Represents an image within a GeometryStream. */
+  export interface ImagePrimitive {
+    type: "image";
+    /** @beta */
+    readonly image: ImageGraphic;
   }
 
   /** Represents a reference to a GeometryPart within a GeometryStream. */
@@ -484,7 +512,7 @@ export namespace GeometryStreamIteratorEntry {
   }
 
   /** Union of all possible geometric primitive types that may appear within a GeometryStream. */
-  export type Primitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive;
+  export type Primitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive;
 }
 
 /** GeometryStreamIterator is a helper class for iterating a [[GeometryStreamProps]].
@@ -587,10 +615,10 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   }
 
   /** Advance to next displayable geometric entry while updating the current [[GeometryParams]] from appearance related entries.
-   * Geometric entries are [[TextString]], [[GeometryQuery]], [[GeometryPart]], and [[BRepEntity.DataProps]].
+   * Geometric entries are [[TextString]], [[GeometryQuery]], [[GeometryPart]], [[ImageGraphic]], and [[BRepEntity.DataProps]].
    */
   public next(): IteratorResult<GeometryStreamIteratorEntry> {
-    this.entry.partToLocal = this.entry.partId = this.entry.geometryQuery = this.entry.textString = this.entry.brep = undefined; // NOTE: localRange remains valid until new subRange entry is encountered
+    this.entry.partToLocal = this.entry.partId = this.entry.geometryQuery = this.entry.textString = this.entry.brep = this.entry.image = undefined; // NOTE: localRange remains valid until new subRange entry is encountered
     while (this._index < this.geometryStream.length) {
       const entry = this.geometryStream[this._index++];
       if (entry.appearance) {
@@ -651,6 +679,11 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
         this.entry.textString = new TextString(entry.textString);
         if (this.entry.localToWorld !== undefined)
           this.entry.textString.transformInPlace(this.entry.localToWorld);
+        return { value: this.entry, done: false };
+      } else if (entry.image) {
+        this.entry.image = ImageGraphic.fromJSON(entry.image);
+        if (undefined !== this.entry.localToWorld)
+          this.entry.image.transformInPlace(this.entry.localToWorld);
         return { value: this.entry, done: false };
       } else if (entry.brep) {
         this.entry.brep = entry.brep;

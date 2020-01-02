@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -126,7 +126,6 @@ export class ToolSettingsTracker {
 
     div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
     label = IModelApp.makeHTMLElement("label", { innerText: "Wheel Zoom Bump Distance (meters): ", parent: div });
-    label = document.createElement("label") as HTMLLabelElement;
     label.style.display = "inline";
     label.htmlFor = "ts_wheelZoomBumpDistance";
     createNumericInput({

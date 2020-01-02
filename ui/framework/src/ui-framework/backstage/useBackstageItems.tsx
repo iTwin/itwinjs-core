@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
@@ -19,7 +19,7 @@ export const useBackstageItems = (manager: BackstageItemsManager): readonly Back
     else {
       setItems(manager.items);
     }
-  }, [manager]);
+  }, [manager, manager.items]);
   React.useEffect(() => {
     const handleChanged = (args: BackstageItemsChangedArgs) => {
       setItems(args.items);

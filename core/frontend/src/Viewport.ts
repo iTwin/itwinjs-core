@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -1824,7 +1824,7 @@ export abstract class Viewport implements IDisposable {
    * @param _opts options for how the view change operation should work
    */
   public changeView(view: ViewState, _opts?: ViewChangeOptions) {
-    const prevView = undefined !== this.view ? this.view : undefined;
+    const prevView =  this.view;
 
     this.updateChangeFlags(view);
     this.doSetupFromView(view);

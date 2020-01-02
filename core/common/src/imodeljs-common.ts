@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export * from "./ChangedElements";
@@ -47,6 +47,7 @@ export * from "./domains/LinearReferencingElementProps";
 export * from "./geometry/AreaPattern";
 export * from "./geometry/Cartographic";
 export * from "./geometry/GeometryStream";
+export * from "./geometry/ImageGraphic";
 export * from "./geometry/LineStyle";
 export * from "./geometry/Placement";
 export * from "./geometry/TextString";

@@ -1,6 +1,6 @@
 # WMS Example Plugin
 
-Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 An iModel.js example Plugin that demonstrates adding a WMS (Web Map Service) tiled graphics provider to the graphics of a view:
 

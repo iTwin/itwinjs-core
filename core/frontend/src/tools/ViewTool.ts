@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
@@ -1803,6 +1803,10 @@ class ViewLookAndMove extends ViewNavigate {
   protected _touchStartR?: BeTouchEvent;
   protected _touchLast?: BeTouchEvent;
   protected _touchElevate = false;
+  protected _touchLook = false;
+  protected _havePointerLock = false;
+  protected _pointerLockChangeListener?: EventListener;
+  protected _clickListener?: EventListener;
 
   constructor(viewManip: ViewManip) {
     super(viewManip);
@@ -1822,7 +1826,7 @@ class ViewLookAndMove extends ViewNavigate {
     super.onReinitialize();
     this._speedChange = undefined;
     this._touchStartL = this._touchStartR = this._touchLast = undefined;
-    this._touchElevate = false;
+    this._touchElevate = this._touchLook = false;
     if (this.viewTool.viewHandles.testHit(Point3d.createZero(), ViewHandleType.LookAndMove))
       this.viewTool.viewHandles.focusHitHandle(); // Ensure key events go to this handle by default w/o requiring motion...
     this.onCleanup();
@@ -1830,7 +1834,42 @@ class ViewLookAndMove extends ViewNavigate {
 
   public onCleanup(): void {
     super.onCleanup();
-    document.exitPointerLock();
+    this.releasePointerLock();
+  }
+
+  private pointerLockChangeEvent(): void {
+    const vp = this.viewTool.viewport;
+    if (undefined !== vp && document.pointerLockElement === vp.canvas) {
+      vp.npcToView(NpcCenter, this._anchorPtView); // Display indicator in the middle of the view for pointer lock...
+      this._lastPtView.setFrom(this._anchorPtView);
+      this._havePointerLock = true;
+      vp.invalidateDecorations();
+    } else {
+      this._havePointerLock = false;
+    }
+  }
+
+  private requestPointerLock(vp: ScreenViewport): void {
+    // NOTE: Chrome appears to be the only browser that doesn't require pointer lock to be requested from an event like click...
+    this._pointerLockChangeListener = () => this.pointerLockChangeEvent();
+    this._clickListener = (ev: Event) => { ev.preventDefault(); ev.stopPropagation(); if (1 === this.viewTool.nPts) this.viewTool.viewport!.canvas.requestPointerLock(); };
+    document.addEventListener("pointerlockchange", this._pointerLockChangeListener, false);
+    document.addEventListener("click", this._clickListener, false); // NOTE: "once" option prevented pointer lock from being requested in Firefox...
+    vp.canvas.click();
+  }
+
+  private releasePointerLock(): void {
+    this._havePointerLock = false;
+    if (undefined !== this._pointerLockChangeListener) {
+      document.removeEventListener("pointerlockchange", this._pointerLockChangeListener, false);
+      this._pointerLockChangeListener = undefined;
+    }
+    if (undefined !== this._clickListener) {
+      document.removeEventListener("click", this._clickListener, false);
+      this._clickListener = undefined;
+    }
+    if (null !== document.pointerLockElement)
+      document.exitPointerLock();
   }
 
   public firstPoint(ev: BeButtonEvent): boolean {
@@ -1838,19 +1877,25 @@ class ViewLookAndMove extends ViewNavigate {
     if (!super.firstPoint(ev))
       return false;
 
-    ev.viewport!.npcToView(NpcCenter, this._anchorPtView); // Display indicator in the middle of the view...
+    const vp = this.viewTool.viewport;
+    if (undefined === vp || !vp.isCameraOn)
+      return true;
+
     if (InputSource.Mouse === ev.inputSource) {
-      this._lastPtView.setFrom(this._anchorPtView);
-      ev.viewport!.canvas.requestPointerLock();
+      this.requestPointerLock(vp);
+      this._deadZone = Math.pow(vp.pixelsFromInches(0.5), 2); // Only used if pointer lock isn't supported...
+    } else {
+      this._touchLook = true;
+      vp.npcToView(NpcCenter, this._anchorPtView); // Display indicator in the middle of the view for touch look...
     }
     return true;
   }
 
   public doManipulation(ev: BeButtonEvent): boolean {
     if (InputSource.Mouse === ev.inputSource)
-      this._lastMovement = ev.movement;
+      this._lastMovement = this._havePointerLock ? ev.movement : undefined;
     else
-      this._lastMovement = this._lastPtView.vectorTo(ev.viewPoint).scale(2.0);
+      this._lastMovement = this._lastPtView.vectorTo(ev.viewPoint).scale(2.0); // ev.movement isn't available for button event created from touch event...
     this._accumulator.setZero();
 
     return super.doManipulation(ev);
@@ -1906,6 +1951,14 @@ class ViewLookAndMove extends ViewNavigate {
       return angularInput;
     }
 
+    if (this._havePointerLock || this._touchLook)
+      return angularInput;
+
+    const input = this.getInputVector();
+    if (undefined !== input) {
+      angularInput.x = input.x * -this.getMaxAngularVelocityX();
+      angularInput.y = input.y * -this.getMaxAngularVelocityY();
+    }
     return angularInput;
   }
 

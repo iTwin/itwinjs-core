@@ -1,6 +1,6 @@
 # IotDemo Example Plugin
 
-Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 An iModel.js example Plugin that loosely emulates the functions of a network of IoT devices that monitor a building's temperature, heating and cooling, Co2 levels, smoke, and fire alarms.
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, MarkerSet, Marker, MarkerImage, Cluster, BeButtonEvent, BeButton, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -130,6 +130,8 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
 
     return vf.lighting ? FlashMode.Brighten : FlashMode.MixHiliteColor;
   }
+
+  public wantMixMonochromeColor(_target: Target): boolean { return false; }
 
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 

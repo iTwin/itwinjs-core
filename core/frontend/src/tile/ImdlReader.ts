@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
@@ -580,6 +580,7 @@ export class ImdlReader extends GltfReader {
       material = createSurfaceMaterial(displayParams.material);
     }
 
+    const textureMapping = undefined !== texture ? { texture, alwaysDisplayed: JsonUtils.asBool(surf.alwaysDisplayTexture) } : undefined;
     return {
       type,
       indices,
@@ -587,7 +588,7 @@ export class ImdlReader extends GltfReader {
       hasBakedLighting: false,
       hasFixedNormals: false,
       material,
-      texture,
+      textureMapping,
     };
   }
 

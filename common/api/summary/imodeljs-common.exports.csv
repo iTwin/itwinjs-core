@@ -179,6 +179,10 @@ beta;ILinearElementProps
 beta;ILinearlyLocatedAttributionProps
 public;ImageBuffer
 public;ImageBufferFormat
+beta;ImageGraphic
+beta;ImageGraphicCorners
+beta;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
+beta;ImageGraphicProps
 internal;ImageLight
 public;ImageSource
 public;ImageSourceFormat

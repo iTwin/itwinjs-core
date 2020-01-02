@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
@@ -567,16 +567,11 @@ export class RealityModelTileClient {
       requestContext.enter();
     }
 
-    let tileUrl: string = url;
-    if (undefined !== this._baseUrl) {
-      tileUrl = this._baseUrl + url;
+    const tileUrl = this._baseUrl + url;
+    if (undefined !== this.rdsProps && undefined !== this._token)
+      return this._realityData!.getTileContent(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
-      if (undefined !== this.rdsProps && undefined !== this._token)
-        return this._realityData!.getTileContent(requestContext as AuthorizedFrontendRequestContext, tileUrl);
-
-      return getArrayBuffer(requestContext, tileUrl);
-    }
-    throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data content url");
+    return getArrayBuffer(requestContext, tileUrl);
   }
 
   /**
@@ -591,15 +586,11 @@ export class RealityModelTileClient {
       requestContext.enter();
     }
 
-    let tileUrl: string = url;
-    if (undefined !== this._baseUrl) {
-      tileUrl = this._baseUrl + url;
+    const tileUrl = this._baseUrl + url;
 
-      if (undefined !== this.rdsProps && undefined !== this._token)
-        return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl);
+    if (undefined !== this.rdsProps && undefined !== this._token)
+      return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
-      return getJson(requestContext, tileUrl);
-    }
-    throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data json url");
+    return getJson(requestContext, tileUrl);
   }
 }

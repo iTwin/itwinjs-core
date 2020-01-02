@@ -1,6 +1,6 @@
 
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
@@ -115,7 +115,7 @@ class BackgroundTerrainTreeSupplier implements TileTree.Supplier {
     const loader = await getCesiumWorldTerrainLoader(iModel, modelId, heightBias, heightRange, id.wantSkirts);
     const treeProps = new WebMapTileTreeProps(heightBias, modelId, heightRange, 12);
 
-    if (undefined === loader || undefined === treeProps) {
+    if (undefined === loader) {
       assert(false, "Invalid Terrain Provider");
       return undefined;
     }
