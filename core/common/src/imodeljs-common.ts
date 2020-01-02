@@ -56,7 +56,7 @@ export * from "./rpc/DevToolsRpcInterface";
 export * from "./rpc/IModelReadRpcInterface";
 export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/IModelWriteRpcInterface";
-export * from "./rpc/EventSourceRpcInterface";
+export * from "./rpc/NativeAppRpcInterface";
 export * from "./rpc/SnapshotIModelRpcInterface";
 export * from "./rpc/TestRpcManager";
 export * from "./rpc/WipRpcInterface";
