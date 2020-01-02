@@ -9031,6 +9031,7 @@ export class ToolSettings {
     static viewToolPickRadiusInches: number;
     static walkCameraAngle: Angle;
     static walkEnforceZUp: boolean;
+    static walkRequestPointerLock: boolean;
     static walkVelocity: number;
     static wheelLineFactor: number;
     static wheelPageFactor: number;
