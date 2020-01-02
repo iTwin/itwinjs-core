@@ -42,36 +42,54 @@ function getConfig(env) {
     devtool: "source-map",
     module: {
       rules: [{
-          test: /growl\.js$/,
-          use: 'null-loader'
-        },
-        {
-          test: /xunit\.js$/,
-          use: 'null-loader'
-        },
-        {
-          test: /bunyan/,
-          use: 'null-loader'
-        },
-        {
-          test: /@azure/,
-          use: 'null-loader'
-        },
-        {
-          test: /core\/backend\/lib\/DevTools\.js/,
-          use: 'null-loader'
-        }
+        test: /growl\.js$/,
+        use: 'null-loader'
+      },
+      {
+        test: /xunit\.js$/,
+        use: 'null-loader'
+      },
+      {
+        test: /bunyan/,
+        use: 'null-loader'
+      },
+      {
+        test: /@azure/,
+        use: 'null-loader'
+      },
+      {
+        test: /IModelBankCloudEnv\.js$/,
+        use: 'null-loader'
+      },
+      {
+        test: /DevTools\.js$/,
+        use: 'null-loader'
+      },
+      {
+        test: /OidcDesktopClient\.js$/,
+        use: 'null-loader'
+      },
+      {
+        test: /oidc-signin-tool/,
+        use: 'null-loader'
+      },
+      {
+        test: /AzCopy\.js$/,
+        use: 'null-loader'
+      },
       ]
     },
     externals: {
-      "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-native/package.json,",
+      "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-native/package.json",
       "@bentley/imodeljs-native/loadNativePlatform.js": "@bentley/imodeljs-native/loadNativePlatform.js",
       "electron": "electron",
       "IModelJsFs": "IModelJsFs",
       "./IModelJsFs": "IModelJsFs",
       "../IModelJsFs": "IModelJsFs",
+      "../../IModelJsFs": "IModelJsFs",
+      "./lib/IModelJsFs.js": "IModelJsFs",
       "fs": "fs",
-      "fs-extra": "IModelJsFs",
+      "fs-extra": "fs",
       "express": "express",
     },
     stats: {
@@ -84,7 +102,7 @@ function getConfig(env) {
       Buffer: true,
     },
     plugins: [
-      new webpack.DefinePlugin({}),
+      new webpack.DefinePlugin({ "global.location.search": "''" }),
       new webpack.ProvidePlugin({}),
       new webpack.EnvironmentPlugin({})
     ],
