@@ -653,7 +653,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠️Clients Tests (Integration - Certa/Backend)",
+      "name": "⚠︝Clients Tests (Integration - Certa/Backend)",
       "cwd": "${workspaceRoot}/core/clients/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
       "runtimeArgs": [
@@ -675,7 +675,7 @@
       "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
     },
     {
-      "name": "⚠️Clients Tests (Integration - Frontend)",
+      "name": "⚠︝Clients Tests (Integration - Frontend)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
@@ -690,7 +690,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠️GeoPhoto Plugin Tests (Integration - Certa/Backend)",
+      "name": "⚠︝GeoPhoto Plugin Tests (Integration - Certa/Backend)",
       "cwd": "${workspaceRoot}/plugins/geo-photo/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
       "runtimeArgs": [
@@ -712,7 +712,7 @@
       "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
     },
     {
-      "name": "⚠️GeoPhoto Plugin Tests (Integration - Frontend)",
+      "name": "⚠︝GeoPhoto Plugin Tests (Integration - Frontend)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
@@ -727,7 +727,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠️Integration Tests (backend)",
+      "name": "⚠︝Integration Tests (backend)",
       "cwd": "${workspaceRoot}/integration-tests/core/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
       "runtimeArgs": [
@@ -753,7 +753,7 @@
       "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
     },
     {
-      "name": "⚠️Integration Tests (frontend)",
+      "name": "⚠︝Integration Tests (frontend)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/core/certa.json
@@ -767,7 +767,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠️Frontend Tests (certa/backend)",
+      "name": "⚠︝Frontend Tests (certa/backend)",
       "cwd": "${workspaceRoot}/core/frontend/",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -779,7 +779,7 @@
       "port": 5858 // NB: This must match ports.debugging in core/frontend/certa.json
     },
     {
-      "name": "⚠️Frontend Tests (chrome)",
+      "name": "⚠︝Frontend Tests (chrome)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
@@ -794,7 +794,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠️Markup Tests (certa/backend)",
+      "name": "⚠︝Markup Tests (certa/backend)",
       "cwd": "${workspaceRoot}/core/markup/",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -806,7 +806,7 @@
       "port": 5858 // NB: This must match ports.debugging in core/markup/certa.json
     },
     {
-      "name": "⚠️Markup Tests (chrome)",
+      "name": "⚠︝Markup Tests (chrome)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/markup/certa.json
@@ -821,7 +821,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠️RPC Integration Tests (backend)",
+      "name": "⚠︝RPC Integration Tests (backend)",
       "cwd": "${workspaceRoot}/integration-tests/rpc/",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
@@ -845,7 +845,7 @@
       "port": 5858 // NB: This must match ports.debugging in integration-tests/rpc/certa.json
     },
     {
-      "name": "⚠️RPC Integration Tests (frontend)",
+      "name": "⚠︝RPC Integration Tests (frontend)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/rpc/certa.json
@@ -859,38 +859,38 @@
   ],
   "compounds": [
     {
-      "name": "✔️Frontend Tests",
+      "name": "✔︝Frontend Tests",
       "configurations": [
-        "⚠️Frontend Tests (chrome)",
-        "⚠️Frontend Tests (certa/backend)"
+        "⚠︝Frontend Tests (chrome)",
+        "⚠︝Frontend Tests (certa/backend)"
       ]
     },
     {
-      "name": "✔️Markup Tests",
+      "name": "✔︝Markup Tests",
       "configurations": [
-        "⚠️Markup Tests (chrome)",
-        "⚠️Markup Tests (certa/backend)"
+        "⚠︝Markup Tests (chrome)",
+        "⚠︝Markup Tests (certa/backend)"
       ]
     },
     {
-      "name": "✔️Integration Tests",
+      "name": "✔︝Integration Tests",
       "configurations": [
-        "⚠️Integration Tests (frontend)",
-        "⚠️Integration Tests (backend)"
+        "⚠︝Integration Tests (frontend)",
+        "⚠︝Integration Tests (backend)"
       ]
     },
     {
-      "name": "✔️RPC Tests",
+      "name": "✔︝RPC Tests",
       "configurations": [
-        "⚠️RPC Integration Tests (frontend)",
-        "⚠️RPC Integration Tests (backend)"
+        "⚠︝RPC Integration Tests (frontend)",
+        "⚠︝RPC Integration Tests (backend)"
       ]
     },
     {
-      "name": "✔️perf-test-app tests",
+      "name": "✔︝perf-test-app tests",
       "configurations": [
-        "⚠️perf-test-app tests (backend)",
-        "⚠️perf-test-app tests (frontend)"
+        "⚠︝perf-test-app tests (backend)",
+        "⚠︝perf-test-app tests (frontend)"
       ]
     },
     {
@@ -901,17 +901,17 @@
       ]
     },
     {
-      "name": "✔️Clients Tests (Integration)",
+      "name": "✔︝Clients Tests (Integration)",
       "configurations": [
-        "⚠️Clients Tests (Integration - Certa/Backend)",
-        "⚠️Clients Tests (Integration - Frontend)"
+        "⚠︝Clients Tests (Integration - Certa/Backend)",
+        "⚠︝Clients Tests (Integration - Frontend)"
       ]
     },
     {
-      "name": "✔️GeoPhoto Plugin Tests (Integration)",
+      "name": "✔︝GeoPhoto Plugin Tests (Integration)",
       "configurations": [
-        "⚠️GeoPhoto Plugin Tests (Integration - Certa/Backend)",
-        "⚠️GeoPhoto Plugin Tests (Integration - Frontend)"
+        "⚠︝GeoPhoto Plugin Tests (Integration - Certa/Backend)",
+        "⚠︝GeoPhoto Plugin Tests (Integration - Frontend)"
       ]
     }
   ],

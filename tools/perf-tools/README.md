@@ -1,6 +1,6 @@
 # @bentley/perf-tools
 
-Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 ## Report
 `Reporter.ts` provides a way to report performance test results. The following are fields for reports:
