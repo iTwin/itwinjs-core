@@ -311,30 +311,6 @@ export type OnItemExecutedFunc = (item: any) => void;
 // @beta
 export type OnNumberCommitFunc = (value: number) => void;
 
-// @internal
-export interface PluginStatusbarItemsChangedArgs {
-    // (undocumented)
-    readonly items: ReadonlyArray<CommonStatusBarItem>;
-}
-
-// @beta
-export class PluginStatusBarItemsManager {
-    // (undocumented)
-    add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>): void;
-    // @internal (undocumented)
-    items: ReadonlyArray<CommonStatusBarItem>;
-    // @internal
-    loadItems(items: ReadonlyArray<CommonStatusBarItem>): void;
-    // @internal
-    readonly onItemsChanged: BeEvent<(args: PluginStatusbarItemsChangedArgs) => void>;
-    // (undocumented)
-    remove(itemIdOrItemIds: CommonStatusBarItem["id"] | ReadonlyArray<CommonStatusBarItem["id"]>): void;
-    // (undocumented)
-    setIsVisible(id: CommonStatusBarItem["id"], isVisible: boolean): void;
-    setLabel(id: CommonStatusBarItem["id"], label: string): void;
-    setTooltip(id: CommonStatusBarItem["id"], tooltip: string): void;
-}
-
 // @alpha
 export class PluginUiManager {
     static getPluginUiProvider(providerId: string): PluginUiProvider | undefined;
@@ -386,6 +362,30 @@ export enum StageUsage {
 
 // @beta
 export type StatusBarItemId = CommonStatusBarItem["id"];
+
+// @internal
+export interface StatusBarItemsChangedArgs {
+    // (undocumented)
+    readonly items: ReadonlyArray<CommonStatusBarItem>;
+}
+
+// @beta
+export class StatusBarItemsManager {
+    // (undocumented)
+    add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>): void;
+    // @internal (undocumented)
+    items: ReadonlyArray<CommonStatusBarItem>;
+    // @internal
+    loadItems(items: ReadonlyArray<CommonStatusBarItem>): void;
+    // @internal
+    readonly onItemsChanged: BeEvent<(args: StatusBarItemsChangedArgs) => void>;
+    remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>): void;
+    // @internal (undocumented)
+    removeAll(): void;
+    setIsVisible(id: StatusBarItemId, isVisible: boolean): void;
+    setLabel(id: StatusBarItemId, label: string): void;
+    setTooltip(id: StatusBarItemId, tooltip: string): void;
+}
 
 // @beta
 export enum StatusBarItemType {

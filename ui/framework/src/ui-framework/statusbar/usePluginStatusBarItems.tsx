@@ -5,14 +5,14 @@
 /** @module StatusBar */
 
 import * as React from "react";
-import { PluginUiManager, PluginStatusBarItemsManager, StageUsage, PluginStatusbarItemsChangedArgs, CommonStatusBarItem } from "@bentley/ui-abstract";
+import { PluginUiManager, StatusBarItemsManager, StageUsage, StatusBarItemsChangedArgs, CommonStatusBarItem } from "@bentley/ui-abstract";
 import { useActiveStageId } from "../hooks/useActiveStageId";
 import { useAvailablePluginUiProviders } from "../hooks/useAvailablePluginUiProviders";
 
-/** Hook that returns items from [[PluginStatusBarItemsManager]].
+/** Hook that returns items from [[StatusBarItemsManager]].
  * @beta
  */
-export const usePluginStatusBarItems = (manager: PluginStatusBarItemsManager | undefined): readonly CommonStatusBarItem[] => {
+export const usePluginStatusBarItems = (manager: StatusBarItemsManager | undefined): readonly CommonStatusBarItem[] => {
   const pluginUiProviderIds = useAvailablePluginUiProviders();
   const stageId = useActiveStageId();
   const [items, setItems] = React.useState(manager ? manager.items : []);
@@ -36,7 +36,7 @@ export const usePluginStatusBarItems = (manager: PluginStatusBarItemsManager | u
   }, [manager, pluginUiProviderIds, stageId]);
   // handle item changes caused by calls to UiFramework.pluginStatusBarItemsManager.setxxx
   React.useEffect(() => {
-    const handleChanged = (args: PluginStatusbarItemsChangedArgs) => {
+    const handleChanged = (args: StatusBarItemsChangedArgs) => {
       setItems(args.items);
     };
     if (manager) {

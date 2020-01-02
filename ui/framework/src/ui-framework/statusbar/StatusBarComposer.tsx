@@ -6,14 +6,13 @@
 
 import * as React from "react";
 import {
-  PluginStatusBarItemsManager, CommonStatusBarItem, isAbstractStatusBarActionItem, AbstractStatusBarActionItem,
+  StatusBarItemsManager, CommonStatusBarItem, isAbstractStatusBarActionItem, AbstractStatusBarActionItem,
   isAbstractStatusBarLabelItem, AbstractStatusBarLabelItem, StatusbarLabelSide, StatusBarSection,
 } from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
 import { FooterIndicator } from "@bentley/ui-ninezone";
 import { StatusBarSpaceBetween, StatusBarLeftSection, StatusBarCenterSection, StatusBarRightSection, StatusBarContext } from "./StatusBar";
 import { isStatusBarItem } from "./StatusBarItem";
-import { StatusBarItemsManager } from "./StatusBarItemsManager";
 import { useStageStatusBarItems } from "./useStageStatusBarItems";
 import { usePluginStatusBarItems } from "./usePluginStatusBarItems";
 import { Indicator } from "../statusfields/Indicator";
@@ -53,7 +52,7 @@ export interface StatusBarComposerProps {
   /** StatusBar items manager containing status fields */
   itemsManager: StatusBarItemsManager;
   /** If specified is used to managed statusbar items provided from plugins */
-  pluginItemsManager?: PluginStatusBarItemsManager;
+  pluginItemsManager?: StatusBarItemsManager;
 }
 
 /** Component to load components into the [[StatusBar]].
