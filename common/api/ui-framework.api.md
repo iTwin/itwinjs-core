@@ -85,7 +85,6 @@ import { Orientation } from '@bentley/ui-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PlaybackSettings } from '@bentley/ui-components';
-import { PluginStatusBarItemsManager } from '@bentley/ui-abstract';
 import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
@@ -111,7 +110,7 @@ import { SolarDataProvider } from '@bentley/ui-components';
 import { StagePanelType } from '@bentley/ui-ninezone';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { Status } from '@bentley/ui-ninezone';
-import { StatusBarItemId } from '@bentley/ui-abstract';
+import { StatusBarItemsManager as StatusBarItemsManager_2 } from '@bentley/ui-abstract';
 import { StatusBarSection } from '@bentley/ui-abstract';
 import { Store } from 'redux';
 import { StringGetter as StringGetter_2 } from '@bentley/ui-abstract';
@@ -4235,8 +4234,8 @@ export const StatusBarComposer: React.FC<StatusBarComposerProps>;
 
 // @beta
 export interface StatusBarComposerProps {
-    itemsManager: StatusBarItemsManager;
-    pluginItemsManager?: PluginStatusBarItemsManager;
+    itemsManager: StatusBarItemsManager_2;
+    pluginItemsManager?: StatusBarItemsManager_2;
 }
 
 // @internal
@@ -4250,26 +4249,8 @@ export interface StatusBarItem extends AbstractStatusBarCustomItem {
     readonly reactNode: React.ReactNode;
 }
 
-// @beta
-export class StatusBarItemsChangedEvent extends UiEvent<StatusBarItemsChangedEventArgs> {
-}
-
-// @beta
-export interface StatusBarItemsChangedEventArgs {
-    // (undocumented)
-    items: ReadonlyArray<CommonStatusBarItem>;
-}
-
-// @beta
-export class StatusBarItemsManager {
-    add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>): void;
-    // @internal (undocumented)
-    items: ReadonlyArray<CommonStatusBarItem>;
-    readonly onItemsChanged: StatusBarItemsChangedEvent;
-    remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>): void;
-    // @internal (undocumented)
-    removeAll(): void;
-    setIsVisible(id: StatusBarItemId, isVisible: boolean): void;
+// @beta @deprecated
+export class StatusBarItemsManager extends StatusBarItemsManager_2 {
 }
 
 // @beta
@@ -4908,7 +4889,7 @@ export class UiFramework {
     // @internal (undocumented)
     static readonly packageName: string;
     // @beta
-    static readonly pluginStatusBarItemsManager: PluginStatusBarItemsManager;
+    static readonly pluginStatusBarItemsManager: StatusBarItemsManager_2;
     // @internal (undocumented)
     static readonly projectServices: ProjectServices;
     // @deprecated (undocumented)
@@ -4998,7 +4979,7 @@ export const useGroupedItems: (manager: BackstageItemsManager) => readonly (read
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
 
 // @beta
-export const usePluginStatusBarItems: (manager: PluginStatusBarItemsManager | undefined) => readonly CommonStatusBarItem[];
+export const usePluginStatusBarItems: (manager: StatusBarItemsManager_2 | undefined) => readonly CommonStatusBarItem[];
 
 // @public
 export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {
@@ -5015,7 +4996,7 @@ export interface UserProfileBackstageItemProps extends CommonProps {
 }
 
 // @beta
-export const useStageStatusBarItems: (manager: StatusBarItemsManager) => readonly CommonStatusBarItem[];
+export const useStageStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
 
 // @alpha
 export class ValidationTextbox extends React.PureComponent<ValidationTextboxProps, ValidationTextboxState> {

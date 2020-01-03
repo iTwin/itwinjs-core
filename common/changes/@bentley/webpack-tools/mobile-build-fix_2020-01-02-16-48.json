@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webpack-tools",
+      "comment": "Fix webpack for mobile backend due to new dependencies",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Affan.Khan@Bentley.com"
+}

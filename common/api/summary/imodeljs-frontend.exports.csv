@@ -90,7 +90,6 @@ public;CoordSystem
 internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise
-alpha;cssPixelsToDevicePixels(cssPixels: number): number
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormattedNumberParams 
@@ -289,7 +288,6 @@ beta;PropertyValueFormat
 internal;QuadId
 alpha;QuantityFormatter 
 beta;QuantityType
-alpha;queryDevicePixelRatio(): number
 alpha;RangeEditorParams 
 public;RelativePosition
 beta;class RenderClipVolume 

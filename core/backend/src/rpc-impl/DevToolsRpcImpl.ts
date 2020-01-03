@@ -7,7 +7,7 @@ import { LogLevel, GuidString } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcManager, DevToolsRpcInterface, IModelTokenProps, DevToolsStatsOptions, IModelToken } from "@bentley/imodeljs-common";
 import { DevTools, DevToolsStatsFormatter } from "../DevTools";
 import { IModelDb } from "../IModelDb";
-import { EventSinkManager } from "./EventSourceRpcImpl";
+import { EventSinkManager } from "./EventSink";
 
 /** The backend implementation of WipRpcInterface.
  * @internal

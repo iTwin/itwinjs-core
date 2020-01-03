@@ -5,8 +5,7 @@
 /** @module StatusBar */
 
 import * as React from "react";
-import { CommonStatusBarItem } from "@bentley/ui-abstract";
-import { StatusBarItemsManager, StatusBarItemsChangedEventArgs } from "../statusbar/StatusBarItemsManager";
+import { CommonStatusBarItem, StatusBarItemsManager, StatusBarItemsChangedArgs } from "@bentley/ui-abstract";
 
 /** Hook that returns items from [[StatusBarItemsManager]].
  * @beta
@@ -22,7 +21,7 @@ export const useStageStatusBarItems = (manager: StatusBarItemsManager): readonly
     }
   }, [manager]);
   React.useEffect(() => {
-    const handleChanged = (args: StatusBarItemsChangedEventArgs) => {
+    const handleChanged = (args: StatusBarItemsChangedArgs) => {
       setItems(args.items);
     };
     manager.onItemsChanged.addListener(handleChanged);

@@ -45,13 +45,13 @@ beta;LabelProps
 beta;OnCancelFunc = () => void
 beta;OnItemExecutedFunc = (item: any) => void
 beta;OnNumberCommitFunc = (value: number) => void
-internal;PluginStatusbarItemsChangedArgs
-beta;PluginStatusBarItemsManager
 alpha;PluginUiManager
 alpha;PluginUiProvider
 public;RelativePosition
 alpha;StageUsage
 beta;StatusBarItemId = CommonStatusBarItem["id"]
+internal;StatusBarItemsChangedArgs
+beta;StatusBarItemsManager
 beta;StatusBarItemType
 beta;StatusbarLabelSide
 beta;StatusBarSection

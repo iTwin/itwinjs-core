@@ -6,7 +6,7 @@
 
 import { Logger, BeEvent } from "@bentley/bentleyjs-core";
 import { ToolbarItemInsertSpec } from "./PluginUi";
-import { CommonStatusBarItem } from "../items/StatusBarItem";
+import { CommonStatusBarItem } from "../statusbar/StatusBarItem";
 import { StageUsage } from "../stage/Stage";
 
 const loggerCategory = "imodeljs-frontend.Plugin";

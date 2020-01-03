@@ -12,6 +12,15 @@ iModel.js will now perform smooth animations when changing between saved views, 
 [IModelExporter]($backend), [IModelTransformer]($backend), and [IModelImporter]($backend) are now beta and provide low-level functionality needed for iModel transformation and data exchange.
 See the [iModel Transformation and Data Exchange]($docs/learning/backend/IModelTransformation.md) article for more information.
 
+## High-DPI display support
+
+Beta support for [device pixel ratio](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio) was introduced in v1.9.0. 1.10.0 fixes a handful of bugs associated with this feature. In particular, device pixel ratio may vary between different [Viewport]($frontend)s. As a result, the previously free-standing APIs have moved to the [Viewport]($frontend) class:
+
+* [Viewport.devicePixelRatio]($frontend) replaces `queryDevicePixelRatio`.
+* [Viewport.cssPixelsToDevicePixels]($frontend) replaces `cssPixelsToDevicePixels`.
+
+Do not assume that `Viewport.devicePixelRatio` will always return [`window.devicePixelRatio`](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio).
+
 ## Geometry
 
 ### Matrix3d inverse state bug fix

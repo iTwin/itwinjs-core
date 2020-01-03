@@ -42,6 +42,8 @@ export class ToolSettings {
   public static walkEnforceZUp = false;
   /** Speed, in meters per second, for the walk tool. */
   public static walkVelocity = 3.5;
+  /** Whether the walk tool requests pointer lock to hide the cursor for mouse look */
+  public static walkRequestPointerLock = true;
   /** Scale factor applied for wheel events with "per-line" modifier. */
   public static wheelLineFactor = 40;
   /** Scale factor applied for wheel events with "per-page" modifier. */

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Plugins */
+/** @module StatusBar */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { CommonStatusBarItem } from "../items/StatusBarItem";
+import { CommonStatusBarItem, StatusBarItemId } from "./StatusBarItem";
 
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 
@@ -13,10 +13,10 @@ const isInstance = <T extends any>(args: InstanceOrArray<T>): args is T => {
   return !Array.isArray(args);
 };
 
-/** Arguments of [[StatusbarItemsManager.onChanged]] event.
+/** Arguments of [[StatusBarItemsManager.onChanged]] event.
  * @internal
  */
-export interface PluginStatusbarItemsChangedArgs {
+export interface StatusBarItemsChangedArgs {
   readonly items: ReadonlyArray<CommonStatusBarItem>;
 }
 
@@ -24,13 +24,13 @@ export interface PluginStatusbarItemsChangedArgs {
  * Controls status bar items.
  * @beta
  */
-export class PluginStatusBarItemsManager {
+export class StatusBarItemsManager {
   private _items: ReadonlyArray<CommonStatusBarItem> = [];
 
-  /** Event raised when backstage items are changed.
+  /** Event raised when StatusBar items are changed.
    * @internal
    */
-  public readonly onItemsChanged = new BeEvent<(args: PluginStatusbarItemsChangedArgs) => void>();
+  public readonly onItemsChanged = new BeEvent<(args: StatusBarItemsChangedArgs) => void>();
 
   /** load items but do not fire onItemsChanged
    * @internal
@@ -52,7 +52,39 @@ export class PluginStatusBarItemsManager {
     this.onItemsChanged.raiseEvent({ items });
   }
 
-  public setIsVisible(id: CommonStatusBarItem["id"], isVisible: boolean) {
+  public add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>) {
+    let itemsToAdd;
+    if (isInstance(itemOrItems))
+      itemsToAdd = [itemOrItems];
+    else {
+      itemsToAdd = itemOrItems.filter((itemToAdd, index) => itemOrItems.findIndex((item) => item.id === itemToAdd.id) === index);
+    }
+    itemsToAdd = itemsToAdd.filter((itemToAdd) => this._items.find((item) => item.id === itemToAdd.id) === undefined);
+    if (itemsToAdd.length === 0)
+      return;
+    const items = [
+      ...this._items,
+      ...itemsToAdd,
+    ];
+    this.items = items;
+  }
+
+  /** Remove StatusBar items based on id */
+  public remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId
+  >) {
+    const items = this._items.filter((item) => {
+      return isInstance(itemIdOrItemIds) ? item.id !== itemIdOrItemIds : !itemIdOrItemIds.find((itemId) => itemId === item.id);
+    });
+    this.items = items;
+  }
+
+  /** @internal */
+  public removeAll() {
+    this._items = [];
+  }
+
+  /** Set the visibility of a StatusBar item */
+  public setIsVisible(id: StatusBarItemId, isVisible: boolean) {
     const itemIndex = this._items.findIndex((i) => i.id === id);
     if (itemIndex < 0)
       return;
@@ -73,7 +105,7 @@ export class PluginStatusBarItemsManager {
   }
 
   /** Set Label on statusbar items that support labels */
-  public setLabel(id: CommonStatusBarItem["id"], label: string) {
+  public setLabel(id: StatusBarItemId, label: string) {
     const itemIndex = this._items.findIndex((i) => i.id === id);
     if (itemIndex < 0)
       return;
@@ -95,7 +127,7 @@ export class PluginStatusBarItemsManager {
   }
 
   /** Set Tooltip on statusbar items that support tooltip string. */
-  public setTooltip(id: CommonStatusBarItem["id"], tooltip: string) {
+  public setTooltip(id: StatusBarItemId, tooltip: string) {
     const itemIndex = this._items.findIndex((i) => i.id === id);
     if (itemIndex < 0)
       return;
@@ -116,27 +148,4 @@ export class PluginStatusBarItemsManager {
     ];
   }
 
-  public add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>) {
-    let itemsToAdd;
-    if (isInstance(itemOrItems))
-      itemsToAdd = [itemOrItems];
-    else {
-      itemsToAdd = itemOrItems.filter((itemToAdd, index) => itemOrItems.findIndex((item) => item.id === itemToAdd.id) === index);
-    }
-    itemsToAdd = itemsToAdd.filter((itemToAdd) => this._items.find((item) => item.id === itemToAdd.id) === undefined);
-    if (itemsToAdd.length === 0)
-      return;
-    const items = [
-      ...this._items,
-      ...itemsToAdd,
-    ];
-    this.items = items;
-  }
-
-  public remove(itemIdOrItemIds: CommonStatusBarItem["id"] | ReadonlyArray<CommonStatusBarItem["id"]>) {
-    const items = this._items.filter((item) => {
-      return isInstance(itemIdOrItemIds) ? item.id !== itemIdOrItemIds : !itemIdOrItemIds.find((itemId) => itemId === item.id);
-    });
-    this.items = items;
-  }
 }

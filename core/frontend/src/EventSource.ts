@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module EventSource */
-import { QueuedEvent, EventSourceRpcInterface, IModelToken, RpcRegistry } from "@bentley/imodeljs-common";
+import { QueuedEvent, NativeAppRpcInterface, IModelToken, RpcRegistry } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
@@ -24,7 +24,7 @@ export class EventSource {
   private scheduleNextPoll() {
     const onPoll = async () => {
       try {
-        const queuedEvents = await EventSourceRpcInterface.getClient().fetch(this.iModelToken.toJSON(), IModelApp.eventSourceOptions.prefetchLimit);
+        const queuedEvents = await NativeAppRpcInterface.getClient().fetchEvents(this.iModelToken.toJSON(), IModelApp.eventSourceOptions.prefetchLimit);
         // dispatch events
         queuedEvents.forEach((event: QueuedEvent) => {
           this.dispatchEvent(event);
@@ -46,10 +46,10 @@ export class EventSource {
         this._timeoutHandle = undefined;
       }
     } else if (!this._timeoutHandle) {
-      if (RpcRegistry.instance.isRpcInterfaceInitialized(EventSourceRpcInterface)) {
+      if (RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
         this.scheduleNextPoll();
       } else {
-        Logger.logError(loggingCategory, "EventSource is disabled. Interface 'EventSourceRpcInterface' is not registered");
+        Logger.logError(loggingCategory, "EventSource is disabled. Interface 'NativeAppRpcInterface' is not registered");
       }
     }
   }

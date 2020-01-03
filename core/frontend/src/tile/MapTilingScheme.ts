@@ -4,7 +4,38 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 import { Cartographic } from "@bentley/imodeljs-common";
-import { Point2d, Point3d, Angle } from "@bentley/geometry-core";
+import { Point2d, Point3d, Angle, Range2d } from "@bentley/geometry-core";
+
+export class MapTileRectangle extends Range2d {
+  public constructor(west = 0, south = 0, east = 0, north = 0) {
+    super(west, south, east, north);
+  }
+  public static create(west = 0, south = 0, east = 0, north = 0, result?: MapTileRectangle): MapTileRectangle {
+    if (!result)
+      return new MapTileRectangle(west, south, east, north);
+    result.init(west, south, east, north);
+    return result;
+  }
+  public get west() { return this.low.x; }
+  public set west(x: number) { this.low.x = x; }
+  public get south() { return this.low.y; }
+  public set south(y: number) { this.low.y = y; }
+  public get east() { return this.high.x; }
+  public set east(x: number) { this.high.x = x; }
+  public get north() { return this.high.y; }
+  public set north(y: number) { this.high.y = y; }
+
+  public init(west = 0, south = 0, east = 0, north = 0) {
+    this.west = west;
+    this.south = south;
+    this.east = east;
+    this.north = north;
+  }
+  public containsCartographic(carto: Cartographic) { return this.containsXY(carto.longitude, carto.latitude); }
+  public getCenter(result?: Cartographic): Cartographic {
+    return Cartographic.fromRadians((this.west + this.east) / 2, (this.north + this.south) / 2, 0, result);
+  }
+}
 
 /** @internal */
 export abstract class MapTilingScheme {
@@ -64,6 +95,13 @@ export abstract class MapTilingScheme {
     return yFraction;
   }
 
+  public tileXToLongitude(x: number, level: number) {
+    return this.xFractionToLongitude(this.tileXToFraction(x, level));
+  }
+  public tileYToLatitude(y: number, level: number) {
+    return this.yFractionToLatitude(this.tileYToFraction(y, level));
+  }
+
   /**
    * Gets the fraction of the normalized (0-1) coordinates with at left, bottom.
    *
@@ -92,6 +130,10 @@ export abstract class MapTilingScheme {
   public tileXYToCartographic(x: number, y: number, level: number, result: Cartographic, height?: number): Cartographic {
     this.tileXYToFraction(x, y, level, this._scratchFraction);
     return this.fractionToCartographic(this._scratchFraction.x, this._scratchFraction.y, result, height);
+  }
+  public tileXYToRectangle(x: number, y: number, level: number, result?: MapTileRectangle) {
+    return MapTileRectangle.create(this.tileXToLongitude(x, level), this.tileYToLatitude(y, level), this.tileXToLongitude(x + 1, level), this.tileYToLatitude(y + 1, level), result);
+
   }
   /**
    *

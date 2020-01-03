@@ -21,7 +21,6 @@ before(async () => {
   const currentEnvironment: string = await executeBackendCallback(BackendTestCallbacks.getEnvironment);
   switch (currentEnvironment) {
     case "http": return initializeCloud("http");
-    case "http2": return initializeCloud("https");
     case "electron": return ElectronRpcManager.initializeClient({}, rpcInterfaces);
     case "direct": {
       // (global as any).window = undefined;

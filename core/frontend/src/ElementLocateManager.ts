@@ -12,7 +12,6 @@ import { Pixel } from "./rendering";
 import { InputSource, InteractiveTool } from "./tools/Tool";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";
-import { cssPixelsToDevicePixels } from "./render/DevicePixelRatio";
 
 /** The possible actions for which a locate filter can be called.
  * @public
@@ -176,9 +175,9 @@ export class ElementPicker {
       if (undefined === pixels)
         return;
 
-      testPointView.x = cssPixelsToDevicePixels(testPointView.x);
-      testPointView.y = cssPixelsToDevicePixels(testPointView.y);
-      pixelRadius = cssPixelsToDevicePixels(pixelRadius);
+      testPointView.x = vp.cssPixelsToDevicePixels(testPointView.x);
+      testPointView.y = vp.cssPixelsToDevicePixels(testPointView.y);
+      pixelRadius = vp.cssPixelsToDevicePixels(pixelRadius);
 
       const elmHits = new Map<string, Point2d>();
       const testPoint = Point2d.createZero();
