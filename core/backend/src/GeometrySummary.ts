@@ -286,17 +286,17 @@ class ResponseGenerator {
         return summary + " numPoints: " + query.points.length;
       case "bsurf":
         return summary
-        + " poleDimension: " + query.poleDimension
-        + " numPolesTotal: " + query.numPolesTotal()
-        + " degree[U,V]: " + JSON.stringify([query.degreeUV(UVSelect.uDirection), query.degreeUV(UVSelect.VDirection)])
-        + " order[U,V]: " + JSON.stringify([query.orderUV(UVSelect.uDirection), query.orderUV(UVSelect.VDirection)])
-        + " numSpan[U,V]: " + JSON.stringify([query.numSpanUV(UVSelect.uDirection), query.numSpanUV(UVSelect.VDirection)])
-        + " numPoles[U,V]: " + JSON.stringify([query.numPolesUV(UVSelect.uDirection), query.numPolesUV(UVSelect.VDirection)])
-        + " poleStep[U,V]: " + JSON.stringify([query.poleStepUV(UVSelect.uDirection), query.poleStepUV(UVSelect.VDirection)]);
+          + " poleDimension: " + query.poleDimension
+          + " numPolesTotal: " + query.numPolesTotal()
+          + " degree[U,V]: " + JSON.stringify([query.degreeUV(UVSelect.uDirection), query.degreeUV(UVSelect.VDirection)])
+          + " order[U,V]: " + JSON.stringify([query.orderUV(UVSelect.uDirection), query.orderUV(UVSelect.VDirection)])
+          + " numSpan[U,V]: " + JSON.stringify([query.numSpanUV(UVSelect.uDirection), query.numSpanUV(UVSelect.VDirection)])
+          + " numPoles[U,V]: " + JSON.stringify([query.numPolesUV(UVSelect.uDirection), query.numPolesUV(UVSelect.VDirection)])
+          + " poleStep[U,V]: " + JSON.stringify([query.poleStepUV(UVSelect.uDirection), query.poleStepUV(UVSelect.VDirection)]);
       case "polyface": {
         const data = query.data;
         summary = summary + " pointCount: " + data.point.length
-        + " pointIndexCount: " + data.pointIndex.length;
+          + " pointIndexCount: " + data.pointIndex.length;
         if (query.twoSided)
           summary = summary + " (two-sided)";
         if (undefined !== data.normal)
@@ -349,10 +349,10 @@ class ResponseGenerator {
           + " sweepAngle: " + rotationalSweep.getSweep().degrees;
       case "ruledSweep":
         const ruledSweep: RuledSweep = solid as RuledSweep;
-        const summariedCollection = ruledSweep.cloneContours().map((curveCollection) => this.summarizeCurveCollection(curveCollection));
+        const summarizedCollection = ruledSweep.cloneContours().map((curveCollection) => this.summarizeCurveCollection(curveCollection));
         return summary
           + " isClosedVolume" + ruledSweep.isClosedVolume
-          + " contours: " + JSON.stringify(summariedCollection);
+          + " contours: " + JSON.stringify(summarizedCollection);
       case "torusPipe":
         const torusPipe: TorusPipe = solid as TorusPipe;
         const vectorX = torusPipe.cloneVectorX();
@@ -377,7 +377,7 @@ class ResponseGenerator {
     switch (curve.curvePrimitiveType) {
       case "arc":
         const arc: Arc3d = curve as Arc3d;
-        summary =  summary + " center: " + JSON.stringify(arc.center.toJSON());
+        summary = summary + " center: " + JSON.stringify(arc.center.toJSON());
         if (undefined !== arc.circularRadius)
           summary = summary + " radius: " + arc.circularRadius();
         summary = summary

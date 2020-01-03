@@ -126,7 +126,7 @@ export class Config {
     return this._container.hasOwnProperty(name);
   }
 
-  /** Attempts to retrieve a variable, the search is case-insensitve.
+  /** Attempts to retrieve a variable, the search is case-insensitive.
    * @param varName The name of the config variable to find
    * @param defaultVal The default value to return if the variable does not exist.  If undefined, an exception is thrown.
    * @throws if the variable does not exist and a default value is not provided.

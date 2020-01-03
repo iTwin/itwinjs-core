@@ -9,7 +9,7 @@
 export class BinaryPropertyTypeConverter {
   private static _base64Header = "encoding=base64;";
 
-  /** Helper callback intented to be used with JSON.parse()
+  /** Helper callback intended to be used with JSON.parse()
    * @internal
    */
   public static createReviverCallback() {
@@ -18,7 +18,7 @@ export class BinaryPropertyTypeConverter {
     };
   }
 
-  /** Helper callback intented to be used with JSON.stringify()
+  /** Helper callback intended to be used with JSON.stringify()
    * @internal
    */
   public static createReplacerCallback(addEncodingHeader: boolean) {
@@ -27,7 +27,7 @@ export class BinaryPropertyTypeConverter {
     };
   }
 
-  /** Decode base64 string into uint8Array if possiable otherwise return orignal value
+  /** Decode base64 string into uint8Array if possible otherwise return original value
    * @internal
    */
   private static tryConvertToUint8Array(value: any): [boolean, any] {
@@ -40,7 +40,7 @@ export class BinaryPropertyTypeConverter {
     }
     return [false, value];
   }
-  /** Convert Uint8Array into base64 if possiable otherwise return orignal value
+  /** Convert Uint8Array into base64 if possible otherwise return original value
    * @internal
    */
   private static tryConvertToBase64(value: any, addEncodingHeader: boolean): [boolean, any] {

@@ -7,7 +7,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 
 /**
- * A schedule (or script)  for controlling the visibility, position and symbology of a series of elements over a perid of time.
+ * A schedule (or script)  for controlling the visibility, position and symbology of a series of elements over a period of time.
  * A schedule script is exposed through [[DisplayStyleSettingsProps]].
  * @beta
  */
