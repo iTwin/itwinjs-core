@@ -10,6 +10,7 @@ import {
   ClientRequestContext,
   Id64String,
   JsonUtils,
+  utf8ToString,
 } from "@bentley/bentleyjs-core";
 import { TerrainTileLoaderBase, MapTileGeometryAttributionProvider, QuadId, MapTileTreeReference } from "./WebMapTileTree";
 import { TileRequest } from "./TileRequest";
@@ -32,7 +33,8 @@ import { IModelApp } from "../IModelApp";
 import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshParams } from "../render/primitives/VertexTable";
-import { GeographicTilingScheme } from "./MapTilingScheme";
+import { GeographicTilingScheme, MapTilingScheme } from "./MapTilingScheme";
+import { TileAvailability } from "./MapTileAvailability";
 import { MapTile } from "./MapTileTree";
 import { GraphicBranch } from "../render/System";
 
@@ -81,13 +83,25 @@ export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, mode
     assert(false);
     return undefined;
   }
+  const tilingScheme = new GeographicTilingScheme();
+  let tileAvailability;
+  if (undefined !== layers.available) {
+    const availableTiles = layers.available;
+    tileAvailability = new TileAvailability(tilingScheme, availableTiles.length);
+    for (let level = 0; level < layers.available.length; level++) {
+      const rangesAtLevel = availableTiles[level];
+      for (const range of rangesAtLevel) {
+        tileAvailability.addAvailableTileRange(level, range.startX, range.startY, range.endX, range.endY);
+      }
+    }
+  }
 
   let tileUrlTemplate = _endPointUrl + layers.tiles[0].replace("{version}", layers.version);
   tileUrlTemplate = tileUrlTemplate.replace("?", "?extensions=octvertexnormals-watermask-metadata&");
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
 
   // TBD -- When we have  an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
-  return new CesiumWorldTerrainTileLoader(iModel, modelId, groundBias, _requestContext, _accessToken, tileUrlTemplate, maxDepth, heightRange, wantSkirts);
+  return new CesiumWorldTerrainTileLoader(iModel, modelId, groundBias, _requestContext, _accessToken, tileUrlTemplate, maxDepth, heightRange, wantSkirts, tilingScheme, tileAvailability, layers.metadataAvailability);
 }
 function zigZagDecode(value: number) {
   return (value >> 1) ^ (-(value & 1));
@@ -133,9 +147,11 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private static _scratchPoint = Point3d.createZero();
   private static _scratchTriangle = new Triangle();
   private static _scratchNormal = Vector3d.createZero();
+  public forceTileLoad(tile: Tile): boolean { return undefined !== this._metaDataAvailableLevel && tile.depth === 1 + this._metaDataAvailableLevel; }     // Force loading of the metadata availability tiles as these will be required for determining the availability of descendants.
 
-  constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string, private _maxDepth: number, heightRange: Range1d, private readonly _wantSkirts: boolean) {
-    super(iModel, modelId, groundBias, new GeographicTilingScheme(), heightRange);
+  constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string,
+    private _maxDepth: number, heightRange: Range1d, private readonly _wantSkirts: boolean, tilingScheme: MapTilingScheme, private _tileAvailability: TileAvailability | undefined, private _metaDataAvailableLevel: number | undefined) {
+    super(iModel, modelId, groundBias, tilingScheme, heightRange);
   }
 
   public getGeometryLogo(_tileProvider: MapTileTreeReference): HTMLTableRowElement {
@@ -144,6 +160,26 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
 
   public get maxDepth(): number { return this._maxDepth; }
   public get geometryAttributionProvider(): MapTileGeometryAttributionProvider { return this; }
+
+  public isLeaf(quadId: QuadId) {
+    if (quadId.level >= this.maxDepth)
+      return true;
+
+    const tileAvailability = this._tileAvailability;
+    if (undefined !== tileAvailability) {
+      const level = quadId.level + 1;
+      const column = quadId.column * 2;
+      const row = quadId.row * 2;
+      for (let j = 0; j < 2; j++) {
+        for (let i = 0; i < 2; i++) {
+          if (!tileAvailability.isTileAvailable(level - 1, column + j, row + i))
+            return true;
+        }
+      }
+    }
+
+    return false;
+  }
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content> {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
@@ -250,15 +286,40 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
         case QuantizedMeshExtensionIds.OctEncodedNormals:
           assert(vertexCount * 2 === extensionLength);
           encodedNormalsBuffer = new Uint8Array(streamBuffer.arrayBuffer, streamBuffer.curPos, extensionLength);
+          streamBuffer.advance(extensionLength);
           break;
 
         case QuantizedMeshExtensionIds.WaterMask:
           waterMaskBuffer = new Uint8Array(streamBuffer.arrayBuffer, streamBuffer.curPos, extensionLength);
+          streamBuffer.advance(extensionLength);
+          break;
+
+        case QuantizedMeshExtensionIds.Metadata:
+          const stringLength = streamBuffer.nextUint32;
+          if (stringLength > 0) {
+            const strData = streamBuffer.nextBytes(stringLength);
+            const str = utf8ToString(strData);
+            if (undefined !== str) {
+              const metaData = JSON.parse(str);
+              if (undefined !== metaData.available && undefined !== this._tileAvailability) {
+                const availableTiles = metaData.available;
+                for (let offset = 0; offset < availableTiles.length; ++offset) {
+                  const availableLevel = tile.depth + offset;     // Our depth is includes root (1 + cesium Depth)
+                  const rangesAtLevel = availableTiles[offset];
+
+                  for (const range of rangesAtLevel)
+                    this._tileAvailability.addAvailableTileRange(availableLevel, range.startX, range.startY, range.endX, range.endY);
+                }
+              }
+            }
+          }
+
           break;
         default:
+          streamBuffer.advance(extensionLength);
           break;
       }
-      streamBuffer.advance(extensionLength);
+
     }
     if (undefined !== encodedNormalsBuffer) {
     }

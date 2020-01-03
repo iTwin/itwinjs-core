@@ -26,7 +26,7 @@ import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
-import { EventSourceRpcImpl } from "./rpc-impl/EventSourceRpcImpl";
+import { NativeAppRpcImpl } from "./rpc-impl/NativeAppRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
@@ -354,7 +354,7 @@ export class IModelHost {
     SnapshotIModelRpcImpl.register();
     WipRpcImpl.register();
     DevToolsRpcImpl.register();
-    EventSourceRpcImpl.register();
+    NativeAppRpcImpl.register();
     BisCoreSchema.registerSchema();
     GenericSchema.registerSchema();
     FunctionalSchema.registerSchema();

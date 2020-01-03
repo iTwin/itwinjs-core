@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { testViewports, comparePixelData, Color, testOnScreenViewport, createOnScreenTestViewport } from "../TestViewport";
+import { TestViewport, testViewports, comparePixelData, Color, testOnScreenViewport, createOnScreenTestViewport } from "../TestViewport";
 import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
 import { RenderMemory, Pixel, RenderSystem, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
@@ -55,6 +55,12 @@ describe("Test VBO creation", () => {
   });
 });
 
+async function testViewportsWithDpr(imodel: IModelConnection, rect: ViewRect, test: (vp: TestViewport) => Promise<void>): Promise<void> {
+  const devicePixelRatios = [ 1.0, 1.25, 1.5, 2.0 ];
+  for (const dpr of devicePixelRatios)
+    await testViewports("0x24", imodel, rect.width, rect.height, test, dpr);
+}
+
 describe("Render mirukuru with VAOs disabled", () => {
   let imodel: IModelConnection;
 
@@ -74,7 +80,7 @@ describe("Render mirukuru with VAOs disabled", () => {
 
   it("should properly render the model (smooth shaded with visible edges)", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
-    await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
       const vf = vp.view.viewFlags;
       vf.visibleEdges = true;
 
@@ -219,12 +225,12 @@ describe("Render mirukuru", () => {
       // We run this test twice. The second time, the tiles will already be available so the view will NOT be empty. Purge them now.
       await imodel.tiles.purgeTileTrees(undefined);
       vp.refreshForModifiedModels(undefined);
-    });
+    }, 1.0);
   });
 
   it("should render the model", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
-    await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
       await vp.waitForAllTilesToRender();
       expect(vp.numRequestedTiles).to.equal(0);
       expect(vp.numSelectedTiles).to.equal(1);
@@ -302,47 +308,48 @@ describe("Render mirukuru", () => {
   });
 
   it("should read image at expected sizes", async () => {
-    const rect = new ViewRect(0, 0, 100, 100);
-    await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
+    // NOTE: rect is in CSS pixels. ImageBuffer returned by readImage is in device pixels. vp.target.viewRect is in device pixels.
+    const cssRect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, cssRect, async (vp) => {
       await vp.waitForAllTilesToRender();
 
-      let imgBuffer = vp.readImage();
-      expect(imgBuffer).to.not.be.undefined;
-      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width);
+      const expectImageDimensions = (readRect: ViewRect | undefined, targetSize: Point2d | undefined, expectedWidth: number, expectedHeight: number) => {
+        const img = vp.readImage(readRect, targetSize)!;
+        expect(img).not.to.be.undefined;
+        expect(img.width).to.equal(Math.floor(expectedWidth));
+        expect(img.height).to.equal(Math.floor(expectedHeight));
+      };
 
-      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 2, vp.target.viewRect.height / 2), true);
-      expect(imgBuffer).to.not.be.undefined;
-      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
-      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
-      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 2);
-      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 2);
+      const devRect = vp.target.viewRect;
 
-      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 4, vp.target.viewRect.height / 4), true);
-      expect(imgBuffer).to.not.be.undefined;
-      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
-      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
-      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 4);
-      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 4);
+      // Read full image, no resize
+      expectImageDimensions(undefined, undefined, devRect.width, devRect.height);
+      expectImageDimensions(new ViewRect(0, 0, -1, -1), undefined, devRect.width, devRect.height);
+      expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
 
-      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 4, vp.target.viewRect.height / 2), true);
-      expect(imgBuffer).to.not.be.undefined;
-      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
-      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
-      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 4);
-      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 2);
+      // Read sub-image, no resize
+      const cssHalfWidth = cssRect.width / 2;
+      const cssQuarterHeight = cssRect.height / 4;
+      const devHalfWidth = Math.floor(devRect.width / 2);
+      const devQuarterHeight = Math.floor(devRect.height / 4);
+      expectImageDimensions(new ViewRect(0, 0, cssHalfWidth, cssQuarterHeight), undefined, devHalfWidth, devQuarterHeight);
+      expectImageDimensions(new ViewRect(cssHalfWidth, cssQuarterHeight, cssRect.right, cssRect.bottom), undefined, devRect.width - devHalfWidth, devRect.height - devQuarterHeight);
+      expectImageDimensions(new ViewRect(0, 0, cssHalfWidth, cssRect.bottom), undefined, devHalfWidth, devRect.height);
 
-      imgBuffer = vp.readImage(undefined, new Point2d(vp.target.viewRect.width / 2, vp.target.viewRect.height / 4), true);
-      expect(imgBuffer).to.not.be.undefined;
-      expect(imgBuffer!.width).to.not.equal(vp.target.viewRect.width);
-      expect(imgBuffer!.height).to.not.equal(vp.target.viewRect.height);
-      expect(imgBuffer!.width).to.equal(vp.target.viewRect.width / 2);
-      expect(imgBuffer!.height).to.equal(vp.target.viewRect.height / 4);
+      // Read full image and resize
+      expectImageDimensions(undefined, new Point2d(256, 128), 256, 128);
+      expectImageDimensions(new ViewRect(0, 0, -1, -1), new Point2d(50, 200), 50, 200);
+      expectImageDimensions(cssRect, new Point2d(10, 10), 10, 10);
+      expectImageDimensions(undefined, new Point2d(devRect.width, devRect.height), devRect.width, devRect.height);
+
+      // Read sub-image and resize
+      expectImageDimensions(new ViewRect(0, 0, cssHalfWidth, cssQuarterHeight), new Point2d(512, 768), 512, 768);
     });
   });
 
   it("should override symbology", async () => {
     const rect = new ViewRect(0, 0, 200, 150);
-    await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
       const elemId = "0x29";
       const subcatId = "0x18";
       const vf = vp.view.viewFlags;
@@ -502,7 +509,7 @@ describe("Render mirukuru", () => {
 
   it("should render hilite", async () => {
     const rect = new ViewRect(0, 0, 200, 150);
-    await testViewports("0x24", imodel, rect.width, rect.height, async (vp) => {
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
       const vf = vp.view.viewFlags;
       vf.visibleEdges = vf.hiddenEdges = vf.lighting = false;
       vp.hilite = new Hilite.Settings(ColorDef.red.clone(), 1.0, 0.0, Hilite.Silhouette.Thin);
@@ -555,7 +562,7 @@ describe("Render mirukuru", () => {
 
   it("should determine visible depth range", async () => {
     const fullRect = new ViewRect(0, 0, 100, 100);
-    await testViewports("0x24", imodel, fullRect.width, fullRect.height, async (vp) => {
+    await testViewportsWithDpr(imodel, fullRect, async (vp) => {
       await vp.waitForAllTilesToRender();
 
       // Depth range for entire view should correspond to the face of the slab in the center of the view which is parallel to the camera's near+far planes.

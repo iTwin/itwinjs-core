@@ -325,7 +325,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <div className="start-time-container">
             {hasDates && <span className="start-date">{startDate!.toLocaleDateString()}</span>}
-            {!showDuration && <span className="start-time">{startDate!.toLocaleTimeString()}</span>}
+            {hasDates && !showDuration && <span className="start-time">{startDate!.toLocaleTimeString()}</span>}
             {showDuration && <span className="duration-start-time">{durationString}</span>}
           </div>
           <Scrubber
@@ -342,7 +342,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
           />
           <div className="end-time-container">
             {hasDates && <span className="end-date">{endDate!.toLocaleDateString()}</span>}
-            {!showDuration && <span className="end-time">{endDate!.toLocaleTimeString()}</span>}
+            {hasDates && !showDuration && <span className="end-time">{endDate!.toLocaleTimeString()}</span>}
             {showDuration && <InlineEdit className="duration-end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />}
           </div>
           {miniMode && this._renderSettings()}

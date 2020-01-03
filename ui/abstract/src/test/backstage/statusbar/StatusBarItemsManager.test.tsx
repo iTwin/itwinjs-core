@@ -6,12 +6,12 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 
 import {
-  AbstractStatusBarItemUtilities, PluginStatusBarItemsManager, StatusBarSection,
+  AbstractStatusBarItemUtilities, StatusBarItemsManager, StatusBarSection,
   isAbstractStatusBarLabelItem, isAbstractStatusBarActionItem, isAbstractStatusBarCustomItem,
   StatusBarItemType, AbstractStatusBarCustomItem, CommonStatusBarItem,
-} from "../../ui-abstract";
+} from "../../../ui-abstract";
 
-describe("PluginStatusBarItemsManager", () => {
+describe("StatusBarItemsManager", () => {
   const createCustomItem = (id: string, section: StatusBarSection, itemPriority: number, itemProps?: Partial<AbstractStatusBarCustomItem>): AbstractStatusBarCustomItem => ({
     id, section, itemPriority,
     isVisible: true,
@@ -23,7 +23,7 @@ describe("PluginStatusBarItemsManager", () => {
 
   describe("items", () => {
     it("should contain 0 items by default", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
       expect(sut.items.length).to.eq(0);
     });
   });
@@ -53,7 +53,7 @@ describe("PluginStatusBarItemsManager", () => {
 
   describe("add & remove", () => {
     it("should add & remove one item", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
 
       const item = AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
       expect(isAbstractStatusBarLabelItem(item)).to.be.true;
@@ -67,7 +67,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("attempt to set duplicate items ignores it", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
 
       const item = AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
 
@@ -79,7 +79,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("add ignores duplicate items", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
 
       const item1 = AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
       const item2 = AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
@@ -88,7 +88,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("attempt to add duplicate item ignores it", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
 
       const item = AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
 
@@ -100,7 +100,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("should add & remove multiple items to StatusBarManager items", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
 
       const items: CommonStatusBarItem[] = [
         AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello"),
@@ -117,7 +117,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("add via load should not trigger listener", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
 
       const items: CommonStatusBarItem[] = [
         AbstractStatusBarItemUtilities.createLabelItem("PluginTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello"),
@@ -131,12 +131,17 @@ describe("PluginStatusBarItemsManager", () => {
       spy.calledOnce.should.false;
 
       expect(sut.items.length).to.eq(3);
+
+      spy.resetHistory();
+      sut.removeAll();
+      spy.calledOnce.should.false;
+      expect(sut.items.length).to.eq(0);
     });
   });
 
   describe("setIsVisible", () => {
     it("should set is visible", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
       sut.items = [
         AbstractStatusBarItemUtilities.createLabelItem("test1", StatusBarSection.Center, 100, "icon-hand-2", "Hello"),
       ];
@@ -150,7 +155,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("should not update if item is not found", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
       const spy = sinon.spy();
       sut.onItemsChanged.addListener(spy);
       sut.setIsVisible("test1", false);
@@ -159,7 +164,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("should not update if item visibility equals new visibility", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
       sut.items = [
         AbstractStatusBarItemUtilities.createLabelItem("test1", StatusBarSection.Center, 100, "icon-hand-2", "Hello"),
       ];
@@ -174,7 +179,7 @@ describe("PluginStatusBarItemsManager", () => {
 
   describe("setLabel", () => {
     it("should set label on label item", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
       sut.items = [
         AbstractStatusBarItemUtilities.createLabelItem("test1", StatusBarSection.Center, 100, "icon-hand-2", "Hello"),
       ];
@@ -191,7 +196,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("should set tooltip on action item", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
       sut.items = [
         AbstractStatusBarItemUtilities.createActionItem("test1", StatusBarSection.Center, 100, "icon-developer", "test status bar from plugin", () => { }),
       ];
@@ -208,7 +213,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("should not update if item is not found (Label)", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
       const spy = sinon.spy();
       sut.onItemsChanged.addListener(spy);
       const newLabel = "New Label";
@@ -217,7 +222,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("should not update if item is not found (Tooltip)", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
       const spy = sinon.spy();
       sut.onItemsChanged.addListener(spy);
       const newTip = "New Tip";
@@ -226,7 +231,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("should not update if label equals new label", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
       const label = "Hello";
 
       sut.items = [
@@ -240,7 +245,7 @@ describe("PluginStatusBarItemsManager", () => {
     });
 
     it("should not update if tooltip equals new tooltip", () => {
-      const sut = new PluginStatusBarItemsManager();
+      const sut = new StatusBarItemsManager();
       const toolTip = "ToolTip";
 
       sut.items = [

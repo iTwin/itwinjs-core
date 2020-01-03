@@ -411,7 +411,11 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public selectRealityTiles(context: TraversalSelectionContext, args: Tile.DrawArgs, traversalDetails: TraversalDetails) {
     const vis = this.computeVisibility(args);
     if (Tile.Visibility.OutsideFrustum === vis) {
-      this.unloadChildren(args.purgeOlderThan);
+      // Note -- Can't unload children here because this tile tree may be used by more than one viewport.
+      return;
+    }
+    if (this.root.loader.forceTileLoad(this) && !this.isReady) {
+      context.selectOrQueue(this, traversalDetails);    // Force loading if loader requires this tile. (cesium terrain visibility).
       return;
     }
 

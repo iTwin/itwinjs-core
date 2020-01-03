@@ -1748,15 +1748,6 @@ export interface EnvironmentProps {
     sky?: SkyBoxProps;
 }
 
-// @internal
-export abstract class EventSourceRpcInterface extends RpcInterface {
-    // (undocumented)
-    fetch(_iModelToken: IModelTokenProps, _limit: number): Promise<QueuedEvent[]>;
-    static getClient(): EventSourceRpcInterface;
-    static readonly interfaceName = "EventSourceRpcInterface";
-    static interfaceVersion: string;
-}
-
 // @public
 export interface ExternalSourceAspectProps extends ElementAspectProps {
     checksum?: string;
@@ -3587,6 +3578,14 @@ export interface ModelQueryParams extends EntityQueryParams {
 export interface ModelSelectorProps extends DefinitionElementProps {
     // (undocumented)
     models: Id64Array;
+}
+
+// @internal
+export abstract class NativeAppRpcInterface extends RpcInterface {
+    fetchEvents(_iModelToken: IModelTokenProps, _maxToFetch: number): Promise<QueuedEvent[]>;
+    static getClient(): NativeAppRpcInterface;
+    static readonly interfaceName = "NativeAppRpcInterface";
+    static interfaceVersion: string;
 }
 
 // @public

@@ -11,7 +11,7 @@ import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
 import { OidcDesktopClientConfiguration } from "@bentley/imodeljs-common";
 import { IModelConnection, SnapMode, IModelApp, OidcBrowserClient, ViewState, FrontendRequestContext, OidcDesktopClientRenderer } from "@bentley/imodeljs-frontend";
-import { UiError, getClassName, PluginStatusBarItemsManager } from "@bentley/ui-abstract";
+import { UiError, getClassName, StatusBarItemsManager } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Presentation } from "@bentley/presentation-frontend";
 
@@ -55,12 +55,12 @@ export class UiFramework {
   private static _frameworkStateKeyInStore: string = "frameworkState";  // default name
   private static _backstageManager?: BackstageManager;
   private static _statusBarManager?: StatusBarManager;
-  private static _pluginStatusBarItemsManager = new PluginStatusBarItemsManager();
+  private static _pluginStatusBarItemsManager = new StatusBarItemsManager();
 
-  /** Get the PluginStatusBarItemsManager used to manage status bar items provided by plugins.
+  /** Get the StatusBarItemsManager used to manage status bar items provided by plugins.
    * @beta
    */
-  public static get pluginStatusBarItemsManager(): PluginStatusBarItemsManager {
+  public static get pluginStatusBarItemsManager(): StatusBarItemsManager {
     return UiFramework._pluginStatusBarItemsManager;
   }
 

@@ -19,9 +19,9 @@ export * from "./ui-abstract/items/BadgeType";
 export * from "./ui-abstract/items/BaseItemState";
 export * from "./ui-abstract/items/ConditionalDisplayType";
 export * from "./ui-abstract/items/RelativePosition";
-export * from "./ui-abstract/items/StatusBarItem";
+export * from "./ui-abstract/statusbar/StatusBarItem";
 
-export * from "./ui-abstract/plugins/PluginStatusBarItemsManager";
+export * from "./ui-abstract/statusbar/StatusBarItemsManager";
 export * from "./ui-abstract/plugins/PluginUi";
 export * from "./ui-abstract/plugins/PluginUiManager";
 
@@ -59,6 +59,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Plugins
  * Classes for creating and managing runtime [Plugins]($docs/learning/frontend/Plugins.md)
+ */
+/**
+ * @docs-group-description StatusBar
+ * Classes for creating and managing items in the status bar.
  */
 /**
  * @docs-group-description Utilities

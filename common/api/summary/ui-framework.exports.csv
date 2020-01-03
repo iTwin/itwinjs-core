@@ -410,9 +410,7 @@ beta;StatusBarComposerProps
 internal;StatusBarContext: React.Context
 public;StatusBarFieldId = string | null
 beta;StatusBarItem 
-beta;StatusBarItemsChangedEvent 
-beta;StatusBarItemsChangedEventArgs
-beta;StatusBarItemsManager
+beta;StatusBarItemsManager 
 beta;StatusBarItemUtilities
 beta;StatusBarLeftSection: React.FunctionComponent
 beta;StatusBarManager
@@ -491,10 +489,10 @@ internal;useBackstageItems: (manager: BackstageItemsManager) => readonly Backsta
 beta;useBackstageManager: () => BackstageManager
 internal;useGroupedItems: (manager: BackstageItemsManager) => readonly (readonly BackstageItem[])[]
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
-beta;usePluginStatusBarItems: (manager: PluginStatusBarItemsManager | undefined) => readonly CommonStatusBarItem[]
+beta;usePluginStatusBarItems: (manager: StatusBarItemsManager_2 | undefined) => readonly CommonStatusBarItem[]
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
-beta;useStageStatusBarItems: (manager: StatusBarItemsManager) => readonly CommonStatusBarItem[]
+beta;useStageStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 alpha;ValidationTextbox 
 internal;VersionInfo
 beta;ViewAttributesStatusField 

@@ -36,7 +36,7 @@ import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost, ApplicationType } from "./IModelHost";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
-import { EventSink, EventSinkManager } from "./rpc-impl/EventSourceRpcImpl";
+import { EventSink, EventSinkManager } from "./rpc-impl/EventSink";
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** A string that identifies a Txn.
@@ -83,6 +83,9 @@ export class OpenParams {
   ) {
     this.validate();
   }
+
+  /** Returns true if the OpenParams open a briefcase iModel */
+  public get isBriefcase(): boolean { return this.syncMode !== undefined; }
 
   /** Returns true if the OpenParams open a standalone iModel
    * @deprecated Use [[isSnapshot]] instead as *standalone* has been replaced by *snapshot*.
@@ -380,6 +383,13 @@ export class IModelDb extends IModel {
       requestContext.enter();
       Logger.logError(loggerCategory, "Could not log usage information", () => ({ errorStatus: error.status, errorMessage: error.message, iModelToken: iModelDb.iModelToken }));
     }
+  }
+
+  /** Returns true if this is an iModel from iModelHub (briefcase)
+   * @see [[open]]
+   */
+  public get isBriefcase(): boolean {
+    return this.briefcase.openParams.isBriefcase;
   }
 
   /** Returns true if this is a standalone iModel

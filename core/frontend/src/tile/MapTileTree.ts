@@ -7,7 +7,7 @@ import { ColorDef, FrustumPlanes } from "@bentley/imodeljs-common";
 import { TileTree } from "./TileTree";
 import { Tile } from "./Tile";
 import { assert } from "@bentley/bentleyjs-core";
-import { QuadId, computeMercatorFractionToDb } from "./WebMapTileTree";
+import { QuadId, computeMercatorFractionToDb, MapTileLoaderBase } from "./WebMapTileTree";
 import { Point3d, Range1d, Range3d, Transform, Angle, ClipVector, ClipShape } from "@bentley/geometry-core";
 import { MapTilingScheme } from "./MapTilingScheme";
 import { GeoConverter } from "../GeoServices";
@@ -96,14 +96,14 @@ export class MapTile extends Tile {
     const level = this.quadId.level + 1;
     const column = this.quadId.column * 2;
     const row = this.quadId.row * 2;
-    const childrenAreLeaves = (this.depth + 1) === mapTree.loader.maxDepth;
+    const loader = mapTree.loader as MapTileLoaderBase;
     this._children = [];
     for (let j = 0; j < rowCount; j++) {
       for (let i = 0; i < columnCount; i++) {
         const quadId = new QuadId(level, column + i, row + j);
         const corners = childCorners[j * columnCount + i];
         const range = Range3d.createArray(MapTile.computeRangeCorners(corners, this.heightRange));
-        const child = new MapTile({ root: this._mapTree, contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, mapTree.heightRange);
+        const child = new MapTile({ root: this._mapTree, contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: loader.isLeaf(quadId) }, quadId, corners, mapTree.heightRange);
         this._children.push(child);
       }
     }

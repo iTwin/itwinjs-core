@@ -13,7 +13,7 @@ import {
 import {
   AuthorizedFrontendRequestContext, FrontendRequestContext, DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, EntityState,
   OidcBrowserClient, PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, Target, TileAdmin, Viewport, ViewRect, ViewState, IModelAppOptions,
-  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, cssPixelsToDevicePixels, queryDevicePixelRatio, OidcDesktopClientRenderer,
+  FeatureOverrideProvider, FeatureSymbology, GLTimerResult, OidcDesktopClientRenderer,
 } from "@bentley/imodeljs-frontend";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
@@ -363,6 +363,19 @@ async function waitForTilesToLoad(modelLocation?: string) {
   theViewport!.renderFrame();
   timer.stop();
   curTileLoadingTime = timer.current.milliseconds;
+}
+
+// ###TODO this should be using Viewport.devicePixelRatio.
+function queryDevicePixelRatio(): number {
+  if (false === IModelApp.renderSystem.options.dpiAwareViewports)
+    return 1;
+
+  return window.devicePixelRatio || 1;
+}
+
+// ###TODO This should be going through Viewport.cssPixelsToDevicePixels().
+function cssPixelsToDevicePixels(css: number): number {
+  return Math.floor(css * queryDevicePixelRatio());
 }
 
 function getRowData(finalFrameTimings: Array<Map<string, number>>, finalGPUFrameTimings: Map<string, number[]>, timingsForActualFPS: Array<Map<string, number>>, configs: DefaultConfigs, pixSelectStr?: string): Map<string, number | string> {

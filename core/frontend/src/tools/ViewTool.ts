@@ -1849,24 +1849,31 @@ class ViewLookAndMove extends ViewNavigate {
     }
   }
 
-  private requestPointerLock(vp: ScreenViewport): void {
-    // NOTE: Chrome appears to be the only browser that doesn't require pointer lock to be requested from an event like click...
+  private requestPointerLock(): void {
+    if (!ToolSettings.walkRequestPointerLock)
+      return;
+    // NOTE: Chrome appears to be the only browser that doesn't require pointer lock to be requested from an engagement event like click.
+    //       Since this is called from a mouse button down event, we can still get click notification after the corresponding up event.
+    //       Currently pointer lock is not requested *by design* if the user starts a mouse drag instead of mouse click.
     this._pointerLockChangeListener = () => this.pointerLockChangeEvent();
-    this._clickListener = (ev: Event) => { ev.preventDefault(); ev.stopPropagation(); if (1 === this.viewTool.nPts) this.viewTool.viewport!.canvas.requestPointerLock(); };
+    this._clickListener = () => { if (1 === this.viewTool.nPts) this.viewTool.viewport!.canvas.requestPointerLock(); };
     document.addEventListener("pointerlockchange", this._pointerLockChangeListener, false);
-    document.addEventListener("click", this._clickListener, false); // NOTE: "once" option prevented pointer lock from being requested in Firefox...
-    vp.canvas.click();
+    document.addEventListener("click", this._clickListener, false);
+  }
+
+  private removeClickListener(): void {
+    if (undefined === this._clickListener)
+      return;
+    document.removeEventListener("click", this._clickListener, false);
+    this._clickListener = undefined;
   }
 
   private releasePointerLock(): void {
     this._havePointerLock = false;
+    this.removeClickListener();
     if (undefined !== this._pointerLockChangeListener) {
       document.removeEventListener("pointerlockchange", this._pointerLockChangeListener, false);
       this._pointerLockChangeListener = undefined;
-    }
-    if (undefined !== this._clickListener) {
-      document.removeEventListener("click", this._clickListener, false);
-      this._clickListener = undefined;
     }
     if (null !== document.pointerLockElement)
       document.exitPointerLock();
@@ -1882,7 +1889,7 @@ class ViewLookAndMove extends ViewNavigate {
       return true;
 
     if (InputSource.Mouse === ev.inputSource) {
-      this.requestPointerLock(vp);
+      this.requestPointerLock();
       this._deadZone = Math.pow(vp.pixelsFromInches(0.5), 2); // Only used if pointer lock isn't supported...
     } else {
       this._touchLook = true;
@@ -1897,6 +1904,7 @@ class ViewLookAndMove extends ViewNavigate {
     else
       this._lastMovement = this._lastPtView.vectorTo(ev.viewPoint).scale(2.0); // ev.movement isn't available for button event created from touch event...
     this._accumulator.setZero();
+    this.removeClickListener(); // Ignore click after start drag...
 
     return super.doManipulation(ev);
   }

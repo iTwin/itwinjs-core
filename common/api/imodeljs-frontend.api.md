@@ -2462,9 +2462,6 @@ export function createClassifierTileTreeReference(classifiers: SpatialClassifier
 // @internal
 export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise<TileTree | undefined>;
 
-// @alpha
-export function cssPixelsToDevicePixels(cssPixels: number): number;
-
 // @internal (undocumented)
 export class CurrentInputState {
     // (undocumented)
@@ -4739,6 +4736,8 @@ export abstract class MapTileLoaderBase extends ContextTileLoader {
     // (undocumented)
     readonly isContentUnbounded: boolean;
     // (undocumented)
+    isLeaf(quadId: QuadId): boolean;
+    // (undocumented)
     abstract loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
     // (undocumented)
     protected _mapTilingScheme: MapTilingScheme;
@@ -5633,6 +5632,10 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
+    readonly devicePixelRatio: number;
+    // (undocumented)
+    devicePixelRatioOverride: number | undefined;
+    // (undocumented)
     dispose(): void;
     // (undocumented)
     protected drawOverlayDecorations(): void;
@@ -6156,9 +6159,6 @@ export enum QuantityType {
     // (undocumented)
     Volume = 4
 }
-
-// @alpha
-export function queryDevicePixelRatio(): number;
 
 // @alpha
 export interface RangeEditorParams extends BasePropertyEditorParams {
@@ -6721,8 +6721,12 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined;
     // (undocumented)
+    cssPixelsToDevicePixels(cssPixels: number): number;
+    // (undocumented)
     readonly debugControl: RenderTargetDebugControl | undefined;
     static depthFromDisplayPriority(priority: number): number;
+    // (undocumented)
+    readonly devicePixelRatio: number;
     // (undocumented)
     dispose(): void;
     // (undocumented)
@@ -6743,11 +6747,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void;
     // (undocumented)
     pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined;
-    // (undocumented)
     readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     readImageToCanvas(): HTMLCanvasElement;
-    // (undocumented)
     abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
     // (undocumented)
     abstract readonly renderSystem: RenderSystem;
@@ -6763,7 +6765,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     updateSolarShadows(_context: SceneContext | undefined): void;
     // (undocumented)
     abstract updateViewRect(): boolean;
-    // (undocumented)
     abstract readonly viewRect: ViewRect;
     // (undocumented)
     abstract readonly wantInvertBlackBackground: boolean;
@@ -6771,6 +6772,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
 
 // @beta
 export interface RenderTargetDebugControl {
+    // @internal
+    devicePixelRatioOverride?: number;
     // @internal (undocumented)
     displayDrapeFrustum: boolean;
     drawForReadPixels: boolean;
@@ -7844,6 +7847,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     createPlanarClassifier(properties: SpatialClassificationProps.Classifier): PlanarClassifier;
     // (undocumented)
+    protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect;
+    // (undocumented)
     readonly currentFeatureSymbologyOverrides: FeatureSymbology.Overrides;
     // (undocumented)
     readonly currentlyDrawingClassifier: PlanarClassifier | undefined;
@@ -7975,7 +7980,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     pushBranch(exec: ShaderProgramExecutor, branch: Branch): void;
     // (undocumented)
     pushState(state: BranchState): void;
-    // (undocumented)
     readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined;
     // (undocumented)
     protected readImagePixels(out: Uint8Array, x: number, y: number, w: number, h: number): boolean;
@@ -8514,6 +8518,8 @@ export abstract class TileLoader {
     // (undocumented)
     readonly drawAsRealityTiles: boolean;
     // (undocumented)
+    forceTileLoad(_tile: Tile): boolean;
+    // (undocumented)
     getBatchIdMap(): BatchedTileIdMap | undefined;
     // (undocumented)
     abstract getChildrenProps(parent: Tile): Promise<TileProps[]>;
@@ -9031,6 +9037,7 @@ export class ToolSettings {
     static viewToolPickRadiusInches: number;
     static walkCameraAngle: Angle;
     static walkEnforceZUp: boolean;
+    static walkRequestPointerLock: boolean;
     static walkVelocity: number;
     static wheelLineFactor: number;
     static wheelPageFactor: number;
@@ -10163,11 +10170,15 @@ export abstract class Viewport implements IDisposable {
     protected _controllerValid: boolean;
     // @internal (undocumented)
     createSceneContext(): SceneContext;
+    // @beta
+    cssPixelsToDevicePixels(cssPixels: number): number;
     // @internal
     debugBoundingBoxes: Tile.DebugBoundingBoxes;
     // @internal (undocumented)
     protected _decorationsValid: boolean;
     determineVisibleDepthRange(rect?: ViewRect, result?: DepthRangeNpc): DepthRangeNpc | undefined;
+    // @beta
+    readonly devicePixelRatio: number;
     // @internal
     discloseTileTrees(trees: TileTreeSet): void;
     displayStyle: DisplayStyleState;

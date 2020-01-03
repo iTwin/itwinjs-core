@@ -12,7 +12,6 @@ import {
   OffScreenViewport,
   ViewRect,
   IModelApp,
-  cssPixelsToDevicePixels,
 } from "@bentley/imodeljs-frontend";
 import { Feature, GeometryClass } from "@bentley/imodeljs-common";
 
@@ -111,10 +110,10 @@ function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocata
       return;
 
     const sRect = rect.clone();
-    sRect.left = cssPixelsToDevicePixels(sRect.left);
-    sRect.right = cssPixelsToDevicePixels(sRect.right);
-    sRect.bottom = cssPixelsToDevicePixels(sRect.bottom);
-    sRect.top = cssPixelsToDevicePixels(sRect.top);
+    sRect.left = vp.cssPixelsToDevicePixels(sRect.left);
+    sRect.right = vp.cssPixelsToDevicePixels(sRect.right);
+    sRect.bottom = vp.cssPixelsToDevicePixels(sRect.bottom);
+    sRect.top = vp.cssPixelsToDevicePixels(sRect.top);
 
     for (let x = sRect.left; x < sRect.right; x++)
       for (let y = sRect.top; y < sRect.bottom; y++)
@@ -271,16 +270,23 @@ export async function createOffScreenTestViewport(viewId: Id64String, imodel: IM
 }
 
 // Create an on-screen viewport for tests. The viewport is added to the ViewManager on construction, and dropped on disposal.
-export async function createOnScreenTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<ScreenTestViewport> {
-  return ScreenTestViewport.createTestViewport(viewId, imodel, width, height);
+export async function createOnScreenTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, devicePixelRatio?: number): Promise<ScreenTestViewport> {
+  const vp = await ScreenTestViewport.createTestViewport(viewId, imodel, width, height);
+  if (undefined !== devicePixelRatio) {
+    const debugControl = vp.target.debugControl;
+    if (undefined !== debugControl)
+      debugControl.devicePixelRatioOverride = devicePixelRatio;
+  }
+
+  return vp;
 }
 
-export async function testOnScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: ScreenTestViewport) => Promise<void>): Promise<void> {
+export async function testOnScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: ScreenTestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
   if (!IModelApp.initialized)
     return Promise.resolve();
 
   // ###TODO: Make ScreenTestViewport integrate properly with the (non-continuous) render loop...
-  const onscreen = await createOnScreenTestViewport(viewId, imodel, width, height);
+  const onscreen = await createOnScreenTestViewport(viewId, imodel, width, height, devicePixelRatio);
   onscreen.continuousRendering = true;
   try {
     await test(onscreen);
@@ -293,11 +299,11 @@ export async function testOnScreenViewport(viewId: Id64String, imodel: IModelCon
 }
 
 // Execute a test against both an off-screen and on-screen viewport.
-export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
+export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
   if (!IModelApp.initialized)
     return Promise.resolve();
 
-  await testOnScreenViewport(viewId, imodel, width, height, test);
+  await testOnScreenViewport(viewId, imodel, width, height, test, devicePixelRatio);
 
   const offscreen = await createOffScreenTestViewport(viewId, imodel, width, height);
   try {
