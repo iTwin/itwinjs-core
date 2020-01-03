@@ -162,8 +162,8 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   }
 
   public render() {
-    const testButtons = true;
-    const actionButtonRenderers = testButtons ? [this._favoriteActionButtonRenderer] : undefined;
+    // const actionButtonRenderers = undefined;  // used to test UnifiedSelectionPropertyGrid styling when no actionButtonRenderers
+    const actionButtonRenderers = [this._favoriteActionButtonRenderer];
     if (this.props.iModelConnection && this.props.rulesetId)
       return (
         <div style={{ height: "100%" }}>
