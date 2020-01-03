@@ -4739,6 +4739,8 @@ export abstract class MapTileLoaderBase extends ContextTileLoader {
     // (undocumented)
     readonly isContentUnbounded: boolean;
     // (undocumented)
+    isLeaf(quadId: QuadId): boolean;
+    // (undocumented)
     abstract loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content>;
     // (undocumented)
     protected _mapTilingScheme: MapTilingScheme;
@@ -8513,6 +8515,8 @@ export abstract class TileLoader {
     readonly containsPointClouds: boolean;
     // (undocumented)
     readonly drawAsRealityTiles: boolean;
+    // (undocumented)
+    forceTileLoad(_tile: Tile): boolean;
     // (undocumented)
     getBatchIdMap(): BatchedTileIdMap | undefined;
     // (undocumented)

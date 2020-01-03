@@ -543,6 +543,7 @@ export abstract class TileLoader {
   public get preloadRealityParentSkip(): number { return 0; }
   public get drawAsRealityTiles(): boolean { return false; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
+  public forceTileLoad(_tile: Tile): boolean { return false; }
 
   public computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
     return tile.depth;
