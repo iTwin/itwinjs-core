@@ -2886,9 +2886,9 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 
   public interrupt() { }
 
-  constructor(startEv: BeTouchEvent, _ev: BeTouchEvent) {
+  constructor(startEv: BeTouchEvent, ev: BeTouchEvent) {
     super(startEv.viewport!, 0, true, false);
-    this.onStart(startEv);
+    this.onStart(ev);
   }
 
   public onStart(ev: BeTouchEvent): void {
@@ -2917,12 +2917,14 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 
     const vp = this.viewport!;
     const distance = (2 === ev.touchCount ? BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp).distance(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp)) : 0.0);
+    const threshold = this.viewport!.pixelsFromInches(ToolSettings.touchZoomChangeThresholdInches);
 
-    if (0.0 === distance || Math.abs(this._startDistance - distance) < this.viewport!.pixelsFromInches(ToolSettings.touchZoomChangeThresholdInches))
+    if (0.0 === distance || Math.abs(this._startDistance - distance) < threshold)
       return 1.0;
 
     this._hasZoom = true;
-    return Geometry.clamp(this._startDistance / distance, .1, 10);
+    const adjustedDist = (distance > this._startDistance ? (distance - threshold) : (distance + threshold)); // Avoid sudden jump in zoom scale by subtracting zoom threshold distance...
+    return Geometry.clamp(this._startDistance / adjustedDist, .1, 10);
   }
 
   private computeRotation(ev?: BeTouchEvent): Angle {
@@ -2932,8 +2934,9 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     const vp = this.viewport!;
     const direction = Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp));
     const rotation = this._startDirection.angleTo(direction);
+    const threshold = Angle.createDegrees(5.0);
 
-    if (Math.abs(rotation.radians) < Angle.createDegrees(5.0).radians)
+    if (Math.abs(rotation.radians) < threshold.radians)
       return Angle.createDegrees(0.0);
 
     const angularDistance = Math.abs(direction.magnitude() / 2.0 * Math.sin(Math.abs(rotation.radians)));
@@ -2941,8 +2944,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     const panDistance = this._startPtView.distanceXY(this._lastPtView);
 
     // NOTE: The * 0.75 below is because it's easy to confuse an attempted rotate for an attempted pan, and this tries to balance that without having a false positive in the opposite direction.
-    if (Math.abs(rotation.radians) > Angle.createDegrees(18.0).radians || (angularDistance > zoomDistance && angularDistance > panDistance * 0.75))
-      return rotation;
+    if (angularDistance > zoomDistance && angularDistance > (panDistance * 0.75))
+      return Angle.createRadians(rotation.radians > 0 ? rotation.radians - threshold.radians : rotation.radians + threshold.radians); // Avoid jump when starting rotation...
 
     return Angle.createDegrees(0.0);
   }
@@ -3041,9 +3044,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     }
 
     this._inertiaVec = undefined;
-    const vp = this.viewport;
     const thisPt = ev.viewPoint;
-    const smallDistance = vp.pixelsFromInches(0.05);
+    const smallDistance = 2.0;
     const samePoint = this._lastPtView.isAlmostEqualXY(thisPt, smallDistance);
     if (1 === ev.touchCount && samePoint)
       return; // Don't early return if multi-touch, center doesn't have to move for zoom...

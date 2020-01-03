@@ -555,6 +555,10 @@ export class ToolAdmin {
 
     switch (touchEvent.type) {
       case "touchstart":
+        if (touchEvent.changedTouches.length === touchEvent.targetTouches.length)
+          vp.setAnimator(); // Clear viewport animator on start of new touch input (first contact point added)...
+        current.setKeyQualifiers(touchEvent);
+        break;
       case "touchend":
         current.setKeyQualifiers(touchEvent);
         break;
