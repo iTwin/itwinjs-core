@@ -2059,6 +2059,7 @@ export class IModelDb extends IModel {
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
+    readonly isBriefcase: boolean;
     // @internal
     readonly isOpen: boolean;
     readonly isReadonly: boolean;
@@ -3002,6 +3003,7 @@ export class OpenParams {
     timeout?: number | undefined);
     equals(other: OpenParams): boolean;
     static fixedVersion(): OpenParams;
+    readonly isBriefcase: boolean;
     readonly isSnapshot: boolean;
     // @deprecated
     readonly isStandalone: boolean;
