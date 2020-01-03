@@ -37,6 +37,7 @@ describe("Opening IModelConnection (#integration)", () => {
   });
 
   after(async () => {
+    await TestUtility.purgeAcquiredBriefcases(testIModelId);
     MockRender.App.shutdown();
   });
 
