@@ -56,7 +56,6 @@ export * from "./properties/PrimitiveTypes";
 export * from "./properties/Record";
 export * from "./properties/ToolSettingsValue";
 export * from "./properties/Value";
-export * from "./render/DevicePixelRatio";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";
 export * from "./render/MockRender";

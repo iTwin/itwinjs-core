@@ -591,7 +591,7 @@ export namespace Pixel {
   }
 
   /** A rectangular array of pixels as read from a [[Viewport]]'s frame buffer. Each pixel is represented as a [[Pixel.Data]] object.
-   * The contents of the pixel buffer will be specified using device pixels, not CSS pixels. See [[queryDevicePixelRatio]] and [[cssPixelsToDevicePixels]].
+   * The contents of the pixel buffer will be specified using device pixels, not CSS pixels. See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
    * @see [[Viewport.readPixels]].
    */
   export interface Buffer {
@@ -634,6 +634,10 @@ export interface RenderTargetDebugControl {
   readonly shadowFrustum: Frustum | undefined;
   /** @internal */
   displayDrapeFrustum: boolean;
+  /** Override device pixel ratio for on-screen targets only. This supersedes window.devicePixelRatio. Undefined clears the override. Chiefly useful for tests.
+   * @internal
+   */
+  devicePixelRatioOverride?: number;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
@@ -654,7 +658,15 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   }
 
   public abstract get renderSystem(): RenderSystem;
+
+  /** NB: *Device pixels*, not CSS pixels! */
   public abstract get viewRect(): ViewRect;
+
+  public get devicePixelRatio(): number { return 1; }
+  public cssPixelsToDevicePixels(cssPixels: number): number {
+    return Math.floor(cssPixels * this.devicePixelRatio);
+  }
+
   public abstract get wantInvertBlackBackground(): boolean;
 
   public abstract get animationFraction(): number;
@@ -689,7 +701,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
   public onResized(): void { }
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
+  /** `rect` is specified in *CSS* pixels. */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
+  /** `_rect` is specified in *CSS* pixels. */
   public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
   public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
@@ -1147,7 +1161,7 @@ export namespace RenderSystem {
      */
     filterMapDrapeTextures?: boolean;
 
-    /** If true viewports will respect the DPI of the display.  See [[queryDevicePixelRatio]] and [[cssPixelsToDevicePixels]].
+    /** If true, [[ScreenViewport]]s will respect the DPI of the display.  See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
      *
      * Default value: true
      *

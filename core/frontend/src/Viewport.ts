@@ -30,7 +30,6 @@ import { TileTreeReference, TileTreeSet } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewPose, ViewState2d, ViewPose3d, ViewState3d } from "./ViewState";
-import { cssPixelsToDevicePixels } from "./render/DevicePixelRatio";
 import { ViewRect } from "./ViewRect";
 import { ToolSettings } from "./tools/ToolSettings";
 
@@ -1862,10 +1861,10 @@ export abstract class Viewport implements IDisposable {
       if (!pixels)
         return;
 
-      readRect.left = cssPixelsToDevicePixels(readRect.left);
-      readRect.right = cssPixelsToDevicePixels(readRect.right);
-      readRect.bottom = cssPixelsToDevicePixels(readRect.bottom);
-      readRect.top = cssPixelsToDevicePixels(readRect.top);
+      readRect.left = this.cssPixelsToDevicePixels(readRect.left);
+      readRect.right = this.cssPixelsToDevicePixels(readRect.right);
+      readRect.bottom = this.cssPixelsToDevicePixels(readRect.bottom);
+      readRect.top = this.cssPixelsToDevicePixels(readRect.top);
 
       let maximum = 0;
       let minimum = 1;
@@ -2593,7 +2592,7 @@ export abstract class Viewport implements IDisposable {
   /** Read selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
-   * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error. The pixels received will be device pixels, not CSS pixels. See [[queryDevicePixelRatio]] and [[cssPixelsToDevicePixels]].
+   * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error. The pixels received will be device pixels, not CSS pixels. See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
    * @beta
@@ -2636,10 +2635,10 @@ export abstract class Viewport implements IDisposable {
 
     const result = undefined !== out ? out : new Point3d();
     const viewRect = this.viewRect.clone();
-    viewRect.left = cssPixelsToDevicePixels(viewRect.left);
-    viewRect.right = cssPixelsToDevicePixels(viewRect.right);
-    viewRect.bottom = cssPixelsToDevicePixels(viewRect.bottom);
-    viewRect.top = cssPixelsToDevicePixels(viewRect.top);
+    viewRect.left = this.cssPixelsToDevicePixels(viewRect.left);
+    viewRect.right = this.cssPixelsToDevicePixels(viewRect.right);
+    viewRect.bottom = this.cssPixelsToDevicePixels(viewRect.bottom);
+    viewRect.top = this.cssPixelsToDevicePixels(viewRect.top);
     result.x = (x + 0.5 - viewRect.left) / viewRect.width;
     result.y = 1.0 - (y + 0.5 - viewRect.top) / viewRect.height;
     if (viewSpace.frustFraction < 1.0)
@@ -2700,6 +2699,24 @@ export abstract class Viewport implements IDisposable {
 
     this._tileSizeModifier = modifier;
     this.invalidateScene();
+  }
+
+  /** The device pixel ratio used by this Viewport. This value is *not* necessarily equal to `window.devicePixelRatio`.
+   * See: https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+   * @beta
+   */
+  public get devicePixelRatio(): number {
+    return this.target.devicePixelRatio;
+  }
+
+  /** Convert a number in CSS pixels to device pixels using this Viewport's device pixel ratio.
+   * See: https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+   * @param num The number in CSS pixels to scale
+   * @returns The resulting number in device pixels
+   * @beta
+   */
+  public cssPixelsToDevicePixels(cssPixels: number): number {
+    return this.target.cssPixelsToDevicePixels(cssPixels);
   }
 }
 

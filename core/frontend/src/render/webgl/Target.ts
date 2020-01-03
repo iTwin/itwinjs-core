@@ -83,7 +83,6 @@ import { imageBufferToCanvas, canvasToResizedCanvasWithBars, canvasToImageBuffer
 import { HiliteSet } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
 import { WebGLDisposable } from "./Disposable";
-import { cssPixelsToDevicePixels, queryDevicePixelRatio } from "../DevicePixelRatio";
 import { TargetUniforms } from "./TargetUniforms";
 import { PerformanceMetrics } from "./PerformanceMetrics";
 
@@ -839,10 +838,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
     this.beginPerfMetricFrame();
 
-    rect.left = cssPixelsToDevicePixels(rect.left);
-    rect.right = cssPixelsToDevicePixels(rect.right);
-    rect.bottom = cssPixelsToDevicePixels(rect.bottom);
-    rect.top = cssPixelsToDevicePixels(rect.top);
+    rect = this.cssViewRectToDeviceViewRect(rect);
 
     const gl = this.renderSystem.context;
     const viewRect = this.viewRect;
@@ -1008,17 +1004,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return new Point2d(curSize.x * bestRatio, curSize.y * bestRatio);
   }
 
+  /** wantRectIn is in CSS pixels. Output ImageBuffer will be in device pixels.
+   * If wantRect.right or wantRect.bottom is -1, that means "read the entire image".
+   */
   public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
     // Determine capture rect and validate
-    const actualViewRect = this.renderRect;
-
-    const wantRect = wantRectIn.clone();
-    if (wantRect.right === -1 || wantRect.bottom === -1) {  // Indicates to get the entire view, no clipping
-      wantRect.right = actualViewRect.right;
-      wantRect.bottom = actualViewRect.bottom;
-    }
-
-    const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1); // in BSIRect, the right and bottom are actually *outside* of the rectangle
+    const actualViewRect = this.renderRect; // already has device pixel ratio applied
+    const wantRect = (wantRectIn.right === -1 || wantRectIn.bottom === -1) ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
+    const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1);
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
       return undefined;
 
@@ -1030,6 +1023,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     const isValidImageData = this.readImagePixels(imageData, wantRect.left, wantRect.top, wantRect.width, wantRect.height);
     if (!isValidImageData)
       return undefined;
+
     let image = ImageBuffer.create(imageData, ImageBufferFormat.Rgba, wantRect.width);
     if (!image)
       return undefined;
@@ -1096,7 +1090,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     const image = this.readImage(new ViewRect(0, 0, -1, -1), Point2d.createZero(), true);
     const canvas = undefined !== image ? imageBufferToCanvas(image, false) : undefined;
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
-    const pixelRatio = queryDevicePixelRatio();
+    const pixelRatio = this.devicePixelRatio;
     retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
     return retCanvas;
   }
@@ -1128,6 +1122,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this._compositor.collectStatistics(stats);
   }
+
+  protected cssViewRectToDeviceViewRect(rect: ViewRect): ViewRect {
+    // NB: ViewRect constructor *floors* inputs.
+    const ratio = this.devicePixelRatio;
+    return new ViewRect(
+      Math.floor(rect.left * ratio),
+      Math.floor(rect.top * ratio),
+      Math.floor(rect.right * ratio),
+      Math.floor(rect.bottom * ratio));
+  }
 }
 
 class CanvasState {
@@ -1143,9 +1147,9 @@ class CanvasState {
   }
 
   // Returns true if the rect actually changed.
-  public updateDimensions(pixelRatio: number = 1): boolean {
-    const w = cssPixelsToDevicePixels(this.canvas.clientWidth);
-    const h = cssPixelsToDevicePixels(this.canvas.clientHeight);
+  public updateDimensions(pixelRatio: number): boolean {
+    const w = Math.floor(this.canvas.clientWidth * pixelRatio);
+    const h = Math.floor(this.canvas.clientHeight * pixelRatio);
     if (w === this._width && h === this._height)
       return false;
 
@@ -1176,6 +1180,7 @@ export class OnScreenTarget extends Target {
   private _blitGeom?: SingleTexturedViewportQuadGeometry;
   private _scratchProgParams?: ShaderProgramParams;
   private _scratchDrawParams?: DrawParams;
+  private _devicePixelRatioOverride?: number;
 
   private get _curCanvas() { return this._usingWebGLCanvas ? this._webglCanvas : this._2dCanvas; }
 
@@ -1207,6 +1212,18 @@ export class OnScreenTarget extends Target {
       this._blitGeom.collectStatistics(stats);
   }
 
+  public get devicePixelRatioOverride(): number | undefined { return this._devicePixelRatioOverride; }
+  public set devicePixelRatioOverride(ovr: number | undefined) { this._devicePixelRatioOverride = ovr; }
+  public get devicePixelRatio(): number {
+    if (undefined !== this.devicePixelRatioOverride)
+      return this.devicePixelRatioOverride;
+
+    if (false === this.renderSystem.options.dpiAwareViewports)
+      return 1.0;
+
+    return window.devicePixelRatio || 1.0;
+  }
+
   public get viewRect(): ViewRect {
     assert(0 < this.renderRect.width && 0 < this.renderRect.height, "Zero-size view rect");
     assert(Math.floor(this.renderRect.width) === this.renderRect.width && Math.floor(this.renderRect.height) === this.renderRect.height, "fractional view rect dimensions");
@@ -1236,7 +1253,7 @@ export class OnScreenTarget extends Target {
   }
 
   public updateViewRect(): boolean {
-    const pixelRatio = queryDevicePixelRatio();
+    const pixelRatio = this.devicePixelRatio;
     const changed2d = this._2dCanvas.updateDimensions(pixelRatio);
     const changedWebGL = this._webglCanvas.updateDimensions(pixelRatio);
     this.renderRect.init(0, 0, this._curCanvas.width, this._curCanvas.height);

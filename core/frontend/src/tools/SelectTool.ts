@@ -21,7 +21,6 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, EventHandled, InputSource, CoordinateLockOverrides, CoreTools } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceSection, ToolAssistanceInstruction, ToolAssistanceInputMethod } from "./ToolAssistance";
-import { cssPixelsToDevicePixels } from "../render/DevicePixelRatio";
 
 // cSpell:ignore buttongroup
 
@@ -329,8 +328,8 @@ export class SelectionTool extends PrimitiveTool {
         return;
 
       const sRange = Range2d.createNull();
-      sRange.extendPoint(Point2d.create(cssPixelsToDevicePixels(range.low.x), cssPixelsToDevicePixels(range.low.y)));
-      sRange.extendPoint(Point2d.create(cssPixelsToDevicePixels(range.high.x), cssPixelsToDevicePixels(range.high.y)));
+      sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.low.x), vp.cssPixelsToDevicePixels(range.low.y)));
+      sRange.extendPoint(Point2d.create(vp.cssPixelsToDevicePixels(range.high.x), vp.cssPixelsToDevicePixels(range.high.y)));
 
       let contents = new Set<string>();
       const testPoint = Point2d.createZero();
