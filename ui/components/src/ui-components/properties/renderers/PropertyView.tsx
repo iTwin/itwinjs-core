@@ -88,9 +88,12 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
         };
     }
     // Orientation.Vertical
-    return {
-      gridTemplateColumns: "auto auto",
-    };
+    if (props.actionButtonRenderers)
+      return {
+        gridTemplateColumns: "auto auto",
+      };
+
+    return undefined;
   }
 
   /** @internal */

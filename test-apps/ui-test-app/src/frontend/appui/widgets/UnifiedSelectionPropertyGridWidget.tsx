@@ -162,6 +162,8 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   }
 
   public render() {
+    const testButtons = true;
+    const actionButtonRenderers = testButtons ? [this._favoriteActionButtonRenderer] : undefined;
     if (this.props.iModelConnection && this.props.rulesetId)
       return (
         <div style={{ height: "100%" }}>
@@ -170,7 +172,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
             orientation={Orientation.Horizontal}
             isPropertyHoverEnabled={true}
             onPropertyContextMenu={this._onPropertyContextMenu}
-            actionButtonRenderers={[this._favoriteActionButtonRenderer]}
+            actionButtonRenderers={actionButtonRenderers}
           />
           {this.renderContextMenu()}
         </div>
