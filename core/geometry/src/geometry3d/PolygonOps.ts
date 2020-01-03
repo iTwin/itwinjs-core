@@ -16,6 +16,7 @@ import { XYParitySearchContext } from "../topology/XYParitySearchContext";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { Range3d, Range1d } from "./Range";
 import { Point4d } from "../geometry4d/Point4d";
+import { SortablePolygon } from "./SortablePolygon";
 /**
  * Carrier for a loop extracted from clip operation, annotated for sorting
  * @internal
@@ -659,14 +660,15 @@ export class PolygonOps {
    *    * all subsequent loops are holes
    *    * The outer loop is CCW
    *    * The holes are CW.
+   * * Call RegionOps.sortOuterAndHoleLoopsXY to have the result returned as a UnionRegion
    * @param loops multiple loops to sort and reverse.
    */
   public static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][] {
     const loopAndArea: SortablePolygon[] = [];
     for (const loop of loops) {
-      SortablePolygon.pushLoop(loopAndArea, loop);
+      SortablePolygon.pushPolygon(loopAndArea, loop);
     }
-    return SortablePolygon.assignParentsAndDepth(loopAndArea);
+    return SortablePolygon.sortAsArrayOfArrayOfPolygons(loopAndArea);
   }
 }
 /**
@@ -1004,93 +1006,6 @@ export class Point3dArrayPolygonOps {
         xyz.push(xyzI);
       }
       work.length = 0;
-    }
-  }
-}
-/**
- * A `SortablePolygon` carries a (single) loop with data useful for sorting for inner-outer structure.
- * @internal
- */
-class SortablePolygon {
-  public loop: IndexedReadWriteXYZCollection;
-  public sortKey: number;
-  public signedArea: number;
-  public range: Range3d;
-  public parentIndex?: number;
-  public isHole: boolean;
-  public outputSetIndex?: number;
-  /**
-   *
-   * @param loop Loop to capture.
-   */
-  public constructor(loop: IndexedReadWriteXYZCollection, range: Range3d, signedArea: number) {
-    this.loop = loop;
-    this.range = range;
-    this.signedArea = signedArea;
-    this.sortKey = Math.abs(this.signedArea);
-    this.isHole = false;
-  }
-  /** Push loop with sort data onto the array.
-   * * No action if no clear normal.
-   * * return true if pushed.
-   */
-  public static pushLoop(loops: SortablePolygon[], loop: IndexedReadWriteXYZCollection): boolean {
-    const areaXY = PolygonOps.areaXY(loop);
-    if (Math.abs(areaXY) > 0.0) {
-      loops.push(new SortablePolygon(loop, Range3d.createFromVariantData(loop), areaXY));
-      return true;
-    }
-    return true;
-  }
-  /** Push loop with sort data onto the array.
-   * * No action if no clear normal.
-   * * return true if pushed.
-   */
-  public static assignParentsAndDepth(loops: SortablePolygon[]): IndexedReadWriteXYZCollection[][] {
-    const outputSets: IndexedReadWriteXYZCollection[][] = [];
-    // Sort largest to smallest ...
-    loops.sort((loopA: SortablePolygon, loopB: SortablePolygon) => (loopB.sortKey - loopA.sortKey));
-    outputSets.length = 0;
-    // starting with smallest loop, point each loop to smallest containing parent.
-    for (let i = loops.length; i-- > 0;) {
-      const searchX = loops[i].loop.getXAtUncheckedPointIndex(0);
-      const searchY = loops[i].loop.getYAtUncheckedPointIndex(0);
-      // find smallest containing parent (search forward only to hit)
-      loops[i].parentIndex = undefined;
-      loops[i].outputSetIndex = undefined;
-      for (let j = i; j-- > 0;) {
-        if (loops[j].range.containsXY(searchX, searchY)
-          && 1 === PolygonOps.classifyPointInPolygonXY(searchX, searchY, loops[j].loop)) {
-          loops[i].parentIndex = j;
-          break;
-        }
-      }
-    }
-    // In large-to-small order:
-    // If a loop has no parent or has a "hole" as parent it is outer.
-    // otherwise (i.e. it has a non-hole parent) it becomes a hole in the parent.
-    for (const loopData of loops) {
-      loopData.isHole = false;
-      const parentIndex = loopData.parentIndex;
-      if (parentIndex !== undefined)
-        loopData.isHole = !loops[parentIndex].isHole;
-      if (!loopData.isHole) {
-        loopData.reverseLoopForAreaSign(1.0);
-        loopData.outputSetIndex = outputSets.length;
-        outputSets.push([]);
-        outputSets[loopData.outputSetIndex].push(loopData.loop);
-      } else {
-        loopData.reverseLoopForAreaSign(-1.0);
-        const outputSetIndex = loops[parentIndex!].outputSetIndex!;
-        outputSets[outputSetIndex].push(loopData.loop);
-      }
-    }
-    return outputSets;
-  }
-  private reverseLoopForAreaSign(areaSign: number) {
-    if (areaSign * this.signedArea < 0.0) {
-      this.loop.reverseInPlace();
-      this.signedArea *= -1.0;
     }
   }
 }
