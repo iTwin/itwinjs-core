@@ -16,8 +16,12 @@ import {
   CurrentImdlVersion,
   getMaximumMajorTileFormatVersion,
   IModelTileRpcInterface,
+  IModelToken,
+  NativeAppRpcInterface,
   RpcOperation,
+  RpcRegistry,
   RpcResponseCacheControl,
+  TileTreeContentIds,
   TileTreeProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -169,6 +173,8 @@ export abstract class TileAdmin {
   public abstract onTilesElided(numElided: number): void;
   /** @internal */
   public abstract onCacheMiss(): void;
+  /** @internal */
+  public abstract onActiveRequestCanceled(tile: Tile): void;
 }
 
 /** @alpha */
@@ -314,6 +320,7 @@ export namespace TileAdmin {
      * @alpha
      */
     contextPreloadParentDepth?: number;
+
     /** Preloading parents for context (reality and map tiles) will improve the user experience by making it more likely that tiles in nearly the required resolution will be
      * already loaded as the view is manipulated.  This value controls the number of parents that are skipped before parents are preloaded.  The default value of 1 will skip
      * immediate parents and significantly reduce the number of preloaded tiles without significant reducing the value of preloading.
@@ -323,6 +330,13 @@ export namespace TileAdmin {
      * @alpha
      */
     contextPreloadParentSkip?: number;
+
+    /** In a single-client application, when a request for tile content is cancelled, whether to ask the backend to cancel the corresponding tile generation task.
+     * Has no effect unless `NativeAppRpcInterface` is registered.
+     * Default value: false.
+     * @internal
+     */
+    cancelBackendTileRequests?: boolean;
   }
 
   /** A set of [[Viewport]]s.
@@ -479,6 +493,8 @@ class Admin extends TileAdmin {
   private readonly _treeExpirationTime?: BeDuration;
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
+  private _canceledRequests?: Map<IModelToken, Map<string, Set<string>>>;
+  private readonly _cancelBackendTileRequests: boolean;
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
@@ -515,6 +531,7 @@ class Admin extends TileAdmin {
     this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
     this._useProjectExtents = true === options.useProjectExtents;
+    this._cancelBackendTileRequests = true === options.cancelBackendTileRequests;
 
     const clamp = (seconds: number | undefined, min: number, max: number): BeDuration | undefined => {
       if (undefined === seconds)
@@ -611,6 +628,23 @@ class Admin extends TileAdmin {
       else
         this.dispatch(request);
     }
+
+    if (undefined === this._canceledRequests || 0 === this._canceledRequests.size)
+      return;
+
+    for (const [iModelToken, entries] of this._canceledRequests) {
+      const treeContentIds: TileTreeContentIds[] = [];
+      for (const [treeId, tileIds] of entries) {
+        treeContentIds.push({
+          treeId,
+          contentIds: Array.from(tileIds),
+        });
+      }
+
+    NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelToken.toJSON(), treeContentIds);
+    }
+
+    this._canceledRequests.clear();
   }
 
   private processRequests(vp: Viewport, tiles: Set<Tile>): void {
@@ -737,6 +771,9 @@ class Admin extends TileAdmin {
     const policy = RpcOperation.lookup(IModelTileRpcInterface, "requestTileContent").policy;
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
+
+    if (this._cancelBackendTileRequests && RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface))
+      this._canceledRequests = new Map<IModelToken, Map<string, Set<string>>>();
   }
 
   public onTileFailed(_tile: Tile) { ++this._totalFailed; }
@@ -749,5 +786,24 @@ class Admin extends TileAdmin {
       ++this._totalEmpty;
     else if (!tile.isDisplayable)
       ++this._totalUndisplayable;
+  }
+
+  public onActiveRequestCanceled(tile: Tile): void {
+    if (undefined === this._canceledRequests)
+      return;
+
+    let iModelEntry = this._canceledRequests.get(tile.root.iModel.iModelToken);
+    if (undefined === iModelEntry) {
+      iModelEntry = new Map<string, Set<string>>();
+      this._canceledRequests.set(tile.root.iModel.iModelToken, iModelEntry);
+    }
+
+    let contentIds = iModelEntry.get(tile.root.id);
+    if (undefined === contentIds) {
+      contentIds = new Set<string>();
+      iModelEntry.set(tile.root.id, contentIds);
+    }
+
+    contentIds.add(tile.contentId);
   }
 }
