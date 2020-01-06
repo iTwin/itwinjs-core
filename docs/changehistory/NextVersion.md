@@ -7,6 +7,8 @@ ignore: true
 
 iModel.js will now perform smooth animations when changing between saved views, if possible. If the beginning and ending views are in the same direction but far apart, a *zoom out then in* path is followed to provide context. See [ScreenViewport.animation]($frontend) for settings that control view animations.
 
+[Viewport.synchWithView]($frontend) previously accepted a `boolean` argument indicating whether or not the changes should be saved in the undo buffer. It now alternatively accepts a [ViewChangeOptions]($frontend) allowing further customization of its behavior, including whether and how to animate the transition.
+
 ## IModel Transformation and Data Exchange
 
 [IModelExporter]($backend), [IModelTransformer]($backend), and [IModelImporter]($backend) are now beta and provide low-level functionality needed for iModel transformation and data exchange.
@@ -20,6 +22,18 @@ Beta support for [device pixel ratio](https://developer.mozilla.org/en-US/docs/W
 * [Viewport.cssPixelsToDevicePixels]($frontend) replaces `cssPixelsToDevicePixels`.
 
 Do not assume that `Viewport.devicePixelRatio` will always return [`window.devicePixelRatio`](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio).
+
+## Viewing tools
+
+* New walk tool [LookAndMoveTool]($frontend).
+  * Supports mouse look and keyboard (wasd) for movement.
+  * Touch screen control sticks for look and move.
+* Improved responsiveness when using touch controls.
+
+## Visualization
+
+* Reduced CPU overhead associated with binding uniform shader program variables, resulting in up to 30% improvement in frames per second.
+* Graphics for reality models and background maps load much more quickly and smoothly.
 
 ## Geometry
 
@@ -39,12 +53,6 @@ Do not assume that `Viewport.devicePixelRatio` will always return [`window.devic
   * CurveLocationDetail.createCurveEvaluatedFractionFraction` constructor with 2 fractions.
   * `detail.inverseInterpolateFraction (f, defaultLocalFraction)` maps input fraction f to local fraction of the `fraction, fraction1` interval of the detail.
   * `detail.swapFractionsAndPoints ()` swaps the `[fraction,point]` and `[fraction1, point1]` values (if both defined)
-
-### Viewing tools
-
-* New walk tool 'LookAndMoveTool'
-  * Supports mouse look and keyboard (wasd) for movement.
-  * Touch screen control sticks for look and move.
 
 ### Miscellaneous
 
