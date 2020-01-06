@@ -11,8 +11,9 @@ Name | Required? | Type | Default | Meaning
 `isPolymorphic` | No | `boolean` | `false` | Should `relationships` and `relatedClasses` be handled polymorphically.
 `requiredDirection` | No | `"Forward" \| "Backward" \| "Both"` | `"Both"` | Relationship directions to follow when looking for related instances.
 `relationshipMeaning` | No | `"SameInstance" \| "RelatedInstance"` | `"RelatedInstance"` | Meaning of the relationship. This is really just a cue for UI for how to display the property.
-`propertyNames` | No | `string[] \| "_none_"` | All properties in related classes | List of names of related class properties that should be included in the content.
+`properties` | No | `Array<string \| PropertySpecification> \| "_none_"` | All properties in related classes | List of names or definitions of related class properties that should be included in the content.
 `nestedRelatedProperties` | No | `RelatedPropertiesSpecification[]` | `[]` | Nested related properties specifications. Often used with `propertyNames = "_none_"` when traversing through several relationships to access related properties.
+`autoExpand` | No | `boolean` | `false` | Should field containing related properties be automatically expanded. Only takes effect when related properties are displayed as a struct.
 
 ## Example
 
@@ -22,6 +23,10 @@ Name | Required? | Type | Default | Meaning
   "relatedClasses": {"schemaName": "BisCore", "classNames": ["ElementUniqueAspect"]},
   "requiredDirection": "Forward",
   "isPolymorphic": true,
-  "relationshipMeaning": "SameInstance"
+  "relationshipMeaning": "SameInstance",
+  "properties": [{
+    "name": "MyProperty1",
+    "labelOverride": "My Custom Related Property Label"
+  }]
 }
 ```
