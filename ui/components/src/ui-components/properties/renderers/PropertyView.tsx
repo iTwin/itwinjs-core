@@ -76,24 +76,17 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
     return propertyRecordClassName;
   }
 
-  private getStyle(props: PropertyViewProps, ratio: number): React.CSSProperties | undefined {
-    if (props.orientation === Orientation.Horizontal) {
-      if (props.onColumnRatioChanged)
-        return {
-          gridTemplateColumns: `${ratio * 100}% 1px auto auto`,
-        };
-      else
-        return {
-          gridTemplateColumns: `${ratio * 100}% auto`,
-        };
-    }
-    // Orientation.Vertical
-    if (props.actionButtonRenderers)
-      return {
-        gridTemplateColumns: "auto auto",
-      };
+  private getStyle(props: PropertyViewProps, ratio: number): React.CSSProperties {
+    let gridTemplateColumns;
+    if (props.orientation === Orientation.Horizontal)
+      gridTemplateColumns = `${ratio * 100}%` + (props.onColumnRatioChanged ? " 1px" : "") + " auto";
+    else // Orientation.Vertical
+      gridTemplateColumns = "auto";
 
-    return undefined;
+    if (props.actionButtonRenderers)
+      gridTemplateColumns += " auto"; // add another column for action buttons
+
+    return { gridTemplateColumns };
   }
 
   /** @internal */

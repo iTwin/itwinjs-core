@@ -162,7 +162,6 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   }
 
   public render() {
-    // const actionButtonRenderers = undefined;  // used to test UnifiedSelectionPropertyGrid styling when no actionButtonRenderers
     const actionButtonRenderers = [this._favoriteActionButtonRenderer];
     if (this.props.iModelConnection && this.props.rulesetId)
       return (

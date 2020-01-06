@@ -56,7 +56,7 @@ describe("PropertyView", () => {
 
     expect(propertyRenderer.childAt(0).hasClass("components-property-record--horizontal"), "class not found").to.be.true;
     expect(propertyRenderer.find(ElementSeparator).first().exists(), "ElementSeparator not found").to.be.true;
-    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% 1px auto auto");
+    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% 1px auto");
   });
 
   it("does not render ElementSeparator when onColumnRatioChanged callback is not provided", () => {
@@ -68,6 +68,7 @@ describe("PropertyView", () => {
       />);
 
     expect(propertyRenderer.find(ElementSeparator).first().exists(), "ElementSeparator found").to.be.false;
+    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% auto");
   });
 
   it("does not render ElementSeparator when orientation is vertical", () => {
@@ -80,6 +81,7 @@ describe("PropertyView", () => {
 
     expect(propertyRenderer.childAt(0).hasClass("components-property-record--vertical"), "class not found").to.be.true;
     expect(propertyRenderer.find(ElementSeparator).first().exists(), "ElementSeparator found").to.be.false;
+    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "auto");
   });
 
   it("triggers selection if property gets clicked once", () => {
@@ -195,16 +197,30 @@ describe("PropertyView", () => {
     expect(propertyRenderer.state("isHovered")).to.eq(false);
   });
 
-  it("renders action button list if action button renderers are passed", async () => {
+  it("renders action button list if orientation is horizontal and action button renderers are passed", async () => {
     const propertyRenderer = mount(
       <PropertyView
         orientation={Orientation.Horizontal}
         propertyRecord={propertyRecord}
         labelElement={"label"}
-        isHoverable={true}
+        onColumnRatioChanged={() => { }}
         actionButtonRenderers={[(_) => undefined]}
       />);
     expect(propertyRenderer.find(".components-property-action-button-list--horizontal").first().exists()).to.be.true;
+    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "25% 1px auto auto");
+  });
+
+  it("renders action button list if orientation is vertical and action button renderers are passed", () => {
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Vertical}
+        propertyRecord={propertyRecord}
+        labelElement={"label"}
+        onColumnRatioChanged={() => { }}
+        actionButtonRenderers={[(_) => undefined]}
+      />);
+    expect(propertyRenderer.find(".components-property-action-button-list--vertical").first().exists()).to.be.true;
+    expect(propertyRenderer.childAt(0).get(0).props.style).to.have.property("gridTemplateColumns", "auto auto");
   });
 
   it("renders only label when property record is non primitive", () => {
