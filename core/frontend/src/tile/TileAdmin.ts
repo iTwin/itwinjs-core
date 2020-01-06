@@ -205,6 +205,8 @@ export namespace TileAdmin {
     totalCacheMisses: number;
     /** The total number of tiles for which content requests were dispatched. */
     totalDispatchedRequests: number;
+    /** The total number of tiles for which content requests were dispatched and then canceled on the backend before completion. */
+    totalAbortedRequests: number;
   }
 
   /** Describes configuration of a [[TileAdmin]].
@@ -487,6 +489,7 @@ class Admin extends TileAdmin {
   private _totalElided = 0;
   private _totalCacheMisses = 0;
   private _totalDispatchedRequests = 0;
+  private _totalAbortedRequests = 0;
   private _rpcInitialized = false;
   private readonly _tileExpirationTime: BeDuration;
   private readonly _realityTileExpirationTime: BeDuration;
@@ -510,11 +513,14 @@ class Admin extends TileAdmin {
       totalElidedTiles: this._totalElided,
       totalCacheMisses: this._totalCacheMisses,
       totalDispatchedRequests: this._totalDispatchedRequests,
+      totalAbortedRequests: this._totalAbortedRequests,
     };
   }
 
   public resetStatistics(): void {
-    this._totalCompleted = this._totalFailed = this._totalTimedOut = this._totalEmpty = this._totalUndisplayable = this._totalElided = this._totalCacheMisses = this._totalDispatchedRequests = 0;
+    this._totalCompleted = this._totalFailed = this._totalTimedOut =
+    this._totalEmpty = this._totalUndisplayable = this._totalElided =
+    this._totalCacheMisses = this._totalDispatchedRequests = this._totalAbortedRequests = 0;
   }
 
   public constructor(options?: TileAdmin.Props) {
@@ -620,6 +626,22 @@ class Admin extends TileAdmin {
       if (active.viewports.isEmpty)
         this.cancel(active);
 
+    // If the backend is servicing a single client, ask it to immediately stop processing requests for content we no longer want.
+    if (undefined !== this._canceledRequests && this._canceledRequests.size > 0) {
+      for (const [iModelToken, entries] of this._canceledRequests) {
+        const treeContentIds: TileTreeContentIds[] = [];
+        for (const [treeId, tileIds] of entries) {
+          const contentIds = Array.from(tileIds);
+          treeContentIds.push({ treeId, contentIds });
+          this._totalAbortedRequests += contentIds.length;
+        }
+
+      NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelToken.toJSON(), treeContentIds);
+      }
+
+    this._canceledRequests.clear();
+    }
+
     // Fill up the active requests from the queue.
     while (this._activeRequests.size < this._maxActiveRequests) {
       const request = this._pendingRequests.pop();
@@ -628,23 +650,6 @@ class Admin extends TileAdmin {
       else
         this.dispatch(request);
     }
-
-    if (undefined === this._canceledRequests || 0 === this._canceledRequests.size)
-      return;
-
-    for (const [iModelToken, entries] of this._canceledRequests) {
-      const treeContentIds: TileTreeContentIds[] = [];
-      for (const [treeId, tileIds] of entries) {
-        treeContentIds.push({
-          treeId,
-          contentIds: Array.from(tileIds),
-        });
-      }
-
-    NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelToken.toJSON(), treeContentIds);
-    }
-
-    this._canceledRequests.clear();
   }
 
   private processRequests(vp: Viewport, tiles: Set<Tile>): void {
@@ -725,7 +730,11 @@ class Admin extends TileAdmin {
   private dispatch(req: TileRequest): void {
     ++this._totalDispatchedRequests;
     this._activeRequests.add(req);
-    req.dispatch(() => this.dropActiveRequest(req)).catch((_) => undefined);
+    req.dispatch(() => {
+      this.dropActiveRequest(req);
+    }).catch((ex) => {
+      //
+    });
   }
 
   private cancel(req: TileRequest) {
