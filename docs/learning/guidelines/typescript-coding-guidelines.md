@@ -373,7 +373,7 @@ Every .ts file should have this notice as its **first lines**:
 ```ts
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) 20xx Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 ```
 

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex, Arc3d, Range3d } from "@bentley/geometry-core";

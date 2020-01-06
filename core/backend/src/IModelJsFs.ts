@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // this is the nodejs-specific implementation of the IModelJsFs pseudo-interface.
 // On mobile platforms, this file is not included. Instead, the iModel.js host app implements IModelJsFs in native code and projects it into JavaScript.

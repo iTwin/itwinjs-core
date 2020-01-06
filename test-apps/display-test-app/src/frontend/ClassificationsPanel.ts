@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { Viewport, DisplayStyle3dState, ContextRealityModelState, SpatialViewState, SpatialModelState, SpatialClassifiers, findAvailableRealityModels, IModelApp } from "@bentley/imodeljs-frontend";

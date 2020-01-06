@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { TestRpcInterface, ZeroMajorRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, TestNotFoundResponse, TestNotFoundResponseCode, RpcTransportTestImpl, TokenValues } from "../common/TestRpcInterface";
 import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, RpcInvocation, IModelTokenProps } from "@bentley/imodeljs-common";

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyStatus, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, Arc3d, Box, Geometry, LineSegment3d, LineString3d, Loop, Point2d, Point3d, Range3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
