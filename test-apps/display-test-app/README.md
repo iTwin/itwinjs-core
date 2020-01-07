@@ -132,6 +132,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the anisotropic filtering will be disabled for map tiles draped on terrain.
  * SVT_DISABLE_DPI_AWARE_VIEWPORTS
   * If defined, do not respect the DPI of the system when rendering viewports.
+ * SVT_NO_CANCEL_TILE_REQUESTS
+  * If defined, do not cancel tile requests on backend when cancelled on front-end.
 
 ## Key-ins
 

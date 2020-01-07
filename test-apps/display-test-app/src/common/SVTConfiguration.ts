@@ -25,4 +25,5 @@ export interface SVTConfiguration {
   filterMapDrapeTextures?: boolean; // default ON (if extension supported)
   useFakeCloudStorageTileCache?: boolean; // default OFF
   dpiAwareViewports?: boolean; // default ON
+  cancelBackendTileRequests?: boolean; // default ON
 }

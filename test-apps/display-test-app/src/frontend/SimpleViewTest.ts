@@ -12,13 +12,14 @@ import {
   IModelReadRpcInterface,
   IModelTileRpcInterface,
   IModelToken,
+  MobileRpcConfiguration,
+  MobileRpcManager,
+  NativeAppRpcInterface,
+  OidcDesktopClientConfiguration,
   RpcConfiguration,
   RpcOperation,
   SnapshotIModelRpcInterface,
-  MobileRpcConfiguration,
-  MobileRpcManager,
   TileContentIdentifier,
-  OidcDesktopClientConfiguration,
 } from "@bentley/imodeljs-common";
 import { OidcFrontendClientConfiguration, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";
 import {
@@ -150,19 +151,21 @@ async function main() {
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
   };
 
+  const tileAdminProps = DisplayTestApp.tileAdminProps;
   if (configuration.disableInstancing)
-    DisplayTestApp.tileAdminProps.enableInstancing = false;
+    tileAdminProps.enableInstancing = false;
 
   if (configuration.enableImprovedElision)
-    DisplayTestApp.tileAdminProps.enableImprovedElision = true;
+    tileAdminProps.enableImprovedElision = true;
 
   if (configuration.useProjectExtents)
-    DisplayTestApp.tileAdminProps.useProjectExtents = true;
+    tileAdminProps.useProjectExtents = true;
 
   if (configuration.disableMagnification)
-    DisplayTestApp.tileAdminProps.disableMagnification = true;
+    tileAdminProps.disableMagnification = true;
 
-  DisplayTestApp.tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
+  tileAdminProps.cancelBackendTileRequests = (configuration.cancelBackendTileRequests !== false);
+  tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
 
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
@@ -172,14 +175,16 @@ async function main() {
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
+  const rpcInterfaces = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface, NativeAppRpcInterface ];
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
-    rpcConfiguration = ElectronRpcManager.initializeClient({}, [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface]);
+    rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
-    rpcConfiguration = MobileRpcManager.initializeClient([IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface]);
+    rpcConfiguration = MobileRpcManager.initializeClient(rpcInterfaces);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
-    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface]);
+    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, rpcInterfaces);
+
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())
