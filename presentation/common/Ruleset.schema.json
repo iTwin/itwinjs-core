@@ -390,6 +390,10 @@
           ],
           "description": "List of ECClass specifications whose ECInstances should be selected."
         },
+        "handleInstancesPolymorphically": {
+          "description": "Should instances be queried using a polymorphic query - from `classes` and all their\nsubclasses. This doesn't mean the resulting content will have all properties of the subclasses\nthough - they're only taken from base classes specified in `classes` attribute.",
+          "type": "boolean"
+        },
         "instanceFilter": {
           "description": "Condition for filtering instances of defined classes.\n\nSee: ECExpressions available in instance filter",
           "type": "string"

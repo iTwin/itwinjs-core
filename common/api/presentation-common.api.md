@@ -182,8 +182,10 @@ export enum ContentFlags {
 
 // @public
 export interface ContentInstancesOfSpecificClassesSpecification extends ContentSpecificationBase {
+    // @deprecated
     arePolymorphic?: boolean;
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
+    handleInstancesPolymorphically?: boolean;
     instanceFilter?: string;
     specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses;
 }
