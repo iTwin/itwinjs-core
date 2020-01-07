@@ -427,6 +427,7 @@ internal;TileOptions
 internal;TileProps
 internal;TileReadError 
 internal;enum TileReadStatus
+internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
 beta;Tween

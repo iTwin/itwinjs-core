@@ -4390,6 +4390,8 @@ export class IModelTileLoader extends TileLoader {
     // (undocumented)
     readonly maxDepth: number;
     // (undocumented)
+    onActiveRequestCanceled(tile: Tile): void;
+    // (undocumented)
     readonly priority: Tile.LoadPriority;
     // (undocumented)
     requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
@@ -8424,6 +8426,8 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract readonly maximumMajorTileFormatVersion: number;
     // @internal (undocumented)
+    abstract onActiveRequestCanceled(tile: Tile): void;
+    // @internal (undocumented)
     abstract onCacheMiss(): void;
     // @internal (undocumented)
     abstract onShutDown(): void;
@@ -8460,6 +8464,8 @@ export abstract class TileAdmin {
 // @alpha (undocumented)
 export namespace TileAdmin {
     export interface Props {
+        // @internal
+        cancelBackendTileRequests?: boolean;
         contextPreloadParentDepth?: number;
         contextPreloadParentSkip?: number;
         defaultTileSizeModifier?: number;
@@ -8481,6 +8487,7 @@ export namespace TileAdmin {
         numActiveRequests: number;
         numCanceled: number;
         numPendingRequests: number;
+        totalAbortedRequests: number;
         totalCacheMisses: number;
         totalCompletedRequests: number;
         totalDispatchedRequests: number;
@@ -8533,6 +8540,8 @@ export abstract class TileLoader {
     loadTileContentFromStream(tile: Tile, streamBuffer: ByteStream, isCanceled?: () => boolean): Promise<Tile.Content>;
     // (undocumented)
     abstract readonly maxDepth: number;
+    // (undocumented)
+    onActiveRequestCanceled(_tile: Tile): void;
     // (undocumented)
     readonly parentsAndChildrenExclusive: boolean;
     // (undocumented)

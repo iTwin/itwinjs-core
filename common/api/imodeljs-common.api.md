@@ -3582,6 +3582,7 @@ export interface ModelSelectorProps extends DefinitionElementProps {
 
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
+    cancelTileContentRequests(_iModelToken: IModelTokenProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     fetchEvents(_iModelToken: IModelTokenProps, _maxToFetch: number): Promise<QueuedEvent[]>;
     static getClient(): NativeAppRpcInterface;
     static readonly interfaceName = "NativeAppRpcInterface";
@@ -5884,6 +5885,14 @@ export const enum TileReadStatus {
     NewerMajorVersion = 6,
     // (undocumented)
     Success = 0
+}
+
+// @internal
+export interface TileTreeContentIds {
+    // (undocumented)
+    contentIds: string[];
+    // (undocumented)
+    treeId: string;
 }
 
 // @internal
