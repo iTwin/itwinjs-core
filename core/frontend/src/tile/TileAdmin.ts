@@ -636,10 +636,10 @@ class Admin extends TileAdmin {
           this._totalAbortedRequests += contentIds.length;
         }
 
-      NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelToken.toJSON(), treeContentIds);
+        NativeAppRpcInterface.getClient().cancelTileContentRequests(iModelToken.toJSON(), treeContentIds);
       }
 
-    this._canceledRequests.clear();
+      this._canceledRequests.clear();
     }
 
     // Fill up the active requests from the queue.
@@ -732,7 +732,7 @@ class Admin extends TileAdmin {
     this._activeRequests.add(req);
     req.dispatch(() => {
       this.dropActiveRequest(req);
-    }).catch((ex) => {
+    }).catch((_) => {
       //
     });
   }
