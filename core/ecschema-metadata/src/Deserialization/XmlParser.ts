@@ -303,8 +303,10 @@ export class XmlParser extends AbstractParser<Element> {
     else
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
 
-    const _isStrict = this.getRequiredAttribute(xmlElement, "isStrict",
-      `The Enumeration ${this._currentItemFullName} is missing the required 'isStrict' attribute.`);
+    let _isStrict: string | undefined = this.getOptionalAttribute(xmlElement, "isStrict");
+    if (_isStrict === undefined)
+      _isStrict = "true";
+
     const isStrict = this.parseBoolean(_isStrict,
       `The Enumeration ${this._currentItemFullName} has an invalid 'isStrict' attribute. It should either be "true" or "false".`);
 
