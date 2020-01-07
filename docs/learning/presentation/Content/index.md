@@ -23,6 +23,6 @@ Multiple specifications can contribute to the same content rule if:
 Content modifiers allow modifying content by hiding or showing properties, including additional ones
 or specifying custom editors.
 - [CalculatedProperties](./CalculatedPropertiesSpecification.md)
-- [PropertiesDisplay](./PropertiesDisplaySpecification.md)
-- [PropertyEditors](./PropertyEditorsSpecification.md)
 - [RelatedProperties](./RelatedPropertiesSpecification.md)
+- [PropertyCategory](./PropertyCategorySpecification.md)
+- [PropertyOverrides](./PropertySpecification.md)

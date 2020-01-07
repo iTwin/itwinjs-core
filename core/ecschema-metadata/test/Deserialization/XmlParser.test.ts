@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import sinon = require("sinon");
@@ -348,7 +348,7 @@ describe("XmlParser", () => {
       assert.throws(() => parser.parseEnumeration(itemElement), ECObjectsError, `The Enumeration TestSchema.${itemName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
     });
 
-    it("should throw for missing isStrict attribute", () => {
+    it("missing isStrict attribute results in isStrict set to true", () => {
       const itemXml = `
         <ECEnumeration typeName="TestEnumeration" backingTypeName="int">
           <ECEnumerator name="None" value="0" displayLabel="NoneLabel"/>
@@ -360,8 +360,9 @@ describe("XmlParser", () => {
       if (findResult === undefined)
         throw new Error("Expected finding Enumeration to be successful");
 
-      const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseEnumeration(itemElement), ECObjectsError, `The Enumeration TestSchema.${itemName} is missing the required 'isStrict' attribute.`);
+      const [, , itemElement] = findResult;
+      const props = parser.parseEnumeration(itemElement);
+      assert.equal(props.isStrict, true, "Expected property isStrict to be set to true if missing from xml.");
     });
 
     it("should throw for invalid isStrict attribute", () => {

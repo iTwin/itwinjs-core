@@ -4361,6 +4361,7 @@ export class RegionOps {
     static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint?: boolean): Transform | undefined;
     // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;
+    static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion;
     static splitPathsByRegionInOnOutXY(curvesToCut: CurveCollection | CurvePrimitive | undefined, region: AnyRegion): {
         insideParts: AnyCurve[];
         outsideParts: AnyCurve[];

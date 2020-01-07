@@ -18,7 +18,7 @@ ECEnumerations share the same namespace as ECClasses so its type name must be un
 
 **displayLabel** a localized display label that will be used instead of the name in the GUI. If not set the Type Name of the enumeration will be used (Optional)
 
-**strict** If true only values defined in the enumerators are valid. If false, any value of the backing type is allowed. (Optional, default is false)
+**isStrict** If true only values defined in the enumerators are valid. If false, any value of the backing type is allowed. (Optional, default is true)
 
 ## Sub-Elements
 

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
@@ -43,6 +43,18 @@ export class SubCategoryAppearance {
   public readonly styleId: Id64String;
   /** The element ID of the material applied to surfaces, or an invalid ID if no material is specified. */
   public readonly materialId: Id64String;
+  /** @internal */
+  protected readonly _fillColor?: ColorDef;
+  /** @internal */
+  protected readonly _fillTransparency?: number;
+
+  /** The fill color of geometry marked as being filled.
+   * @note The transparency component of the fill color is ignored.
+   * @see [[SubCategoryAppearance.fillTransparency]].
+   */
+  public get fillColor(): ColorDef { return (undefined !== this._fillColor ? this._fillColor : this.color); }
+  /** A value in the range [0, 1] indicating the fill transparency of the geometry where 0.0 means "fully opaque" and 1.0 means "fully transparent". */
+  public get fillTransparency(): number { return (undefined !== this._fillTransparency ? this._fillTransparency : this.transparency); }
 
   constructor(props?: SubCategoryAppearance.Props) {
     if (!props) {
@@ -65,7 +77,11 @@ export class SubCategoryAppearance {
     this.styleId = Id64.fromJSON(props.style);
     this.priority = JsonUtils.asInt(props.priority);
     this.materialId = Id64.fromJSON(props.material);
-    this.transparency = JsonUtils.asInt(props.transp);
+    this.transparency = JsonUtils.asDouble(props.transp);
+    if (props.fill)
+      this._fillColor = ColorDef.fromJSON(props.fill);
+    if (props.transpFill)
+      this._fillTransparency = JsonUtils.asDouble(props.transpFill);
   }
 
   public equals(other: SubCategoryAppearance): boolean {
@@ -78,7 +94,9 @@ export class SubCategoryAppearance {
       this.priority === other.priority &&
       this.styleId === other.styleId &&
       this.materialId === other.materialId &&
-      this.transparency === other.transparency;
+      this.transparency === other.transparency &&
+      this.fillColor.equals(other.fillColor) &&
+      this.fillTransparency === other.fillTransparency;
   }
 
   /** @internal */
@@ -97,7 +115,15 @@ export class SubCategoryAppearance {
     if (Id64.isValid(this.materialId))
       val.material = this.materialId;
 
-    if (0.0 !== this.transparency) val.transp = this.transparency;
+    if (0.0 !== this.transparency)
+      val.transp = this.transparency;
+
+    if (this._fillColor)
+      val.fill = this._fillColor.toJSON();
+
+    if (this._fillTransparency)
+      val.transpFill = this._fillTransparency;
+
     return val;
   }
 
@@ -114,6 +140,8 @@ export namespace SubCategoryAppearance {
   export interface Props {
     /** @see [[SubCategoryAppearance.color]]. Defaults to black. */
     color?: ColorDefProps;
+    /** @see [[SubCategoryAppearance.fillColor]]. Defaults to [[SubCategoryAppearance.color]]. */
+    fill?: ColorDefProps;
     /** @see [[SubCategoryAppearance.invisible]]. Defaults to false. */
     invisible?: boolean;
     /** @internal */
@@ -132,6 +160,8 @@ export namespace SubCategoryAppearance {
     material?: Id64String;
     /** @see [[SubCategoryAppearance.transparency]]. Defaults to 0. */
     transp?: number;
+    /** @see [[SubCategoryAppearance.fillTransparency]]. Defaults to [[SubCategoryAppearance.transparency]]. */
+    transpFill?: number;
   }
 }
 

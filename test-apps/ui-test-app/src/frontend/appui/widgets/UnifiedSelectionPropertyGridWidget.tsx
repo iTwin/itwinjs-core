@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
@@ -162,6 +162,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   }
 
   public render() {
+    const actionButtonRenderers = [this._favoriteActionButtonRenderer];
     if (this.props.iModelConnection && this.props.rulesetId)
       return (
         <div style={{ height: "100%" }}>
@@ -170,7 +171,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
             orientation={Orientation.Horizontal}
             isPropertyHoverEnabled={true}
             onPropertyContextMenu={this._onPropertyContextMenu}
-            actionButtonRenderers={[this._favoriteActionButtonRenderer]}
+            actionButtonRenderers={actionButtonRenderers}
           />
           {this.renderContextMenu()}
         </div>

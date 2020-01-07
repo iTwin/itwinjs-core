@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Elements */
 
@@ -116,7 +116,7 @@ export class LinearLocation extends LinearLocationElement {
   }
 }
 
-/** Base class for Physical Elements that are inherintly linearly located along a Linear-Element.
+/** Base class for Physical Elements that are inherently linearly located along a Linear-Element.
  * @beta
  */
 export abstract class LinearPhysicalElement extends PhysicalElement {
@@ -667,7 +667,7 @@ export class LinearlyLocated {
   }
 }
 
-/** Base interface to optionally be implemented by Elements inherintly Linearly-Located. Implementors should choose the
+/** Base interface to optionally be implemented by Elements inherently Linearly-Located. Implementors should choose the
  * appropriate sub-interface rather than implementing LinearlyLocatedBase directly.
  * @beta
  */
@@ -675,7 +675,7 @@ export interface LinearlyLocatedBase {
   getLinearElementId(): Id64String | undefined;
 }
 
-/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always a single at-position.
+/** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always a single at-position.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
  * make use of the services provided by [LinearlyLocated]($backend).
  * @beta
@@ -685,7 +685,7 @@ export interface LinearlyLocatedSingleAt extends LinearlyLocatedBase {
   updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId?: Id64String): void;
 }
 
-/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always at-positions.
+/** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always at-positions.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
  * make use of the services provided by [LinearlyLocated]($backend).
  * @beta
@@ -695,7 +695,7 @@ export interface LinearlyLocatedMultipleAt extends LinearlyLocatedBase {
   updateAtLocation(linearLocation: LinearlyReferencedAtLocationProps, aspectId: Id64String): void;
 }
 
-/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always a single from-to-position.
+/** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always a single from-to-position.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
  * make use of the services provided by [LinearlyLocated]($backend).
  * @beta
@@ -705,7 +705,7 @@ export interface LinearlyLocatedSingleFromTo extends LinearlyLocatedBase {
   updateFromToLocation(linearLocation: LinearlyReferencedFromToLocationProps, aspectId?: Id64String): void;
 }
 
-/** Interface to optionally be implemented by Elements inherintly Linearly-Located whose linear-locations are always from-to-positions.
+/** Interface to optionally be implemented by Elements inherently Linearly-Located whose linear-locations are always from-to-positions.
  * It also provides convenient APIs for callers to reach Linear-Referencing data stored on aspects. Classes implementing this interface should
  * make use of the services provided by [LinearlyLocated]($backend).
  * @beta

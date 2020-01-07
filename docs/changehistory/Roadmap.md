@@ -6,65 +6,68 @@ This roadmap provides the *big picture* view of the development path for the iMo
 
 We will use the following themes (that may be adjusted from time-to-time according to your input) to drive the evolution of iModel.js:
 
-- Be *the* open platform for Infrastructure Digital Twins, melding data from iModels, reality models, and many other sources.
-- Focus on support for integrated digital project delivery and immersive digital operations.
-- Prioritize performance, scalability, security and reliability over new features.
-- Make developing with iModel.js enjoyable, productive, predictable, and profitable.
+- Be *the open platform* for Infrastructure Digital Twins for melding data from iModels, GIS data,and reality data with the magnitude of other data sources of digital twins into a seamless user experience.
+- Be cloud provider, operating system, and browser neutral to the extent possible.
+- Performance, scalability, security, and stability are paramount concerns.
+- Make developing with iModel.js as easy, productive, predictable, and profitable as possible.
 - Adhere to open source standards and norms wherever possible.
-- Build a welcoming and inclusive ecosystem of innovation and enterprise.
+- Build an ecosystem of innovation and enterprise.
 
-## Priorities for 2H2019
+## Release 2.0
+
+We plan to release `iModel.js 2.0` in 2Q20.
+
+It will include necessary breaking API changes to:
+
+- remove some concepts and apis that were *deprecated* during 1.x
+- add new UI concepts to subsume/replace existing ones
+- formalize the [Plugin API](../learning/frontend/plugins.md) as the primary way to add functionality to web applications
+- enhance and refine the Briefcase APIs
+- enhance and refine the authorization APIs to
+  - remove support for SAML tokens - all authorization will be done through [JSON Web Tokens](https://jwt.io/) following the OAuth 2.0 protocol for authorization.
+  - use Authorization Code flow instead of Implicit flow for Web Applications
+
+We expect the transition from 1.x to 2.x to be trivial and uneventful for most users.
+
+## Additional Priorities for 1H2020
 
 ### Visualization
 
-- Visualization performance improvements for massive data sets and display modes
-- Improvements and enhancements to visual fidelity and special effects
 - Support for "hyper-modeling" (embedding section drawings and sheets segments in-situ in spatial views)
 - Additional support for large scale scene animations and actors (e.g. schedule simulations, pedestrian simulations, weather animations, disaster simulations, etc.)
-- Additional graphics formats
+- Take advantage of WebGL 2.0, when present
+- Improve lighting system and make lighting more configurable
+- Support for compressed texture formats
+- Support anti-aliasing
 
-### Host platform support
+### Desktop Support
 
-- Prioritize browsers with highest JavaScript and WebGL capabilities
-- Improve support for building native (Electron) desktop applications for Windows, macOS, and Linux
-- Initiate support for native iOS applications
+- Improve support for building Windows native applications (MacOS and Linux to follow in future versions)
+- Support interactive iModel creation and editing
 
->For currently supported platforms see [Supported Platforms](../learning/SupportedPlatforms.md)
+### Mobile Device Support
+
+- Support both *completely offline* and *occasionally connected* in iOS
+- Synch with changesets from iModelHub
+- Minimize power consumption
 
 ### Plugins
 
-- Finalize Plugin infrastructure and logistics
+- Finalize Plugin APIs
 - Streamline Plugin development and deployment processes
 - Create Plugin examples for broad set of scenarios
 
 ### User Interface
 
-- Improve small form factor devices (e.g. phones and tablets)
-- Improve touch input experience
-
-### Backend deployment
-
-- Docker for Linux development and deployment support
-- Deliver deployment examples based on Kubernetes
+- Improvements to look and feel of 9 zone applications
 
 ### Interfaces to external systems
 
-- Enhance mechanisms to connect iModel.js with other non-JavaScript frameworks (e.g. C++, C#, Python, etc.)
-- Create additional examples of interfacing iModel.js with VR/AR platforms (e.g. Unity, Hololens, etc.)
 - Extend techniques to write bridges import data from foreign file formats
-
-### Modeling of data within iModels
-
-- Support transformation and synchronization between iModels
-- Expand support for and provide more examples of Machine Learning with iModels
-- Expand the scope of the delivered BIS schemas
-- Refine BIS documentation with a focus on the information needed by Bridge and Application developers
-- Support the visualization and extension of BIS schemas
 
 ### Developer experience
 
 - Add more samples and improve clarity of existing examples
 - Create interactive "jsfiddle-like" exploration examples
-- Progress @alpha and @beta APIs towards their stable destinations. See [Release Tag Guidelines](../learning/guidelines/release-tags-guidelines.md)
 
->**We want your feedback** - What do you want us to work on most?  What are we doing that we could do better?  What should be on this roadmap but is not?  File an issue on [GitHub](https://github.com/imodeljs/imodeljs/issues) and let us know.
+> **Feedback welcome!** - Please let us know what **you** think should be on our priority list. File an issue on [GitHub](https://github.com/imodeljs/imodeljs/issues).

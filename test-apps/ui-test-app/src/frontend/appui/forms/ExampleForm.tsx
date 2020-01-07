@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Dialog, Form, FieldDefinitions, FieldValues } from "@bentley/ui-core";

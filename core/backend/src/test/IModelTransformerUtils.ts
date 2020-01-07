@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
-  GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps,
+  GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps,
   Placement3d, RelatedElement, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
@@ -16,7 +16,7 @@ import {
   AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d, DocumentListModel,
   Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
-  FunctionalModel, FunctionalSchema, GeometricElement3d, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
+  FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
   InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
   Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SubCategory, Subject,
 } from "../imodeljs-backend";
@@ -96,6 +96,14 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(auxCoordSystemId));
     const renderMaterialId = RenderMaterialElement.insert(sourceDb, definitionModelId, "RenderMaterial", new RenderMaterialElement.Params("PaletteName"));
     assert.isTrue(Id64.isValidId64(renderMaterialId));
+    const geometryPartProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: definitionModelId,
+      code: GeometryPart.createCode(sourceDb, definitionModelId, "GeometryPart"),
+      geom: createBox(Point3d.create(3, 3, 3)),
+    };
+    const geometryPartId = sourceDb.elements.insertElement(geometryPartProps);
+    assert.isTrue(Id64.isValidId64(geometryPartId));
     // Insert InformationRecords
     const informationRecordProps1: any = {
       classFullName: "TestTransformerSource:SourceInformationRecord",
@@ -131,7 +139,7 @@ export namespace IModelTransformerUtils {
       category: spatialCategoryId,
       code: Code.createEmpty(),
       userLabel: "PhysicalObject1",
-      geom: createBox(Point3d.create(1, 1, 1), spatialCategoryId, subCategoryId, renderMaterialId),
+      geom: createBox(Point3d.create(1, 1, 1), spatialCategoryId, subCategoryId, renderMaterialId, geometryPartId),
       placement: {
         origin: Point3d.create(1, 1, 1),
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
@@ -479,6 +487,9 @@ export namespace IModelTransformerUtils {
     // RenderMaterial
     const renderMaterialId = targetDb.elements.queryElementIdByCode(RenderMaterialElement.createCode(targetDb, definitionModelId, "RenderMaterial"))!;
     assert.isTrue(Id64.isValidId64(renderMaterialId));
+    // GeometryPart
+    const geometryPartId = targetDb.elements.queryElementIdByCode(GeometryPart.createCode(targetDb, definitionModelId, "GeometryPart"))!;
+    assert.isTrue(Id64.isValidId64(geometryPartId));
     // PhysicalElement
     const physicalObjectId1: Id64String = queryByUserLabel(targetDb, "PhysicalObject1");
     const physicalObjectId2: Id64String = queryByUserLabel(targetDb, "PhysicalObject2");
@@ -501,11 +512,23 @@ export namespace IModelTransformerUtils {
     assert.equal(physicalObject1.category, spatialCategoryId, "SpatialCategory should have been imported");
     assert.isDefined(physicalObject1.geom);
     const it = new GeometryStreamIterator(physicalObject1.geom!);
+    let itIndex = 0;
     for (const entry of it) {
-      assert.isDefined(entry.geometryQuery);
-      assert.equal(entry.primitive.type, "geometryQuery");
-      assert.equal(entry.geomParams.subCategoryId, subCategoryId);
-      assert.equal(entry.geomParams.materialId, renderMaterialId);
+      if (0 === itIndex) {
+        assert.isDefined(entry.geometryQuery);
+        assert.equal(entry.primitive.type, "geometryQuery");
+        assert.equal(entry.geomParams.subCategoryId, subCategoryId);
+        assert.equal(entry.geomParams.materialId, renderMaterialId);
+      } else if (1 === itIndex) {
+        assert.isUndefined(entry.geometryQuery);
+        assert.equal(entry.primitive.type, "partReference");
+        assert.equal(entry.geomParams.subCategoryId, subCategoryId);
+        assert.equal(entry.geomParams.materialId, renderMaterialId);
+        assert.equal(entry.partId, geometryPartId);
+      } else {
+        assert.fail(undefined, undefined, "Only expected 2 entries");
+      }
+      itIndex++;
     }
     assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
     assert.equal(physicalObject3.federationGuid, federationGuid3, "Source FederationGuid should have been transferred to target element");
@@ -885,7 +908,7 @@ export namespace IModelTransformerUtils {
     return SpatialCategory.insert(iModelDb, modelId, categoryName, appearance);
   }
 
-  export function createBox(size: Point3d, categoryId?: Id64String, subCategoryId?: Id64String, renderMaterialId?: Id64String): GeometryStreamProps {
+  export function createBox(size: Point3d, categoryId?: Id64String, subCategoryId?: Id64String, renderMaterialId?: Id64String, geometryPartId?: Id64String): GeometryStreamProps {
     const geometryStreamBuilder = new GeometryStreamBuilder();
     if ((undefined !== categoryId) && (undefined !== subCategoryId)) {
       geometryStreamBuilder.appendSubCategoryChange(subCategoryId);
@@ -899,6 +922,9 @@ export namespace IModelTransformerUtils {
       Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, size.z),
       size.x, size.y, size.x, size.y, true,
     )!);
+    if (undefined !== geometryPartId) {
+      geometryStreamBuilder.appendGeometryPart3d(geometryPartId);
+    }
     return geometryStreamBuilder.geometryStream;
   }
 

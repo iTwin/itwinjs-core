@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Common */
 
@@ -22,8 +22,10 @@ linkify
           "([a-zA-Z0-9-._~!$&'()*+,;=@%{}]+/)+[a-zA-Z0-9-._~!$&'()*+,;=@%{}]*",
           "i");
       }
+      // istanbul ignore else
       if (self.re.pw.test(tail)) {
         const matches = tail.match(self.re.pw);
+        // istanbul ignore else
         if (matches !== null)
           return matches[0].length;
       }
@@ -41,8 +43,10 @@ linkify
           "^" + self.re.src_auth + self.re.src_host_port_strict + self.re.src_path,
           "i");
       }
+      // istanbul ignore else
       if (self.re.www.test(tail)) {
         const matches = tail.match(self.re.www);
+        // istanbul ignore else
         if (matches !== null)
           return matches[0].length;
       }

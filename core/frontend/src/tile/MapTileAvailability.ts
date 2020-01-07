@@ -1,11 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
 import { MapTilingScheme, MapTileRectangle } from "./MapTilingScheme";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { SortedArray } from "@bentley/bentleyjs-core";
-
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 /** @module Tile */

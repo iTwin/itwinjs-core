@@ -4271,9 +4271,7 @@ export class QPoint3d {
 // @internal
 export class QPoint3dList {
     // (undocumented)
-    [Symbol.iterator](): {
-        next: () => IteratorResult<QPoint3d, any>;
-    };
+    [Symbol.iterator](): IterableIterator<QPoint3d>;
     constructor(paramsIn?: QParams3d);
     add(pt: Point3d): void;
     clear(): void;
@@ -5498,6 +5496,12 @@ export class SubCategoryAppearance {
     readonly dontSnap: boolean;
     // (undocumented)
     equals(other: SubCategoryAppearance): boolean;
+    readonly fillColor: ColorDef;
+    // @internal (undocumented)
+    protected readonly _fillColor?: ColorDef;
+    readonly fillTransparency: number;
+    // @internal (undocumented)
+    protected readonly _fillTransparency?: number;
     readonly invisible: boolean;
     readonly materialId: Id64String;
     readonly priority: number;
@@ -5518,11 +5522,13 @@ export namespace SubCategoryAppearance {
         dontPlot?: boolean;
         // @internal (undocumented)
         dontSnap?: boolean;
+        fill?: ColorDefProps;
         invisible?: boolean;
         material?: Id64String;
         priority?: number;
         style?: Id64String;
         transp?: number;
+        transpFill?: number;
         weight?: number;
     }
 }
