@@ -5,7 +5,20 @@
 /** @module RpcInterface */
 
 import { assert, BeDuration, ClientRequestContext, Id64Array, Logger } from "@bentley/bentleyjs-core";
-import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, IModelTileRpcInterface, IModelToken, IModelTokenProps, RpcInterface, RpcInvocation, RpcPendingResponse, TileTreeProps, RpcManager } from "@bentley/imodeljs-common";
+import {
+  CloudStorageContainerDescriptor,
+  CloudStorageContainerUrl,
+  CloudStorageTileCache,
+  IModelTileRpcInterface,
+  IModelToken,
+  IModelTokenProps,
+  RpcInterface,
+  RpcInvocation,
+  RpcManager,
+  RpcPendingResponse,
+  TileTreeContentIds,
+  TileTreeProps,
+} from "@bentley/imodeljs-common";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -137,11 +150,15 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<Uint8Array, TileCon
     super(getTileContent, generateTileContentKey);
   }
 
-  public static async perform(props: TileContentRequestProps): Promise<Uint8Array> {
+  public static get instance() {
     if (undefined === this._instance)
       this._instance = new RequestTileContentMemoizer();
 
-    return this._instance.perform(props);
+    return this._instance;
+  }
+
+  public static async perform(props: TileContentRequestProps): Promise<Uint8Array> {
+    return this.instance.perform(props);
   }
 }
 
@@ -187,5 +204,28 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     const expiry = CloudStorageTileCache.getCache().supplyExpiryForContainerUrl(id);
     const clientIp = (IModelHost.restrictTileUrlsByClientIp && invocation.request.ip) ? invocation.request.ip : undefined;
     return IModelHost.tileCacheService.obtainContainerUrl(id, expiry, clientIp);
+  }
+}
+
+/** @internal */
+export function cancelTileContentRequests(tokenProps: IModelTokenProps, contentIds: TileTreeContentIds[]): void {
+  const iModelToken = IModelToken.fromJSON(tokenProps);
+  const iModel = IModelDb.find(iModelToken);
+
+  const props: TileContentRequestProps = {
+    requestContext: ClientRequestContext.current,
+    iModelToken,
+    treeId: "",
+    contentId: "",
+  };
+
+  for (const entry of contentIds) {
+    props.treeId = entry.treeId;
+    for (const contentId of entry.contentIds) {
+      props.contentId = contentId;
+      RequestTileContentMemoizer.instance.deleteMemoized(props);
+    }
+
+    iModel.nativeDb.cancelTileContentRequests(entry.treeId, entry.contentIds);
   }
 }

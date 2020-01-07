@@ -77,4 +77,8 @@ export class IModelTileLoader extends TileLoader {
   public adjustContentIdSizeMultiplier(contentId: string, sizeMultiplier: number): string {
     return this._contentIdProvider.idFromParentAndMultiplier(contentId, sizeMultiplier);
   }
+
+  public onActiveRequestCanceled(tile: Tile): void {
+    IModelApp.tileAdmin.onActiveRequestCanceled(tile);
+  }
 }
