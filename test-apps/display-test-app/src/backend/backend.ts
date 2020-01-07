@@ -4,7 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import {
+  IModelReadRpcInterface,
+  IModelTileRpcInterface,
+  MobileRpcConfiguration,
+  NativeAppRpcInterface,
+  SnapshotIModelRpcInterface,
+} from "@bentley/imodeljs-common";
 import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
@@ -19,7 +25,7 @@ IModelJsConfig.init(true /* suppress exception */, true /* suppress error messag
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
 export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
+  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface, NativeAppRpcInterface];
 }
 
 function setupStandaloneConfiguration(): SVTConfiguration {
@@ -72,6 +78,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
 
   if (undefined !== process.env.SVT_DISABLE_DPI_AWARE_VIEWPORTS)
     configuration.dpiAwareViewports = false;
+
+  if (undefined !== process.env.SVT_NO_CANCEL_TILE_REQUESTS)
+    configuration.cancelBackendTileRequests = false;
 
   const extensions = process.env.SVT_DISABLED_EXTENSIONS;
   if (undefined !== extensions)

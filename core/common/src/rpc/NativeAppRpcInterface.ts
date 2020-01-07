@@ -18,6 +18,14 @@ export interface QueuedEvent {
   data: any; // this will be serialized to json
 }
 
+/** Identifies a list of tile content Ids belonging to a single tile tree.
+ * @internal
+ */
+export interface TileTreeContentIds {
+  treeId: string;
+  contentIds: string[];
+}
+
 /** NativeAppRpcInterface supplies Rpc functionality specific to native apps.
  * A "native app" is an iModel.js application in which a one-to-one relationship exists between the frontend and backend process. Both processes execute on the same device, which can
  * enable offline workflows. Such an app can target a specific platform - e.g., Electron, iOS, Android.
@@ -32,7 +40,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public static readonly interfaceName = "NativeAppRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.1.0";
+  public static interfaceVersion = "0.1.1";
 
   /*===========================================================================================
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -46,4 +54,10 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
    * @returns Up to _maxToFetch queued events.
    */
   public async fetchEvents(_iModelToken: IModelTokenProps, _maxToFetch: number): Promise<QueuedEvent[]> { return this.forward(arguments); }
+
+  /** Cancels currently pending or active generation of tile content.
+   * @param _iModelToken Identifies the iModel
+   * @param _contentIds A list of content requests to be canceled, grouped by tile tree Id.
+   */
+  public async cancelTileContentRequests(_iModelToken: IModelTokenProps, _contentIds: TileTreeContentIds[]): Promise<void> { return this.forward(arguments); }
 }
