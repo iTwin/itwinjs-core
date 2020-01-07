@@ -436,7 +436,6 @@ export class QPoint3dList {
   }
 
   public [Symbol.iterator]() {
-    let key = 0;
-    return { next: (): IteratorResult<QPoint3d> => { const result = key < this._list.length ? { value: this._list[key], done: false } : { value: this._list[key - 1], done: true }; key++; return result; } };
+    return this.list[Symbol.iterator]();
   }
 }

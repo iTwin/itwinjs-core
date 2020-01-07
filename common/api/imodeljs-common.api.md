@@ -4271,9 +4271,7 @@ export class QPoint3d {
 // @internal
 export class QPoint3dList {
     // (undocumented)
-    [Symbol.iterator](): {
-        next: () => IteratorResult<QPoint3d, any>;
-    };
+    [Symbol.iterator](): IterableIterator<QPoint3d>;
     constructor(paramsIn?: QParams3d);
     add(pt: Point3d): void;
     clear(): void;
