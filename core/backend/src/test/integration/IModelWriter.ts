@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Box, Point3d, Vector3d } from "@bentley/geometry-core";
 import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common";

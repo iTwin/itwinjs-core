@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 import {
@@ -201,14 +201,14 @@ export class IModelDb extends IModel {
     this.setupBriefcaseEntry(briefcaseEntry);
     this.setDefaultConcurrentControlAndPolicy();
     this.initializeIModelDb();
-    this.initalizeEventSink();
+    this.initializeEventSink();
   }
   private clearEventSink() {
     if (this._eventSink) {
       EventSinkManager.delete(this._eventSink.id);
     }
   }
-  private initalizeEventSink() {
+  private initializeEventSink() {
     if (this.iModelToken.key) {
       this._eventSink = EventSinkManager.get(this.iModelToken.key);
     }

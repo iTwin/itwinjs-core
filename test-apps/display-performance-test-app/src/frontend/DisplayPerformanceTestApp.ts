@@ -1,7 +1,7 @@
 
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64Arg, Id64String, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { HubIModel, OidcFrontendClientConfiguration, Project, IOidcFrontendClient, AccessToken } from "@bentley/imodeljs-clients";

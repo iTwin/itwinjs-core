@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // Code based on the blog article @ https://authguidance.com
 
@@ -232,7 +232,7 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
 
   /** Returns a promise that resolves to the AccessToken of the currently authorized user.
    * The token is refreshed as necessary.
-   * @note The token is ensured to be valid *atleast* for the buffer of time specified by the configuration.
+   * @note The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
    * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
    */
   public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {

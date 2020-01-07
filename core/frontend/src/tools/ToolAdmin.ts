@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
@@ -555,6 +555,10 @@ export class ToolAdmin {
 
     switch (touchEvent.type) {
       case "touchstart":
+        if (touchEvent.changedTouches.length === touchEvent.targetTouches.length)
+          vp.setAnimator(); // Clear viewport animator on start of new touch input (first contact point added)...
+        current.setKeyQualifiers(touchEvent);
+        break;
       case "touchend":
         current.setKeyQualifiers(touchEvent);
         break;

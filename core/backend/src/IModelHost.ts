@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelHost */
 
@@ -164,7 +164,7 @@ export class IModelHostConfiguration {
     maxQueueSize: (os.cpus().length - 1) * 500,
     pollInterval: 50,
     useSharedCache: false,
-    useUncommitedRead: false,
+    useUncommittedRead: false,
     quota: {
       maxTimeAllowed: 60, // 1 Minute
       maxMemoryAllowed: 2 * 1024 * 1024, // 2 Mbytes

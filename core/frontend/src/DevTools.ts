@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel, BeEvent, GuidString } from "@bentley/bentleyjs-core";
 import { DevToolsRpcInterface, IModelToken, DevToolsStatsOptions } from "@bentley/imodeljs-common";

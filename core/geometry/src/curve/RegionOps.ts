@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Curve */
@@ -18,6 +18,7 @@ import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { Polyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { PolygonWireOffsetContext, JointOptions, CurveChainWireOffsetContext } from "./PolygonOffsetContext";
+import { SortablePolygon } from "../geometry3d/SortablePolygon";
 import { CurveCollection, BagOfCurves, CurveChain, ConsolidateAdjacentCurvePrimitivesOptions } from "./CurveCollection";
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 import { Geometry } from "../Geometry";
@@ -581,6 +582,30 @@ export class RegionOps {
     const context = new ConsolidateAdjacentCurvePrimitivesContext(options);
     curves.dispatchToGeometryHandler(context);
   }
+  /**
+   * If reverse loops as necessary to make them all have CCW orientation for given outward normal.
+   * * Return an array of arrays which capture the input pointers.
+   * * In each first level array:
+   *    * The first loop is an outer loop.
+   *    * all subsequent loops are holes
+   *    * The outer loop is CCW
+   *    * The holes are CW.
+   * * Call PolygonOps.sortOuterAndHoleLoopsXY to have the result returned as an array of arrays of polygons.
+   * @param loops multiple loops to sort and reverse.
+   */
+  public static sortOuterAndHoleLoopsXY(loops: Array<Loop | IndexedXYZCollection>): AnyRegion {
+    const loopAndArea: SortablePolygon[] = [];
+    for (const candidate of loops) {
+      if (candidate instanceof Loop)
+        SortablePolygon.pushLoop(loopAndArea, candidate);
+      else if (candidate instanceof IndexedXYZCollection) {
+        const loop = Loop.createPolygon(candidate);
+        SortablePolygon.pushLoop(loopAndArea, loop);
+      }
+    }
+    return SortablePolygon.sortAsAnyRegion(loopAndArea);
+  }
+
 }
 
 function pushToInOnOutArrays(curve: AnyCurve, select: number, arrayNegative: AnyCurve[], array0: AnyCurve[], arrayPositive: AnyCurve[]) {

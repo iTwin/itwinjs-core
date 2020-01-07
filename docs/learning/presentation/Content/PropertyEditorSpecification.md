@@ -1,12 +1,11 @@
-# PropertyEditors Content Modifier
+# PropertyEditor Specification
 
-This content modifier allows specifying a custom property editor for specific properties.
+This specification allows specifying a custom property editor and its parameters.
 
 ## Attributes
 
 Name | Required? | Type | Default | Meaning
 -|-|-|-|-|-
-`propertyName` | Yes | `string` | | Name of the property which custom editor should be used for.
 `editorName` | Yes | `string` | | Name of the custom editor.
 `parameters` | No | `PropertyEditorParameters[]` | `[]` | Parameters for the editor.
 
@@ -58,7 +57,6 @@ Name | Required? | Type | Default | Meaning
 
 ```JSON
 {
-  "propertyName": "Height",
   "editorName": "Slider",
   "parameters": [{
     "paramsType": "Slider",
