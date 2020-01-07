@@ -8,7 +8,7 @@ Name | Required? | Type | Default | Meaning | Performance Notes
 -|-|-|-|-|-
 *Filtering* |
 `classes` | Yes | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]` | `[]` | Classes whose instances should be used.
-`arePolymorphic` | No | `boolean` | `false` | Should all `classes` be handled polymorphically.
+`handleInstancesPolymorphically` | No | `boolean` | `false` | Should instances be queried using a polymorphic query - from `classes` and all their subclasses. This doesn't mean the resulting content will have all properties of the subclasses though - they're only taken from base classes specified in `classes` attribute.
 `instanceFilter` | No | [ECExpression](./ECExpressions.md#instance-filter) | `""` | Condition for filtering instances
 `hideNodesInHierarchy` | No | `boolean` | `false` | Hide nodes provided by this specification and directly show their children. | Expensive
 `hideIfNoChildren` | No | `boolean` | `false` | Hide nodes if they don't have children. | Expensive
