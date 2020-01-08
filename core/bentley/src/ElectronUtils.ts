@@ -6,7 +6,7 @@
 declare var __non_webpack_require__: NodeRequire;
 
 function isElectronRendererFn() {
-  return (typeof navigator === "object" && typeof navigator.userAgent === "string" && navigator.userAgent.toLowerCase().indexOf("electron") >= 0);
+  return (typeof window !== "undefined" && typeof window.process === "object" && (window.process as any).type === "renderer");
 }
 
 /**
