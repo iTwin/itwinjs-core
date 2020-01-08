@@ -9,6 +9,8 @@ import { BeDuration } from "@bentley/bentleyjs-core";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
+// cSpell:words messagebox
+
 /** Describes the type and behavior of a [[NotifyMessageDetails]].
  * @public
  */

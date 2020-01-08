@@ -17,6 +17,8 @@ import { Decorator } from "./ViewManager";
 import { SnapRequestProps } from "@bentley/imodeljs-common";
 import { CanvasDecoration } from "./rendering";
 
+// cspell:ignore dont primitivetools
+
 /** Virtual cursor for using AccuSnap with touch input.
  * @internal
  */

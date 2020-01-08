@@ -389,7 +389,7 @@ export namespace RenderScheduleState {
       this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
     }
     public getModelAnimationId(modelId: Id64String): Id64String | undefined {
-      // Only if the animation contains animation (transform or cutting plane) of individual elements do we require seperate tilesets for animations.
+      // Only if the animation contains animation (transform or cutting plane) of individual elements do we require separate tilesets for animations.
       if (Id64.isTransient(modelId))
         return undefined;
 

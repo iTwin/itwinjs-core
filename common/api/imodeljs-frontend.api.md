@@ -10597,6 +10597,10 @@ export abstract class ViewState extends ElementState {
     readonly name: string;
     // @internal
     peekDetail(name: string): any;
+    // (undocumented)
+    protected _rawExtents?: Vector3d;
+    // (undocumented)
+    protected _rawOrigin?: Point3d;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
     // @internal
@@ -10674,9 +10678,9 @@ export abstract class ViewState2d extends ViewState {
     // @internal (undocumented)
     savePose(): ViewPose;
     // (undocumented)
-    setExtents(delta: Vector3d): void;
+    setExtents(delta: XAndY): void;
     // (undocumented)
-    setOrigin(origin: Point3d): void;
+    setOrigin(origin: XAndY): void;
     // (undocumented)
     setRotation(rot: Matrix3d): void;
     // @internal (undocumented)
@@ -10720,8 +10724,6 @@ export abstract class ViewState3d extends ViewState {
     // @internal (undocumented)
     protected enableCamera(): void;
     readonly extents: Vector3d;
-    // @internal (undocumented)
-    fixAspectRatio(windowAspect: number): void;
     forceMinFrontDist: number;
     getBackDistance(): number;
     // (undocumented)

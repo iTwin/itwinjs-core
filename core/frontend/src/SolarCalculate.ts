@@ -7,6 +7,8 @@
 import { Cartographic } from "@bentley/imodeljs-common";
 import { Angle, Vector3d } from "@bentley/geometry-core";
 
+// cspell:ignore mrad sinm sint aarg
+
 // Code below loosely translated from  https://www.esrl.noaa.gov/gmd/grad/solcalc/
 function calcTimeJulianCent(jd: number) {
   const T = (jd - 2451545.0) / 36525.0;

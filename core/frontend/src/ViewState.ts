@@ -198,6 +198,9 @@ export abstract class ViewState extends ElementState {
   private _clipVector?: ClipVector;
   public description?: string;
   public isPrivate?: boolean;
+  protected _rawExtents?: Vector3d; // the extents before adjusting for aspect ratio
+  protected _rawOrigin?: Point3d; // the origin before adjusting for aspect ratio
+
   /** Selects the categories that are display by this ViewState. */
   public categorySelector: CategorySelectorState;
   /** Selects the styling parameters for this this ViewState. */
@@ -655,11 +658,30 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public fixAspectRatio(windowAspect: number): void {
-    const extents = this.getExtents().clone();
-    const origin = this.getOrigin().clone();
+    if (Geometry.isSameCoordinate(this.getAspectRatio(), windowAspect))
+      return;
+
+    // if we've already adjusted the aspect ratio, use original origin/extents
+    const rawOrigin = this._rawOrigin ? this._rawOrigin : this.getOrigin().clone();
+    const rawExtents = this._rawExtents ? this._rawExtents : this.getExtents().clone();
+
+    const extents = rawExtents.clone();
+    const origin = rawOrigin.clone();
     this.adjustAspectRatio(origin, extents, windowAspect);
     this.setOrigin(origin);
     this.setExtents(extents);
+
+    // if the camera is on, make sure we re-center the eyepoint.
+    // NOTE: since we always make one axis or the other larger, this may have the effect of increasing the lens angle. That's why we use
+    // the "raw" extents in case we adjust multiple times (e.g. minimize/maximize views)
+    if (this.isCameraEnabled()) {
+      this.setLensAngle(this.calcLensAngle());
+      this.centerEyePoint();
+    }
+
+    // save the original extents/origin in case we change the aspect ratio again. NOTE: must be after calls to setOrigin/setExtents above.
+    this._rawExtents = rawExtents;
+    this._rawOrigin = rawOrigin;
   }
 
   /** @internal */
@@ -1059,20 +1081,11 @@ export abstract class ViewState3d extends ViewState {
   /** @internal */
   public applyPose(val: ViewPose3d): this {
     this._cameraOn = val.cameraOn;
-    this.origin.setFrom(val.origin);
-    this.extents.setFrom(val.extents);
+    this.setOrigin(val.origin);
+    this.setExtents(val.extents);
     this.rotation.setFrom(val.rotation);
     this.camera.setFrom(val.camera);
     return this;
-  }
-
-  /** @internal */
-  public fixAspectRatio(windowAspect: number): void {
-    super.fixAspectRatio(windowAspect);
-    if (this._cameraOn) {
-      this.setLensAngle(this.calcLensAngle());
-      this.centerEyePoint();
-    }
   }
 
   public toJSON(): ViewDefinition3dProps {
@@ -1143,8 +1156,8 @@ export abstract class ViewState3d extends ViewState {
   public getOrigin(): Point3d { return this.origin; }
   public getExtents(): Vector3d { return this.extents; }
   public getRotation(): Matrix3d { return this.rotation; }
-  public setOrigin(origin: XYAndZ) { this.origin.setFrom(origin); }
-  public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
+  public setOrigin(origin: XYAndZ) { this._rawOrigin = undefined; this.origin.setFrom(origin); }
+  public setExtents(extents: XYAndZ) { this._rawExtents = undefined; this.extents.setFrom(extents); }
   public setRotation(rot: Matrix3d) { this.rotation.setFrom(rot); }
   /** @internal */
   protected enableCamera(): void { if (this.supportsCamera()) this._cameraOn = true; }
@@ -1811,8 +1824,8 @@ export abstract class ViewState2d extends ViewState {
 
   /** @internal */
   public applyPose(val: ViewPose2d) {
-    this.origin.setFrom(val.origin);
-    this.delta.setFrom(val.delta);
+    this.setOrigin(val.origin);
+    this.setExtents(val.delta);
     this.angle.setFrom(val.angle);
     return this;
   }
@@ -1850,8 +1863,8 @@ export abstract class ViewState2d extends ViewState {
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
   public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
-  public setExtents(delta: Vector3d) { this.delta.set(delta.x, delta.y); }
-  public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
+  public setExtents(delta: XAndY) { this._rawExtents = undefined; this.delta.set(delta.x, delta.y); }
+  public setOrigin(origin: XAndY) { this._rawOrigin = undefined; this.origin.set(origin.x, origin.y); }
   public setRotation(rot: Matrix3d) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
   public viewsModel(modelId: Id64String) { return this.baseModelId.toString() === modelId.toString(); }
   public forEachModel(func: (model: GeometricModelState) => void) {

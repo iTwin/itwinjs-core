@@ -175,8 +175,8 @@ export class DecorateContext extends RenderContext {
   public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
 
   private getClippedGridPlanePoints(vp: Viewport, plane: Plane3dByOriginAndUnitNormal, loopPt: Point3d): Point3d[] | undefined {
-    const frus = vp.getFrustum();
-    const geom = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([ClipPlane.createPlane(plane)]), frus.toRange(), true, false, true);
+    const frust = vp.getFrustum();
+    const geom = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([ClipPlane.createPlane(plane)]), frust.toRange(), true, false, true);
     if (undefined === geom || 1 !== geom.length)
       return undefined;
     const loop = geom[0];
@@ -188,7 +188,7 @@ export class DecorateContext extends RenderContext {
 
     const work = new GrowableXYZArray();
     const finalPoints = new GrowableXYZArray();
-    const convexSet = frus.getRangePlanes(false, false, 0);
+    const convexSet = frust.getRangePlanes(false, false, 0);
     convexSet.polygonClip(child.points, finalPoints, work);
     if (finalPoints.length < 4)
       return undefined;

@@ -540,15 +540,16 @@ export class ViewingSpace {
     return corners;
   }
 
-  private constructor(view: ViewState, clientWidth: number, clientHeight: number, displayedPlanes: Plane3dByOriginAndUnitNormal[]) {
-    this._view = view;
-    this._clientWidth = clientWidth;
-    this._clientHeight = clientHeight;
+  private constructor(vp: Viewport, displayedPlanes: Plane3dByOriginAndUnitNormal[]) {
+    const view = this._view = vp.view;
+    const viewRect = vp.viewRect;
+    this._clientWidth = viewRect.width;
+    this._clientHeight = viewRect.height;
     this._displayedPlanes = displayedPlanes;
 
-    const origin = this.view.getOrigin().clone();
-    const delta = this.view.getExtents().clone();
-    this.rotation.setFrom(this.view.getRotation());
+    const origin = view.getOrigin().clone();
+    const delta = view.getExtents().clone();
+    this.rotation.setFrom(view.getRotation());
 
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
@@ -630,14 +631,14 @@ export class ViewingSpace {
 
   /** @internal */
   public static createFromViewport(vp: Viewport): ViewingSpace | undefined {
-    return new ViewingSpace(vp.view, vp.viewRect.width, vp.viewRect.height, vp.getDisplayedPlanes());
+    return new ViewingSpace(vp, vp.getDisplayedPlanes());
   }
 
   /** @internal */
   public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewingSpace | undefined {
     const planes = vp.getDisplayedPlanes();
     planes.push(plane);
-    const vf = new ViewingSpace(vp.view, vp.viewRect.width, vp.viewRect.height, planes);
+    const vf = new ViewingSpace(vp, planes);
     return 0 === vf.frustFraction ? undefined : vf;
   }
 
@@ -1820,10 +1821,10 @@ export abstract class Viewport implements IDisposable {
 
   /** Change the ViewState of this Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
-   * @param _opts options for how the view change operation should work
+   * @param _opts options for how the view change operation  should work
    */
   public changeView(view: ViewState, _opts?: ViewChangeOptions) {
-    const prevView =  this.view;
+    const prevView = this.view;
 
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
