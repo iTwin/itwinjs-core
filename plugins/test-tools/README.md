@@ -1,6 +1,6 @@
 # Test Tools Example Plugin
 
-Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 An iModel.js example Plugin that adds some tools used for testing various WIP features in iModel.js.
 

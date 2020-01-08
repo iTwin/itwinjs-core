@@ -144,6 +144,7 @@ internal;RbacUser
 internal;RealityData 
 internal;RealityDataRelationship 
 internal;RealityDataServicesClient 
+internal;RealityDataServicesRequestQueryOptions 
 internal;request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise
 beta;RequestBasicCredentials
 beta;RequestGlobalOptions

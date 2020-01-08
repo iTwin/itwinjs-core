@@ -1,6 +1,17 @@
 # Change Log - @bentley/geo-photo-plugin
 
-This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jan 2020 19:44:01 GMT and should not be manually modified.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- merge
+- Fix behavior when no photos (Bug 205812)
+- Eliminate markers in panorama view that are too far to the side. Added Tab to UI for settings.
+- Added a way to orient the markers shown in pannellum viewer
+- Update package location of PluginUiManager.
 
 ## 1.9.0
 Tue, 10 Dec 2019 18:08:56 GMT

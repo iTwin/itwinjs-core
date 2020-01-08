@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Curve */
@@ -17,7 +17,7 @@ import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail, CurveIntervalRole } from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveIntervalRole} from "./CurveLocationDetail";
 import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
 /* tslint:disable:variable-name no-empty*/

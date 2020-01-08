@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 import { ClientRequestContext, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
@@ -57,7 +57,7 @@ export abstract class RpcConfiguration {
   public static requestContext: RpcRequestContext = {
     getId: (_request: RpcRequest): string => "",
     serialize: async (_request: RpcRequest): Promise<SerializedClientRequestContext> => ({
-      id: "",
+      id: _request.id,
       applicationId: "",
       applicationVersion: "",
       sessionId: "",

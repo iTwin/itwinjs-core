@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
@@ -62,17 +62,25 @@ module.exports = {
       use: 'null-loader'
     },
     {
-      test: /core\/clients-backend\/lib\/util\/AzCopy.js$/,
+      test: /IModelBankCloudEnv\.js$/,
       use: 'null-loader'
     },
     {
-      test: /core\/clients-backend\/lib\/test\/imodelhub\/IModelBankCloudEnv.js$/,
+      test: /DevTools\.js$/,
       use: 'null-loader'
     },
     {
-      test: /core\/backend\/lib\/DevTools\.js/,
+      test: /OidcDesktopClient\.js$/,
       use: 'null-loader'
-    }
+    },
+    {
+      test: /oidc-signin-tool/,
+      use: 'null-loader'
+    },
+    {
+      test: /AzCopy\.js$/,
+      use: 'null-loader'
+    },
     ]
   },
   node: {

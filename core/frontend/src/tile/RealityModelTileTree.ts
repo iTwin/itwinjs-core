@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
@@ -17,7 +17,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, TransformProps, Range3dProps, Range3d, Transform, Vector3d, Matrix3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
-import { TileTree, TileTreeSet, ContextTileLoader, BatchedTileIdMap } from "./TileTree";
+import { TileTree, TileTreeReference, TileTreeSet, ContextTileLoader, BatchedTileIdMap } from "./TileTree";
 import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
@@ -317,7 +317,7 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiers;
   }
 
-  export abstract class Reference extends TileTree.Reference {
+  export abstract class Reference extends TileTreeReference {
     public abstract get classifiers(): SpatialClassifiers | undefined;
   }
 
@@ -381,7 +381,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
   private readonly _name: string;
   private readonly _url: string;
   private readonly _classifier?: SpatialClassifierTileTreeReference;
-  private _mapDrapeTree?: TileTree.Reference;
+  private _mapDrapeTree?: TileTreeReference;
 
   public constructor(props: RealityModelTileTree.ReferenceProps) {
     super();
@@ -567,16 +567,11 @@ export class RealityModelTileClient {
       requestContext.enter();
     }
 
-    let tileUrl: string = url;
-    if (undefined !== this._baseUrl) {
-      tileUrl = this._baseUrl + url;
+    const tileUrl = this._baseUrl + url;
+    if (undefined !== this.rdsProps && undefined !== this._token)
+      return this._realityData!.getTileContent(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
-      if (undefined !== this.rdsProps && undefined !== this._token)
-        return this._realityData!.getTileContent(requestContext as AuthorizedFrontendRequestContext, tileUrl);
-
-      return getArrayBuffer(requestContext, tileUrl);
-    }
-    throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data content url");
+    return getArrayBuffer(requestContext, tileUrl);
   }
 
   /**
@@ -591,15 +586,11 @@ export class RealityModelTileClient {
       requestContext.enter();
     }
 
-    let tileUrl: string = url;
-    if (undefined !== this._baseUrl) {
-      tileUrl = this._baseUrl + url;
+    const tileUrl = this._baseUrl + url;
 
-      if (undefined !== this.rdsProps && undefined !== this._token)
-        return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl);
+    if (undefined !== this.rdsProps && undefined !== this._token)
+      return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
-      return getJson(requestContext, tileUrl);
-    }
-    throw new IModelError(BentleyStatus.ERROR, "Unable to determine reality data json url");
+    return getJson(requestContext, tileUrl);
   }
 }

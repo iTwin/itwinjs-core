@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module CartesianGeometry */
 
@@ -728,7 +728,7 @@ export class Vector3d extends XYZ {
    */
   public normalizeInPlace(): boolean {
     const a = Geometry.inverseMetricDistance(this.magnitude());
-    if (!a)
+    if (a === undefined)
       return false;
     this.x *= a;
     this.y *= a;

@@ -1,9 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
 import {
   ConfigurableUiManager, ConfigurableCreateInfo, UiFramework,
   StatusBarWidgetControl, StatusBarWidgetControlArgs, StatusBarComposer,
@@ -20,7 +19,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     const itemsManager = UiFramework.statusBarManager.getItemsManager("main");
     if (itemsManager)
       return (
-        <StatusBarComposer itemsManager={itemsManager} />
+        <StatusBarComposer itemsManager={itemsManager} pluginItemsManager={UiFramework.pluginStatusBarItemsManager} />
       );
     return null;
   }

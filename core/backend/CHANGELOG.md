@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jan 2020 19:44:01 GMT and should not be manually modified.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Typescript code for the classes in the Analytical schema.
+- Return error message from concurrent query manager
+- Added support for embedding images in a GeometryStream.
+- IModelExporter, IModelTransformer, and IModelImporter are now beta and provide low-level functionality needed for iModel transformation and data exchange.
+- Added IModelDb.isBriefcase() getter.
+- Implementing LinearlyLocatedBase interface by base LR abstract element-classes.
+- Moving data-holder structures used during the LinearElement.queryLinearLocations API to imodeljs-common.
+- Allow events to be sent from backend to frontend
+- Add tryGetInstance / tryGetInstanceProps methods to the Relationship class which return undefined rather than throwing an exception when a relationship is not found.
+- Fix webpack for ios test that were failing due to new dependencies
+- VSTS#225894 - Allowed agents to bypass usage logging calls. These cause usage logging errors. 
+- Add tryGetElement / tryGetElementProps which return undefined rather than throwing an exception when an element is not found.
+- Add tryGetModel, tryGetModelProps, tryGetSubModel which return undefined instead of throwing exceptions when the model is not found.
 
 ## 1.9.0
 Tue, 10 Dec 2019 18:08:56 GMT

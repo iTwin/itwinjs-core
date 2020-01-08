@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
@@ -24,12 +24,12 @@ describe("DiagnosticClasses tests", () => {
 
   it("EC Diagnostic messages have valid arg place holders.", async () => {
     for (const [key, value] of Object.entries(ECDiagnostics)) {
-       const params = getMessageArgsHolders(value.prototype.messageText);
-       let index = 0;
-       for (const param of params) {
-         expect(param, `Diagnostic ${key} has invalid message arguments`).to.equal(index.toString());
-         index ++;
-       }
+      const params = getMessageArgsHolders(value.prototype.messageText);
+      let index = 0;
+      for (const param of params) {
+        expect(param, `Diagnostic ${key} has invalid message arguments`).to.equal(index.toString());
+        index ++;
+      }
     }
   });
 });

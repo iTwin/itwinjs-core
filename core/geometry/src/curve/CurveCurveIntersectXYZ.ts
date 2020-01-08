@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Curve */
@@ -157,7 +157,6 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     extendB1: boolean,
     reversed: boolean,
   ) {
-
     const uv = CurveCurveIntersectXYZ._workVector2dA;
     if (SmallSystem.lineSegment3dClosestApproachUnbounded(
       pointA0, pointA1,

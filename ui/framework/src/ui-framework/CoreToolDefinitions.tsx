@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
@@ -22,7 +22,7 @@ import { CustomItemDef } from "./shared/CustomItemDef";
 import { CommandItemDef } from "./shared/CommandItemDef";
 import { KeyinBrowser } from "./keyinbrowser/KeyinBrowser";
 import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
-import { BaseItemState } from "../ui-framework/shared/ItemDefBase";
+import { BaseItemState } from "./shared/ItemDefBase";
 import { ContentViewManager } from "./content/ContentViewManager";
 import { UiFramework } from "./UiFramework";
 import { getSelectionContextSyncEventIds, selectionContextStateFunc } from "./selection/SelectionContextItemDef";

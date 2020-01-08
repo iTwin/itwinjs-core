@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeDuration, Id64, Id64Arg, Id64String, using } from "@bentley/bentleyjs-core";
 import { Angle, Point3d } from "@bentley/geometry-core";
@@ -12,6 +12,8 @@ import {
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
 import { assert, expect } from "chai";
 import * as path from "path";
+
+// cSpell:ignore calibri subcats subcat pmcv ovrs
 
 const iModelDir = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets");
 
@@ -69,7 +71,7 @@ describe("Viewport", () => {
     assert.isTrue(vp2.getFrustum().isSame(frustSave), "vp2 frustum should be same as vp1 after connect");
     vp.turnCameraOn();
 
-    vp.synchWithView(true);
+    vp.synchWithView();
     assert.equal(vp.iModel, imodel);
     assert.equal(vp2.iModel, imodel2);
 
@@ -92,7 +94,7 @@ describe("Viewport", () => {
     assert.isTrue(vp2.getFrustum().isSame(frust2), "frustum should be synched");
 
     vp2.view.displayStyle.monochromeColor = ColorDef.blue;
-    vp2.synchWithView(true);
+    vp2.synchWithView();
     assert.equal(vp.view.displayStyle.monochromeColor.getRgb(), ColorDef.blue.getRgb(), "synch from 2->1 should work");
 
     const pan = IModelApp.tools.create("View.Pan", vp) as PanViewTool;

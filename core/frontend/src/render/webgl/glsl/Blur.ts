@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
@@ -21,7 +21,7 @@ const computeBlur = `
   float texelStepSize = u_blurSettings.z;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-  vec2 step = texelStepSize / u_viewport.zw;
+  vec2 step = texelStepSize / u_viewport;
 
   vec3 gaussian;
   const float twoPi = 6.283185307179586;

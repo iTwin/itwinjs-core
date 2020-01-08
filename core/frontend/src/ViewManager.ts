@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 import { BentleyStatus, BeEvent, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
@@ -280,9 +280,9 @@ export class ViewManager {
   /** @internal */
   public onSelectionSetChanged(_iModel: IModelConnection) { this.forEachViewport((vp) => vp.markSelectionSetDirty()); }
   /** @internal */
-  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.invalidateScene()); }
+  public invalidateViewportScenes(): void { this.forEachViewport((vp) => vp.invalidateScene()); }
   /** @internal */
-  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.sync.setValidScene()); }
+  public validateViewportScenes(): void { this.forEachViewport((vp) => vp.setValidScene()); }
 
   /** @internal */
   public invalidateScenes(): void {

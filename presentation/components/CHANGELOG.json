@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/presentation-components_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Apply unified selection in ControlledTree after selection event is handled."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/presentation-components_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Frontstage */
 
@@ -23,8 +23,8 @@ import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/Fron
 import { ZoneLocation } from "../zones/Zone";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { StagePanelLocation, getStagePanelType, getNestedStagePanelKey } from "./StagePanel";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import "./FrameworkStagePanel.scss";
-import { FrontstageManager } from "../../ui-framework";
 
 /** Properties of a [[FrameworkStagePanel]] component
  * @internal

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
 
@@ -14,7 +14,7 @@ import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDis
 import { PropsHelper } from "../utils/PropsHelper";
 import { UiFramework } from "../UiFramework";
 import { Backstage } from "./Backstage";
-import { BackstageItemProps, BackstageItemState } from "./BackstageItem";
+import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 import { BackstageItemUtilities } from "./BackstageItemUtilities";
 
 // cspell:ignore safearea

@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { PluginUiProvider, UiItemNode, ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
-import { ActionItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType } from "@bentley/ui-abstract";
+import { ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
+import { PluginUiProvider, ActionItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType } from "@bentley/ui-abstract";
 import { ModelessDialogManager, UiDataProvider, PropertyChangeStatus, PropertyChangeResult } from "@bentley/ui-framework";
 
 import { IotSettingsDialog } from "./IotSettingsDialog";
@@ -49,7 +49,7 @@ export class IotUiProvider extends UiDataProvider implements PluginUiProvider {
       ModelessDialogManager.openDialog(<IotSettingsDialog dataProvider={this} />, IotSettingsDialog.id);
   }
   /** Method called by applications that support plugins provided tool buttons. All nine-zone based apps will supports PluginUiProviders */
-  public provideToolbarItems(toolBarId: string, _itemIds: UiItemNode): ToolbarItemInsertSpec[] {
+  public provideToolbarItems(toolBarId: string): ToolbarItemInsertSpec[] {
     // For 9-zone apps the toolbarId will be in form -[stageName]ToolWidget|NavigationWidget-horizontal|vertical
     // examples:"[ViewsFrontstage]ToolWidget-horizontal" "[ViewsFrontstage]NavigationWidget-vertical"
     if (toolBarId.includes("ToolWidget-horizontal")) {

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 import { VariableType, ProgramBuilder, FragmentShaderComponent } from "../ShaderBuilder";
@@ -9,7 +9,7 @@ import { TextureUnit } from "../RenderFlags";
 import { addUInt32s } from "./Common";
 import { Texture2DHandle } from "../Texture";
 import { addWindowToTexCoords } from "./Fragment";
-import { addClassifierFlash, addHiliteSettings } from "./FeatureSymbology";
+import { addClassifierFlash } from "./FeatureSymbology";
 import { SpatialClassificationProps } from "@bentley/imodeljs-common";
 import { Matrix4d } from "@bentley/geometry-core";
 import { Matrix4 } from "../Matrix";
@@ -183,8 +183,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
     });
   });
 
-  addHiliteSettings(frag);
-  addClassifierFlash(frag);
+  addClassifierFlash(frag), false;
   if (translucent)
     // We will never call the shaders for volume classifiers with translucency,
     // so use a different version of the function which does not use glFragCoord to reduce the varyings count

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelComponents */
 
@@ -35,7 +35,6 @@ export interface FilterInfo {
 export interface CategoryTreeState {
   checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
   filterInfo?: FilterInfo;
-  selectedNodes: string[];
   dataProvider?: IPresentationTreeDataProvider;
   categories: Category[];
   activeView?: Viewport;

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Timeline */
 
@@ -28,7 +28,7 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
     // if animationFraction is set pointer should match
     // istanbul ignore else
     if (this._viewport)
-      this.animationFraction = this._viewport.animationFraction;
+      this.animationFraction = this._viewport.scheduleScriptFraction;
 
     // istanbul ignore else
     if (this.supportsTimelineAnimation && this._viewState.analysisStyle) {
@@ -48,7 +48,7 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
     this.animationFraction = animationFraction;
     // istanbul ignore next
     if (this._viewport)
-      this._viewport.animationFraction = animationFraction;
+      this._viewport.scheduleScriptFraction = animationFraction;
   }
 
   // istanbul ignore next

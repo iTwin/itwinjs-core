@@ -1,7 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @module iModels */
 import { Id64String } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -10,7 +11,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
- * @alpha
+ * @beta
  */
 export class IModelCloneContext {
   /** The source IModelDb. */

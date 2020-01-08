@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
@@ -136,6 +136,7 @@ export class FloatRgba extends FloatColor {
   }
 
   public get alpha(): number { return this._components[3]; }
+  public set alpha(alpha: number) { this._components[3] = alpha; }
   public get hasTranslucency(): boolean { return 1.0 !== this.alpha; }
 
   public bind(uniform: UniformHandle): void {
@@ -156,5 +157,13 @@ export class FloatRgba extends FloatColor {
     const rgba = new FloatRgba();
     rgba.set(r, g, b, a);
     return rgba;
+  }
+
+  public clone(out?: FloatRgba): FloatRgba {
+    if (undefined === out)
+      return FloatRgba.from(this.red, this.green, this.blue, this.alpha);
+
+    out.set(this.red, this.green, this.blue, this.alpha);
+    return out;
   }
 }

@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane } from "@bentley/geometry-core";
+import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane, XYAndZ } from "@bentley/geometry-core";
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
  * @public
@@ -83,7 +83,7 @@ export class Frustum {
   /** Multiply all the points of this Frustum by a Transform, in place. */
   public multiply(trans: Transform): void { trans.multiplyPoint3dArrayInPlace(this.points); }
   /** Offset all of the points of this Frustum by a vector. */
-  public translate(offset: Vector3d): void { for (const pt of this.points) pt.plus(offset); }
+  public translate(offset: XYAndZ): void { for (const pt of this.points) pt.plus(offset); }
   /** Transform all the points of this Frustum and return the result in another Frustum. */
   public transformBy(trans: Transform, result?: Frustum): Frustum { result = result ? result : new Frustum(); trans.multiplyPoint3dArray(this.points, result.points); return result; }
   /** Calculate a bounding range from the 8 points in this Frustum. */

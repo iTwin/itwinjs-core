@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import sinon = require("sinon");
@@ -1633,6 +1633,14 @@ describe("XmlParser", () => {
 
       const actualProps = parser.parseSchema();
       assert.deepEqual(actualProps, expectedProps);
+    });
+
+    it("invalid xmlns host (replacing dots with numbers), should throw", () => {
+      const schemaDoc = createSchemaXmlWithItems(``, true);
+      // this xmlns string passes without escaping the '.' in the xmlns regex.
+      schemaDoc.documentElement.setAttribute("xmlns", "http://www1bentley2com/schemas/Bentley3ECXML4352");
+      parser = new XmlParser(schemaDoc);
+      assert.throws(() => parser.parseSchema(), ECObjectsError, `The ECSchema TestSchema has an invalid 'xmlns' attribute`);
     });
 
     it("should throw for missing xmnls ($schema) attribute", () => {

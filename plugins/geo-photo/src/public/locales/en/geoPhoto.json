@@ -25,19 +25,33 @@
     "noPanoramaError": "No panorama image was specified.",
     "genericWebGLError": "Your browser does not have the necessary WebGL support to display this panorama.",
     "textureSizeError": "This panorama is too big for your device! It's {{panWidth}} wide, but your but your device only supports images up to {{deviceWidth}} wide. Try another device or scale down the image.",
-    "unknownError": "Unknown error. Check developer console."
+    "unknownError": "Unknown error. Check developer console.",
+    "showMarkers": "Show markers for nearby photos",
+    "fromTrack": "Get camera direction from GPS Track",
+    "fromPath": "Get camera direction path to from next photo",
+    "reversed": "Camera direction is reversed",
+    "nextPanorama": "Next panorama ({{name}})",
+    "previousPanorama": "Previous panorama ({{name}})"
   },
   "LoadDialog": {
     "LoadTitle": "GeoPhoto Load Progress",
     "FoldersTitle": "GeoPhoto Folders",
+    "GeoPhotoTitle": "GeoPhoto",
     "Finding": "Finding Files in Project Share",
     "FolderName": "Folder: {{folderName}}",
     "FolderCount": "Found {{count}} folders",
     "FileCount": "Found {{count}} files",
+    "EmptyPhotoSet": "No GeoLocated Photographs found in Project Share",
     "Processing": "Extracting File Locations",
     "FolderProgress": "Folders {{folderNum}} / {{folderCount}}",
     "FileProgress": "Files {{fileNum}} / {{fileCount}}",
     "Panoramas": "Panoramas: {{panoramas}}",
-    "Photos": "Photos: {{photos}}"
+    "Photos": "Photos: {{photos}}",
+    "Folders": "Folders",
+    "Settings": "Settings",
+    "ShowMarkers": "Show Markers in Panorama Viewer",
+    "MaxDistance": "Maximum distance from Camera",
+    "MaxCrossDistance": "Maximum distance from Camera Path",
+    "CameraHeight": "Camera height above ground"
   }
 }

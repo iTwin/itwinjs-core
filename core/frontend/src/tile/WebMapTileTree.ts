@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
@@ -28,6 +28,7 @@ import {
   GeoCoordStatus,
   ImageSource,
   ImageSourceFormat,
+  PackedFeatureTable,
   RenderTexture,
   TileProps,
   TileTreeProps,
@@ -47,7 +48,7 @@ import {
   XYZProps,
   Vector3d,
 } from "@bentley/geometry-core";
-import { ContextTileLoader, TileTree } from "./TileTree";
+import { ContextTileLoader, TileTree, TileTreeReference } from "./TileTree";
 import { Tile } from "./Tile";
 import { TileRequest } from "./TileRequest";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
@@ -57,7 +58,7 @@ import { FeatureSymbology } from "../render/FeatureSymbology";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
-import { RenderClipVolume, RenderSystem, PackedFeatureTable } from "../render/System";
+import { RenderClipVolume, RenderSystem } from "../render/System";
 import { MapTilingScheme, WebMercatorTilingScheme } from "./MapTilingScheme";
 import { MapTileTree, MapTile } from "./MapTileTree";
 
@@ -176,6 +177,7 @@ export abstract class MapTileLoaderBase extends ContextTileLoader {
   public get heightRange(): Range1d | undefined { return this._heightRange; }
   protected readonly _heightRange: Range1d | undefined;
   public get isContentUnbounded(): boolean { return true; }
+  public isLeaf(quadId: QuadId) { return quadId.level >= this.maxDepth; }
 
   constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, protected _mapTilingScheme: MapTilingScheme, heightRange?: Range1d) {
     super();
@@ -774,7 +776,7 @@ export async function createTileTreeFromImageryProvider(imageryProvider: Imagery
 /** A reference to a TileTree used for drawing tiled map graphics into a Viewport.
  * @internal
  */
-export abstract class MapTileTreeReference extends TileTree.Reference {
+export abstract class MapTileTreeReference extends TileTreeReference {
   private _overrides?: FeatureSymbology.Overrides;
   private _plane?: {
     plane: Plane3dByOriginAndUnitNormal,

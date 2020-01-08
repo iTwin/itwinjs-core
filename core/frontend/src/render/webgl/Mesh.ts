@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
@@ -11,11 +11,12 @@ import { LUTGeometry, PolylineBuffers, CachedGeometry } from "./CachedGeometry";
 import { VertexIndices, SurfaceType, MeshParams, SegmentEdgeParams, SilhouetteParams, TesselatedPolyline } from "../primitives/VertexTable";
 import { LineCode } from "./EdgeOverrides";
 import { ColorInfo } from "./ColorInfo";
-import { Graphic, Batch } from "./Graphic";
+import { Graphic } from "./Graphic";
 import { VertexLUT } from "./VertexLUT";
 import { Primitive } from "./Primitive";
 import { FloatRgba } from "./FloatRGBA";
-import { ShaderProgramParams, RenderCommands } from "./DrawCommand";
+import { ShaderProgramParams } from "./DrawCommand";
+import { RenderCommands } from "./RenderCommands";
 import { Target } from "./Target";
 import { createMaterialInfo, MaterialInfo } from "./Material";
 import { Texture } from "./Texture";
@@ -27,10 +28,10 @@ import { TechniqueId } from "./TechniqueId";
 import { InstancedGraphicParams, RenderMemory } from "../System";
 import { InstanceBuffers } from "./InstancedGeometry";
 import { AttributeMap } from "./AttributeMap";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 /** @internal */
-export class MeshData implements WebGlDisposable {
+export class MeshData implements WebGLDisposable {
   public readonly edgeWidth: number;
   public readonly hasFeatures: boolean;
   public readonly uniformFeatureId?: number; // Used strictly by BatchPrimitiveCommand.computeisFlashed for flashing volume classification primitives.
@@ -44,6 +45,7 @@ export class MeshData implements WebGlDisposable {
   public readonly hasFixedNormals: boolean;   // Fixed normals will not be flipped to face front (Terrain skirts).
   public readonly lut: VertexLUT;
   public readonly viewIndependentOrigin?: Point3d;
+  private readonly _textureAlwaysDisplayed: boolean;
 
   private constructor(lut: VertexLUT, params: MeshParams, viOrigin: Point3d | undefined) {
     this.lut = lut;
@@ -53,7 +55,14 @@ export class MeshData implements WebGlDisposable {
     if (FeatureIndexType.Uniform === params.vertices.featureIndexType)
       this.uniformFeatureId = params.vertices.uniformFeatureID;
 
-    this.texture = params.surface.texture as Texture;
+    if (undefined !== params.surface.textureMapping) {
+      this.texture = params.surface.textureMapping.texture as Texture;
+      this._textureAlwaysDisplayed = params.surface.textureMapping.alwaysDisplayed;
+    } else {
+      this.texture = undefined;
+      this._textureAlwaysDisplayed = false;
+    }
+
     this.materialInfo = createMaterialInfo(params.surface.material);
 
     this.type = params.surface.type;
@@ -78,6 +87,9 @@ export class MeshData implements WebGlDisposable {
     if (this._ownsTexture)
       this.texture!.dispose();
   }
+
+  public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
+  public get isTextureAlwaysDisplayed() { return this.isGlyph || this._textureAlwaysDisplayed; }
 
   // Returns true if no one else owns this texture. Implies that the texture should be disposed when this object is disposed, and the texture's memory should be tracked as belonging to this object.
   private get _ownsTexture(): boolean {
@@ -156,7 +168,7 @@ export class MeshGraphic extends Graphic {
   }
 
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
-  public addHiliteCommands(cmds: RenderCommands, batch: Batch, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch, pass)); }
+  public addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass)); }
 
   public get surfaceType(): SurfaceType { return this.meshData.type; }
 }
@@ -387,7 +399,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
-  public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
+  public get isGlyph() { return this.mesh.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
   public get isClassifier() { return SurfaceType.VolumeClassifier === this.surfaceType; }
 
@@ -416,6 +428,11 @@ export class SurfaceGeometry extends MeshGeometry {
     }
   }
 
+  public wantMixMonochromeColor(target: Target): boolean {
+    // Text relies on white-on-white reversal.
+    return !this.isGlyph && (this.isLitSurface || this.wantTextures(target, this.isTextured));
+  }
+
   public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
   public get isLitSurface() { return this.isLit; }
   public get hasBakedLighting() { return this.mesh.hasBakedLighting; }
@@ -433,7 +450,7 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public getColor(target: Target) {
     if (FillFlags.Background === (this.fillFlags & FillFlags.Background))
-      return ColorInfo.createUniform(target.bgColor);
+      return target.uniforms.style.backgroundColorInfo;
     else
       return this.colorInfo;
   }
@@ -452,7 +469,7 @@ export class SurfaceGeometry extends MeshGeometry {
     const vf = target.currentViewFlags;
 
     // In wireframe, unless fill is explicitly enabled for planar region, surface does not draw
-    if (RenderMode.Wireframe === vf.renderMode) {
+    if (RenderMode.Wireframe === vf.renderMode && !this.mesh.isTextureAlwaysDisplayed) {
       const fillFlags = this.fillFlags;
       const showFill = FillFlags.Always === (fillFlags & FillFlags.Always) || (vf.fill && FillFlags.ByView === (fillFlags & FillFlags.ByView));
       if (!showFill)
@@ -571,7 +588,7 @@ export class SurfaceGeometry extends MeshGeometry {
     if (!surfaceTextureExists)
       return false;
 
-    if (this.isGlyph)
+    if (this.mesh.isTextureAlwaysDisplayed)
       return true;
 
     const fill = this.fillFlags;

@@ -89,7 +89,9 @@ import { IModelToken } from '@bentley/imodeljs-common';
 import { IModelTokenProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
+import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { LightLocationProps } from '@bentley/imodeljs-common';
+import { LinearLocationReference } from '@bentley/imodeljs-common';
 import { LinearlyLocatedAttributionProps } from '@bentley/imodeljs-common';
 import { LinearlyReferencedAtLocationAspectProps } from '@bentley/imodeljs-common';
 import { LinearlyReferencedAtLocationProps } from '@bentley/imodeljs-common';
@@ -106,6 +108,8 @@ import { ModelProps } from '@bentley/imodeljs-common';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NavigationBindingValue } from '@bentley/imodeljs-common';
 import { NavigationValue } from '@bentley/imodeljs-common';
+import { OidcClient } from '@bentley/imodeljs-clients';
+import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import * as os from 'os';
 import { Placement2d } from '@bentley/imodeljs-common';
@@ -114,9 +118,11 @@ import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PropertyCallback } from '@bentley/imodeljs-common';
 import { QueryLimit } from '@bentley/imodeljs-common';
+import { QueryParams } from '@bentley/imodeljs-common';
 import { QueryPriority } from '@bentley/imodeljs-common';
 import { QueryQuota } from '@bentley/imodeljs-common';
 import { QueryResponse } from '@bentley/imodeljs-common';
+import { QueuedEvent } from '@bentley/imodeljs-common';
 import { Range2d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
 import { Rank } from '@bentley/imodeljs-common';
@@ -170,6 +176,50 @@ export class AliCloudStorageService extends CloudStorageService {
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
 
+// @beta
+export abstract class AnalyticalElement extends GeometricElement3d {
+    // @internal
+    constructor(props: GeometricElement3dProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export abstract class AnalyticalModel extends GeometricModel3d {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export class AnalyticalPartition extends InformationPartitionElement {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export class AnalyticalSchema extends Schema {
+    // (undocumented)
+    static registerSchema(): void;
+    // (undocumented)
+    static readonly schemaFilePath: string;
+    // (undocumented)
+    static readonly schemaName: string;
+}
+
+// @beta
+export class AnalyticalSimulatesSpatialElement extends ElementRefersToElements {
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
+// @beta
+export abstract class AnalyticalType extends TypeDefinitionElement {
+    // @internal
+    constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static readonly className: string;
+}
+
 // @public
 export class AnnotationElement2d extends GraphicalElement2d {
     // @internal
@@ -181,6 +231,14 @@ export class AnnotationElement2d extends GraphicalElement2d {
 // @beta
 export interface AppActivityMonitor {
     isIdle: boolean;
+}
+
+// @alpha
+export enum ApplicationType {
+    // (undocumented)
+    WebAgent = 0,
+    // (undocumented)
+    WebApplicationBackend = 1
 }
 
 // @public
@@ -310,21 +368,23 @@ export class BackendActivityMonitor implements AppActivityMonitor {
 
 // @public
 export enum BackendLoggerCategory {
+    Authorization = "imodeljs-backend.Authorization",
     CodeSpecs = "imodeljs-backend.CodeSpecs",
     ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
     // @internal
     DevTools = "imodeljs-backend.DevTools",
     ECDb = "imodeljs-backend.ECDb",
+    EventSink = "imodeljs-backend.EventSink",
     Functional = "imodeljs-backend.Functional",
     IModelDb = "imodeljs-backend.IModelDb",
-    // @alpha
+    // @beta
     IModelExporter = "imodeljs-backend.IModelExporter",
     IModelHost = "imodeljs-backend.IModelHost",
-    // @alpha
+    // @beta
     IModelImporter = "imodeljs-backend.IModelImporter",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
     IModelTileUpload = "imodeljs-backend.IModelTileUpload",
-    // @alpha
+    // @beta
     IModelTransformer = "imodeljs-backend.IModelTransformer",
     LinearReferencing = "imodeljs-backend.LinearReferencing",
     PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
@@ -663,14 +723,6 @@ export class CodeSpecs {
     insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
     load(id: Id64String): CodeSpec;
     queryId(name: string): Id64String;
-}
-
-// @beta
-export enum ComparisonOption {
-    // (undocumented)
-    Exclusive = 1,
-    // (undocumented)
-    Inclusive = 0
 }
 
 // @beta
@@ -1447,6 +1499,14 @@ export class Entity implements EntityProps {
     toJSON(): EntityProps;
 }
 
+// @internal
+export interface EventSinkOptions {
+    // (undocumented)
+    maxNamespace: number;
+    // (undocumented)
+    maxQueueSize: number;
+}
+
 // @public
 export namespace ExportGraphics {
     // @beta @deprecated
@@ -1922,7 +1982,7 @@ export class ILinearlyLocatedAttributesElement extends RelatedElement {
     static classFullName: string;
 }
 
-// @alpha
+// @beta
 export class IModelCloneContext {
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
@@ -1974,6 +2034,8 @@ export class IModelDb extends IModel {
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
+    // @internal
+    readonly eventSink: EventSink | undefined;
     // @deprecated
     executeQuery(ecsql: string, bindings?: any[] | object): any[];
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
@@ -1997,6 +2059,7 @@ export class IModelDb extends IModel {
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
+    readonly isBriefcase: boolean;
     // @internal
     readonly isOpen: boolean;
     readonly isReadonly: boolean;
@@ -2076,6 +2139,7 @@ export namespace IModelDb {
         deleteElement(ids: Id64Arg): void;
         getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
         getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
+        // @internal
         getElementJson<T extends ElementProps>(elementIdArg: string): T;
         getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
         getRootSubject(): Subject;
@@ -2086,6 +2150,8 @@ export namespace IModelDb {
         queryElementIdByCode(code: Code): Id64String | undefined;
         // @internal
         queryLastModifiedTime(elementId: Id64String): string;
+        tryGetElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
+        tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
         updateElement(elProps: ElementProps): void;
     }
@@ -2095,12 +2161,16 @@ export namespace IModelDb {
         createModel<T extends Model>(modelProps: ModelProps): T;
         deleteModel(ids: Id64Arg): void;
         getModel<T extends Model>(modelId: Id64String): T;
+        // @internal
         getModelJson(modelIdArg: string): string;
         getModelProps<T extends ModelProps>(modelId: Id64String): T;
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T;
         insertModel(props: ModelProps): Id64String;
         // @internal
         queryLastModifiedTime(modelId: Id64String): string;
+        tryGetModel<T extends Model>(modelId: Id64String): T | undefined;
+        tryGetModelProps<T extends ModelProps>(modelId: Id64String): T | undefined;
+        tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T | undefined;
         updateModel(props: UpdateModelOptions): void;
     }
     // @internal
@@ -2134,9 +2204,9 @@ export namespace IModelDb {
     }
 }
 
-// @alpha
+// @beta
 export class IModelExporter {
-    constructor(sourceDb: IModelDb, options?: IModelExportOptions);
+    constructor(sourceDb: IModelDb);
     excludeCodeSpec(codeSpecName: string): void;
     excludeElement(elementId: Id64String): void;
     excludeElementAspectClass(classFullName: string): void;
@@ -2144,7 +2214,7 @@ export class IModelExporter {
     excludeElementClass(classFullName: string): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): void;
-    exportChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void>;
+    exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
     exportChildElements(elementId: Id64String): void;
     exportCodeSpecById(codeSpecId: Id64String): void;
     exportCodeSpecByName(codeSpecName: string): void;
@@ -2162,7 +2232,7 @@ export class IModelExporter {
     readonly sourceDb: IModelDb;
     }
 
-// @alpha
+// @beta
 export abstract class IModelExportHandler {
     // @internal
     readonly callProtected: any;
@@ -2173,17 +2243,13 @@ export abstract class IModelExportHandler {
     protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
     protected onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
     protected onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
-    protected onExportFont(_font: FontProps): void;
+    protected onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void;
     protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void;
     protected shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
     protected shouldExportElement(_element: Element): boolean;
     protected shouldExportElementAspect(_aspect: ElementAspect): boolean;
     protected shouldExportRelationship(_relationship: Relationship): boolean;
-}
-
-// @alpha
-export interface IModelExportOptions {
 }
 
 // @public
@@ -2227,6 +2293,8 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: string;
+    // @alpha
+    applicationType?: ApplicationType;
     briefcaseCacheDir: string;
     // @beta
     compressCachedTiles?: boolean;
@@ -2240,6 +2308,8 @@ export class IModelHostConfiguration {
     static defaultLogTileSizeThreshold: number;
     // @internal
     static defaultTileRequestTimeout: number;
+    // @internal
+    eventSinkOptions: EventSinkOptions;
     imodelClient?: IModelClient;
     // @internal
     logTileLoadTimeThreshold: number;
@@ -2256,7 +2326,7 @@ export class IModelHostConfiguration {
     tileTreeRequestTimeout: number;
 }
 
-// @alpha
+// @beta
 export class IModelImporter {
     constructor(targetDb: IModelDb, options?: IModelImportOptions);
     readonly autoExtendProjectExtents: boolean;
@@ -2281,7 +2351,7 @@ export class IModelImporter {
     readonly targetDb: IModelDb;
 }
 
-// @alpha
+// @beta
 export interface IModelImportOptions {
     autoExtendProjectExtents?: boolean;
 }
@@ -2324,10 +2394,11 @@ export class IModelJsFsStats {
     size: number;
 }
 
-// @alpha
+// @beta
 export class IModelTransformer extends IModelExportHandler {
     constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter, options?: IModelTransformOptions);
     readonly context: IModelCloneContext;
+    protected _deferredElementIds: Set<string>;
     detectElementDeletes(): void;
     detectRelationshipDeletes(): void;
     dispose(): void;
@@ -2342,7 +2413,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportElement(sourceElement: Element): void;
     protected onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
     protected onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void;
-    protected onExportFont(font: FontProps): void;
+    protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
     protected onTransformElement(sourceElement: Element): ElementProps;
@@ -2350,30 +2421,29 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): void;
-    processChanges(requestContext: AuthorizedBackendRequestContext, options: ChangeSummaryExtractOptions): Promise<void>;
+    processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void>;
     processChildElements(sourceElementId: Id64String): void;
     processCodeSpec(codeSpecName: string): void;
     processCodeSpecs(): void;
+    processDeferredElements(numRetries?: number): void;
     processElement(sourceElementId: Id64String): void;
     processFonts(): void;
     processModel(sourceModeledElementId: Id64String): void;
     processModelContents(sourceModelId: Id64String, targetModelId: Id64String, elementClassFullName?: string): void;
     processRelationships(baseRelClassFullName: string): void;
     processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void>;
-    processSkippedElements(numRetries?: number): void;
     processSubject(sourceSubjectId: Id64String, targetSubjectId: Id64String): void;
     protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
     protected shouldExportElement(_sourceElement: Element): boolean;
     protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean;
     protected shouldExportRelationship(_sourceRelationship: Relationship): boolean;
     protected skipElement(sourceElement: Element): void;
-    protected _skippedElementIds: Set<string>;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
     readonly targetScopeElementId: Id64String;
 }
 
-// @alpha
+// @beta
 export interface IModelTransformOptions {
     targetScopeElementId?: Id64String;
 }
@@ -2509,25 +2579,12 @@ export class LinearLocation extends LinearLocationElement {
     }
 
 // @beta
-export abstract class LinearLocationElement extends SpatialLocationElement {
+export abstract class LinearLocationElement extends SpatialLocationElement implements LinearlyLocatedBase {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
-}
-
-// @beta (undocumented)
-export class LinearLocationReference {
-    constructor(startDistanceAlong: number, stopDistanceAlong: number, linearlyLocatedId: Id64String, linearlyLocatedClassFullName: string, locationAspectId: Id64String);
     // (undocumented)
-    readonly linearlyLocatedClassFullName: string;
-    // (undocumented)
-    readonly linearlyLocatedId: Id64String;
-    // (undocumented)
-    readonly locationAspectId: Id64String;
-    // (undocumented)
-    readonly startDistanceAlong: number;
-    // (undocumented)
-    readonly stopDistanceAlong: number;
+    getLinearElementId(): Id64String | undefined;
 }
 
 // @beta
@@ -2544,12 +2601,14 @@ export class LinearlyLocated {
 }
 
 // @beta
-export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps {
+export abstract class LinearlyLocatedAttribution extends SpatialLocationElement implements LinearlyLocatedAttributionProps, LinearlyLocatedBase {
     constructor(props: LinearlyLocatedAttributionProps, iModel: IModelDb);
     // (undocumented)
     attributedElement?: ILinearlyLocatedAttributesElement;
     // @internal (undocumented)
     static readonly className: string;
+    // (undocumented)
+    getLinearElementId(): Id64String | undefined;
 }
 
 // @beta
@@ -2642,16 +2701,6 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
 export class LinearlyReferencedLocation extends ElementMultiAspect {
     // @internal (undocumented)
     static readonly className: string;
-}
-
-// @beta
-export enum LinearlyReferencedLocationType {
-    // (undocumented)
-    Any = 2,
-    // (undocumented)
-    At = 0,
-    // (undocumented)
-    FromTo = 1
 }
 
 // @beta
@@ -2932,6 +2981,20 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     toJSON(): ModelSelectorProps;
 }
 
+// @alpha
+export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient {
+    constructor(clientConfiguration: OidcDesktopClientConfiguration);
+    dispose(): void;
+    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    readonly hasExpired: boolean;
+    readonly hasSignedIn: boolean;
+    initialize(requestContext: ClientRequestContext): Promise<void>;
+    readonly isAuthorized: boolean;
+    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
+    signIn(requestContext: ClientRequestContext): Promise<void>;
+    signOut(requestContext: ClientRequestContext): Promise<void>;
+    }
+
 // @public
 export class OpenParams {
     constructor(
@@ -2940,6 +3003,7 @@ export class OpenParams {
     timeout?: number | undefined);
     equals(other: OpenParams): boolean;
     static fixedVersion(): OpenParams;
+    readonly isBriefcase: boolean;
     readonly isSnapshot: boolean;
     // @deprecated
     readonly isStandalone: boolean;
@@ -3039,23 +3103,6 @@ export class Platform {
     static readonly platformName: string;
 }
 
-// @beta (undocumented)
-export class QueryParams {
-    constructor(fromDistanceAlong?: number | undefined, fromComparisonOption?: ComparisonOption | undefined, toDistanceAlong?: number | undefined, toComparisonOption?: ComparisonOption | undefined, linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType | undefined, linearlyLocatedClassFullNames?: string[] | undefined);
-    // (undocumented)
-    fromComparisonOption?: ComparisonOption | undefined;
-    // (undocumented)
-    fromDistanceAlong?: number | undefined;
-    // (undocumented)
-    linearlyLocatedClassFullNames?: string[] | undefined;
-    // (undocumented)
-    linearlyReferencedLocationTypeFilter?: LinearlyReferencedLocationType | undefined;
-    // (undocumented)
-    toComparisonOption?: ComparisonOption | undefined;
-    // (undocumented)
-    toDistanceAlong?: number | undefined;
-}
-
 // @internal
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     constructor(props: ElementProps, iModel: IModelDb);
@@ -3077,10 +3124,12 @@ export class Referent extends ReferentElement {
     }
 
 // @beta
-export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps {
+export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps, LinearlyLocatedBase {
     constructor(props: ReferentElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static readonly className: string;
+    // (undocumented)
+    getLinearElementId(): Id64String | undefined;
     // (undocumented)
     referencedElement?: IReferentReferencesElement;
 }
@@ -3122,8 +3171,10 @@ export class Relationships {
     createInstance(props: RelationshipProps): Relationship;
     deleteInstance(props: RelationshipProps): void;
     getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T;
-    getInstanceProps<T extends RelationshipProps>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T;
+    getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T;
     insertInstance(props: RelationshipProps): Id64String;
+    tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
+    tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     updateInstance(props: RelationshipProps): void;
 }
 

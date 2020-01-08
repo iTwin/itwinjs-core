@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jan 2020 19:44:01 GMT and should not be manually modified.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Added support for embedding images in a GeometryStream.
+- Moving data-holder structures used during the LinearElement.queryLinearLocations API to imodeljs-common.
+- Allow events to be sent from backend to frontend
+- Renamed EventSourceRpcInterface to NativeAppRpcInterface
+- Moved tile IO-related APIs from frontend to common.
 
 ## 1.9.0
 Tue, 10 Dec 2019 18:08:56 GMT

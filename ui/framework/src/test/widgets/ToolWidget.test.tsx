@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
@@ -27,8 +27,8 @@ import {
   ToolbarDragInteractionContext,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
-import { PluginUiProvider, PluginUiManager, UiItemNode, IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ConditionalDisplayType } from "@bentley/ui-abstract";
+import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
+import { PluginUiProvider, PluginUiManager, ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ConditionalDisplayType } from "@bentley/ui-abstract";
 
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 
@@ -39,7 +39,7 @@ const toggleToolTitle = "plugin-conditional1";
 
 class TestUiProvider implements PluginUiProvider {
   public readonly id = "TestUiProvider";
-  public provideToolbarItems(toolBarId: string, _itemIds: UiItemNode): ToolbarItemInsertSpec[] {
+  public provideToolbarItems(toolBarId: string): ToolbarItemInsertSpec[] {
     if (toolBarId.includes("ToolWidget-horizontal")) {
       const firstActionSpec: ActionItemInsertSpec = {
         itemType: ToolbarItemType.ActionButton,

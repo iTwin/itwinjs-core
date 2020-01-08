@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
 
 import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { BackstageItemsManager } from "@bentley/ui-abstract";
 import { Backstage } from "./Backstage";
-import { BackstageItemsManager } from "./BackstageItemsManager";
 import { UiFramework } from "../UiFramework";
 
 /** Arguments of [[BackstageManager.onToggled]].

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Tools */
@@ -75,7 +75,7 @@ export class RealityTransitionTool extends Tool {
     });
 
     displayStyle.scheduleScript = script;
-    vp.animationFraction = 0.0;
+    vp.scheduleScriptFraction = 0.0;
     return true;
   }
   public parseAndRun(...args: string[]): boolean {

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
@@ -14,6 +14,8 @@ import { AuxCoordSystemState, ACSDisplayOptions } from "../AuxCoordSys";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { SnapDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
+
+// cSpell:ignore dont unlockedz
 
 function normalizedDifference(point1: Point3d, point2: Point3d, out: Vector3d): number { return point2.vectorTo(point1).normalizeWithLength(out).mag; }
 function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): number { return vec1.crossProduct(vec2, out).normalizeWithLength(out).mag; }
@@ -674,13 +676,12 @@ export class AccuDrawShortcuts {
 
     const targetMatrix = newMatrix.multiplyMatrixMatrix(vp.rotation);
     const rotateTransform = Transform.createFixedPointAndMatrix(vp.view.getTargetPoint(), targetMatrix);
-    const startFrustum = vp.getFrustum();
-    const newFrustum = startFrustum.clone();
+    const newFrustum = vp.getFrustum();
     newFrustum.multiply(rotateTransform);
 
     vp.view.setupFromFrustum(newFrustum);
-    vp.synchWithView(true);
-    vp.animateToCurrent(startFrustum);
+    vp.synchWithView();
+    vp.animateFrustumChange();
 
     accudraw.refreshDecorationsAndDynamics();
   }

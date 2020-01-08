@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 // cSpell:ignore iconpicker lineweight
@@ -64,6 +64,8 @@ export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer
 export * from "./ui-components/properties/renderers/PrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyView";
+export * from "./ui-components/properties/renderers/ActionButtonList";
+export * from "./ui-components/properties/renderers/ActionButtonRenderer";
 
 export * from "./ui-components/timeline/interfaces";
 export * from "./ui-components/timeline/BaseTimelineDataProvider";

@@ -73,6 +73,9 @@
     },
     "ReopenIModel": {
       "keyin": "dta file reopen"
+    },
+    "RecordFps": {
+      "keyin": "dta record fps"
     }
   }
 }

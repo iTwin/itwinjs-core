@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
@@ -14,7 +14,8 @@ import { ToolTipOptions } from "./NotificationManager";
 import { CanvasDecoration } from "./render/System";
 import { BeButtonEvent } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
-import { ScreenViewport, Viewport, ViewRect } from "./Viewport";
+import { ScreenViewport, Viewport } from "./Viewport";
+import { ViewRect } from "./ViewRect";
 
 /** The types that may be used for Markers
  * @public

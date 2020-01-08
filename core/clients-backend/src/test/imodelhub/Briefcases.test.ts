@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as fs from "fs";
@@ -173,7 +173,7 @@ describe("iModelHub BriefcaseHandler", () => {
     chai.assert(briefcase.fileName);
     chai.expect(briefcase.fileName!.length).to.be.greaterThan(0);
     chai.assert(briefcase.downloadUrl);
-    chai.assert(briefcase.downloadUrl!.startsWith("https://") || briefcase.downloadUrl!.startsWith("http://"));
+    chai.assert(utils.doesMatchExpectedUrlScheme(briefcase.downloadUrl), "Returned URL scheme does not match any of the expected ones.");
   });
 
   it("should get the application data for a Briefcase", async () => {

@@ -1,20 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
+// tslint:disable-next-line: no-duplicate-imports
+import { useCallback } from "react";
+import { useAsync } from "react-async-hook";
 import {
   ConfigurableUiManager,
   ConfigurableCreateInfo,
   WidgetControl,
 } from "@bentley/ui-framework";
 import { Orientation, GlobalContextMenu, ContextMenuItem, ContextMenuItemProps } from "@bentley/ui-core";
-import { PropertyGrid, PropertyGridContextMenuArgs } from "@bentley/ui-components";
+import { PropertyGrid, PropertyGridContextMenuArgs, ActionButtonRendererProps } from "@bentley/ui-components";
 import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
 import { Field } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 
 // create a HOC property grid component that supports unified selection
 // tslint:disable-next-line:variable-name
@@ -138,7 +140,29 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
     );
   }
 
+  private _favoriteActionButtonRenderer = (props: ActionButtonRendererProps) => {
+    const { dataProvider } = this.state;
+    const getFieldByPropertyRecordCallback = useCallback((property: PropertyRecord) => dataProvider.getFieldByPropertyRecord(property), [dataProvider]);
+    const { result: field } = useAsync(getFieldByPropertyRecordCallback, [props.property]);
+    const imodelId = this.props.iModelConnection.iModelToken.iModelId;
+    const projectId = this.props.iModelConnection.iModelToken.contextId;
+
+    return (
+      <div>
+        {
+          field &&
+          (Presentation.favoriteProperties.has(field, projectId, imodelId) || props.isPropertyHovered) &&
+          <FavoriteActionButton
+            field={field}
+            projectId={projectId}
+            imodelId={imodelId} />
+        }
+      </div>
+    );
+  }
+
   public render() {
+    const actionButtonRenderers = [this._favoriteActionButtonRenderer];
     if (this.props.iModelConnection && this.props.rulesetId)
       return (
         <div style={{ height: "100%" }}>
@@ -147,6 +171,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
             orientation={Orientation.Horizontal}
             isPropertyHoverEnabled={true}
             onPropertyContextMenu={this._onPropertyContextMenu}
+            actionButtonRenderers={actionButtonRenderers}
           />
           {this.renderContextMenu()}
         </div>
@@ -161,3 +186,49 @@ function createDataProvider(imodel: IModelConnection, rulesetId: string): Presen
 }
 
 ConfigurableUiManager.registerControl("UnifiedSelectionPropertyGridDemoWidget", UnifiedSelectionPropertyGridWidgetControl);
+
+interface FavoriteActionButtonProps {
+  field: Field;
+  projectId?: string;
+  imodelId?: string;
+}
+
+class FavoriteActionButton extends React.Component<FavoriteActionButtonProps> {
+
+  private _isMounted = false;
+
+  public componentDidMount() {
+    this._isMounted = true;
+  }
+
+  public componentWillUnmount() {
+    this._isMounted = false;
+  }
+
+  public render() {
+    return (
+      <div onClick={this._onActionButtonClicked}>
+        {this.isFavorite() ?
+          <div style={{ width: "20px", height: "20px", background: "orange" }} /> :
+          <div style={{ width: "20px", height: "20px", background: "blue" }} />}
+      </div>
+    );
+  }
+
+  private _onActionButtonClicked = () => {
+    this.toggleFavoriteProperty(); // tslint:disable-line: no-floating-promises
+  }
+
+  private async toggleFavoriteProperty() {
+    if (this.isFavorite())
+      await Presentation.favoriteProperties.remove(this.props.field, this.props.projectId, this.props.imodelId);
+    else
+      await Presentation.favoriteProperties.add(this.props.field, this.props.projectId, this.props.imodelId);
+    if (this._isMounted)
+      this.setState({ isFavorite: this.isFavorite() });
+  }
+
+  private isFavorite(): boolean {
+    return Presentation.favoriteProperties.has(this.props.field, this.props.projectId, this.props.imodelId);
+  }
+}

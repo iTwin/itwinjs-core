@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module StatusBar */
 
@@ -48,8 +48,7 @@ export class ConditionalField extends React.PureComponent<ConditionalFieldProps,
   }
 
   private _resolveBooleanValue = (): void => {
-    let boolValue = this.state.boolValue;
-    boolValue = this.props.boolFunc(this.props);
+    const boolValue = this.props.boolFunc(this.props);
     if (this.state.boolValue !== boolValue) {
       this.setState({ boolValue });
     }

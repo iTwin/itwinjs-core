@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
@@ -39,7 +39,7 @@ const padStartEx = (str: string, targetLength: number, padString: string) => {
  * addition of two properties: fileName and schemaText.  The fileName contains the
  * full path to the file on disk and schemaText is the full string representation
  * of the Schema.
- * @alpha - Not sure this is how we should implement this long-term.
+ * @alpha @deprecated class moved to ecschema-locaters package
  */
 export class FileSchemaKey extends SchemaKey {
   // The schema file associated with the SchemnaKey

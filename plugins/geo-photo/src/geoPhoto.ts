@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import {
@@ -12,7 +12,6 @@ import { SettingsStatus } from "@bentley/imodeljs-clients";
 import { GeoPhotoMarkerManager } from "./geoPhotoMarker";
 import { PhotoTreeHandler, PhotoFolder, PhotoTree, PhotoTraverseFunction } from "./PhotoTree";
 import { ProjectShareHandler } from "./ProjectSharePhotoTree";
-import { SSL_OP_SSLEAY_080_CLIENT_DH_BUG } from "constants";
 import { GPDialogUiProvider } from "./ui/GPDialogUiProvider";
 
 /*-----------------------------------------------------------------------
@@ -102,7 +101,7 @@ export class GeoPhotos {
 
   public getPhotoCount(): number {
     if (!this.photoTree)
-      return SSL_OP_SSLEAY_080_CLIENT_DH_BUG;
+      return 0;
     this._photoCount = 0;
     this.photoTree.traverseFolders(this.countFunc.bind(this), true, true);
     return this._photoCount;
@@ -138,13 +137,19 @@ const enum Operation {
 
 // settings for the plugin.
 // We don't currently provide a way to change minDistance, maxDistance, or eyeHeight.
-class GeoPhotoSettings {
-  // In the pannellum viewer, the minimum distance that a nearby marker is drawn from the center.
-  public minDistance: number = 10;
+export class GeoPhotoSettings {
   // In the pannellum viewer, the maximum distance for nearby markers. Beyond that distance, they are not drawn.
   public maxDistance: number = 100.0;
+  // In the pannellum viewer, the maximum perpendicular distance between the path of the camera and displayed markers. Markers outside of that distance are not drawn.
+  public maxCrossDistance: number = 7.0;
   // In the pannellum viewer, the assumed height above the ground of the panoramic camera.
-  public eyeHeight: number = 7.0;
+  public eyeHeight: number = 3.0;
+  // Show markers in the pannellum viewer.
+  public showMarkers: boolean = true;
+  // Use the path of the camera (i.e., the vector from the current photo's position to the next photo's position) rather than the gps track from the camera.
+  public directionFromPath: boolean = true;
+  // use reverse of the camera orientation
+  public reversed: boolean = false;
 }
 
 class GeoPhotoFullSettings extends GeoPhotoSettings {
@@ -179,7 +184,6 @@ export class GeoPhotoPlugin extends Plugin {
       this.uiProvider.showGeoPhotoDialog();
 
     let geoPhotos: GeoPhotos = (iModel as any).geoPhotos;
-    let photoTree: PhotoTree | undefined;
     if (undefined === geoPhotos) {
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const settingsPromise = IModelApp.settings.getUserSetting(requestContext, "GeoPhotoPlugin", "Settings", false, iModel.iModelToken.contextId, iModel.iModelToken.iModelId);
@@ -192,7 +196,7 @@ export class GeoPhotoPlugin extends Plugin {
 
       const treeHandler = new ProjectShareHandler(requestContext, this.i18n, iModel, this.uiProvider);
       geoPhotos = new GeoPhotos(this, treeHandler!, iModel, this.uiProvider);
-      photoTree = await geoPhotos.readTreeContents();
+      await geoPhotos.readTreeContents();
 
       const settingsResult = await settingsPromise;
       if (SettingsStatus.Success === settingsResult.status) {
@@ -201,8 +205,20 @@ export class GeoPhotoPlugin extends Plugin {
         if ((settings.visiblePaths) && Array.isArray(settings.visiblePaths)) {
           geoPhotos.photoTree!.traverseFolders(this.checkFolderVisibility.bind(this, settings.visiblePaths), true, false);
         }
+        // get the other values out of the saved settings.
+        if (undefined !== settings.showMarkers) {
+          this.settings.showMarkers = settings.showMarkers;
+        }
+        if (undefined !== settings.maxDistance) {
+          this.settings.maxDistance = settings.maxDistance;
+        }
+        if (undefined !== settings.maxCrossDistance) {
+          this.settings.maxCrossDistance = settings.maxCrossDistance;
+        }
+        if (undefined !== settings.eyeHeight) {
+          this.settings.eyeHeight = settings.eyeHeight;
+        }
       }
-
       /* ------------- Not needed now that we have the dialog box to show progress
       const photoCount: number = geoPhotos.getPhotoCount();
       message = this.i18n.translate("geoPhoto:messages.GeneratingMarkers", { photoCount });
@@ -211,13 +227,21 @@ export class GeoPhotoPlugin extends Plugin {
       ------------------------------------------------------------------------------- */
     }
 
-    await geoPhotos.showMarkers();
-
-    if (photoTree && this.uiProvider) {
-      this.uiProvider.setLoadPhase(2);
-      this.uiProvider.syncTreeData(photoTree);
-      this.uiProvider.syncTitle(this.i18n.translate("geoPhoto:LoadDialog.FoldersTitle"));
-      this.uiProvider.showGeoPhotoDialog(); // in case it was closed by user earlier.
+    const hasPhotos: boolean = (0 !== geoPhotos.getPhotoCount());
+    if (!hasPhotos) {
+      if (this.uiProvider) {
+        this.uiProvider.syncTitle(this.i18n.translate("geoPhoto:LoadDialog.GeoPhotoTitle"));
+        this.uiProvider.setLoadPhase(3);
+      }
+    } else {
+      await geoPhotos.showMarkers();
+      if (this.uiProvider) {
+        this.uiProvider.setLoadPhase(2);
+        this.uiProvider.syncTreeData(geoPhotos.photoTree!);
+        this.uiProvider.syncTitle(this.i18n.translate("geoPhoto:LoadDialog.FoldersTitle"));
+        this.uiProvider.syncSettings(this.settings);
+        this.uiProvider.showGeoPhotoDialog(); // in case it was closed by user earlier.
+      }
     }
   }
 
@@ -291,7 +315,7 @@ export class GeoPhotoPlugin extends Plugin {
     this.saveSettings().catch((_err) => { });
   }
 
-  private async saveSettings(): Promise<void> {
+  public async saveSettings(): Promise<void> {
     const view = IModelApp.viewManager.selectedView;
     if (!view || !view.iModel)
       return;

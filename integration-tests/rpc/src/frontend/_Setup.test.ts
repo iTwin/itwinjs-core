@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { BentleyCloudRpcManager, ElectronRpcManager, IModelToken, RpcOperation, RpcManager } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, ElectronRpcManager, IModelToken, RpcOperation, RpcConfiguration, RpcDefaultConfiguration } from "@bentley/imodeljs-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { rpcInterfaces } from "../common/TestRpcInterface";
 
@@ -21,9 +21,14 @@ before(async () => {
   const currentEnvironment: string = await executeBackendCallback(BackendTestCallbacks.getEnvironment);
   switch (currentEnvironment) {
     case "http": return initializeCloud("http");
-    case "http2": return initializeCloud("https");
     case "electron": return ElectronRpcManager.initializeClient({}, rpcInterfaces);
-    case "direct": return rpcInterfaces.forEach((interfaceDef) => RpcManager.initializeInterface(interfaceDef));
+    case "direct": {
+      // (global as any).window = undefined;
+      require("../backend/CommonBackendSetup");
+      const config = RpcConfiguration.obtain(RpcDefaultConfiguration);
+      config.interfaces = () => rpcInterfaces as any;
+      return RpcConfiguration.initializeInterfaces(config);
+    }
   }
 
   throw new Error(`Invalid test environment: "${currentEnvironment}"`);

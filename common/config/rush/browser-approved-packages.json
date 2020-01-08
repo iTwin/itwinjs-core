@@ -23,6 +23,18 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
+      "name": "@bentley/ecschema-locaters",
+      "allowedCategories": [ "backend", "tools" ]
+    },
+    {
+      "name": "@bentley/ecschema-metadata",
+      "allowedCategories": [ "backend", "common", "tools" ]
+    },
+    {
+      "name": "@bentley/ecschema2ts",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@bentley/electron-manager",
       "allowedCategories": [ "internal" ]
     },
@@ -224,7 +236,7 @@
     },
     {
       "name": "chai-string",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "chalk",
@@ -317,10 +329,6 @@
     {
       "name": "electron-chromedriver",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "electron-rebuild",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "enzyme",
@@ -483,10 +491,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "keytar",
-      "allowedCategories": [ "backend", "common" ]
-    },
-    {
       "name": "linkify-it",
       "allowedCategories": [ "frontend" ]
     },
@@ -539,10 +543,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "nan",
-      "allowedCategories": [ "backend" ]
-    },
-    {
       "name": "nock",
       "allowedCategories": [ "backend", "common" ]
     },
@@ -583,8 +583,8 @@
       "allowedCategories": [ "common", "frontend" ]
     },
     {
-      "name": "opener",
-      "allowedCategories": [ "common" ]
+      "name": "open",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "openid-client",
@@ -633,6 +633,10 @@
     {
       "name": "react",
       "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
+    },
+    {
+      "name": "react-async-hook",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-autosuggest",
@@ -771,6 +775,10 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
+      "name": "spdy",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "ssri",
       "allowedCategories": [ "tools" ]
     },
@@ -892,7 +900,7 @@
     },
     {
       "name": "username",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "uuid",
@@ -928,7 +936,7 @@
     },
     {
       "name": "xmldom",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common", "tools" ]
     },
     {
       "name": "xmlhttprequest",

@@ -1,8 +1,8 @@
 import { QueryQuota } from "@bentley/imodeljs-common";
 
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** Configuration for concurrent query manager
  * @internal
@@ -26,6 +26,6 @@ export interface Config {
   quota?: QueryQuota;
   /** Use sqlite shared cache option */
   useSharedCache?: boolean;
-  /** Read uncommited read for better performance */
-  useUncommitedRead?: boolean;
+  /** Read uncommitted read for better performance */
+  useUncommittedRead?: boolean;
 }

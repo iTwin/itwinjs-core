@@ -1,6 +1,6 @@
 # Geotag Photo Viewer Example Plugin
 
-Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 An iModel.js Plugin that interrogates Project Share for geoTagged jpeg files, displays markers at their position in the iModel, and opens them in another window when the marker is clicked.
 

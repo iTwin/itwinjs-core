@@ -37,6 +37,26 @@
           "NextPoint": "Define new view direction"
         }
       },
+      "LookAndMove": {
+        "keyin": "navigate view",
+        "description": "Walk around in the design",
+        "flyover": "Walk Around",
+        "Prompts": {
+          "FirstPoint": "Enter point to start walking",
+          "NextPoint": "Enter point to stop walking"
+        },
+        "Inputs": {
+          "AcceptLookPoint": "Accept point to begin looking around",
+          "WalkKeys": "Move forward, backward, left, right",
+          "ElevateKeys": "Move up and down",
+          "SpeedIncrease": "Hold to increase speed over time",
+          "SpeedDecrease": "Hold to decrease speed over time",
+          "TouchZoneLL": "Lower left to move forward, backward, left, right",
+          "TouchZoneLR": "Lower right to look around",
+          "TouchTapLL": "Lower left to toggle up, down, left, right movement",
+          "TouchTapLR": "Lower right to toggle 2x movement speed"
+        }
+      },
       "Walk": {
         "keyin": "walk",
         "description": "Walk around in the design",

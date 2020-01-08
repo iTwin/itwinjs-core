@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module StatusBar */
 
@@ -94,7 +94,7 @@ export class DisplayStyleField extends React.Component<StatusFieldProps, Display
 
     this.state.viewport!.displayStyle = this.state.displayStyles.get(event.target.value)!.clone();
     this.state.viewport!.invalidateScene();
-    this.state.viewport!.synchWithView(false);
+    this.state.viewport!.synchWithView();
     this.forceUpdate();
   }
 

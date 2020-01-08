@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
@@ -13,7 +13,9 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "lib/dist"),
     filename: "bundled-tests.js",
-    devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
+    devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
+    libraryTarget: 'umd',
+    globalObject: "this",
   },
   devtool: "nosources-source-map",
   module: {
@@ -31,23 +33,33 @@ module.exports = {
         enforce: "pre"
       },
       {
-        test: /azure-storage|AzureFileHandler|UrlFileHandler/,
+        test: /@azure[\/\\]storage-blob|azure-storage|AzureFileHandler|UrlFileHandler/,
         use: "null-loader"
       },
-      {
-        test: /imodeljs-backend/,
-        use: "null-loader"
-      }
     ]
   },
   stats: "errors-only",
   optimization: {
     nodeEnv: "production"
   },
+  resolve: {
+    mainFields: ['module', 'main']
+  },
+  externals: {
+    "@bentley/imodeljs-native/loadNativePlatform.js": "@bentley/imodeljs-backend/node_modules/@bentley/imodeljs-native/loadNativePlatform.js",
+    "electron": "electron",
+    "fs": "fs",
+    "process": "process",
+    "child_process": "child_process",
+  },
+  node: {
+    process: false,
+  },
   plugins: [
     // Makes some environment variables available to the JS code, for example:
     // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
     new webpack.DefinePlugin({
+      "global.GENTLY": false,
       "process.env": Object.keys(raw)
         .filter((key) => {
           return key.match(/^imjs_/i);

@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ScreenViewport, TiledGraphicsProvider, Viewport } from "./Viewport";
 import { IModelApp } from "./IModelApp";
-import { TileTree } from "./tile/TileTree";
+import { TileTreeReference } from "./tile/TileTree";
 
 /** Terrain provider that provides tile tree for display within a [[Viewport]].
  * @internal
@@ -16,9 +16,9 @@ export abstract class TerrainProvider implements TiledGraphicsProvider {
     });
   }
 
-  public abstract getTileTree(viewport: Viewport): TileTree.Reference | undefined;
+  public abstract getTileTree(viewport: Viewport): TileTreeReference | undefined;
 
-  public forEachTileTreeRef(viewport: Viewport, func: (ref: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void {
     const ref = this.getTileTree(viewport);
     if (undefined !== ref)
       func(ref);

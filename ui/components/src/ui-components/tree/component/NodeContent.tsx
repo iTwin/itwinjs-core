@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
@@ -150,7 +150,9 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
       this.updateLabel(this.props);
     }
 
-    this.setState((_, props) => ({ renderInfo: createRenderInfo(props.node) }));
+    const renderInfo = createRenderInfo(this.props.node);
+    if (renderInfo !== this.state.renderInfo)
+      this.setState({ renderInfo });
   }
 
   public componentWillUnmount() {

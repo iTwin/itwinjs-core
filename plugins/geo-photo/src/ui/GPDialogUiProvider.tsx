@@ -1,19 +1,19 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
 import { StopWatch } from "@bentley/bentleyjs-core";
-import { PluginUiProvider, UiItemNode, ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
-import { ActionItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType } from "@bentley/ui-abstract";
+import { ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
+import { PluginUiProvider, ActionItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { ModelessDialogManager, UiDataProvider } from "@bentley/ui-framework";
 import { ITreeDataProvider } from "@bentley/ui-components";
 
 import { GeoPhotoDialog } from "./GPDialog";
 import geoPhotoButtonSvg from "./geoPhoto-button.svg";
-import { GeoPhotoPlugin } from "../geoPhoto";
+import { GeoPhotoPlugin, GeoPhotoSettings } from "../geoPhoto";
 import { GPLoadTracker } from "../PhotoTree";
 
 export interface SyncTreeDataEventArgs {
@@ -27,6 +27,8 @@ export interface SyncTitleEventArgs {
 export class SyncDataTreeChangeEvent extends UiEvent<SyncTreeDataEventArgs> { }
 
 export class SyncTitleEvent extends UiEvent<SyncTitleEventArgs> { }
+export class SyncShowMarkersEvent extends UiEvent<boolean> { }
+export class SyncSettingsEvent extends UiEvent<GeoPhotoSettings> { }
 
 export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvider, GPLoadTracker {
   // either 0 while finding the folder and file counts, or 1 if processing the folders/files.
@@ -64,6 +66,8 @@ export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvid
 
   public treeDataProvider: ITreeDataProvider | undefined = undefined;
   public onSyncDataTreeEvent = new SyncDataTreeChangeEvent();
+  public onSyncShowMarkersEvent = new SyncShowMarkersEvent();
+  public onSyncSettingsEvent = new SyncSettingsEvent();
 
   public title: string = this.plugin.i18n.translate("geoPhoto:LoadDialog.LoadTitle");
   public onSyncTitleEvent = new SyncTitleEvent();
@@ -127,6 +131,14 @@ export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvid
   public syncTreeData(treeData: ITreeDataProvider) {
     this.treeDataProvider = treeData;
     this.onSyncDataTreeEvent.emit({ treeData });
+  }
+
+  public syncShowMarkers() {
+    this.onSyncShowMarkersEvent.emit(this.plugin.settings.showMarkers);
+  }
+
+  public syncSettings(newSettings: GeoPhotoSettings) {
+    this.onSyncSettingsEvent.emit(newSettings);
   }
 
   public showGeoPhotoDialog = () => {
@@ -202,7 +214,7 @@ export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvid
   }
 
   /** Method called by applications that support plugins provided tool buttons. All nine-zone based apps will supports PluginUiProviders */
-  public provideToolbarItems(toolBarId: string, _itemIds: UiItemNode): ToolbarItemInsertSpec[] {
+  public provideToolbarItems(toolBarId: string): ToolbarItemInsertSpec[] {
     // For 9-zone apps the toolbarId will be in form -[stageName]ToolWidget|NavigationWidget-horizontal|vertical
     // examples:"[ViewsFrontstage]ToolWidget-horizontal" "[ViewsFrontstage]NavigationWidget-vertical"
     if (toolBarId.includes("ToolWidget-horizontal")) {

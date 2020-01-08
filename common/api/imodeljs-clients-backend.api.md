@@ -6,16 +6,13 @@
 
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
-import { BeEvent } from '@bentley/bentleyjs-core';
 import { Client } from 'openid-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { FileHandler } from '@bentley/imodeljs-clients';
 import * as https from 'https';
 import { IAuthorizationClient } from '@bentley/imodeljs-clients';
-import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { Issuer } from 'openid-client';
 import { OidcClient } from '@bentley/imodeljs-clients';
-import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { ProgressInfo } from '@bentley/imodeljs-clients';
 import { TokenSet } from 'openid-client';
 import { Transform } from 'stream';
@@ -129,20 +126,6 @@ export class OidcDelegationClient extends OidcBackendClient {
 
 // @beta (undocumented)
 export type OidcDelegationClientConfiguration = OidcBackendClientConfiguration;
-
-// @alpha
-export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient {
-    constructor(clientConfiguration: OidcFrontendClientConfiguration);
-    dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    readonly hasExpired: boolean;
-    readonly hasSignedIn: boolean;
-    initialize(requestContext: ClientRequestContext): Promise<void>;
-    readonly isAuthorized: boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext: ClientRequestContext): Promise<void>;
-    signOut(requestContext: ClientRequestContext): Promise<void>;
-    }
 
 // @internal
 export class RequestHost {

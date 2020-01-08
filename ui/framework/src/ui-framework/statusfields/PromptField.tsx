@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module StatusBar */
 
@@ -60,5 +60,6 @@ function mapStateToProps(state: any) {
  * IModelApp.notifications.outputPrompt.
  * This React component is Redux connected.
  * @public
+ * @deprecated Use ToolAssistanceField instead
  */ // tslint:disable-next-line:variable-name
 export const PromptField = connect(mapStateToProps)(PromptFieldComponent);

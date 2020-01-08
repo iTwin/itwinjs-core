@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
@@ -14,10 +14,10 @@ import { BufferHandle, BufferParameters, BuffersContainer } from "./Handle";
 import { GL } from "./GL";
 import { AttributeMap } from "./AttributeMap";
 import { TechniqueId } from "./TechniqueId";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 /** @internal */
-export class InstanceBuffers implements WebGlDisposable {
+export class InstanceBuffers implements WebGLDisposable {
   public readonly numInstances: number;
   public readonly transforms: BufferHandle;
   public readonly featureIds?: BufferHandle;

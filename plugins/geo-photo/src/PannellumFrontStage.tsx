@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
@@ -44,7 +44,7 @@ class PannellumContent extends React.Component<PannellumContentProps, PannellumC
 
   public render(): React.ReactNode {
     return (
-      <div ref={(div) => this._containerDiv = div} className={"pannellum-container"}>
+      <div ref={(div) => this._containerDiv = div} className={"pnlm-container"}>
       </div>
     );
   }

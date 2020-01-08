@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
@@ -16,7 +16,7 @@ import { SchemaKey, ECVersion } from "../SchemaKey";
 /**
  * A SchemaLocator implementation for locationg JSON Schema files
  * from the file system using configurable search paths.
- * @alpha Needs further testing and may be moved to a separate package.
+ * @alpha @deprecated class moved to ecschema-locaters package
  */
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
 

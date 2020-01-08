@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Notification */
 
@@ -9,8 +9,8 @@ import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
 import { Timer, BodyText, Point, PointProps, Icon } from "@bentley/ui-core";
-
-import { CursorInformation, CursorPopupManager, CursorUpdatedEventArgs } from "../../../ui-framework";
+import { CursorInformation, CursorUpdatedEventArgs } from "../CursorInformation";
+import { CursorPopupManager } from "../cursorpopup/CursorPopupManager";
 
 import "./CursorPrompt.scss";
 

@@ -1,11 +1,11 @@
 
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 import { BackgroundMapSettings, TerrainProviderName, TerrainHeightOriginMode, TerrainSettings, ViewFlag, RenderMode } from "@bentley/imodeljs-common";
-import { TileTree, TileTreeSet } from "./TileTree";
+import { TileTree, TileTreeReference, TileTreeSet } from "./TileTree";
 import { Tile } from "./Tile";
 import { IModelConnection } from "../IModelConnection";
 import {
@@ -115,7 +115,7 @@ class BackgroundTerrainTreeSupplier implements TileTree.Supplier {
     const loader = await getCesiumWorldTerrainLoader(iModel, modelId, heightBias, heightRange, id.wantSkirts);
     const treeProps = new WebMapTileTreeProps(heightBias, modelId, heightRange, 12);
 
-    if (undefined === loader || undefined === treeProps) {
+    if (undefined === loader) {
       assert(false, "Invalid Terrain Provider");
       return undefined;
     }
@@ -129,10 +129,10 @@ const backgroundTerrainTreeSupplier = new BackgroundTerrainTreeSupplier();
  * an alternative to a planar background map
  * @internal
  */
-export class BackgroundTerrainTileTreeReference extends TileTree.Reference {
+export class BackgroundTerrainTileTreeReference extends TileTreeReference {
   public settings: BackgroundMapSettings;
   private readonly _iModel: IModelConnection;
-  private _mapDrapeTree?: TileTree.Reference;
+  private _mapDrapeTree?: TileTreeReference;
   private _overrides?: FeatureSymbology.Overrides;
   private _doDrape = true;                      // Current settings configuration doesn't allow a terrain without a background drape...
 

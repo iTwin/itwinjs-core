@@ -9,12 +9,17 @@ import { AbstractConditionalItemProps } from '@bentley/ui-abstract';
 import { AbstractGroupItemProps } from '@bentley/ui-abstract';
 import { AbstractItemProps } from '@bentley/ui-abstract';
 import { AbstractMenuItemProps } from '@bentley/ui-abstract';
+import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { AutoSuggestData } from '@bentley/ui-core';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
+import { BackstageActionItem as BackstageActionItem_2 } from '@bentley/ui-abstract';
+import { BackstageItem } from '@bentley/ui-abstract';
+import { BackstageItemsManager } from '@bentley/ui-abstract';
+import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@bentley/ui-abstract';
 import { BadgeType } from '@bentley/ui-abstract';
 import { BaseItemState as BaseItemState_2 } from '@bentley/ui-abstract';
 import { BaseSolarDataProvider } from '@bentley/ui-components';
@@ -27,6 +32,7 @@ import { ColorDef } from '@bentley/imodeljs-common';
 import { CommandHandler as CommandHandler_2 } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';
 import { CommonProps } from '@bentley/ui-core';
+import { CommonStatusBarItem } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DescriptionProps as DescriptionProps_2 } from '@bentley/ui-abstract';
@@ -68,6 +74,7 @@ import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { NotificationManager } from '@bentley/imodeljs-frontend';
 import { NotifyMessageDetails } from '@bentley/imodeljs-frontend';
+import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { Omit } from '@bentley/ui-core';
 import { OnCancelFunc } from '@bentley/ui-abstract';
@@ -83,6 +90,8 @@ import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
 import { PropertyDescription } from '@bentley/imodeljs-frontend';
+import { PropertyRecord } from '@bentley/imodeljs-frontend';
+import { PropertyUpdatedArgs } from '@bentley/ui-components';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import { RectangleProps } from '@bentley/ui-core';
@@ -101,6 +110,8 @@ import { SolarDataProvider } from '@bentley/ui-components';
 import { StagePanelType } from '@bentley/ui-ninezone';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { Status } from '@bentley/ui-ninezone';
+import { StatusBarItemsManager as StatusBarItemsManager_2 } from '@bentley/ui-abstract';
+import { StatusBarSection } from '@bentley/ui-abstract';
 import { Store } from 'redux';
 import { StringGetter as StringGetter_2 } from '@bentley/ui-abstract';
 import { SyncUiProps as SyncUiProps_2 } from '@bentley/ui-abstract';
@@ -123,7 +134,6 @@ import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
-import { UiItemNode } from '@bentley/imodeljs-frontend';
 import { UiSettings } from '@bentley/ui-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
@@ -139,6 +149,24 @@ import { ZoneManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerProps } from '@bentley/ui-ninezone';
 import { ZonesManagerWidgetsProps } from '@bentley/ui-ninezone';
 import { ZoneTargetType } from '@bentley/ui-ninezone';
+
+// @alpha
+export class AccuDrawPopupManager {
+    // (undocumented)
+    static hideCalculator(): boolean;
+    // (undocumented)
+    static hideMenuButton(id: string): boolean;
+    // (undocumented)
+    static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    // (undocumented)
+    static showCalculator(el: HTMLElement, pt: XAndY, initialValue: number, resultIcon: string, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    // (undocumented)
+    static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    // (undocumented)
+    static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    // (undocumented)
+    static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
+}
 
 // @public
 export interface Action<T extends string> {
@@ -316,10 +344,8 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     readonly state: BackstageState;
 }
 
-// @beta
-export interface BackstageActionItem extends CommonBackstageItem {
-    // (undocumented)
-    readonly execute: () => void;
+// @beta @deprecated
+export interface BackstageActionItem extends BackstageActionItem_2 {
     // (undocumented)
     readonly type: BackstageItemType.ActionItem;
 }
@@ -333,7 +359,7 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
 // @internal (undocumented)
 export interface BackstageComposerActionItemProps {
     // (undocumented)
-    readonly item: BackstageActionItem;
+    readonly item: BackstageActionItem_2;
 }
 
 // @beta
@@ -359,7 +385,7 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
 // @internal (undocumented)
 export interface BackstageComposerStageLauncherProps {
     // (undocumented)
-    readonly item: BackstageStageLauncher;
+    readonly item: BackstageStageLauncher_2;
 }
 
 // @public
@@ -372,10 +398,7 @@ export interface BackstageEventArgs {
     isVisible: boolean;
 }
 
-// @beta
-export type BackstageItem = BackstageActionItem | BackstageStageLauncher;
-
-// @public
+// @public @deprecated
 export interface BackstageItemProps extends LabelProps_2, DescriptionProps_2, TooltipProps_2, IconProps_2 {
     isActive?: boolean;
     isEnabled?: boolean;
@@ -383,28 +406,7 @@ export interface BackstageItemProps extends LabelProps_2, DescriptionProps_2, To
     stateSyncIds?: string[];
 }
 
-// @beta
-export interface BackstageItemsChangedArgs {
-    // (undocumented)
-    readonly items: ReadonlyArray<BackstageItem>;
-}
-
-// @beta
-export class BackstageItemsManager {
-    // (undocumented)
-    add(itemOrItems: BackstageItem | ReadonlyArray<BackstageItem>): void;
-    // @internal (undocumented)
-    items: ReadonlyArray<BackstageItem>;
-    readonly onChanged: BeEvent<(args: BackstageItemsChangedArgs) => void>;
-    // (undocumented)
-    remove(itemIdOrItemIds: BackstageItem["id"] | ReadonlyArray<BackstageItem["id"]>): void;
-    // (undocumented)
-    setIsEnabled(id: BackstageItem["id"], isEnabled: boolean): void;
-    // (undocumented)
-    setIsVisible(id: BackstageItem["id"], isVisible: boolean): void;
-}
-
-// @public
+// @public @deprecated
 export interface BackstageItemState {
     // (undocumented)
     iconSpec: IconSpec_2;
@@ -420,7 +422,7 @@ export interface BackstageItemState {
     tooltip: string;
 }
 
-// @beta
+// @beta @deprecated
 export enum BackstageItemType {
     ActionItem = 1,
     StageLauncher = 2
@@ -428,7 +430,9 @@ export enum BackstageItemType {
 
 // @beta
 export class BackstageItemUtilities {
+    // @deprecated
     static createActionItem: (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, itemProps?: Partial<BackstageActionItem> | undefined) => BackstageActionItem;
+    // @deprecated
     static createStageLauncher: (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string | undefined, iconSpec?: string | undefined, itemProps?: Partial<BackstageStageLauncher> | undefined) => BackstageStageLauncher;
     static getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 }
@@ -462,10 +466,8 @@ export interface BackstageProps extends CommonProps {
     showOverlay?: boolean;
 }
 
-// @beta
-export interface BackstageStageLauncher extends CommonBackstageItem {
-    // (undocumented)
-    readonly stageId: string;
+// @beta @deprecated
+export interface BackstageStageLauncher extends BackstageStageLauncher_2 {
     // (undocumented)
     readonly type: BackstageItemType.StageLauncher;
 }
@@ -570,6 +572,28 @@ export enum CalculatorOperator {
     Subtract = 5
 }
 
+// @alpha
+export class CalculatorPopup extends React.PureComponent<CalculatorPopupProps, CalculatorPopupState> {
+    // @internal (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: {
+        size: Size;
+    };
+}
+
+// @alpha (undocumented)
+export interface CalculatorPopupProps extends PopupPropsBase {
+    // (undocumented)
+    initialValue: number;
+    // (undocumented)
+    onCancel: OnCancelFunc;
+    // (undocumented)
+    onOk: OnNumberCommitFunc;
+    // (undocumented)
+    resultIcon: string;
+}
+
 // @alpha (undocumented)
 export interface CalculatorProps extends CommonProps {
     // @internal
@@ -655,8 +679,6 @@ export interface CategoryTreeState {
     dataProvider?: IPresentationTreeDataProvider;
     // (undocumented)
     filterInfo?: FilterInfo;
-    // (undocumented)
-    selectedNodes: string[];
 }
 
 // @internal
@@ -742,21 +764,6 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
 // @public
 export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler_2 {
     commandId: string;
-}
-
-// @beta
-export interface CommonBackstageItem {
-    readonly badge?: BadgeType;
-    readonly groupPriority: number;
-    readonly icon?: string;
-    readonly id: string;
-    readonly isEnabled: boolean;
-    readonly isVisible: boolean;
-    readonly itemPriority: number;
-    readonly label: string;
-    readonly subtitle?: string;
-    readonly tooltip?: string;
-    readonly type: BackstageItemType;
 }
 
 // @public
@@ -2520,6 +2527,35 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     render(): JSX.Element;
 }
 
+// @alpha (undocumented)
+export class InputEditorCommitHandler {
+    constructor(onCommit: OnNumberCommitFunc);
+    // (undocumented)
+    handleCommit: (args: PropertyUpdatedArgs) => void;
+    // (undocumented)
+    readonly onCommit: OnNumberCommitFunc;
+}
+
+// @alpha
+export class InputEditorPopup extends React.PureComponent<InputEditorPopupProps, InputEditorPopupState> {
+    // @internal (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: {
+        size: Size;
+    };
+}
+
+// @alpha (undocumented)
+export interface InputEditorPopupProps extends PopupPropsBase {
+    // (undocumented)
+    commitHandler: InputEditorCommitHandler;
+    // (undocumented)
+    onCancel: OnCancelFunc;
+    // (undocumented)
+    record: PropertyRecord;
+}
+
 // @public
 export class InputFieldMessage extends React.PureComponent<InputFieldMessageProps, InputFieldMessageState> {
     // (undocumented)
@@ -2560,14 +2596,11 @@ export enum InputStatus {
     Valid = 0
 }
 
-// @beta
-export const isActionItem: (item: BackstageItem) => item is BackstageActionItem;
-
 // @internal (undocumented)
 export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open;
 
-// @beta
-export const isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher;
+// @alpha
+export const isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem;
 
 // @internal (undocumented)
 export const isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps;
@@ -2940,6 +2973,22 @@ export class MenuButton extends React.PureComponent<MenuButtonProps, MenuButtonS
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @alpha
+export class MenuButtonPopup extends React.PureComponent<MenuButtonPopupProps, MenuButtonPopupState> {
+    // @internal (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: {
+        size: Size;
+    };
+}
+
+// @alpha (undocumented)
+export interface MenuButtonPopupProps extends PopupPropsBase {
+    // (undocumented)
+    content: React.ReactNode;
+}
 
 // @alpha (undocumented)
 export interface MenuButtonProps extends SquareButtonProps {
@@ -3368,51 +3417,40 @@ export interface PopupButtonProps extends ItemProps, CommonProps {
     onSizeKnown?: (size: SizeProps) => void;
 }
 
-// @internal
-export class PopupInfo {
-    constructor(id: string);
+// @alpha
+export interface PopupInfo {
     // (undocumented)
     component: React.ReactNode;
     // (undocumented)
-    readonly id: string;
+    id: string;
     // (undocumented)
     pt: XAndY;
 }
 
 // @alpha
 export class PopupManager {
+    // (undocumented)
+    static addOrUpdatePopup(popupInfo: PopupInfo): void;
     // @internal (undocumented)
     static clearPopups(): void;
     // (undocumented)
     static defaultOffset: XAndY;
     // (undocumented)
     static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size: SizeProps): Point;
-    // @internal (undocumented)
+    // (undocumented)
+    static hideInputEditor(): boolean;
+    // (undocumented)
+    static hideToolbar(): boolean;
+    // (undocumented)
     static readonly onPopupsChangedEvent: PopupsChangedEvent;
-    // @internal (undocumented)
+    // (undocumented)
     static readonly popupCount: number;
     // @internal (undocumented)
-    static readonly popups: PopupInfo[];
+    static popups: ReadonlyArray<PopupInfo>;
     // (undocumented)
-    static removeCalculator(): boolean;
-    // (undocumented)
-    static removeInputEditor(): boolean;
-    // (undocumented)
-    static removeMenuButton(id: string): boolean;
-    // (undocumented)
-    static removeToolbar(): boolean;
-    // (undocumented)
-    static showAngleEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
-    // (undocumented)
-    static showCalculator(el: HTMLElement, pt: XAndY, initialValue: number, resultIcon: string, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
-    // (undocumented)
-    static showHeightEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
+    static removePopup(id: string): boolean;
     // (undocumented)
     static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
-    // (undocumented)
-    static showLengthEditor(el: HTMLElement, pt: XAndY, value: number, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
-    // (undocumented)
-    static showMenuButton(id: string, el: HTMLElement, pt: XAndY, menuItemsProps: AbstractMenuItemProps[]): boolean;
     // (undocumented)
     static showToolbar(toolbarProps: AbstractToolbarProps, el: HTMLElement, pt: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     }
@@ -3430,17 +3468,25 @@ export interface PopupPropsBase {
 }
 
 // @alpha
-export class PopupRenderer extends React.Component<CommonProps> {
+export class PopupRenderer extends React.Component<{}, PopupRendererState> {
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
+    // @internal (undocumented)
+    readonly state: PopupRendererState;
 }
 
-// @internal
-export class PopupsChangedEvent extends UiEvent<{}> {
+// @alpha
+export class PopupsChangedEvent extends UiEvent<PopupsChangedEventArgs> {
+}
+
+// @alpha (undocumented)
+export interface PopupsChangedEventArgs {
+    // (undocumented)
+    popups: ReadonlyArray<PopupInfo>;
 }
 
 // @alpha (undocumented)
@@ -3506,7 +3552,7 @@ export interface ProjectServices {
     getProjects(projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]>;
 }
 
-// @public
+// @public @deprecated
 export const PromptField: any;
 
 // @alpha
@@ -4184,22 +4230,12 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps>;
 
 // @beta
-export class StatusBarComposer extends React.PureComponent<StatusBarComposerProps, StatusBarComposerState> {
-    // @internal (undocumented)
-    componentDidMount(): void;
-    // @internal (undocumented)
-    componentDidUpdate(prevProps: StatusBarComposerProps): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    render(): JSX.Element;
-    // @internal (undocumented)
-    readonly state: StatusBarComposerState;
-}
+export const StatusBarComposer: React.FC<StatusBarComposerProps>;
 
 // @beta
 export interface StatusBarComposerProps {
-    itemsManager: StatusBarItemsManager;
+    itemsManager: StatusBarItemsManager_2;
+    pluginItemsManager?: StatusBarItemsManager_2;
 }
 
 // @internal
@@ -4209,36 +4245,17 @@ export const StatusBarContext: React.Context<StatusBarWidgetControlArgs>;
 export type StatusBarFieldId = string | null;
 
 // @beta
-export interface StatusBarItem {
-    readonly component: React.ReactNode;
-    readonly id: string;
-    readonly isVisible: boolean;
-    readonly itemPriority: number;
-    readonly section: StatusBarSection;
+export interface StatusBarItem extends AbstractStatusBarCustomItem {
+    readonly reactNode: React.ReactNode;
 }
 
-// @beta
-export type StatusBarItemId = StatusBarItem["id"];
-
-// @beta
-export class StatusBarItemsChangedEvent extends UiEvent<{}> {
-}
-
-// @beta
-export class StatusBarItemsManager {
-    add(itemOrItems: StatusBarItem | ReadonlyArray<StatusBarItem>): void;
-    // @internal (undocumented)
-    items: ReadonlyArray<StatusBarItem>;
-    readonly onItemsChanged: StatusBarItemsChangedEvent;
-    remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>): void;
-    // @internal (undocumented)
-    removeAll(): void;
-    setIsVisible(id: StatusBarItemId, isVisible: boolean): void;
+// @beta @deprecated
+export class StatusBarItemsManager extends StatusBarItemsManager_2 {
 }
 
 // @beta
 export class StatusBarItemUtilities {
-    static createStatusBarItem: (id: string, section: StatusBarSection, itemPriority: number, component: React.ReactNode, itemProps?: Partial<StatusBarItem> | undefined) => StatusBarItem;
+    static createStatusBarItem: (id: string, section: StatusBarSection, itemPriority: number, reactNode: React.ReactNode, itemProps?: Partial<StatusBarItem> | undefined) => StatusBarItem;
 }
 
 // @beta
@@ -4263,16 +4280,6 @@ export interface StatusBarProps extends CommonProps {
 
 // @beta
 export const StatusBarRightSection: React.FunctionComponent<CommonDivProps>;
-
-// @beta
-export enum StatusBarSection {
-    // (undocumented)
-    Center = 1,
-    // (undocumented)
-    Left = 0,
-    // (undocumented)
-    Right = 2
-}
 
 // @beta
 export const StatusBarSpaceBetween: React.FunctionComponent<CommonDivProps>;
@@ -4499,7 +4506,7 @@ export interface TaskPropsList {
 // @beta
 export const ThemeManager: any;
 
-// @internal
+// @beta
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
     constructor(props: StatusFieldProps);
     // (undocumented)
@@ -4582,6 +4589,28 @@ export class ToolbarButtonHelper {
 // @beta
 export const ToolbarDragInteractionContext: React.Context<boolean>;
 
+// @alpha
+export class ToolbarPopup extends React.PureComponent<ToolbarPopupProps, ToolbarPopupState> {
+    // (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: {
+        size: Size;
+    };
+}
+
+// @alpha (undocumented)
+export interface ToolbarPopupProps extends PopupPropsBase {
+    // (undocumented)
+    items: ItemList;
+    // (undocumented)
+    onCancel: OnCancelFunc;
+    // (undocumented)
+    orientation: Orientation;
+    // (undocumented)
+    relativePosition: RelativePosition;
+}
+
 // @internal
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
     expandsTo?: Direction;
@@ -4606,7 +4635,6 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     protected createMergedItemList(originalItemList: ItemList | undefined, insertSpecs: ToolbarItemInsertSpec[], insertAtStart?: boolean): ItemList;
     // (undocumented)
     generateMergedItemLists(): void;
-    protected getItemHierarchy(parentNode: UiItemNode, items: ItemDefBase[]): void;
     // (undocumented)
     horizontalDirection: Direction;
     // (undocumented)
@@ -4845,9 +4873,9 @@ export class UiFramework {
     static readonly i18nNamespace: string;
     // @internal (undocumented)
     static readonly iModelServices: IModelServices;
-    static initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string): Promise<any>;
+    static initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration | OidcDesktopClientConfiguration, frameworkStateKey?: string): Promise<any>;
     // @internal
-    static initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
+    static initializeEx(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration | OidcDesktopClientConfiguration, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<any>;
     // @beta (undocumented)
     static isMobile(): boolean;
     // @internal (undocumented)
@@ -4860,6 +4888,8 @@ export class UiFramework {
     static openCursorMenu(menuData: CursorMenuData | undefined): void;
     // @internal (undocumented)
     static readonly packageName: string;
+    // @beta
+    static readonly pluginStatusBarItemsManager: StatusBarItemsManager_2;
     // @internal (undocumented)
     static readonly projectServices: ProjectServices;
     // @deprecated (undocumented)
@@ -4933,7 +4963,10 @@ export function useActiveIModelConnection(): IModelConnection | undefined;
 // @beta
 export function useActiveViewport(): ScreenViewport | undefined;
 
-// @beta
+// @internal
+export function useAvailablePluginUiProviders(): readonly string[];
+
+// @internal
 export const useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
 // @beta
@@ -4944,6 +4977,9 @@ export const useGroupedItems: (manager: BackstageItemsManager) => readonly (read
 
 // @beta
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
+
+// @beta
+export const usePluginStatusBarItems: (manager: StatusBarItemsManager_2 | undefined) => readonly CommonStatusBarItem[];
 
 // @public
 export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {
@@ -4958,6 +4994,9 @@ export interface UserProfileBackstageItemProps extends CommonProps {
     // (undocumented)
     onOpenSignOut?: () => void;
 }
+
+// @beta
+export const useStageStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
 
 // @alpha
 export class ValidationTextbox extends React.PureComponent<ValidationTextboxProps, ValidationTextboxState> {

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module OIDC */
 
@@ -10,7 +10,7 @@ import { User, UserManager, UserManagerSettings, WebStorageStateStore, Log as Oi
 import { FrontendRequestContext } from "../FrontendRequestContext";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
-const loggerCategory: string = FrontendLoggerCategory.OidcBrowserClient;
+const loggerCategory: string = FrontendLoggerCategory.Authorization;
 
 /** Utility to forward oidc-client logs to the Bentley logger */
 class OidcClientLogger implements IOidcClientLogger {

@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 /** @module Widgets */
 
 import {
-  Viewport, ToolSettings, IModelApp,
+  Viewport, ToolSettings, IModelApp, ScreenViewport,
 } from "@bentley/imodeljs-frontend";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { createCheckBox } from "../ui/CheckBox";
@@ -55,8 +55,8 @@ export class ToolSettingsTracker {
       display: "inline",
       min: 0,
       step: 1,
-      value: ToolSettings.viewAnimate.time.normal.milliseconds,
-      handler: (value, _input) => { ToolSettings.viewAnimate.time.normal = BeDuration.fromMilliseconds(value); IModelApp.toolAdmin.exitViewTool(); },
+      value: ScreenViewport.animation.time.normal.milliseconds,
+      handler: (value, _input) => { ScreenViewport.animation.time.normal = BeDuration.fromMilliseconds(value); IModelApp.toolAdmin.exitViewTool(); },
     });
     div.style.display = "block";
     div.style.textAlign = "left";
@@ -126,7 +126,6 @@ export class ToolSettingsTracker {
 
     div = IModelApp.makeHTMLElement("div", { parent: settingsDiv });
     label = IModelApp.makeHTMLElement("label", { innerText: "Wheel Zoom Bump Distance (meters): ", parent: div });
-    label = document.createElement("label") as HTMLLabelElement;
     label.style.display = "inline";
     label.htmlFor = "ts_wheelZoomBumpDistance";
     createNumericInput({

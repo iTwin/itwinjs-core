@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Loading */
 
@@ -37,7 +37,8 @@ export interface SpinnerProps {
 export class Spinner extends React.PureComponent<SpinnerProps> {
 
   public render() {
-    let sizeClass = "core-spinner-medium";
+    let sizeClass: string;
+
     if (this.props.sizeClass)
       sizeClass = this.props.sizeClass;
     else {

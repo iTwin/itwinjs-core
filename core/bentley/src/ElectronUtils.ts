@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 declare var __non_webpack_require__: NodeRequire;
@@ -20,7 +20,7 @@ export const isElectronRenderer = isElectronRendererFn();
  * @param moduleName
  * @internal
  */
-export function requireInElectronRenderer(moduleName: string) {
+function requireInElectronRenderer(moduleName: string) {
   if (!isElectronRenderer)
     return undefined;
 

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 import { ContextRealityModelProps, CartographicRange } from "@bentley/imodeljs-common";
@@ -8,7 +8,7 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SpatialModelState } from "./ModelState";
-import { TileTree } from "./tile/TileTree";
+import { TileTreeReference } from "./tile/TileTree";
 import { createRealityTileTreeReference, RealityModelTileClient, RealityModelTileUtils, RealityModelTileTree } from "./tile/RealityModelTileTree";
 import { RealityDataServicesClient, RealityData, AccessToken } from "@bentley/imodeljs-clients";
 import { SpatialClassifiers } from "./SpatialClassification";
@@ -51,7 +51,7 @@ export class ContextRealityModelState {
     });
   }
 
-  public get treeRef(): TileTree.Reference { return this._treeRef; }
+  public get treeRef(): TileTreeReference { return this._treeRef; }
   public get classifiers(): SpatialClassifiers | undefined { return this._treeRef.classifiers; }
 
   public toJSON(): ContextRealityModelProps {

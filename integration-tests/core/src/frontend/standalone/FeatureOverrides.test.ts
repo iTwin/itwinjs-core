@@ -1,14 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
 import { FeatureOverrides, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import { HiliteSet, IModelApp, ScreenViewport, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
-import { PackedFeatureTable } from "@bentley/imodeljs-frontend/lib/rendering";
 import * as path from "path";
-import { GeometryClass, FeatureTable, Feature } from "@bentley/imodeljs-common";
+import { GeometryClass, Feature, FeatureTable, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");

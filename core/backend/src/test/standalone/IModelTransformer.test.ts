@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
@@ -332,7 +332,6 @@ describe("IModelTransformer", () => {
       IModelTransformerUtils.assertTeamIModelContents(iModelA, "A");
       const iModelExporterA = new IModelExporter(iModelA);
       iModelExporterA.excludeElement(iModelA.elements.queryElementIdByCode(Subject.createCode(iModelA, IModel.rootSubjectId, "Context"))!);
-      iModelExporterA.excludeElement(IModel.dictionaryId);
       const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "A");
       const transformerA2S = new IModelTransformer(iModelExporterA, iModelShared, { targetScopeElementId: subjectId });
       transformerA2S.context.remapElement(IModel.rootSubjectId, subjectId);
@@ -348,7 +347,6 @@ describe("IModelTransformer", () => {
       IModelTransformerUtils.assertTeamIModelContents(iModelB, "B");
       const iModelExporterB = new IModelExporter(iModelB);
       iModelExporterB.excludeElement(iModelB.elements.queryElementIdByCode(Subject.createCode(iModelB, IModel.rootSubjectId, "Context"))!);
-      iModelExporterB.excludeElement(IModel.dictionaryId);
       const subjectId: Id64String = IModelTransformerUtils.querySubjectId(iModelShared, "B");
       const transformerB2S = new IModelTransformer(iModelExporterB, iModelShared, { targetScopeElementId: subjectId });
       transformerB2S.context.remapElement(IModel.rootSubjectId, subjectId);
@@ -356,7 +354,7 @@ describe("IModelTransformer", () => {
       transformerB2S.dispose();
       iModelB.closeSnapshot();
       iModelShared.saveChanges("Imported B");
-      IModelTransformerUtils.assertSharedIModelContents(iModelShared, ["B"]);
+      IModelTransformerUtils.assertSharedIModelContents(iModelShared, ["A", "B"]);
     }
 
     if (true) {
@@ -378,7 +376,7 @@ describe("IModelTransformer", () => {
       transformerS2C.processModel(definitionB);
       transformerS2C.processModel(physicalA);
       transformerS2C.processModel(physicalB);
-      transformerS2C.processSkippedElements();
+      transformerS2C.processDeferredElements();
       transformerS2C.processRelationships(ElementRefersToElements.classFullName);
       transformerS2C.dispose();
       IModelTransformerUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");

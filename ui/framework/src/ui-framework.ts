@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 // cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin
@@ -10,15 +10,17 @@ export * from "./ui-framework/UiFramework";  // Please ensure that this line com
 export * from "./ui-framework/CoreToolDefinitions";
 export * from "./ui-framework/MarkupToolDefinitions";
 
+export * from "./ui-framework/accudraw/AccuDrawPopupManager";
 export * from "./ui-framework/accudraw/Calculator";
 export * from "./ui-framework/accudraw/CalculatorEngine";
+export * from "./ui-framework/accudraw/CalculatorPopup";
 export * from "./ui-framework/accudraw/MenuButton";
+export * from "./ui-framework/accudraw/MenuButtonPopup";
 
 export * from "./ui-framework/backstage/Backstage";
 export * from "./ui-framework/backstage/BackstageComposer";
 export * from "./ui-framework/backstage/BackstageComposerItem";
-export * from "./ui-framework/backstage/BackstageItem";
-export * from "./ui-framework/backstage/BackstageItemsManager";
+export * from "./ui-framework/backstage/BackstageItemProps";
 export * from "./ui-framework/backstage/BackstageItemUtilities";
 export * from "./ui-framework/backstage/BackstageManager";
 export * from "./ui-framework/backstage/CommandLaunch";
@@ -75,6 +77,8 @@ export * from "./ui-framework/frontstage/ModalFrontstage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveViewport";
+export * from "./ui-framework/hooks/useAvailablePluginUiProviders";
+export * from "./ui-framework/backstage/useBackstageItems";
 
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
@@ -104,8 +108,10 @@ export * from "./ui-framework/pickers/ListPicker";
 export * from "./ui-framework/pickers/ModelSelector/ModelSelector";
 export * from "./ui-framework/pickers/ViewSelector";
 
+export * from "./ui-framework/popup/InputEditorPopup";
 export * from "./ui-framework/popup/PopupManager";
 export * from "./ui-framework/popup/PositionPopup";
+export * from "./ui-framework/popup/ToolbarPopup";
 
 export * from "./ui-framework/redux/SessionState";
 export * from "./ui-framework/redux/FrameworkState";
@@ -143,8 +149,11 @@ export * from "./ui-framework/statusbar/StatusBarComposer";
 export * from "./ui-framework/statusbar/StatusBarItem";
 export * from "./ui-framework/statusbar/StatusBarItemsManager";
 export * from "./ui-framework/statusbar/StatusBarItemUtilities";
+export * from "./ui-framework/statusbar/StatusBarComposer";
 export * from "./ui-framework/statusbar/StatusBarManager";
 export * from "./ui-framework/statusbar/withMessageCenterFieldProps";
+export * from "./ui-framework/statusbar/usePluginStatusBarItems";
+export * from "./ui-framework/statusbar/useStageStatusBarItems";
 export * from "./ui-framework/statusbar/withStatusFieldProps";
 
 export * from "./ui-framework/statusfields/tileloading/TileLoadingIndicator";

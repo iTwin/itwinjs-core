@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Widget */
 
 import * as React from "react";
 
-import { PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/imodeljs-frontend";
+import { PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/ui-abstract";
 import { CommonProps, Icon } from "@bentley/ui-core";
 import { AppButton, Tools as NZ_ToolsWidget, Direction } from "@bentley/ui-ninezone";
 
@@ -16,7 +16,7 @@ import { CommandItemDef } from "../shared/CommandItemDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 
-/** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
+/** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  * @public
  */
 export class ToolWidgetDef extends ToolbarWidgetDefBase {

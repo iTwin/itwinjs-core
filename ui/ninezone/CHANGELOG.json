@@ -2,6 +2,21 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/ui-ninezone_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix widget target infinite set state issue."
+          },
+          {
+            "comment": "Add css option to pad between icon and label in Label StatusBar Indicator."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/ui-ninezone_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
@@ -29,15 +29,6 @@ function addShaderFlagsLookup(shader: ShaderBuilder) {
   shader.addFunction(extractNthBit);
   shader.addFunction(extractShaderBit);
   shader.addFunction(isShaderBitSet);
-}
-
-/** @internal */
-export function addViewMatrix(vert: ShaderBuilder): void {
-  vert.addUniform("u_viewMatrix", VariableType.Mat4, (prog) => {
-    prog.addGraphicUniform("u_viewMatrix", (uniform, params) => {
-      uniform.setMatrix4(params.viewMatrix);
-    });
-  });
 }
 
 function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
@@ -94,7 +85,7 @@ export function addShaderFlags(builder: ProgramBuilder) {
 export function addFrustum(builder: ProgramBuilder) {
   builder.addUniform("u_frustum", VariableType.Vec3, (prog) => {
     prog.addProgramUniform("u_frustum", (uniform, params) => {
-      uniform.setUniform3fv(params.target.frustumUniforms.frustum);
+      uniform.setUniform3fv(params.target.uniforms.frustum.frustum);
     });
   });
 

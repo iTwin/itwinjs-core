@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
@@ -26,6 +26,7 @@ import { DrawingNavigationCanvas } from "../../ui-framework/navigationaids/Drawi
 describe("DrawingNavigationAid", () => {
 
   before(async () => {
+    sinon.restore();
     await TestUtils.initializeUiFramework();
 
     if (!ConfigurableUiManager.isControlRegistered("DrawingNavigationAid"))
@@ -34,6 +35,7 @@ describe("DrawingNavigationAid", () => {
 
   after(() => {
     TestUtils.terminateUiFramework();
+    sinon.restore();
   });
 
   let extents = Vector3d.create(400, 400);

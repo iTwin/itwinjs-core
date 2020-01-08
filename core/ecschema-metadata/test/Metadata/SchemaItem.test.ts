@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
@@ -102,10 +102,10 @@ describe("SchemaItem", () => {
 });
 
 describe("SchemaItemKey", () => {
-  describe("matches", () => {
-    const schemaKeyA = new SchemaKey("SchemaTest", 1, 2, 3);
-    const schemaKeyB = new SchemaKey("OtherTestSchema", 1, 2, 3);
+  const schemaKeyA = new SchemaKey("SchemaTest", 1, 2, 3);
+  const schemaKeyB = new SchemaKey("OtherTestSchema", 1, 2, 3);
 
+  describe("matches", () => {
     it("should return false if names do not match", () => {
       expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinB", schemaKeyA))).to.be.false;
     });
@@ -116,6 +116,24 @@ describe("SchemaItemKey", () => {
 
     it("should return true if keys match", () => {
       expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinA", schemaKeyA))).to.be.true;
+    });
+  });
+
+  describe("matchesFullName", () => {
+    it("should return true if names match", () => {
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinA")).to.be.true;
+    });
+
+    it("should return false if schema does not match", () => {
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTestB.01.02.03.MixinA")).to.be.false;
+    });
+
+    it("should return false if schema version does not match", () => {
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.00.MixinA")).to.be.false;
+    });
+
+    it("should return false if name does not match", () => {
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinB")).to.be.false;
     });
   });
 });

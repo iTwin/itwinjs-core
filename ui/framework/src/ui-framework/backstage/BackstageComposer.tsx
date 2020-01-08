@@ -1,14 +1,15 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
 
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
+import { BackstageItem, BackstageItemsManager } from "@bentley/ui-abstract";
 import { Backstage as NZ_Backstage, BackstageSeparator } from "@bentley/ui-ninezone";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { useBackstageItems, BackstageItem, BackstageItemsManager } from "./BackstageItemsManager";
+import { useBackstageItems } from "./useBackstageItems";
 import { useBackstageManager, useIsBackstageOpen } from "./BackstageManager";
 import { BackstageComposerItem } from "./BackstageComposerItem";
 

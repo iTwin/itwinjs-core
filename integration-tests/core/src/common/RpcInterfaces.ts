@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AuthorizedClientRequestContextProps } from "@bentley/imodeljs-clients";
 import {
@@ -8,6 +8,7 @@ import {
   IModelWriteRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
   DevToolsRpcInterface,
   IModelTokenProps,
+  NativeAppRpcInterface,
 } from "@bentley/imodeljs-common";
 import { ClientRequestContextProps } from "@bentley/bentleyjs-core";
 
@@ -52,4 +53,5 @@ export const rpcInterfaces = [
   TestRpcInterface,
   WipRpcInterface,
   DevToolsRpcInterface,
+  NativeAppRpcInterface,
 ];

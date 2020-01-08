@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
@@ -28,6 +28,7 @@ import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileTree } from "./tile/TileTree";
 import { ViewState } from "./ViewState";
+import { EventSource, EventSourceManager } from "./EventSource";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -59,6 +60,10 @@ export class IModelConnection extends IModel {
   public readonly codeSpecs: IModelConnection.CodeSpecs;
   /** The [[ViewState]]s in this IModelConnection. */
   public readonly views: IModelConnection.Views;
+  /** The event source that listen for backend generated events
+   * @internal
+   */
+  public readonly eventSource: EventSource | undefined;
   /** The set of currently hilited elements for this IModelConnection.
    * @alpha
    */
@@ -114,6 +119,9 @@ export class IModelConnection extends IModel {
    * @note Be careful not to perform any asynchronous operations on the IModelConnection because it will close before they are processed.
    */
   public static readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
+
+  /** Event called immediately after *any* IModelConnection is opened. */
+  public static readonly onOpen = new BeEvent<(_imodel: IModelConnection) => void>();
 
   /** Event called immediately before *this* IModelConnection is closed.
    * @note This event is called only for this IModelConnection. To monitor *all* IModelConnections,use the static event.
@@ -184,6 +192,9 @@ export class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
+    if (iModel.iModelToken && iModel.iModelToken.key) {
+      this.eventSource = EventSourceManager.get(iModel.iModelToken.key, this.iModelToken);
+    }
   }
 
   /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
@@ -218,6 +229,7 @@ export class IModelConnection extends IModel {
     const connection = new IModelConnection(openResponse, openMode);
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
 
+    IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
 
@@ -339,6 +351,9 @@ export class IModelConnection extends IModel {
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     requestContext.useContextForRpc = true;
     const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't awaited right away.
+    if (this.eventSource) {
+      EventSourceManager.delete(this.iModelToken.key!);
+    }
     try {
       await closePromise;
     } finally {
@@ -354,7 +369,9 @@ export class IModelConnection extends IModel {
   public static async openSnapshot(fileName: string): Promise<IModelConnection> {
     const openResponse: IModelProps = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
     Logger.logTrace(loggerCategory, "IModelConnection.openSnapshot", () => ({ fileName }));
-    return new IModelConnection(openResponse, OpenMode.Readonly);
+    const connection = new IModelConnection(openResponse, OpenMode.Readonly);
+    IModelConnection.onOpen.raiseEvent(connection);
+    return connection;
   }
 
   /** Close this IModelConnection to a read-only iModel *snapshot*.
@@ -458,8 +475,13 @@ export class IModelConnection extends IModel {
         result = await this.queryRows(ecsql, bindings, { maxRowAllowed: rowsToGet, startRowOffset: offset }, quota, priority);
       }
 
-      if (result.status === QueryResponseStatus.Error)
-        throw new IModelError(QueryResponseStatus.Error, "Failed to execute ECSQL");
+      if (result.status === QueryResponseStatus.Error) {
+        if (result.rows[0] === undefined) {
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "Invalid ECSql");
+        } else {
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, result.rows[0]);
+        }
+      }
 
       if (rowsToGet > 0) {
         rowsToGet -= result.rows.length;
@@ -994,7 +1016,7 @@ export namespace IModelConnection {
 
     /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */
     public purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void {
-      // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTree.References exist pointing to a given Owner.
+      // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTreeReferences exist pointing to a given Owner.
       for (const entry of this._treesBySupplier) {
         const dict = entry[1];
         dict.forEach((_treeId, owner) => {

@@ -1,6 +1,6 @@
 # Certa
 
-Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 __Certa__ is a tool for easily running [mocha](https://mochajs.org/) tests in different environments.
 With Certa, you can run the exact same tests in chrome, electron, and node.

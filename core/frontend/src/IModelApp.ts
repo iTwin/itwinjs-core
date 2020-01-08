@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelApp */
 
@@ -20,7 +20,6 @@ import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./QuantityFormatter";
 import { FrontendRequestContext } from "./FrontendRequestContext";
 import { RenderSystem } from "./render/System";
-import { System } from "./render/webgl/System";
 import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
@@ -32,6 +31,8 @@ import { TerrainProvider } from "./TerrainProvider";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { PluginAdmin } from "./plugin/Plugin";
 import { UiAdmin } from "@bentley/ui-abstract";
+import { FeatureTrackingManager } from "./FeatureTrackingManager";
+import { System } from "./render/webgl/System";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
@@ -103,8 +104,18 @@ export interface IModelAppOptions {
   pluginAdmin?: PluginAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
+  /** if present, supplies the [[FeatureTrackingManager]] for this session */
+  features?: FeatureTrackingManager;
 }
-
+/** Setting for [[EventSource]]
+ * @internal
+ */
+export interface EventSourceOptions {
+  /** Poll interval in milliseconds use to poll backend for events */
+  pollInterval: number;
+  /** Prefetch limit set limit on number of event returned by backend */
+  prefetchLimit: number;
+}
 /** Options for [[IModelApp.makeModalDiv]]
  *  @internal
  */
@@ -164,10 +175,15 @@ export class IModelApp {
   private static _animationIntervalId?: number;
   private static _tileTreePurgeTime?: BeTimePoint;
   private static _tileTreePurgeInterval?: BeDuration;
+  private static _features: FeatureTrackingManager;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
 
+  /** Global event source options
+   * @internal
+   */
+  public static eventSourceOptions: EventSourceOptions = { pollInterval: 3000, prefetchLimit: 512 };
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: IAuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
@@ -220,6 +236,8 @@ export class IModelApp {
   public static get pluginAdmin() { return this._pluginAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
+  /** The [[FeatureTrackingManager]] for this session */
+  public static get features() { return this._features; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -332,6 +350,7 @@ export class IModelApp {
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._terrainProvider = opts.terrainProvider;
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
+    this._features = (opts.features !== undefined) ? opts.features : new FeatureTrackingManager();
 
     [
       this.renderSystem,

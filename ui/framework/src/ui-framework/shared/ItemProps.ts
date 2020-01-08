@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
@@ -62,14 +62,14 @@ export interface ItemProps extends Omit<AbstractItemProps, "iconSpec">, IconProp
   betaBadge?: boolean;
 }
 
-/** Definition for a Tool item with a tool id.
+/** Properties for a Tool item with a tool id.
  * @public
  */
 export interface ToolItemProps extends ItemProps, CommandHandler {
   toolId: string;
 }
 
-/** Definition for a Command item.
+/** Properties for a Command item.
  * @public
  */
 export interface CommandItemProps extends ItemProps, CommandHandler {

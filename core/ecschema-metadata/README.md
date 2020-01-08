@@ -1,6 +1,6 @@
 # @bentley/ecschema-metadata
 
-Copyright © Bentley Systems, Inc. 2018
+Copyright © Bentley Systems, Incorporated. All rights reserved.
 
 ## Description
 

@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Hooks */
 
 import { useState, useEffect } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
-import { SyncUiEventDispatcher, SyncUiEventArgs, SessionStateActionId } from "../../ui-framework";
+import { SessionStateActionId } from "../redux/SessionState";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 /** React hook that maintains the active IModelConnection. For this hook to work properly the
  * IModelConnection must be set using UiFramework.setIModelConnection method. This also requires

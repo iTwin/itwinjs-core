@@ -28,7 +28,7 @@
     "logo": "landing-page/assets/imodeljs-logo.svg",
     "smallLogo": "landing-page/assets/imodeljs-icon.svg",
     "sponsoredByLogo": "landing-page/assets/bentley.svg",
-    "favicon": "landing-page/assets/imodeljs_16.png",
+    "favicon": "landing-page/assets/imodeljs_favicon_16.png",
     "docSiteOrder": [
       "landing-page",
       "getting-started",
@@ -42,7 +42,7 @@
       "BIS": "bis",
       "Learning": "learning",
       "API Reference": "reference",
-      "v1.9.0": "changehistory"
+      "v1.10.0": "changehistory"
     },
     "packageAliases": {
       "backend": "imodeljs-backend",

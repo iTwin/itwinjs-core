@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Inputs */
 
@@ -876,12 +876,12 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
       wrap: {
         style: noStyle ? null : css.wrap,
         className: "react-numeric-input",
-        ref: (e: HTMLSpanElement) => { if (e != null && e !== undefined) { this._refsWrapper = e; } },
+        ref: (e: HTMLSpanElement) => { this._refsWrapper = e; },
         onMouseUp: undefined,
         onMouseLeave: undefined,
       },
       input: {
-        ref: (e: HTMLInputElement) => { if (e != null && e !== undefined) { this.refsInput = e; } },
+        ref: (e: HTMLInputElement) => { this.refsInput = e; },
         type: "text",
         style: noStyle ? null : Object.assign(
           {},

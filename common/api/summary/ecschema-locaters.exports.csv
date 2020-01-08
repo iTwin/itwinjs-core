@@ -1,0 +1,6 @@
+sep=;
+Release Tag;API Item
+alpha;FileSchemaKey 
+alpha;class SchemaFileLocater
+alpha;SchemaJsonFileLocater 
+alpha;SchemaXmlFileLocater 

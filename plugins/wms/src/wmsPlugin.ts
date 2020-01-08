@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { compareNumbers } from "@bentley/bentleyjs-core";
@@ -16,6 +16,7 @@ import {
   ScreenViewport,
   TiledGraphicsProvider,
   TileTree,
+  TileTreeReference,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -128,7 +129,7 @@ class WMSGraphicsProvider implements TiledGraphicsProvider {
   }
 
   /** Returns the tree containing the tiles to be drawn in the specified viewport. */
-  public forEachTileTreeRef(vp: Viewport, func: (ref: TileTree.Reference) => void): void {
+  public forEachTileTreeRef(vp: Viewport, func: (ref: TileTreeReference) => void): void {
     // In case the user opened a view from a different iModel, make sure the tree reference uses the current iModel.
     this._tree.iModel = vp.iModel;
     func(this._tree);

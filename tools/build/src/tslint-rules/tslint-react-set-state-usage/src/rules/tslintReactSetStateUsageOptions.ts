@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* This code has been adapted from
+* [tslint-react-set-state-usage](https://github.com/sutrkiller/tslint-react-set-state-usage).
 *--------------------------------------------------------------------------------------------*/
 
 export const OPTION_UPDATER_ONLY = "updater-only";

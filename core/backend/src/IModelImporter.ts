@@ -1,20 +1,21 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, IModelStatus, Logger, Id64 } from "@bentley/bentleyjs-core";
-import { ElementProps, IModelError, ModelProps, ElementAspectProps, Placement3d, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
+/** @module iModels */
+import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { AxisAlignedBox3d, ElementAspectProps, ElementProps, GeometricElement3dProps, IModelError, ModelProps, Placement3d } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { IModelDb } from "./IModelDb";
-import { RelationshipProps, Relationship } from "./Relationship";
-import { ElementMultiAspect, ElementAspect } from "./ElementAspect";
 import { Element, GeometricElement3d } from "./Element";
+import { ElementAspect, ElementMultiAspect } from "./ElementAspect";
+import { IModelDb } from "./IModelDb";
 import { Model } from "./Model";
+import { Relationship, RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelImporter;
 
 /** Options provided to the [[IModelImporter]] constructor.
- * @alpha
+ * @beta
  */
 export interface IModelImportOptions {
   /** If `true` (the default), auto-extend the projectExtents of the target iModel as elements are imported. If `false`, throw an Error if an element would be outside of the projectExtents. */
@@ -22,7 +23,10 @@ export interface IModelImportOptions {
 }
 
 /** Base class for importing data into an iModel.
- * @alpha
+ * @see [iModel Transformation and Data Exchange]($docs/learning/backend/IModelTransformation.md)
+ * @see [IModelExporter]($backend)
+ * @see [IModelTransformer]($backend)
+ * @beta
  */
 export class IModelImporter {
   /** The read/write target iModel. */
@@ -123,7 +127,7 @@ export class IModelImporter {
         const targetExtents: AxisAlignedBox3d = targetElementPlacement.calculateRange();
         if (!targetExtents.isNull && !this.targetDb.projectExtents.containsRange(targetExtents)) {
           if (this.autoExtendProjectExtents) {
-            Logger.logTrace(loggerCategory, "[Target] Auto-extending projectExtents");
+            Logger.logTrace(loggerCategory, "Auto-extending projectExtents");
             targetExtents.extendRange(this.targetDb.projectExtents);
             this.targetDb.updateProjectExtents(targetExtents);
           } else {

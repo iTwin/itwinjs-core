@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Breadcrumb */
 
@@ -554,7 +554,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
   private _findChildUserInput = async (p: string): Promise<BeInspireTreeNode<TreeNodeItem> | undefined> => {
     const delimiter = this.props.delimiter!;
-    if (p.lastIndexOf(delimiter) === p.length - delimiter.length) // strip last delimiter if at end
+    if (p.endsWith(delimiter)) // strip last delimiter if at end
       p = p.substr(0, p.length - delimiter.length);
     const root = this.props.tree.nodes();
     for (const node of root) {

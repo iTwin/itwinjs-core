@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, Id64Array, Id64 } from "@bentley/bentleyjs-core";
 import { Point2d, XYAndZ, XAndY, Point3d, ClipVector, Transform } from "@bentley/geometry-core";
@@ -30,6 +30,8 @@ import { HyperModelingPlugin } from "./HyperModeling";
 import { createSectionGraphicsProvider } from "./SectionGraphicsProvider";
 import { AbstractToolbarProps, BadgeType } from "@bentley/ui-abstract";
 
+// cSpell:ignore hotspot sectionmarkersprite detailmarkersprite elevationmarkersprite planmarkersprite
+
 interface PopupToolbarProvider {
   toolbarProps: AbstractToolbarProps;
   overToolbarHotspot: boolean;
@@ -49,7 +51,7 @@ class PopupToolbarManager {
         PopupToolbarManager._itemExecuted, PopupToolbarManager._cancel)) {
       PopupToolbarManager._current = PopupToolbarManager._provider;
       PopupToolbarManager._provider = undefined;
-      PopupToolbarManager.closeAfterTimout();
+      PopupToolbarManager.closeAfterTimeout();
       return true;
     }
     return false;
@@ -59,16 +61,16 @@ class PopupToolbarManager {
   private static _cancel = () => { if (undefined === PopupToolbarManager._current || !PopupToolbarManager._current.overToolbarHotspot) PopupToolbarManager.close(); }; // Don't hide when click is over hotspot...
   private static close(): boolean { PopupToolbarManager._current = undefined; return IModelApp.uiAdmin.hideToolbar(); }
 
-  private static closeAfterTimout() {
+  private static closeAfterTimeout() {
     if (undefined === PopupToolbarManager._current)
       return;
     if (PopupToolbarManager._current.overToolbarHotspot || undefined === IModelApp.toolAdmin.cursorView)
-      setTimeout(() => { PopupToolbarManager.closeAfterTimout(); }, 500); // Cursor not in view or over hotspot, check again...
+      setTimeout(() => { PopupToolbarManager.closeAfterTimeout(); }, 500); // Cursor not in view or over hotspot, check again...
     else
       PopupToolbarManager.close();
   }
 
-  public static toolbarShowAfterTimout(provider: PopupToolbarProvider) {
+  public static toolbarShowAfterTimeout(provider: PopupToolbarProvider) {
     if (PopupToolbarManager._current === provider)
       return;
     PopupToolbarManager._provider = provider;
@@ -165,8 +167,8 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
     if (startFrustum.equals(newFrustum))
       return;
     vp.view.setupFromFrustum(newFrustum);
-    vp.synchWithView(true);
-    vp.animateToCurrent(startFrustum);
+    vp.synchWithView();
+    vp.animateFrustumChange();
   }
 
   public toolbarProps: AbstractToolbarProps = {
@@ -215,7 +217,7 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
 
   public onMouseEnter(ev: BeButtonEvent) {
     super.onMouseEnter(ev);
-    PopupToolbarManager.toolbarShowAfterTimout(this);
+    PopupToolbarManager.toolbarShowAfterTimeout(this);
   }
 
   public onMouseButton(ev: BeButtonEvent): boolean {

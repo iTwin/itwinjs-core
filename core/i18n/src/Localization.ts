@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module AppAdministration */
 
@@ -39,6 +39,12 @@ export class I18N {
       crossDomain: true,
     };
 
+    const detectionOptions: i18nextBrowserLanguageDetector.DetectorOptions = {
+      order: ["querystring", "navigator", "htmlTag"],
+      lookupQuerystring: "lng",
+      caches: [],
+    };
+
     nameSpaces = nameSpaces ? ("string" === typeof nameSpaces ? [nameSpaces] : nameSpaces) : [""];
 
     const initOptions: i18next.InitOptions = {
@@ -47,6 +53,7 @@ export class I18N {
       ns: nameSpaces,
       defaultNS: nameSpaces[0],
       backend: backendOptions,
+      detection: detectionOptions,
     };
 
     // if in a development environment, set to pseudo-localize, otherwise detect from browser.

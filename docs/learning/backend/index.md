@@ -24,6 +24,7 @@ These packages provide the following functions to support backend operations:
   * [Synchronizing with iModelHub](./IModelDbSync.md)
   * [Writing to an IModelDb](./IModelDbReadwrite.md)
   * [Concurrency control](./ConcurrencyControl.md)
+  * [iModel Transformation and Data Exchange](./IModelTransformation.md)
 
 * Working with Schemas and Elements in TypeScript
   * [Working with Schemas and Elements in TypeScript](./SchemasAndElementsInTypeScript.md)

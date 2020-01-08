@@ -1,14 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
+import { ImdlFlags } from "@bentley/imodeljs-common";
 
 // Describes a single tile.
 export interface TileTestCase {
   readonly bytes: Uint8Array;
-  readonly flags: IModelTileIO.Flags;
+  readonly flags: ImdlFlags;
 }
 
 // Describes a set of tiles generated for a particular version of the tile format from a set of simple iModels.

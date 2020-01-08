@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import {
@@ -26,7 +26,7 @@ import {
   createColorInput,
   createNestedMenu,
   createButton,
- } from "@bentley/frontend-devtools";
+} from "@bentley/frontend-devtools";
 
 type EnvironmentAspect = "ground" | "sky";
 type UpdateAttribute = (view: ViewState) => void;
@@ -299,7 +299,7 @@ export class EnvironmentEditor {
   }
 
   private sync(): void {
-    this._vp.synchWithView(false);
+    this._vp.synchWithView();
   }
 
   private addCheckbox(cbLabel: string, handler: (enabled: boolean) => void, parent: HTMLElement, id: string): CheckBox {

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ExportGraphicsInfo, IModelHost, IModelDb, ECSqlStatement, Texture } from "@bentley/imodeljs-backend";
 import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";

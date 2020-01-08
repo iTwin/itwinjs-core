@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module SyncUi */
 
@@ -52,10 +52,11 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
 
   private _handleVisibilitySyncUiEvent = (args: SyncUiEventArgs): void => {
     /* istanbul ignore next */
-    if (this._componentUnmounting) return;
-    let boolValue = this.state.boolValue;
+    if (this._componentUnmounting)
+      return;
+
     if (this.props.eventIds.some((value: string): boolean => args.eventIds.has(value))) {
-      boolValue = this.props.boolFunc();
+      const boolValue = this.props.boolFunc();
       if (this.state.boolValue !== boolValue) {
         this.setState({ boolValue });
       }

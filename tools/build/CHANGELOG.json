@@ -2,6 +2,18 @@
   "name": "@bentley/build-tools",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/build-tools_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added tslint-react-set-state-usage to ThirdPartyNotices.md in tools/build"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/build-tools_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",

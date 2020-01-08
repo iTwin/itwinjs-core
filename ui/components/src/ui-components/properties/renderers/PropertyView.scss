@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/ui-core/index";
 
@@ -26,6 +26,8 @@ $text-font-color: $buic-text-color;
 }
 
 .components-property-record--vertical {
+  display: grid;
+
   .components-property-record-label {
     font-size: $uicore-font-size-small;
     color: $buic-foreground-muted;
@@ -55,6 +57,13 @@ $text-font-color: $buic-text-color;
 
 .components-property-record-value {
   @include record-cell;
+  overflow: hidden;
+
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   .core-underlined-button {
     // Offset by 2px, because value is centered vertically

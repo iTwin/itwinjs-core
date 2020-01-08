@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
 import { FooterSeparator } from "@bentley/ui-ninezone";
+import { StatusBarSection } from "@bentley/ui-abstract";
 import {
   ToolAssistanceField, ActivityCenterField, MessageCenterField,
-  SnapModeField, StatusBarItem, StatusBarSection, StatusBarItemUtilities,
+  SnapModeField, StatusBarItem, StatusBarItemUtilities,
   withStatusFieldProps, withMessageCenterFieldProps, BooleanSyncUiListener, FooterModeField,
 } from "@bentley/ui-framework";
 import { SampleAppUiActionId, SampleAppIModelApp } from "../..";

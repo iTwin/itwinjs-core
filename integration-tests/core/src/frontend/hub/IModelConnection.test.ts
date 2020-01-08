@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, OpenMode, Logger, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
@@ -43,6 +43,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   after(async () => {
+    await TestUtility.purgeAcquiredBriefcases(iModel.iModelToken.iModelId!);
     if (iModel)
       await iModel.close();
     MockRender.App.shutdown();

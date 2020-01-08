@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaFileLocater, FileSchemaKey } from "./SchemaFileLocater";
@@ -18,7 +18,7 @@ import { XmlParser } from "./XmlParser";
 /**
  * A SchemaLocater implementation for locating XML Schema files
  * from the file system using configurable search paths.
- * @internal This is a workaround the current lack of a full xml parser.
+ * @alpha @deprecated class moved to ecschema-locaters package
  */
 export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**

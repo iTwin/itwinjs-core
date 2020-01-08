@@ -371,7 +371,7 @@ export class JpegTagReader {
       const entryOffset = dirStart + i * 12 + 2;
       const tag = strings[file.getUint16(entryOffset, !bigEnd)];
       if (!tag) {
-        Logger.logWarning(loggerCategory, "Unknown tag", () => ({ tag: file.getUint16(entryOffset, !bigEnd) }));
+        // Logger.logWarning(loggerCategory, "Unknown tag", () => ({ tag: file.getUint16(entryOffset, !bigEnd) }));
         continue;
       }
       tags.set(tag, this.readTagValueAtOffset(file, entryOffset, tiffStart, dirStart, bigEnd));

@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
 
 import * as React from "react";
 
 import { BackstageSeparator as NZ_BackstageSeparator } from "@bentley/ui-ninezone";
-import { BackstageItemProps } from "./BackstageItem";
+import { BackstageItemProps } from "./BackstageItemProps";
 
 /** Separator Backstage item.
  * @public

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
@@ -25,12 +25,12 @@ import { SkyBox } from "../../DisplayStyleState";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } from "./Mesh";
 import { AttributeMap } from "./AttributeMap";
-import { WebGlDisposable } from "./Disposable";
+import { WebGLDisposable } from "./Disposable";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering.
  * @internal
  */
-export abstract class CachedGeometry implements WebGlDisposable, RenderMemory.Consumer {
+export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Consumer {
   protected _range?: Range3d;
   /**
    * Functions for obtaining a subclass of CachedGeometry.
@@ -131,6 +131,8 @@ export abstract class CachedGeometry implements WebGlDisposable, RenderMemory.Co
     return vf.lighting ? FlashMode.Brighten : FlashMode.MixHiliteColor;
   }
 
+  public wantMixMonochromeColor(_target: Target): boolean { return false; }
+
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 
   public computeRange(output?: Range3d): Range3d {
@@ -183,7 +185,7 @@ export abstract class LUTGeometry extends CachedGeometry {
 /** Parameters used to construct an IndexedGeometry
  * @internal
  */
-export class IndexedGeometryParams implements WebGlDisposable {
+export class IndexedGeometryParams implements WebGLDisposable {
   public readonly buffers: BuffersContainer;
   public readonly positions: QBufferHandle3d;
   public readonly indices: BufferHandle;
@@ -346,7 +348,7 @@ class SkyBoxQuads {
 /** Parameters used to construct an SkyBox
  * @internal
  */
-export class SkyBoxGeometryParams implements WebGlDisposable {
+export class SkyBoxGeometryParams implements WebGLDisposable {
   public readonly buffers: BuffersContainer;
   public readonly positions: QBufferHandle3d;
 
@@ -915,7 +917,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
 }
 
 /** @internal */
-export class PolylineBuffers implements WebGlDisposable {
+export class PolylineBuffers implements WebGLDisposable {
   public buffers: BuffersContainer;
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
