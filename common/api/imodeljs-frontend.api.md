@@ -10597,10 +10597,6 @@ export abstract class ViewState extends ElementState {
     readonly name: string;
     // @internal
     peekDetail(name: string): any;
-    // (undocumented)
-    protected _rawExtents?: Vector3d;
-    // (undocumented)
-    protected _rawOrigin?: Point3d;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
     // @internal
