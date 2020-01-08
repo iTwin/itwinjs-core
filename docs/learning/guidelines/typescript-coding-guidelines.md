@@ -372,7 +372,7 @@ Every .ts file should have this notice as its **first lines**:
 
 ```ts
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 20xx Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 ```
