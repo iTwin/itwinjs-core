@@ -1657,6 +1657,7 @@ export abstract class Viewport implements IDisposable {
 
       this._alwaysDrawnExclusive = false;
       this._changeFlags.setAlwaysDrawn();
+      this.invalidateShadows();
     }
   }
 
@@ -1667,6 +1668,7 @@ export abstract class Viewport implements IDisposable {
     if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
       this._changeFlags.setNeverDrawn();
+      this.invalidateShadows();
     }
   }
 
@@ -1676,6 +1678,7 @@ export abstract class Viewport implements IDisposable {
   public setNeverDrawn(ids: Id64Set): void {
     this._neverDrawn = ids;
     this._changeFlags.setNeverDrawn();
+    this.invalidateShadows();
   }
 
   /** Specify the Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
@@ -1688,6 +1691,7 @@ export abstract class Viewport implements IDisposable {
     this._alwaysDrawn = ids;
     this._alwaysDrawnExclusive = exclusive;
     this._changeFlags.setAlwaysDrawn();
+    this.invalidateShadows();
   }
 
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
