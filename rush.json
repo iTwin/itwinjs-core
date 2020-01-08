@@ -383,6 +383,12 @@
       "projectFolder": "integration-tests/rpc",
       "reviewCategory": "internal",
       "shouldPublish": false
+    },
+    {
+      "packageName": "@bentley/rpcinterface-integration-test",
+      "projectFolder": "integration-tests/rpc-interface",
+      "reviewCategory": "tools",
+      "shouldPublish": true
     }
   ]
 }

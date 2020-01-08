@@ -16,7 +16,7 @@
     },
     {
       "name": "@bentley/certa",
-      "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/config-loader",
@@ -40,7 +40,7 @@
     },
     {
       "name": "@bentley/express-server",
-      "allowedCategories": [ "internal", "plugins" ]
+      "allowedCategories": [ "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/frontend-devtools",
@@ -80,7 +80,7 @@
     },
     {
       "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-markup",
@@ -92,7 +92,7 @@
     },
     {
       "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-webserver",
@@ -104,7 +104,7 @@
     },
     {
       "name": "@bentley/oidc-signin-tool",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "@bentley/perf-tools",
@@ -560,7 +560,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "null-loader",
@@ -912,7 +912,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "webpack-dev-server",

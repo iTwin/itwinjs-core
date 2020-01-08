@@ -856,6 +856,55 @@
       "breakOnLoadStrategy": "instrument",
       "webRoot": "${workspaceFolder}"
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "⚠︝RPC Interface Integration Tests (certa backend)",
+      "cwd": "${workspaceRoot}/integration-tests/rpc-interface/",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run-script",
+        "test:integration:chrome",
+        "--",
+        "--debug"
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/integration-tests/rpc-interface/lib/**/*.js",
+        "${workspaceRoot}/core/*/lib/**/*.js",
+        "${workspaceRoot}/tools/certa/lib/**/*.js"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in integration-tests/rpc-interface/certa.json
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "⚠︝RPC Interface Integration Tests (backend)",
+      "cwd": "${workspaceRoot}/integration-tests/rpc-interface/",
+      "program": "${workspaceRoot}/integration-tests/rpc-interface/lib/test/backend.js",
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/integration-tests/rpc-interface/lib/**/*.js",
+        "${workspaceRoot}/core/*/lib/**/*.js"
+      ],
+      "protocol": "inspector"
+    },
+    {
+      "name": "⚠︝RPC Interface Integration Tests (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/rpc-interface/certa.json
+      "sourceMaps": true,
+      "timeout": 200000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "breakOnLoadStrategy": "instrument",
+      "webRoot": "${workspaceFolder}"
+    },
   ],
   "compounds": [
     {
@@ -884,6 +933,14 @@
       "configurations": [
         "⚠︝RPC Integration Tests (frontend)",
         "⚠︝RPC Integration Tests (backend)"
+      ]
+    },
+    {
+      "name": "✔︝RPC Interface Tests",
+      "configurations": [
+        "⚠︝RPC Interface Integration Tests (frontend)",
+        "⚠︝RPC Interface Integration Tests (certa backend)",
+        "⚠︝RPC Interface Integration Tests (backend)"
       ]
     },
     {
@@ -934,7 +991,6 @@
       "options": [
         "chrome",
         "electron",
-        "http2",
         "direct"
       ]
     }

@@ -1,0 +1,9 @@
+# start off ignoring everything, and then add back only the files we want
+*
+!lib/**/*.d.ts
+!lib/**/*.js
+lib/**/test/*.d.ts
+lib/**/test/*.js
+!lib/package.json
+!lib/rulesets/**/*
+!certa.json
