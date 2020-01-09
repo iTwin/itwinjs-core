@@ -8239,10 +8239,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     readonly loadStatus: Tile.LoadStatus;
     // (undocumented)
-    protected _localContentRange?: ElementAlignedBox3d;
-    // (undocumented)
-    protected _localRange?: ElementAlignedBox3d;
-    // (undocumented)
     readonly maximumSize: number;
     // (undocumented)
     protected _maximumSize: number;
