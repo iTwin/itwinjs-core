@@ -192,7 +192,7 @@ export class ChangeSet extends WsgInstance {
     userCreated?: string;
 }
 
-// @beta
+// @internal
 export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
     // (undocumented)
     briefcaseId?: number;
@@ -722,7 +722,7 @@ export interface FileHandler {
 // @internal
 export function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any>;
 
-// @beta
+// @internal
 export enum GetEventOperationType {
     Destructive = 0,
     Peek = 1
@@ -731,9 +731,8 @@ export enum GetEventOperationType {
 // @internal
 export function getJson(requestContext: ClientRequestContext, url: string): Promise<any>;
 
-// @beta
+// @internal
 export class GlobalEventHandler extends EventBaseHandler {
-    // @internal
     constructor(handler: IModelBaseHandler);
     createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number, getOperation?: GetEventOperationType): Promise<IModelHubGlobalEvent | undefined>;
@@ -741,11 +740,11 @@ export class GlobalEventHandler extends EventBaseHandler {
     readonly subscriptions: GlobalEventSubscriptionHandler;
 }
 
-// @beta
+// @internal
 export class GlobalEventSAS extends BaseEventSAS {
 }
 
-// @beta
+// @internal
 export class GlobalEventSubscription extends WsgInstance {
     // (undocumented)
     eventTypes?: GlobalEventType[];
@@ -753,27 +752,26 @@ export class GlobalEventSubscription extends WsgInstance {
     subscriptionId?: string;
 }
 
-// @beta
+// @internal
 export class GlobalEventSubscriptionHandler {
-    // @internal
     constructor(handler: IModelBaseHandler);
     create(requestContext: AuthorizedClientRequestContext, subscriptionId: GuidString, globalEvents: GlobalEventType[]): Promise<GlobalEventSubscription>;
     delete(requestContext: AuthorizedClientRequestContext, subscriptionId: string): Promise<void>;
     update(requestContext: AuthorizedClientRequestContext, subscription: GlobalEventSubscription): Promise<GlobalEventSubscription>;
 }
 
-// @beta
+// @internal
 export type GlobalEventType =
 /** Sent when an iModel is put into the archive. See [[SoftiModelDeleteEvent]].
- * @beta Rename to SoftIModelDeleteEvent
+ * @internal Rename to SoftIModelDeleteEvent
  */
 "SoftiModelDeleteEvent" |
 /** Sent when an archived iModel is completely deleted from the storage. See [[HardiModelDeleteEvent]].
- * @beta Rename to HardIModelDeleteEvent
+ * @internal Rename to HardIModelDeleteEvent
  */
 "HardiModelDeleteEvent" |
 /** Sent when an iModel is created. See [[IModelCreatedEvent]].
- * @beta Rename to IModelCreatedEvent
+ * @internal Rename to IModelCreatedEvent
  */
 "iModelCreatedEvent" |
 /** Sent when a [[ChangeSet]] is pushed. See [[ChangeSetCreatedEvent]]. */
@@ -781,7 +779,7 @@ export type GlobalEventType =
 /** Sent when a named [[Version]] is created. See [[NamedVersionCreatedEvent]]. */
 "NamedVersionCreatedEvent";
 
-// @beta
+// @internal
 export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
@@ -899,6 +897,7 @@ export abstract class IModelClient {
     // @alpha
     readonly codes: CodeHandler;
     readonly events: EventHandler;
+    // @internal
     readonly globalEvents: GlobalEventHandler;
     // (undocumented)
     protected _handler: IModelBaseHandler;
@@ -916,7 +915,7 @@ export abstract class IModelClient {
     readonly versions: VersionHandler;
 }
 
-// @beta
+// @internal
 export class IModelCreatedEvent extends IModelHubGlobalEvent {
 }
 
@@ -1007,11 +1006,10 @@ export abstract class IModelHubEvent extends IModelHubBaseEvent {
     iModelId?: GuidString;
 }
 
-// @beta
+// @internal
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     contextId?: string;
     contextTypeId?: ContextType;
-    // @internal
     fromJson(obj: any): void;
     iModelId?: GuidString;
     projectId?: string;
@@ -1233,7 +1231,7 @@ export class MultiLock extends LockBase {
     objectIds?: Id64String[];
 }
 
-// @beta
+// @internal
 export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
     // (undocumented)
     changeSetId?: string;
@@ -1770,7 +1768,7 @@ export enum SettingsStatus {
 export class SmallThumbnail extends Thumbnail {
 }
 
-// @beta
+// @internal
 export class SoftiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 

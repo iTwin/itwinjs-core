@@ -133,6 +133,7 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[IModelHubGlobalEvent]]s.
+   * @internal
    */
   public get globalEvents(): GlobalEventHandler {
     return new GlobalEventHandler(this._handler);

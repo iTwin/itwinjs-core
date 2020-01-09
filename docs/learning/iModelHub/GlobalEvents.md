@@ -1,3 +1,7 @@
+---
+ignore: true
+---
+
 # Global Events
 ** Global Events require service accounts. Service accounts are currently only available to internal Bentley products. **
 

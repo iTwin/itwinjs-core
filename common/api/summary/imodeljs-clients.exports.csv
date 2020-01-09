@@ -19,7 +19,7 @@ beta;class BriefcaseEvent
 internal;BriefcaseHandler
 internal;BriefcaseQuery 
 beta;ChangeSet 
-beta;ChangeSetCreatedEvent 
+internal;ChangeSetCreatedEvent 
 beta;ChangeSetHandler
 beta;ChangeSetPostPushEvent 
 beta;ChangeSetPrePushEvent 
@@ -72,13 +72,13 @@ internal;FeatureStartedLogEntry
 internal;FileAccessKey 
 beta;FileHandler
 internal;getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise
-beta;GetEventOperationType
+internal;GetEventOperationType
 internal;getJson(requestContext: ClientRequestContext, url: string): Promise
-beta;GlobalEventHandler 
-beta;GlobalEventSAS 
-beta;GlobalEventSubscription 
-beta;GlobalEventSubscriptionHandler
-beta;HardiModelDeleteEvent 
+internal;GlobalEventHandler 
+internal;GlobalEventSAS 
+internal;GlobalEventSubscription 
+internal;GlobalEventSubscriptionHandler
+internal;HardiModelDeleteEvent 
 alpha;HubCode 
 beta;HubIModel 
 alpha;HubUserInfo 
@@ -89,7 +89,7 @@ internal;IModelBankFileSystemContextClient
 beta;IModelBankHandler 
 beta;IModelBaseHandler 
 beta;class IModelClient
-beta;IModelCreatedEvent 
+internal;IModelCreatedEvent 
 beta;IModelCreateOptions
 beta;IModelDeletedEvent 
 internal;IModelFileSystemContextProps
@@ -98,7 +98,7 @@ beta;IModelHubClient
 beta;IModelHubClientError 
 beta;IModelHubError 
 beta;class IModelHubEvent 
-beta;class IModelHubGlobalEvent 
+internal;class IModelHubGlobalEvent 
 beta;IModelQuery 
 beta;IModelsHandler
 internal;ImsActiveSecureTokenClient 
@@ -123,7 +123,7 @@ internal;LogEntryConverter
 internal;LogPostingResponse
 internal;MultiCode 
 alpha;MultiLock 
-beta;NamedVersionCreatedEvent 
+internal;NamedVersionCreatedEvent 
 beta;class OidcClient 
 beta;OidcFrontendClientConfiguration
 internal;ParseEvent(response: Response): IModelHubEvent
@@ -161,7 +161,7 @@ alpha;SettingsMapResult
 alpha;SettingsResult
 alpha;SettingsStatus
 alpha;SmallThumbnail 
-beta;SoftiModelDeleteEvent 
+internal;SoftiModelDeleteEvent 
 beta;StringIdQuery 
 alpha;class Thumbnail 
 alpha;ThumbnailHandler
