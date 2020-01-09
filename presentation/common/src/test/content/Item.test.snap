@@ -1,25 +1,74 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Item constructor creates valid item with label 1`] = `
+Object {
+  "classInfo": undefined,
+  "displayValues": Object {
+    "key": "Kina",
+  },
+  "extendedData": undefined,
+  "imageId": "70c6cab5-86c7-4d22-b010-6c0cf48d9662",
+  "label": "pink",
+  "labelDefinition": Object {
+    "displayValue": "pink",
+    "rawValue": "pink",
+    "typeName": "string",
+  },
+  "mergedFieldNames": Array [],
+  "primaryKeys": Array [],
+  "values": Object {
+    "key": "models",
+  },
+}
+`;
+
+exports[`Item constructor creates valid item with label definition 1`] = `
+Object {
+  "classInfo": undefined,
+  "displayValues": Object {
+    "key": "Keyboard",
+  },
+  "extendedData": undefined,
+  "imageId": "0ea0e226-a243-44c2-83b1-e941fb2d30c8",
+  "label": "Oregon",
+  "labelDefinition": Object {
+    "displayValue": "Oregon",
+    "rawValue": "Toys",
+    "typeName": "string",
+  },
+  "mergedFieldNames": Array [],
+  "primaryKeys": Array [],
+  "values": Object {
+    "key": "Savings Account",
+  },
+}
+`;
+
 exports[`Item fromJSON creates valid Item from valid JSON 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0x397c000000f221",
-    "label": "XSS Unbranded",
-    "name": "harness",
+    "id": "0x9c64000000847e",
+    "label": "Brand",
+    "name": "XSS",
   },
   "displayValues": Object {
-    "key1": "Generic Concrete Ball technologies Ergonomic",
-    "key2": "Sports orchestrate Music",
+    "key1": "Associate Savings Account",
+    "key2": "technologies",
   },
-  "imageId": "bc24c3cf-c6dc-4a16-8097-7434afabfe4b",
-  "label": "Soft",
+  "imageId": "4c3cfc6d-ca16-4409-b743-4afabfe4b926",
+  "label": "Rustic Soft Fish",
+  "labelDefinition": Object {
+    "displayValue": "Rustic Soft Fish",
+    "rawValue": "override",
+    "typeName": "string",
+  },
   "mergedFieldNames": Array [
     "key1",
   ],
   "primaryKeys": Array [],
   "values": Object {
-    "key1": 7008,
-    "key2": "seize Grenada Branding",
+    "key1": 94837,
+    "key2": "mesh collaborative",
   },
 }
 `;
@@ -28,18 +77,23 @@ exports[`Item fromJSON creates valid Item from valid JSON without classInfo 1`] 
 Object {
   "classInfo": undefined,
   "displayValues": Object {
-    "key1": "Greenland",
-    "key2": "Barbados Dollar",
+    "key1": "Rubber one-to-one Barbados Dollar",
+    "key2": "Quetzal context-sensitive",
   },
-  "imageId": "4b46a857-e4f2-48a5-8df2-6ce9acb15edc",
-  "label": "Central Practical",
+  "imageId": "64b46a85-7e4f-428a-98df-26ce9acb15ed",
+  "label": "Washington",
+  "labelDefinition": Object {
+    "displayValue": "Washington",
+    "rawValue": "Common",
+    "typeName": "string",
+  },
   "mergedFieldNames": Array [
     "key1",
   ],
   "primaryKeys": Array [],
   "values": Object {
-    "key1": 49793,
-    "key2": "Plains Accounts",
+    "key1": 56931,
+    "key2": "Optimization Kazakhstan Personal Loan Account",
   },
 }
 `;
@@ -47,23 +101,28 @@ Object {
 exports[`Item fromJSON creates valid Item from valid serialized JSON 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0xa3b70000013601",
-    "label": "Bulgarian Lev Program Tools",
-    "name": "magnetic",
+    "id": "0xf3eb0000001909",
+    "label": "magnetic International",
+    "name": "Consultant",
   },
   "displayValues": Object {
-    "key1": "reboot payment Future",
-    "key2": "port Borders neutral",
+    "key1": "Mobility",
+    "key2": "payment Future Legacy",
   },
-  "imageId": "1ba212b4-dc31-4912-8d4b-70a2f087a19f",
-  "label": "Mobility Vietnam redundant",
+  "imageId": "fc61ba21-2b4d-4c31-9124-d4b70a2f087a",
+  "label": "Strategist",
+  "labelDefinition": Object {
+    "displayValue": "Strategist",
+    "rawValue": "firewall",
+    "typeName": "string",
+  },
   "mergedFieldNames": Array [
     "key1",
   ],
   "primaryKeys": Array [],
   "values": Object {
-    "key1": 67657,
-    "key2": "demand-driven",
+    "key1": 7721,
+    "key2": "Books whiteboard discrete",
   },
 }
 `;
@@ -71,15 +130,20 @@ Object {
 exports[`Item fromJSON creates valid Item with nested content values 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0x117d20000006e52",
-    "label": "bypassing Buckinghamshire",
-    "name": "Fantastic",
+    "id": "0x6e520000005776",
+    "label": "invoice Sleek",
+    "name": "bandwidth",
   },
   "displayValues": Object {
     "key1": null,
   },
-  "imageId": "25d312e8-1f7a-4066-b0a1-de9fba7ba143",
-  "label": "system El Salvador",
+  "imageId": "425d312e-81f7-4a06-a30a-1de9fba7ba14",
+  "label": "bricks-and-clicks",
+  "labelDefinition": Object {
+    "displayValue": "bricks-and-clicks",
+    "rawValue": "Mountains",
+    "typeName": "string",
+  },
   "mergedFieldNames": Array [
     "key1",
   ],
@@ -91,12 +155,12 @@ Object {
           "nested": "",
         },
         "mergedFieldNames": Array [
-          "quantifying",
+          "override",
         ],
         "primaryKeys": Array [
           Object {
-            "className": "invoice",
-            "id": "0x1546600000135a6",
+            "className": "SAS",
+            "id": "0x110880000004de8",
           },
         ],
         "values": Object {
@@ -111,21 +175,69 @@ Object {
 exports[`Item fromJSON creates valid Item with null values 1`] = `
 Object {
   "classInfo": Object {
-    "id": "0xf76a000000bd4c",
-    "label": "Clothing Forge Chips",
-    "name": "Intelligent Steel Pants",
+    "id": "0xbd4c0000006e24",
+    "label": "Incredible Metal Chair",
+    "name": "deposit",
   },
   "displayValues": Object {
     "key1": null,
   },
-  "imageId": "6da4e9d2-8abe-47b0-8954-da11390a7074",
-  "label": "optical Keyboard",
+  "imageId": "26da4e9d-28ab-4e7b-8895-4da11390a707",
+  "label": "impactful",
+  "labelDefinition": Object {
+    "displayValue": "impactful",
+    "rawValue": "GB",
+    "typeName": "string",
+  },
   "mergedFieldNames": Array [
     "key1",
   ],
   "primaryKeys": Array [],
   "values": Object {
     "key1": null,
+  },
+}
+`;
+
+exports[`Item toJSON serializes item without label definition 1`] = `
+Object {
+  "classInfo": undefined,
+  "displayValues": Object {
+    "key": "back up",
+  },
+  "extendedData": undefined,
+  "imageId": "9f85cf09-f254-4daf-8189-05b72a0fdb4d",
+  "label": "Plain",
+  "labelDefinition": Object {
+    "displayValue": "Plain",
+    "rawValue": "Plain",
+    "typeName": "string",
+  },
+  "mergedFieldNames": Array [],
+  "primaryKeys": Array [],
+  "values": Object {
+    "key": "Forward",
+  },
+}
+`;
+
+exports[`Item toJSON serializes item without label definition to json 1`] = `
+Object {
+  "classInfo": undefined,
+  "displayValues": Object {
+    "key": "models",
+  },
+  "extendedData": undefined,
+  "imageId": "9cc4d132-a1f6-4c5c-85a2-222ae14a7e22",
+  "label": Object {
+    "displayValue": "Incredible",
+    "rawValue": "Incredible",
+    "typeName": "string",
+  },
+  "mergedFieldNames": Array [],
+  "primaryKeys": Array [],
+  "values": Object {
+    "key": "solid state",
   },
 }
 `;

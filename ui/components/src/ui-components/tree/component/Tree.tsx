@@ -26,7 +26,7 @@ import {
 import {
   TreeDataProvider, TreeNodeItem,
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem,
-  isTreeDataProviderInterface,
+  isTreeDataProviderInterface, getLabelString,
 } from "../TreeDataProvider";
 import { NodeEventManager } from "../NodeEventManager";
 import { NodeLoadingOrchestrator } from "../NodeLoadingOrchestrator";
@@ -726,7 +726,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     const node: BeInspireTreeNodeConfig = {
       ...base,
       id: item.id,
-      text: item.label,
+      text: getLabelString(item.label),
       itree: {
         ...base.itree,
         state: {

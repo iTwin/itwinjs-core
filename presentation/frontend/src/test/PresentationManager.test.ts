@@ -13,6 +13,7 @@ import {
   createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement,
   createRandomECInstanceKey,
   createRandomRuleset,
+  createRandomLabelDefinition,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -23,11 +24,14 @@ import {
 import { PresentationManager } from "../PresentationManager";
 import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
 import { RulesetManagerImpl } from "../RulesetManager";
+import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
+import { Presentation } from "../Presentation";
 
 describe("PresentationManager", () => {
 
   let rpcRequestsHandlerMock: moq.IMock<RpcRequestsHandler>;
   let manager: PresentationManager;
+  const i18nMock = moq.Mock.ofType<I18N>();
   const testData = {
     imodelToken: new IModelToken(),
     imodelMock: moq.Mock.ofType<IModelConnection>(),
@@ -36,6 +40,7 @@ describe("PresentationManager", () => {
   };
 
   beforeEach(() => {
+    mockI18N();
     testData.imodelMock.setup((x) => x.iModelToken).returns(() => testData.imodelToken);
     testData.pageOptions = { start: faker.random.number(), size: faker.random.number() };
     testData.rulesetId = faker.random.uuid();
@@ -45,7 +50,16 @@ describe("PresentationManager", () => {
 
   afterEach(() => {
     manager.dispose();
+    Presentation.terminate();
   });
+
+  const mockI18N = () => {
+    i18nMock.reset();
+    Presentation.i18n = i18nMock.object;
+    const resolvedPromise = new Promise<void>((resolve) => resolve());
+    i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns((name: string) => new I18NNamespace(name, resolvedPromise));
+    i18nMock.setup((x) => x.translate(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
+  }
 
   const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) => {
     // 1. put default `locale`
@@ -622,6 +636,44 @@ describe("PresentationManager", () => {
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getDisplayLabels(options, keys);
+      expect(actualResult).to.deep.eq(result);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+  });
+
+  describe("getDisplayLabelDefinition", () => {
+
+    it("requests display label definition", async () => {
+      const key = createRandomECInstanceKey();
+      const result = createRandomLabelDefinition();
+      const options: LabelRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getDisplayLabelDefinition(toIModelTokenOptions(options), key))
+        .returns(async () => result)
+        .verifiable();
+      const actualResult = await manager.getDisplayLabelDefinition(options, key);
+      expect(actualResult).to.deep.eq(result);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+  });
+
+  describe("getDisplayLabelsDefinitions", () => {
+
+    it("requests display labels definitions", async () => {
+      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const result = [createRandomLabelDefinition(), createRandomLabelDefinition()];
+      const options: LabelRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getDisplayLabelsDefinitions(toIModelTokenOptions(options), keys))
+        .returns(async () => result)
+        .verifiable();
+      const actualResult = await manager.getDisplayLabelsDefinitions(options, keys);
       expect(actualResult).to.deep.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });

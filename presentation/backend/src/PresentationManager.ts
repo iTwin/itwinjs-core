@@ -14,7 +14,7 @@ import {
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   DescriptorOverrides, Paged, KeySet, InstanceKey, LabelRequestOptions,
   SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
-  ContentFlags, Ruleset, RulesetVariable, RequestPriority,
+  ContentFlags, Ruleset, RulesetVariable, RequestPriority, LabelDefinition, LOCALES_DIRECTORY,
 } from "@bentley/presentation-common";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
@@ -483,11 +483,14 @@ export class PresentationManager {
    * @param requestContext The client request context
    * @param requestOptions options for the request
    * @param key Key of an instance to get label for
+   * @deprecated Use 'getDisplayLabelDefinition' instead
    */
   public async getDisplayLabel(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<string> {
     requestContext.enter();
     const params = this.createRequestParams(NativePlatformRequestTypes.GetDisplayLabel, requestOptions, { key });
-    return this.request<string>(requestContext, requestOptions.imodel, params);
+    const labelDefinition = await this.request<LabelDefinition>(requestContext, requestOptions.imodel, params, LabelDefinition.reviver);
+    requestContext.enter();
+    return labelDefinition.displayValue;
   }
 
   /**
@@ -495,6 +498,7 @@ export class PresentationManager {
    * @param requestContext The client request context
    * @param requestOptions options for the request
    * @param instanceKeys Keys of instances to get labels for
+   * @deprecated Use 'getDisplayLabelDefinitions' instead
    */
   public async getDisplayLabels(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<string[]> {
     instanceKeys = instanceKeys.map((k) => {
@@ -515,6 +519,46 @@ export class PresentationManager {
       if (!item)
         return "";
       return item.label;
+    });
+  }
+
+  /**
+   * Retrieves display label definition of specific item
+   * @param requestContext The client request context
+   * @param requestOptions options for the request
+   * @param key Key of an instance to get label for
+   */
+  public async getDisplayLabelDefinition(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<LabelDefinition> {
+    requestContext.enter();
+    const params = this.createRequestParams(NativePlatformRequestTypes.GetDisplayLabel, requestOptions, { key });
+    return this.request<LabelDefinition>(requestContext, requestOptions.imodel, params, LabelDefinition.reviver);
+  }
+
+  /**
+   * Retrieves display labels definitions of specific items
+   * @param requestContext The client request context
+   * @param requestOptions options for the request
+   * @param instanceKeys Keys of instances to get labels for
+   */
+  public async getDisplayLabelsDefinitions(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<LabelDefinition[]> {
+    instanceKeys = instanceKeys.map((k) => {
+      if (k.className === "BisCore:Element")
+        return this.getElementKey(requestOptions.imodel, k.id);
+      return k;
+    }).filter<InstanceKey>((k): k is InstanceKey => (undefined !== k));
+    const rulesetId = "RulesDrivenECPresentationManager_RulesetId_DisplayLabel";
+    const overrides: DescriptorOverrides = {
+      displayType: DefaultContentDisplayTypes.List,
+      contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
+      hiddenFieldNames: [],
+    };
+    const content = await this.getContent(requestContext, { ...requestOptions, rulesetId }, overrides, new KeySet(instanceKeys));
+    requestContext.enter();
+    return instanceKeys.map((key) => {
+      const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
+      if (!item || !item.labelDefinition)
+        return { displayValue: "", rawValue: "", typeName: "" };
+      return item.labelDefinition;
     });
   }
 
@@ -730,7 +774,7 @@ const skipTransients = (callback: (id: Id64String) => void) => {
 };
 
 const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
-  const localeDirectories = [path.join(__dirname, "assets", "locales")];
+  const localeDirectories = [LOCALES_DIRECTORY];
   if (props && props.localeDirectories) {
     props.localeDirectories.forEach((dir) => {
       if (-1 === localeDirectories.indexOf(dir))

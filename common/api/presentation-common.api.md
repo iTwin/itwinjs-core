@@ -613,7 +613,7 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
 
 // @public
 export class Item {
-    constructor(primaryKeys: InstanceKey[], label: string, imageId: string, classInfo: ClassInfo | undefined, values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: {
+    constructor(primaryKeys: InstanceKey[], label: string | LabelDefinition, imageId: string, classInfo: ClassInfo | undefined, values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: {
         [key: string]: any;
     });
     classInfo?: ClassInfo;
@@ -625,7 +625,9 @@ export class Item {
     static fromJSON(json: ItemJSON | string | undefined): Item | undefined;
     imageId: string;
     isFieldMerged(fieldName: string): boolean;
+    // @deprecated
     label: string;
+    labelDefinition: LabelDefinition;
     mergedFieldNames: string[];
     primaryKeys: InstanceKey[];
     // @internal
@@ -683,6 +685,45 @@ export interface KindOfQuantityInfo {
 }
 
 // @public
+export interface LabelCompositeValue {
+    // (undocumented)
+    separator: string;
+    // (undocumented)
+    values: LabelDefinition[];
+}
+
+// @public (undocumented)
+export namespace LabelCompositeValue {
+    // @internal (undocumented)
+    export function fromJSON(json: LabelCompositeValueJSON): LabelCompositeValue;
+    // @internal (undocumented)
+    export function toJSON(compositeValue: LabelCompositeValue): LabelCompositeValueJSON;
+}
+
+// @public
+export interface LabelDefinition {
+    displayValue: string;
+    rawValue: LabelRawValue;
+    typeName: string;
+}
+
+// @public (undocumented)
+export namespace LabelDefinition {
+    // @internal
+    export function fromJSON(json: LabelDefinitionJSON | string): LabelDefinition;
+    // @internal (undocumented)
+    export function fromLabelString(label: string): LabelDefinitionJSON;
+    // @internal (undocumented)
+    export function isCompositeDefinition(def: LabelDefinition): def is LabelDefinition & {
+        rawValue: LabelCompositeValue;
+    };
+    // @internal
+    export function reviver(key: string, value: any): any;
+    // @internal
+    export function toJSON(labelDefinition: LabelDefinition): LabelDefinitionJSON;
+}
+
+// @public
 export interface LabelGroupingNodeKey extends GroupingNodeKey {
     label: string;
     // (undocumented)
@@ -698,11 +739,17 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
 }
 
 // @public
+export type LabelRawValue = string | number | boolean | LabelCompositeValue;
+
+// @public
 export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> {
 }
 
 // @public
 export type LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit<LabelRequestOptions<IModelToken>, "imodel">;
+
+// @internal (undocumented)
+export const LOCALES_DIRECTORY: string;
 
 // @public
 export enum LoggingNamespaces {
@@ -805,7 +852,9 @@ export interface Node {
     isExpanded?: boolean;
     isSelectionDisabled?: boolean;
     key: NodeKey;
+    // @deprecated
     label: string;
+    labelDefinition?: LabelDefinition;
 }
 
 // @public (undocumented)
@@ -923,10 +972,14 @@ export class PresentationRpcInterface extends RpcInterface {
     getContentDescriptor(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _displayType: string, _keys: KeySetJSON, _selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined>;
     // (undocumented)
     getContentSetSize(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<number>;
-    // (undocumented)
+    // @deprecated (undocumented)
     getDisplayLabel(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<string>;
     // (undocumented)
+    getDisplayLabelDefinition(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON>;
+    // @deprecated (undocumented)
     getDisplayLabels(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<string[]>;
+    // (undocumented)
+    getDisplayLabelsDefinitions(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]>;
     // (undocumented)
     getDistinctValues(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]>;
     // (undocumented)
@@ -1303,7 +1356,11 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     getDisplayLabel(options: LabelRequestOptions<IModelToken>, key: InstanceKeyJSON): Promise<string>;
     // (undocumented)
+    getDisplayLabelDefinition(options: LabelRequestOptions<IModelToken>, key: InstanceKeyJSON): Promise<LabelDefinitionJSON>;
+    // (undocumented)
     getDisplayLabels(options: LabelRequestOptions<IModelToken>, keys: InstanceKeyJSON[]): Promise<string[]>;
+    // (undocumented)
+    getDisplayLabelsDefinitions(options: LabelRequestOptions<IModelToken>, keys: InstanceKeyJSON[]): Promise<LabelDefinitionJSON[]>;
     // (undocumented)
     getDistinctValues(options: ContentRequestOptions<IModelToken>, descriptor: DescriptorJSON, keys: KeySetJSON, fieldName: string, maximumValueCount: number): Promise<string[]>;
     // (undocumented)

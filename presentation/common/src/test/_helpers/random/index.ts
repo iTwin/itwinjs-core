@@ -9,3 +9,4 @@ export * from "./Ruleset";
 export * from "./IModelJs";
 export * from "./Misc";
 export * from "./Selection";
+export * from "./LabelDefinition";

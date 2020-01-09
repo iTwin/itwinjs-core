@@ -141,7 +141,61 @@ Array [
                           "modelId": "0x45",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2A]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2A]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2A]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2A",
+                                        "rawValue": "2A",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                     ],
                     "extendedData": Object {
@@ -150,7 +204,18 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Floor",
+                    "label": PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Label",
+                        "name": "node_label",
+                        "typename": "string",
+                      },
+                      "value": Object {
+                        "displayValue": "Floor",
+                        "value": "Floor",
+                        "valueFormat": 0,
+                      },
+                    },
                   },
                 ],
                 "extendedData": Object {
@@ -158,7 +223,18 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "Arch 1.dgn",
+                "label": PropertyRecord {
+                  "property": Object {
+                    "displayLabel": "Label",
+                    "name": "node_label",
+                    "typename": "string",
+                  },
+                  "value": Object {
+                    "displayValue": "Arch 1.dgn",
+                    "value": "Arch 1.dgn",
+                    "valueFormat": 0,
+                  },
+                },
               },
               Object {
                 "children": Array [
@@ -170,7 +246,61 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3I]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3I]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3I]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3I",
+                                        "rawValue": "3I",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -178,7 +308,61 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3J]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3J]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3J]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3J",
+                                        "rawValue": "3J",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -186,7 +370,61 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3K]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3K]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3K]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3K",
+                                        "rawValue": "3K",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -194,7 +432,61 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3L]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3L]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3L]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3L",
+                                        "rawValue": "3L",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                     ],
                     "extendedData": Object {
@@ -203,7 +495,18 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Walls",
+                    "label": PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Label",
+                        "name": "node_label",
+                        "typename": "string",
+                      },
+                      "value": Object {
+                        "displayValue": "Walls",
+                        "value": "Walls",
+                        "valueFormat": 0,
+                      },
+                    },
                   },
                 ],
                 "extendedData": Object {
@@ -211,7 +514,18 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "Arch 2.dgn",
+                "label": PropertyRecord {
+                  "property": Object {
+                    "displayLabel": "Label",
+                    "name": "node_label",
+                    "typename": "string",
+                  },
+                  "value": Object {
+                    "displayValue": "Arch 2.dgn",
+                    "value": "Arch 2.dgn",
+                    "valueFormat": 0,
+                  },
+                },
               },
               Object {
                 "children": Array [
@@ -223,7 +537,61 @@ Array [
                           "modelId": "0x49",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3O]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3O]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3O]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3O",
+                                        "rawValue": "3O",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                     ],
                     "extendedData": Object {
@@ -232,7 +600,18 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Roof",
+                    "label": PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Label",
+                        "name": "node_label",
+                        "typename": "string",
+                      },
+                      "value": Object {
+                        "displayValue": "Roof",
+                        "value": "Roof",
+                        "valueFormat": 0,
+                      },
+                    },
                   },
                   Object {
                     "children": Array [
@@ -242,7 +621,61 @@ Array [
                           "modelId": "0x49",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3M]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3M]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3M]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3M",
+                                        "rawValue": "3M",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -250,7 +683,61 @@ Array [
                           "modelId": "0x49",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3N]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3N]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3N]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3N",
+                                        "rawValue": "3N",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                     ],
                     "extendedData": Object {
@@ -259,7 +746,18 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Walls",
+                    "label": PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Label",
+                        "name": "node_label",
+                        "typename": "string",
+                      },
+                      "value": Object {
+                        "displayValue": "Walls",
+                        "value": "Walls",
+                        "valueFormat": 0,
+                      },
+                    },
                   },
                 ],
                 "extendedData": Object {
@@ -267,7 +765,18 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "Arch 3.dgn",
+                "label": PropertyRecord {
+                  "property": Object {
+                    "displayLabel": "Label",
+                    "name": "node_label",
+                    "typename": "string",
+                  },
+                  "value": Object {
+                    "displayValue": "Arch 3.dgn",
+                    "value": "Arch 3.dgn",
+                    "valueFormat": 0,
+                  },
+                },
               },
             ],
             "extendedData": Object {
@@ -275,7 +784,18 @@ Array [
             },
             "hasChildren": true,
             "icon": "icon-folder",
-            "label": "Arch master.dgn",
+            "label": PropertyRecord {
+              "property": Object {
+                "displayLabel": "Label",
+                "name": "node_label",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "Arch master.dgn",
+                "value": "Arch master.dgn",
+                "valueFormat": 0,
+              },
+            },
           },
           Object {
             "children": Array [
@@ -289,7 +809,61 @@ Array [
                           "modelId": "0x4d",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3Q]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3Q]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3Q]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3Q",
+                                        "rawValue": "3Q",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                     ],
                     "extendedData": Object {
@@ -298,7 +872,18 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "sewer",
+                    "label": PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Label",
+                        "name": "node_label",
+                        "typename": "string",
+                      },
+                      "value": Object {
+                        "displayValue": "sewer",
+                        "value": "sewer",
+                        "valueFormat": 0,
+                      },
+                    },
                   },
                   Object {
                     "children": Array [
@@ -308,7 +893,61 @@ Array [
                           "modelId": "0x4d",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3P]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3P]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3P]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3P",
+                                        "rawValue": "3P",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                     ],
                     "extendedData": Object {
@@ -317,7 +956,18 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "supply",
+                    "label": PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Label",
+                        "name": "node_label",
+                        "typename": "string",
+                      },
+                      "value": Object {
+                        "displayValue": "supply",
+                        "value": "supply",
+                        "valueFormat": 0,
+                      },
+                    },
                   },
                 ],
                 "extendedData": Object {
@@ -325,7 +975,18 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "MEP 1.dgn",
+                "label": PropertyRecord {
+                  "property": Object {
+                    "displayLabel": "Label",
+                    "name": "node_label",
+                    "typename": "string",
+                  },
+                  "value": Object {
+                    "displayValue": "MEP 1.dgn",
+                    "value": "MEP 1.dgn",
+                    "valueFormat": 0,
+                  },
+                },
               },
             ],
             "extendedData": Object {
@@ -333,7 +994,18 @@ Array [
             },
             "hasChildren": true,
             "icon": "icon-folder",
-            "label": "MEP master.dgn",
+            "label": PropertyRecord {
+              "property": Object {
+                "displayLabel": "Label",
+                "name": "node_label",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "MEP master.dgn",
+                "value": "MEP master.dgn",
+                "valueFormat": 0,
+              },
+            },
           },
           Object {
             "children": Array [
@@ -347,7 +1019,61 @@ Array [
                           "modelId": "0x41",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2B]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2B]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2B]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2B",
+                                        "rawValue": "2B",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                     ],
                     "extendedData": Object {
@@ -356,7 +1082,18 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Floor",
+                    "label": PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Label",
+                        "name": "node_label",
+                        "typename": "string",
+                      },
+                      "value": Object {
+                        "displayValue": "Floor",
+                        "value": "Floor",
+                        "valueFormat": 0,
+                      },
+                    },
                   },
                 ],
                 "extendedData": Object {
@@ -364,7 +1101,18 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "Struct 1.dgn",
+                "label": PropertyRecord {
+                  "property": Object {
+                    "displayLabel": "Label",
+                    "name": "node_label",
+                    "typename": "string",
+                  },
+                  "value": Object {
+                    "displayValue": "Struct 1.dgn",
+                    "value": "Struct 1.dgn",
+                    "valueFormat": 0,
+                  },
+                },
               },
               Object {
                 "children": Array [
@@ -376,7 +1124,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3C]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3C]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3C]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3C",
+                                        "rawValue": "3C",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -384,7 +1186,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3D]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3D]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3D]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3D",
+                                        "rawValue": "3D",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -392,7 +1248,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3E]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3E]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3E]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3E",
+                                        "rawValue": "3E",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -400,7 +1310,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3F]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3F]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3F]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3F",
+                                        "rawValue": "3F",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -408,7 +1372,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3G]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3G]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3G]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3G",
+                                        "rawValue": "3G",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -416,7 +1434,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3H]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3H]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3H]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3H",
+                                        "rawValue": "3H",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                     ],
                     "extendedData": Object {
@@ -425,7 +1497,18 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Beams",
+                    "label": PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Label",
+                        "name": "node_label",
+                        "typename": "string",
+                      },
+                      "value": Object {
+                        "displayValue": "Beams",
+                        "value": "Beams",
+                        "valueFormat": 0,
+                      },
+                    },
                   },
                   Object {
                     "children": Array [
@@ -435,7 +1518,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2C]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2C]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2C]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2C",
+                                        "rawValue": "2C",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -443,7 +1580,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2D]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2D]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2D]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2D",
+                                        "rawValue": "2D",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -451,7 +1642,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2E]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2E]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2E]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2E",
+                                        "rawValue": "2E",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -459,7 +1704,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2F]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2F]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2F]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2F",
+                                        "rawValue": "2F",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -467,7 +1766,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2G]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2G]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2G]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2G",
+                                        "rawValue": "2G",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -475,7 +1828,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2H]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2H]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2H]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2H",
+                                        "rawValue": "2H",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -483,7 +1890,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2I]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2I]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2I]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2I",
+                                        "rawValue": "2I",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -491,7 +1952,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2J]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2J]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2J]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2J",
+                                        "rawValue": "2J",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -499,7 +2014,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2K]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2K]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2K]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2K",
+                                        "rawValue": "2K",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -507,7 +2076,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2L]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2L]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2L]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2L",
+                                        "rawValue": "2L",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -515,7 +2138,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2M]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2M]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2M]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2M",
+                                        "rawValue": "2M",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -523,7 +2200,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2N]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2N]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2N]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2N",
+                                        "rawValue": "2N",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -531,7 +2262,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2O]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2O]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2O]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2O",
+                                        "rawValue": "2O",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -539,7 +2324,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2P]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2P]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2P]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2P",
+                                        "rawValue": "2P",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -547,7 +2386,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2Q]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2Q]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2Q]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2Q",
+                                        "rawValue": "2Q",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -555,7 +2448,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2R]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2R]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2R]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2R",
+                                        "rawValue": "2R",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -563,7 +2510,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2S]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2S]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2S]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2S",
+                                        "rawValue": "2S",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -571,7 +2572,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2T]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2T]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2T]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2T",
+                                        "rawValue": "2T",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -579,7 +2634,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2U]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2U]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2U]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2U",
+                                        "rawValue": "2U",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -587,7 +2696,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2V]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2V]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2V]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2V",
+                                        "rawValue": "2V",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -595,7 +2758,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2W]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2W]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2W]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2W",
+                                        "rawValue": "2W",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -603,7 +2820,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2X]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2X]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2X]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2X",
+                                        "rawValue": "2X",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -611,7 +2882,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2Y]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2Y]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2Y]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2Y",
+                                        "rawValue": "2Y",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -619,7 +2944,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2Z]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-2Z]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-2Z]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "2Z",
+                                        "rawValue": "2Z",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -627,7 +3006,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3A]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3A]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3A]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3A",
+                                        "rawValue": "3A",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -635,7 +3068,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3B]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-3B]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-3B]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "3B",
+                                        "rawValue": "3B",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -643,7 +3130,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-30]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-30]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-30]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "30",
+                                        "rawValue": "30",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -651,7 +3192,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-31]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-31]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-31]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "31",
+                                        "rawValue": "31",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -659,7 +3254,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-32]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-32]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-32]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "32",
+                                        "rawValue": "32",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -667,7 +3316,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-33]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-33]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-33]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "33",
+                                        "rawValue": "33",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -675,7 +3378,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-34]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-34]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-34]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "34",
+                                        "rawValue": "34",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -683,7 +3440,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-35]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-35]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-35]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "35",
+                                        "rawValue": "35",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -691,7 +3502,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-36]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-36]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-36]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "36",
+                                        "rawValue": "36",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -699,7 +3564,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-37]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-37]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-37]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "37",
+                                        "rawValue": "37",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -707,7 +3626,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-38]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-38]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-38]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "38",
+                                        "rawValue": "38",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                       Object {
                         "extendedData": Object {
@@ -715,7 +3688,61 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-39]",
+                        "label": PropertyRecord {
+                          "property": Object {
+                            "displayLabel": "Label",
+                            "name": "node_label",
+                            "typename": "composite",
+                          },
+                          "value": Object {
+                            "displayValue": "Physical Object [0-39]",
+                            "value": Object {
+                              "parts": Array [
+                                Object {
+                                  "displayValue": "Physical Object",
+                                  "rawValue": "Physical Object",
+                                  "typeName": "string",
+                                },
+                                Object {
+                                  "displayValue": "[0-39]",
+                                  "rawValue": Object {
+                                    "parts": Array [
+                                      Object {
+                                        "displayValue": "[",
+                                        "rawValue": "[",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "0",
+                                        "rawValue": "0",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "-",
+                                        "rawValue": "-",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "39",
+                                        "rawValue": "39",
+                                        "typeName": "string",
+                                      },
+                                      Object {
+                                        "displayValue": "]",
+                                        "rawValue": "]",
+                                        "typeName": "string",
+                                      },
+                                    ],
+                                    "separator": "",
+                                  },
+                                  "typeName": "composite",
+                                },
+                              ],
+                              "separator": " ",
+                            },
+                            "valueFormat": 0,
+                          },
+                        },
                       },
                     ],
                     "extendedData": Object {
@@ -724,7 +3751,18 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Columns",
+                    "label": PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Label",
+                        "name": "node_label",
+                        "typename": "string",
+                      },
+                      "value": Object {
+                        "displayValue": "Columns",
+                        "value": "Columns",
+                        "valueFormat": 0,
+                      },
+                    },
                   },
                 ],
                 "extendedData": Object {
@@ -732,7 +3770,18 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "Struct 2.dgn",
+                "label": PropertyRecord {
+                  "property": Object {
+                    "displayLabel": "Label",
+                    "name": "node_label",
+                    "typename": "string",
+                  },
+                  "value": Object {
+                    "displayValue": "Struct 2.dgn",
+                    "value": "Struct 2.dgn",
+                    "valueFormat": 0,
+                  },
+                },
               },
             ],
             "extendedData": Object {
@@ -740,7 +3789,18 @@ Array [
             },
             "hasChildren": true,
             "icon": "icon-folder",
-            "label": "Struct master.dgn",
+            "label": PropertyRecord {
+              "property": Object {
+                "displayLabel": "Label",
+                "name": "node_label",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "Struct master.dgn",
+                "value": "Struct master.dgn",
+                "valueFormat": 0,
+              },
+            },
           },
         ],
         "extendedData": Object {
@@ -748,7 +3808,18 @@ Array [
         },
         "hasChildren": true,
         "icon": "icon-folder",
-        "label": "Joe's house",
+        "label": PropertyRecord {
+          "property": Object {
+            "displayLabel": "Label",
+            "name": "node_label",
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "Joe's house",
+            "value": "Joe's house",
+            "valueFormat": 0,
+          },
+        },
       },
     ],
     "extendedData": Object {
@@ -756,7 +3827,18 @@ Array [
     },
     "hasChildren": true,
     "icon": "icon-imodel-hollow-2",
-    "label": "Joe's house.bim",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Joe's house.bim",
+        "value": "Joe's house.bim",
+        "valueFormat": 0,
+      },
+    },
   },
 ]
 `;

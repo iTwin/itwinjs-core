@@ -14,6 +14,7 @@ import {
   DisplayValueJSON, ValueJSON,
   ValuesMapJSON, DisplayValuesMapJSON,
 } from "./Value";
+import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
 
 /**
  * Serialized [[Item]] JSON representation.
@@ -21,7 +22,9 @@ import {
  */
 export interface ItemJSON {
   primaryKeys: InstanceKeyJSON[];
-  label: string;
+  /** @deprecated use labelDefinition instead */
+  label?: string;
+  labelDefinition: LabelDefinitionJSON;
   imageId: string;
   classInfo?: ClassInfoJSON;
   values: ValuesDictionary<ValueJSON>;
@@ -37,8 +40,12 @@ export interface ItemJSON {
 export class Item {
   /** Keys of instances whose data is contained in this item */
   public primaryKeys: InstanceKey[];
-  /** Display label of the item */
+  /** Display label of the item
+   * @deprecated use 'labelDefinition' instead
+   */
   public label: string;
+  /** Definition of item display label */
+  public labelDefinition: LabelDefinition;
   /** ID of the image associated with this item */
   public imageId: string;
   /** For cases when item consists only of same class instances, information about the ECClass */
@@ -63,16 +70,17 @@ export class Item {
    * @param mergedFieldNames List of field names whose values are merged (see [Merging values]($docs/learning/presentation/Content/Terminology#value-merging))
    * @param extendedData Extended data injected into this content item
    */
-  public constructor(primaryKeys: InstanceKey[], label: string, imageId: string, classInfo: ClassInfo | undefined,
+  public constructor(primaryKeys: InstanceKey[], label: string | LabelDefinition, imageId: string, classInfo: ClassInfo | undefined,
     values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, mergedFieldNames: string[], extendedData?: { [key: string]: any }) {
     this.primaryKeys = primaryKeys;
-    this.label = label;
     this.imageId = imageId;
     this.classInfo = classInfo;
     this.values = values;
     this.displayValues = displayValues;
     this.mergedFieldNames = mergedFieldNames;
     this.extendedData = extendedData;
+    this.label = typeof label === "string" ? label : label.displayValue;
+    this.labelDefinition = typeof label === "string" ? LabelDefinition.fromLabelString(label) : label;
   }
 
   /**
@@ -84,10 +92,13 @@ export class Item {
 
   /** @internal */
   public toJSON(): ItemJSON {
-    return Object.assign({}, this, {
+    const { labelDefinition, ...content } = this;
+    return Object.assign({}, content, {
       classInfo: this.classInfo ? ClassInfo.toJSON(this.classInfo) : undefined,
       values: Value.toJSON(this.values) as ValuesMapJSON,
       displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
+      labelDefinition: LabelDefinition.toJSON(labelDefinition),
+      label: labelDefinition.displayValue,
     });
   }
 
@@ -109,6 +120,8 @@ export class Item {
       classInfo: json.classInfo ? ClassInfo.fromJSON(json.classInfo) : undefined,
       values: Value.fromJSON(json.values),
       displayValues: DisplayValue.fromJSON(json.displayValues),
+      labelDefinition: LabelDefinition.fromJSON(json.labelDefinition),
+      label: json.labelDefinition.displayValue,
     } as Partial<Item>);
   }
 

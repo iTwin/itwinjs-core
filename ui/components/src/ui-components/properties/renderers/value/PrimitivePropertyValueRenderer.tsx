@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import { IPropertyValueRenderer, PropertyValueRendererContext, PropertyContainerType } from "../../ValueRendererManager";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { withContextStyle } from "./WithContextStyle";
@@ -22,16 +22,15 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
 
   /** Method that returns a JSX representation of PropertyRecord */
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
-    if (context && context.containerType === PropertyContainerType.Tree)
+    if (context && context.decoratedTextElement)
       return withContextStyle(context.decoratedTextElement, context);
 
-    const value = (record.value as PrimitiveValue).value;
+    const primitiveValue = (record.value as PrimitiveValue);
+    if (primitiveValue.value === undefined)
+      return withContextStyle(primitiveValue.displayValue || "", context);
 
-    if (value === undefined)
-      return withContextStyle("", context);
+    const stringValue = TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitiveValue.value);
 
-    const stringValue = TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
-
-    return withContextStyle(withLinks(record, stringValue), context);
+    return withContextStyle(withLinks(record, stringValue, context && context.textHighlighter), context);
   }
 }

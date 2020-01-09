@@ -40,6 +40,13 @@ describe("Utils", () => {
       expect(treeNode).to.matchSnapshot();
     });
 
+    it("creates tree node without labelDefinition", () => {
+      const node = createRandomECInstanceNode();
+      node.labelDefinition = undefined;
+      const treeNode = createTreeNodeItem(node);
+      expect(treeNode).to.matchSnapshot();
+    });
+
   });
 
   describe("createTreeNodeItems", () => {

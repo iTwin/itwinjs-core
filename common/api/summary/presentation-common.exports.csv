@@ -90,10 +90,23 @@ public;Key
 public;Keys = ReadonlyArray
 public;KeySet
 public;KindOfQuantityInfo
+public;LabelCompositeValue
+public;LabelCompositeValue
+internal;fromJSON(json: LabelCompositeValueJSON): LabelCompositeValue
+internal;toJSON(compositeValue: LabelCompositeValue): LabelCompositeValueJSON
+public;LabelDefinition
+public;LabelDefinition
+internal;fromJSON(json: LabelDefinitionJSON | string): LabelDefinition
+internal;fromLabelString(label: string): LabelDefinitionJSON
+internal;isCompositeDefinition(def: LabelDefinition): def is LabelDefinition &
+internal;reviver(key: string, value: any): any
+internal;toJSON(labelDefinition: LabelDefinition): LabelDefinitionJSON
 public;LabelGroupingNodeKey 
 public;LabelOverride 
+public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRequestOptions
 public;LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit
+internal;LOCALES_DIRECTORY: string
 public;LoggingNamespaces
 public;MultiSchemaClassesSpecification
 public;NavigationRule = RootNodeRule | ChildNodeRule

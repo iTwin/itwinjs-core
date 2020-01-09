@@ -55,7 +55,7 @@ describe("TreeRenderer", () => {
         nodeHeight={() => 50}
       />);
 
-    getByText(node.label);
+    getByText(node.label as string);
   });
 
   it("renders placeholder and starts loading root node", () => {
@@ -147,7 +147,7 @@ describe("TreeRenderer", () => {
         nodeHeight={() => 50}
       />);
 
-    getByText(node.label);
+    getByText(node.label as string);
 
     const newNode = createRandomMutableTreeModelNode();
     const newVisibleNodesMock = moq.Mock.ofType<VisibleTreeNodes>();
@@ -162,7 +162,7 @@ describe("TreeRenderer", () => {
         nodeHeight={() => 50}
       />);
 
-    getByText(newNode.label);
+    getByText(newNode.label as string);
   });
 
   it("scrolls to highlighted node", () => {
@@ -174,7 +174,7 @@ describe("TreeRenderer", () => {
     visibleNodesMock.setup((x) => x[Symbol.iterator]()).returns(() => [node1, node2][Symbol.iterator]());
 
     const highlightProps: HighlightableTreeProps = {
-      searchText: node2.label,
+      searchText: node2.label as string,
       activeMatch: {
         matchIndex: 0,
         nodeId: node2.id,

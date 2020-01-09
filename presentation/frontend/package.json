@@ -42,12 +42,20 @@
         {
           "source": "./src/**/*.json",
           "dest": "./lib"
+        },
+        {
+          "source": "../common/assets/**/*",
+          "dest": "./lib/public"
         }
       ],
       "webpack": {
         "dest": "./lib/module",
         "entry": "./lib/presentation-frontend.js",
         "bundleName": "presentation-frontend"
+      },
+      "pseudoLocalize": {
+        "source": "./lib/public/locales/en",
+        "dest": "./lib/public/locales/en-PSEUDO"
       }
     }
   },

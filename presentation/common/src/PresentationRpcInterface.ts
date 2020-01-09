@@ -9,6 +9,7 @@ import { RpcInterface, IModelToken, IModelTokenProps } from "@bentley/imodeljs-c
 import { NodeKeyJSON } from "./hierarchy/Key";
 import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { NodeJSON } from "./hierarchy/Node";
+import { LabelDefinitionJSON } from "./LabelDefinition";
 import { SelectionInfo, DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ContentJSON } from "./content/Content";
 import {
@@ -91,7 +92,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // tslint:disable-line: naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "1.2.0";
+  public static interfaceVersion = "1.3.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -112,8 +113,13 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getContentAndSize(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<{ content?: ContentJSON, size: number }> { return this.forward(arguments); }
   public async getDistinctValues(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]> { return this.forward(arguments); }
 
+  /** @deprecated use 'getDisplayLabelDefinition' instead */
   public async getDisplayLabel(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<string> { return this.forward(arguments); }
+  /** @deprecated use 'getDisplayLabelsDefinitions' instead */
   public async getDisplayLabels(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<string[]> { return this.forward(arguments); }
+
+  public async getDisplayLabelDefinition(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON> { return this.forward(arguments); }
+  public async getDisplayLabelsDefinitions(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]> { return this.forward(arguments); }
 
   public async getSelectionScopes(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
   public async computeSelection(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }

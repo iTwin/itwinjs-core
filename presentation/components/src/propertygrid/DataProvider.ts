@@ -19,7 +19,7 @@ import {
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
-import { priorityAndNameSortFunction } from "../common/Utils";
+import { priorityAndNameSortFunction, createLabelRecord } from "../common/Utils";
 import { ContentBuilder, filterMatchingFieldPaths, applyOptionalPrefix } from "../common/ContentBuilder";
 import { getFavoritesCategory } from "../favorite-properties/DataProvider";
 
@@ -232,7 +232,7 @@ class PropertyDataBuilder {
     const records = await this.createCategorizedRecords(fields);
     return {
       ...records,
-      label: this._contentItem.label,
+      label: createLabelRecord(this._contentItem.labelDefinition, "content_item_name"),
       description: this._contentItem.classInfo ? this._contentItem.classInfo.label : undefined,
     } as PropertyData;
   }

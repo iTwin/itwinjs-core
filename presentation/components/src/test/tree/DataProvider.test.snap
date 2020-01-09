@@ -4,68 +4,78 @@ exports[`TreeDataProvider getFilteredNodes returns presentation manager result 1
 Array [
   Object {
     "children": Array [],
-    "filteringData": Object {
-      "childMatchesCount": 5837,
-      "matchesCount": 76356,
-    },
-    "index": 769,
+    "index": 841,
     "node": Object {
       "backColor": "rgb(
-    96,
-    226,
-    226
+    32,
+    198,
+    46
   )",
       "description": undefined,
-      "foreColor": "#E9002C",
+      "foreColor": "#970E90",
       "hasChildren": false,
-      "imageId": "Missouri",
+      "imageId": undefined,
       "isCheckboxEnabled": false,
-      "isCheckboxVisible": false,
+      "isCheckboxVisible": true,
       "isChecked": false,
       "isEditable": true,
-      "isExpanded": true,
-      "isSelectionDisabled": false,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
       "key": Object {
         "instanceKey": Object {
-          "className": "Taka",
-          "id": "0xe0610000013f37",
+          "className": "utilize",
+          "id": "0x536300000019a6",
         },
         "pathFromRoot": Array [
-          "e4e25571-05b9-4034-8bb1-b7e5e34bee89",
-          "3267e90a-8528-4b85-8ec0-2dd87fe4a098",
+          "557105b9-034c-4bb1-b7e5-e34bee893267",
+          "e90a8528-b854-4ec0-add8-7fe4a098a1d9",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Movies plum",
+      "label": "SQL",
+      "labelDefinition": Object {
+        "displayValue": "SQL",
+        "rawValue": "Corporate",
+        "typeName": "string",
+      },
     },
   },
   Object {
     "children": Array [],
-    "index": 989,
+    "filteringData": Object {
+      "childMatchesCount": 32434,
+      "matchesCount": 15232,
+    },
+    "index": 794,
     "node": Object {
       "backColor": undefined,
       "description": undefined,
-      "foreColor": "#A93236",
+      "foreColor": "#ECD911",
       "hasChildren": false,
-      "imageId": "Frozen",
+      "imageId": undefined,
       "isCheckboxEnabled": false,
       "isCheckboxVisible": false,
       "isChecked": false,
-      "isEditable": false,
-      "isExpanded": true,
+      "isEditable": true,
+      "isExpanded": false,
       "isSelectionDisabled": true,
       "key": Object {
         "instanceKey": Object {
-          "className": "Cote d'Ivoire",
-          "id": "0xddf20000011fe3",
+          "className": "Mauritius Rupee",
+          "id": "0x11fe300000051e8",
         },
         "pathFromRoot": Array [
-          "83a9d7f7-74e8-4f8a-b944-42664d12027c",
-          "2244b3f7-075d-4c28-8579-7cdfdf3462fa",
+          "083a9d7f-774e-48f8-a394-442664d12027",
+          "c2244b3f-7075-4dc2-8457-97cdfdf3462f",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Refined neural",
+      "label": "hack",
+      "labelDefinition": Object {
+        "displayValue": "hack",
+        "rawValue": "synthesizing",
+        "typeName": "string",
+      },
     },
   },
 ]
@@ -76,45 +86,71 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "Wisconsin",
-        "id": "0xe3970000015b4a",
+        "className": "Movies",
+        "id": "0x23a30000017bf5",
       },
       "pathFromRoot": Array [
-        "5a887966-3af4-4c64-be5e-66399295a54e",
-        "21ab590b-334a-4e25-bb59-28504ca89d67",
+        "79663af4-c647-4e5e-a639-9295a54e21ab",
+        "590b334a-e253-4b59-a850-4ca89d679fe9",
       ],
       "type": "ECInstanceNode",
     },
-    "autoExpand": true,
-    "description": "Voluptatem repellendus sint rerum.",
+    "description": "Ratione voluptatem repellendus sint rerum quod.",
     "hasChildren": true,
-    "id": "21ab590b-334a-4e25-bb59-28504ca89d67/5a887966-3af4-4c64-be5e-66399295a54e",
-    "label": "Tasty Wooden Mouse",
+    "icon": "Prairie",
+    "id": "590b334a-e253-4b59-a850-4ca89d679fe9/79663af4-c647-4e5e-a639-9295a54e21ab",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "model",
+        "value": "Borders",
+        "valueFormat": 0,
+      },
+    },
     "parentId": "cfa5b4da-3271-4b2d-a97b-279993a4436c",
     "style": Object {
       "colorOverrides": Object {
-        "color": 2050433535,
+        "backgroundColor": 1168318463,
+        "color": 1914219007,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "Practical Plastic Fish",
-        "id": "0x17dfb0000004a94",
+        "className": "Investor",
+        "id": "0x837c0000015105",
       },
       "pathFromRoot": Array [
-        "53634882-9809-4817-bdb7-62e5377376d7",
-        "efbbdf5e-70a4-4764-860c-82aebaa5384c",
+        "098173db-762e-4537-b376-d7efbbdf5e70",
+        "a4764c60-c82a-4eba-a538-4c065b3f77fb",
       ],
       "type": "ECInstanceNode",
     },
-    "id": "efbbdf5e-70a4-4764-860c-82aebaa5384c/53634882-9809-4817-bdb7-62e5377376d7",
-    "label": "Cambridgeshire reboot",
+    "description": "Ducimus similique maxime a eligendi veritatis reiciendis occaecati eaque dolor.",
+    "icon": "customer loyalty",
+    "id": "a4764c60-c82a-4eba-a538-4c065b3f77fb/098173db-762e-4537-b376-d7efbbdf5e70",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Central African Republic",
+        "value": "Home Loan Account",
+        "valueFormat": 0,
+      },
+    },
     "parentId": "cfa5b4da-3271-4b2d-a97b-279993a4436c",
     "style": Object {
       "colorOverrides": Object {
-        "color": 1585037311,
+        "backgroundColor": -1246345473,
+        "color": -359597313,
       },
     },
   },
@@ -126,47 +162,69 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "grey",
-        "id": "0x7f5e000000f4a6",
+        "className": "Mountain",
+        "id": "0x102c90000007006",
       },
       "pathFromRoot": Array [
-        "44689e68-48ae-45ef-90f6-e931fa4685cc",
-        "14189a13-8287-4e88-b429-40a6f4fc635a",
+        "9e6848ae-5ef5-40f6-a931-fa4685cc1418",
+        "9a138287-e887-4429-80a6-f4fc635a36a5",
       ],
       "type": "ECInstanceNode",
     },
-    "checkBoxState": 1,
     "hasChildren": true,
-    "id": "14189a13-8287-4e88-b429-40a6f4fc635a/44689e68-48ae-45ef-90f6-e931fa4685cc",
+    "id": "9a138287-e887-4429-80a6-f4fc635a36a5/9e6848ae-5ef5-40f6-a931-fa4685cc1418",
+    "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "Fiji payment",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "data-warehouse",
+        "value": "syndicate",
+        "valueFormat": 0,
+      },
+    },
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 81687551,
-        "color": -1776365569,
+        "backgroundColor": -1872553985,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "national",
-        "id": "0x37190000000e92",
+        "className": "USB",
+        "id": "0x725b000001309d",
       },
       "pathFromRoot": Array [
-        "c0ad3c15-e225-48d9-9174-cf691c86639b",
-        "762a6c71-77b4-413a-a82a-1d6b76624dbc",
+        "0b9c0ad3-c15e-4225-8d91-174cf691c866",
+        "39b762a6-c717-47b4-93aa-82a1d6b76624",
       ],
       "type": "ECInstanceNode",
     },
-    "autoExpand": true,
-    "checkBoxState": 1,
-    "description": "Eum quidem reiciendis veniam sunt sunt.",
-    "icon": "orange",
-    "id": "762a6c71-77b4-413a-a82a-1d6b76624dbc/c0ad3c15-e225-48d9-9174-cf691c86639b",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
-    "label": "Assimilated International Investment Account",
+    "icon": "Frozen",
+    "id": "39b762a6-c717-47b4-93aa-82a1d6b76624/0b9c0ad3-c15e-4225-8d91-174cf691c866",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Mississippi",
+        "value": "Tennessee",
+        "valueFormat": 0,
+      },
+    },
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 1638136575,
+        "color": 247031807,
+      },
+    },
   },
 ]
 `;

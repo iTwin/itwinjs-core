@@ -19,6 +19,7 @@ import { DescriptorJSON } from "@bentley/presentation-common/lib/content/Descrip
 import { KeySetJSON } from "@bentley/presentation-common/lib/KeySet";
 import { InstanceKeyJSON } from "@bentley/presentation-common/lib/EC";
 import { NodePathElementJSON } from "@bentley/presentation-common/lib/hierarchy/NodePathElement";
+import { LabelDefinitionJSON } from "@bentley/presentation-common/lib/LabelDefinition";
 import { ContentJSON } from "@bentley/presentation-common/lib/content/Content";
 import { PresentationRpcImplStateless } from "./PresentationRpcImplStateless";
 import { PresentationRpcImplStateful } from "./PresentationRpcImplStateful";
@@ -96,12 +97,22 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     return this.pickImpl(requestOptions).getDistinctValues(token, requestOptions, descriptor, keys, fieldName, maximumValueCount);
   }
 
+  /** @deprecated */
   public async getDisplayLabel(token: IModelToken, requestOptions: LabelRpcRequestOptions, key: InstanceKeyJSON): PresentationRpcResponse<string> {
     return this.pickImpl(requestOptions).getDisplayLabel(token, requestOptions, key);
   }
 
+  /** @deprecated */
   public async getDisplayLabels(token: IModelToken, requestOptions: LabelRpcRequestOptions, keys: InstanceKeyJSON[]): PresentationRpcResponse<string[]> {
     return this.pickImpl(requestOptions).getDisplayLabels(token, requestOptions, keys);
+  }
+
+  public async getDisplayLabelDefinition(token: IModelToken, requestOptions: LabelRpcRequestOptions, key: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON> {
+    return this.pickImpl(requestOptions).getDisplayLabelDefinition(token, requestOptions, key);
+  }
+
+  public async getDisplayLabelsDefinitions(token: IModelToken, requestOptions: LabelRpcRequestOptions, keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]> {
+    return this.pickImpl(requestOptions).getDisplayLabelsDefinitions(token, requestOptions, keys);
   }
 
   public async getSelectionScopes(token: IModelToken, requestOptions: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {
