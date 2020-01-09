@@ -940,7 +940,7 @@
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
       "name": "xpath",
