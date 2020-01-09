@@ -421,7 +421,7 @@ export abstract class ViewState extends ElementState {
 
   /**  Get the point at the geometric center of the view. */
   public getCenter(result?: Point3d): Point3d {
-    const delta = this.getRotation().transpose().multiplyVector(this.getExtents());
+    const delta = this.getRotation().multiplyTransposeVector(this.getExtents());
     return this.getOrigin().plusScaled(delta, 0.5, result);
   }
 
@@ -643,7 +643,7 @@ export abstract class ViewState extends ElementState {
     const origExtents = extents.clone();
     extents.y = extents.x * this.getAspectRatioSkew() / windowAspect;
     // adjust origin by half of the distance we modified extents to keep centered
-    origin.addScaledInPlace(this.getRotation().multiplyTransposeVector(origExtents.minus(extents, origExtents)), .5);
+    origin.addScaledInPlace(this.getRotation().multiplyTransposeVector(extents.vectorTo(origExtents, origExtents)), .5);
   }
 
   /** @internal */
@@ -656,10 +656,6 @@ export abstract class ViewState extends ElementState {
     this.adjustAspectRatio(origin, extents, windowAspect);
     this.setOrigin(origin);
     this.setExtents(extents);
-
-    // if the camera is on, re-center the eyepoint.
-    if (this.isCameraEnabled())
-      this.centerEyePoint();
   }
 
   /** @internal */
@@ -696,7 +692,7 @@ export abstract class ViewState extends ElementState {
 
     delta.x = limitWindowSize(delta.x, false);
     delta.y = limitWindowSize(delta.y, false);
-    delta.z = limitWindowSize(delta.z, true);   // We ignore z error messages for the sake of 2D views
+    delta.z = limitWindowSize(delta.z, true);   // We ignore z error messages for the sake of 2d views
 
     if (messageNeeded && error !== ViewStatus.Success)
       this.showFrustumErrorMessage(error);
@@ -1051,6 +1047,10 @@ export abstract class ViewState3d extends ViewState {
     this.rotation = YawPitchRollAngles.fromJSON(props.angles).toMatrix3d();
     assert(this.rotation.isRigid());
     this.camera = new Camera(props.camera);
+
+    // if the camera is on, make sure the eyepoint is centered.
+    if (this.isCameraEnabled())
+      this.centerEyePoint();
   }
 
   /** @internal */
@@ -1366,8 +1366,8 @@ export abstract class ViewState3d extends ViewState {
   public centerEyePoint(backDistance?: number): void {
     const eyePoint = this.getExtents().scale(0.5);
     eyePoint.z = backDistance ? backDistance : this.getBackDistance();
-    const eye = this.getRotation().multiplyTransposeXYZ(eyePoint.x, eyePoint.y, eyePoint.z);
-    this.camera.setEyePoint(this.getOrigin().plus(eye));
+    const eye = this.getOrigin().plus(this.getRotation().multiplyTransposeXYZ(eyePoint.x, eyePoint.y, eyePoint.z));
+    this.camera.setEyePoint(eye);
   }
 
   /** Center the focus distance of the camera halfway between the front plane and the back plane, keeping the eyepoint,
