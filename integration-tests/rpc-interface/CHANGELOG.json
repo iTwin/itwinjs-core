@@ -1,0 +1,11 @@
+{
+  "name": "@bentley/rpcinterface-integration-test",
+  "entries": [
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/rpcinterface-integration-test_v1.11.0",
+      "date": "Thu, 09 Jan 2020 06:01:07 GMT",
+      "comments": {}
+    }
+  ]
+}
