@@ -225,7 +225,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       data: {
         successRedirectUrl: successRedirectUrl || window.location.href,
       },
-    }); // tslint:disable-line:no-floating-promises
+    });
   }
 
   /**
@@ -237,7 +237,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    */
   public async signOut(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    await this._userManager!.signoutRedirect(); // tslint:disable-line:no-floating-promises
+    await this._userManager!.signoutRedirect();
   }
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */

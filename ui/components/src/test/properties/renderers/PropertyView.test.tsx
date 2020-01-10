@@ -14,10 +14,10 @@ import { PropertyView } from "../../../ui-components";
 describe("PropertyView", () => {
   let propertyRecord: PropertyRecord;
 
-  before(() => {
+  before(async () => {
     propertyRecord = TestUtils.createPrimitiveStringProperty("Label", "Model");
 
-    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+    await TestUtils.initializeUiComponents();
   });
 
   it("renders label and value", () => {

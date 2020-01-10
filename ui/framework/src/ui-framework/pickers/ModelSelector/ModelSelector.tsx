@@ -111,12 +111,11 @@ export class ModelSelectorWidget extends React.Component<
   private _initModelState = async () => {
     return Presentation.presentation
       .rulesets()
-      .add(require("../../../../rulesets/Models.json")) // tslint:disable-line:no-floating-promises
+      .add(require("../../../../rulesets/Models.json"))
       .then((ruleset: RegisteredRuleset) => {
         this._modelRuleset = ruleset;
 
         this._setViewType(ruleset).then(() => {
-          // tslint:disable-line:no-floating-promises
           this._updateModelsWithViewport(this.state.activeView); // tslint:disable-line:no-floating-promises
         });
       });
@@ -126,12 +125,11 @@ export class ModelSelectorWidget extends React.Component<
   private _initCategoryState = async () => {
     return Presentation.presentation
       .rulesets()
-      .add(require("../../../../rulesets/Categories.json")) // tslint:disable-line:no-floating-promises
+      .add(require("../../../../rulesets/Categories.json"))
       .then((ruleset: RegisteredRuleset) => {
         this._categoryRuleset = ruleset;
 
         this._setViewType(ruleset).then(() => {
-          // tslint:disable-line:no-floating-promises
           this._updateCategoriesWithViewport(this.state.activeView); // tslint:disable-line:no-floating-promises
         });
       });

@@ -51,7 +51,7 @@ function createDataProvider(props: PresentationNodeLoaderProps) {
     dataProvider = provider;
   }
   if (props.preloadingEnabled && dataProvider.loadHierarchy) {
-    dataProvider.loadHierarchy(); // tslint:disable-line: no-floating-promises
+    dataProvider.loadHierarchy(); // tslint:disable-line:no-floating-promises
   }
   return dataProvider;
 }

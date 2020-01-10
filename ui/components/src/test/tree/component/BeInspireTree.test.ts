@@ -1276,7 +1276,7 @@ describe("BeInspireTree", () => {
         done();
       });
 
-      // tslint:disable-next-line: no-floating-promises
+      // tslint:disable-next-line:no-floating-promises
       tree.requestNodeLoad(undefined, 2);
     });
 

@@ -19,12 +19,12 @@ export function useRulesetRegistration(ruleset: Ruleset) {
       registeredRuleset.current = await Presentation.presentation.rulesets().add(ruleset);
     };
 
-    register(); // tslint:disable-line: no-floating-promises
+    register(); // tslint:disable-line:no-floating-promises
 
     return () => {
       // istanbul ignore else
       if (registeredRuleset.current)
-        Presentation.presentation.rulesets().remove(registeredRuleset.current); // tslint:disable-line: no-floating-promises
+        Presentation.presentation.rulesets().remove(registeredRuleset.current); // tslint:disable-line:no-floating-promises
     };
   }, []);
 }

@@ -47,7 +47,7 @@ describe("PropertyGrid", () => {
   });
 
   before(async () => {
-    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+    await TestUtils.initializeUiComponents();
   });
 
   describe("rendering", () => {

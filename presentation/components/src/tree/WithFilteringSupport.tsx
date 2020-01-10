@@ -95,7 +95,7 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
       const candidateFilter = createFilterKey(this.props.dataProvider, this.props.filter);
       if (!_.isEqual(currFilter, candidateFilter)) {
         this.setState({ inProgress: candidateFilter }, () => {
-          // tslint:disable-next-line: no-floating-promises
+          // tslint:disable-next-line:no-floating-promises
           this.loadDataProvider(candidateFilter.filter);
         });
       }
@@ -107,7 +107,7 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
         this.setState(
           (_prevState, props) => ({ inProgress: createFilterKey(props.dataProvider, filter) }),
           () => {
-            // tslint:disable-next-line: no-floating-promises
+            // tslint:disable-next-line:no-floating-promises
             this.loadDataProvider(filter);
           });
       }

@@ -237,7 +237,7 @@ async function setViewType(activeView?: Viewport) {
 
   const view = activeView.view as SpatialViewState;
   const viewType = view.is3d() ? "3d" : "2d";
-  await Presentation.presentation.vars(RULESET.id).setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
+  await Presentation.presentation.vars(RULESET.id).setString("ViewType", viewType);
 }
 
 /** @internal */

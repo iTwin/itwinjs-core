@@ -132,7 +132,7 @@ describe("Workflow & WorkflowManager", () => {
       expect(WorkflowManager.defaultWorkflowId).to.eq("ExampleWorkflow");
     });
 
-    it("setActiveWorkflowAndTask & isActive", () => {
+    it("setActiveWorkflowAndTask & isActive", async () => {
       const workflow = WorkflowManager.findWorkflow("ExampleWorkflow");
       expect(workflow).to.not.be.undefined;
 
@@ -141,7 +141,7 @@ describe("Workflow & WorkflowManager", () => {
         expect(task1).to.not.be.undefined;
 
         if (task1) {
-          WorkflowManager.setActiveWorkflowAndTask(workflow, task1); // tslint:disable-line:no-floating-promises
+          await WorkflowManager.setActiveWorkflowAndTask(workflow, task1);
           expect(workflow.isActive).to.be.true;
           expect(task1.isActive).to.be.true;
           expect(WorkflowManager.activeWorkflow).to.eq(workflow);

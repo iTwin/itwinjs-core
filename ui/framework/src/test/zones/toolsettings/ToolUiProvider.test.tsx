@@ -81,12 +81,12 @@ describe("ToolUiProvider", () => {
     ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
   });
 
-  it("starting a tool with tool settings", () => {
+  it("starting a tool with tool settings", async () => {
     const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
       FrontstageManager.ensureToolInformationIsSet(testToolId);
       FrontstageManager.setActiveToolId(testToolId);

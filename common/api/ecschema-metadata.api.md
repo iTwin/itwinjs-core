@@ -2923,7 +2923,7 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
     readonly schema: Schema;
 }
 
-// @alpha
+// @alpha @deprecated
 export abstract class SchemaFileLocater {
     constructor();
     addSchemaSearchPath(schemaPath: string): void;

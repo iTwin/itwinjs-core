@@ -205,7 +205,7 @@ export class PresentationManager {
   // tslint:disable-next-line: naming-convention
   private onIModelOpened = (requestContext: ClientRequestContext, imodel: IModelDb) => {
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    // tslint:disable-next-line: no-floating-promises
+    // tslint:disable-next-line:no-floating-promises
     this.getNativePlatform().forceLoadSchemas(requestContext, imodelAddon);
   }
 

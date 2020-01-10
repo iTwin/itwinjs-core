@@ -153,7 +153,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   }
 
   private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
-    using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
+    using((this._tree as any).pauseRendering(), async () => {
       await this._tree.reload();
     });
   }

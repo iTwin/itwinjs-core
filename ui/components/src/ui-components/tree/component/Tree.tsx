@@ -672,7 +672,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
-    using((this.state.model.pauseRendering() as any), async () => { // tslint:disable-line:no-floating-promises
+    using((this.state.model.pauseRendering() as any), async () => {
       for (const item of items) {
         if (item) {
           // specific node needs to be reloaded

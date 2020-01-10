@@ -18,7 +18,7 @@ describe("BreadcrumbDetails", () => {
   let renderedComponent: RenderResult;
 
   before(async () => {
-    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+    await TestUtils.initializeUiComponents();
   });
 
   beforeEach(() => {

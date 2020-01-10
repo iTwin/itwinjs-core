@@ -703,7 +703,7 @@ export class QuantityFormatter implements UnitsProvider {
   public async loadFormatAndParsingMaps(useImperial: boolean): Promise<void> {
     const formatPromise = this.loadFormatSpecsForQuantityTypes(useImperial);
     const parsePromise = this.loadParsingSpecsForQuantityTypes(useImperial);
-    await Promise.all([formatPromise, parsePromise]); // tslint:disable-line:no-floating-promises
+    await Promise.all([formatPromise, parsePromise]);
   }
 
   /** Set the flag to return either metric or imperial formats. This call also makes an async request to refresh the cached formats. */

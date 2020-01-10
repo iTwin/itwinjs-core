@@ -81,7 +81,7 @@ describe("Task", () => {
     if (workflow) {
       const task = workflow.getTask("Task1");
       if (task) {
-        await WorkflowManager.setActiveWorkflowAndTask(workflow, task); // tslint:disable-line:no-floating-promises
+        await WorkflowManager.setActiveWorkflowAndTask(workflow, task);
       }
     }
 

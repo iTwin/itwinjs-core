@@ -406,7 +406,7 @@ class GeoPhotoMarker extends Marker {
 
   public onMouseButton(ev: BeButtonEvent): boolean {
     try {
-      this.doMouseDown(ev); // tslint:disable-line: no-floating-promises
+      this.doMouseDown(ev); // tslint:disable-line:no-floating-promises
     } catch (err) { }
     return true;
   }

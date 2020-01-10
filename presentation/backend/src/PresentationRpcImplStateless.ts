@@ -161,7 +161,7 @@ export class PresentationRpcImplStateless extends PresentationRpcInterface {
   public async loadHierarchy(token: IModelToken, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
     return this.makeRequest(token, requestOptions, async (requestContext, options) => {
       // note: we intentionally don't await here - don't want frontend waiting for this task to complete
-      // tslint:disable-next-line: no-floating-promises
+      // tslint:disable-next-line:no-floating-promises
       this.getManager(requestOptions.clientId).loadHierarchy(requestContext, options)
         .catch((e) => Logger.logWarning("Presentation", `Error loading '${getRulesetId(requestOptions)}' hierarchy: ${e}`));
     });
