@@ -1225,6 +1225,16 @@ class ViewLook extends ViewingToolHandle {
     return true;
   }
 
+  public onWheel() {
+    const tool = this.viewTool;
+    if (!tool.inHandleModify)
+      return;
+    tool.nPts = 0; // start over
+    tool.inHandleModify = false;
+    tool.inDynamicUpdate = false;
+    tool.viewHandles.setFocus(-1);
+  }
+
   public doManipulation(ev: BeButtonEvent, _inDynamics: boolean): boolean {
     const tool = this.viewTool;
     const viewport = tool.viewport!;
@@ -1509,6 +1519,16 @@ class ViewZoom extends ViewingToolHandle {
 
     this.viewTool.provideToolAssistance("Zoom.Prompts.NextPoint");
     return true;
+  }
+
+  public onWheel() {
+    const tool = this.viewTool;
+    if (!tool.inHandleModify)
+      return;
+    tool.nPts = 0; // start over
+    tool.inHandleModify = false;
+    tool.inDynamicUpdate = false;
+    tool.viewHandles.setFocus(-1);
   }
 
   protected getDirection(): Vector3d | undefined {
