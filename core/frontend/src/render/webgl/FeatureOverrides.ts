@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
-import { assert, BeTimePoint, dispose, Id64 } from "@bentley/bentleyjs-core";
+import { assert, dispose, Id64 } from "@bentley/bentleyjs-core";
 import { PackedFeature, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { DisplayParams } from "../primitives/DisplayParams";
@@ -16,6 +16,7 @@ import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture"
 import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { UniformHandle } from "./Handle";
+import { SyncObserver, sync } from "./Sync";
 
 function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): { width: number, height: number } {
   const maxSize = System.instance.capabilities.maxTextureSize;
@@ -61,8 +62,8 @@ export class FeatureOverrides implements WebGLDisposable {
   public readonly target: Target;
   private _lut?: TextureHandle;
   private _mostRecentSymbologyOverrides?: FeatureSymbology.Overrides;
-  private _lastFlashUpdated: BeTimePoint = BeTimePoint.now();
-  private _lastHiliteUpdated: BeTimePoint = BeTimePoint.now();
+  private _lastFlashId = Id64.invalid;
+  private _hiliteSyncObserver: SyncObserver = {};
   private _anyOverridden = true;
   private _allHidden = true;
   private _anyTranslucent = true;
@@ -302,7 +303,8 @@ export class FeatureOverrides implements WebGLDisposable {
     this._mostRecentSymbologyOverrides = ovrs;
     const hilite = this.target.hilites;
     this._lut = this._initialize(map, ovrs, hilite, this.target.flashed);
-    this._lastFlashUpdated = this._lastHiliteUpdated = BeTimePoint.now();
+    this._lastFlashId = Id64.invalid;
+    this._hiliteSyncObserver = {};
   }
 
   public update(features: PackedFeatureTable) {
@@ -313,16 +315,16 @@ export class FeatureOverrides implements WebGLDisposable {
     else
       ovrs = undefined;
 
-    const flashLastUpdated = this.target.flashedUpdateTime;
-    const hiliteLastUpdated = this.target.hiliteUpdateTime;
-    const hiliteUpdated = this._lastHiliteUpdated.before(hiliteLastUpdated);
+    const flashedId = this.target.flashedId;
+
+    const hiliteSyncTarget = this.target.hiliteSyncTarget;
+    const hiliteUpdated = !sync(hiliteSyncTarget, this._hiliteSyncObserver);
 
     const hilite = this.target.hilites;
-    if (ovrsUpdated || hiliteUpdated || this._lastFlashUpdated.before(flashLastUpdated)) {
+    if (ovrsUpdated || hiliteUpdated || flashedId !== this._lastFlashId) {
       this._update(features, this._lut!, this.target.flashed, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
 
-      this._lastFlashUpdated = flashLastUpdated;
-      this._lastHiliteUpdated = hiliteLastUpdated;
+      this._lastFlashId = flashedId;
     }
   }
 

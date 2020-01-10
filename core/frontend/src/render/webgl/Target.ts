@@ -15,7 +15,6 @@ import {
   XAndY,
 } from "@bentley/geometry-core";
 import {
-  BeTimePoint,
   IDisposable,
   Id64,
   Id64String,
@@ -85,6 +84,7 @@ import { SceneContext } from "../../ViewContext";
 import { WebGLDisposable } from "./Disposable";
 import { TargetUniforms } from "./TargetUniforms";
 import { PerformanceMetrics } from "./PerformanceMetrics";
+import { desync, SyncTarget } from "./Sync";
 
 /** Interface for 3d GPU clipping.
  * @internal
@@ -155,10 +155,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _hilites: Hilites = new EmptyHiliteSet();
-  private _hiliteUpdateTime = BeTimePoint.now();
+  private _hiliteSyncTarget: SyncTarget = { syncKey: Number.MIN_SAFE_INTEGER };
   private _flashed: Id64.Uint32Pair = { lower: 0, upper: 0 };
   private _flashedId = Id64.invalid;
-  private _flashedUpdateTime = BeTimePoint.now();
   private _flashIntensity: number = 0;
   private _transparencyThreshold: number = 0;
   private _renderCommands: RenderCommands;
@@ -225,11 +224,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get techniques(): Techniques { return this.renderSystem.techniques!; }
 
   public get hilites(): Hilites { return this._hilites; }
-  public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
+  public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
 
   public get flashed(): Id64.Uint32Pair | undefined { return Id64.isValid(this._flashedId) ? this._flashed : undefined; }
   public get flashedId(): Id64String { return this._flashedId; }
-  public get flashedUpdateTime(): BeTimePoint { return this._flashedUpdateTime; }
   public get flashIntensity(): number { return this._flashIntensity; }
 
   public get scene(): GraphicList { return this._scene; }
@@ -505,13 +503,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
   public setHiliteSet(hilite: HiliteSet): void {
     this._hilites = hilite;
-    this._hiliteUpdateTime = BeTimePoint.now();
+    desync(this._hiliteSyncTarget);
   }
   public setFlashed(id: Id64String, intensity: number) {
     if (id !== this._flashedId) {
       this._flashedId = id;
       this._flashed = Id64.getUint32Pair(id);
-      this._flashedUpdateTime = BeTimePoint.now();
     }
 
     this._flashIntensity = intensity;

@@ -7946,8 +7946,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly flashedId: Id64String;
     // (undocumented)
-    readonly flashedUpdateTime: BeTimePoint;
-    // (undocumented)
     readonly flashIntensity: number;
     // (undocumented)
     getEdgeLineCode(params: ShaderProgramParams, baseCode: number): number;
@@ -7970,7 +7968,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     readonly hilites: Hilites;
     // (undocumented)
-    readonly hiliteUpdateTime: BeTimePoint;
+    readonly hiliteSyncTarget: SyncTarget;
     // (undocumented)
     readonly is2d: boolean;
     // (undocumented)
