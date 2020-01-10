@@ -158,7 +158,7 @@ export async function findAvailableUnattachedRealityModels(projectid: string, iM
       realityDataName = currentRealityData.name as string;
     } else if (currentRealityData.rootDocument) {
       // In case root document contains a relative path we only keep the filename
-      const rootDocParts = (currentRealityData.rootDocumentb as string).split("/");
+      const rootDocParts = (currentRealityData.rootDocument as string).split("/");
       realityDataName = rootDocParts[rootDocParts.length - 1];
     } else {
       // This case would not occur normally but if it does the RD is considered invalid
