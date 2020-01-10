@@ -54,7 +54,7 @@ describe("BreadcrumbDetails", () => {
       path.setCurrentNode(undefined);
       await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 12);
       const node = mockRawTreeDataProvider[1];
-      expect(await waitForElement(() => renderedComponent.getByText(node.label))).to.exist;
+      expect(await waitForElement(() => renderedComponent.getByText(node.label as string))).to.exist;
     });
 
     it("should render when node is defined", async () => {
@@ -62,7 +62,7 @@ describe("BreadcrumbDetails", () => {
       path.setCurrentNode(mockRawTreeDataProvider[1]);
       await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 9);
       const node = mockRawTreeDataProvider[1].children![0];
-      expect(await waitForElement(() => renderedComponent.getByText(node.label))).to.exist;
+      expect(await waitForElement(() => renderedComponent.getByText(node.label as string))).to.exist;
     });
 
     it("should change path", async () => {
@@ -76,7 +76,7 @@ describe("BreadcrumbDetails", () => {
       const nodeInterface = (await mockInterfaceTreeDataProvider.getNodes())[1];
       const path = new BreadcrumbPath(mockInterfaceTreeDataProvider);
       renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />);
-      expect(await waitForElement(() => renderedComponent.getByText(nodeInterface.label))).to.exist;
+      expect(await waitForElement(() => renderedComponent.getByText(nodeInterface.label as string))).to.exist;
       path.setDataProvider(mockRawTreeDataProvider);
       await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 9);
     });
@@ -85,7 +85,7 @@ describe("BreadcrumbDetails", () => {
       const nodeRaw = mockRawTreeDataProvider[1];
       const path = new BreadcrumbPath(mockRawTreeDataProvider);
       renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />);
-      expect(await waitForElement(() => renderedComponent.getByText(nodeRaw.label))).to.exist;
+      expect(await waitForElement(() => renderedComponent.getByText(nodeRaw.label as string))).to.exist;
       path.setDataProvider(mockInterfaceTreeDataProvider);
       await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onChildrenLoaded={renderSpy} path={path} />), renderSpy, 4);
     });
@@ -131,7 +131,7 @@ describe("BreadcrumbDetails", () => {
       const pathUpdateSpy = sinon.stub();
       path.BreadcrumbUpdateEvent.addListener(pathUpdateSpy);
       await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 12);
-      const listRow = renderedComponent.getByText(node.label);
+      const listRow = renderedComponent.getByText(node.label as string);
       const event = new MouseEvent("click", { bubbles: true });
       await waitForUpdate(() => listRow.dispatchEvent(event), pathUpdateSpy, 1);
       expect(pathUpdateSpy).to.have.been.called;

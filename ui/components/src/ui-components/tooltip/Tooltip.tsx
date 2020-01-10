@@ -9,6 +9,7 @@ import { Orientation } from "@bentley/ui-core";
 import { PropertyList } from "../propertygrid/component/PropertyList";
 import { PropertyData } from "../propertygrid/PropertyDataProvider";
 import "./Tooltip.scss";
+import { getLabelString } from "../tree/TreeDataProvider";
 
 /** Properties for [[Tooltip]] React component
  * @alpha
@@ -25,7 +26,7 @@ export class Tooltip extends React.Component<TooltipProps> {
   public render() {
     return (
       <div className="components-element-tooltip">
-        {this.props.propertyData.label}
+        {getLabelString(this.props.propertyData.label)}
         <PropertyList
           orientation={Orientation.Horizontal}
           properties={this.props.propertyData.records.Favorite}

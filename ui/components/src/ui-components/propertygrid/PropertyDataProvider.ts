@@ -22,7 +22,7 @@ export interface PropertyCategory {
  * @public
  */
 export interface PropertyData {
-  label: string;
+  label: string | PropertyRecord;
   description?: string;
   categories: PropertyCategory[];
   records: { [categoryName: string]: PropertyRecord[] };

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module Breadcrumb */
-import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren } from "../tree/TreeDataProvider";
+import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren, getLabelString } from "../tree/TreeDataProvider";
 import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table/TableDataProvider";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { UiComponents } from "../UiComponents";
@@ -36,9 +36,9 @@ export class BreadcrumbTreeUtils {
       key: "label",
       record: new PropertyRecord(
         {
-          value: node.label,
+          value: getLabelString(node.label),
           valueFormat: PropertyValueFormat.Primitive,
-          displayValue: node.label,
+          displayValue: getLabelString(node.label),
         },
         {
           name: "label",

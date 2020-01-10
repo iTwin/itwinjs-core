@@ -142,7 +142,7 @@ describe("ControlledTree", () => {
   it("renders highlighted node", () => {
     mockVisibleNode();
     const highlightProps: HighlightableTreeProps = {
-      searchText: node.label,
+      searchText: node.label as string,
       activeMatch: {
         nodeId: node.id,
         matchIndex: 0,

@@ -13,6 +13,7 @@ import { TreeNodeContent } from "../../../../ui-components/tree/controlled/compo
 import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
 import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import { TestUtils } from "../../../TestUtils";
+import { PropertyRecord } from "@bentley/imodeljs-frontend";
 
 describe("NodeContent", () => {
   const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();
@@ -97,10 +98,37 @@ describe("NodeContent", () => {
     await waitForElement(() => renderedNode.getByText("Async label"));
   });
 
-  it("highlights label", () => {
+  it("uses label record from item node", () => {
+    const customLabelRecord = TestUtils.createPrimitiveStringProperty("node_label_record", "Custom Label Record");
+    node.item.label = customLabelRecord;
+
+    let recordFromRendererManager: PropertyRecord;
+    rendererManagerMock.reset();
+    rendererManagerMock.setup((x) => x.render(moq.It.isAny(), moq.It.isAny()))
+      .callback((record) => { recordFromRendererManager = record; })
+      .returns(() => "Label");
+
+    const renderedNode = render(
+      <TreeNodeContent
+        node={node}
+        valueRendererManager={rendererManagerMock.object}
+      />,
+    );
+
+    renderedNode.getByText("Label");
+    expect(recordFromRendererManager!).to.be.deep.eq(customLabelRecord);
+  });
+
+  it("passes highlight callback to values renderer", () => {
     const highlightingProps: HighlightableTreeNodeProps = { searchText: "label" };
 
     const spy = sinon.spy(HighlightingEngine, "renderNodeLabel");
+
+    rendererManagerMock.reset();
+    rendererManagerMock
+      .setup((x) => x.render(moq.It.isAny(), moq.It.isAny()))
+      .callback((_, context) => { context.textHighlighter(); })
+      .returns(() => "HighlightedLabel");
 
     render(
       <TreeNodeContent

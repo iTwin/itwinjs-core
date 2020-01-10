@@ -1974,14 +1974,14 @@ export function UnderlinedButton(props: UnderlinedButtonProps): JSX.Element;
 
 // @public
 export interface UnderlinedButtonProps {
-    children: string;
+    children: string | React.ReactNode;
     className?: string;
     onClick?: (e: React.MouseEvent) => void;
     title?: string;
 }
 
 // @alpha
-export function useEffectSkipFirst(callback: () => void, deps?: any[]): void;
+export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 
 // @public
 export enum VerticalAlignment {

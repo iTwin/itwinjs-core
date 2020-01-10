@@ -12,7 +12,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
-  createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath, createRandomPropertiesField, createRandomNestedContentField,
+  createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath, createRandomPropertiesField, createRandomNestedContentField, createRandomLabelDefinition,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";

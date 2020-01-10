@@ -195,6 +195,7 @@ describe("FilteredTreeDataProvider", () => {
       const paths: NodePathElement[] = [];
       paths[0] = createRandomNodePathElement();
       paths[0].node.label = "A-1";
+      paths[0].filteringData = undefined;
       expect(provider.countFilteringResults(paths)).to.eq(0);
     });
   });

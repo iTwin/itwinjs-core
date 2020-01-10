@@ -10,7 +10,7 @@ import {
   createRandomECInstanceNodeKeyJSON, createRandomECInstanceKeyJSON,
   createRandomECInstanceNodeJSON, createRandomNodePathElementJSON,
   createRandomContentJSON, createRandomDescriptorJSON,
-  createRandomSelectionScope,
+  createRandomSelectionScope, createRandomLabelDefinitionJSON,
 } from "./_helpers/random";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelToken, RpcManager, RpcInterface, RpcInterfaceDefinition, IModelTokenProps } from "@bentley/imodeljs-common";
@@ -343,6 +343,30 @@ describe("RpcRequestsHandler", () => {
       const result = [faker.random.word(), faker.random.word()];
       rpcInterfaceMock.setup(async (x) => x.getDisplayLabels(token, rpcOptions, keys)).returns(async () => successResponse(result)).verifiable();
       expect(await handler.getDisplayLabels(options, keys)).to.deep.eq(result);
+      rpcInterfaceMock.verifyAll();
+    });
+
+    it("forwards getDisplayLabelDefinition call", async () => {
+      const key = createRandomECInstanceKeyJSON();
+      const options: LabelRequestOptions<IModelToken> = {
+        imodel: token,
+      };
+      const rpcOptions = { ...defaultRpcOptions, ...options };
+      const result = createRandomLabelDefinitionJSON();
+      rpcInterfaceMock.setup(async (x) => x.getDisplayLabelDefinition(token, rpcOptions, key)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.getDisplayLabelDefinition(options, key)).to.deep.eq(result);
+      rpcInterfaceMock.verifyAll();
+    });
+
+    it("forwards getDisplayLabelsDefinitions call", async () => {
+      const keys = [createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()];
+      const options: LabelRequestOptions<IModelToken> = {
+        imodel: token,
+      };
+      const rpcOptions = { ...defaultRpcOptions, ...options };
+      const result = [createRandomLabelDefinitionJSON(), createRandomLabelDefinitionJSON()];
+      rpcInterfaceMock.setup(async (x) => x.getDisplayLabelsDefinitions(token, rpcOptions, keys)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.getDisplayLabelsDefinitions(options, keys)).to.deep.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

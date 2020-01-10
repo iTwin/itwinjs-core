@@ -12,6 +12,7 @@ import { NodeJSON } from "../../../hierarchy/Node";
 import { NodePathElementJSON } from "../../../hierarchy/NodePathElement";
 import { nullable, createRandomHexColor, createRandomRgbColor } from "./Misc";
 import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "./EC";
+import { createRandomLabelDefinitionJSON, createRandomLabelDefinition } from "./LabelDefinition";
 
 export const createRandomBaseNodeKey = (): BaseNodeKey => {
   return {
@@ -94,9 +95,11 @@ export const createRandomGroupingNodeKey = (groupedInstancesCount?: number): Gro
 };
 
 export const createRandomECInstanceNode = (): Node => {
+  const labelDefinition = createRandomLabelDefinition();
   return {
     key: createRandomECInstanceNodeKey(),
-    label: faker.random.words(),
+    label: labelDefinition.displayValue,
+    labelDefinition,
     description: nullable<string>(faker.lorem.sentence),
     imageId: nullable<string>(faker.random.word),
     foreColor: nullable<string>(createRandomHexColor),
@@ -115,6 +118,7 @@ export const createRandomECInstanceNodeJSON = (): NodeJSON => {
   return {
     key: createRandomECInstanceNodeKeyJSON(),
     label: faker.random.words(),
+    labelDefinition: createRandomLabelDefinitionJSON(),
     description: nullable<string>(faker.lorem.sentence),
     foreColor: nullable<string>(createRandomHexColor),
     backColor: nullable<string>(createRandomRgbColor),

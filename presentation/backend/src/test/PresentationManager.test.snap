@@ -14,6 +14,11 @@ Array [
       "type": "ECInstanceNode",
     },
     "label": "test2",
+    "labelDefinition": Object {
+      "displayValue": "test2",
+      "rawValue": "test2",
+      "typeName": "string",
+    },
   },
   Object {
     "key": Object {
@@ -24,6 +29,11 @@ Array [
       "type": "type 2",
     },
     "label": "test3",
+    "labelDefinition": Object {
+      "displayValue": "test3",
+      "rawValue": "test3",
+      "typeName": "string",
+    },
   },
 ]
 `;
@@ -42,6 +52,11 @@ Array [
       "type": "ECInstanceNode",
     },
     "label": "test2",
+    "labelDefinition": Object {
+      "displayValue": "test2",
+      "rawValue": "test2",
+      "typeName": "string",
+    },
   },
   Object {
     "key": Object {
@@ -52,6 +67,11 @@ Array [
       "type": "type 2",
     },
     "label": "test3",
+    "labelDefinition": Object {
+      "displayValue": "test3",
+      "rawValue": "test3",
+      "typeName": "string",
+    },
   },
 ]
 `;
@@ -66,10 +86,15 @@ Object {
         "name": "mesh",
       },
       "displayValues": Object {
-        "synthesizing": "Brunei Dollar",
+        "synthesizing": "interactive teal Pataca",
       },
-      "imageId": "075a0d05-0d92-4ba6-a755-b186798f16c7",
-      "label": "Ball",
+      "imageId": "75a0d050-d92b-4a6a-b55b-186798f16c72",
+      "label": "Customizable",
+      "labelDefinition": Object {
+        "displayValue": "Customizable",
+        "rawValue": "24 hour",
+        "typeName": "string",
+      },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
@@ -78,7 +103,7 @@ Object {
         },
       ],
       "values": Object {
-        "synthesizing": "Branding",
+        "synthesizing": "Yuan Renminbi Brunei Dollar EXE",
       },
     },
   ],
@@ -147,10 +172,15 @@ Object {
         "name": "Orchestrator",
       },
       "displayValues": Object {
-        "transmit": "backing up",
+        "transmit": "Shoes Maryland Developer",
       },
-      "imageId": "a229fb2a-3e8d-4fac-9eb6-e90255f7ce5b",
-      "label": "HTTP pixel Home Loan Account",
+      "imageId": "8a229fb2-a3e8-4dfa-81eb-6e90255f7ce5",
+      "label": "Silver",
+      "labelDefinition": Object {
+        "displayValue": "Silver",
+        "rawValue": "Handcrafted Rubber Soap",
+        "typeName": "string",
+      },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
@@ -159,7 +189,7 @@ Object {
         },
       ],
       "values": Object {
-        "transmit": "Bedfordshire Crescent",
+        "transmit": "Mission infrastructure Concrete",
       },
     },
   ],
@@ -525,10 +555,15 @@ Object {
         "name": "Metal",
       },
       "displayValues": Object {
-        "Music": "Accountability Boliviano Mvdol Mouse",
+        "Music": "orchid",
       },
-      "imageId": "049600de-db3d-41ee-989a-4ae96dcf5570",
-      "label": "Associate Heard Island and McDonald Islands",
+      "imageId": "49600ded-b3d1-4ee1-89a4-ae96dcf55701",
+      "label": "Way",
+      "labelDefinition": Object {
+        "displayValue": "Way",
+        "rawValue": "Awesome Cotton Chair",
+        "typeName": "string",
+      },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
@@ -537,7 +572,7 @@ Object {
         },
       ],
       "values": Object {
-        "Music": "haptic",
+        "Music": "Sao Tome and Principe Accountability Boliviano Mvdol",
       },
     },
   ],
@@ -606,10 +641,15 @@ Object {
         "name": "cyan",
       },
       "displayValues": Object {
-        "Tuna": "generating copying Engineer",
+        "Tuna": "program Auto Loan Account",
       },
-      "imageId": "f3698011-f5e8-4ab5-b733-33be6a40b776",
-      "label": "Principal",
+      "imageId": "3698011f-5e8a-4b53-b333-3be6a40b776c",
+      "label": "azure",
+      "labelDefinition": Object {
+        "displayValue": "azure",
+        "rawValue": "Representative",
+        "typeName": "string",
+      },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
@@ -618,7 +658,7 @@ Object {
         },
       ],
       "values": Object {
-        "Tuna": "Savings Account Guatemala quantify",
+        "Tuna": "Granite enterprise",
       },
     },
   ],
@@ -687,10 +727,15 @@ Object {
         "name": "Home Loan Account",
       },
       "displayValues": Object {
-        "Handcrafted Wooden Bacon": "functionalities Ergonomic",
+        "Handcrafted Wooden Bacon": "Gibraltar",
       },
-      "imageId": "0312e406-0235-4e5c-b5a3-733442ac718e",
-      "label": "generate",
+      "imageId": "2e406023-5e5c-435a-b733-442ac718eed2",
+      "label": "Handmade Rubber Chair",
+      "labelDefinition": Object {
+        "displayValue": "Handmade Rubber Chair",
+        "rawValue": "Centralized",
+        "typeName": "string",
+      },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
@@ -699,7 +744,7 @@ Object {
         },
       ],
       "values": Object {
-        "Handcrafted Wooden Bacon": "GB Plastic deposit",
+        "Handcrafted Wooden Bacon": "monitoring",
       },
     },
   ],
@@ -762,20 +807,25 @@ exports[`PresentationManager addon results conversion to Presentation objects re
 Array [
   Object {
     "children": Array [],
-    "index": 886,
+    "filteringData": Object {
+      "childMatchesCount": 83192,
+      "matchesCount": 75062,
+    },
+    "index": 631,
     "node": Object {
       "backColor": "rgb(
-    164,
-    179,
-    120
+    222,
+    241,
+    204
   )",
-      "description": "Distinctio cum ut.",
+      "description": "Ratione rerum cumque rem rerum harum id.",
+      "foreColor": "#DCAE76",
       "hasChildren": true,
-      "isCheckboxEnabled": true,
+      "isCheckboxEnabled": false,
       "isCheckboxVisible": true,
       "isChecked": false,
       "isEditable": true,
-      "isExpanded": true,
+      "isExpanded": false,
       "isSelectionDisabled": true,
       "key": Object {
         "instanceKey": Object {
@@ -788,7 +838,12 @@ Array [
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Pound Sterling",
+      "label": "Movies",
+      "labelDefinition": Object {
+        "displayValue": "Movies",
+        "rawValue": "payment",
+        "typeName": "string",
+      },
     },
   },
 ]
@@ -798,17 +853,16 @@ exports[`PresentationManager addon results conversion to Presentation objects re
 Array [
   Object {
     "children": Array [],
-    "index": 573,
-    "isMarked": false,
+    "index": 209,
     "node": Object {
-      "description": "Sunt optio sed ipsa.",
-      "foreColor": "#9C5176",
-      "hasChildren": true,
+      "description": "Quis officia et.",
+      "foreColor": "#176AD3",
+      "hasChildren": false,
       "isCheckboxEnabled": false,
-      "isCheckboxVisible": false,
+      "isCheckboxVisible": true,
       "isChecked": false,
-      "isEditable": true,
-      "isExpanded": false,
+      "isEditable": false,
+      "isExpanded": true,
       "isSelectionDisabled": false,
       "key": Object {
         "instanceKey": Object {
@@ -821,7 +875,12 @@ Array [
         ],
         "type": "ECInstanceNode",
       },
-      "label": "object-oriented Norwegian Krone",
+      "label": "Rustic",
+      "labelDefinition": Object {
+        "displayValue": "Rustic",
+        "rawValue": "Ohio",
+        "typeName": "string",
+      },
     },
   },
 ]
@@ -851,6 +910,11 @@ Array [
       "type": "type1",
     },
     "label": "test1",
+    "labelDefinition": Object {
+      "displayValue": "test1",
+      "rawValue": "test1",
+      "typeName": "string",
+    },
   },
   Object {
     "backColor": "",
@@ -876,6 +940,11 @@ Array [
       "type": "ECInstanceNode",
     },
     "label": "test2",
+    "labelDefinition": Object {
+      "displayValue": "test2",
+      "rawValue": "test2",
+      "typeName": "string",
+    },
   },
   Object {
     "key": Object {
@@ -886,6 +955,11 @@ Array [
       "type": "some node",
     },
     "label": "test2",
+    "labelDefinition": Object {
+      "displayValue": "test2",
+      "rawValue": "test2",
+      "typeName": "string",
+    },
   },
 ]
 `;
@@ -914,6 +988,11 @@ Array [
       "type": "type1",
     },
     "label": "test1",
+    "labelDefinition": Object {
+      "displayValue": "test1",
+      "rawValue": "test1",
+      "typeName": "string",
+    },
   },
   Object {
     "backColor": "",
@@ -939,6 +1018,11 @@ Array [
       "type": "ECInstanceNode",
     },
     "label": "test2",
+    "labelDefinition": Object {
+      "displayValue": "test2",
+      "rawValue": "test2",
+      "typeName": "string",
+    },
   },
   Object {
     "key": Object {
@@ -949,6 +1033,11 @@ Array [
       "type": "some node",
     },
     "label": "test2",
+    "labelDefinition": Object {
+      "displayValue": "test2",
+      "rawValue": "test2",
+      "typeName": "string",
+    },
   },
 ]
 `;

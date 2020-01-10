@@ -33,6 +33,6 @@ export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
       stringValue = TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value);
     }
 
-    return withContextStyle(withLinks(record, stringValue), context);
+    return withContextStyle(withLinks(record, stringValue, context && context.textHighlighter), context);
   }
 }

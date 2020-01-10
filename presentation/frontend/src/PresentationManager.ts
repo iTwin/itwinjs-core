@@ -10,10 +10,11 @@ import {
   RpcRequestsHandler, RequestPriority, DescriptorOverrides,
   HierarchyRequestOptions, Node, NodeKey, NodePathElement,
   ContentRequestOptions, Content, Descriptor, SelectionInfo,
-  Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable,
+  Paged, KeySet, InstanceKey, LabelRequestOptions, Ruleset, RulesetVariable, LabelDefinition,
 } from "@bentley/presentation-common";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
+import { LocalizationHelper } from "./LocalizationHelper";
 
 /**
  * Properties used to configure [[PresentationManager]]
@@ -49,6 +50,7 @@ export class PresentationManager implements IDisposable {
 
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
+  private _localizationHelper: LocalizationHelper;
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _connections: Map<IModelConnection, Promise<void>>;
 
@@ -68,6 +70,7 @@ export class PresentationManager implements IDisposable {
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
 
     this._rulesets = new RulesetManagerImpl();
+    this._localizationHelper = new LocalizationHelper();
     this._connections = new Map<IModelConnection, Promise<void>>();
   }
 
@@ -154,7 +157,7 @@ export class PresentationManager implements IDisposable {
     const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getNodesAndCount(this.toIModelTokenOptions(options), parentKeyJson);
-    return { ...result, nodes: result.nodes.map(Node.fromJSON) };
+    return { ...result, nodes: await this._localizationHelper.getLocalizedNodes(result.nodes.map(Node.fromJSON)) };
   }
 
   /**
@@ -169,7 +172,7 @@ export class PresentationManager implements IDisposable {
     const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getNodes(this.toIModelTokenOptions(options), parentKeyJson);
-    return result.map(Node.fromJSON);
+    return this._localizationHelper.getLocalizedNodes(result.map(Node.fromJSON));
   }
 
   /**
@@ -275,7 +278,7 @@ export class PresentationManager implements IDisposable {
 
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getContent(this.toIModelTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
-    return Content.fromJSON(result);
+    return this._localizationHelper.getLocalizedContent(Content.fromJSON(result));
   }
 
   /**
@@ -290,7 +293,7 @@ export class PresentationManager implements IDisposable {
 
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
-    return { ...result, content: Content.fromJSON(result.content) };
+    return { ...result, content: await this._localizationHelper.getLocalizedContent(Content.fromJSON(result.content)) };
   }
 
   private createDescriptorParam(descriptorOrOverrides: Descriptor | DescriptorOverrides) {
@@ -319,6 +322,7 @@ export class PresentationManager implements IDisposable {
    * Retrieves display label of specific item
    * @param requestOptions options for the request
    * @param key Key of instance to get label for
+   * @deprecated use 'getDisplayLabelDefinition' instead
    */
   public async getDisplayLabel(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<string> {
     await this.onConnection(requestOptions.imodel);
@@ -328,10 +332,32 @@ export class PresentationManager implements IDisposable {
    * Retrieves display label of specific items
    * @param requestOptions options for the request
    * @param keys Keys of instances to get labels for
+   * @deprecated use 'getDisplayLabelsDefinitions' instead
    */
   public async getDisplayLabels(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<string[]> {
     await this.onConnection(requestOptions.imodel);
     return this._requestsHandler.getDisplayLabels(this.toIModelTokenOptions(requestOptions), keys.map(InstanceKey.toJSON));
+  }
+
+  /**
+   * Retrieves display label definition of specific item
+   * @param requestOptions options for the request
+   * @param key Key of instance to get label for
+   */
+  public async getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition> {
+    await this.onConnection(requestOptions.imodel);
+    const result = await this._requestsHandler.getDisplayLabelDefinition(this.toIModelTokenOptions(requestOptions), InstanceKey.toJSON(key));
+    return this._localizationHelper.getLocalizedLabelDefinition(LabelDefinition.fromJSON(result));
+  }
+  /**
+   * Retrieves display label definition of specific items
+   * @param requestOptions options for the request
+   * @param keys Keys of instances to get labels for
+   */
+  public async getDisplayLabelsDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]> {
+    await this.onConnection(requestOptions.imodel);
+    const result = await this._requestsHandler.getDisplayLabelsDefinitions(this.toIModelTokenOptions(requestOptions), keys.map(InstanceKey.toJSON));
+    return this._localizationHelper.getLocalizedLabelDefinitions(result.map(LabelDefinition.fromJSON));
   }
 
 }

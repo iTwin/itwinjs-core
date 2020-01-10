@@ -7,6 +7,7 @@ import * as faker from "faker";
 import {
   createRandomECInstanceKeyJSON, createRandomECClassInfoJSON, createRandomDescriptorJSON,
   createRandomDescriptor,
+  createRandomLabelDefinitionJSON,
 } from "../_helpers/random";
 import { Content, ContentJSON } from "../../content/Content";
 import { Item } from "../../content/Item";
@@ -34,7 +35,7 @@ describe("Content", () => {
         contentSet: [{
           classInfo: createRandomECClassInfoJSON(),
           primaryKeys: [createRandomECInstanceKeyJSON()],
-          label: faker.random.words(),
+          labelDefinition: createRandomLabelDefinitionJSON(),
           imageId: faker.random.uuid(),
           mergedFieldNames: [],
           values: {

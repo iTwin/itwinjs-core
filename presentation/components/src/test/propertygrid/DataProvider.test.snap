@@ -1,5 +1,52 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`PropertyDataProvider getData handles records with labelDefinition 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "solutions",
+      "name": "Cambridgeshire",
+    },
+  ],
+  "description": "Fantastic Wooden Fish",
+  "label": "visualize",
+  "labelRecord": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "one-to-one",
+      "value": "SMS",
+      "valueFormat": 0,
+    },
+  },
+  "records": Object {
+    "Cambridgeshire": Array [
+      PropertyRecord {
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Handcrafted Soft Chicken Administrator Papua New Guinea",
+          "editor": Object {
+            "name": "systems",
+            "params": Array [],
+          },
+          "name": "sensor",
+          "typename": "text",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
 exports[`PropertyDataProvider getData handles records with no values 1`] = `
 Object {
   "categories": Array [
@@ -10,7 +57,18 @@ Object {
     },
   ],
   "description": "Egyptian Pound",
-  "label": "Toys",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Toys",
+      "value": "Toys",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "orchid": Array [
       PropertyRecord {
@@ -30,11 +88,58 @@ Object {
 }
 `;
 
+exports[`PropertyDataProvider getData handles records without labelDefinition 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "expand": false,
+      "label": "connecting",
+      "name": "metrics",
+    },
+  ],
+  "description": "Global Sleek Steel Soap Saint Helena",
+  "label": "clicks-and-mortar Games",
+  "labelRecord": undefined,
+  "records": Object {
+    "metrics": Array [
+      PropertyRecord {
+        "isReadonly": true,
+        "property": Object {
+          "displayLabel": "Movies",
+          "editor": Object {
+            "name": "Guyana",
+            "params": Array [],
+          },
+          "name": "Avon",
+          "typename": "bigint",
+        },
+        "value": Object {
+          "displayValue": "",
+          "value": undefined,
+          "valueFormat": 0,
+        },
+      },
+    ],
+  },
+}
+`;
+
 exports[`PropertyDataProvider getData nested content handling removes nested content record when the nested field is categorized but there's no content 1`] = `
 Object {
   "categories": Array [],
   "description": undefined,
-  "label": "Mission Personal Loan Account",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Mission Personal Loan Account",
+      "value": "Mission Personal Loan Account",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {},
 }
 `;
@@ -54,7 +159,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "Investment Account",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Investment Account",
+      "value": "Investment Account",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Concrete": Array [
       PropertyRecord {
@@ -110,7 +226,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "Florida",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Florida",
+      "value": "Florida",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Bahamas": Array [
       PropertyRecord {
@@ -158,7 +285,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "transmitting Small",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "transmitting Small",
+      "value": "transmitting Small",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Berkshire": Array [
       PropertyRecord {
@@ -211,7 +349,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "Metrics Fantastic Metrics",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Metrics Fantastic Metrics",
+      "value": "Metrics Fantastic Metrics",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "District": Array [
       PropertyRecord {
@@ -312,7 +461,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "Legacy deposit superstructure",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Legacy deposit superstructure",
+      "value": "Legacy deposit superstructure",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Consultant": Array [
       PropertyRecord {
@@ -393,7 +553,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "Berkshire",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Berkshire",
+      "value": "Berkshire",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Savings Account": Array [
       PropertyRecord {
@@ -504,7 +675,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "deposit",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "deposit",
+      "value": "deposit",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Intelligent": Array [
       PropertyRecord {
@@ -641,7 +823,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "Connecticut projection web-enabled",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Connecticut projection web-enabled",
+      "value": "Connecticut projection web-enabled",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Cloned": Array [
       PropertyRecord {
@@ -753,7 +946,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "Iowa",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Iowa",
+      "value": "Iowa",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "South Dakota": Array [
       PropertyRecord {
@@ -826,7 +1030,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "Avon circuit",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Avon circuit",
+      "value": "Avon circuit",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Awesome": Array [
       PropertyRecord {
@@ -873,7 +1088,18 @@ Object {
     },
   ],
   "description": undefined,
-  "label": "user-centric",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "user-centric",
+      "value": "user-centric",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Rustic": Array [
       PropertyRecord {
@@ -912,7 +1138,18 @@ exports[`PropertyDataProvider getData nested content handling returns nothing fo
 Object {
   "categories": Array [],
   "description": undefined,
-  "label": "Sudan Berkshire",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Sudan Berkshire",
+      "value": "Sudan Berkshire",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {},
 }
 `;
@@ -927,7 +1164,18 @@ Object {
     },
   ],
   "description": "teal Personal Loan Account transmitting",
-  "label": "Customer solutions",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Customer solutions",
+      "value": "Customer solutions",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "needs-based": Array [
       PropertyRecord {
@@ -987,7 +1235,18 @@ Object {
     },
   ],
   "description": "Analyst Assistant",
-  "label": "Electronics",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Electronics",
+      "value": "Electronics",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Trail": Array [
       PropertyRecord {
@@ -1023,7 +1282,18 @@ Object {
     },
   ],
   "description": "Metal Venezuela",
-  "label": "navigating hack Refined",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "navigating hack Refined",
+      "value": "navigating hack Refined",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Identity": Array [
       PropertyRecord {

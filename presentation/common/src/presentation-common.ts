@@ -22,7 +22,7 @@ export { RulesetsFactory } from "./RulesetsFactory";
 export { LoggingNamespaces } from "./Logging";
 export {
   Omit, Subtract, ValuesDictionary,
-  getInstancesCount,
+  getInstancesCount, LOCALES_DIRECTORY,
 } from "./Utils";
 export { AsyncTasksTracker } from "./AsyncTasks";
 export {
@@ -30,6 +30,7 @@ export {
   LabelRequestOptions, SelectionScopeRequestOptions,
   PageOptions, Paged, RequestOptionsWithRuleset, RequestPriority,
 } from "./PresentationManagerOptions";
+export { LabelDefinition, LabelRawValue, LabelCompositeValue } from "./LabelDefinition";
 
 /**
  * @module RPC

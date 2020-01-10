@@ -10,6 +10,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import TestUtils from "../../../TestUtils";
 import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
 import { PrimitiveValue, Primitives } from "@bentley/imodeljs-frontend";
+import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 
 function createNavigationProperty(value: Primitives.Hexadecimal, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Category", "", displayValue);
@@ -51,6 +52,21 @@ describe("NavigationPropertyValueRenderer", () => {
       renderedElement.getByText("Test property");
 
       expect(renderedElement.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
+    });
+
+    it("renders navigation property with highlighting", () => {
+      const renderer = new NavigationPropertyValueRenderer();
+      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
+
+      const highlightNode = (text: string) => <span>{text + " Highlighted"}</span>;
+      const renderContext: PropertyValueRendererContext = {
+        textHighlighter: highlightNode,
+      };
+
+      const element = renderer.render(stringProperty, renderContext);
+      const renderedElement = render(<>{element}</>);
+
+      renderedElement.getByText("Test property Highlighted");
     });
 
     it("throws when trying to render array property", () => {
