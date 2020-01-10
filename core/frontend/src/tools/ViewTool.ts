@@ -1562,7 +1562,11 @@ class ViewZoom extends ViewingToolHandle {
     }
 
     frustum.transformBy(transform, frustum);
-    return viewport.setupViewFromFrustum(frustum);
+    if (ViewStatus.Success !== view.setupFromFrustum(frustum))
+      return false;
+    if (view.isCameraEnabled())
+      this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
+    return ViewStatus.Success === viewport.setupFromView();
   }
 
   /** @internal */
