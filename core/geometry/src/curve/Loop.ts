@@ -77,3 +77,15 @@ export class Loop extends CurveChain {
     return handler.handleLoop(this);
   }
 }
+
+/** Carrier object for loops characterized by area sign
+ * @public
+ */
+export interface SignedLoops {
+  /** Array of loops that have positive area sign.  (i.e. counterclockwise loops) */
+  positiveAreaLoops: Loop[];
+  /** Array of loops that have negative area sign. (i.e. clockwise loops. */
+  negativeAreaLoops: Loop[];
+  /** slivers where there are coincident sections of input curves. */
+  slivers: Loop[];
+}

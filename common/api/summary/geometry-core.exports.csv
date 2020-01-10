@@ -212,6 +212,7 @@ public;RotationalSweep
 public;RuledSweep 
 alpha;Sample
 public;Segment1d
+public;SignedLoops
 internal;SineCosinePolynomial
 public;SmallSystem
 public;SmoothTransformBetweenFrusta

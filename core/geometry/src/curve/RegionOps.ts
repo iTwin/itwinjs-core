@@ -23,7 +23,7 @@ import { CurveCollection, BagOfCurves, CurveChain, ConsolidateAdjacentCurvePrimi
 import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 import { Geometry } from "../Geometry";
 import { CurvePrimitive } from "./CurvePrimitive";
-import { Loop } from "./Loop";
+import { Loop, SignedLoops } from "./Loop";
 import { Path } from "./Path";
 import { PointInOnOutContext } from "./Query/InOutTests";
 import { CurveSplitContext } from "./Query/CurveSplitContext";
@@ -35,7 +35,7 @@ import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByE
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
 import { CurveCurve } from "./CurveCurve";
-import { PlanarSubdivision, SignedLoops } from "./Query/PlanarSubdivision";
+import { PlanarSubdivision } from "./Query/PlanarSubdivision";
 import { Range3d } from "../geometry3d/Range";
 /**
  * * `properties` is a string with special characters indicating

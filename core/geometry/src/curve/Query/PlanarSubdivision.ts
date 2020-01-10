@@ -5,21 +5,12 @@
 import { CurvePrimitive } from "../CurvePrimitive";
 import { CurveLocationDetailPair, CurveLocationDetail } from "../CurveLocationDetail";
 import { HalfEdgeGraph, HalfEdge } from "../../topology/Graph";
-import { Loop } from "../Loop";
+import { Loop, SignedLoops } from "../Loop";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { RegionOps } from "../RegionOps";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 
 /** @module Curve */
-/** Carrier object for loops characterized by area sign */
-export interface SignedLoops {
-  /** Array of loops that have positive area sign.  (i.e. counterclockwise loops) */
-  positiveAreaLoops: Loop[];
-  /** Array of loops that have negative area sign. (i.e. clockwise loops. */
-  negativeAreaLoops: Loop[];
-  /** slivers where there are coincident sections of input curves. */
-  slivers: Loop[];
-}
 
 class MapCurvePrimitiveToCurveLocatioNDetailPairArray {
   public primitiveToPair = new Map<CurvePrimitive, CurveLocationDetailPair[]>();

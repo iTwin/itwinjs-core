@@ -4553,6 +4553,13 @@ export class Segment1d {
     x1: number;
 }
 
+// @public
+export interface SignedLoops {
+    negativeAreaLoops: Loop[];
+    positiveAreaLoops: Loop[];
+    slivers: Loop[];
+}
+
 // @internal
 export class SineCosinePolynomial {
     constructor(a: number, cosCoff: number, sinCoff: number);

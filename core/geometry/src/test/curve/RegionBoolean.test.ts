@@ -12,10 +12,9 @@ import { RegionOps } from "../../curve/RegionOps";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Loop } from "../../curve/Loop";
+import { Loop, SignedLoops } from "../../curve/Loop";
 import { Arc3d } from "../../curve/Arc3d";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { SignedLoops } from "../../curve/Query/PlanarSubdivision";
 import { AnyCurve } from "../../curve/CurveChain";
 import { CurveFactory } from "../../curve/CurveFactory";
 /* tslint:disable:no-console */
