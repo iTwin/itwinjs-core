@@ -6,7 +6,7 @@
 import {
   Schema, ECClass, EntityClass, PrimitiveProperty, StructProperty, EnumerationProperty, PrimitiveType,
   SchemaItemType, Enumeration, ECClassModifier, SchemaItem, Mixin, StructClass,
-} from "@bentley/ecschema-metadata/lib/ecschema-metadata";
+} from "@bentley/ecschema-metadata";
 
 interface TsBentleyModule {
   moduleName: string;
@@ -63,7 +63,7 @@ export class ECSchemaToTs {
    * Given the schema, the function will converted it to typescript strings
    * @param schema The schema to be converted to typescript strings
    */
-  public convertSchemaToTs(schema: Schema): {schemaTsString: string, elemTsString: string, propsTsString: string} {
+  public convertSchemaToTs(schema: Schema): { schemaTsString: string, elemTsString: string, propsTsString: string } {
     // convert schema to typescript String
     this._schema = schema;
     this.dependencyToFront();
@@ -590,7 +590,7 @@ export class ECSchemaToTs {
     // find external module to import
     let externalModule: string = "";
     const shouldImportJsCommon = (baseECClass.fullName === elementECClassName) ||
-                                 (baseECClass.schema.schemaKey.name === "BisCore" && ecClass.schema.schemaKey.name !== "BisCore");
+      (baseECClass.schema.schemaKey.name === "BisCore" && ecClass.schema.schemaKey.name !== "BisCore");
     if (shouldImportJsCommon)
       externalModule = tsBentleyModules.tsIModelJsCommon.moduleName;
     else if (!baseECClass.schema.schemaKey.compareByName(ecClass.schema.schemaKey))

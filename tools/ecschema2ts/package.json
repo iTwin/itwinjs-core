@@ -4,22 +4,21 @@
   "license": "MIT",
   "version": "1.11.0-dev.5",
   "bin": {
-    "ecschema2ts": "./lib/index.js"
+    "ecschema2ts": "./bin/index.js"
   },
-  "main": "./lib/main",
+  "main": "bin/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/ecschema2tss"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/ecschema2ts"
   },
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2 && npm run copy:test-assets && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema2ts",
-    "copy:assets": "cpx ./src/index.js ./lib",
     "lint": "tslint --project . 1>&2",
     "docs": "",
-    "prebuild": "npm run copy:assets",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./src/test/",
+    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "test:watch": "betools test-tsnode --watch",
     "cli:dev": "npm run clean & npm run build & npm link",
     "cover": "nyc npm test"

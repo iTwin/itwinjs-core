@@ -4,7 +4,7 @@
 
 ```ts
 
-import { Schema } from '@bentley/ecschema-metadata/lib/ecschema-metadata';
+import { Schema } from '@bentley/ecschema-metadata';
 
 // @beta (undocumented)
 export class ECSchemaToTs {
