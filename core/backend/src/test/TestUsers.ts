@@ -27,6 +27,18 @@ export class TestUsers {
     return Config.App.getString("imjs_oidc_browser_test_scopes");
   }
 
+  /** ulas Oidc configuration */
+  public static get ulasOidcConfig(): OidcConfiguration {
+    return {
+      clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
+      redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
+    };
+  }
+
+  public static get ulasScopes(): string {
+    return Config.App.getString("imjs_oidc_ulas_test_scopes");
+  }
+
   /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
   public static get regular(): UserCredentials {
     return {

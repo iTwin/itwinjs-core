@@ -1844,12 +1844,14 @@ export abstract class Token {
     protected _x509Certificate?: string;
 }
 
-// @internal
+// @internal @deprecated
 export class UlasClient extends Client {
     constructor();
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     protected getUrlSearchKey(): string;
+    // @deprecated
     logFeature(requestContext: AuthorizedClientRequestContext, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse>;
+    // @deprecated
     logUsage(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): Promise<LogPostingResponse>;
     // (undocumented)
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;

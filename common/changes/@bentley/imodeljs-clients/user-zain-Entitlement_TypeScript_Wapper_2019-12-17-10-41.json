@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-clients",
+      "comment": "Added TypeScript wrapper over the native SaaSClient.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Zain.UlAbidin@bentley.com"
+}
