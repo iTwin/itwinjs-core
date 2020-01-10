@@ -22,7 +22,7 @@ class SignInControl extends ContentControl {
   }
 
   private _onRegister = () => {
-    window.open("https://imodeljs.github.io/iModelJs-docs-output/getting-started/#developer-registration", "_blank");
+    window.open("https://www.imodeljs.org/getting-started/#developer-registration", "_blank");
   }
 }
 

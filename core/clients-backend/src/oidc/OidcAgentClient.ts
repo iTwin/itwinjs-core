@@ -22,7 +22,7 @@ export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
 /**
  * Utility to generate OIDC/OAuth tokens for agent or service applications
  * * The application must register a client using the
- * [self service registration page]{@link https://imodeljs.github.io/iModelJs-docs-output/getting-started/registration-dashboard/}.
+ * [self service registration page](https://imodeljs.org/getting-started/registration-dashboard/).
  * * The client type must be "Agent"
  * * Use the Client Id/Client Secret/Scopes to create the agent configuration that's passed in.
  * * Ensure the application can access the Connect Project/Asset - in production environments, this is done by
