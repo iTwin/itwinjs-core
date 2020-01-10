@@ -32,6 +32,7 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { PluginAdmin } from "./plugin/Plugin";
 import { UiAdmin } from "@bentley/ui-abstract";
 import { FeatureTrackingManager } from "./FeatureTrackingManager";
+import { FeatureToggleClient } from "./FeatureToggleClient";
 import { System } from "./render/webgl/System";
 
 import * as idleTool from "./tools/IdleTool";
@@ -106,6 +107,10 @@ export interface IModelAppOptions {
   uiAdmin?: UiAdmin;
   /** if present, supplies the [[FeatureTrackingManager]] for this session */
   features?: FeatureTrackingManager;
+  /** if present, supplies the [[FeatureToggleClient]] for this session
+   * @internal
+   */
+  featureToggles?: FeatureToggleClient;
 }
 /** Setting for [[EventSource]]
  * @internal
@@ -176,6 +181,7 @@ export class IModelApp {
   private static _tileTreePurgeTime?: BeTimePoint;
   private static _tileTreePurgeInterval?: BeDuration;
   private static _features: FeatureTrackingManager;
+  private static _featureToggles: FeatureToggleClient;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   private constructor() { }
@@ -238,6 +244,11 @@ export class IModelApp {
   public static get uiAdmin() { return this._uiAdmin; }
   /** The [[FeatureTrackingManager]] for this session */
   public static get features() { return this._features; }
+
+  /** The [[FeatureToggleClient]] for this session
+   * @internal
+   */
+  public static get featureToggles() { return this._featureToggles; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -351,6 +362,7 @@ export class IModelApp {
     this._terrainProvider = opts.terrainProvider;
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
     this._features = (opts.features !== undefined) ? opts.features : new FeatureTrackingManager();
+    this._featureToggles = (opts.featureToggles !== undefined) ? opts.featureToggles : new FeatureToggleClient();
 
     [
       this.renderSystem,

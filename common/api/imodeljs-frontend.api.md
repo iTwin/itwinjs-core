@@ -102,6 +102,8 @@ import { IModelVersion } from '@bentley/imodeljs-common';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
+import { LDClient } from 'ldclient-js';
+import { LDFlagValue } from 'ldclient-js';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { Loop } from '@bentley/geometry-core';
@@ -3347,6 +3349,20 @@ export namespace FeatureSymbology {
         }
 }
 
+// @internal
+export class FeatureToggleClient {
+    evaluateFeature(featureKey: string, defaultValue?: LDFlagValue): LDFlagValue;
+    initialize(envKey?: string): Promise<void>;
+    isFeatureEnabled(featureKey: string, defaultValue?: boolean): boolean;
+    readonly ldClient: LDClient;
+    protected _ldClient?: LDClient;
+    // (undocumented)
+    protected readonly _loggingCategory = FrontendLoggerCategory.FeatureToggle;
+    // (undocumented)
+    protected _offlineValue: boolean;
+    setUser(accessToken: AccessToken): Promise<void>;
+}
+
 // @alpha
 export function findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]>;
 
@@ -3431,6 +3447,7 @@ export class FlyViewTool extends ViewManip {
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
     EventSource = "imodeljs-frontend.EventSource",
+    FeatureToggle = "imodeljs-frontend.FeatureToggles",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
     // @deprecated
@@ -4141,6 +4158,8 @@ export class IModelApp {
     // @internal
     static eventSourceOptions: EventSourceOptions;
     static readonly features: FeatureTrackingManager;
+    // @internal
+    static readonly featureToggles: FeatureToggleClient;
     // @internal (undocumented)
     static readonly hasRenderSystem: boolean;
     static readonly i18n: I18N;
@@ -4211,6 +4230,8 @@ export interface IModelAppOptions {
     applicationVersion?: string;
     authorizationClient?: IAuthorizationClient;
     features?: FeatureTrackingManager;
+    // @internal
+    featureToggles?: FeatureToggleClient;
     i18n?: I18N | I18NOptions;
     imodelClient?: IModelClient;
     // @internal (undocumented)

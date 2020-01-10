@@ -491,6 +491,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "ldclient-js",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "linkify-it",
       "allowedCategories": [ "frontend" ]
     },

@@ -31,4 +31,7 @@ export enum FrontendLoggerCategory {
 
   /** The logger category used for general authorization purposes */
   Authorization = "imodeljs-frontend.Authorization",
+
+  /** The logger category used by feature-flag-related functions */
+  FeatureToggle = "imodeljs-frontend.FeatureToggles",
 }
