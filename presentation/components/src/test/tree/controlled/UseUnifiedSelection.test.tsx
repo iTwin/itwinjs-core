@@ -19,7 +19,7 @@ import {
   SelectionManager, Presentation, SelectionChangeEvent, SelectionHandler,
   SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider, SelectionHelper,
 } from "@bentley/presentation-frontend";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection, PrimitiveValue } from "@bentley/imodeljs-frontend";
 import { UnifiedSelectionTreeEventHandler } from "../../../tree/controlled/UseUnifiedSelection";
 import { useControlledTreeUnifiedSelection, IPresentationTreeDataProvider } from "../../../presentation-components";
 import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
@@ -122,7 +122,7 @@ describe("UnifiedSelectionEventHandler", () => {
     const nodeItem = createRandomTreeNodeItem(nodeKeyGenerator());
     const node: MutableTreeModelNode = {
       id: nodeItem.id,
-      label: nodeItem.label,
+      label: typeof nodeItem.label === "string" ? nodeItem.label : (nodeItem.label.value as PrimitiveValue).displayValue || "",
       isLoading: false,
       isSelected: false,
       depth: 0,

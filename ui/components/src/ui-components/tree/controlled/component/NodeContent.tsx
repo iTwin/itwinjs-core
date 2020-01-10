@@ -6,8 +6,11 @@
 
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import classnames from "classnames";
+import { Subject } from "rxjs/internal/Subject";
+import { from } from "rxjs/internal/observable/from";
+import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { TreeNodePlaceholder, isPromiseLike, CommonProps, useEffectSkipFirst } from "@bentley/ui-core";
 import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
 import { TreeModelNode } from "../TreeModel";
@@ -82,42 +85,57 @@ export const TreeNodeContent: React.FC<TreeNodeContentProps> = (props: TreeNodeC
 };
 
 function useLabel(node: TreeModelNode, valueRendererManager: PropertyValueRendererManager, highlightProps?: HighlightableTreeNodeProps) {
-  const getLabel = useCallback((): React.ReactNode | Promise<React.ReactNode> => {
-    // handle filtered matches' highlighting
-    let labelElement: React.ReactNode = node.label;
-    if (highlightProps)
-      labelElement = HighlightingEngine.renderNodeLabel(node.label, highlightProps);
-
-    // handle custom cell rendering
-    const context: PropertyValueRendererContext = {
-      containerType: PropertyContainerType.Tree,
-      decoratedTextElement: labelElement,
-      style: getStyle(node.item.style, node.isSelected),
-    };
-
-    const nodeRecord = nodeToPropertyRecord(node);
-    return valueRendererManager.render(nodeRecord, context);
-  }, [node, highlightProps, valueRendererManager]);
+  const cancelled = useMemo(() => new Subject<void>(), []);
 
   const [label, setLabel] = useState<React.ReactNode>(() => {
-    const newLabel = getLabel();
+    const newLabel = getLabel(node, valueRendererManager, highlightProps);
     if (isPromiseLike(newLabel)) {
-      newLabel.then((result) => setLabel(result)); // tslint:disable-line: no-floating-promises
+      from(newLabel).pipe(takeUntil(cancelled)).subscribe((result) => setLabel(result));
       return <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />;
     }
     return newLabel;
   });
 
   useEffectSkipFirst(() => {
-    const newLabel = getLabel();
+    const updateLabel = (result: React.ReactNode) => {
+      cancelled.next();
+      setLabel(result);
+    };
+    const newLabel = getLabel(node, valueRendererManager, highlightProps);
     if (isPromiseLike(newLabel)) {
-      newLabel.then((result) => setLabel(result)); // tslint:disable-line: no-floating-promises
+      const subscription = from(newLabel).subscribe(updateLabel);
+      // istanbul ignore next
+      return () => subscription.unsubscribe();
     } else {
-      setLabel(newLabel);
+      updateLabel(newLabel);
+      // istanbul ignore next
+      return () => { };
     }
-  }, [getLabel]);
+  }, [node, cancelled, valueRendererManager, highlightProps]);
+
+  useEffect(() => () => cancelled.next(), [cancelled]);
 
   return label;
+}
+
+function getLabel(
+  node: TreeModelNode,
+  valueRendererManager: PropertyValueRendererManager,
+  highlightProps?: HighlightableTreeNodeProps): React.ReactNode | Promise<React.ReactNode> {
+  // handle filtered matches' highlighting
+  const highlightCallback = highlightProps
+    ? (text: string) => HighlightingEngine.renderNodeLabel(text, highlightProps)
+    : undefined;
+
+  // handle custom cell rendering
+  const context: PropertyValueRendererContext = {
+    containerType: PropertyContainerType.Tree,
+    style: getStyle(node.item.style, node.isSelected),
+    textHighlighter: highlightCallback,
+  };
+
+  const nodeRecord = typeof node.item.label === "string" ? nodeToPropertyRecord(node) : node.item.label;
+  return valueRendererManager.render(nodeRecord, context);
 }
 
 function getStyle(style?: ItemStyle, isSelected?: boolean): React.CSSProperties {
@@ -126,7 +144,7 @@ function getStyle(style?: ItemStyle, isSelected?: boolean): React.CSSProperties 
 
 function nodeToPropertyRecord(node: TreeModelNode) {
   const value: PrimitiveValue = {
-    displayValue: node.item.label,
+    displayValue: node.item.label as string,
     value: node.item.label,
     valueFormat: PropertyValueFormat.Primitive,
   };

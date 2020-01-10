@@ -13,7 +13,18 @@ Array [
     "description": "child description",
     "icon": "child image id",
     "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
-    "label": "child label",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "child label",
+        "value": "child label",
+        "valueFormat": 0,
+      },
+    },
     "parentId": "3da8ffb01a263e88441398a167bf117c",
   },
 ]
@@ -32,7 +43,18 @@ Array [
     "description": "child description",
     "icon": "child image id",
     "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
-    "label": "child label",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "child label",
+        "value": "child label",
+        "valueFormat": 0,
+      },
+    },
     "parentId": "3da8ffb01a263e88441398a167bf117c",
   },
 ]
@@ -54,7 +76,18 @@ Array [
     "id": "3da8ffb01a263e88441398a167bf117c",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "root label",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "root label",
+        "value": "root label",
+        "valueFormat": 0,
+      },
+    },
     "style": Object {
       "colorOverrides": Object {
         "backgroundColor": 8388863,
@@ -83,7 +116,18 @@ Array [
     "id": "3da8ffb01a263e88441398a167bf117c",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "root label",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "root label",
+        "value": "root label",
+        "valueFormat": 0,
+      },
+    },
     "style": Object {
       "colorOverrides": Object {
         "backgroundColor": 8388863,

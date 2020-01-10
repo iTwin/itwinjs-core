@@ -1,0 +1,143 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`LabelCompositeValue fromJSON creates valid LabelCompositeValue from JSON 1`] = `
+Object {
+  "separator": "0",
+  "values": Array [
+    Object {
+      "displayValue": "withdrawal",
+      "rawValue": "withdrawal",
+      "typeName": "string",
+    },
+    Object {
+      "displayValue": "Practical",
+      "rawValue": "Shoal",
+      "typeName": "string",
+    },
+  ],
+}
+`;
+
+exports[`LabelCompositeValue toJSON serializes LabelCompositeValue 1`] = `
+Object {
+  "separator": "5",
+  "values": Array [
+    Object {
+      "displayValue": "B2B",
+      "rawValue": "New Jersey",
+      "typeName": "string",
+    },
+    Object {
+      "displayValue": "Checking Account",
+      "rawValue": "Knoll",
+      "typeName": "string",
+    },
+  ],
+}
+`;
+
+exports[`LabelDefinition fromJSON creates valid LabelDefinition from JSON 1`] = `
+Object {
+  "displayValue": "Sleek Concrete Bike",
+  "rawValue": "deposit",
+  "typeName": "string",
+}
+`;
+
+exports[`LabelDefinition fromJSON creates valid LabelDefinition from serialized JSON 1`] = `
+Object {
+  "displayValue": "deposit",
+  "rawValue": "Computer",
+  "typeName": "string",
+}
+`;
+
+exports[`LabelDefinition fromJSON creates valid LabelDefinition with composite value from JSON 1`] = `
+Object {
+  "displayValue": "Savings Account",
+  "rawValue": Object {
+    "separator": "t",
+    "values": Array [
+      Object {
+        "displayValue": "Pines",
+        "rawValue": "Savings Account",
+        "typeName": "string",
+      },
+      Object {
+        "displayValue": "implementation",
+        "rawValue": "Auto Loan Account",
+        "typeName": "string",
+      },
+    ],
+  },
+  "typeName": "composite",
+}
+`;
+
+exports[`LabelDefinition fromJSON creates valid LabelDefinition with composite value from serialized JSON 1`] = `
+Object {
+  "displayValue": "Switchable",
+  "rawValue": Object {
+    "separator": "f",
+    "values": Array [
+      Object {
+        "displayValue": "South Carolina",
+        "rawValue": "collaboration",
+        "typeName": "string",
+      },
+      Object {
+        "displayValue": "Dominican Peso",
+        "rawValue": "budgetary management",
+        "typeName": "string",
+      },
+    ],
+  },
+  "typeName": "composite",
+}
+`;
+
+exports[`LabelDefinition fromJSON creates valid Node from serialized JSON 1`] = `
+Object {
+  "displayValue": "Facilitator",
+  "rawValue": "Rhode Island",
+  "typeName": "string",
+}
+`;
+
+exports[`LabelDefinition fromLabelString creates valid LabelDefinition from label string 1`] = `
+Object {
+  "displayValue": "Chief",
+  "rawValue": "Chief",
+  "typeName": "string",
+}
+`;
+
+exports[`LabelDefinition toJSON serializes LabelDefinition 1`] = `
+Object {
+  "displayValue": "Gibraltar Pound",
+  "rawValue": "Computer",
+  "typeName": "string",
+}
+`;
+
+exports[`LabelDefinition toJSON serializes LabelDefinition with composite value 1`] = `
+Object {
+  "displayValue": "navigate",
+  "rawValue": Object {
+    "separator": "r",
+    "values": Array [
+      Object {
+        "displayValue": "intangible",
+        "rawValue": "Cotton",
+        "typeName": "string",
+      },
+      Object {
+        "displayValue": "Tunnel",
+        "rawValue": "structure",
+        "typeName": "string",
+      },
+    ],
+  },
+  "typeName": "composite",
+}
+`;

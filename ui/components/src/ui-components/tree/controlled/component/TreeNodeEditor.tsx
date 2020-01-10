@@ -56,12 +56,14 @@ export const TreeNodeEditor: React.FC<TreeNodeEditorProps> = (props: TreeNodeEdi
   );
 };
 
-function createPropertyRecord(value: string, typename: string = "text", editor?: string) {
-  const v: PrimitiveValue = {
+function createPropertyRecord(label: string | PropertyRecord, typename: string = "text", editor?: string) {
+  const createPrimitiveValue = (value: string): PrimitiveValue => ({
     valueFormat: PropertyValueFormat.Primitive,
     value,
     displayValue: value,
-  };
+  });
+
+  const v = typeof label === "string" ? createPrimitiveValue(label) : label.value;
 
   const p: PropertyDescription = {
     name: "tree-node-editor",

@@ -20,8 +20,9 @@
   "main": "lib/presentation-common.js",
   "typings": "lib/presentation-common",
   "scripts": {
-    "build": "npm run ruleset-json-schema && npm run extract && buildIModelJsModule",
-    "build:watch": "npm run ruleset-json-schema && tsc -b ./src/test -w",
+    "build": "npm run ruleset-json-schema && npm run build:assets && npm run extract && buildIModelJsModule",
+    "build:assets": "cpx \"./assets/**/*\" ./lib/assets && npm run pseudolocalize",
+    "build:watch": "npm run ruleset-json-schema && npm run build:assets && tsc -b ./src/test -w",
     "clean": "rimraf lib .rush package-deps.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
@@ -33,6 +34,7 @@
     "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks --include ./src/rules/**/*.ts --include ./src/rules/*.ts -- ./src/tsconfig.json Ruleset > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
     "lint": "tslint -p ./src/tsconfig.json 1>&2",
+    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-PSEUDO",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },

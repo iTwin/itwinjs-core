@@ -9,7 +9,7 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomECInstanceKey,
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
-  createRandomDescriptor, createRandomId, createRandomSelectionScope, createRandomContent,
+  createRandomDescriptor, createRandomId, createRandomSelectionScope, createRandomContent, createRandomLabelDefinitionJSON,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
@@ -897,6 +897,36 @@ describe("PresentationRpcImplStateless", () => {
           .returns(async () => result)
           .verifiable();
         const actualResult = await impl.getDisplayLabels(testData.imodelToken, { ...defaultRpcParams }, keys.map(InstanceKey.toJSON));
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(result);
+      });
+
+    });
+
+    describe("getDisplayLabelDefinition", () => {
+
+      it("calls manager", async () => {
+        const result = createRandomLabelDefinitionJSON();
+        const key = createRandomECInstanceKey();
+        presentationManagerMock.setup(async (x) => x.getDisplayLabelDefinition(ClientRequestContext.current, { imodel: testData.imodelMock.object }, key))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.getDisplayLabelDefinition(testData.imodelToken, { ...defaultRpcParams }, InstanceKey.toJSON(key));
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.deep.eq(result);
+      });
+
+    });
+
+    describe("getDisplayLabelsDefinitions", () => {
+
+      it("calls manager", async () => {
+        const result = [createRandomLabelDefinitionJSON(), createRandomLabelDefinitionJSON()];
+        const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+        presentationManagerMock.setup(async (x) => x.getDisplayLabelsDefinitions(ClientRequestContext.current, { imodel: testData.imodelMock.object }, keys))
+          .returns(async () => result)
+          .verifiable();
+        const actualResult = await impl.getDisplayLabelsDefinitions(testData.imodelToken, { ...defaultRpcParams }, keys.map(InstanceKey.toJSON));
         presentationManagerMock.verifyAll();
         expect(actualResult.result).to.deep.eq(result);
       });

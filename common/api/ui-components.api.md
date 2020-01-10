@@ -1485,6 +1485,9 @@ export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
 // @beta @deprecated
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
 
+// @internal (undocumented)
+export function getLabelString(label: string | PropertyRecord): string;
+
 // @public
 export const hasChildren: (node: TreeNodeItem) => boolean;
 
@@ -1951,7 +1954,7 @@ export interface MutableTreeModelNode extends TreeModelNode {
     // (undocumented)
     item: TreeNodeItem;
     // (undocumented)
-    label: string;
+    label: string | PropertyRecord;
 }
 
 // @public
@@ -2242,7 +2245,7 @@ export interface PropertyData {
     // (undocumented)
     description?: string;
     // (undocumented)
-    label: string;
+    label: string | PropertyRecord;
     // (undocumented)
     records: {
         [categoryName: string]: PropertyRecord[];
@@ -2430,6 +2433,7 @@ export interface PropertyValueRendererContext {
     onPopupShow?: (popupState: PropertyPopupState) => void;
     orientation?: Orientation;
     style?: React.CSSProperties;
+    textHighlighter?: (text: string) => React.ReactNode;
 }
 
 // @public
@@ -3469,7 +3473,7 @@ export interface TreeModelNode {
     // (undocumented)
     readonly item: TreeNodeItem;
     // (undocumented)
-    readonly label: string;
+    readonly label: string | PropertyRecord;
     // (undocumented)
     readonly numChildren: number | undefined;
     // (undocumented)
@@ -3499,7 +3503,7 @@ export interface TreeModelNodeInput {
     // (undocumented)
     readonly item: TreeNodeItem;
     // (undocumented)
-    readonly label: string;
+    readonly label: string | PropertyRecord;
     // (undocumented)
     readonly numChildren?: number;
 }
@@ -3585,7 +3589,7 @@ export interface TreeNodeItem {
     // (undocumented)
     isEditable?: boolean;
     // (undocumented)
-    label: string;
+    label: string | PropertyRecord;
     // (undocumented)
     parentId?: string;
     // (undocumented)

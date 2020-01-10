@@ -11,7 +11,7 @@ import "./Breadcrumb.scss";
 import * as _ from "lodash";
 import { using } from "@bentley/bentleyjs-core";
 import { SplitButton, withOnOutsideClick, MessageSeverity, DialogButtonType, MessageBox, ContextMenu, ContextMenuItem, CommonProps } from "@bentley/ui-core";
-import { TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../tree/TreeDataProvider";
+import { TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, getLabelString } from "../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";
 import { UiComponents } from "../UiComponents";
@@ -297,7 +297,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   private static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>): BeInspireTreeNodeConfig {
     const node: BeInspireTreeNodeConfig = {
       id: item.id,
-      text: item.label,
+      text: getLabelString(item.label),
       itree: {
         state: { collapsed: false },
       },
@@ -811,7 +811,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
       if (p)
         parent = p.payload;
     }
-    const label = n && n.label ? n.label : " ";
+    const label = n && n.label ? getLabelString(n.label) : " ";
     const icon = n && n.icon ? n.icon : "icon-browse";
     const renderNode = this.props.renderNode ? this.props.renderNode : this.renderNode;
     if (this.props.parentsOnly)

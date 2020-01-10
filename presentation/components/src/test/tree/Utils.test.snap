@@ -4,22 +4,36 @@ exports[`Utils createTreeNodeItem creates tree node 1`] = `
 Object {
   "__presentation-components/key": Object {
     "instanceKey": Object {
-      "className": "COM",
-      "id": "0x535d0000015d88",
+      "className": "Fantastic Rubber Towels",
+      "id": "0x44780000014325",
     },
     "pathFromRoot": Array [
-      "b5c02a04-6127-4f62-b128-58488bc1c9d1",
-      "19fb96ab-449d-4f28-a09d-cff691955c55",
+      "2a046127-f623-4128-9848-8bc1c9d119fb",
+      "96ab449d-f282-409d-8ff6-91955c55e9e3",
     ],
     "type": "ECInstanceNode",
   },
   "autoExpand": true,
-  "id": "19fb96ab-449d-4f28-a09d-cff691955c55/b5c02a04-6127-4f62-b128-58488bc1c9d1",
-  "label": "engage",
+  "icon": "AGP",
+  "id": "96ab449d-f282-409d-8ff6-91955c55e9e3/2a046127-f623-4128-9848-8bc1c9d119fb",
+  "isCheckboxDisabled": true,
+  "isCheckboxVisible": true,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Indian Rupee Ngultrum",
+      "value": "back up",
+      "valueFormat": 0,
+    },
+  },
   "style": Object {
     "colorOverrides": Object {
-      "backgroundColor": -1843179777,
-      "color": -2100005121,
+      "backgroundColor": -920212993,
+      "color": 1737639167,
     },
   },
 }
@@ -29,23 +43,37 @@ exports[`Utils createTreeNodeItem creates tree node with custom label styles 1`]
 Object {
   "__presentation-components/key": Object {
     "instanceKey": Object {
-      "className": "Configuration",
-      "id": "0xa95e0000010601",
+      "className": "Missouri",
+      "id": "0x1ab100000013b4",
     },
     "pathFromRoot": Array [
-      "774cdc48-ca2b-4104-8800-7ce7a4f6d779",
-      "f7dd0ef0-a772-4c3d-b03a-40a84a6a8c62",
+      "dc48ca2b-1044-4800-bce7-a4f6d779f7dd",
+      "0ef0a772-c3d3-403a-80a8-4a6a8c62fda6",
     ],
     "type": "ECInstanceNode",
   },
-  "description": "Voluptate consequuntur eum quaerat.",
-  "icon": "Coordinator",
-  "id": "f7dd0ef0-a772-4c3d-b03a-40a84a6a8c62/774cdc48-ca2b-4104-8800-7ce7a4f6d779",
-  "label": "Avon Awesome Plastic Salad",
+  "checkBoxState": 1,
+  "hasChildren": true,
+  "icon": "ADP",
+  "id": "0ef0a772-c3d3-403a-80a8-4a6a8c62fda6/dc48ca2b-1044-4800-bce7-a4f6d779f7dd",
+  "isCheckboxDisabled": true,
+  "isCheckboxVisible": true,
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Mews",
+      "value": "regional",
+      "valueFormat": 0,
+    },
+  },
   "style": Object {
     "colorOverrides": Object {
-      "backgroundColor": -1139576833,
-      "color": 2124521215,
+      "backgroundColor": 461301503,
+      "color": 1658093567,
     },
     "isBold": true,
     "isItalic": true,
@@ -57,20 +85,52 @@ exports[`Utils createTreeNodeItem creates tree node with parent id 1`] = `
 Object {
   "__presentation-components/key": Object {
     "instanceKey": Object {
-      "className": "Small Fresh Shoes",
-      "id": "0x11d2d0000000aba",
+      "className": "Shoes",
+      "id": "0x1091d0000016b29",
     },
     "pathFromRoot": Array [
-      "df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
-      "0b80175c-270d-4a1a-bba3-14ef8866c2a1",
+      "559da389-bc4e-4ef0-a5d0-cb8b62e60b80",
+      "175c270d-a1a3-4ba3-94ef-8866c2a100d7",
     ],
     "type": "ECInstanceNode",
   },
-  "description": "Et velit aperiam sed aut.",
+  "description": "Omnis quam est minima voluptas et velit aperiam.",
   "hasChildren": true,
-  "id": "0b80175c-270d-4a1a-bba3-14ef8866c2a1/df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
-  "label": "Indian Rupee Rufiyaa systems",
+  "icon": "Automotive",
+  "id": "175c270d-a1a3-4ba3-94ef-8866c2a100d7/559da389-bc4e-4ef0-a5d0-cb8b62e60b80",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "JBOD",
+      "value": "South Dakota",
+      "valueFormat": 0,
+    },
+  },
   "parentId": "deposit",
+}
+`;
+
+exports[`Utils createTreeNodeItem creates tree node without labelDefinition 1`] = `
+Object {
+  "__presentation-components/key": Object {
+    "instanceKey": Object {
+      "className": "value-added",
+      "id": "0xdb590000003706",
+    },
+    "pathFromRoot": Array [
+      "c7ea16a7-b57b-4973-b341-ed11dd8506c2",
+      "9d2bd13d-baba-48d5-a16f-11a6bebd4508",
+    ],
+    "type": "ECInstanceNode",
+  },
+  "description": "Commodi quae explicabo hic aut quod rem odit odio saepe.",
+  "icon": "Direct",
+  "id": "9d2bd13d-baba-48d5-a16f-11a6bebd4508/c7ea16a7-b57b-4973-b341-ed11dd8506c2",
+  "label": "calculate",
 }
 `;
 
@@ -79,43 +139,72 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "Data",
-        "id": "0xdbbd0000011f6d",
+        "className": "e-tailers",
+        "id": "0x17b9c000000d4fc",
       },
       "pathFromRoot": Array [
-        "4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
-        "e845ce78-d049-4079-8e52-c1852841f2dd",
+        "61ac32e0-9daf-4f7d-a66e-d5ccf6b5e845",
+        "ce78d049-0790-4e52-8185-2841f2ddecb9",
       ],
       "type": "ECInstanceNode",
     },
     "autoExpand": true,
-    "description": "Necessitatibus eum ab.",
+    "description": "Beatae necessitatibus eum ab harum.",
     "hasChildren": true,
-    "id": "e845ce78-d049-4079-8e52-c1852841f2dd/4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
+    "icon": "Automotive",
+    "id": "ce78d049-0790-4e52-8185-2841f2ddecb9/61ac32e0-9daf-4f7d-a66e-d5ccf6b5e845",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "intranet Executive",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "systematic",
+        "value": "wireless",
+        "valueFormat": 0,
+      },
+    },
     "style": Object {
       "colorOverrides": Object {
-        "color": 248743167,
+        "backgroundColor": -2024888833,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "Networked",
-        "id": "0xdba500000106ba",
+        "className": "invoice",
+        "id": "0x159ee000000b364",
       },
       "pathFromRoot": Array [
-        "eba56260-0815-4375-8f3d-aeabb1421892",
-        "b75ef471-908f-4cd9-8af2-5d633b21a813",
+        "62600815-3750-4f3d-aeab-b1421892b75e",
+        "f471908f-cd9c-4af2-9d63-3b21a81337a8",
       ],
       "type": "ECInstanceNode",
     },
-    "icon": "national",
-    "id": "b75ef471-908f-4cd9-8af2-5d633b21a813/eba56260-0815-4375-8f3d-aeabb1421892",
-    "label": "indexing XSS",
+    "hasChildren": true,
+    "id": "f471908f-cd9c-4af2-9d63-3b21a81337a8/62600815-3750-4f3d-aeab-b1421892b75e",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Assurance",
+        "value": "Hong Kong Dollar",
+        "valueFormat": 0,
+      },
+    },
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": -2105862145,
+        "color": 1250650111,
+      },
+    },
   },
 ]
 `;
@@ -125,47 +214,73 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "metrics",
-        "id": "0x63060000003c1a",
+        "className": "Granite",
+        "id": "0x9ece000000928e",
       },
       "pathFromRoot": Array [
-        "7563a72a-9ca8-4deb-b3f2-90e038b00330",
-        "fde07d2e-c992-4c8d-9f77-66e2d57cff27",
+        "a72a9ca8-debb-43f2-90e0-38b00330fde0",
+        "7d2ec992-c8d5-4f77-a6e2-d57cff276d24",
       ],
       "type": "ECInstanceNode",
     },
     "checkBoxState": 1,
-    "description": "At enim qui enim quisquam ratione debitis sequi totam aut.",
-    "hasChildren": true,
-    "id": "fde07d2e-c992-4c8d-9f77-66e2d57cff27/7563a72a-9ca8-4deb-b3f2-90e038b00330",
+    "id": "7d2ec992-c8d5-4f77-a6e2-d57cff276d24/a72a9ca8-debb-43f2-90e0-38b00330fde0",
     "isCheckboxVisible": true,
-    "label": "Haiti",
-    "parentId": "Movies",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Harbors",
+        "value": "eyeballs",
+        "valueFormat": 0,
+      },
+    },
+    "parentId": "one-to-one",
     "style": Object {
       "colorOverrides": Object {
-        "color": 437788159,
+        "backgroundColor": 479940351,
+        "color": 615703295,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "Accountability",
-        "id": "0xabb40000005556",
+        "className": "exuding",
+        "id": "0x17679000001797b",
       },
       "pathFromRoot": Array [
-        "b17a7270-2f3a-4398-85ab-e6ed9fcd7bda",
-        "1c500d4d-5d63-4c09-a4f2-bdad7ba2e46f",
+        "29db17a7-2702-4f3a-b980-5abe6ed9fcd7",
+        "bda1c500-d4d5-4d63-809e-4f2bdad7ba2e",
       ],
       "type": "ECInstanceNode",
     },
-    "icon": "connecting",
-    "id": "1c500d4d-5d63-4c09-a4f2-bdad7ba2e46f/b17a7270-2f3a-4398-85ab-e6ed9fcd7bda",
-    "label": "Berkshire Soft generate",
-    "parentId": "Movies",
+    "autoExpand": true,
+    "checkBoxState": 1,
+    "hasChildren": true,
+    "icon": "methodologies",
+    "id": "bda1c500-d4d5-4d63-809e-4f2bdad7ba2e/29db17a7-2702-4f3a-b980-5abe6ed9fcd7",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Cambridgeshire",
+        "value": "Sharable",
+        "valueFormat": 0,
+      },
+    },
+    "parentId": "one-to-one",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 1513652479,
+        "backgroundColor": 632996863,
       },
     },
   },

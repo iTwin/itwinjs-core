@@ -91,8 +91,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   protected _sizeMultiplier?: number;
   protected _request?: TileRequest;
   protected _transformToRoot?: Transform;
-  protected _localRange?: ElementAlignedBox3d;
-  protected _localContentRange?: ElementAlignedBox3d;
   protected _emptySubRangeMask?: number;
   private _state: TileState;
   private static _loadedRealityChildren = new Array<Tile>();
@@ -111,12 +109,10 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     this._sizeMultiplier = props.sizeMultiplier;
     if (undefined !== (this.transformToRoot = props.transformToRoot)) {
       this.transformToRoot.multiplyRange(props.range, this.range);
-      this._localRange = this.range;
-      if (undefined !== props.contentRange) {
+      if (undefined !== props.contentRange)
         this.transformToRoot.multiplyRange(props.contentRange, this._contentRange);
-        this._localContentRange = props.contentRange;
-      }
     }
+
     if (!this.root.loader.tileRequiresLoading(props)) {
       this.setIsReady();    // If no contents, this node is for structure only and no content loading is required.
     }
@@ -617,7 +613,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
         if (undefined !== props) {
           // If this tile is undisplayable, update its content range based on children's content ranges.
-          const parentRange = this.hasContentRange ? undefined : new Range3d();
+          // Note, the children usually *have* no content at this point, so content range == tile range.
+          const parentRange = (this.hasContentRange || undefined !== this.root.contentRange) ? undefined : new Range3d();
           for (const prop of props) {
             const child = new Tile(Tile.paramsFromJSON(prop, this.root, this));
 

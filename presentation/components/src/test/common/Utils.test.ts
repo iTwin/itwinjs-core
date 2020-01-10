@@ -7,9 +7,14 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
-import { createRandomDescriptor, createRandomPropertiesField, createRandomNestedContentField } from "@bentley/presentation-common/lib/test/_helpers/random";
+import {
+  createRandomDescriptor, createRandomPropertiesField, createRandomNestedContentField,
+  createRandomLabelDefinition, createRandomLabelCompositeValue,
+} from "@bentley/presentation-common/lib/test/_helpers/random";
 import { applyOptionalPrefix } from "../../common/ContentBuilder";
 import * as utils from "../../common/Utils";
+import { PrimitiveValue, Primitives } from "@bentley/imodeljs-frontend";
+import { LabelCompositeValue } from "@bentley/presentation-common";
 
 class TestComponent extends React.Component {
 }
@@ -92,6 +97,38 @@ describe("Utils", () => {
       descriptor.fields = [nestingField];
       const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, nestingField.name));
       expect(result).to.eq(nestedField);
+    });
+
+  });
+
+  describe("createLabelRecord", () => {
+    const validateCompositeValue = (actual: Primitives.Composite, expected: LabelCompositeValue) => {
+      expect(actual.separator).to.be.eq(expected.separator);
+      expect(actual.parts.length).to.be.eq(expected.values.length);
+      for (let i = 0; i < actual.parts.length; i++) {
+        expect(actual.parts[i].displayValue).to.be.eq(expected.values[i].displayValue);
+        expect(actual.parts[i].rawValue).to.be.eq(expected.values[i].rawValue);
+        expect(actual.parts[i].typeName).to.be.eq(expected.values[i].typeName);
+      }
+    };
+
+    it("creates PropertyRecord for label with simple value", () => {
+      const definition = createRandomLabelDefinition();
+      const record = utils.createLabelRecord(definition, "test");
+      const primitiveValue = record.value as PrimitiveValue;
+      expect(primitiveValue.value).to.be.eq(definition.rawValue);
+      expect(primitiveValue.displayValue).to.be.eq(definition.displayValue);
+      expect(record.property.typename).to.be.eq(definition.typeName);
+    });
+
+    it("creates PropertyRecord for label with composite value", () => {
+      const compositeValue = createRandomLabelCompositeValue();
+      const definition = { ...createRandomLabelDefinition(), rawValue: compositeValue, typeName: "composite" };
+      const record = utils.createLabelRecord(definition, "test");
+      const primitiveValue = record.value as PrimitiveValue;
+      validateCompositeValue(primitiveValue.value as Primitives.Composite, definition.rawValue);
+      expect(primitiveValue.displayValue).to.be.eq(definition.displayValue);
+      expect(record.property.typename).to.be.eq(definition.typeName);
     });
 
   });

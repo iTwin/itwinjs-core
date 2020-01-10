@@ -5900,6 +5900,22 @@ export namespace Primitives {
     // (undocumented)
     export type Boolean = boolean | string | {} | [];
     // (undocumented)
+    export interface Composite {
+        // (undocumented)
+        parts: CompositePart[];
+        // (undocumented)
+        separator: string;
+    }
+    // (undocumented)
+    export interface CompositePart {
+        // (undocumented)
+        displayValue: string;
+        // (undocumented)
+        rawValue: Value;
+        // (undocumented)
+        typeName: string;
+    }
+    // (undocumented)
     export type Enum = number | string;
     // (undocumented)
     export type Float = number | string;
@@ -5929,7 +5945,7 @@ export namespace Primitives {
     // (undocumented)
     export type Text = string;
     // (undocumented)
-    export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point;
+    export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite;
 }
 
 // @public
@@ -8222,10 +8238,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     readonly loader: TileLoader;
     // (undocumented)
     readonly loadStatus: Tile.LoadStatus;
-    // (undocumented)
-    protected _localContentRange?: ElementAlignedBox3d;
-    // (undocumented)
-    protected _localRange?: ElementAlignedBox3d;
     // (undocumented)
     readonly maximumSize: number;
     // (undocumented)

@@ -5,13 +5,6 @@ Array [
   Object {
     "editable": false,
     "filterable": false,
-    "key": "/DisplayLabel/",
-    "label": "£ábêl",
-    "sortable": true,
-  },
-  Object {
-    "editable": false,
-    "filterable": false,
     "key": "pc_bis_Model_ModeledElement",
     "label": "Modeled Element",
     "sortable": true,
@@ -21,13 +14,6 @@ Array [
 
 exports[`TableDataProvider getColumns returns columns for multiple instances 1`] = `
 Array [
-  Object {
-    "editable": false,
-    "filterable": false,
-    "key": "/DisplayLabel/",
-    "label": "£ábêl",
-    "sortable": true,
-  },
   Object {
     "editable": false,
     "filterable": false,
@@ -41,23 +27,6 @@ Array [
 exports[`TableDataProvider getRow returns first row 1`] = `
 Object {
   "cells": Array [
-    Object {
-      "key": "/DisplayLabel/",
-      "record": PropertyRecord {
-        "description": "Properties_60InstancesWithUrl2",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "£ábêl",
-          "name": "/DisplayLabel/",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "Properties_60InstancesWithUrl2",
-          "value": "Properties_60InstancesWithUrl2",
-          "valueFormat": 0,
-        },
-      },
-    },
     Object {
       "key": "pc_bis_Model_ModeledElement",
       "record": PropertyRecord {
@@ -85,23 +54,6 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "/DisplayLabel/",
-        "record": PropertyRecord {
-          "description": "BisCore.DictionaryModel",
-          "isReadonly": true,
-          "property": Object {
-            "displayLabel": "£ábêl",
-            "name": "/DisplayLabel/",
-            "typename": "string",
-          },
-          "value": Object {
-            "displayValue": "BisCore.DictionaryModel",
-            "value": "BisCore.DictionaryModel",
-            "valueFormat": 0,
-          },
-        },
-      },
-      Object {
         "key": "pc_bis_Model_ModeledElement",
         "record": PropertyRecord {
           "description": "BisCore.DictionaryModel",
@@ -124,22 +76,27 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "/DisplayLabel/",
+        "key": "pc_bis_Model_ModeledElement",
         "record": PropertyRecord {
-          "description": "DgnV8Bridge",
+          "description": "Properties_60InstancesWithUrl2",
           "isReadonly": true,
           "property": Object {
-            "displayLabel": "£ábêl",
-            "name": "/DisplayLabel/",
-            "typename": "string",
+            "displayLabel": "Modeled Element",
+            "name": "pc_bis_Model_ModeledElement",
+            "typename": "navigation",
           },
           "value": Object {
-            "displayValue": "DgnV8Bridge",
-            "value": "DgnV8Bridge",
+            "displayValue": "Properties_60InstancesWithUrl2",
+            "value": 28,
             "valueFormat": 0,
           },
         },
       },
+    ],
+    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
+  },
+  Object {
+    "cells": Array [
       Object {
         "key": "pc_bis_Model_ModeledElement",
         "record": PropertyRecord {
@@ -159,45 +116,6 @@ Array [
       },
     ],
     "key": "{\\"className\\":\\"BisCore:RepositoryModel\\",\\"id\\":\\"0x1\\"}",
-  },
-  Object {
-    "cells": Array [
-      Object {
-        "key": "/DisplayLabel/",
-        "record": PropertyRecord {
-          "description": "Properties_60InstancesWithUrl2",
-          "isReadonly": true,
-          "property": Object {
-            "displayLabel": "£ábêl",
-            "name": "/DisplayLabel/",
-            "typename": "string",
-          },
-          "value": Object {
-            "displayValue": "Properties_60InstancesWithUrl2",
-            "value": "Properties_60InstancesWithUrl2",
-            "valueFormat": 0,
-          },
-        },
-      },
-      Object {
-        "key": "pc_bis_Model_ModeledElement",
-        "record": PropertyRecord {
-          "description": "Properties_60InstancesWithUrl2",
-          "isReadonly": true,
-          "property": Object {
-            "displayLabel": "Modeled Element",
-            "name": "pc_bis_Model_ModeledElement",
-            "typename": "navigation",
-          },
-          "value": Object {
-            "displayValue": "Properties_60InstancesWithUrl2",
-            "value": 28,
-            "valueFormat": 0,
-          },
-        },
-      },
-    ],
-    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
   },
 ]
 `;
@@ -207,62 +125,6 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "/DisplayLabel/",
-        "record": PropertyRecord {
-          "description": "Properties_60InstancesWithUrl2",
-          "isReadonly": true,
-          "property": Object {
-            "displayLabel": "£ábêl",
-            "name": "/DisplayLabel/",
-            "typename": "string",
-          },
-          "value": Object {
-            "displayValue": "Properties_60InstancesWithUrl2",
-            "value": "Properties_60InstancesWithUrl2",
-            "valueFormat": 0,
-          },
-        },
-      },
-      Object {
-        "key": "pc_bis_Model_ModeledElement",
-        "record": PropertyRecord {
-          "description": "Properties_60InstancesWithUrl2",
-          "isReadonly": true,
-          "property": Object {
-            "displayLabel": "Modeled Element",
-            "name": "pc_bis_Model_ModeledElement",
-            "typename": "navigation",
-          },
-          "value": Object {
-            "displayValue": "Properties_60InstancesWithUrl2",
-            "value": 28,
-            "valueFormat": 0,
-          },
-        },
-      },
-    ],
-    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
-  },
-  Object {
-    "cells": Array [
-      Object {
-        "key": "/DisplayLabel/",
-        "record": PropertyRecord {
-          "description": "DgnV8Bridge",
-          "isReadonly": true,
-          "property": Object {
-            "displayLabel": "£ábêl",
-            "name": "/DisplayLabel/",
-            "typename": "string",
-          },
-          "value": Object {
-            "displayValue": "DgnV8Bridge",
-            "value": "DgnV8Bridge",
-            "valueFormat": 0,
-          },
-        },
-      },
-      Object {
         "key": "pc_bis_Model_ModeledElement",
         "record": PropertyRecord {
           "description": "Ñót spêçìfíêd",
@@ -285,22 +147,27 @@ Array [
   Object {
     "cells": Array [
       Object {
-        "key": "/DisplayLabel/",
+        "key": "pc_bis_Model_ModeledElement",
         "record": PropertyRecord {
-          "description": "BisCore.DictionaryModel",
+          "description": "Properties_60InstancesWithUrl2",
           "isReadonly": true,
           "property": Object {
-            "displayLabel": "£ábêl",
-            "name": "/DisplayLabel/",
-            "typename": "string",
+            "displayLabel": "Modeled Element",
+            "name": "pc_bis_Model_ModeledElement",
+            "typename": "navigation",
           },
           "value": Object {
-            "displayValue": "BisCore.DictionaryModel",
-            "value": "BisCore.DictionaryModel",
+            "displayValue": "Properties_60InstancesWithUrl2",
+            "value": 28,
             "valueFormat": 0,
           },
         },
       },
+    ],
+    "key": "{\\"className\\":\\"BisCore:PhysicalModel\\",\\"id\\":\\"0x1c\\"}",
+  },
+  Object {
+    "cells": Array [
       Object {
         "key": "pc_bis_Model_ModeledElement",
         "record": PropertyRecord {

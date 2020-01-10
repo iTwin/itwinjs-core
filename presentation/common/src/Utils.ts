@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
+import * as path from "path";
 import { KeySet } from "./KeySet";
 import { NodeKey } from "./hierarchy/Key";
 
@@ -56,3 +57,6 @@ export const getInstancesCount = (keys: Readonly<KeySet>): number => {
   });
   return count;
 };
+
+/** @internal */
+export const LOCALES_DIRECTORY = path.join(__dirname, "assets", "locales");

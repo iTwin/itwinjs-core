@@ -5,50 +5,69 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "sticky",
-        "id": "0x1d01000000f5fb",
+        "className": "Auto Loan Account",
+        "id": "0xb1d8000000de35",
       },
       "pathFromRoot": Array [
-        "8a0214f5-9431-442b-a3f9-5f0db34739fd",
-        "e2c0a107-d9c9-4758-b192-6883bea7421c",
+        "66dcb686-2502-41e0-a1c3-9b08a0214f59",
+        "43142b23-f95f-40db-b473-9fde2c0a107d",
       ],
       "type": "ECInstanceNode",
     },
-    "description": "Ex quaerat explicabo.",
-    "id": "e2c0a107-d9c9-4758-b192-6883bea7421c/8a0214f5-9431-442b-a3f9-5f0db34739fd",
-    "isCheckboxVisible": true,
-    "label": "A-2-1",
-    "parentId": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
+    "description": "Doloribus aut culpa ratione vel molestias omnis.",
+    "icon": "reboot",
+    "id": "43142b23-f95f-40db-b473-9fde2c0a107d/66dcb686-2502-41e0-a1c3-9b08a0214f59",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Realigned",
+        "value": "bluetooth",
+        "valueFormat": 0,
+      },
+    },
+    "parentId": "680c80a2-8cf0-49ee-8272-ec6682ae559c/e412801a-e3e4-4479-8999-2f94b3186fb7",
     "style": Object {
       "colorOverrides": Object {
-        "color": 1051299327,
+        "backgroundColor": 1126240511,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "Vermont",
-        "id": "0x5e54000001574b",
+        "className": "Village",
+        "id": "0x143170000017783",
       },
       "pathFromRoot": Array [
-        "ea063b9c-f6fe-483e-8ae6-4729087ece56",
-        "9f025212-b800-47ff-9507-21582ec854f5",
+        "23ea98de-9451-4bb8-8be2-ea063b9cf6fe",
+        "83e0ae64-7290-487e-8e56-9f025212b800",
       ],
       "type": "ECInstanceNode",
     },
     "autoExpand": true,
-    "description": "In quis consequuntur quos hic animi ipsam perferendis tenetur.",
+    "checkBoxState": 1,
+    "description": "Rem quia odit.",
     "hasChildren": true,
-    "id": "9f025212-b800-47ff-9507-21582ec854f5/ea063b9c-f6fe-483e-8ae6-4729087ece56",
+    "icon": "Avon",
+    "id": "83e0ae64-7290-487e-8e56-9f025212b800/23ea98de-9451-4bb8-8be2-ea063b9cf6fe",
     "isCheckboxVisible": true,
-    "label": "A-2-2",
-    "parentId": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
-    "style": Object {
-      "colorOverrides": Object {
-        "color": 1674400767,
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "end-to-end",
+        "value": "Licensed",
+        "valueFormat": 0,
       },
     },
+    "parentId": "680c80a2-8cf0-49ee-8272-ec6682ae559c/e412801a-e3e4-4479-8999-2f94b3186fb7",
   },
 ]
 `;
@@ -58,48 +77,61 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "bandwidth",
-        "id": "0xa0da000001762c",
+        "className": "Congo",
+        "id": "0x71220000010e43",
       },
       "pathFromRoot": Array [
-        "6fbe024f-2316-4265-a6e8-d65a837e308a",
-        "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19",
+        "024f2316-265a-46e8-965a-837e308ae678",
+        "62f3ccbf-c51b-48ed-ad1d-0420ea196af6",
       ],
       "type": "ECInstanceNode",
     },
     "autoExpand": true,
-    "description": "Repellendus fugiat velit sit aperiam placeat fuga doloribus.",
+    "description": "Nobis repellendus fugiat velit.",
     "hasChildren": true,
-    "id": "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a",
+    "icon": "Shoes",
+    "id": "62f3ccbf-c51b-48ed-ad1d-0420ea196af6/024f2316-265a-46e8-965a-837e308ae678",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "A-1",
-    "style": Object {
-      "colorOverrides": Object {
-        "backgroundColor": 1198705407,
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "methodologies",
+        "value": "capacitor",
+        "valueFormat": 0,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
       "instanceKey": Object {
-        "className": "SMS",
-        "id": "0xfd06000000f39f",
+        "className": "payment",
+        "id": "0x1590a0000003157",
       },
       "pathFromRoot": Array [
-        "2801ae3e-4479-4099-92f9-4b3186fb7680",
-        "c80a28cf-09ee-4827-aec6-682ae559cab2",
+        "e412801a-e3e4-4479-8999-2f94b3186fb7",
+        "680c80a2-8cf0-49ee-8272-ec6682ae559c",
       ],
       "type": "ECInstanceNode",
     },
     "autoExpand": true,
     "hasChildren": true,
-    "icon": "XSS",
-    "id": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
-    "label": "A-2",
-    "style": Object {
-      "colorOverrides": Object {
-        "color": -1483662081,
+    "id": "680c80a2-8cf0-49ee-8272-ec6682ae559c/e412801a-e3e4-4479-8999-2f94b3186fb7",
+    "isCheckboxVisible": true,
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Union",
+        "value": "Gorgeous",
+        "valueFormat": 0,
       },
     },
   },

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Create PropertyRecord to represent TreeNodeItem label if node's LabelDefinition is provided",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "Saulius.Skliutas@bentley.com"
+}

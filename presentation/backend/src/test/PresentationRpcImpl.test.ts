@@ -265,6 +265,42 @@ describe("PresentationRpcImpl", () => {
 
     });
 
+    describe("getDisplayLabelDefinition", () => {
+
+      it("calls stateless implementation", async () => {
+        statelessImpl.setup((x) => x.getDisplayLabelDefinition(testData.imodelToken, defaultRpcParams, testData.keys[0]))
+          .verifiable(moq.Times.once());
+        await impl.getDisplayLabelDefinition(testData.imodelToken, defaultRpcParams, testData.keys[0]);
+        statelessImpl.verifyAll();
+      });
+
+      it("calls stateful implementation", async () => {
+        statefulImpl.setup((x) => x.getDisplayLabelDefinition(testData.imodelToken, statefulRpcParams, testData.keys[0]))
+          .verifiable(moq.Times.once());
+        await impl.getDisplayLabelDefinition(testData.imodelToken, statefulRpcParams, testData.keys[0]);
+        statefulImpl.verifyAll();
+      });
+
+    });
+
+    describe("getDisplayLabelsDefinitions", () => {
+
+      it("calls stateless implementation", async () => {
+        statelessImpl.setup((x) => x.getDisplayLabelsDefinitions(testData.imodelToken, defaultRpcParams, []))
+          .verifiable(moq.Times.once());
+        await impl.getDisplayLabelsDefinitions(testData.imodelToken, defaultRpcParams, []);
+        statelessImpl.verifyAll();
+      });
+
+      it("calls stateful implementation", async () => {
+        statefulImpl.setup((x) => x.getDisplayLabelsDefinitions(testData.imodelToken, statefulRpcParams, []))
+          .verifiable(moq.Times.once());
+        await impl.getDisplayLabelsDefinitions(testData.imodelToken, statefulRpcParams, []);
+        statefulImpl.verifyAll();
+      });
+
+    });
+
     describe("getSelectionScopes", () => {
 
       it("calls stateless implementation", async () => {

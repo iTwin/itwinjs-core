@@ -127,6 +127,7 @@ alpha;FilterRenderer
 public;FloatTypeConverter 
 beta;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
+internal;getLabelString(label: string | PropertyRecord): string
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 

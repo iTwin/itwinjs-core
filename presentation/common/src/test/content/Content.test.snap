@@ -10,10 +10,15 @@ Object {
         "name": "digital",
       },
       "displayValues": Object {
-        "test": "programming",
+        "test": "Sharable",
       },
-      "imageId": "3c2f9cb3-5cd2-40d7-a211-cb278fb504eb",
-      "label": "Handmade quantify",
+      "imageId": "83c2f9cb-35cd-420d-ba21-1cb278fb504e",
+      "label": "evolve",
+      "labelDefinition": Object {
+        "displayValue": "evolve",
+        "rawValue": "monitor",
+        "typeName": "string",
+      },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
@@ -22,7 +27,7 @@ Object {
         },
       ],
       "values": Object {
-        "test": 5729,
+        "test": 74076,
       },
     },
   ],
@@ -376,10 +381,15 @@ Object {
         "name": "Planner",
       },
       "displayValues": Object {
-        "test": "driver",
+        "test": "Shoes Buckinghamshire Streets",
       },
-      "imageId": "0ab9860a-104d-4be2-aec7-dc91ccb3ee33",
-      "label": "synthesize",
+      "imageId": "ab9860a1-04db-4e2a-ac7d-c91ccb3ee332",
+      "label": "Handmade",
+      "labelDefinition": Object {
+        "displayValue": "Handmade",
+        "rawValue": "driver",
+        "typeName": "string",
+      },
       "mergedFieldNames": Array [],
       "primaryKeys": Array [
         Object {
@@ -388,7 +398,7 @@ Object {
         },
       ],
       "values": Object {
-        "test": 13274,
+        "test": 14767,
       },
     },
   ],

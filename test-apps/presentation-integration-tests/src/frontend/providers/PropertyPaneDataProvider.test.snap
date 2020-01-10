@@ -263,7 +263,61 @@ Object {
     },
   ],
   "description": "Physical Object",
-  "label": "Physical Object [0-39]",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "composite",
+    },
+    "value": Object {
+      "displayValue": "Physical Object [0-39]",
+      "value": Object {
+        "parts": Array [
+          Object {
+            "displayValue": "Physical Object",
+            "rawValue": "Physical Object",
+            "typeName": "string",
+          },
+          Object {
+            "displayValue": "[0-39]",
+            "rawValue": Object {
+              "parts": Array [
+                Object {
+                  "displayValue": "[",
+                  "rawValue": "[",
+                  "typeName": "string",
+                },
+                Object {
+                  "displayValue": "0",
+                  "rawValue": "0",
+                  "typeName": "string",
+                },
+                Object {
+                  "displayValue": "-",
+                  "rawValue": "-",
+                  "typeName": "string",
+                },
+                Object {
+                  "displayValue": "39",
+                  "rawValue": "39",
+                  "typeName": "string",
+                },
+                Object {
+                  "displayValue": "]",
+                  "rawValue": "]",
+                  "typeName": "string",
+                },
+              ],
+              "separator": "",
+            },
+            "typeName": "composite",
+          },
+        ],
+        "separator": " ",
+      },
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "DgnCustomItemTypes_MyProp__x003A__area": Array [
       PropertyRecord {
@@ -1548,7 +1602,18 @@ Object {
     },
   ],
   "description": "Physical Model",
-  "label": "Properties_60InstancesWithUrl2",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Properties_60InstancesWithUrl2",
+      "value": "Properties_60InstancesWithUrl2",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "General": Array [
       PropertyRecord {
@@ -1585,23 +1650,20 @@ Object {
     },
   ],
   "description": "Physical Model",
-  "label": "Properties_60InstancesWithUrl2",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "content_item_name",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "Properties_60InstancesWithUrl2",
+      "value": "Properties_60InstancesWithUrl2",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {
     "Favorite": Array [
-      PropertyRecord {
-        "description": "Properties_60InstancesWithUrl2",
-        "isReadonly": true,
-        "property": Object {
-          "displayLabel": "£ábêl",
-          "name": "/DisplayLabel/",
-          "typename": "string",
-        },
-        "value": Object {
-          "displayValue": "Properties_60InstancesWithUrl2",
-          "value": "Properties_60InstancesWithUrl2",
-          "valueFormat": 0,
-        },
-      },
       PropertyRecord {
         "description": "Properties_60InstancesWithUrl2",
         "isReadonly": true,

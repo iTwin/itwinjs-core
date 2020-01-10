@@ -9,7 +9,7 @@ import { useEffect, useRef } from "react";
  *
  * @alpha
  */
-export function useEffectSkipFirst(callback: () => void, deps?: any[]) {
+export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]) {
   const skipFirst = useRef(true);
 
   useEffect(() => {
@@ -18,6 +18,6 @@ export function useEffectSkipFirst(callback: () => void, deps?: any[]) {
       return;
     }
 
-    callback();
+    return callback();
   }, deps); // eslint-disable-line react-hooks/exhaustive-deps
 }

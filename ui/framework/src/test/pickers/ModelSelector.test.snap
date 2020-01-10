@@ -5,7 +5,18 @@ exports[`ModelSelector Category generates correct drawing categories' hierarchy 
 exports[`ModelSelector Category generates correct spatial categories' hierarchy 1`] = `
 Array [
   Object {
-    "label": "Uncategorized",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Uncategorized",
+        "value": "Uncategorized",
+        "valueFormat": 0,
+      },
+    },
   },
 ]
 `;
@@ -13,7 +24,18 @@ Array [
 exports[`ModelSelector Model generates correct models' hierarchy 1`] = `
 Array [
   Object {
-    "label": "Properties_60InstancesWithUrl2",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Properties_60InstancesWithUrl2",
+        "value": "Properties_60InstancesWithUrl2",
+        "valueFormat": 0,
+      },
+    },
   },
 ]
 `;

@@ -32,7 +32,7 @@ describe("TreeNodeRenderer", () => {
         node={node}
       />);
 
-    renderedNode.getByText(node.label);
+    renderedNode.getByText(node.label as string);
   });
 
   it("renders tree node with checkbox", () => {
@@ -72,7 +72,7 @@ describe("TreeNodeRenderer", () => {
         imageLoader={imageLoaderMock.object}
       />);
 
-    getByText(node.label);
+    getByText(node.label as string);
   });
 
   describe("events", () => {

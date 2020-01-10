@@ -7,8 +7,9 @@
 import * as React from "react";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Presentation } from "@bentley/presentation-frontend";
-import { Descriptor, Field } from "@bentley/presentation-common";
+import { Descriptor, Field, LabelDefinition, LabelCompositeValue } from "@bentley/presentation-common";
 import { FIELD_NAMES_SEPARATOR } from "./ContentBuilder";
+import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, Primitives } from "@bentley/imodeljs-frontend";
 
 /**
  * An interface of something that has a priority.
@@ -85,4 +86,38 @@ export const findField = (descriptor: Descriptor, recordPropertyName: string): F
       return field;
   }
   return undefined;
+};
+
+/**
+ * Creates property record for label using label definition.
+ * @internal
+ */
+export const createLabelRecord = (label: LabelDefinition, name: string): PropertyRecord => {
+  const value: PrimitiveValue = {
+    displayValue: label.displayValue,
+    value: createPrimitiveLabelValue(label),
+    valueFormat: PropertyValueFormat.Primitive,
+  };
+  const property: PropertyDescription = {
+    displayLabel: "Label",
+    typename: label.typeName,
+    name,
+  };
+
+  return new PropertyRecord(value, property);
+};
+
+const createPrimitiveLabelValue = (label: LabelDefinition) => {
+  return LabelDefinition.isCompositeDefinition(label) ? createPrimitiveCompositeValue(label.rawValue) : label.rawValue;
+};
+
+const createPrimitiveCompositeValue = (compositeValue: LabelCompositeValue): Primitives.Composite => {
+  return {
+    separator: compositeValue.separator,
+    parts: compositeValue.values.map((part) => ({
+      displayValue: part.displayValue,
+      typeName: part.typeName,
+      rawValue: createPrimitiveLabelValue(part),
+    })),
+  };
 };
