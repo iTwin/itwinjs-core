@@ -89,7 +89,7 @@ export class CurveLocationDetailArrayPair {
 export class CurveCurveIntersectXY extends NullGeometryHandler {
   // private geometryA: GeometryQuery;  // nb never used -- passed through handlers.
   private _extendA: boolean;
-  private _geometryB: GeometryQuery;
+  private _geometryB: GeometryQuery | undefined;
   private _extendB: boolean;
   private _results!: CurveLocationDetailPair[];
   private _worldToLocalPerspective: Matrix4d | undefined;
@@ -106,7 +106,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
    * @param geometryB second curve for intersection.  Saved for reference by specific handler methods.
    * @param extendB flag for extension of geometryB.
    */
-  public constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean) {
+  public constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean) {
     super();
     // this.geometryA = _geometryA;
     this._extendA = extendA;
@@ -122,8 +122,9 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     this._coincidentGeometryContext = CoincidentGeometryQuery.create();
     this.reinitialize();
   }
-  /** Reset the geometry flags, leaving all other parts unchanged (and preserving accumulated intersections) */
+  /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections) */
   public resetGeometry(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean) {
+
     this._extendA = extendA;
     this._geometryB = geometryB;
     this._extendB = extendB;
@@ -168,6 +169,9 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       this.reinitialize();
     return result;
   }
+  private sameCurveAndFraction(cp: CurvePrimitive, fraction: number, detail: CurveLocationDetail): boolean {
+    return cp === detail.curve && Geometry.isAlmostEqualNumber(fraction, detail.fraction);
+  }
   /** compute intersection of two line segments.
    * filter by extension rules.
    * record with fraction mapping.
@@ -198,13 +202,13 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     // ignore duplicate of most recent point .  ..
     const numPrevious = this._results.length;
     if (numPrevious > 0) {
-      const topFractionA = this._results[numPrevious - 1].detailA.fraction;
-      const topFractionB = this._results[numPrevious - 1].detailB.fraction;
+      const oldDetailA = this._results[numPrevious - 1].detailA;
+      const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (Geometry.isAlmostEqualNumber(topFractionA, globalFractionB) && Geometry.isAlmostEqualNumber(topFractionB, globalFractionA))
+        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailB) && this.sameCurveAndFraction(cpB, globalFractionB, oldDetailA))
           return;
       } else {
-        if (Geometry.isAlmostEqualNumber(topFractionA, globalFractionA) && Geometry.isAlmostEqualNumber(topFractionB, globalFractionB))
+        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailA) && this.sameCurveAndFraction(cpB, globalFractionB, oldDetailB))
           return;
       }
     }

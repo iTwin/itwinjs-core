@@ -21,8 +21,6 @@ import { CurveFactory } from "../../curve/CurveFactory";
 import { RegionOps } from "../../curve/RegionOps";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
-// import { prettyPrint } from "./testFunctions";
-// import { CurveLocationDetail } from "../curve/CurvePrimitive";
 /* tslint:disable:no-console */
 
 function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
@@ -178,14 +176,38 @@ describe("ConsolidateAdjacentPrimitives", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("LinesAndArcs", () => {
+  it("FilletsInLinestring", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
+    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 3, 1), Point3d.create(4, 3, 1), Point3d.create(6, 2, 1)];
+    const lineString0 = LineString3d.create(points);
+    points.reverse();
+    const lineString1 = LineString3d.create(points);
+    for (const filletRadius of [0.2, 0.4, 0.6, 1.2, 2.0, 4.0]) {
+      let y0 = 0.0;
+      for (const lineString of [lineString0, lineString1]) {
+        const chain0 = CurveFactory.createFilletsInLineString(lineString, filletRadius, false)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
+        y0 += 8.0;
+      }
+      x0 += 20.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", "FilletsInLineString");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("LinesAndArcs", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    ck.testUndefined(CurveFactory.createFilletsInLineString([Point3d.create(0, 0, 0)], 0.2, false));
+    let x0 = 0.0;
     const y0 = 0.0;
-    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 3, 1), Point3d.create(4, 3, 1)];
+    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 3, 1), Point3d.create(4, 3, 1), Point3d.create(6, 2, 1)];
     const tail = points[points.length - 1];
     const chain0 = CurveFactory.createFilletsInLineString(points, 0.2, false)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
+    x0 += 10;
     chain0.tryAddChild(BezierCurve3d.create([tail,
       tail.plus(Vector3d.create(1, 1, 0)),
       tail.plus(Vector3d.create(2, 0, -1)),

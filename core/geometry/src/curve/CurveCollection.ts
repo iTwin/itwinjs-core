@@ -206,7 +206,7 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
  * @public
  */
 export abstract class CurveCollection extends GeometryQuery {
-   /** String name for schema properties */
+  /** String name for schema properties */
   public readonly geometryCategory = "curveCollection";
   /** Type discriminator. */
   public abstract readonly curveCollectionType: CurveCollectionType;
@@ -240,27 +240,28 @@ export abstract class CurveCollection extends GeometryQuery {
     return CloneWithExpandedLineStrings.clone(this);
   }
   /** Recurse through children to collect CurvePrimitive's in flat array. */
-  private collectCurvePrimitivesGo(results: CurvePrimitive[]) {
+  private collectCurvePrimitivesGo(results: CurvePrimitive[], smallestPossiblePrimitives: boolean) {
     if (this.children) {
       for (const child of this.children) {
         if (child instanceof CurvePrimitive)
-          results.push(child);
+          child.collectCurvePrimitivesGo(results, smallestPossiblePrimitives);
         else if (child instanceof CurveCollection)
-          child.collectCurvePrimitivesGo(results);
+          child.collectCurvePrimitivesGo(results, smallestPossiblePrimitives);
       }
     }
   }
 
   /**
    * Return an array containing only the curve primitives.
-   * * These are leaf nodes
-   * * If there is a CurveChainWithDistanceIndex, that primitive stands as a leaf. (NOT its constituent curves)
+   * @param collectorArray optional array to receive primitives.   If present, new primitives are ADDED (without clearing the array.)
+   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
    */
-  public collectCurvePrimitives(): CurvePrimitive[] {
-    const results: CurvePrimitive[] = [];
-    this.collectCurvePrimitivesGo(results);
+  public collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false): CurvePrimitive[] {
+    const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
+    this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives);
     return results;
   }
+
   /** Return true for planar region types:
    * * `Loop`
    * * `ParityRegion`
@@ -380,12 +381,17 @@ export abstract class CurveChain extends CurveCollection {
     return undefined;
   }
   /** Return a structural clone, with CurvePrimitive objects stroked. */
-  public cloneStroked(options?: StrokeOptions): AnyCurve {
+  public abstract cloneStroked(options?: StrokeOptions): AnyCurve;
+  /*  EDL 01/20 Path, Loop, CurveChainWithDistanceIndex all implement this.
+      Reducing it to abstract.
+      Hypothetically, a derived class in the wild might be depending on this.
+   {
     const strokes = LineString3d.create();
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);
     return strokes;
   }
+  */
   /** add a child curve.
    * * Returns false if the given child is not a CurvePrimitive.
    */
@@ -423,7 +429,7 @@ export abstract class CurveChain extends CurveCollection {
  * @public
  */
 export class BagOfCurves extends CurveCollection {
-   /** String name for schema properties */
+  /** String name for schema properties */
   public readonly curveCollectionType = "bagOfCurves";
 
   /** test if `other` is an instance of `BagOfCurves` */

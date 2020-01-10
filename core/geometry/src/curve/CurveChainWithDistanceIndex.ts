@@ -268,6 +268,23 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     return numStroke;
   }
   /**
+   * Return an array containing only the curve primitives.
+   * * This DEFAULT simply pushes `this` to the collectorArray.
+   * * CurvePrimitiveWithDistanceIndex optionally collects its members.
+   * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
+   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
+   */
+  public collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives: boolean) {
+    if (smallestPossiblePrimitives) {
+      for (const c of this._path.children) {
+        c.collectCurvePrimitivesGo(collectorArray, smallestPossiblePrimitives);
+      }
+    } else {
+      collectorArray.push(this);
+    }
+  }
+
+  /**
    * construct StrokeCountMap for each child, accumulating data to stroke count map for this primitive.
    * @param options StrokeOptions that determine count
    * @param parentStrokeMap evolving parent map.
@@ -384,7 +401,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       return fragment.childCurve.fractionToPoint(childFraction, result);
     }
     // no fragment found.  Use _fragments[0]
-//    fragment = this.chainDistanceToFragment(chainDistance, true);
+    //    fragment = this.chainDistanceToFragment(chainDistance, true);
     return this._fragments[0].childCurve.fractionToPoint(0.0, result);
   }
 

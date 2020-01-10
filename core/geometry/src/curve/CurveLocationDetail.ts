@@ -102,6 +102,11 @@ export class CurveLocationDetail {
     this.point1 = point1;
   }
 
+  /** test if this pair has fraction1 defined */
+  public get hasFraction1(): boolean {
+    return this.fraction1 !== undefined;
+  }
+
   /** test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex) */
   public get isIsolated(): boolean {
     return this.intervalRole === undefined
@@ -119,6 +124,8 @@ export class CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = this.curve;
     result.fraction = this.fraction;
+    result.fraction1 = this.fraction1;
+    result.point1 = this.point1;
     result.point.setFromPoint3d(this.point);
     result.vectorInCurveLocationDetail = optionalVectorUpdate(this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail);
     result.a = this.a;

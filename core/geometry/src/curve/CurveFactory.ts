@@ -7,7 +7,7 @@
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Arc3d, ArcBlendData } from "./Arc3d";
 import { LineString3d } from "./LineString3d";
 import { LineSegment3d } from "./LineSegment3d";
@@ -16,6 +16,8 @@ import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Path } from "./Path";
 import { Geometry } from "../Geometry";
 import { Ellipsoid, GeodesicPathPoint } from "../geometry3d/Ellipsoid";
+import { Loop } from "./Loop";
+import { AngleSweep } from "../geometry3d/AngleSweep";
 /**
  * The `CurveFactory` class contains methods for specialized curve constructions.
  * @public
@@ -69,6 +71,7 @@ export class CurveFactory {
           blendArray[i].arc = undefined;
         }
       }
+      /*  The "1-b" logic above prevents this loop from ever doing anything.
       // on edge with conflict, suppress the arc with larger fraction
       for (let i = 1; i < n; i++) {
         const b0 = blendArray[i - 1];
@@ -79,7 +82,7 @@ export class CurveFactory {
           b.fraction12 = 0.0;
           blendArray[i].arc = undefined;
         }
-      }
+      }*/
     }
     const path = Path.create();
     this.addPartialSegment(path, allowBackupAlongEdge, blendArray[0].point, blendArray[1].point, blendArray[0].fraction12, 1.0 - blendArray[1].fraction10);
@@ -92,7 +95,33 @@ export class CurveFactory {
     }
     return path;
   }
-
+  /** Create a `Loop` with given xy corners and fixed z. */
+  public static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z: number = 0, filletRadius?: number): Loop {
+    if (filletRadius === undefined)
+      return Loop.createPolygon([Point3d.create(x0, y0, z), Point3d.create(x1, y0, z), Point3d.create(x1, y1, z), Point3d.create(x0, y1, z), Point3d.create(x0, y0, z)]);
+    else {
+      const vectorU = Vector3d.create(filletRadius, 0, 0);
+      const vectorV = Vector3d.create(0, filletRadius, 0);
+      const x0A = x0 + filletRadius;
+      const y0A = y0 + filletRadius;
+      const x1A = x1 - filletRadius;
+      const y1A = y1 - filletRadius;
+      const centers = [Point3d.create(x1A, y1A, z), Point3d.create(x0A, y1A, z), Point3d.create(x0A, y0A, z), Point3d.create(x1A, y0A, z)];
+      const loop = Loop.create();
+      for (let i = 0; i < 4; i++) {
+        const center = centers[i];
+        const nextCenter = centers[(i + 1) % 4];
+        const edgeVector = Vector3d.createStartEnd(center, nextCenter);
+        const arc = Arc3d.create(center, vectorU, vectorV, AngleSweep.createStartEndDegrees(0, 90));
+        loop.tryAddChild(arc);
+        const arcEnd = arc.endPoint();
+        loop.tryAddChild(LineSegment3d.create(arcEnd, arcEnd.plus(edgeVector)));
+        vectorU.rotate90CCWXY(vectorU);
+        vectorV.rotate90CCWXY(vectorV);
+      }
+      return loop;
+    }
+  }
   /**
    * If `arcB` is a continuation of `arcA`, extend `arcA` (in place) to include the range of `arcB`
    * * This only succeeds if the two arcs are part of identical complete arcs and end of `arcA` matches the beginning of `arcB`.

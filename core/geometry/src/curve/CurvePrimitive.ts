@@ -554,6 +554,29 @@ export abstract class CurvePrimitive extends GeometryQuery {
       parentMap.addToCountAndLength(curveMap.numStroke, curveMap.curveLength);
     curve.strokeData = curveMap;
   }
+  /**
+   * Return an array containing only the curve primitives.
+   * * This DEFAULT simply pushes `this` to the collectorArray.
+   * * CurvePrimitiveWithDistanceIndex optionally collects its members.
+   * @param collectorArray array to receive primitives (pushed -- the array is not cleared)
+   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
+   */
+  public collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], _smallestPossiblePrimitives: boolean) {
+    collectorArray.push(this);
+  }
+
+  /**
+   * Return an array containing only the curve primitives.
+   * * This DEFAULT captures the default result construction and calls collectCurvePrimitivesGo
+   * @param collectorArray optional array to receive primitives.   If present, new primitives are ADDED (without clearing the array.)
+   * @param smallestPossiblePrimitives if false, CurvePrimitiveWithDistanceIndex returns only itself.  If true, it recurses to its (otherwise hidden) children.
+   */
+  public collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false): CurvePrimitive[] {
+    const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
+    this.collectCurvePrimitivesGo(results, smallestPossiblePrimitives);
+    return results;
+  }
+
 }
 
 /** Intermediate class for managing the parentCurve announcements from an IStrokeHandler */

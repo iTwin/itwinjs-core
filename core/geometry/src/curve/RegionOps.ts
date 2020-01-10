@@ -34,6 +34,9 @@ import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { PolylineCompressionContext } from "../geometry3d/PolylineCompressionByEdgeOffset";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { ConsolidateAdjacentCurvePrimitivesContext } from "./Query/ConsolidateAdjacentPrimitivesContext";
+import { CurveCurve } from "./CurveCurve";
+import { PlanarSubdivision, SignedLoops } from "./Query/PlanarSubdivision";
+import { Range3d } from "../geometry3d/Range";
 /**
  * * `properties` is a string with special characters indicating
  *   * "U" -- contains unmerged stick data
@@ -274,6 +277,21 @@ export class RegionOps {
     if (result instanceof MomentData) {
       result.shiftOriginAndSumsToCentroidOfSums();
       return result;
+    }
+    return undefined;
+  }
+
+  /**
+   * Return an xy area for a loop, parity region, or union region.
+   * * If `rawMomentData` is the MomentData returned by computeXYAreaMoments, convert to principal axes and moments with
+   *    call `principalMomentData = MomentData.inertiaProductsToPrincipalAxes (rawMomentData.origin, rawMomentData.sums);`
+   * @param root any Loop, ParityRegion, or UnionRegion.
+   */
+  public static computeXYArea(root: AnyRegion): number | undefined {
+    const handler = new RegionMomentsXY();
+    const result = root.dispatchToGeometryHandler(handler);
+    if (result instanceof MomentData) {
+      return result.quantitySum;
     }
     return undefined;
   }
@@ -605,7 +623,74 @@ export class RegionOps {
     }
     return SortablePolygon.sortAsAnyRegion(loopAndArea);
   }
+  /**
+   * Find all areas bounded by the unstructured, possibly intersection curves.
+   * * In `curvesAndRegions`, Loop/ParityRegion/UnionRegion contribute curve primitives.
+   * @param curvesAndRegions Any collection of curves.
+   * @alpha
+   */
+  public static constructAllXYRegionLoops(curvesAndRegions: AnyCurve | AnyCurve[]): SignedLoops[] {
+    const primitivesA = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true);
+    const primitivesB = this.expandLineStrings(primitivesA);
+    const range = this.curveArrayRange(primitivesB);
+    const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitivesB);
+    const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitivesB, intersections);
+    return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, 1.0e-12 * range.xLength() * range.yLength());
+  }
 
+  /**
+   * collect all `CurvePrimitives` in loosely typed input.
+   * * This (always) recurses into primitives within collections (Path, Loop, ParityRegion, UnionRegion)
+   * * It (optionally) recurses to hidden primitives within primitives (i.e. CurveChainWithDistanceIndex)
+   * @param candidates array of various CurvePrimitive and CurveCollection
+   * @param smallestPossiblePrimitives if false, leave CurveChainWithDistanceIndex as single primitives.  If true, recurse to their children.
+   */
+  public static collectCurvePrimitives(candidates: AnyCurve | AnyCurve[], collectorArray?: CurvePrimitive[], smallestPossiblePrimitives: boolean = false): CurvePrimitive[] {
+    const results: CurvePrimitive[] = collectorArray === undefined ? [] : collectorArray;
+    if (candidates instanceof CurvePrimitive) {
+      candidates.collectCurvePrimitives(results, smallestPossiblePrimitives);
+    } else if (candidates instanceof CurveCollection) {
+      candidates.collectCurvePrimitives(results, smallestPossiblePrimitives);
+    } else if (Array.isArray(candidates)) {
+      for (const c of candidates) {
+        this.collectCurvePrimitives(c, results, smallestPossiblePrimitives);
+      }
+    }
+    return results;
+  }
+  /**
+   * Copy primitive pointers from candidates to result array.
+   * * replace LineString3d by individual LineSegment3d.
+   * * all others unchanged.
+   * @param candidates
+   */
+  public static expandLineStrings(candidates: CurvePrimitive[]): CurvePrimitive[] {
+    const result: CurvePrimitive[] = [];
+    for (const c of candidates) {
+      if (c instanceof LineString3d) {
+        for (let i = 0; i + 1 < c.packedPoints.length; i++) {
+          const q = c.getIndexedSegment(i);
+          if (q !== undefined)
+            result.push(q);
+        }
+      } else {
+        result.push(c);
+      }
+    }
+    return result;
+  }
+  /**
+   * Return the overall range of given curves.
+   * @param curves candidate curves
+   */
+  public static curveArrayRange(curves: AnyCurve[]): Range3d {
+    const range = Range3d.create();
+    for (const c of curves) {
+      if (c)
+        range.extendRange(c.range());
+    }
+    return range;
+  }
 }
 
 function pushToInOnOutArrays(curve: AnyCurve, select: number, arrayNegative: AnyCurve[], array0: AnyCurve[], arrayPositive: AnyCurve[]) {

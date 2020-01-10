@@ -41,6 +41,7 @@ import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
 import { NullGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 import { CurveExtendMode } from "../../curve/CurveExtendMode";
+import { Sphere } from "../../solid/Sphere";
 /* tslint:disable:no-console */
 
 class StrokeCountSearch extends NullGeometryHandler {
@@ -971,7 +972,8 @@ describe("CylindricalRange", () => {
     const curves = Sample.createSimplePaths(false);
     for (const c of curves) {
       const strokes = c.cloneStroked();
-      for (const ray of [Ray3d.createXYZUVW(0, 0, 0, 1, 0, 0),
+      for (const ray of [
+        Ray3d.createXYZUVW(0, 0, 0, 1, 0, 0),
         Ray3d.createXYZUVW(1, 2, 4, 3, 1, 5)]) {
         const vector1 = CylindricalRangeQuery.computeMaxVectorFromRay(ray, c);
         ck.testPointer(vector1);
@@ -1001,6 +1003,16 @@ describe("GeometryQuery", () => {
     ck.testFalse(pathA.isAlmostEqual(pathC));
     ck.testTrue(pathC.isAlmostEqual(pathC));
 
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("CurvePrimitive", () => {
+    const ck = new Checker();
+    ck.testUndefined(CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(undefined, 0.5));
+    ck.testUndefined(CurveCollection.createCurveLocationDetailOnAnyCurvePrimitive(Sphere.createCenterRadius(Point3d.create(0, 0, 0), 2)));
+    const path = Path.create(LineSegment3d.createXYXY(1, 2, 3, 4));
+    ck.testUndefined(path.getChild(-1));
+    ck.testUndefined(path.getChild(3));
     expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -154,7 +154,7 @@ export class HalfEdgeGraphMerge {
    * * If there are edge crossings, the graph can be a (highly complicated) Klein bottle topology.
    * * Mask.NULL_FACE is cleared throughout and applied within null faces.
    */
-  public static clusterAndMergeXYTheta(graph: HalfEdgeGraph) {
+  public static clusterAndMergeXYTheta(graph: HalfEdgeGraph, outboundRadiansFunction?: (he: HalfEdge) => number) {
     const allNodes = graph.allHalfEdges;
     const numNodes = allNodes.length;
     graph.clearMask(HalfEdgeMask.NULL_FACE);
@@ -194,7 +194,7 @@ export class HalfEdgeGraphMerge {
       if (clusterTableIndex !== ClusterableArray.clusterTerminator) {
         const nodeA = allNodes[clusterTableIndex];
         const nodeB = nodeA.faceSuccessor;
-        let radians = Math.atan2(nodeB.y - nodeA.y, nodeB.x - nodeA.x);
+        let radians = outboundRadiansFunction ? outboundRadiansFunction(nodeA) : Math.atan2(nodeB.y - nodeA.y, nodeB.x - nodeA.x);
         if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, -Math.PI))
           radians = Math.PI;
         clusters.setExtraData(clusterTableIndex, 0, radians);
