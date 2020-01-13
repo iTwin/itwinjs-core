@@ -260,11 +260,11 @@ export namespace TileAdmin {
      */
     maximumMajorTileFormatVersion?: number;
 
-    /** By default, the range of a spatial tile tree is based on the range of the model. If that range is small relative to the project extents, the "low-resolution" tiles
-     * will be much higher-resolution than is appropriate to draw when the view is fit to the project extents, This can cause poor display performance due to too much tiny geometry.
-     * Setting this option to `true` will instead base the range of the tree on the project extents.
+    /** When computing the range of a spatial tile tree we can use either the range of the model, or the project extents. If the model range is small relative to the
+     * project extents, the "low-resolution" tiles will be much higher-resolution than is appropriate when the view is fit to the project extents. This can cause poor
+     * framerate due to too much tiny geometry. Setting this option to `true` will use the project extents for the tile tree range; `false` will use the model range.
      *
-     * Default value: false
+     * Default value: true
      *
      * @internal
      */
@@ -536,7 +536,7 @@ class Admin extends TileAdmin {
     this._enableImprovedElision = true === options.enableImprovedElision;
     this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
-    this._useProjectExtents = true === options.useProjectExtents;
+    this._useProjectExtents = false !== options.useProjectExtents;
     this._cancelBackendTileRequests = true === options.cancelBackendTileRequests;
 
     const clamp = (seconds: number | undefined, min: number, max: number): BeDuration | undefined => {

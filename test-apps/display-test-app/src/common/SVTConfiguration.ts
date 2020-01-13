@@ -18,7 +18,7 @@ export interface SVTConfiguration {
   enableImprovedElision?: boolean; // default false
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
-  useProjectExtents?: boolean;
+  useProjectExtents?: boolean; // default ON
   tileTreeExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
   filterMapTextures?: boolean;  // default OFF

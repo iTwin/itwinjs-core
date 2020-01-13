@@ -158,8 +158,8 @@ async function main() {
   if (configuration.enableImprovedElision)
     tileAdminProps.enableImprovedElision = true;
 
-  if (configuration.useProjectExtents)
-    tileAdminProps.useProjectExtents = true;
+  if (false === configuration.useProjectExtents)
+    tileAdminProps.useProjectExtents = false;
 
   if (configuration.disableMagnification)
     tileAdminProps.disableMagnification = true;
