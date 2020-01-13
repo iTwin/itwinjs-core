@@ -9,6 +9,7 @@ import Footer from "./pages/Footer";
 import StagePanels from "./pages/StagePanels";
 import Tools from "./pages/Tools";
 import Zones from "./pages/Zones";
+import Zones2 from "./pages/Zones/Zones";
 import ZoneTargets from "./pages/ZoneTargets";
 
 export default class Demo extends React.PureComponent {
@@ -18,6 +19,7 @@ export default class Demo extends React.PureComponent {
         <>
           <Route exact path="/" component={Home} />
           <Route path="/zones" component={Zones} />
+          <Route path="/zones2" component={Zones2} />
           <Route path="/stage-panels" component={StagePanels} />
           <Route path="/zone-targets" component={ZoneTargets} />
           <Route path="/footer" component={Footer} />

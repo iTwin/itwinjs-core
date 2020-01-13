@@ -31,8 +31,18 @@ beta;Direction
 internal;DirectionHelpers
 beta;DisabledResizeHandles
 internal;DisabledResizeHandlesHelpers
+internal;DockedToolSetting(props: ToolSettingProps): JSX.Element
+internal;DockedToolSettings(props: DockedToolSettingsProps): JSX.Element
+internal;DockedToolSettingsHandle(props: DockedToolSettingsHandleProps): JSX.Element
+internal;DockedToolSettingsHandleProps 
+internal;DockedToolSettingsOverflow(props: DockedToolSettingsOverflowProps): JSX.Element
+internal;DockedToolSettingsOverflowProps 
+internal;DockedToolSettingsProps 
 internal;DraggedWidgetManager
 beta;DraggedWidgetManagerProps
+internal;DragHandle 
+internal;DragHandleProps 
+internal;Ellipsis(props: CommonProps): JSX.Element
 alpha;ExpandableButton 
 alpha;ExpandableButtonProps 
 beta;ExpandableItem 
@@ -64,6 +74,7 @@ beta;getDefaultZonesManagerProps: () => ZonesManagerProps
 internal;getDefaultZonesManagerWidgetsProps: () => ZonesManagerWidgetsProps
 internal;getDefaultZonesManagerZonesProps: () => ZonesManagerZonesProps
 internal;getDragDistance: (from: Point, to: Point, direction: Direction) => number
+internal;getOverflown(width: number, docked: ReadonlyArray
 alpha;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 alpha;getToolbarItemProps: 
 internal;getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings
@@ -145,6 +156,8 @@ alpha;Panel
 alpha;PanelProps 
 alpha;PanelsProvider 
 alpha;PanelsProviderProps
+internal;PointerCaptor 
+internal;PointerCaptorProps 
 beta;ProgressProps 
 alpha;ResizeDirection
 alpha;ResizeDirectionHelpers
@@ -224,7 +237,10 @@ beta;ToolbarPanelAlignment
 alpha;ToolbarPanelAlignmentHelpers
 beta;ToolbarProps 
 alpha;Tools 
+internal;ToolSettingProps 
 beta;ToolSettings 
+internal;ToolSettingsOverflowPanel: React.ForwardRefExoticComponent
+internal;ToolSettingsOverflowPanelProps 
 beta;ToolSettingsPopup 
 beta;ToolSettingsPopupProps 
 beta;ToolSettingsProps 
@@ -236,8 +252,15 @@ alpha;ToolsProps
 beta;Tooltip 
 beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
+internal;useOverflow(children: React.ReactNode): [ReadonlyArray
+internal;usePointerCaptor
+internal;useRefEffect
+internal;useRefs
+internal;useResizeObserver
 beta;UserProfile 
 beta;UserProfileProps 
+internal;useTargeted: (elementRef: React.RefObject
+internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs
 beta;VerticalAnchor
 internal;VerticalAnchorHelpers
 alpha;WidgetContent 

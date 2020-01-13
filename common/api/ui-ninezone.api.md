@@ -248,6 +248,35 @@ export class DisabledResizeHandlesHelpers {
 }
 
 // @internal
+export function DockedToolSetting(props: ToolSettingProps): JSX.Element;
+
+// @internal
+export function DockedToolSettings(props: DockedToolSettingsProps): JSX.Element;
+
+// @internal
+export function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps): JSX.Element;
+
+// @internal
+export interface DockedToolSettingsHandleProps extends CommonProps {
+    // (undocumented)
+    onDrag?: () => void;
+}
+
+// @internal
+export function DockedToolSettingsOverflow(props: DockedToolSettingsOverflowProps): JSX.Element;
+
+// @internal
+export interface DockedToolSettingsOverflowProps extends ToolSettingProps {
+    onClick?: () => void;
+}
+
+// @internal
+export interface DockedToolSettingsProps extends CommonProps {
+    children?: React.ReactNode;
+    panelContainer?: React.ComponentType;
+}
+
+// @internal
 export class DraggedWidgetManager {
     // (undocumented)
     setLastPosition(lastPosition: PointProps, props: DraggedWidgetManagerProps): DraggedWidgetManagerProps;
@@ -264,6 +293,26 @@ export interface DraggedWidgetManagerProps {
     // (undocumented)
     readonly tabIndex: number;
 }
+
+// @internal
+export class DragHandle extends React.PureComponent<DragHandleProps, DragHandleState> {
+    // (undocumented)
+    render(): JSX.Element;
+    // (undocumented)
+    readonly state: DragHandleState;
+}
+
+// @internal
+export interface DragHandleProps extends CommonProps {
+    lastPosition?: PointProps;
+    onClick?: () => void;
+    onDrag?: (dragged: PointProps) => void;
+    onDragEnd?: () => void;
+    onDragStart?: (initialPosition: PointProps) => void;
+}
+
+// @internal
+export function Ellipsis(props: CommonProps): JSX.Element;
 
 // @alpha
 export class ExpandableButton extends React.PureComponent<ExpandableButtonProps> {
@@ -410,6 +459,9 @@ export const getDefaultZonesManagerZonesProps: () => ZonesManagerZonesProps;
 
 // @internal (undocumented)
 export const getDragDistance: (from: Point, to: Point, direction: Direction) => number;
+
+// @internal
+export function getOverflown(width: number, docked: ReadonlyArray<readonly [string, number]>, overflowWidth: number): string[];
 
 // @alpha (undocumented)
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
@@ -996,6 +1048,25 @@ export interface PanelsProviderProps {
     histories: HTMLElement | null;
     items?: React.ReactNode;
     panels: HTMLElement | null;
+}
+
+// @internal
+export class PointerCaptor extends React.PureComponent<PointerCaptorProps> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @internal
+export interface PointerCaptorProps extends CommonProps {
+    isPointerDown: boolean;
+    onClick?: () => void;
+    onPointerDown?: (e: PointerEvent) => void;
+    onPointerMove?: (e: PointerEvent) => void;
+    onPointerUp?: (e: PointerEvent) => void;
 }
 
 // @beta
@@ -1648,6 +1719,11 @@ export class Tools extends React.PureComponent<ToolsProps> {
     render(): JSX.Element;
 }
 
+// @internal
+export interface ToolSettingProps extends CommonProps {
+    children?: React.ReactNode;
+}
+
 // @beta
 export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     // (undocumented)
@@ -1655,6 +1731,14 @@ export class ToolSettings extends React.PureComponent<ToolSettingsProps> {
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @internal
+export const ToolSettingsOverflowPanel: React.ForwardRefExoticComponent<ToolSettingsOverflowPanelProps & React.RefAttributes<HTMLDivElement>>;
+
+// @internal
+export interface ToolSettingsOverflowPanelProps extends ToolSettingProps {
+    children?: React.ReactNode;
+}
 
 // @beta
 export class ToolSettingsPopup extends React.PureComponent<ToolSettingsPopupProps> {
@@ -1750,6 +1834,25 @@ export interface TooltipProps extends CommonProps {
     position: PointProps;
 }
 
+// @internal
+export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
+outsideEventPredicate?: (e: PointerEvent) => boolean): React.MutableRefObject<T | null>;
+
+// @internal
+export function useOverflow(children: React.ReactNode): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
+
+// @internal
+export function usePointerCaptor<T extends HTMLElement>(onPointerDown?: () => void, onPointerMove?: () => void, onPointerUp?: () => void): (instance: T | null) => void;
+
+// @internal
+export function useRefEffect<T>(callback: (instance: T | null) => (void | (() => void)), deps: ReadonlyArray<any>): (instance: T | null) => void;
+
+// @internal
+export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
+
+// @internal
+export function useResizeObserver<T extends Element>(onResize?: (width: number) => void): (instance: T | null) => void;
+
 // @beta
 export class UserProfile extends React.PureComponent<UserProfileProps> {
     // (undocumented)
@@ -1764,6 +1867,12 @@ export interface UserProfileProps extends CommonProps {
     onClick?: () => void;
     safeAreaInsets?: SafeAreaInsets;
 }
+
+// @internal
+export const useTargeted: (elementRef: React.RefObject<Element>) => boolean;
+
+// @internal (undocumented)
+export function useToolSettingsEntry(): DockedToolSettingsEntryContextArgs;
 
 // @beta
 export enum VerticalAnchor {

@@ -43,7 +43,7 @@ describe("<DragHandle />", () => {
 
     pointerCaptor.prop("onClick")!();
 
-    spy.calledOnceWithExactly().should.false;
+    spy.notCalled.should.true;
   });
 
   it("should release pointer capture", () => {

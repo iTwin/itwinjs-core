@@ -7,6 +7,14 @@ export * from "./ui-ninezone/backstage/Item";
 export * from "./ui-ninezone/backstage/Separator";
 export * from "./ui-ninezone/backstage/UserProfile";
 
+export * from "./ui-ninezone/base/DragHandle";
+export * from "./ui-ninezone/base/Ellipsis";
+export * from "./ui-ninezone/base/PointerCaptor";
+export * from "./ui-ninezone/base/useOnOutsideClick";
+export * from "./ui-ninezone/base/useRefEffect";
+export * from "./ui-ninezone/base/useRefs";
+export * from "./ui-ninezone/base/useResizeObserver";
+export * from "./ui-ninezone/base/useTargeted";
 export * from "./ui-ninezone/base/WithContainIn";
 
 export * from "./ui-ninezone/footer/dialog/Button";
@@ -56,6 +64,12 @@ export * from "./ui-ninezone/stage-panels/StagePanels";
 export * from "./ui-ninezone/stage-panels/manager/NestedStagePanels";
 export * from "./ui-ninezone/stage-panels/manager/StagePanel";
 export * from "./ui-ninezone/stage-panels/manager/StagePanels";
+
+export * from "./ui-ninezone/tool-settings/Docked";
+export * from "./ui-ninezone/tool-settings/Handle";
+export * from "./ui-ninezone/tool-settings/Overflow";
+export * from "./ui-ninezone/tool-settings/Panel";
+export * from "./ui-ninezone/tool-settings/Setting";
 
 export * from "./ui-ninezone/toolbar/item/Item";
 export * from "./ui-ninezone/toolbar/item/Overflow";

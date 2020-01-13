@@ -743,6 +743,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "resize-observer-polyfill",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },

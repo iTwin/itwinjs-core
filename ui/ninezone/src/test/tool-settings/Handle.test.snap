@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DockedToolSettingsHandle should render 1`] = `
+<div
+  class="nz-toolSettings-handle"
+>
+  <div
+    class="nz-row"
+  >
+    <div
+      class="nz-dot"
+    />
+    <div
+      class="nz-dot"
+    />
+  </div>
+  <div
+    class="nz-row"
+  >
+    <div
+      class="nz-dot"
+    />
+    <div
+      class="nz-dot"
+    />
+  </div>
+  <div
+    class="nz-row"
+  >
+    <div
+      class="nz-dot"
+    />
+    <div
+      class="nz-dot"
+    />
+  </div>
+</div>
+`;

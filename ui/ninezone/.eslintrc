@@ -1,3 +1,11 @@
 {
-  "extends": "./node_modules/@bentley/ui-core/.eslintrc"
+  "extends": "./node_modules/@bentley/ui-core/.eslintrc",
+  "rules": {
+    "react-hooks/exhaustive-deps": [
+      "error",
+      {
+        "additionalHooks": "useRefEffect"
+      }
+    ]
+  }
 }
