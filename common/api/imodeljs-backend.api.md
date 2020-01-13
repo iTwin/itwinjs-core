@@ -1500,6 +1500,35 @@ export class Entity implements EntityProps {
 }
 
 // @internal
+export class EventSink {
+    constructor(id: string);
+    // (undocumented)
+    emit(namespace: string, eventName: string, data: any): void;
+    // (undocumented)
+    fetch(limit: number): QueuedEvent[];
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    purge(namespace: string): void;
+}
+
+// @internal
+export class EventSinkManager {
+    // (undocumented)
+    static clear(): void;
+    // (undocumented)
+    static delete(id: string): void;
+    // (undocumented)
+    static get(id: string): EventSink;
+    // (undocumented)
+    static readonly GLOBAL = "__globalEvents__";
+    // (undocumented)
+    static readonly global: EventSink;
+    // (undocumented)
+    static has(id: string): boolean;
+    }
+
+// @internal
 export interface EventSinkOptions {
     // (undocumented)
     maxNamespace: number;

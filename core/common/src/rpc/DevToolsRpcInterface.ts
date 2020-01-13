@@ -6,7 +6,7 @@
 
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { LogLevel, GuidString } from "@bentley/bentleyjs-core";
+import { LogLevel } from "@bentley/bentleyjs-core";
 import { IModelTokenProps } from "../IModel";
 
 /** Options to get the backend statistics
@@ -33,7 +33,7 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
   /** The semantic version of the interface.
    * @note The DevToolsRpcInterface will remain at 0.x since it is for testing only and not intended for production.
    */
-  public static interfaceVersion = "0.4.1";
+  public static interfaceVersion = "0.5.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -50,8 +50,4 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
 
   // Sets a new log level for the specified category and returns the old log level
   public async setLogLevel(_iModelToken: IModelTokenProps, _loggerCategory: string, _logLevel: LogLevel): Promise<LogLevel | undefined> { return this.forward(arguments); }
-
-  // Set a event that would be fired from backend and recieved on frontend.
-  public async echo(_iModelToken: IModelTokenProps, _id: GuidString, _message: string): Promise<void> { return this.forward(arguments); }
-
 }

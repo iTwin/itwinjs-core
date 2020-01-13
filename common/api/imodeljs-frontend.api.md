@@ -2679,8 +2679,6 @@ export interface DepthRangeNpc {
 // @internal
 export class DevTools {
     static connectToBackendInstance(iModelToken: IModelToken): DevTools;
-    echo(id: GuidString, message: string): Promise<string>;
-    readonly onEcho: BeEvent<(id: string, message: string) => void>;
     ping(count: number): Promise<PingTestResult>;
     setLogLevel(inLoggerCategory: string, newLevel: LogLevel): Promise<LogLevel | undefined>;
     stats(options?: DevToolsStatsOptions): Promise<any>;

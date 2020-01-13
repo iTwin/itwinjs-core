@@ -13,7 +13,7 @@ import {
   RpcManager,
   TileTreeContentIds,
 } from "@bentley/imodeljs-common";
-import { EventSinkManager } from "./EventSink";
+import { EventSinkManager } from "../EventSink";
 import { cancelTileContentRequests } from "./IModelTileRpcImpl";
 
 /** The backend implementation of NativeAppRpcInterface.

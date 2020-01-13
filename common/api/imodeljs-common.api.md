@@ -1319,8 +1319,6 @@ export interface DefinitionElementProps extends ElementProps {
 
 // @internal
 export abstract class DevToolsRpcInterface extends RpcInterface {
-    // (undocumented)
-    echo(_iModelToken: IModelTokenProps, _id: GuidString, _message: string): Promise<void>;
     static getClient(): DevToolsRpcInterface;
     static readonly interfaceName = "DevToolsRpcInterface";
     static interfaceVersion: string;

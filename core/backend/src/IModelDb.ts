@@ -36,7 +36,7 @@ import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { IModelHost, ApplicationType } from "./IModelHost";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
-import { EventSink, EventSinkManager } from "./rpc-impl/EventSink";
+import { EventSink, EventSinkManager } from "./EventSink";
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** A string that identifies a Txn.

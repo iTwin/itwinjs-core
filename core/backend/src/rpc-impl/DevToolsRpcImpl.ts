@@ -3,11 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
-import { LogLevel, GuidString } from "@bentley/bentleyjs-core";
-import { RpcInterface, RpcManager, DevToolsRpcInterface, IModelTokenProps, DevToolsStatsOptions, IModelToken } from "@bentley/imodeljs-common";
+import { LogLevel } from "@bentley/bentleyjs-core";
+import { RpcInterface, RpcManager, DevToolsRpcInterface, IModelTokenProps, DevToolsStatsOptions } from "@bentley/imodeljs-common";
 import { DevTools, DevToolsStatsFormatter } from "../DevTools";
-import { IModelDb } from "../IModelDb";
-import { EventSinkManager } from "./EventSink";
 
 /** The backend implementation of WipRpcInterface.
  * @internal
@@ -18,17 +16,6 @@ export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterfac
   // Returns true if the backend received the ping
   public async ping(_tokenProps: IModelTokenProps): Promise<boolean> {
     return DevTools.ping();
-  }
-
-  // set event that will be send to the frontend
-  public async echo(tokenProps: IModelTokenProps, id: GuidString, message: string): Promise<void> {
-    if (EventSinkManager.GLOBAL === tokenProps.key) {
-      EventSinkManager.global.emit(DevToolsRpcInterface.name, "echo", { id, message });
-    } else {
-      const iModelToken = IModelToken.fromJSON(tokenProps);
-      const iModelDb = IModelDb.find(iModelToken);
-      iModelDb.eventSink!.emit(DevToolsRpcInterface.name, "echo", { id, message });
-    }
   }
 
   // Returns JSON object with statistics

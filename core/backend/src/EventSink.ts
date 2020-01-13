@@ -7,8 +7,8 @@
 
 import { NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { IModelHost } from "../IModelHost";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { IModelHost } from "./IModelHost";
 
 const loggingCategory: string = BackendLoggerCategory.EventSink;
 

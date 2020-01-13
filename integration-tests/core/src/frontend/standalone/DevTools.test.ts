@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LogLevel, Guid } from "@bentley/bentleyjs-core";
+import { LogLevel } from "@bentley/bentleyjs-core";
 import { IModelToken, DevToolsStatsOptions } from "@bentley/imodeljs-common";
 import { DevTools, IModelApp, PingTestResult } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
@@ -39,19 +39,7 @@ describe("DevTools", () => {
     assert.isTrue((formattedStats.os.cpus[0].speed as string).endsWith("MHz"));
     assert.isTrue((formattedStats.os.cpus[0].times.user as string).endsWith("%"));
   });
-  it("echo - roundtrip", async () => {
-    let eventRecieved = 0;
-    const eventSent = 100;
-    devTools.onEcho.addListener((_message: string) => {
-      ++eventRecieved;
-    });
-    const ready = [];
-    for (let i = 0; i < eventSent; i++) {
-      ready.push(devTools.echo(Guid.createValue(), "Hello, world!"));
-    }
-    await Promise.all(ready);
-    assert.equal(eventSent, eventRecieved);
-  });
+
   it("can ping backend", async () => {
     const pingSummary: PingTestResult = await devTools.ping(10);
     assert.isDefined(pingSummary);

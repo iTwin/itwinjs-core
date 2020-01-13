@@ -28,6 +28,7 @@ export * from "./SqliteStatement";
 export * from "./ViewDefinition";
 export * from "./BisCoreSchema";
 export * from "./ChangedElementsDb";
+export * from "./EventSink";
 export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
@@ -53,7 +54,6 @@ export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./oidc/OidcDesktopClient";
 export * from "./IModelDb"; // must be last
-
 /** @docs-package-description
  * The imodeljs-backend package always runs on the computer with a local Briefcase.
  *
