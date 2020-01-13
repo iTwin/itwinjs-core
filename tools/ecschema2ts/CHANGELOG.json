@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/ecschema2ts",
+  "entries": [
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/ecschema2ts_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "consume schema locater api from ecschema-locaters package"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -2,6 +2,30 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/imodeljs-common_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added support for embedding images in a GeometryStream."
+          },
+          {
+            "comment": "Moving data-holder structures used during the LinearElement.queryLinearLocations API to imodeljs-common."
+          },
+          {
+            "comment": "Allow events to be sent from backend to frontend"
+          },
+          {
+            "comment": "Renamed EventSourceRpcInterface to NativeAppRpcInterface"
+          },
+          {
+            "comment": "Moved tile IO-related APIs from frontend to common."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/imodeljs-common_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",

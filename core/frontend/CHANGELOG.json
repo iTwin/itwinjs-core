@@ -2,6 +2,105 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/imodeljs-frontend_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clear reality tile children loading flag when selecting. "
+          },
+          {
+            "comment": "Animate change view operations"
+          },
+          {
+            "comment": "Average the gpu profiler times for the last 120 frames instead of updating each frame; also simplify PerformnaceMetrics"
+          },
+          {
+            "comment": "Implement tile availability testing for Cesium World Terrain."
+          },
+          {
+            "comment": "Return error message from concurrent query manager"
+          },
+          {
+            "comment": "Fixed some bugs associated with device pixel ratio."
+          },
+          {
+            "comment": "Fix flickering view when zooming in/out while a section clip is applied."
+          },
+          {
+            "comment": "Adjust focus plane when zooming with mouse wheel."
+          },
+          {
+            "comment": "Prevent analysis style from overriding texture image for non-animated surfaces."
+          },
+          {
+            "comment": "Do not force unload of children on reality tile trees as these may be shared among viewports."
+          },
+          {
+            "comment": "Added support for displaying images embedded in a GeometryStream."
+          },
+          {
+            "comment": "Added IModelConnection.onOpen event.\""
+          },
+          {
+            "comment": "Regenerate shadow map when feature symbology overrides change."
+          },
+          {
+            "comment": "Use parent if reality tile children are loading."
+          },
+          {
+            "comment": "Allow events to be sent from backend to frontend"
+          },
+          {
+            "comment": "Fixed Viewport.turnCameraOn() having no effect if the contents of the viewport have uniform depth."
+          },
+          {
+            "comment": "Set focus distance from depth point for viewing tools."
+          },
+          {
+            "comment": "Start of new walk tool using mouse + keyboard and touch controls."
+          },
+          {
+            "comment": "Reduce redundancy between CPU and GPU timers, creating a single interface for this; update display performance tests to save both CPU and GPU data (if available)"
+          },
+          {
+            "comment": "Use pointerlockchange event to make sure it's supported."
+          },
+          {
+            "comment": "Reduced CPU overhead of computing uniform variable values."
+          },
+          {
+            "comment": "Moved tile IO-related APIs from frontend to common."
+          },
+          {
+            "comment": "#254280 #254276 Address \"jump\" when starting touch viewing operations."
+          },
+          {
+            "comment": "Add features prop to iModelApp and specify a default implementation for FeatureTrackingManager."
+          },
+          {
+            "comment": "Move PluginUiManager and PluginUiProvider to ui-abstract package."
+          },
+          {
+            "comment": "Use onTouchMoveStart for control sticks. Fix issue with key transiton."
+          },
+          {
+            "comment": "LookAndMoveTool change to use mouse look instead of treating mouse like a control stick."
+          },
+          {
+            "comment": "Add setting to easily disable pointer lock for walk tool."
+          },
+          {
+            "comment": "Fix walk tool pan when is 2d or camera is off"
+          },
+          {
+            "comment": "Fix edges of surfaces in 2d views sometimes showing through surfaces in front of them."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/imodeljs-frontend_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",

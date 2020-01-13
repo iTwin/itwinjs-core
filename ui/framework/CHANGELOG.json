@@ -2,6 +2,30 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/ui-framework_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed lgtm issues in UI folders"
+          },
+          {
+            "comment": "Ui doc & release tag cleanup"
+          },
+          {
+            "comment": "Update to use new BackstageItemManager and PluginStatusBarManager from ui-abstract package. Update StatusbarComposer to show items from plugins."
+          },
+          {
+            "comment": "Remove duplicate StatusBarItemManager from ui-framework and only leave the one in ui-abstract."
+          },
+          {
+            "comment": "Fix for nine-zone sample app not displaying backstage items."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/ui-framework_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",

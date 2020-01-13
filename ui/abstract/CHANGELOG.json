@@ -2,6 +2,21 @@
   "name": "@bentley/ui-abstract",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/ui-abstract_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add PluginUiManager, PluginUiProvider, BackstageItemManager, BackstageItem, PluginStatusBarManager and abstract statusbar item interfaces."
+          },
+          {
+            "comment": "Remove duplicate StatusBarItemManager from ui-framework and only leave the one in ui-abstract."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/ui-abstract_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",

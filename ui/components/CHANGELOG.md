@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jan 2020 19:44:01 GMT and should not be manually modified.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Fix styling issue in property grid when actionButtonRenders are not defined.
+- Fixed lgtm issues in UI folders
+- Update code to up code coverage to avoid CI failures on Linux machines.
+- Added Action Buttons for properties
+- Attempt to fix sporadic failing solartimeline test.
+- Fix bug in timeline component when view only has an analysis animation without dates.
+- Update timeline test to use fake timers to see if that resolved sporadic failures on CI builds.
 
 ## 1.9.0
 Tue, 10 Dec 2019 18:08:56 GMT

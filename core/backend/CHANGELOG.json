@@ -2,6 +2,54 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/imodeljs-backend_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Typescript code for the classes in the Analytical schema."
+          },
+          {
+            "comment": "Return error message from concurrent query manager"
+          },
+          {
+            "comment": "Added support for embedding images in a GeometryStream."
+          },
+          {
+            "comment": "IModelExporter, IModelTransformer, and IModelImporter are now beta and provide low-level functionality needed for iModel transformation and data exchange."
+          },
+          {
+            "comment": "Added IModelDb.isBriefcase() getter."
+          },
+          {
+            "comment": "Implementing LinearlyLocatedBase interface by base LR abstract element-classes."
+          },
+          {
+            "comment": "Moving data-holder structures used during the LinearElement.queryLinearLocations API to imodeljs-common."
+          },
+          {
+            "comment": "Allow events to be sent from backend to frontend"
+          },
+          {
+            "comment": "Add tryGetInstance / tryGetInstanceProps methods to the Relationship class which return undefined rather than throwing an exception when a relationship is not found."
+          },
+          {
+            "comment": "Fix webpack for ios test that were failing due to new dependencies"
+          },
+          {
+            "comment": "VSTS#225894 - Allowed agents to bypass usage logging calls. These cause usage logging errors. "
+          },
+          {
+            "comment": "Add tryGetElement / tryGetElementProps which return undefined rather than throwing an exception when an element is not found."
+          },
+          {
+            "comment": "Add tryGetModel, tryGetModelProps, tryGetSubModel which return undefined instead of throwing exceptions when the model is not found."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/imodeljs-backend_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",

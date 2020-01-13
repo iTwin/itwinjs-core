@@ -1,6 +1,42 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jan 2020 19:44:01 GMT and should not be manually modified.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- Clear reality tile children loading flag when selecting. 
+- Animate change view operations
+- Average the gpu profiler times for the last 120 frames instead of updating each frame; also simplify PerformnaceMetrics
+- Implement tile availability testing for Cesium World Terrain.
+- Return error message from concurrent query manager
+- Fixed some bugs associated with device pixel ratio.
+- Fix flickering view when zooming in/out while a section clip is applied.
+- Adjust focus plane when zooming with mouse wheel.
+- Prevent analysis style from overriding texture image for non-animated surfaces.
+- Do not force unload of children on reality tile trees as these may be shared among viewports.
+- Added support for displaying images embedded in a GeometryStream.
+- Added IModelConnection.onOpen event."
+- Regenerate shadow map when feature symbology overrides change.
+- Use parent if reality tile children are loading.
+- Allow events to be sent from backend to frontend
+- Fixed Viewport.turnCameraOn() having no effect if the contents of the viewport have uniform depth.
+- Set focus distance from depth point for viewing tools.
+- Start of new walk tool using mouse + keyboard and touch controls.
+- Reduce redundancy between CPU and GPU timers, creating a single interface for this; update display performance tests to save both CPU and GPU data (if available)
+- Use pointerlockchange event to make sure it's supported.
+- Reduced CPU overhead of computing uniform variable values.
+- Moved tile IO-related APIs from frontend to common.
+- #254280 #254276 Address "jump" when starting touch viewing operations.
+- Add features prop to iModelApp and specify a default implementation for FeatureTrackingManager.
+- Move PluginUiManager and PluginUiProvider to ui-abstract package.
+- Use onTouchMoveStart for control sticks. Fix issue with key transiton.
+- LookAndMoveTool change to use mouse look instead of treating mouse like a control stick.
+- Add setting to easily disable pointer lock for walk tool.
+- Fix walk tool pan when is 2d or camera is off
+- Fix edges of surfaces in 2d views sometimes showing through surfaces in front of them.
 
 ## 1.9.0
 Tue, 10 Dec 2019 18:08:56 GMT

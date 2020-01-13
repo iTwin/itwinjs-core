@@ -1,5 +1,17 @@
 {
   "name": "@bentley/ecschema-locaters",
   "entries": [
+    {
+      "version": "1.10.0",
+      "tag": "@bentley/ecschema-locaters_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "New package to contain EC Schema locaters previously located in ecschema-metadata"
+          }
+        ]
+      }
+    }
   ]
 }

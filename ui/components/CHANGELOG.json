@@ -2,6 +2,36 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/ui-components_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix styling issue in property grid when actionButtonRenders are not defined."
+          },
+          {
+            "comment": "Fixed lgtm issues in UI folders"
+          },
+          {
+            "comment": "Update code to up code coverage to avoid CI failures on Linux machines."
+          },
+          {
+            "comment": "Added Action Buttons for properties"
+          },
+          {
+            "comment": "Attempt to fix sporadic failing solartimeline test."
+          },
+          {
+            "comment": "Fix bug in timeline component when view only has an analysis animation without dates."
+          },
+          {
+            "comment": "Update timeline test to use fake timers to see if that resolved sporadic failures on CI builds."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/ui-components_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",

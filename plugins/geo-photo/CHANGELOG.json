@@ -2,6 +2,30 @@
   "name": "@bentley/geo-photo-plugin",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/geo-photo-plugin_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "merge"
+          },
+          {
+            "comment": "Fix behavior when no photos (Bug 205812)"
+          },
+          {
+            "comment": "Eliminate markers in panorama view that are too far to the side. Added Tab to UI for settings."
+          },
+          {
+            "comment": "Added a way to orient the markers shown in pannellum viewer"
+          },
+          {
+            "comment": "Update package location of PluginUiManager."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/geo-photo-plugin_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",

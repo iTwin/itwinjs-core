@@ -1,6 +1,18 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Tue, 10 Dec 2019 18:08:56 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jan 2020 19:44:01 GMT and should not be manually modified.
+
+## 1.10.0
+Tue, 07 Jan 2020 19:44:01 GMT
+
+### Updates
+
+- `CurveCurve.intersectionPairsXY` returns details of line-line and arc-arc coincident geometry
+- Add method for mesh orientation fixup.
+- Path-on-Ellipsoid support
+- New method RegionOps.sortOuterAndHoleLoopsXY
+- BUG: Fix inverseState management in MatrixMatrix multliplies with preallocated result and/or aliasing
+- Added Matrix4d.isExactEqual()
 
 ## 1.9.0
 Tue, 10 Dec 2019 18:08:56 GMT

@@ -2,6 +2,33 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "1.10.0",
+      "tag": "@bentley/geometry-core_v1.10.0",
+      "date": "Tue, 07 Jan 2020 19:44:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "`CurveCurve.intersectionPairsXY` returns details of line-line and arc-arc coincident geometry"
+          },
+          {
+            "comment": "Add method for mesh orientation fixup."
+          },
+          {
+            "comment": "Path-on-Ellipsoid support"
+          },
+          {
+            "comment": "New method RegionOps.sortOuterAndHoleLoopsXY"
+          },
+          {
+            "comment": "BUG: Fix inverseState management in MatrixMatrix multliplies with preallocated result and/or aliasing"
+          },
+          {
+            "comment": "Added Matrix4d.isExactEqual()"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.9.0",
       "tag": "@bentley/geometry-core_v1.9.0",
       "date": "Tue, 10 Dec 2019 18:08:56 GMT",
