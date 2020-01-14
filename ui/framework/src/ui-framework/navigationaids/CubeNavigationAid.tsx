@@ -560,6 +560,8 @@ export class FaceCell extends React.Component<FaceCellProps> {
       onMouseUp={this._handleMouseUp}
       onMouseOver={this._handleMouseOver}
       onMouseOut={this._handleMouseOut}
+      onTouchStart={this._handleTouchStart}
+      onTouchEnd={this._handleTouchEnd}
       data-testid={"nav-cube-face-cell-" + face + "-" + n}
       className={classnames("face-cell", { center, hover, active })}
       {...props}>{children}</div>;
@@ -573,16 +575,34 @@ export class FaceCell extends React.Component<FaceCellProps> {
     this.props.onFaceCellHoverChange(vector, CubeHover.None);
   }
   private _handleMouseDown = (event: React.MouseEvent) => {
-    const { vector } = this.props;
     const { clientX, clientY } = event;
-    this._startMouse = Point2d.create(clientX, clientY);
-    this.props.onFaceCellHoverChange(vector, CubeHover.Active);
+    this.handlePointerDown(clientX, clientY);
   }
   private _handleMouseUp = (event: React.MouseEvent) => {
-    const { vector, face } = this.props;
     const { clientX, clientY } = event;
+    this.handlePointerUp(clientX, clientY);
+  }
+
+  private _handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.targetTouches.length === 1 && this.handlePointerDown(event.targetTouches[0].clientX, event.targetTouches[0].clientY);
+  }
+
+  private _handleTouchEnd = (event: React.TouchEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.changedTouches.length === 1 && this.handlePointerUp(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+  }
+
+  private handlePointerDown(x: number, y: number) {
+    const { vector } = this.props;
+    this._startMouse = Point2d.create(x, y);
+    this.props.onFaceCellHoverChange(vector, CubeHover.Active);
+  }
+
+  private handlePointerUp(x: number, y: number) {
+    const { vector, face } = this.props;
     this.props.onFaceCellHoverChange(vector, CubeHover.None);
-    const mouse = Point2d.create(clientX, clientY);
+    const mouse = Point2d.create(x, y);
     if (this._startMouse && this._startMouse.isAlmostEqual(mouse)) {
       const isFace = Math.abs(vector.x) + Math.abs(vector.y) + Math.abs(vector.z) === 1;
       this.props.onFaceCellClick(vector, isFace ? face : Face.None);
