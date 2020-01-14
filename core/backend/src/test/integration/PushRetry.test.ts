@@ -14,10 +14,9 @@ import {
 import * as utils from "./../../../../clients-backend/lib/test/imodelhub/TestUtils";
 import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients-backend/lib/test/ResponseBuilder";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { TestUsers } from "../TestUsers";
+import { TestUsers, TestConfig } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
 import { createNewModelAndCategory } from "./IModelWrite.test";
-import { TestConfig } from "../TestConfig";
 import { TestPushUtility } from "./TestPushUtility";
 import { KnownTestLocations } from "../KnownTestLocations";
 

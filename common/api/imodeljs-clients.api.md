@@ -809,12 +809,6 @@ export class HubUserInfo extends WsgInstance {
     lastName?: string;
 }
 
-// @alpha
-export interface IAngularOidcFrontendClient extends IOidcFrontendClient {
-    // (undocumented)
-    handleRedirectCallback(): Promise<boolean>;
-}
-
 // @beta
 export interface IAuthorizationClient {
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;

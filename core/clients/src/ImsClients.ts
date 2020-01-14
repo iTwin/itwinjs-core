@@ -19,7 +19,7 @@ const loggerCategory: string = ClientsLoggerCategory.ImsClients;
 /** Interface for user credentials for programmatic login to IMS
  * Note: This can only be used in test environments. In a real application, the password cannot be explicitly used in any API.
  * @internal
- * @deprecated
+ * @deprecated Will be removed in iModel.js 2.0.
  */
 export interface ImsUserCredentials {
   email: string;
@@ -28,7 +28,7 @@ export interface ImsUserCredentials {
 
 /** Client API for the IMS Federated Authentication Service.
  * @internal
- * @deprecated
+ * @deprecated  Will be removed in iModel.js 2.0.
  */
 export class ImsFederatedAuthenticationClient extends Client {
   public static readonly searchKey: string = "IMS.FederatedAuth.Url";
@@ -62,7 +62,7 @@ export class ImsFederatedAuthenticationClient extends Client {
 
 /** Client API for the IMS Active Secure Token Service.
  * @internal
- * @deprecated
+ * @deprecated  Will be removed in iModel.js 2.0.
  */
 export class ImsActiveSecureTokenClient extends Client {
   public static readonly searchKey: string = "Mobile.ImsStsAuth";
@@ -125,7 +125,7 @@ export class ImsActiveSecureTokenClient extends Client {
 
 /** Client API for the IMS Delegation Secure Token Service.
  * @internal
- * @deprecated
+ * @deprecated  Will be removed in iModel.js 2.0.
  */
 export class ImsDelegationSecureTokenClient extends Client {
   public static readonly searchKey: string = "ActiveSTSDelegationServiceUrl";
@@ -204,7 +204,7 @@ export class ImsDelegationSecureTokenClient extends Client {
 
 /** Implementation of IAuthorizationClient using IMS - this is only used in test environments
  * @internal
- * @deprecated
+ * @deprecated  Will be removed in iModel.js 2.0.
  */
 export class ImsTestAuthorizationClient implements IAuthorizationClient {
   private _accessToken?: AccessToken;

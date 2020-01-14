@@ -41,6 +41,7 @@
   "devDependencies": {
     "@bentley/config-loader": "1.11.0-dev.9",
     "@bentley/build-tools": "1.11.0-dev.9",
+    "@bentley/oidc-signin-tool": "1.11.0-dev.9",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.16.1",

@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { OpenMode, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, Config, ImsUserCredentials } from "@bentley/imodeljs-clients";
+import { OpenMode } from "@bentley/bentleyjs-core";
+import { AccessToken, ConnectClient, Config } from "@bentley/imodeljs-clients";
 import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { getToken, OidcConfiguration } from "@bentley/oidc-signin-tool";
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
@@ -20,10 +21,28 @@ export interface IModelTestUtilsOpenOptions {
   openMode?: OpenMode;
 }
 
+export interface UserCredentials {
+  email: string;
+  password: string;
+}
+
 /** Test users with various permissions */
 export class TestUsers {
+
+  /** Browser Oidc configuration for all test users */
+  public static get oidcConfig(): OidcConfiguration {
+    return {
+      clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
+      redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
+    };
+  }
+
+  public static get scopes(): string {
+    return Config.App.getString("imjs_oidc_browser_test_scopes");
+  }
+
   /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static get regular(): ImsUserCredentials {
+  public static get regular(): UserCredentials {
     return {
       email: Config.App.getString("imjs_test_regular_user_name"),
       password: Config.App.getString("imjs_test_regular_user_password"),
@@ -56,16 +75,11 @@ export class IModelTestUtils {
     return IModelTestUtils._connectClient!;
   }
 
-  public static async getTestUserAccessToken(userCredentials?: any): Promise<AccessToken> {
-    const requestContext = new ClientRequestContext();
+  public static async getTestUserAccessToken(userCredentials?: UserCredentials): Promise<AccessToken> {
     if (userCredentials === undefined)
       userCredentials = TestUsers.regular;
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(requestContext, userCredentials.email, userCredentials.password);
-    assert(authToken);
-
-    const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(requestContext, authToken!);
+    const accessToken = await getToken(userCredentials.email, userCredentials.password, TestUsers.scopes, TestUsers.oidcConfig);
     assert(accessToken);
-
     return accessToken;
   }
 

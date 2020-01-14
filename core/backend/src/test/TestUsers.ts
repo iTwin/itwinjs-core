@@ -6,10 +6,17 @@
 
 import { Config } from "@bentley/imodeljs-clients";
 import { OidcConfiguration } from "@bentley/oidc-signin-tool";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 export interface UserCredentials {
   email: string;
   password: string;
+}
+
+export class TestConfig {
+  public static get projectName(): string { return Config.App.get("imjs_test_project_name"); }
+  public static get iModelName(): string { return Config.App.get("imjs_test_imodel_name"); }
 }
 
 /** Test users with various permissions */

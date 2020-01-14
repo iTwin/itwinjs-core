@@ -5624,7 +5624,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     signOut(requestContext: ClientRequestContext): Promise<void>;
     }
 
-// @internal
+// @internal @deprecated
 export class OidcBrowserSamlClient extends OidcBrowserClient {
     getSamlToken(requestContext: ClientRequestContext): Promise<AccessToken>;
 }

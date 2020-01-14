@@ -11,9 +11,9 @@ import * as puppeteer from "puppeteer";
 import * as os from "os";
 
 function oidcInfoToUserInfo(info: OIDCUserInfo): UserInfo {
-  const { sub, email, name, family_name, org, org_name, ultimate_site, usage_country_iso } = info;
+  const { sub, email, given_name, family_name, org, org_name, preferred_username, ultimate_site, usage_country_iso } = info;
   const emailObj = (email) ? { id: email } : undefined;
-  const profile = (name && family_name) ? { firstName: name, lastName: family_name } : undefined;
+  const profile = (given_name && family_name) ? { firstName: given_name, lastName: family_name, preferredUserName: preferred_username } : undefined;
   const organization = (org && org_name) ? { id: org as string, name: org_name as string } : undefined;
   const featureTracking = (ultimate_site && usage_country_iso) ? { ultimateSite: ultimate_site as string, usageCountryIso: usage_country_iso as string } : undefined;
 

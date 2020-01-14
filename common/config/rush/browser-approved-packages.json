@@ -104,7 +104,7 @@
     },
     {
       "name": "@bentley/oidc-signin-tool",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@bentley/perf-tools",

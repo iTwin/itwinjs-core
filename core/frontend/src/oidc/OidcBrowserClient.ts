@@ -406,6 +406,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
 /**
  * Utility to get the legacy SAML token at the frontend of SPA/Electron applications
  * @internal
+ * @deprecated  Will be removed in iModel.js 2.0.
  */
 export class OidcBrowserSamlClient extends OidcBrowserClient {
 

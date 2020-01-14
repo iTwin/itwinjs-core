@@ -55,6 +55,7 @@
     "@bentley/geometry-core": "1.11.0-dev.9",
     "@bentley/imodeljs-clients": "1.11.0-dev.9",
     "@bentley/imodeljs-common": "1.11.0-dev.9",
+    "@bentley/oidc-signin-tool": "1.11.0-dev.9",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/nock": "^9.1.2",

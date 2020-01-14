@@ -10,10 +10,7 @@ import { ConnectClient, Project } from "../ConnectClients";
 
 import { Logger, GuidString, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
-// import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-
-// IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,
