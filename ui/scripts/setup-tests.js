@@ -12,20 +12,22 @@ const {
   JSDOM
 } = require('jsdom');
 global.DOMParser = new JSDOM().window.DOMParser;
-require("resize-observer-polyfill").default = class {
-  constructor(callback) {
-    this.callback = callback;
-  }
+try {
+  require("resize-observer-polyfill").default = class {
+    constructor(callback) {
+      this.callback = callback;
+    }
 
-  observe() {
-  }
+    observe() {
+    }
 
-  unobserve() {
-  }
+    unobserve() {
+    }
 
-  disconnect() {
-  }
-};
+    disconnect() {
+    }
+  };
+} catch { }
 
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
