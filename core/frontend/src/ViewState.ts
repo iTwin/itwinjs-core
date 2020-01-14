@@ -632,28 +632,19 @@ export abstract class ViewState extends ElementState {
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
-  /** Adjust the supplied origin and extents arguments to match the aspect ratio of the window (taking into consideration the aspect ratio skew),
-   * by adjusting the height of the view.
-   * @param origin origin of view. adjusted by this method.
-   * @param extents view aligned extents (note: aspect ratio = `x/y`). Only extents.y is adjusted by this method.
-   * @param windowAspect the aspect ratio (width/height) to match.
+  /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
    */
-  public adjustAspectRatio(origin: Point3d, extents: Vector3d, windowAspect: number) {
-    const origExtents = extents.clone();
-    extents.y = extents.x * this.getAspectRatioSkew() / windowAspect;
-    // adjust origin by half of the distance we modified extents to keep centered
-    origin.addScaledInPlace(this.getRotation().multiplyTransposeVector(extents.vectorTo(origExtents, origExtents)), .5);
-  }
-
-  /** @internal */
   public fixAspectRatio(windowAspect: number): void {
-    if (Geometry.isSameCoordinate(this.getAspectRatio() * this.getAspectRatioSkew(), windowAspect))
+    const origExtents = this.getExtents();
+    const extents = origExtents.clone();
+    extents.y = extents.x * this.getAspectRatioSkew() / windowAspect;
+    if (extents.isAlmostEqual(origExtents))
       return;
 
-    const extents = this.getExtents().clone();
+    // adjust origin by half of the distance we modified extents to keep centered
     const origin = this.getOrigin().clone();
-    this.adjustAspectRatio(origin, extents, windowAspect);
+    origin.addScaledInPlace(this.getRotation().multiplyTransposeVector(extents.vectorTo(origExtents, origExtents)), .5);
     this.setOrigin(origin);
     this.setExtents(extents);
   }
@@ -941,8 +932,18 @@ export abstract class ViewState extends ElementState {
 
     viewRot.multiplyTransposeVectorInPlace(newOrigin);
 
-    if (aspect)
-      this.adjustAspectRatio(newOrigin, newDelta, aspect);
+    if (aspect) {
+      const origExtents = newDelta.clone();
+      if (newDelta.x > (aspect * newDelta.y))
+        newDelta.y = newDelta.x / aspect;
+      else
+        newDelta.x = newDelta.y * aspect;
+
+      newDelta.y /= this.getAspectRatioSkew(); // skew always adjusts y
+
+      // adjust origin by half of the distance we modified extents to keep centered
+      newOrigin.addScaledInPlace(viewRot.multiplyTransposeVector(newDelta.vectorTo(origExtents, origExtents)), .5);
+    }
 
     this.setExtents(newDelta);
     this.setOrigin(newOrigin);

@@ -10535,8 +10535,6 @@ export class ViewRedoTool extends ViewTool {
 export abstract class ViewState extends ElementState {
     // @internal
     protected constructor(props: ViewDefinitionProps, iModel: IModelConnection, categoryOrClone: CategorySelectorState, displayStyle: DisplayStyleState);
-    // @internal
-    adjustAspectRatio(origin: Point3d, extents: Vector3d, windowAspect: number): void;
     abstract allow3dManipulations(): boolean;
     readonly analysisStyle: AnalysisStyle | undefined;
     // @internal (undocumented)
@@ -10574,7 +10572,7 @@ export abstract class ViewState extends ElementState {
     drawGrid(context: DecorateContext): void;
     equals(other: this): boolean;
     extentLimits: ExtentLimits;
-    // @internal (undocumented)
+    // @internal
     fixAspectRatio(windowAspect: number): void;
     abstract forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal
