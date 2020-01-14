@@ -302,29 +302,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "ui-test-app Electron (Main Process)",
-      "protocol": "inspector",
-      "cwd": "${workspaceFolder}/test-apps/ui-test-app/",
-      "runtimeExecutable": "${workspaceFolder}/test-apps/ui-test-app/node_modules/.bin/electron",
-      "windows": {
-        "runtimeExecutable": "${workspaceFolder}/test-apps/ui-test-app/node_modules/.bin/electron.cmd"
-      },
-      "env": {
-        "SVT_LOG_LEVEL": "TRACE",
-      },
-      "args": [
-        "--remote-debugging-port=9223",
-        "${workspaceFolder}/test-apps/ui-test-app/lib/backend/main.js"
-      ],
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/test-apps/ui-test-app/lib/{backend}/**/*.js",
-        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
-      ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "display-performance-test-app Browser (backend)",
       "cwd": "${workspaceRoot}/test-apps/display-performance-test-app",
       "program": "${workspaceRoot}/test-apps/display-performance-test-app/lib/backend/WebMain.js",
@@ -499,6 +476,36 @@
       ]
     },
     {
+      "type": "node",
+      "request": "launch",
+      "name": "ui-test-app Electron (backend)",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/test-apps/ui-test-app/",
+      "runtimeExecutable": "${workspaceFolder}/test-apps/ui-test-app/node_modules/.bin/electron",
+      "env": {
+        "SVT_LOG_LEVEL": "TRACE",
+      },
+      "args": [
+        "${workspaceFolder}/test-apps/ui-test-app/lib/backend/main.js",
+        "--remote-debugging-port=9223"
+      ],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/ui-test-app/lib/{backend}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js",
+        "${workspaceRoot}/ui/**/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "ui-test-app Electron (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "webRoot": "${workspaceRoot}",
+      "sourceMaps": true,
+      "smartStep": true
+    },
+    {
       "name": "ui-test-app (frontend)",
       "type": "chrome",
       "request": "launch",
@@ -556,19 +563,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug agent-test-app",
-      "program": "${workspaceRoot}/test-apps/agent-test-app/lib/Main.js",
-      "cwd": "${workspaceRoot}/test-apps/agent-test-app/",
-      "smartStep": true,
-      "sourceMaps": true,
-      "outFiles": [
-        "${workspaceRoot}/test-apps/agent-test-app/lib/**/*.js"
-      ],
-      "protocol": "inspector"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "Debug analysis-importer",
       "program": "${workspaceRoot}/test-apps/analysis-importer/lib/Main.js",
       "cwd": "${workspaceRoot}/test-apps/analysis-importer/",
@@ -592,22 +586,6 @@
         "--input=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
         "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
       ]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Debug reality-model-importer",
-      "program": "${workspaceRoot}/test-apps/imodel-from-reality-model/lib/main.js",
-      "cwd": "${workspaceRoot}/test-apps/imodel-from-reality-model/",
-      "outFiles": [
-        "${workspaceFolder}/lib/**/*.js"
-      ],
-      "args": [
-        "--input",
-        "http://localhost:8080/3d-tiles-test/data/tileset.json",
-        "--output",
-        "g:\\briefcases\\testRealityModel.ibim"
-      ],
     },
     {
       "type": "node",
@@ -955,6 +933,13 @@
       "configurations": [
         "display-test-app Electron (backend)",
         "display-test-app (frontend)"
+      ]
+    },
+    {
+      "name": "ui-test-app Electron (frontend + backend)",
+      "configurations": [
+        "ui-test-app Electron (backend)",
+        "ui-test-app Electron (frontend)"
       ]
     },
     {
