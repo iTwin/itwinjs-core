@@ -41,11 +41,10 @@ const options = [
 
 const watchOptions = argv.watch ? ["--watch", "--inline-diffs"] : [];
 
-const debugOptions = argv.debug ?
-  [
-    "--inspect=9229",
-    "--debug-brk"
-  ] : []
+const debugOptions = argv.debug || argv.inspect ? [
+  "--inspect=9229",
+  "--inspect-brk"
+] : [];
 
 let grepOptions = [];
 if (argv.grep) {
