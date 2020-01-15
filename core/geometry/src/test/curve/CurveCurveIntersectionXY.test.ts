@@ -18,6 +18,7 @@ import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
+import { Sample } from "../../serialization/GeometrySamples";
 
 function createSamplePerspectiveMaps(): Map4d[] {
   const origin = Point3d.create(-20, -20, -1);
@@ -176,6 +177,58 @@ describe("CurveCurveXY", () => {
     testIntersectionPairsXY(ck, undefined, intersectionsAB, 1, 1);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [segment0, segment1], x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveXY", "LineLineCoincident");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("LineLineStringCoincident", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const segment0 = LineSegment3d.createXYXY(0, 0, 2, 0);
+    const lineString1 = LineString3d.create([[0, 1], [0, 0], [1, 0]]);
+    const intersectionsAB = CurveCurve.intersectionXYPairs(segment0, false, lineString1, false);
+    testIntersectionPairsXY(ck, undefined, intersectionsAB, 2, 2);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [segment0, lineString1], x0, y0);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.04, x0, y0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveXY", "LineLineStringCoincident");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("LineStringLineStringCoincident", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const pointsA: Point3d[] = [];
+    const linestring = Sample.appendSawTooth(pointsA, 2, 1, 0.5, 3, 4);
+    let f0 = 0.4;
+    let f1 = 0.9;
+    const df0 = -0.1;
+    const df1 = 0.06;
+    const pointsB = [];
+    // make another linestring that has two points defined at varying fractions on each segment of the sawtooth
+    for (let segment = 0; segment + 1 < linestring.length; segment++ , f0 += df0, f1 += df1) {
+      pointsB.push(pointsA[segment].interpolate(f0, pointsA[segment + 1]));
+      pointsB.push(pointsA[segment].interpolate(f1, pointsA[segment + 1]));
+    }
+
+    const linestringA = LineString3d.create(pointsA);
+    const linestringB = LineString3d.create(pointsB);
+    const intersectionsAB = CurveCurve.intersectionXYPairs(linestringA, false, linestringB, false);
+    testIntersectionPairsXY(ck, undefined, intersectionsAB, 0, 2 * pointsB.length);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [linestringA, linestringB], x0, y0);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 0.04, x0, y0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveXY", "LineStringLineStringCoincident");
+
+    for (let segmentIndex = 0; segmentIndex + 1 < linestring.length; segmentIndex++ , f0 += df0, f1 += df1) {
+      const lineSegment = linestringA.getIndexedSegment(segmentIndex);
+      if (lineSegment) {
+        const intersections = CurveCurve.intersectionXYPairs(lineSegment, false, linestringA, false);
+        const numExpected = (segmentIndex === 0 || segmentIndex + 2 === linestringA.numPoints()) ? 2 : 3;
+        testIntersectionPairsXY(ck, undefined, intersections, numExpected, numExpected);
+      }
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -339,21 +392,12 @@ describe("CurveCurveXY", () => {
       for (const order0 of [2, 3, 4]) {
         const z0 = 0.3;    // raise the arc a little so various view directions produce different intersections.
         // bspline0 sweeps from high on y axis to low in 4 quadrant
-        const bspline0 = BSplineCurve3d.createUniformKnots(
-          [Point3d.create(0, 5, z0),
-            Point3d.create(0, 2, z0),
-            Point3d.create(4, -1, z0),
-            Point3d.create(4, -4, z0)],
+        const bspline0 = BSplineCurve3d.createUniformKnots([Point3d.create(0, 5, z0), Point3d.create(0, 2, z0), Point3d.create(4, -1, z0), Point3d.create(4, -4, z0)],
           order0)!;
         dy = dyOuter;
         for (const order1 of [2, 3, 4, 5]) {
           const bspline1 = BSplineCurve3d.createUniformKnots(
-            [Point3d.create(-1, 2, 0),
-              Point3d.create(0, 1, 0),
-              Point3d.create(2, 2, 0),
-              Point3d.create(3, 4, 0),
-              Point3d.create(4, 4, 0),
-              Point3d.create(6, 5, 0)],
+            [Point3d.create(-1, 2, 0), Point3d.create(0, 1, 0), Point3d.create(2, 2, 0), Point3d.create(3, 4, 0), Point3d.create(4, 4, 0), Point3d.create(6, 5, 0)],
             order1)!;
           GeometryCoreTestIO.captureGeometry(allGeometry, bspline0.clone(), dx, dy);
 

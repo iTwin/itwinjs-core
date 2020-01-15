@@ -1411,6 +1411,8 @@ export class CurveLocationDetail {
     captureFraction1Point1(fraction1: number, point1: Point3d): void;
     childDetail?: CurveLocationDetail;
     clone(result?: CurveLocationDetail): CurveLocationDetail;
+    collapseToEnd(): void;
+    collapseToStart(): void;
     static create(curve?: CurvePrimitive, result?: CurveLocationDetail): CurveLocationDetail;
     static createConditionalMoveSignedDistance(allowExtension: boolean, curve: CurvePrimitive, startFraction: number, endFraction: number, requestedSignedDistance: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveEvaluatedFraction(curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail): CurveLocationDetail;
@@ -1423,6 +1425,7 @@ export class CurveLocationDetail {
     curveSearchStatus?: CurveSearchStatus;
     fraction: number;
     fraction1?: number;
+    readonly fractionDelta: number;
     readonly hasFraction1: boolean;
     intervalRole?: CurveIntervalRole;
     inverseInterpolateFraction(f: number, defaultFraction?: number): number;

@@ -174,5 +174,4 @@ export class CurveFactory {
     }
     return arcPath;
   }
-
 }

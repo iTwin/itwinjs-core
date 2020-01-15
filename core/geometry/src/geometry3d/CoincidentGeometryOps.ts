@@ -100,8 +100,31 @@ export class CoincidentGeometryQuery {
       CoincidentGeometryQuery.assignDetailInterpolatedFractionsAndPoints(detailAOnB, h0, h1, pointB0, pointB1);
       return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
     } else {
-      return undefined;
+      if (segment.signedDelta() < 0.0) {
+        if (detailBOnA.point.isAlmostEqual(pointA0)) {
+          detailBOnA.collapseToStart();
+          detailAOnB.collapseToStart();
+          return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
+        }
+        if (detailBOnA.point1.isAlmostEqual(pointA1)) {
+          detailBOnA.collapseToEnd();
+          detailAOnB.collapseToEnd();
+          return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
+        }
+      } else {
+        if (detailBOnA.point.isAlmostEqual(pointA1)) {
+          detailBOnA.collapseToStart();
+          detailAOnB.collapseToEnd();
+          return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
+        }
+        if (detailBOnA.point1.isAlmostEqual(pointA0)) {
+          detailBOnA.collapseToEnd();
+          detailAOnB.collapseToStart();
+          return CurveLocationDetailPair.createCapture(detailBOnA, detailAOnB);
+        }
+      }
     }
+    return undefined;
   }
   /**
    * Create a CurveLocationDetailPair from . . .

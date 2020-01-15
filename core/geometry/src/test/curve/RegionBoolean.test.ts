@@ -11,66 +11,22 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { RegionOps } from "../../curve/RegionOps";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Loop, SignedLoops } from "../../curve/Loop";
 import { Arc3d } from "../../curve/Arc3d";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { AnyCurve } from "../../curve/CurveChain";
 import { CurveFactory } from "../../curve/CurveFactory";
+import { Transform } from "../../geometry3d/Transform";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Angle } from "../../geometry3d/Angle";
+import { LinearSweep } from "../../solid/LinearSweep";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { ParityRegion } from "../../curve/ParityRegion";
 /* tslint:disable:no-console */
 
 describe("RegionBoolean", () => {
-  it("Overlaps", () => {
-    const ck = new Checker();
-    const allGeometry: GeometryQuery[] = [];
-    const xMax = 10.0;
-    const da = 1.0;
-    let x0 = 0.0;
-    const c = 1.0;
-    const c1 = 2.5;
-    for (const ab of [0.6, 1.1, 3.1]) {
-      for (let numCut = 1; numCut < 10; numCut++) {
-        const candidates: AnyCurve[] = [];
-        candidates.push(Loop.createPolygon([
-          Point3d.create(0, 0),
-          Point3d.create(xMax, 0),
-          Point3d.create(xMax, 2),
-          Point3d.create(0, 2),
-          Point3d.create(0, 0)]));
-
-        const a0 = 0.5;
-        const b0 = a0 + ab;
-        for (let i = 0; i < numCut; i++) {
-          const a = a0 + i * da;
-          const b = b0 + i * da;
-          // alternate direction of overlap bits ... maybe it will cause problems in graph sort . .
-          if ((i & 0x01) === 0)
-            candidates.push(LineSegment3d.createXYXY(a, 0, b, 0));
-          else
-            candidates.push(LineSegment3d.createXYXY(a, 0, b, 0));
-          candidates.push(LineSegment3d.createXYXY(a, 0, a, c));
-          candidates.push(LineSegment3d.createXYXY(b, 0, b, c));
-          candidates.push(LineSegment3d.createXYXY(a, c, b, c));
-          // spread around some X geometry  . . .
-          if ((i & 0x02) !== 0 && ab > 2.0) {
-            candidates.push(LineSegment3d.createXYXY(a, c, b, c1));
-            candidates.push(LineSegment3d.createXYXY(a, c1, b, c));
-          }
-        }
-
-        const loops = RegionOps.constructAllXYRegionLoops(candidates);
-        const y0 = 0;
-        const dy = 3.0;
-        saveShiftedLoops(allGeometry, loops, x0, y0 + dy, dy);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, candidates, x0, y0);
-        x0 += 2 * xMax;
-      }
-      x0 += 4 * xMax;
-    }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "Overlaps");
-    expect(ck.getNumErrors()).equals(0);
-
-  });
   it("SimpleSplits", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -146,6 +102,119 @@ describe("RegionBoolean", () => {
       x0 += 4 * delta;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "Holes");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("Overlaps", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const badGeometry: GeometryQuery[] = [];
+    const xMax = 10.0;
+    const da = 1.0;
+    let x0 = 0.0;
+    let y0 = 0;
+    const c = 1.0;
+    const c1 = 2.5;
+    for (const degrees of [0, 180, 0.012123389324234, 42.123213]) {
+      const transform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0),
+        Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
+      x0 = 0.0;
+      for (const ab of [0.6 /* , 1.1, 3.1 */]) {
+        for (const numCut of [1, 4, 7, 9]) {
+          const candidates: AnyCurve[] = [];
+          candidates.push(Loop.createPolygon([
+            Point3d.create(0, 0),
+            Point3d.create(xMax, 0),
+            Point3d.create(xMax, 2),
+            Point3d.create(0, 2),
+            Point3d.create(0, 0)]));
+
+          const a0 = 0.5;
+          const b0 = a0 + ab;
+          for (let i = 0; i < numCut; i++) {
+            const a = a0 + i * da;
+            const b = b0 + i * da;
+            // alternate direction of overlap bits ... maybe it will cause problems in graph sort . .
+            if ((i & 0x01) === 0)
+              candidates.push(LineSegment3d.createXYXY(a, 0, b, 0));
+            else
+              candidates.push(LineSegment3d.createXYXY(a, 0, b, 0));
+            candidates.push(LineSegment3d.createXYXY(a, 0, a, c));
+            candidates.push(LineSegment3d.createXYXY(b, 0, b, c));
+            candidates.push(LineSegment3d.createXYXY(a, c, b, c));
+            // spread around some X geometry  . . .
+            if ((i & 0x02) !== 0 && ab > 2.0) {
+              candidates.push(LineSegment3d.createXYXY(a, c, b, c1));
+              candidates.push(LineSegment3d.createXYXY(a, c1, b, c));
+            }
+          }
+          let testIndex = 0;
+          for (const candidate of candidates) {
+            (candidate as any).testIndex = testIndex++;
+            candidate.tryTransformInPlace(transform);
+          }
+          const loops = RegionOps.constructAllXYRegionLoops(candidates);
+          const dy = 3.0;
+          saveShiftedLoops(allGeometry, loops, x0, y0 + dy, dy);
+          const stepData = { rotateDegrees: degrees, numCutout: numCut, cutoutStep: ab };
+          if (!ck.testExactNumber(1, loops.length, stepData)
+            || !ck.testExactNumber(1, loops[0].negativeAreaLoops.length, stepData)) {
+            saveShiftedLoops(badGeometry, loops, x0, y0 + dy, dy);
+          }
+
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, candidates, x0, y0);
+          x0 += 2 * xMax;
+        }
+        x0 += 4 * xMax;
+      }
+      y0 += 100.0;
+    }
+    GeometryCoreTestIO.saveGeometry(badGeometry, "RegionBoolean", "Overlaps.BAD");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "Overlaps");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+  it("ParityRegionWithCoincidentEdges", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let xBase = 0.0;
+    for (const q of [0, 0, 1, 0]) {
+      let x0 = xBase;
+      let y0 = 0;
+      const a0 = -q;
+      const a1 = 12 + q;
+      const b0 = 4 - q;
+      const b1 = 8 + q;
+      const loopA = Loop.createPolygon(
+        GrowableXYZArray.create([[8, 0], [4, 0], [a0, a0], [0, 4], [0, 8], [a0, 12],
+        [4, 11], [8, 11], [a1, 12], [12, 8], [12, 4], [a1, a0], [8, 0]]));
+      // loopA.reverseChildrenInPlace();
+      const loopB = Loop.createPolygon(
+        GrowableXYZArray.create([[8, 0], [4, 0], [b0, 4], [4, 8], [8, 8], [b1, 4], [8, 0]]));
+      // loopB.reverseChildrenInPlace();
+      const region = ParityRegion.create();
+      region.tryAddChild(loopA);
+      region.tryAddChild(loopB);
+
+      const solid = LinearSweep.create(region, Vector3d.create(0, 0, 1), true)!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, x0, y0);
+      y0 += 20;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, solid, x0, y0);
+      const builder = PolyfaceBuilder.create();
+      builder.addLinearSweep(solid);
+      const mesh = builder.claimPolyface();
+      y0 += 15;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+      x0 += 15;
+      y0 = 0.0;
+      const fixedRegions = RegionOps.constructAllXYRegionLoops(region);
+      saveShiftedLoops(allGeometry, fixedRegions, x0, y0, 30.0);
+      const sortedLoops = RegionOps.sortOuterAndHoleLoopsXY([loopA, loopB]);
+      x0 += 15;
+      y0 = 0.0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, sortedLoops, x0, y0);
+      xBase += 100;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithCoincidentEdges");
     expect(ck.getNumErrors()).equals(0);
   });
 });

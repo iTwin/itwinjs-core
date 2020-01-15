@@ -127,6 +127,7 @@
         "incircle",
         "interoperate",
         "Intersectable",
+        "intersector",
         "intrinsics",
         "invertibility",
         "isolines",

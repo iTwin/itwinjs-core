@@ -114,6 +114,33 @@ export class CurveLocationDetail {
       || this.intervalRole === CurveIntervalRole.isolatedAtVertex;
   }
 
+  /** return the fraction delta. (0 if no fraction1) */
+  public get fractionDelta(): number {
+    return this.fraction1 !== undefined ? this.fraction1 - this.fraction : 0.0;
+  }
+
+  /** If (fraction1, point1) are defined, make them the primary (and only) data.
+   * * No action if undefined.
+   */
+  public collapseToEnd() {
+    if (this.fraction1 !== undefined) {
+      this.fraction = this.fraction1;
+      this.fraction1 = undefined;
+    }
+    if (this.point1) {
+      this.point = this.point1;
+      this.point1 = undefined;
+    }
+  }
+
+  /** make (fraction, point) the primary (and only) data.
+   * * No action if undefined.
+   */
+  public collapseToStart() {
+    this.fraction1 = undefined;
+    this.point1 = undefined;
+  }
+
   /** Return a complete copy, WITH CAVEATS . . .
    * * curve member is copied as a reference.
    * * point and vector members are cloned.
