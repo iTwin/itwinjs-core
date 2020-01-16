@@ -1,6 +1,11 @@
 # Change Log - @bentley/rpcinterface-integration-test
 
-This log was last generated on Wed, 15 Jan 2020 06:00:55 GMT and should not be manually modified.
+This log was last generated on Thu, 16 Jan 2020 06:01:31 GMT and should not be manually modified.
+
+## 1.11.7
+Thu, 16 Jan 2020 06:01:31 GMT
+
+*Version update only*
 
 ## 1.11.6
 Wed, 15 Jan 2020 06:00:55 GMT
