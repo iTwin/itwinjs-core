@@ -16,7 +16,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   BatchType,
-} from "../Render";
+} from "../FeatureTable";
 import { TileProps } from "../TileProps";
 import {
   CurrentImdlVersion,

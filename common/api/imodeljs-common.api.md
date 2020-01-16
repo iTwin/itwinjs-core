@@ -1354,7 +1354,13 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     ambientOcclusionSettings: AmbientOcclusion.Settings;
     // @internal (undocumented)
     environment: EnvironmentProps;
+    // @alpha (undocumented)
+    getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
     hiddenLineSettings: HiddenLine.Settings;
+    // @alpha (undocumented)
+    readonly planProjectionSettings: Iterable<[Id64String, PlanProjectionSettings]> | undefined;
+    // @alpha (undocumented)
+    setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
     solarShadowsSettings: SolarShadows.Settings;
     // @internal (undocumented)
     sunDir: Vector3d | undefined;
@@ -1369,6 +1375,10 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     environment?: EnvironmentProps;
     // @beta
     hline?: HiddenLine.SettingsProps;
+    // @alpha
+    planProjections?: {
+        [modelId: string]: PlanProjectionSettingsProps;
+    };
     // @alpha
     sceneLights?: SceneLightsProps;
     // @beta
@@ -3955,6 +3965,28 @@ export interface Placement3dProps {
 
 // @public (undocumented)
 export type PlacementProps = Placement2dProps | Placement3dProps;
+
+// @alpha
+export class PlanProjectionSettings {
+    constructor(props: PlanProjectionSettingsProps);
+    clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings;
+    readonly elevation?: number;
+    // (undocumented)
+    static fromJSON(props: PlanProjectionSettingsProps | undefined): PlanProjectionSettings | undefined;
+    readonly overlay: boolean;
+    readonly priority?: number;
+    // (undocumented)
+    toJSON(): PlanProjectionSettingsProps;
+    readonly transparency?: number;
+}
+
+// @alpha
+export interface PlanProjectionSettingsProps {
+    elevation?: number;
+    overlay?: boolean;
+    priority?: number;
+    transparency?: number;
+}
 
 // @internal
 export class PntsHeader extends TileHeader {

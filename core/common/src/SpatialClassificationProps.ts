@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module SpatialClassificationProps */
+/** @module DisplayStyles */
 import { Id64String } from "@bentley/bentleyjs-core";
 
 /** Geometry may be classified by its spatial location.  This is typically used to classify reality models.

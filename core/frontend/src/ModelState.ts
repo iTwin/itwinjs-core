@@ -10,6 +10,7 @@ import {
   BatchType,
   compareIModelTileTreeIds,
   GeometricModel2dProps,
+  GeometricModel3dProps,
   GeometricModelProps,
   iModelTileTreeIdToString,
   ModelProps,
@@ -256,10 +257,42 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 export class GeometricModel3dState extends GeometricModelState {
   /** @internal */
   public static get className() { return "GeometricModel3d"; }
+
+  constructor(props: GeometricModel3dProps, iModel: IModelConnection, state?: GeometricModel3dState) {
+    super(props, iModel, state);
+    this.isNotSpatiallyLocated = JsonUtils.asBool(props.isNotSpatiallyLocated);
+    this.isPlanProjection = JsonUtils.asBool(props.isPlanProjection);
+  }
+
+  /** @internal */
+  public toJSON(): GeometricModel3dProps {
+    const val = super.toJSON() as GeometricModel3dProps;
+    if (this.isNotSpatiallyLocated)
+      val.isNotSpatiallyLocated = true;
+
+    if (this.isPlanProjection)
+      val.isPlanProjection = true;
+
+    return val;
+  }
+
   /** @internal */
   public get is3d(): boolean { return true; }
   /** @internal */
   public get asGeometricModel3d(): GeometricModel3dState { return this; }
+
+  /** If true, then the elements in this GeometricModel3dState are expected to be in an XY plane.
+   * @note The associated ECProperty was added to the BisCore schema in version 1.0.8
+   */
+  public readonly isPlanProjection: boolean;
+
+  /** If true, then the elements in this GeometricModel3dState are not in real-world coordinates and will not be in the spatial index.
+   * @note The associated ECProperty was added to the BisCore schema in version 1.0.8
+   */
+  public readonly isNotSpatiallyLocated: boolean;
+
+  /** If true, then the elements in this GeometricModel3dState are in real-world coordinates and will be in the spatial index. */
+  public get iSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
 }
 
 /** Represents the front-end state of a [SheetModel]($backend).

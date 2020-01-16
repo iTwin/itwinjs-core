@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @module DisplayStyles */
 
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, AngleProps } from "@bentley/geometry-core";

@@ -279,6 +279,8 @@ public;Placement2dProps
 public;Placement3d 
 public;Placement3dProps
 public;PlacementProps = Placement2dProps | Placement3dProps
+alpha;PlanProjectionSettings
+alpha;PlanProjectionSettingsProps
 internal;PntsHeader 
 beta;PointWithStatus
 internal;POLICY: unique symbol

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @module iModels */
 
 import { XYZProps } from "@bentley/geometry-core";
 

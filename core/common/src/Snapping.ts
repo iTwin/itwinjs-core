@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @module Geometry */
 
 import { Id64String, Id64Array } from "@bentley/bentleyjs-core";
 import { XYZProps, Matrix4dProps } from "@bentley/geometry-core";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
-import { GeometryClass } from "./Render";
+import { GeometryClass } from "./GeometryParams";
 
 /** Information required to request a *snap* to a pickable decoration from the front end to the back end.
  * @beta

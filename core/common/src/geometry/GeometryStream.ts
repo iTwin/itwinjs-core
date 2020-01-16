@@ -24,7 +24,8 @@ import {
 
 import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";
-import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";
+import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill } from "../GeometryParams";
+import { Gradient } from "../Gradient";
 import { TextStringProps, TextString } from "./TextString";
 import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";

@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Feature, GeometryClass, PolylineFlags } from "../Render";
+import { PolylineFlags } from "../Render";
+import { GeometryClass } from "../GeometryParams";
+import { Feature } from "../FeatureTable";
 
 describe("Feature", () => {
   it("constructor works as expected", () => {

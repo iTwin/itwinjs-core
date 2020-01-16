@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Geometry */
+/** @module Symbology */
 
 import { Point2d, Point3d, YawPitchRollAngles, Matrix3d, Transform, YawPitchRollProps, XYZProps, AngleProps, XYProps, Angle, Geometry } from "@bentley/geometry-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";

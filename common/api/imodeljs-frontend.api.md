@@ -67,6 +67,7 @@ import { FrustumPlanes } from '@bentley/imodeljs-common';
 import * as Fuse from 'fuse.js';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
+import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
 import { GeometryClass } from '@bentley/imodeljs-common';
 import { GeometryQuery } from '@bentley/geometry-core';
@@ -3516,12 +3517,18 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 
 // @public
 export class GeometricModel3dState extends GeometricModelState {
+    constructor(props: GeometricModel3dProps, iModel: IModelConnection, state?: GeometricModel3dState);
     // @internal (undocumented)
     readonly asGeometricModel3d: GeometricModel3dState;
     // @internal (undocumented)
     static readonly className: string;
     // @internal (undocumented)
     readonly is3d: boolean;
+    readonly isNotSpatiallyLocated: boolean;
+    readonly iSpatiallyLocated: boolean;
+    readonly isPlanProjection: boolean;
+    // @internal (undocumented)
+    toJSON(): GeometricModel3dProps;
 }
 
 // @public

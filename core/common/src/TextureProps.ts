@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WireFormats */
+/** @module Entities */
 
 import { DefinitionElementProps } from "./ElementProps";
 import { ImageSourceFormat } from "./Image";

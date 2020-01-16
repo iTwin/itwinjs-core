@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WireFormats */
+/** @module Entities */
 
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d } from "@bentley/geometry-core";

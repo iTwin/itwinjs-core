@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WireFormats */
+/** @module Geometry */
 
 import { Id64Array, BentleyStatus } from "@bentley/bentleyjs-core";
 import { XYZProps } from "@bentley/geometry-core";

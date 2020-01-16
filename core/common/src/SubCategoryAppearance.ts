@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @module Symbology */
 
 import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";
@@ -163,116 +163,4 @@ export namespace SubCategoryAppearance {
     /** @see [[SubCategoryAppearance.fillTransparency]]. Defaults to [[SubCategoryAppearance.transparency]]. */
     transpFill?: number;
   }
-}
-
-/** Overrides selected aspects of a [[SubCategoryAppearance]] in the context of a [[ViewState]].
- * When determining how geometry belonging to a [[SubCategory]] will appear when drawn within a view:
- *  1. The base [[SubCategoryAppearance]] associated with that subcategory is obtained.
- *  2. The [[SubCategoryOverride]] associated with that subcategory in the [[ViewState]] is obtained.
- *  3. Any aspects of the appearance overridden by the SubCategoryOverride are replaced with the values from the SubCategoryOverride.
- * An aspect is overridden by virtue of not being set to "undefined" in the SubCategoryOverride.
- * @see [[ViewState.overrideSubCategory]]
- * @public
- */
-export class SubCategoryOverride {
-  /** @see [[SubCategoryAppearance.color]] */
-  public readonly color?: ColorDef;
-  /** @see [[SubCategoryAppearance.invisible]] */
-  public readonly invisible?: boolean;
-  /** @see [[SubCategoryAppearance.weight]] */
-  public readonly weight?: number;
-  /** @internal Overriding with arbitrary custom line style is not supported - overriding with LinePixels enum could be. */
-  public readonly style?: Id64String;
-  /** @see [[SubCategoryAppearance.priority]] */
-  public readonly priority?: number;
-  /** @see [[SubCategoryAppearance.materialId]] */
-  public readonly material?: Id64String;
-  /** @see [[SubCategoryAppearance.transparency]] */
-  public readonly transparency?: number;
-
-  /** Returns true if any aspect of the appearance is overridden (i.e., if any member is not undefined). */
-  public get anyOverridden(): boolean {
-    return undefined !== this.invisible || undefined !== this.color || undefined !== this.weight || undefined !== this.style || undefined !== this.priority || undefined !== this.material || undefined !== this.transparency;
-  }
-
-  /** Returns a SubCategoryAppearance overridden to match the properties defined by this SubCategoryOverride. */
-  public override(appearance: SubCategoryAppearance): SubCategoryAppearance {
-    if (!this.anyOverridden)
-      return appearance;
-
-    const props = appearance.toJSON();
-    const ovrProps = this.toJSON();
-    if (undefined !== ovrProps.invisible) props.invisible = ovrProps.invisible;
-    if (undefined !== ovrProps.weight) props.weight = ovrProps.weight;
-    if (undefined !== ovrProps.style) props.style = ovrProps.style;
-    if (undefined !== ovrProps.material) props.material = ovrProps.material;
-    if (undefined !== ovrProps.priority) props.priority = ovrProps.priority;
-    if (undefined !== ovrProps.transp) props.transp = ovrProps.transp;
-    if (undefined !== ovrProps.color) props.color = ovrProps.color;
-
-    return new SubCategoryAppearance(props);
-  }
-
-  /** Convert this SubCategoryOverride to a JSON object
-   * @internal
-   */
-  public toJSON(): SubCategoryAppearance.Props {
-    const val: SubCategoryAppearance.Props = {
-      invisible: this.invisible,
-      weight: this.weight,
-      style: this.style,
-      material: this.material,
-      priority: this.priority,
-      transp: this.transparency,
-    };
-
-    if (undefined !== this.color)
-      val.color = this.color.toJSON();
-
-    return val;
-  }
-
-  /** Perform equality comparison against another SubCategoryOverride. */
-  public equals(other: SubCategoryOverride): boolean {
-    if (this.invisible !== other.invisible || this.weight !== other.weight || this.style !== other.style
-      || this.priority !== other.priority || this.material !== other.material || this.transparency !== other.transparency)
-      return false;
-
-    if (undefined !== this.color && undefined !== other.color)
-      return this.color.tbgr === other.color.tbgr;
-    else
-      return undefined === this.color && undefined === other.color;
-  }
-
-  /** Create a new SubCategoryOverride from a JSON object */
-  public static fromJSON(json?: SubCategoryAppearance.Props): SubCategoryOverride {
-    return undefined !== json ? new SubCategoryOverride(json) : this.defaults;
-  }
-
-  private constructor(props: SubCategoryAppearance.Props) {
-    if (undefined !== props.invisible) this.invisible = JsonUtils.asBool(props.invisible);
-    if (undefined !== props.color) this.color = ColorDef.fromJSON(props.color);
-    if (undefined !== props.weight) this.weight = JsonUtils.asInt(props.weight);
-    if (undefined !== props.style) this.style = Id64.fromJSON(props.style);
-    if (undefined !== props.material) this.material = Id64.fromJSON(props.material);
-    if (undefined !== props.priority) this.priority = JsonUtils.asInt(props.priority);
-    if (undefined !== props.transp) this.transparency = JsonUtils.asDouble(props.transp);
-  }
-
-  /** A default SubCategoryOverride which overrides nothing. */
-  public static defaults = new SubCategoryOverride({});
-}
-
-/** The *rank* for a Category
- * @public
- */
-export enum Rank {
-  /** This category is predefined by the system */
-  System = 0,
-  /** This category is defined by a schema. Elements in this category are not recognized by system classes. */
-  Domain = 1,
-  /** This category is defined by an application. Elements in this category are not recognized by system and schema classes. */
-  Application = 2,
-  /** This category is defined by a user. Elements in this category are not recognized by system, schema, and application classes. */
-  User = 3,
 }

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @module ECSQL */
 
 /** The desired ECSql query quota constraint. It is not guaranteed exactly but will be met as accurately as possible as long as it narrows the constraints imposed by the backend.
  * @public
