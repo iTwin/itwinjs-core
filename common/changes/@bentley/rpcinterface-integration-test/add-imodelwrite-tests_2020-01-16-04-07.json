@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/rpcinterface-integration-test",
+      "comment": "Add a basic tests for the iModelWriteRpcInterface.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/rpcinterface-integration-test",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

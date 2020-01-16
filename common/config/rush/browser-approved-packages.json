@@ -323,6 +323,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "dotenv-expand",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "electron",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },

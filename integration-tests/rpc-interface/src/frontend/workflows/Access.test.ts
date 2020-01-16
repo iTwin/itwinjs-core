@@ -36,7 +36,9 @@ describe("Access", () => {
     await expect(iModel.saveChanges(), "Expected writing to iModel in read mode to fail").to.be.rejectedWith(IModelError);
   });
 
-  it("should fail to open an IModel for read/write TestCase:819337", async () => {
+  it("should fail to open an IModel for read/write TestCase:819337", async function () {
+    if (testContext.settings.runiModelWriteRpcTests)
+      this.skip();
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const contextId = testContext.iModelWithChangesets!.contextId;
     const openMode = OpenMode.ReadWrite;

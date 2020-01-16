@@ -1,6 +1,6 @@
 {
   "name": "@bentley/rpcinterface-integration-test",
-  "version": "1.11.7",
+  "version": "1.11.0-dev.11",
   "description": "Test frontend integration for an iModel.js backend using standard RPC interfaces",
   "license": "MIT",
   "repository": {
@@ -48,6 +48,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "dotenv": "^8.2.0",
+    "dotenv-expand": "^5.1.0",
     "mocha": "^5.2.0",
     "openid-client": "^3.7.2",
     "puppeteer": "chrome-stable"

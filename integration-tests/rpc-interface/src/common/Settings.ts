@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@bentley/bentleyjs-core";
 import {
-  IModelReadRpcInterface,
+  IModelReadRpcInterface, IModelWriteRpcInterface,
   IModelTileRpcInterface, DevToolsRpcInterface,
 } from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
@@ -38,6 +38,8 @@ export function getRpcInterfaces(settings: Settings) {
     rpcInterfaces.push(PresentationRpcInterface);
   if (settings.runiModelReadRpcTests)
     rpcInterfaces.push(IModelReadRpcInterface);
+  if (settings.runiModelWriteRpcTests)
+    rpcInterfaces.push(IModelWriteRpcInterface);
   if (settings.runiModelTileRpcTests)
     rpcInterfaces.push(IModelTileRpcInterface);
 
@@ -58,6 +60,7 @@ export class Settings {
 
   public iModels: IModelData[] = [];
   public get iModel(): IModelData { return this.iModels[0]; }
+  public get writeIModel(): IModelData { return this.iModels[1]; }
   public get user(): User { return this.users[0]; }
 
   public get Backend(): Backend { return this._backend; }
@@ -65,15 +68,25 @@ export class Settings {
   public get runiModelTileRpcTests(): boolean { return undefined === process.env.RPC_IMODELTILE_ENABLE ? false : true; }
   public get runPresentationRpcTests(): boolean { return undefined === process.env.RPC_PRESENTATION_ENABLE ? false : true; }
   public get runiModelReadRpcTests(): boolean { return undefined === process.env.RPC_IMODELREAD_ENABLE ? false : true; }
+  public get runiModelWriteRpcTests(): boolean { return undefined === process.env.RPC_IMODELWRITE_ENABLE ? false : true; }
   public get runDevToolsRpcTests(): boolean { return undefined === process.env.RPC_DEVTOOLS_ENABLE ? false : true; }
 
   constructor(env: NodeJS.ProcessEnv) {
     const isFrontend = (typeof (process) === "undefined");
     if (!isFrontend && undefined === env.TF_BUILD) {
+      const path = require("path");
       const dotenv = require("dotenv");
-      const result = dotenv.config();
-      if (result.error)
-        throw result.error;
+      const dotenvExpand = require("dotenv-expand");
+      // First check in process.cwd() for the config
+      let result = dotenv.config();
+      if (result.error) {
+        const potential = path.resolve(process.cwd(), "..", "..", "..", "imodeljs-config", ".env");
+        result = dotenv.config({ path: potential });
+        if (result.error)
+          throw result.error;
+      }
+
+      dotenvExpand(result);
     }
 
     if (isFrontend)
@@ -121,6 +134,20 @@ export class Settings {
       changeSetId: process.env.IMODEL_CHANGESETID,
     });
 
+    // If write rpc interface is defined expect a separate iModel to be used.
+    if (this.runiModelWriteRpcTests) {
+      if (undefined === process.env.IMODEL_WRITE_PROJECTID)
+        throw new Error("Missing the 'IMODEL_WRITE_PROJECTID' setting.");
+
+      if (undefined === process.env.IMODEL_WRITE_IMODELID)
+        throw new Error("Missing the 'IMODEL_WRITE_IMODELID' setting.");
+
+      this.iModels.push({
+        projectId: process.env.IMODEL_WRITE_PROJECTID,
+        id: process.env.IMODEL_WRITE_IMODELID,
+      });
+    }
+
     // Parse logging level
     if (undefined !== process.env.LOG_LEVEL) {
       const level = parseInt(process.env.LOG_LEVEL, 10);
@@ -149,7 +176,6 @@ export class Settings {
   public toString(): string {
     return `Configurations:
       backend location: ${this.Backend.location},
-      backend path: ${this.Backend.path},
       backend name: ${this.Backend.name},
       backend version: ${this.Backend.version},
       oidc client id: ${this.oidcClientId},
@@ -159,6 +185,7 @@ export class Settings {
       testing iModelTileRpcTests: ${this.runiModelTileRpcTests},
       testing PresentationRpcTest: ${this.runPresentationRpcTests},
       testing iModelReadRpcTests: ${this.runiModelReadRpcTests},
-      testing DevToolsRpcTests: ${this.runDevToolsRpcTests}`;
+      testing DevToolsRpcTests: ${this.runDevToolsRpcTests},
+      testing iModelWriteRpcTests: ${this.runiModelWriteRpcTests}`;
   }
 }

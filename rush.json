@@ -388,7 +388,8 @@
       "packageName": "@bentley/rpcinterface-integration-test",
       "projectFolder": "integration-tests/rpc-interface",
       "reviewCategory": "tools",
-      "shouldPublish": true
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
     }
   ]
 }
