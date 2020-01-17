@@ -176,6 +176,20 @@ describe("PresentationRpcInterface tests", () => {
       });
     });
 
+    it("getDisplayLabelDefinition works as expected", async () => {
+      await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
+        const displayLabel = await Presentation.presentation.getDisplayLabelDefinition(props, key1);
+        expect(displayLabel).to.not.be.undefined;
+      });
+    });
+
+    it("getDisplayLabelDefinitions works as expected", async () => {
+      await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
+        const displayLabels = await Presentation.presentation.getDisplayLabelsDefinitions(props, [key1, key2]);
+        expect(displayLabels).to.not.be.undefined;
+      });
+    });
+
     it("getSelectionScopes works as expected", async () => {
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
         const scopeIds = await Presentation.selection.scopes.getSelectionScopes(iModel);
