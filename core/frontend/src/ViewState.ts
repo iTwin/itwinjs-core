@@ -267,8 +267,11 @@ export abstract class ViewState extends ElementState {
     this._auxCoordSystem = undefined;
     const acsId = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValid(acsId)) {
-      const props = await this.iModel.elements.getProps(acsId);
-      this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
+      try {
+        const props = await this.iModel.elements.getProps(acsId);
+        if (0 !== props.length)
+          this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
+      } catch { }
     }
 
     const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
