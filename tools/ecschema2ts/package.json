@@ -38,7 +38,6 @@
     "@bentley/build-tools": "1.11.0-dev.13",
     "@types/chai": "^4.1.4",
     "@types/chai-string": "^1.4.1",
-    "@types/chalk": "^2.2.0",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
