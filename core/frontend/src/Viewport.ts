@@ -2996,10 +2996,13 @@ export class ScreenViewport extends Viewport {
     const boresite = Ray3d.create(pickPoint, direction);
     const projectedPt = Point3d.createZero();
 
-    // returns true if there's an intersection in the forward direction
+    // returns true if there's an intersection that isn't behind the front plane
     const boresiteIntersect = (plane: Plane3dByOriginAndUnitNormal) => {
       const dist = boresite.intersectionWithPlane(plane, projectedPt);
-      return dist !== undefined && dist > 0;
+      if (undefined === dist)
+        return false;
+      const npcPt = this.worldToNpc(projectedPt);
+      return npcPt.z < 1.0;
     };
 
     if (undefined !== this.backgroundMapPlane && boresiteIntersect(this.backgroundMapPlane))
