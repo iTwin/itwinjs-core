@@ -154,6 +154,7 @@ export class Capabilities {
   private _maxVertUniformVectors: number = 0;
   private _maxVaryingVectors: number = 0;
   private _maxFragUniformVectors: number = 0;
+  private _canRenderDepthWithoutColor: boolean = false;
 
   private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
   private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
@@ -187,6 +188,8 @@ export class Capabilities {
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
+
+  public get canRenderDepthWithoutColor(): boolean { return this._canRenderDepthWithoutColor; }
 
   public get supportsShadowMaps(): boolean {
     return (undefined !== this.findExtension("OES_texture_float") || undefined !== this.findExtension("OES_texture_half_float"));
@@ -311,6 +314,8 @@ export class Capabilities {
     // this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
     this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
+    this._canRenderDepthWithoutColor = this._maxDepthType === DepthType.TextureUnsignedInt24Stencil8 ? this.isDepthRenderableWithoutColor(gl) : false;
+
     this._presentFeatures = this._gatherFeatures();
     const missingRequiredFeatures = this._findMissingFeatures(Capabilities.requiredFeatures);
     const missingOptionalFeatures = this._findMissingFeatures(Capabilities.optionalFeatures);
@@ -359,59 +364,85 @@ export class Capabilities {
     return fbStatus === gl.FRAMEBUFFER_COMPLETE;
   }
 
+  /** Determines if depth textures can be rendered without also having a color attachment bound on the host system. */
+  private isDepthRenderableWithoutColor(gl: WebGLRenderingContext): boolean {
+    const dtExt = this.queryExtensionObject<WEBGL_depth_texture>("WEBGL_depth_texture");
+    if (dtExt === undefined)
+      return false;
+
+    const tex: WebGLTexture | null = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_STENCIL, 1, 1, 0, gl.DEPTH_STENCIL, dtExt.UNSIGNED_INT_24_8_WEBGL, null);
+
+    const fb: WebGLFramebuffer | null = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.TEXTURE_2D, tex, 0);
+
+    const fbStatus: number = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.deleteFramebuffer(fb);
+    gl.deleteTexture(tex);
+
+    gl.getError(); // clear any errors
+
+    return fbStatus === gl.FRAMEBUFFER_COMPLETE;
+  }
+
   private debugPrint(gl: WebGLRenderingContext, missingRequiredFeatures: WebGLFeature[], _missingOptionalFeatures: WebGLFeature[]) {
     if (!Debug.printEnabled)
       return;
 
     Debug.print(() => "GLES Capabilities Information:");
-    Debug.print(() => "     hasRequiredFeatures : " + (0 === missingRequiredFeatures.length ? "yes" : "no"));
-    Debug.print(() => " missingOptionalFeatures : " + (missingRequiredFeatures.length > 0 ? "yes" : "no"));
-    Debug.print(() => " hasRequiredTextureUnits : " + this._hasRequiredTextureUnits);
-    Debug.print(() => "              GL_VERSION : " + gl.getParameter(gl.VERSION));
-    Debug.print(() => "               GL_VENDOR : " + gl.getParameter(gl.VENDOR));
-    Debug.print(() => "             GL_RENDERER : " + gl.getParameter(gl.RENDERER));
-    Debug.print(() => "          maxTextureSize : " + this.maxTextureSize);
-    Debug.print(() => "     maxColorAttachments : " + this.maxColorAttachments);
-    Debug.print(() => "          maxDrawBuffers : " + this.maxDrawBuffers);
-    Debug.print(() => "     maxFragTextureUnits : " + this.maxFragTextureUnits);
-    Debug.print(() => "     maxVertTextureUnits : " + this.maxVertTextureUnits);
-    Debug.print(() => "     nonPowerOf2Textures : " + (this.supportsNonPowerOf2Textures ? "yes" : "no"));
-    Debug.print(() => "             drawBuffers : " + (this.supportsDrawBuffers ? "yes" : "no"));
-    Debug.print(() => "              instancing : " + (this.supportsInstancing ? "yes" : "no"));
-    Debug.print(() => "       32BitElementIndex : " + (this.supports32BitElementIndex ? "yes" : "no"));
-    Debug.print(() => "            textureFloat : " + (this.supportsTextureFloat ? "yes" : "no"));
-    Debug.print(() => "        textureHalfFloat : " + (this.supportsTextureHalfFloat ? "yes" : "no"));
-    Debug.print(() => "        shaderTextureLOD : " + (this.supportsShaderTextureLOD ? "yes" : "no"));
-    Debug.print(() => "               fragDepth : " + (this.supportsFragDepth ? "yes" : "no"));
-    Debug.print(() => "      disjointTimerQuery : " + (this.supportsDisjointTimerQuery ? "yes" : "no"));
+    Debug.print(() => "       hasRequiredFeatures : " + (0 === missingRequiredFeatures.length ? "yes" : "no"));
+    Debug.print(() => "   missingOptionalFeatures : " + (missingRequiredFeatures.length > 0 ? "yes" : "no"));
+    Debug.print(() => "   hasRequiredTextureUnits : " + this._hasRequiredTextureUnits);
+    Debug.print(() => "                GL_VERSION : " + gl.getParameter(gl.VERSION));
+    Debug.print(() => "                 GL_VENDOR : " + gl.getParameter(gl.VENDOR));
+    Debug.print(() => "               GL_RENDERER : " + gl.getParameter(gl.RENDERER));
+    Debug.print(() => "            maxTextureSize : " + this.maxTextureSize);
+    Debug.print(() => "       maxColorAttachments : " + this.maxColorAttachments);
+    Debug.print(() => "            maxDrawBuffers : " + this.maxDrawBuffers);
+    Debug.print(() => "       maxFragTextureUnits : " + this.maxFragTextureUnits);
+    Debug.print(() => "       maxVertTextureUnits : " + this.maxVertTextureUnits);
+    Debug.print(() => "       nonPowerOf2Textures : " + (this.supportsNonPowerOf2Textures ? "yes" : "no"));
+    Debug.print(() => "               drawBuffers : " + (this.supportsDrawBuffers ? "yes" : "no"));
+    Debug.print(() => "                instancing : " + (this.supportsInstancing ? "yes" : "no"));
+    Debug.print(() => "         32BitElementIndex : " + (this.supports32BitElementIndex ? "yes" : "no"));
+    Debug.print(() => "              textureFloat : " + (this.supportsTextureFloat ? "yes" : "no"));
+    Debug.print(() => "          textureHalfFloat : " + (this.supportsTextureHalfFloat ? "yes" : "no"));
+    Debug.print(() => "          shaderTextureLOD : " + (this.supportsShaderTextureLOD ? "yes" : "no"));
+    Debug.print(() => "                 fragDepth : " + (this.supportsFragDepth ? "yes" : "no"));
+    Debug.print(() => "        disjointTimerQuery : " + (this.supportsDisjointTimerQuery ? "yes" : "no"));
 
     switch (this.maxRenderType) {
       case RenderType.TextureUnsignedByte:
-        Debug.print(() => "           maxRenderType : TextureUnsigedByte");
+        Debug.print(() => "             maxRenderType : TextureUnsigedByte");
         break;
       case RenderType.TextureHalfFloat:
-        Debug.print(() => "           maxRenderType : TextureHalfFloat");
+        Debug.print(() => "             maxRenderType : TextureHalfFloat");
         break;
       case RenderType.TextureFloat:
-        Debug.print(() => "           maxRenderType : TextureFloat");
+        Debug.print(() => "             maxRenderType : TextureFloat");
         break;
       default:
-        Debug.print(() => "           maxRenderType : Unknown");
+        Debug.print(() => "             maxRenderType : Unknown");
     }
 
     switch (this.maxDepthType) {
       case DepthType.RenderBufferUnsignedShort16:
-        Debug.print(() => "            maxDepthType : RenderBufferUnsignedShort16");
+        Debug.print(() => "              maxDepthType : RenderBufferUnsignedShort16");
         break;
       case DepthType.TextureUnsignedInt24Stencil8:
-        Debug.print(() => "            maxDepthType : TextureUnsignedInt24Stencil8");
+        Debug.print(() => "              maxDepthType : TextureUnsignedInt24Stencil8");
         break;
       case DepthType.TextureUnsignedInt32:
-        Debug.print(() => "            maxDepthType : TextureUnsignedInt32");
+        Debug.print(() => "              maxDepthType : TextureUnsignedInt32");
         break;
       default:
-        Debug.print(() => "            maxDepthType : Unknown");
+        Debug.print(() => "              maxDepthType : Unknown");
     }
+
+    Debug.print(() => "canRenderDepthWithoutColor : " + (this.canRenderDepthWithoutColor ? "yes" : "no"));
   }
 }
 
