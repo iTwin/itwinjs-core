@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";

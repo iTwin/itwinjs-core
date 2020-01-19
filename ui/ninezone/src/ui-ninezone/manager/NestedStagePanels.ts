@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module StagePanels */
+/** @packageDocumentation
+ * @module StagePanels
+ */
 
 import { NestedStagePanelsManagerProps, NestedStagePanelsManager, NestedStagePanelKey, NestedStagePanelsId } from "../stage-panels/manager/NestedStagePanels";
 import { NineZoneStagePanelsManagerProps, NineZoneStagePanelsManager } from "./StagePanels";

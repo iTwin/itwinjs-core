@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module TypeConverters */
+/** @packageDocumentation
+ * @module TypeConverters
+ */
 
 import { PropertyDescription, EnumerationChoice, Primitives } from "@bentley/imodeljs-frontend";
 import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";

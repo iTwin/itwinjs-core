@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 import { GL } from "./GL";
 import { dispose, assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { RenderMemory, RenderGraphic, RenderClipVolume } from "../System";

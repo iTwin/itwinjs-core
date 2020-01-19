@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tile
+ */
 import { Range3d, Range1d, Point3d, Point2d, Range2d, Angle, BilinearPatch } from "@bentley/geometry-core";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { QParams3d, QPoint3d, TextureMapping, RenderTexture, ColorDef, LinePixels, FillFlags } from "@bentley/imodeljs-common";

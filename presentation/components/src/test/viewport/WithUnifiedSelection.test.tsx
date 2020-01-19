@@ -214,36 +214,48 @@ describe("ViewportSelectionHandler", () => {
 
   describe("reacting to unified selection changes", () => {
 
-    let getHiliteSet: sinon.SinonStub;
-    const hiliteSpies = {
-      clear: sinon.spy(),
-      elements: sinon.spy(),
-      models: sinon.spy(),
-      subcategories: sinon.spy(),
-      resetHistory: () => { },
+    interface HiliteSpies {
+      clear: sinon.SinonSpy<[], void>;
+      elements: sinon.SinonSpy<[Id64Arg], void>;
+      models: sinon.SinonSpy<[Id64Arg], void>;
+      subcategories: sinon.SinonSpy<[Id64Arg], void>;
+      resetHistory: () => void;
+    }
+
+    interface SelectionSetSpies {
+      emptyAll: sinon.SinonSpy<[], void>;
+      replace: sinon.SinonSpy<[Id64Arg], void>;
+      onChanged: sinon.SinonSpy<any[], any>;
     };
-    const selectionSetSpies = {
-      emptyAll: sinon.spy(),
-      replace: sinon.spy(),
-      onChanged: sinon.spy(),
-    };
+
+    let hiliteSpies: HiliteSpies;
+    let selectionSetSpies: SelectionSetSpies;
+    let getHiliteSet: sinon.SinonStub<[IModelConnection], Promise<HiliteSet>>;
+
     beforeEach(() => {
       // ensure there's something in the selection set
       imodelMock.target.selectionSet.replace(createRandomId());
 
       getHiliteSet = sinon.stub(Presentation.selection, "getHiliteSet").resolves({});
-      hiliteSpies.clear = sinon.spy(imodelMock.target.hilited, "clear");
-      hiliteSpies.elements = sinon.spy(imodelMock.target.hilited.elements, "addIds");
-      hiliteSpies.models = sinon.spy(imodelMock.target.hilited.models, "addIds");
-      hiliteSpies.subcategories = sinon.spy(imodelMock.target.hilited.subcategories, "addIds");
-      hiliteSpies.resetHistory = () => {
-        hiliteSpies.clear.resetHistory();
-        hiliteSpies.elements.resetHistory();
-        hiliteSpies.models.resetHistory();
-        hiliteSpies.subcategories.resetHistory();
+      hiliteSpies = {
+        clear: sinon.spy(imodelMock.target.hilited, "clear"),
+        elements: sinon.spy(imodelMock.target.hilited.elements, "addIds"),
+        models: sinon.spy(imodelMock.target.hilited.models, "addIds"),
+        subcategories: sinon.spy(imodelMock.target.hilited.subcategories, "addIds"),
+        resetHistory: () => {
+          hiliteSpies.clear.resetHistory();
+          hiliteSpies.elements.resetHistory();
+          hiliteSpies.models.resetHistory();
+          hiliteSpies.subcategories.resetHistory();
+        },
       };
-      selectionSetSpies.emptyAll = sinon.spy(imodelMock.target.selectionSet, "emptyAll");
-      selectionSetSpies.replace = sinon.spy(imodelMock.target.selectionSet, "replace");
+
+      selectionSetSpies = {
+        emptyAll: sinon.spy(imodelMock.target.selectionSet, "emptyAll"),
+        replace: sinon.spy(imodelMock.target.selectionSet, "replace"),
+        onChanged: sinon.spy(),
+      };
+
       imodelMock.target.selectionSet.onChanged.addListener(selectionSetSpies.onChanged);
       selectionSetSpies.onChanged.resetHistory();
     });
@@ -388,7 +400,7 @@ describe("ViewportSelectionHandler", () => {
       getHiliteSet.resetBehavior();
       const hiliteSetRequests = [0, 1].map((callIndex) => {
         const result = new ResolvablePromise<HiliteSet>();
-        getHiliteSet.onCall(callIndex).returns(result);
+        getHiliteSet.onCall(callIndex).returns(result as any); // wants Promise<Hilite>, missing catch(), finally(), [Symbol.toStringTag].
         return result;
       });
 

@@ -69,7 +69,7 @@
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typemoq": "^2.1.0",
-    "typescript": "~3.6.2"
+    "typescript": "~3.7.4"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",

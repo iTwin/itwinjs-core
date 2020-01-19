@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Toolbar */
+/** @packageDocumentation
+ * @module Toolbar
+ */
 
 import * as React from "react";
 import { Point, Timer } from "@bentley/ui-core";

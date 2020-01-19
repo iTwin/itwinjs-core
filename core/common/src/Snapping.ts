@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Geometry */
+/** @packageDocumentation
+ * @module Geometry
+ */
 
 import { Id64String, Id64Array } from "@bentley/bentleyjs-core";
 import { XYZProps, Matrix4dProps } from "@bentley/geometry-core";

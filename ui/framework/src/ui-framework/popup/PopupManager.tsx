@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Popup */
+/** @packageDocumentation
+ * @module Popup
+ */
 
 import * as React from "react";
 
@@ -68,7 +70,6 @@ export class PopupManager {
   public static get popupCount() { return this._popups.length; }
   public static get popups() { return this._popups; }
 
-  /** @internal */
   public static set popups(popups: ReadonlyArray<PopupInfo>) {
     if (this._popups === popups)
       return;

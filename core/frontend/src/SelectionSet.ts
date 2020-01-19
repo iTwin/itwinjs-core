@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module SelectionSet */
+/** @packageDocumentation
+ * @module SelectionSet
+ */
 import { BeEvent, Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";

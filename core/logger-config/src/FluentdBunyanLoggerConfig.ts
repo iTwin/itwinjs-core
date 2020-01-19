@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Logging */
+/** @packageDocumentation
+ * @module Logging
+ */
 
 import * as bunyan from "bunyan";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";

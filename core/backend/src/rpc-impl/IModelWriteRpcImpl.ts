@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 import { Id64, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { RpcInterface, RpcManager, IModelProps, IModelToken, IModelTokenProps, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps } from "@bentley/imodeljs-common";

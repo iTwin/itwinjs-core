@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Polyface */
+/** @packageDocumentation
+ * @module Polyface
+ */
 import { IndexedEdgeMatcher, SortableEdge } from "./IndexedEdgeMatcher";
 import { PolyfaceVisitor, IndexedPolyface } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";

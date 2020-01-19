@@ -291,7 +291,7 @@ export class B3dmHeader extends TileHeader {
     // (undocumented)
     readonly featureTableJsonLength: number;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
     readonly length: number;
 }
@@ -341,7 +341,7 @@ export class BackgroundMapSettings {
     // (undocumented)
     toJSON(): BackgroundMapProps;
     readonly transparency: number | false;
-    readonly transparencyOverride: number | undefined;
+    get transparencyOverride(): number | undefined;
     readonly useDepthBuffer: boolean;
 }
 
@@ -530,11 +530,11 @@ export class Camera implements CameraProps {
     // (undocumented)
     invalidateFocus(): void;
     // (undocumented)
-    readonly isFocusValid: boolean;
+    get isFocusValid(): boolean;
     // (undocumented)
-    readonly isLensValid: boolean;
+    get isLensValid(): boolean;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
     static isValidLensAngle(val: Angle): boolean;
     // (undocumented)
@@ -814,15 +814,19 @@ export class CodeSpec {
     id: Id64String;
     iModel: IModel;
     // @beta
-    isManagedWithIModel: boolean;
-    readonly isValid: boolean;
+    get isManagedWithIModel(): boolean;
+    set isManagedWithIModel(value: boolean);
+    get isValid(): boolean;
     name: string;
     // @internal
     properties: any;
-    scopeReq: CodeScopeSpec.ScopeRequirement;
-    scopeType: CodeScopeSpec.Type;
+    get scopeReq(): CodeScopeSpec.ScopeRequirement;
+    set scopeReq(req: CodeScopeSpec.ScopeRequirement);
+    get scopeType(): CodeScopeSpec.Type;
+    set scopeType(scopeType: CodeScopeSpec.Type);
     // @deprecated
-    specScopeType: CodeScopeSpec.Type;
+    get specScopeType(): CodeScopeSpec.Type;
+    set specScopeType(scopeType: CodeScopeSpec.Type);
 }
 
 // @public
@@ -1136,7 +1140,7 @@ export class ColorDef {
     static readonly black: ColorDef;
     static readonly blue: ColorDef;
     clone(result?: ColorDef): ColorDef;
-    readonly colors: {
+    get colors(): {
         b: number;
         g: number;
         r: number;
@@ -1153,15 +1157,16 @@ export class ColorDef {
     getTransparency(): number;
     static readonly green: ColorDef;
     invert(): ColorDef;
-    readonly isOpaque: boolean;
+    get isOpaque(): boolean;
     lerp(color2: ColorDef, weight: number, result?: ColorDef): ColorDef;
-    readonly name: string | undefined;
+    get name(): string | undefined;
     static readonly red: ColorDef;
     static rgb2bgr(val: number): number;
     setAlpha(alpha: number): void;
     setFrom(other: ColorDef): void;
     setTransparency(transparency: number): void;
-    tbgr: number;
+    get tbgr(): number;
+    set tbgr(tbgr: number);
     toHexString(): string;
     toHSL(opt?: HSLColor): HSLColor;
     toHSV(out?: HSVColor): HSVColor;
@@ -1177,21 +1182,21 @@ export type ColorDefProps = number | ColorDef;
 export class ColorIndex {
     constructor();
     // (undocumented)
-    readonly hasAlpha: boolean;
+    get hasAlpha(): boolean;
     // (undocumented)
     initNonUniform(colors: Uint32Array, indices: number[], hasAlpha: boolean): void;
     // (undocumented)
     initUniform(color: ColorDef | number): void;
     // (undocumented)
-    readonly isUniform: boolean;
+    get isUniform(): boolean;
     // (undocumented)
-    readonly nonUniform: NonUniformColor | undefined;
+    get nonUniform(): NonUniformColor | undefined;
     // (undocumented)
-    readonly numColors: number;
+    get numColors(): number;
     // (undocumented)
     reset(): void;
     // (undocumented)
-    readonly uniform: ColorDef | undefined;
+    get uniform(): ColorDef | undefined;
 }
 
 // @public
@@ -1217,7 +1222,7 @@ export enum ComparisonOption {
 export class CompositeTileHeader extends TileHeader {
     constructor(stream: ByteStream);
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
     readonly length: number;
     // (undocumented)
@@ -1250,9 +1255,9 @@ export abstract class ContentIdProvider {
     // (undocumented)
     protected join(depth: number, i: number, j: number, k: number, mult: number): string;
     // (undocumented)
-    readonly rootContentId: string;
+    get rootContentId(): string;
     // (undocumented)
-    protected abstract readonly _separator: string;
+    protected abstract get _separator(): string;
     // (undocumented)
     specFromId(id: string): ContentIdSpec;
 }
@@ -1351,19 +1356,24 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyle3dSettingsProps;
     });
-    ambientOcclusionSettings: AmbientOcclusion.Settings;
+    get ambientOcclusionSettings(): AmbientOcclusion.Settings;
+    set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     // @internal (undocumented)
-    environment: EnvironmentProps;
+    get environment(): EnvironmentProps;
+    set environment(environment: EnvironmentProps);
     // @alpha (undocumented)
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
-    hiddenLineSettings: HiddenLine.Settings;
+    get hiddenLineSettings(): HiddenLine.Settings;
+    set hiddenLineSettings(hline: HiddenLine.Settings);
     // @alpha (undocumented)
-    readonly planProjectionSettings: Iterable<[Id64String, PlanProjectionSettings]> | undefined;
+    get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
     // @alpha (undocumented)
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
-    solarShadowsSettings: SolarShadows.Settings;
+    get solarShadowsSettings(): SolarShadows.Settings;
+    set solarShadowsSettings(solarShadows: SolarShadows.Settings);
     // @internal (undocumented)
-    sunDir: Vector3d | undefined;
+    get sunDir(): Vector3d | undefined;
+    set sunDir(dir: Vector3d | undefined);
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
 }
@@ -1398,24 +1408,28 @@ export class DisplayStyleSettings {
         styles?: DisplayStyleSettingsProps;
     });
     addExcludedElements(id: Id64String): void;
-    backgroundColor: ColorDef;
+    get backgroundColor(): ColorDef;
+    set backgroundColor(color: ColorDef);
     // @alpha (undocumented)
-    backgroundMap: BackgroundMapSettings;
+    get backgroundMap(): BackgroundMapSettings;
+    set backgroundMap(map: BackgroundMapSettings);
     dropExcludedElement(id: Id64String): void;
     dropSubCategoryOverride(id: Id64String): void;
     // @internal (undocumented)
     equalSubCategoryOverrides(other: DisplayStyleSettings): boolean;
-    readonly excludedElements: Set<Id64String>;
+    get excludedElements(): Set<Id64String>;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
-    readonly hasSubCategoryOverride: boolean;
+    get hasSubCategoryOverride(): boolean;
     // (undocumented)
     protected readonly _json: DisplayStyleSettingsProps;
-    monochromeColor: ColorDef;
+    get monochromeColor(): ColorDef;
+    set monochromeColor(color: ColorDef);
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
-    readonly subCategoryOverrides: Map<Id64String, SubCategoryOverride>;
+    get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
     // @internal (undocumented)
     toJSON(): DisplayStyleSettingsProps;
-    viewFlags: ViewFlags;
+    get viewFlags(): ViewFlags;
+    set viewFlags(flags: ViewFlags);
     }
 
 // @public
@@ -1606,15 +1620,15 @@ export class EdgeArgs {
     // (undocumented)
     init(meshEdges?: MeshEdges): boolean;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
-    readonly numEdges: number;
+    get numEdges(): number;
 }
 
 // @beta
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
     // (undocumented)
-    static readonly isElectron: boolean;
+    static get isElectron(): boolean;
     abstract protocol: ElectronRpcProtocol;
 }
 
@@ -1776,9 +1790,9 @@ export class Feature {
     // (undocumented)
     readonly geometryClass: GeometryClass;
     // (undocumented)
-    readonly isDefined: boolean;
+    get isDefined(): boolean;
     // (undocumented)
-    readonly isUndefined: boolean;
+    get isUndefined(): boolean;
     // (undocumented)
     readonly subCategoryId: string;
 }
@@ -1800,9 +1814,9 @@ export class FeatureIndex {
     // (undocumented)
     featureIDs?: Uint32Array;
     // (undocumented)
-    readonly isEmpty: boolean;
+    get isEmpty(): boolean;
     // (undocumented)
-    readonly isUniform: boolean;
+    get isUniform(): boolean;
     // (undocumented)
     reset(): void;
     // (undocumented)
@@ -1823,21 +1837,21 @@ export enum FeatureIndexType {
 export class FeatureTable extends IndexMap<Feature> {
     constructor(maxFeatures: number, modelId?: Id64String, type?: BatchType);
     // @internal (undocumented)
-    readonly anyDefined: boolean;
+    get anyDefined(): boolean;
     findFeature(index: number): Feature | undefined;
     // @internal (undocumented)
     getArray(): Array<IndexedValue<Feature>>;
     // @internal (undocumented)
     insertWithIndex(feature: Feature, index: number): void;
-    readonly isPlanarClassifier: boolean;
-    readonly isUniform: boolean;
-    readonly isVolumeClassifier: boolean;
-    readonly maxFeatures: number;
+    get isPlanarClassifier(): boolean;
+    get isUniform(): boolean;
+    get isVolumeClassifier(): boolean;
+    get maxFeatures(): number;
     // (undocumented)
     readonly modelId: Id64String;
     // (undocumented)
     readonly type: BatchType;
-    readonly uniform: Feature | undefined;
+    get uniform(): Feature | undefined;
 }
 
 // @internal
@@ -1940,7 +1954,7 @@ export class Frustum {
     getCorner(i: number): Point3d;
     getFraction(): number;
     getRangePlanes(clipFront: boolean, clipBack: boolean, expandPlaneDistance: number): ConvexClipPlaneSet;
-    readonly hasMirror: boolean;
+    get hasMirror(): boolean;
     initFromRange(range: LowAndHighXYZ | LowAndHighXY): void;
     initNpc(): this;
     invalidate(): void;
@@ -1971,9 +1985,9 @@ export class FrustumPlanes {
     // (undocumented)
     intersectsRay(origin: Point3d, direction: Vector3d): boolean;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
-    readonly planes: ClipPlane[] | undefined;
+    get planes(): ClipPlane[] | undefined;
     }
 
 // @internal (undocumented)
@@ -2156,7 +2170,8 @@ export class GeometryStreamBuilder {
     readonly geometryStream: GeometryStreamProps;
     // @internal (undocumented)
     getHeader(): GeometryStreamHeaderProps | undefined;
-    isViewIndependent: boolean;
+    get isViewIndependent(): boolean;
+    set isViewIndependent(viewIndependent: boolean);
     // @internal (undocumented)
     obtainHeader(): GeometryStreamHeaderProps;
     setLocalToWorld(localToWorld?: Transform): void;
@@ -2213,7 +2228,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     static fromGeometryPart(geomPart: GeometryPartProps, geomParams?: GeometryParams, partTransform?: Transform): GeometryStreamIterator;
     geometryStream: GeometryStreamProps;
     // @internal (undocumented)
-    readonly isViewIndependent: boolean;
+    get isViewIndependent(): boolean;
     next(): IteratorResult<GeometryStreamIteratorEntry>;
     partToWorld(): Transform | undefined;
     setLocalToWorld(localToWorld?: Transform): void;
@@ -2234,7 +2249,7 @@ export class GeometryStreamIteratorEntry {
     localToWorld?: Transform;
     partId?: Id64String;
     partToLocal?: Transform;
-    readonly primitive: GeometryStreamIteratorEntry.Primitive;
+    get primitive(): GeometryStreamIteratorEntry.Primitive;
     textString?: TextString;
 }
 
@@ -2321,7 +2336,7 @@ export class GltfBufferView {
     // (undocumented)
     readonly accessor: any;
     // (undocumented)
-    readonly byteLength: number;
+    get byteLength(): number;
     // (undocumented)
     readonly count: number;
     // (undocumented)
@@ -2379,7 +2394,7 @@ export class GltfHeader extends TileHeader {
     // (undocumented)
     readonly gltfLength: number;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
     readonly scenePosition: number;
     // (undocumented)
@@ -2465,8 +2480,8 @@ export namespace Gradient {
         static fromJSON(json?: SymbProps): Symb;
         getImage(width: number, height: number): ImageBuffer;
         // (undocumented)
-        readonly hasTranslucency: boolean;
-        readonly isOutlined: boolean;
+        get hasTranslucency(): boolean;
+        get isOutlined(): boolean;
         // (undocumented)
         keys: KeyColor[];
         mapColor(value: number): ColorDef;
@@ -2520,9 +2535,9 @@ export namespace Gradient {
         // (undocumented)
         colorScheme: number;
         // (undocumented)
-        static readonly contentMax: number;
+        static get contentMax(): number;
         // (undocumented)
-        static readonly contentRange: number;
+        static get contentRange(): number;
         // (undocumented)
         copyFrom(other: ThematicSettingsProps): void;
         // (undocumented)
@@ -2530,13 +2545,14 @@ export namespace Gradient {
         // (undocumented)
         static fromJSON(json: ThematicSettingsProps): ThematicSettings;
         // (undocumented)
-        static readonly margin: number;
+        static get margin(): number;
         // (undocumented)
         marginColor: ColorDef;
         // (undocumented)
         mode: ThematicMode;
         // (undocumented)
-        range: Range1d;
+        get range(): Range1d;
+        set range(range: Range1d);
         // (undocumented)
         rangeHigh: number;
         // (undocumented)
@@ -2628,7 +2644,7 @@ export namespace HiddenLine {
         toJSON(): SettingsProps;
         readonly transparencyThreshold: number;
         // (undocumented)
-        readonly transThreshold: number;
+        get transThreshold(): number;
         readonly visible: Style;
     }
     export interface SettingsProps {
@@ -2649,7 +2665,7 @@ export namespace HiddenLine {
         overridePattern(pattern: LinePixels | undefined): Style;
         overrideWidth(width: number | undefined): Style;
         // @internal (undocumented)
-        readonly ovrColor: boolean;
+        get ovrColor(): boolean;
         readonly pattern?: LinePixels;
         // (undocumented)
         toJSON(): StyleProps;
@@ -2787,7 +2803,7 @@ export class I3dmHeader extends TileHeader {
     // (undocumented)
     readonly gltfVersion: number;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
     readonly length: number;
 }
@@ -2818,10 +2834,10 @@ export class ImageBuffer {
     readonly data: Uint8Array;
     readonly format: ImageBufferFormat;
     static getNumBytesPerPixel(format: ImageBufferFormat): number;
-    readonly height: number;
+    get height(): number;
     // @internal (undocumented)
     protected static isValidData(data: Uint8Array, format: ImageBufferFormat, width: number): boolean;
-    readonly numBytesPerPixel: number;
+    get numBytesPerPixel(): number;
     readonly width: number;
 }
 
@@ -2924,17 +2940,17 @@ export class ImdlHeader extends TileHeader {
     readonly flags: ImdlFlags;
     readonly headerLength: number;
     // (undocumented)
-    readonly isReadableVersion: boolean;
+    get isReadableVersion(): boolean;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     readonly numElementsExcluded: number;
     readonly numElementsIncluded: number;
     readonly tileLength: number;
     readonly tolerance: number;
     // (undocumented)
-    readonly versionMajor: number;
+    get versionMajor(): number;
     // (undocumented)
-    readonly versionMinor: number;
+    get versionMinor(): number;
 }
 
 // @public
@@ -2943,17 +2959,19 @@ export abstract class IModel implements IModelProps {
     protected constructor(iModelToken?: IModelToken);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     static readonly dictionaryId: Id64String;
-    readonly ecefLocation: EcefLocation | undefined;
+    get ecefLocation(): EcefLocation | undefined;
     ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d;
     static getDefaultSubCategoryId(categoryId: Id64String): Id64String;
     getEcefTransform(): Transform;
-    globalOrigin: Point3d;
-    readonly iModelToken: IModelToken;
+    get globalOrigin(): Point3d;
+    set globalOrigin(org: Point3d);
+    get iModelToken(): IModelToken;
     // @internal (undocumented)
     protected initialize(name: string, props: IModelProps): void;
-    readonly isGeoLocated: boolean;
+    get isGeoLocated(): boolean;
     name: string;
-    projectExtents: AxisAlignedBox3d;
+    get projectExtents(): AxisAlignedBox3d;
+    set projectExtents(extents: AxisAlignedBox3d);
     static readonly repositoryModelId: Id64String;
     rootSubject: RootSubjectProps;
     static readonly rootSubjectId: Id64String;
@@ -3105,8 +3123,8 @@ export class IModelVersion {
     static fromJson(jsonObj: any): IModelVersion;
     getAsOfChangeSet(): GuidString | undefined;
     getName(): string | undefined;
-    readonly isFirst: boolean;
-    readonly isLatest: boolean;
+    get isFirst(): boolean;
+    get isLatest(): boolean;
     static latest(): IModelVersion;
     static named(versionName: string): IModelVersion;
     }
@@ -3200,9 +3218,9 @@ export class Light {
     // (undocumented)
     intensity2?: number;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
-    readonly isVisible: boolean;
+    get isVisible(): boolean;
     // (undocumented)
     kelvin: number;
     // (undocumented)
@@ -3519,9 +3537,9 @@ export type MobileRpcChunks = Array<string | Uint8Array>;
 // @beta
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
     static readonly args: any;
-    static readonly isIOSFrontend: any;
-    static readonly isMobileBackend: boolean;
-    static readonly isMobileFrontend: boolean;
+    static get isIOSFrontend(): any;
+    static get isMobileBackend(): boolean;
+    static get isMobileFrontend(): boolean;
     static readonly platform: RpcMobilePlatform;
     // (undocumented)
     abstract protocol: MobileRpcProtocol;
@@ -3873,7 +3891,7 @@ export class PackedFeatureTable {
     // (undocumented)
     readonly anyDefined: boolean;
     // (undocumented)
-    readonly byteLength: number;
+    get byteLength(): number;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number): Feature | undefined;
     // (undocumented)
@@ -3886,12 +3904,12 @@ export class PackedFeatureTable {
     // (undocumented)
     getSubCategoryIdPair(featureIndex: number): Id64.Uint32Pair;
     // (undocumented)
-    readonly isClassifier: boolean;
+    get isClassifier(): boolean;
     // (undocumented)
-    readonly isPlanarClassifier: boolean;
-    readonly isUniform: boolean;
+    get isPlanarClassifier(): boolean;
+    get isUniform(): boolean;
     // (undocumented)
-    readonly isVolumeClassifier: boolean;
+    get isVolumeClassifier(): boolean;
     // (undocumented)
     readonly maxFeatures: number;
     // (undocumented)
@@ -3901,7 +3919,7 @@ export class PackedFeatureTable {
     static pack(featureTable: FeatureTable): PackedFeatureTable;
     // (undocumented)
     readonly type: BatchType;
-    readonly uniform: Feature | undefined;
+    get uniform(): Feature | undefined;
     unpack(): FeatureTable;
 }
 
@@ -3915,13 +3933,13 @@ export class Placement2d implements Placement2dProps {
     calculateRange(): AxisAlignedBox3d;
     static fromJSON(json?: Placement2dProps): Placement2d;
     getWorldCorners(out?: Frustum): Frustum;
-    readonly isValid: boolean;
+    get isValid(): boolean;
     multiplyTransform(other: Transform): void;
     // (undocumented)
     origin: Point2d;
-    readonly rotation: Matrix3d;
+    get rotation(): Matrix3d;
     setFrom(other: Placement2d): void;
-    readonly transform: Transform;
+    get transform(): Transform;
 }
 
 // @public
@@ -3944,13 +3962,13 @@ export class Placement3d implements Placement3dProps {
     calculateRange(): AxisAlignedBox3d;
     static fromJSON(json?: Placement3dProps): Placement3d;
     getWorldCorners(out?: Frustum): Frustum;
-    readonly isValid: boolean;
+    get isValid(): boolean;
     multiplyTransform(other: Transform): void;
     // (undocumented)
     origin: Point3d;
-    readonly rotation: Matrix3d;
+    get rotation(): Matrix3d;
     setFrom(other: Placement3d): void;
-    readonly transform: Transform;
+    get transform(): Transform;
 }
 
 // @public
@@ -4000,7 +4018,7 @@ export class PntsHeader extends TileHeader {
     // (undocumented)
     readonly featureTableJsonLength: number;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
     readonly length: number;
 }
@@ -4022,7 +4040,7 @@ export class PolylineData {
     // (undocumented)
     init(polyline: MeshPolyline): boolean;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
     numIndices: number;
     // (undocumented)
@@ -4039,11 +4057,11 @@ export class PolylineEdgeArgs {
     // (undocumented)
     init(lines?: PolylineData[]): boolean;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
     lines?: PolylineData[];
     // (undocumented)
-    readonly numLines: number;
+    get numLines(): number;
 }
 
 // @internal
@@ -4058,13 +4076,13 @@ export class PolylineFlags {
     // (undocumented)
     is2d: boolean;
     // (undocumented)
-    readonly isAnyEdge: boolean;
+    get isAnyEdge(): boolean;
     // (undocumented)
     isDisjoint: boolean;
     // (undocumented)
-    readonly isNormalEdge: boolean;
+    get isNormalEdge(): boolean;
     // (undocumented)
-    readonly isOutlineEdge: boolean;
+    get isOutlineEdge(): boolean;
     // (undocumented)
     isPlanar: boolean;
     pack(): number;
@@ -4142,7 +4160,7 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     isCustomHandled?: boolean;
     // (undocumented)
     isCustomHandledOrphan?: boolean;
-    readonly isNavigation: boolean;
+    get isNavigation(): boolean;
     // (undocumented)
     kindOfQuantity?: string;
     // (undocumented)
@@ -4254,9 +4272,11 @@ export class QPoint2d {
     setFromScalars(x: number, y: number): void;
     unquantize(params: QParams2d, out?: Point2d): Point2d;
     // (undocumented)
-    x: number;
+    get x(): number;
+    set x(x: number);
     // (undocumented)
-    y: number;
+    get y(): number;
+    set y(y: number);
     }
 
 // @internal
@@ -4265,7 +4285,7 @@ export class QPoint2dList {
     add(pt: Point2d): void;
     clear(): void;
     static fromPoints(points: Point2d[], out?: QPoint2dList): QPoint2dList;
-    readonly length: number;
+    get length(): number;
     // (undocumented)
     readonly params: QParams2d;
     push(qpt: QPoint2d): void;
@@ -4291,11 +4311,14 @@ export class QPoint3d {
     setFromScalars(x: number, y: number, z: number): void;
     unquantize(params: QParams3d, out?: Point3d): Point3d;
     // (undocumented)
-    x: number;
+    get x(): number;
+    set x(x: number);
     // (undocumented)
-    y: number;
+    get y(): number;
+    set y(y: number);
     // (undocumented)
-    z: number;
+    get z(): number;
+    set z(z: number);
     }
 
 // @internal
@@ -4308,9 +4331,9 @@ export class QPoint3dList {
     // (undocumented)
     static createFrom(points: Point3d[], params: QParams3d): QPoint3dList;
     static fromPoints(points: Point3d[], out?: QPoint3dList): QPoint3dList;
-    readonly length: number;
+    get length(): number;
     // (undocumented)
-    readonly list: QPoint3d[];
+    get list(): QPoint3d[];
     // (undocumented)
     readonly params: QParams3d;
     push(qpt: QPoint3d): void;
@@ -4455,7 +4478,7 @@ export interface RelatedElementProps {
 export abstract class RenderMaterial {
     protected constructor(params: RenderMaterial.Params);
     // (undocumented)
-    readonly hasTexture: boolean;
+    get hasTexture(): boolean;
     readonly key?: string;
     readonly textureMapping?: TextureMapping;
 }
@@ -4464,7 +4487,8 @@ export abstract class RenderMaterial {
 export namespace RenderMaterial {
     export class Params {
         constructor(key?: string);
-        alpha: number | undefined;
+        get alpha(): number | undefined;
+        set alpha(alpha: number | undefined);
         ambient: number;
         static readonly defaults: Params;
         diffuse: number;
@@ -4593,12 +4617,12 @@ export abstract class RenderTexture implements IDisposable {
     protected constructor(params: RenderTexture.Params);
     abstract dispose(): void;
     // (undocumented)
-    readonly isGlyph: boolean;
+    get isGlyph(): boolean;
     readonly isOwned: boolean;
     // (undocumented)
-    readonly isSkyBox: boolean;
+    get isSkyBox(): boolean;
     // (undocumented)
-    readonly isTileSection: boolean;
+    get isTileSection(): boolean;
     readonly key: string | undefined;
     readonly type: RenderTexture.Type;
 }
@@ -4609,12 +4633,12 @@ export namespace RenderTexture {
         constructor(key?: string, type?: Type, isOwned?: boolean);
         static readonly defaults: Params;
         // (undocumented)
-        readonly isGlyph: boolean;
+        get isGlyph(): boolean;
         readonly isOwned: boolean;
         // (undocumented)
-        readonly isSkyBox: boolean;
+        get isSkyBox(): boolean;
         // (undocumented)
-        readonly isTileSection: boolean;
+        get isTileSection(): boolean;
         readonly key?: string;
         readonly type: Type;
     }
@@ -4637,33 +4661,33 @@ export class ResponseLike implements Response {
     // (undocumented)
     blob(): Promise<Blob>;
     // (undocumented)
-    readonly body: null;
+    get body(): null;
     // (undocumented)
-    readonly bodyUsed: boolean;
+    get bodyUsed(): boolean;
     // (undocumented)
     clone(): {} & this;
     // (undocumented)
     formData(): Promise<FormData>;
     // (undocumented)
-    readonly headers: Headers;
+    get headers(): Headers;
     // (undocumented)
     json(): Promise<any>;
     // (undocumented)
-    readonly ok: boolean;
+    get ok(): boolean;
     // (undocumented)
-    readonly redirected: boolean;
+    get redirected(): boolean;
     // (undocumented)
-    readonly status: number;
+    get status(): number;
     // (undocumented)
-    readonly statusText: string;
+    get statusText(): string;
     // (undocumented)
     text(): Promise<string>;
     // (undocumented)
-    readonly trailer: Promise<Headers>;
+    get trailer(): Promise<Headers>;
     // (undocumented)
-    readonly type: ResponseType;
+    get type(): ResponseType;
     // (undocumented)
-    readonly url: string;
+    get url(): string;
 }
 
 // @public
@@ -4841,13 +4865,13 @@ export { RpcInterfaceStatus }
 export class RpcInvocation {
     constructor(protocol: RpcProtocol, request: SerializedRpcRequest);
     static current(rpcImpl: RpcInterface): RpcInvocation;
-    readonly elapsed: number;
+    get elapsed(): number;
     readonly fulfillment: Promise<RpcRequestFulfillment>;
     readonly operation: RpcOperation;
     readonly protocol: RpcProtocol;
     readonly request: SerializedRpcRequest;
     readonly result: Promise<any>;
-    readonly status: RpcRequestStatus;
+    get status(): RpcRequestStatus;
     }
 
 // @public
@@ -4896,8 +4920,8 @@ export class RpcNotFoundResponse extends RpcControlResponse {
 // @internal
 export class RpcOpenAPIDescription {
     constructor(protocol: WebAppRpcProtocol);
-    readonly document: OpenAPIDocument;
-    readonly paths: OpenAPIPaths;
+    get document(): OpenAPIDocument;
+    get paths(): OpenAPIPaths;
     readonly protocol: WebAppRpcProtocol;
     toJSON(): OpenAPIDocument;
 }
@@ -4911,7 +4935,7 @@ export class RpcOperation {
     static fallbackToken: IModelToken | undefined;
     static forEach(definition: RpcInterfaceDefinition, callback: (operation: RpcOperation) => void): void;
     readonly interfaceDefinition: RpcInterfaceDefinition;
-    readonly interfaceVersion: string;
+    get interfaceVersion(): string;
     static lookup(target: string | RpcInterfaceDefinition, operationName: string): RpcOperation;
     readonly operationName: string;
     policy: RpcOperationPolicy;
@@ -5041,7 +5065,7 @@ export class RpcRegistry {
     // (undocumented)
     initializeRpcInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): void;
     // (undocumented)
-    static readonly instance: RpcRegistry;
+    static get instance(): RpcRegistry;
     // (undocumented)
     isRpcInterfaceInitialized<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>): boolean;
     // (undocumented)
@@ -5065,15 +5089,15 @@ export class RpcRegistry {
 // @public
 export abstract class RpcRequest<TResponse = any> {
     constructor(client: RpcInterface, operation: string, parameters: any[]);
-    static readonly aggregateLoad: RpcOperationsProfile;
+    static get aggregateLoad(): RpcOperationsProfile;
     readonly client: RpcInterface;
-    readonly connecting: boolean;
+    get connecting(): boolean;
     static current(context: RpcInterface): RpcRequest;
     // @internal (undocumented)
     dispose(): void;
-    readonly elapsed: number;
+    get elapsed(): number;
     static readonly events: BeEvent<RpcRequestEventHandler>;
-    readonly extendedStatus: string;
+    get extendedStatus(): string;
     findParameterOfType<T>(requiredProperties: {
         [index: string]: string;
     }): T | undefined;
@@ -5081,19 +5105,19 @@ export abstract class RpcRequest<TResponse = any> {
     // (undocumented)
     protected handleUnknownResponse(code: number): void;
     readonly id: string;
-    readonly lastSubmitted: number;
-    readonly lastUpdated: number;
+    get lastSubmitted(): number;
+    get lastUpdated(): number;
     protected abstract load(): Promise<RpcSerializedValue>;
     method: string;
     static readonly notFoundHandlers: BeEvent<RpcRequestNotFoundHandler>;
     readonly operation: RpcOperation;
     parameters: any[];
     path: string;
-    readonly pending: boolean;
+    get pending(): boolean;
     readonly protocol: RpcProtocol;
     // (undocumented)
     protected _rawPromise: Promise<Response>;
-    readonly rawResponse: Promise<Response>;
+    get rawResponse(): Promise<Response>;
     // (undocumented)
     protected reject(reason: any): void;
     // (undocumented)
@@ -5105,7 +5129,7 @@ export abstract class RpcRequest<TResponse = any> {
     protected abstract send(): Promise<number>;
     protected abstract setHeader(name: string, value: string): void;
     protected setLastUpdatedTime(): void;
-    readonly status: RpcRequestStatus;
+    get status(): RpcRequestStatus;
     // (undocumented)
     submit(): Promise<void>;
 }
@@ -5526,10 +5550,10 @@ export class SubCategoryAppearance {
     readonly dontSnap: boolean;
     // (undocumented)
     equals(other: SubCategoryAppearance): boolean;
-    readonly fillColor: ColorDef;
+    get fillColor(): ColorDef;
     // @internal (undocumented)
     protected readonly _fillColor?: ColorDef;
-    readonly fillTransparency: number;
+    get fillTransparency(): number;
     // @internal (undocumented)
     protected readonly _fillTransparency?: number;
     readonly invisible: boolean;
@@ -5565,7 +5589,7 @@ export namespace SubCategoryAppearance {
 
 // @public
 export class SubCategoryOverride {
-    readonly anyOverridden: boolean;
+    get anyOverridden(): boolean;
     readonly color?: ColorDef;
     static defaults: SubCategoryOverride;
     equals(other: SubCategoryOverride): boolean;
@@ -5659,7 +5683,7 @@ export class TextString {
     transformInPlace(transform: Transform): boolean;
     underline?: boolean;
     // (undocumented)
-    readonly width: number;
+    get width(): number;
     // (undocumented)
     widthFactor?: number;
 }
@@ -5740,7 +5764,7 @@ export namespace TextureMapping {
         // (undocumented)
         setTransform(): void;
         // (undocumented)
-        readonly transform: Transform;
+        get transform(): Transform;
         }
 }
 
@@ -5850,9 +5874,9 @@ export function tileFormatFromNumber(formatNumber: number): TileFormat;
 export abstract class TileHeader {
     constructor(stream: ByteStream);
     // (undocumented)
-    readonly format: TileFormat;
+    get format(): TileFormat;
     protected invalidate(): void;
-    abstract readonly isValid: boolean;
+    abstract get isValid(): boolean;
     // (undocumented)
     version: number;
 }
@@ -5900,7 +5924,7 @@ export interface TileProps {
 export class TileReadError extends BentleyError {
     constructor(status: TileReadStatus, message?: string);
     // (undocumented)
-    readonly wasCanceled: boolean;
+    get wasCanceled(): boolean;
 }
 
 // @internal
@@ -5972,9 +5996,9 @@ export class Tween {
     // (undocumented)
     interpolation(interpolationFunction?: InterpolationFunction): this;
     // (undocumented)
-    readonly isPaused: boolean;
+    get isPaused(): boolean;
     // (undocumented)
-    readonly isPlaying: boolean;
+    get isPlaying(): boolean;
     // (undocumented)
     onComplete(callback?: TweenCallback): this;
     // (undocumented)
@@ -6106,7 +6130,7 @@ export namespace ViewFlag {
         // (undocumented)
         clearPresent(flag: PresenceFlag): void;
         // @internal
-        readonly clipVolumeOverride: boolean | undefined;
+        get clipVolumeOverride(): boolean | undefined;
         // (undocumented)
         clone(out?: Overrides): Overrides;
         // (undocumented)
@@ -6269,7 +6293,8 @@ export class ViewFlags {
     // @internal (undocumented)
     hiddenEdgesVisible(): boolean;
     hLineMaterialColors: boolean;
-    lighting: boolean;
+    get lighting(): boolean;
+    set lighting(enable: boolean);
     materials: boolean;
     monochrome: boolean;
     // @internal
@@ -6331,7 +6356,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     abstract info: OpenAPIInfo;
     isTimeout(code: number): boolean;
     // @internal
-    readonly openAPIDescription: RpcOpenAPIDescription;
+    get openAPIDescription(): RpcOpenAPIDescription;
     pathPrefix: string;
     // (undocumented)
     preserveStreams: boolean;

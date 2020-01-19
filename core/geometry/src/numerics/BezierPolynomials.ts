@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";

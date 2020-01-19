@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 /** Represents the state of synchronization between a [[SyncTarget]] and a [[SyncObserver]]. Owned by a [[SyncTarget]].
  * When the [[SyncObserver]]'s state changes via [[desync]], all associated [[SyncToken]]s become out-of-sync.

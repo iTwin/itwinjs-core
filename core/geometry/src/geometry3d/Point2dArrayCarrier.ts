@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 /* tslint:disable:variable-name jsdoc-format no-empty */
 import { Point2d, Vector2d, XY } from "./Point2dVector2d";

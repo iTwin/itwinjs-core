@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 
 import { assert, DbResult, GuidString, Id64String, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ChangeSet, ChangeSetQuery } from "@bentley/imodeljs-clients";

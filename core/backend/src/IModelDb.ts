@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 import {
   ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set,
   Id64String, JsonUtils, Logger, OpenMode, PerfLogger, BeDuration, ChangeSetStatus,

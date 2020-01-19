@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Categories */
+/** @packageDocumentation
+ * @module Categories
+ */
 
 import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps } from "@bentley/imodeljs-common";

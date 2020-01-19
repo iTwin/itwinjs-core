@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Codes */
+/** @packageDocumentation
+ * @module Codes
+ */
 
 import { Id64, Id64String, GuidString, JsonUtils } from "@bentley/bentleyjs-core";
 import { IModel } from "./IModel";

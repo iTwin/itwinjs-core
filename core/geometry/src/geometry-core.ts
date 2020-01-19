@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Utility */
+/** @packageDocumentation
+ * @module Utility
+ */
 
 // REMARK:
 // The docs-group-description comments are followed by empty classes with names corresponding to the doc-group.

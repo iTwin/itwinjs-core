@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { AxisOrder } from "../Geometry";
 import { Angle } from "./Angle";
@@ -51,9 +53,8 @@ export class OrderedRotationAngles {
   public get zDegrees(): number { return this._z.degrees; }
   /** (Property accessor) Return the angle of rotation around z, in radians */
   public get zRadians(): number { return this._z.radians; }
-  /** (Property accessor) flag controlling whether vectors are treated as rows or as columns */
+  /** Flag controlling whether vectors are treated as rows or as columns */
   public static get treatVectorsAsColumns(): boolean { return OrderedRotationAngles._sTreatVectorsAsColumns; }
-  /** (Property set) flag controlling whether vectors are treated as rows or as columns */
   public static set treatVectorsAsColumns(value: boolean) { OrderedRotationAngles._sTreatVectorsAsColumns = value; }
 
   /** Create an OrderedRotationAngles from three angles and an ordering in which to apply them when rotating.

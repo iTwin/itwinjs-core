@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyGrid */
+/** @packageDocumentation
+ * @module PropertyGrid
+ */
 import * as React from "react";
 import classnames from "classnames";
 import ReactResizeDetector from "react-resize-detector";

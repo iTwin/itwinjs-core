@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Elements */
+/** @packageDocumentation
+ * @module Elements
+ */
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ImageSourceFormat, TextureFlags, TextureProps } from "@bentley/imodeljs-common";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Bspline */
+/** @packageDocumentation
+ * @module Bspline
+ */
 
 // import { Point2d } from "../Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
@@ -63,11 +65,8 @@ export class KnotVector {
   public get leftKnotIndex() { return this.degree - 1; }
   /** Return the index of the rightmost knot of the active interval */
   public get rightKnotIndex() { return this.knots.length - this.degree; }
-  /**
-   * Return true if the bspline was created by adding poles in to "closed" structure
-   */
+  /** Whether the bspline was created by adding poles into "closed" structure. This is used by serialize/deserialize to mark knotVector's that were converted from periodic style. */
   public get wrappable() { return this._wrapMode === undefined ? BSplineWrapMode.None : this._wrapMode; }
-  /** Set the wrappable flag.  This is used by serialize/deserialize to mark knotVector's that were converted from periodic style. */
   public set wrappable(value: BSplineWrapMode) { this._wrapMode = value; }
   /** Return the number of bezier spans.  Not that this includes zero-length spans if there are repeated knots. */
   public get numSpans() { return this.rightKnotIndex - this.leftKnotIndex; }

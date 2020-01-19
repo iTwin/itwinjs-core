@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PresentationRules */
+/** @packageDocumentation
+ * @module PresentationRules
+ */
 
 /**
  * Sub-specification to include additional calculated properties into the content.

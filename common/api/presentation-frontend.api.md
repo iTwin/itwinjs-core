@@ -100,15 +100,16 @@ export class PersistenceHelper {
 
 // @public
 export class Presentation {
-    // @internal (undocumented)
-    static favoriteProperties: FavoritePropertiesManager;
-    // @internal (undocumented)
-    static i18n: I18N;
+    // @beta
+    static get favoriteProperties(): FavoritePropertiesManager;
+    static set favoriteProperties(value: FavoritePropertiesManager);
+    static get i18n(): I18N;
+    static set i18n(value: I18N);
     static initialize(props?: PresentationManagerProps): void;
-    // @internal (undocumented)
-    static presentation: PresentationManager;
-    // @internal (undocumented)
-    static selection: SelectionManager;
+    static get presentation(): PresentationManager;
+    static set presentation(value: PresentationManager);
+    static get selection(): SelectionManager;
+    static set selection(value: SelectionManager);
     static terminate(): void;
 }
 
@@ -145,7 +146,7 @@ export class PresentationManager implements IDisposable {
     // @internal
     onNewiModelConnection(_: IModelConnection): Promise<void>;
     // @internal (undocumented)
-    readonly rpcRequestsHandler: RpcRequestsHandler;
+    get rpcRequestsHandler(): RpcRequestsHandler;
     rulesets(): RulesetManager;
     vars(rulesetId: string): RulesetVariablesManager;
 }
@@ -262,8 +263,9 @@ export interface SelectionManagerProps {
 // @public
 export class SelectionScopesManager {
     constructor(props: SelectionScopesManagerProps);
-    readonly activeLocale: string | undefined;
-    activeScope: SelectionScope | string | undefined;
+    get activeLocale(): string | undefined;
+    get activeScope(): SelectionScope | string | undefined;
+    set activeScope(scope: SelectionScope | string | undefined);
     computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string): Promise<KeySet>;
     getSelectionScopes(imodel: IModelConnection, locale?: string): Promise<SelectionScope[]>;
     }

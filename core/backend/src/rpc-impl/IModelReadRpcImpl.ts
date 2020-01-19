@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import { ClientRequestContext, assert, Id64, Id64String, Logger, OpenMode, IModelStatus } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d } from "@bentley/geometry-core";

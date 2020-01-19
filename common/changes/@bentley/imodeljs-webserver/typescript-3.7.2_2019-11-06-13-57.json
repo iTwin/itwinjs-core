@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-webserver",
+      "comment": "Upgrade to TypeScript 3.7.2.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-webserver",
+  "email": "Upgrade to TypeScript 3.7.2."
+}

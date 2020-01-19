@@ -12,7 +12,7 @@ import {
   BeInspireTree, BeInspireTreeNodes, BeInspireTreeNode,
   BeInspireTreeDataProviderMethod, BeInspireTreeNodeConfig,
   MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeDataProviderInterface,
-  BeInspireTreeDataProvider, toNode,
+  BeInspireTreeDataProvider, toNode, BeInspireTreeDataProviderPromise,
 } from "../../../ui-components/tree/component/BeInspireTree";
 import { PageOptions } from "../../../ui-components/common/PageOptions";
 
@@ -340,12 +340,9 @@ describe("BeInspireTree", () => {
         if (entry.isDelayLoaded) {
 
           it("requests data from the data provider", async () => {
-            let spy: sinon.SinonSpy;
-            if (typeof dataProvider === "function") {
-              spy = dataProvider = sinon.spy(dataProvider);
-            } else {
-              spy = sinon.spy(dataProvider as any, "getNodes");
-            }
+            const spy = (typeof dataProvider === "function")
+              ? dataProvider = sinon.spy(dataProvider)
+              : sinon.spy(dataProvider as any, "getNodes");
             tree = new BeInspireTree({
               dataProvider,
               mapPayloadToInspireNodeConfig,
@@ -1100,7 +1097,7 @@ describe("BeInspireTree", () => {
   describe("pagination", () => {
 
     let dataProvider: BeInspireTreeDataProviderInterface<Node>;
-    let getNodesSpy: sinon.SinonSpy;
+    let getNodesSpy: sinon.SinonSpy<[Node?, PageOptions?], BeInspireTreeDataProviderPromise<Node>>;
 
     beforeEach(async () => {
       hierarchy = createHierarchy(5, 2);

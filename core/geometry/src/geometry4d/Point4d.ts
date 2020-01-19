@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 import { Geometry, BeJSONFunctions } from "../Geometry";
 import { XYAndZ } from "../geometry3d/XYZProps";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -58,21 +60,17 @@ export class Point4d implements BeJSONFunctions {
       this.xyzw[index] = value;
     }
   }
-  /** Return the x component. */
+  /** The x component. */
   public get x() { return this.xyzw[0]; }
-  /** Set the x component. */
   public set x(val: number) { this.xyzw[0] = val; }
-  /** Return the y component. */
+  /** The y component. */
   public get y() { return this.xyzw[1]; }
-  /** Set the y component. */
   public set y(val: number) { this.xyzw[1] = val; }
-  /** Return the z component. */
+  /** The z component. */
   public get z() { return this.xyzw[2]; }
-  /** Set the z component. */
   public set z(val: number) { this.xyzw[2] = val; }
-  /** Return the w component of this point. */
+  /** The w component of this point. */
   public get w() { return this.xyzw[3]; }
-  /** Set the w component. */
   public set w(val: number) { this.xyzw[3] = val; }
   /** Construct from coordinates. */
   protected constructor(x: number = 0, y: number = 0, z: number = 0, w: number = 0) {

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Angle, Constant } from "@bentley/geometry-core";
@@ -14,7 +16,6 @@ import { ScreenViewport } from "../Viewport";
 export class ToolSettings {
   /** @deprecated */
   public static get animationTime() { return ScreenViewport.animation.time.normal; }
-  /** @deprecated */
   public static set animationTime(val: BeDuration) { ScreenViewport.animation.time.normal = val; }
   /** Two tap must be within this period to be a double tap. */
   public static doubleTapTimeout = BeDuration.fromMilliseconds(250);

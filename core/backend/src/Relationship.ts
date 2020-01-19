@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Relationships */
+/** @packageDocumentation
+ * @module Relationships
+ */
 
 import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";

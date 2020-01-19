@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { GraphicParams, ColorDef, LinePixels, FillFlags, Gradient, RenderMaterial, TextureMapping, RenderTexture } from "@bentley/imodeljs-common";
 import { compareNumbers, compareBooleans, compareStringsOrUndefined, comparePossiblyUndefined, assert } from "@bentley/bentleyjs-core";

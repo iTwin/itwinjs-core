@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 import { PriorityQueue, OrderedComparator } from "@bentley/bentleyjs-core";
 import { HalfEdge } from "./Graph";
 import { HalfEdgeGraphOps } from "./Merging";

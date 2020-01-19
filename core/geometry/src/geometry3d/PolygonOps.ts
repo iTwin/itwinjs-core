@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Point2d, Vector2d } from "./Point2dVector2d";
 import { XAndY } from "./XYZProps";

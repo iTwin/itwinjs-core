@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 // cspell:word FSFP
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 // Search services for HalfEdgeGraph

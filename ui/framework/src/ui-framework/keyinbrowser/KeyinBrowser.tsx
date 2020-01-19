@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @packageDocumentation
+ * @module Item
+ */
 
 // cSpell:ignore Modeless keyins keyinbrowser testid
 import * as React from "react";

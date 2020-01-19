@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { AnyRegion, AnyCurve } from "./CurveChain";
 import { MomentData } from "../geometry4d/MomentData";

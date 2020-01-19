@@ -8,16 +8,30 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { Tree } from "../../ui-core/tree/Tree";
 
+// Note: Cannot instantiate DOMRect yet since it's experimental and not available in all browsers (Nov. 2019)
+class Rect {
+  public constructor(public left: number, public top: number, public right: number, public bottom: number) { }
+  public get x(): number { return this.left; }
+  public get y(): number { return this.top; }
+  public get width(): number { return Math.abs(this.right - this.left); }
+  public get height(): number { return Math.abs(this.bottom - this.top); }
+  public toJSON(): any {
+    return {
+      x: this.x,
+      y: this.y,
+      top: this.top,
+      bottom: this.bottom,
+      left: this.left,
+      right: this.right,
+      width: this.width,
+      height: this.height,
+    };
+  }
+}
+
 describe("<Tree />", () => {
 
-  const createRect = (x0: number, y0: number, x1: number, y1: number): ClientRect => ({
-    left: x0,
-    top: y0,
-    right: x1,
-    bottom: y1,
-    width: Math.abs(x1 - x0),
-    height: Math.abs(y1 - y0),
-  });
+  const createRect = (x0: number, y0: number, x1: number, y1: number): DOMRect => new Rect(x0, y0, x1, y1);
   const createRandomRect = () => createRect(1, 2, 3, 4);
 
   it("should render", () => {

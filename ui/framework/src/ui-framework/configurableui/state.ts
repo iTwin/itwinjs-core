@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module State */
+/** @packageDocumentation
+ * @module State
+ */
 
 import { createAction, ActionsUnion } from "../utils/redux-ts";
 import { SnapMode } from "@bentley/imodeljs-frontend";

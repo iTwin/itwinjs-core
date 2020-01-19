@@ -8,7 +8,9 @@ import { Geometry } from "../Geometry";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 /**
  * Reference to a HalfEdge node with extra XYZ and UV data.
  * @internal

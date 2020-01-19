@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { Geometry, AxisOrder, AxisIndex, BeJSONFunctions, StandardViewIndex } from "../Geometry";
 import { Angle } from "./Angle";

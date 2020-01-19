@@ -71,7 +71,7 @@ describe("SubscriptionScheduler", () => {
 
           await waitForUnsubscription(secondObservableSubscription);
           await waitForUnsubscription(firstObservableSubscription);
-          expect(secondSubscriptionSpy).to.have.been.calledBefore(firstSubscriptionSpy);
+          expect(secondSubscriptionSpy.calledBefore(firstSubscriptionSpy)).to.be.true;
           expect(firstSubscriptionSpy).to.have.been.calledOnce;
           expect(secondSubscriptionSpy).to.have.been.calledOnce;
         });

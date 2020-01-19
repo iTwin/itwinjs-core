@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { BadUnit, Parser, ParserSpec, ParseResult, Format, Formatter, FormatterSpec, UnitConversion, UnitProps, UnitsProvider, BasicUnit } from "@bentley/imodeljs-quantity";
@@ -706,13 +708,14 @@ export class QuantityFormatter implements UnitsProvider {
     await Promise.all([formatPromise, parsePromise]);
   }
 
-  /** Set the flag to return either metric or imperial formats. This call also makes an async request to refresh the cached formats. */
+  /** True if tool quantity values should be displayed in imperial units; false for metric. Changing this flag triggers an asynchronous request to refresh the cached formats. */
+  public get useImperialFormats(): boolean { return this._activeSystemIsImperial; }
   public set useImperialFormats(useImperial: boolean) {
+    if (this._activeSystemIsImperial === useImperial)
+      return;
+
     IModelApp.toolAdmin.startDefaultTool();
     this._activeSystemIsImperial = useImperial;
     this.loadFormatAndParsingMaps(useImperial); // tslint:disable-line:no-floating-promises
   }
-
-  /** Return true if Tool Quantities are to be displayed in Imperial units. If false Metric units are to used. */
-  public get useImperialFormats(): boolean { return this._activeSystemIsImperial; }
 }

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Core */
+/** @packageDocumentation
+ * @module Core
+ */
 
 import { RulesetsFactory, Omit } from "@bentley/presentation-common";
 import { PropertyRecord } from "@bentley/imodeljs-frontend";

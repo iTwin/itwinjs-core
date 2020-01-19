@@ -5,11 +5,10 @@
 import * as sinon from "sinon";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { useOnOutsideClick } from "../../ui-ninezone";
-import { SinonSpy } from "../Utils";
 
 describe("useOnOutsideClick", () => {
   it("should call onOutsideClick", () => {
-    const spy = sinon.spy() as SinonSpy<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>;
+    const spy = sinon.spy(); // as SinonSpy<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>;
     const { result } = renderHook(() => useOnOutsideClick(spy));
     const element = document.createElement("div");
     act(() => {
@@ -28,7 +27,7 @@ describe("useOnOutsideClick", () => {
   });
 
   it("should respect outside event predicate", () => {
-    const spy = sinon.spy() as SinonSpy<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>;
+    const spy = sinon.spy(); // as SinonSpy<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>;
     const predicate = sinon.spy<NonNullable<Parameters<typeof useOnOutsideClick>[1]>>(() => {
       return false;
     });
@@ -51,7 +50,7 @@ describe("useOnOutsideClick", () => {
   });
 
   it("should respect outside event predicate", () => {
-    const spy = sinon.spy() as SinonSpy<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>;
+    const spy = sinon.spy(); // as SinonSpy<NonNullable<Parameters<typeof useOnOutsideClick>[0]>>;
     const predicate = sinon.spy<NonNullable<Parameters<typeof useOnOutsideClick>[1]>>((ev) => {
       if (ev.type === "pointerup")
         return false;

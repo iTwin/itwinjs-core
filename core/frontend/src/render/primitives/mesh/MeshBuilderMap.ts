@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { compareNumbers, compareBooleans, Dictionary } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import {
   assert,
@@ -506,7 +508,6 @@ export namespace Attachments {
       // "Ready" state is a valid situation. It means another tile created the scene for this level of detail. We will use that scene.
       // However, this means we would be using the texture for that other tile, which is not what we want. We must recreate the texture.
 
-      assert(currentState !== State.Empty);
       if (currentState === State.Empty) {
         this.setNotFound();
         return;
@@ -919,9 +920,8 @@ export namespace Attachments {
     public abstract get is2d(): boolean;
     /** Returns true if this attachment has a defined tile tree and is ready to be drawn. */
     public get isReady(): boolean { return this._tree !== undefined; }
-    /** Returns the tile tree corresponding to this attachment, which may be 2d or 3d. Returns undefined if the tree has not been loaded. */
+    /** The tile tree corresponding to this attachment, which may be 2d or 3d. Returns undefined if the tree has not been loaded. */
     public get tree(): Tree | undefined { return this._tree; }
-    /** Sets the reference to the tile tree corresponding to this attachment view's model. */
     public set tree(tree: Tree | undefined) { this._tree = tree; }
 
     /** Given a view and placement, compute a scale for an attachment. */

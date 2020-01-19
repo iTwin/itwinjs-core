@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module EventSource */
+/** @packageDocumentation
+ * @module EventSource
+ */
 import { QueuedEvent, NativeAppRpcInterface, IModelToken, RpcRegistry } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";

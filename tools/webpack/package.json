@@ -113,6 +113,6 @@
     "react-dom": "^16.8.0",
     "react-test-renderer": "^16.8.0",
     "rimraf": "^2.6.2",
-    "typescript": "~3.6.2"
+    "typescript": "~3.7.4"
   }
 }

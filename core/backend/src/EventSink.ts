@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import { NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";

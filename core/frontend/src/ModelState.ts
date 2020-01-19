@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ModelState */
+/** @packageDocumentation
+ * @module ModelState
+ */
 
 import { compareBooleans, compareStrings, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tooltip */
+/** @packageDocumentation
+ * @module Tooltip
+ */
 
 import React from "react";
 import { Orientation } from "@bentley/ui-core";

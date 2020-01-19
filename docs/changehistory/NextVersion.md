@@ -3,6 +3,37 @@ ignore: true
 ---
 # NextVersion
 
+## TypeScript 3.7.4
+
+iModel.js now compiles with [TypeScript 3.7.2](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html). Aside from keeping current, the primary motivations for the upgrade include [uncalled function checks](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#uncalled-function-checks) and [assertion functions](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions).
+
+[assert]($bentley) is now an [assertion function](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions). This assures the compiler that code following a call to `assert` will never execute unless the asserted condition is true. Bear in mind that because calls to `assert` are stripped out of production builds, this assurance is only true in development builds - so reserve use of `assert` for conditions that are truly never expected to occur, and use ordinary validation and exception handling for other conditions.
+
+## api-extractor 7.7.3
+
+Upgrading to TypeScript 3.7.2 necessitated an upgrade to a new version of [api-extractor](https://api-extractor.com/), primarily due to changes to the JavaScript emitted by tsc for property getters and setters. api-extractor now requires that documentation and release tags are applied only to the *getter*, never the *setter*. This imposes some constraints which were temporarily relaxed in api-extractor 3.6:
+
+- Write-only properties (having only a setter, no getter) are rejected.
+- A setter cannot have a different release tag than the corresponding getter.
+
+## Module documentation
+
+Upgrading to TypeScript 3.7.2 necessitated an upgrade to [typedoc 0.15.1](https://typedoc.org/) and v2.1.0 of the [typedoc plugin](https://www.npmjs.com/package/typedoc-plugin-external-module-name) used to support external module declarations. This changes the format of `@module` comments.
+
+Previous syntax for `@module` comments:
+```ts
+/** @module ModuleName */
+```
+
+New syntax for `@module` comments:
+```ts
+/** @packageDocumentation
+ * @module ModuleName
+ */
+```
+
+Without the `@packageDocumentation`, the documentation generator will fail to recognize that the source file should be mapped to the `ModuleName` external module.
+
 ## Geometry
 
 * new public methods in RegionOps:
@@ -31,4 +62,3 @@ ignore: true
   * CurveChain.cloneStroked is abstract (implemented by Path, Loop, CurveChainWithDistanceIndex
 * CurveFactory
   * New method to create xy rectangles with optional fillets.
-

@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { copyStringToClipboard } from "../ClipboardUtilities";

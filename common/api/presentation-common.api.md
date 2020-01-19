@@ -38,7 +38,7 @@ export interface ArrayTypeDescription extends BaseTypeDescription {
 // @internal
 export class AsyncTasksTracker {
     // (undocumented)
-    readonly pendingAsyncs: Set<string>;
+    get pendingAsyncs(): Set<string>;
     // (undocumented)
     trackAsyncTask(): IDisposable;
 }
@@ -445,7 +445,7 @@ export class Field {
     isReadonly: boolean;
     label: string;
     name: string;
-    readonly parent: NestedContentField | undefined;
+    get parent(): NestedContentField | undefined;
     priority: number;
     // @internal (undocumented)
     rebuildParentship(parentField?: NestedContentField): void;
@@ -660,16 +660,16 @@ export class KeySet {
     forEachBatch(batchSize: number, callback: (batch: KeySet, index: number) => void): void;
     // @internal
     static fromJSON(json: KeySetJSON): KeySet;
-    readonly guid: GuidString;
+    get guid(): GuidString;
     has(value: Key): boolean;
     hasAll(keys: Keys): boolean;
     hasAny(keys: Keys): boolean;
-    readonly instanceKeys: Map<string, Set<InstanceId>>;
-    readonly instanceKeysCount: number;
-    readonly isEmpty: boolean;
-    readonly nodeKeys: Set<NodeKey>;
-    readonly nodeKeysCount: number;
-    readonly size: number;
+    get instanceKeys(): Map<string, Set<InstanceId>>;
+    get instanceKeysCount(): number;
+    get isEmpty(): boolean;
+    get nodeKeys(): Set<NodeKey>;
+    get nodeKeysCount(): number;
+    get size(): number;
     // @internal
     toJSON(): KeySetJSON;
 }
@@ -1216,19 +1216,19 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
     constructor(ruleset: Ruleset, uniqueIdentifier: string, disposeFunc: (ruleset: RegisteredRuleset) => void);
     dispose(): void;
     // (undocumented)
-    readonly id: string;
+    get id(): string;
     // (undocumented)
-    readonly rules: Rule[];
+    get rules(): Rule[];
     // (undocumented)
-    readonly supplementationInfo: SupplementationInfo | undefined;
+    get supplementationInfo(): SupplementationInfo | undefined;
     // (undocumented)
-    readonly supportedSchemas: SchemasSpecification | undefined;
+    get supportedSchemas(): SchemasSpecification | undefined;
     // (undocumented)
     toJSON(): Ruleset;
     // (undocumented)
-    readonly uniqueIdentifier: string;
+    get uniqueIdentifier(): string;
     // (undocumented)
-    readonly vars: VariablesGroup[] | undefined;
+    get vars(): VariablesGroup[] | undefined;
 }
 
 // @public

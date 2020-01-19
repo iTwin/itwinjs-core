@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { GeometryQuery } from "./GeometryQuery";
 import { Matrix4d } from "../geometry4d/Matrix4d";

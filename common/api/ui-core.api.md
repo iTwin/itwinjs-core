@@ -1776,8 +1776,9 @@ export enum TimeFormat {
 // @public
 export class Timer {
     constructor(msDelay: number);
-    delay: number;
-    readonly isRunning: boolean;
+    get delay(): number;
+    set delay(ms: number);
+    get isRunning(): boolean;
     setOnExecute(onExecute: ExecuteHandler | undefined): void;
     start(): void;
     stop(): void;
@@ -1922,13 +1923,13 @@ export interface TreeProps extends CommonProps {
 
 // @public
 export class UiCore {
-    static readonly i18n: I18N;
-    static readonly i18nNamespace: string;
+    static get i18n(): I18N;
+    static get i18nNamespace(): string;
     static initialize(i18n: I18N): Promise<void>;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)
-    static readonly packageName: string;
+    static get packageName(): string;
     static terminate(): void;
     // @internal
     static translate(key: string | string[], options?: TranslationOptions): string;

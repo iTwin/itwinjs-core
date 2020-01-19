@@ -330,7 +330,7 @@ describe("Full Schema Deserialization", () => {
             descriptions.push((await c.baseClass).description!);
           else if (c.schemaItemType === SchemaItemType.Mixin && c.appliesTo)
             descriptions.push((await c.appliesTo).description!);
-        }),
+        }) as any,
       };
 
       const context = new SchemaContext();
@@ -381,7 +381,7 @@ describe("Full Schema Deserialization", () => {
             descriptions.push((await c.baseClass).description!);
           else if (c.schemaItemType === SchemaItemType.Mixin && c.appliesTo)
             descriptions.push((await c.appliesTo).description!);
-        }),
+        }) as any,
       };
 
       const context = new SchemaContext();
@@ -454,7 +454,7 @@ describe("Full Schema Deserialization", () => {
             const prop = await c.properties![0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
-        }),
+        }) as any,
       };
 
       const context = new SchemaContext();
@@ -527,7 +527,7 @@ describe("Full Schema Deserialization", () => {
             const prop = await c.properties![0] as NavigationProperty;
             descriptions.push((await prop.relationshipClass).description!);
           }
-        }),
+        }) as any,
       };
 
       const context = new SchemaContext();

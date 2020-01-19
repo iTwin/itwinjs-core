@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Core */
+/** @packageDocumentation
+ * @module Core
+ */
 
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "@bentley/imodeljs-frontend";
@@ -91,7 +93,7 @@ export class Presentation {
   }
 
   /**
-   * Get the singleton [[PresentationManager]]
+   * The singleton [[PresentationManager]]. The setter for this property is for internal use only.
    */
   public static get presentation(): PresentationManager {
     if (!presentationManager)
@@ -99,7 +101,6 @@ export class Presentation {
     return presentationManager;
   }
 
-  /** @internal */
   public static set presentation(value: PresentationManager) {
     if (presentationManager)
       presentationManager.dispose();
@@ -107,7 +108,7 @@ export class Presentation {
   }
 
   /**
-   * Get the singleton [[SelectionManager]]
+   * The singleton [[SelectionManager]]. The setter for this property is for internal use only.
    */
   public static get selection(): SelectionManager {
     if (!selectionManager)
@@ -115,13 +116,12 @@ export class Presentation {
     return selectionManager;
   }
 
-  /** @internal */
   public static set selection(value: SelectionManager) {
     selectionManager = value;
   }
 
   /**
-   * Get the singleton [[FavoritePropertiesManager]]
+   * The singleton [[FavoritePropertiesManager]]. The setter for this property is for internal use only.
    * @beta
    */
   public static get favoriteProperties(): FavoritePropertiesManager {
@@ -130,14 +130,14 @@ export class Presentation {
     return favoritePropertiesManager;
   }
 
-  /** @internal */
   public static set favoriteProperties(value: FavoritePropertiesManager) {
     favoritePropertiesManager = value;
   }
 
   /**
-   * Get localization manager used by Presentation frontend.
+   * The localization manager used by Presentation frontend.
    * Returns the result of `IModelApp.i18n`.
+   * The setter for this property is for internal use only.
    */
   public static get i18n(): I18N {
     if (!i18n)
@@ -145,7 +145,6 @@ export class Presentation {
     return i18n;
   }
 
-  /** @internal */
   public static set i18n(value: I18N) {
     i18n = value;
   }

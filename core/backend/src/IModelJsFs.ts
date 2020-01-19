@@ -5,7 +5,9 @@
 // this is the nodejs-specific implementation of the IModelJsFs pseudo-interface.
 // On mobile platforms, this file is not included. Instead, the iModel.js host app implements IModelJsFs in native code and projects it into JavaScript.
 
-/** @module Portability */
+/** @packageDocumentation
+ * @module Portability
+ */
 
 import * as fs from "fs-extra";
 

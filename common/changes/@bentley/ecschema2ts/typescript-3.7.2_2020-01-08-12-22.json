@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema2ts",
+      "comment": "Upgrade to TypeScript 3.7.2.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema2ts",
+  "email": "Paul.Connelly@bentley.com"
+}

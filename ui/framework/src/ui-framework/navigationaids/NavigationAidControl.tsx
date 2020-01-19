@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module NavigationAids */
+/** @packageDocumentation
+ * @module NavigationAids
+ */
 
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -32,9 +34,8 @@ export class NavigationAidControl extends ConfigurableUiControl {
     super(info, options);
   }
 
-  /** Gets the React element associated with this control */
+  /** The React element associated with this control */
   public get reactElement(): React.ReactNode { return this._reactElement; }
-  /** Sets the React element associated with this control */
   public set reactElement(r: React.ReactNode) { this._reactElement = r; }
 
   /** Default size is "64px". Override to set a different size. */

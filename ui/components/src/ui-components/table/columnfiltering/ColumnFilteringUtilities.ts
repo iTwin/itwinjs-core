@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Table  */
+/** @packageDocumentation
+ * @module Table
+ */
 
 import { PropertyValueFormat, PropertyRecord, Primitives } from "@bentley/imodeljs-frontend";
 import { RowItem, CellItem } from "../TableDataProvider";

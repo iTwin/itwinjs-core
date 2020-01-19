@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 
 /** Support class for quadrature -- approximate integrals by summing weighted function values.
  * These are filled with x and weight for quadrature between xA and xB

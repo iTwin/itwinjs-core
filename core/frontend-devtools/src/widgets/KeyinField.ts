@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Widgets */
+/** @packageDocumentation
+ * @module Widgets
+ */
 
 import { ToolType, IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
 import { createButton } from "../ui/Button";

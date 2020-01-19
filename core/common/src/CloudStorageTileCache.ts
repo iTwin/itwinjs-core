@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module CloudStorage */
+/** @packageDocumentation
+ * @module CloudStorage
+ */
 
 import { IModelToken } from "./IModel";
 import { CloudStorageCache, CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider } from "./CloudStorage";

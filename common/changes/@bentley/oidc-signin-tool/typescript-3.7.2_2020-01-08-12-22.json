@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/oidc-signin-tool",
+      "comment": "Upgrade to TypeScript 3.7.2.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/oidc-signin-tool",
+  "email": "Paul.Connelly@bentley.com"
+}

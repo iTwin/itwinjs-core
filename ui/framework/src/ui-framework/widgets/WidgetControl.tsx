@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Widget */
+/** @packageDocumentation
+ * @module Widget
+ */
 
 import * as React from "react";
 import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
@@ -19,14 +21,12 @@ export class WidgetControl extends ConfigurableUiControl {
     super(info, options);
   }
 
-  /** Gets the React element associated with this control */
+  /** The React element associated with this control */
   public get reactElement(): React.ReactNode { return this._reactElement; }
-  /** Sets the React element associated with this control */
   public set reactElement(r: React.ReactNode) { this._reactElement = r; }
 
-  /** Gets the [[WidgetDef]] associated with this control */
+  /** The [[WidgetDef]] associated with this control */
   public get widgetDef(): WidgetDef { return this._widgetDef; }
-  /** Sets the [[WidgetDef]] associated with this control */
   public set widgetDef(w: WidgetDef) { this._widgetDef = w; }
 
   /** Gets the type of ConfigurableUiControl, which is 'Widget' in this case */

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utilities */
+/** @packageDocumentation
+ * @module Utilities
+ */
 
 import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 

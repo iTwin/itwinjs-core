@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module StatusBar */
+/** @packageDocumentation
+ * @module StatusBar
+ */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { CommonStatusBarItem, StatusBarItemId } from "./StatusBarItem";
@@ -44,7 +46,6 @@ export class StatusBarItemsManager {
     return this._items;
   }
 
-  /** @internal */
   public set items(items: ReadonlyArray<CommonStatusBarItem>) {
     if (this._items === items)
       return;

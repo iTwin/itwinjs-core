@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 
 /**
  * Type of method to unlock the held mutex

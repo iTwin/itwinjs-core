@@ -130,7 +130,7 @@
     "tslint-loader": "^3.6.0",
     "tsutils": "^3.6.0",
     "typemoq": "^2.1.0",
-    "typescript": "~3.6.2",
+    "typescript": "~3.7.4",
     "url-loader": "^1.0.1",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.0",

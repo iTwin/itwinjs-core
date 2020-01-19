@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
 import * as sinon from "sinon";
 
 // tslint:disable: completed-docs
@@ -13,6 +12,19 @@ export const createRect = (left: number, top: number, right: number, bottom: num
   bottom,
   width: right - left,
   height: bottom - top,
+});
+
+// tslint:disable: completed-docs
+export const createBoundingClientRect = (left: number, top: number, right: number, bottom: number): DOMRect => ({
+  left,
+  top,
+  right,
+  bottom,
+  width: right - left,
+  height: bottom - top,
+  x: left,
+  y: top,
+  toJSON: () => "",
 });
 
 // tslint:disable: completed-docs
@@ -47,6 +59,12 @@ export interface ResizeObserverMock extends ResizeObserver {
   readonly callback: ResizeObserverCallback;
 }
 
+declare module "sinon" {
+  interface SinonStubStatic {
+    // tslint:disable-next-line: callable-types
+    <T extends (...args: any) => any>(): sinon.SinonStub<Parameters<T>, ReturnType<T>>;
+  }
+}
+
 export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
 export type SinonStub<T extends (...args: any) => any> = sinon.SinonStub<Parameters<T>, ReturnType<T>>;
-export type CreateRefStub<T = unknown> = sinon.SinonStub<Parameters<typeof React.createRef>, React.RefObject<T>>;

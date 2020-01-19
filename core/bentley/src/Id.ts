@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Ids */
+/** @packageDocumentation
+ * @module Ids
+ */
 
 /** A string containing a well-formed string representation of an [Id64]($bentleyjs-core).
  * See [Working with Ids]($docs/learning/common/Id64.md).

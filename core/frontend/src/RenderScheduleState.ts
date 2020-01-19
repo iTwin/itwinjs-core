@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import { RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
 import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";

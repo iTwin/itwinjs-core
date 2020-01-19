@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel, Npc, ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, Matrix3d, Transform, Arc3d, AngleSweep } from "@bentley/geometry-core";

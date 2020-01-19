@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { Geometry, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { Order2Bezier } from "../numerics/BezierPolynomials";

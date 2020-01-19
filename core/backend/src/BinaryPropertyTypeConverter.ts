@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Helper */
+/** @packageDocumentation
+ * @module Helper
+ */
 /** Convert base64 type property values to Uint8Array and vice vera.
  * @internal
  */

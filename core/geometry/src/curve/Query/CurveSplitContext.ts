@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { CurveLocationDetailPair, CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";

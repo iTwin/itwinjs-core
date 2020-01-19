@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ToolSettings */
+/** @packageDocumentation
+ * @module ToolSettings
+ */
 
 import { UiEvent } from "@bentley/ui-core";
 import { IModelApp, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, InteractiveTool } from "@bentley/imodeljs-frontend";
@@ -105,16 +107,14 @@ export class ToolUiManager {
     return [];
   }
 
-  /** Returns true if the Tool Settings are to be auto populated from the toolSettingsProperties. */
+  /** Returns true if the Tool Settings are to be auto populated from the toolSettingsProperties.
+   * The setter is chiefly for testing.
+   */
   public static get useDefaultToolSettingsProvider(): boolean { return ToolUiManager._useDefaultToolSettingsProvider; }
-
-  /** @internal for use only by testing  */
   public static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean) { ToolUiManager._useDefaultToolSettingsProvider = useDefaultToolSettings; }
 
-  /** Returns the name label of the active tool. */
+  /** The name of the active tool. This is typically the flyover text specified for the tool. */
   public static get activeToolLabel(): string { return ToolUiManager._activeToolLabel; }
-
-  /** Set the name of the active tool. This is typically the flyover text specified for the Tool. */
   public static set activeToolLabel(label: string) { ToolUiManager._activeToolLabel = label; }
 
   /** Returns the description of the active tool. */

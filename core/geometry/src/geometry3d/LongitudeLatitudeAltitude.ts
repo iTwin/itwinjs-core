@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { Angle } from "./Angle";
 import { BeJSONFunctions, Geometry } from "../Geometry";
@@ -37,10 +39,8 @@ export class LongitudeLatitudeNumber implements BeJSONFunctions {
   /** (property getter) (clone of)  latitude as a strongly typed `Angle` */
   public get latitude(): Angle { return this._latitude.clone(); }
 
-  /** (property getter) altitude */
+  /** Get or set the altitude. */
   public get altitude(): number { return this._altitude; }
-
-  /** (property setter) altitude */
   public set altitude(value: number) { this._altitude = value; }
   /** Constructor: Capture angles and altitude */
   private constructor(longitude: Angle, latitude: Angle, altitude: number) {

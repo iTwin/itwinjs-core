@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { dispose } from "@bentley/bentleyjs-core";
 import { QParams2d, QParams3d } from "@bentley/imodeljs-common";

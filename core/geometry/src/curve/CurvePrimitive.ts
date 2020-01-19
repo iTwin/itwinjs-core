@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { StrokeOptions } from "./StrokeOptions";
 import { Order2Bezier } from "../numerics/BezierPolynomials";

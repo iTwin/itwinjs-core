@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 
 import { Geometry } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";

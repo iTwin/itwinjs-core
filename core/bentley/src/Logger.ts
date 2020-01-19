@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Logging */
+/** @packageDocumentation
+ * @module Logging
+ */
 
 import { GetMetaDataFunction, IModelStatus, BentleyError } from "./BentleyError";
 import { IDisposable } from "./Disposable";
@@ -106,7 +108,6 @@ export class Logger {
     }
   }
 
-  /** Should the callstack be included when an exception is logged?  */
   public static set logExceptionCallstacks(b: boolean) {
     Logger._logExceptionCallstacks = b;
   }

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Cursor */
+/** @packageDocumentation
+ * @module Cursor
+ */
 
 import { RelativePosition } from "@bentley/ui-abstract";
 import { UiEvent, Point, PointProps } from "@bentley/ui-core";
@@ -55,10 +57,10 @@ export class CursorInformation {
 
   private static _cursorDirections = new Array<CursorDirection>();
 
-  /** Sets the cursor position. */
-  public static set cursorPosition(pt: PointProps) { this._cursorPosition = Point.create(pt); }
-  /** Gets the cursor position. */
+  /** The cursor position. */
   public static get cursorPosition(): PointProps { return this._cursorPosition; }
+  public static set cursorPosition(pt: PointProps) { this._cursorPosition = Point.create(pt); }
+
   /** Gets the cursor X position. */
   public static get cursorX(): number { return this._cursorPosition.x; }
   /** Gets the cursor Y position. */

@@ -218,7 +218,7 @@ describe("useBackstageItems", () => {
   };
 
   it("should return backstage items", () => {
-    const spy = sinon.spy() as sinon.SinonSpy<[ReturnType<typeof useBackstageItems>]>;
+    const spy = sinon.stub<[ReturnType<typeof useBackstageItems>]>();
     const manager = new BackstageItemsManager();
     manager.items = [
       getActionItem(),
@@ -244,7 +244,7 @@ describe("useBackstageItems", () => {
   });
 
   it("should update items", () => {
-    const spy = sinon.spy() as sinon.SinonSpy<[ReturnType<typeof useBackstageItems>]>;
+    const spy = sinon.stub<[ReturnType<typeof useBackstageItems>]>();
     const manager = new BackstageItemsManager();
     manager.items = [
       getActionItem(),

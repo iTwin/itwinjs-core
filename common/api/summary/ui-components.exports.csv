@@ -156,8 +156,8 @@ public;IPropertyDataProvider
 public;IPropertyValueRenderer
 public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
 public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
-public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is Promise
-public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is ImmediatelyLoadedTreeNodeItem[]
+public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is TreeDataProviderPromise
+public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is TreeDataProviderRaw
 beta;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
 beta;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
 beta;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode

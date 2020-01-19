@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Symbology */
+/** @packageDocumentation
+ * @module Symbology
+ */
 
 import { Vector3d, XYZProps, YawPitchRollProps, YawPitchRollAngles, Transform } from "@bentley/geometry-core";
 import { Id64String } from "@bentley/bentleyjs-core";

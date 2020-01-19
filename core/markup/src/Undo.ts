@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module MarkupTools */
+/** @packageDocumentation
+ * @module MarkupTools
+ */
 
 import { assert } from "@bentley/bentleyjs-core";
 import { Element as MarkupElement } from "@svgdotjs/svg.js";

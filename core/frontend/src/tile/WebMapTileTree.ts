@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tile
+ */
 
 /// cSpell:ignore quadkey
 
@@ -238,7 +240,14 @@ class WebMapDrawArgs extends Tile.DrawArgs {
 
 /** @internal */
 export class WebMapTileLoader extends MapTileLoaderBase {
-  public set geometryAttributionProvider(provider: MapTileGeometryAttributionProvider) { if (this._imageryProvider) this._imageryProvider.geometryAttributionProvider = provider; }
+  public get geometryAttributionProvider(): MapTileGeometryAttributionProvider | undefined {
+    return undefined !== this._imageryProvider ? this._imageryProvider.geometryAttributionProvider : undefined;
+  }
+  public set geometryAttributionProvider(provider: MapTileGeometryAttributionProvider | undefined) {
+    if (this._imageryProvider)
+      this._imageryProvider.geometryAttributionProvider = provider;
+  }
+
   public get parentsAndChildrenExclusive(): boolean { return false; }     // Allow map tiles to draw both parent and children -- this will cause these to be displayed with parents first.
   public get imageryProvider(): ImageryProvider {
     return this._imageryProvider;

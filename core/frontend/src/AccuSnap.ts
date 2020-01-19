@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module LocatingElements */
+/** @packageDocumentation
+ * @module LocatingElements
+ */
 
 import { Point3d, Point2d, XAndY, Vector3d, CurveCurve, CurvePrimitive, GeometryQuery, IModelJson as GeomJson } from "@bentley/geometry-core";
 import { Viewport, ScreenViewport } from "./Viewport";

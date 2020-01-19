@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { ClipPrimitive, ClipMaskXYZRangePlanes, ClipShape } from "./ClipPrimitive";
 import { ClipPlaneContainment } from "./ClipUtils";

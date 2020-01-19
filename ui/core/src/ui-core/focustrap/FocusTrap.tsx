@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Popup */
+/** @packageDocumentation
+ * @module Popup
+ */
 
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";

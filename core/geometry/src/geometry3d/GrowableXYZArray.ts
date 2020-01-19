@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module ArraysAndInterfaces */
+/** @packageDocumentation
+ * @module ArraysAndInterfaces
+ */
 
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { XYAndZ } from "./XYZProps";
@@ -41,12 +43,9 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     this._xyzInUse = 0;
     this._xyzCapacity = numPoints;
   }
-  /** Return the number of points in use. */
-  public get length() { return this._xyzInUse; }
 
-  /** Set number of points.
-   * Pad zeros if length grows.
-   */
+  /** The number of points in use. When the length is increased, the array is padded with zeroes. */
+  public get length() { return this._xyzInUse; }
   public set length(newLength: number) {
     let oldLength = this.length;
     if (newLength < oldLength) {

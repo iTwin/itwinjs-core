@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Core */
+/** @packageDocumentation
+ * @module Core
+ */
 
 import * as React from "react";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";

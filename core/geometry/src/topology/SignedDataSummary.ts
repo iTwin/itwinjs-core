@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 /**
  * Class to accumulate statistics about a stream of signed numbers with tag items.
  * * All sums, counts, extrema, and item values are initialized to zero in the constructor.

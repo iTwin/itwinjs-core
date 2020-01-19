@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module IModelHost */
+/** @packageDocumentation
+ * @module IModelHost
+ */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Guid, GuidString, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext, Config, IAuthorizationClient, IModelClient, UrlDiscoveryClient, UserInfo } from "@bentley/imodeljs-clients";

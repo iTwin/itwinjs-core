@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module AccuDraw */
+/** @packageDocumentation
+ * @module AccuDraw
+ */
 import { IModelApp } from "./IModelApp";
 import {
   Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive,

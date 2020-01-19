@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Polyface */
+/** @packageDocumentation
+ * @module Polyface
+ */
 
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -65,7 +67,6 @@ export class PolyfaceData {
   private _twoSided: boolean;
   /** boolean tag indicating if the facets are viewable from the back */
   public get twoSided(): boolean { return this._twoSided; }
-  /** boolean tag indicating if the facets are viewable from the back */
   public set twoSided(value: boolean) { this._twoSided = value; }
   /** Constructor for facets.  The various params control whether respective arrays are to be allocated. */
   public constructor(needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false) {

@@ -45,7 +45,7 @@ export class Presentation {
     static getManager(clientId?: string): PresentationManager;
     static getRequestTimeout(): number;
     static initialize(props?: PresentationProps): void;
-    static readonly initProps: PresentationProps | undefined;
+    static get initProps(): PresentationProps | undefined;
     static terminate(): void;
 }
 
@@ -82,7 +82,7 @@ export class PresentationManager {
     getSelectionScopes(requestContext: ClientRequestContext, requestOptions: SelectionScopeRequestOptions<IModelDb>): Promise<SelectionScope[]>;
     // @beta
     loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void>;
-    readonly props: PresentationManagerProps;
+    get props(): PresentationManagerProps;
     rulesets(): RulesetManager;
     vars(rulesetId: string): RulesetVariablesManager;
 }

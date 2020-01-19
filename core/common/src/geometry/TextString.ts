@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Geometry */
+/** @packageDocumentation
+ * @module Geometry
+ */
 
 import { XYZProps, Point3d, YawPitchRollAngles, YawPitchRollProps, Transform, Vector3d } from "@bentley/geometry-core";
 

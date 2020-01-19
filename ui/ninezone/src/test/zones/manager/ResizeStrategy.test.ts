@@ -16,10 +16,14 @@ const zonesManagerMock = Moq.Mock.ofType<ZonesManager>();
 const zonesManagerPropsMock = Moq.Mock.ofType<ZonesManagerProps>();
 const zonesMock = Moq.Mock.ofType<ZonesManagerProps["zones"]>();
 const widgetsMock = Moq.Mock.ofType<ZonesManagerProps["widgets"]>();
-let getMaxResizeStub: sinon.SinonStub | undefined;
+
+const sandbox = sinon.createSandbox();
+
+afterEach(() => {
+  sandbox.restore();
+});
 
 beforeEach(() => {
-  getMaxResizeStub && getMaxResizeStub.restore();
   zonesManagerMock.reset();
   zonesManagerPropsMock.reset();
   zonesMock.reset();
@@ -330,7 +334,7 @@ describe("GrowLeft", () => {
     zone.setup((x) => x.floating).returns(() => undefined);
     zone.setup((x) => x.bounds).returns(() => new Rectangle(80));
     widget.setup((x) => x.horizontalAnchor).returns(() => HorizontalAnchor.Right);
-    getMaxResizeStub = sinon.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
+    sandbox.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
     zonesManagerMock.setup((x) => x.getInitialBounds(6, Moq.It.isAny())).returns(() => new Rectangle(50));
 
     const sut = new GrowLeft(zonesManagerMock.object);
@@ -339,7 +343,7 @@ describe("GrowLeft", () => {
   });
 
   it("should resize zone over initial bounds", () => {
-    getMaxResizeStub = sinon.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
+    sandbox.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
     const sut = new GrowLeft(zonesManagerMock.object);
     const maxResize = sut.getMaxResize(6, zonesManagerPropsMock.object);
     maxResize.should.eq(50);
@@ -399,7 +403,7 @@ describe("GrowRight", () => {
     zone.setup((x) => x.floating).returns(() => undefined);
     zone.setup((x) => x.bounds).returns(() => new Rectangle(0, 0, 20));
     widget.setup((x) => x.horizontalAnchor).returns(() => HorizontalAnchor.Left);
-    getMaxResizeStub = sinon.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
+    sandbox.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
     zonesManagerMock.setup((x) => x.getInitialBounds(4, Moq.It.isAny())).returns(() => new Rectangle(0, 0, 50));
 
     const sut = new GrowRight(zonesManagerMock.object);
@@ -408,7 +412,7 @@ describe("GrowRight", () => {
   });
 
   it("should resize zone over initial bounds", () => {
-    getMaxResizeStub = sinon.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
+    sandbox.stub(GrowStrategy.prototype, "getMaxResize").returns(50);
     const sut = new GrowRight(zonesManagerMock.object);
     const maxResize = sut.getMaxResize(4, zonesManagerPropsMock.object);
     maxResize.should.eq(50);

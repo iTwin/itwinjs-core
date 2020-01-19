@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry, Constant, Arc3d, AngleSweep, Plane3dByOriginAndUnitNormal, XAndY } from "@bentley/geometry-core";
 import { ColorDef, Frustum, Npc, NpcCenter, LinePixels } from "@bentley/imodeljs-common";

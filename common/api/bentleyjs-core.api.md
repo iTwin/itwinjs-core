@@ -9,7 +9,7 @@ export class AbandonedError extends Error {
 }
 
 // @beta
-export function assert(condition: boolean, msg?: string): void;
+export function assert(condition: boolean, msg?: string): asserts condition;
 
 // @alpha
 export class AsyncMutex {
@@ -37,15 +37,15 @@ export class BeDuration {
     executeAfter<T>(fn: (...args: any[]) => T, scope?: any, ...args: any[]): Promise<T>;
     static fromMilliseconds(milliseconds: number): BeDuration;
     static fromSeconds(seconds: number): BeDuration;
-    readonly isTowardsFuture: boolean;
-    readonly isTowardsPast: boolean;
-    readonly isZero: boolean;
-    readonly milliseconds: number;
+    get isTowardsFuture(): boolean;
+    get isTowardsPast(): boolean;
+    get isZero(): boolean;
+    get milliseconds(): number;
     minus(other: BeDuration): BeDuration;
     plus(other: BeDuration): BeDuration;
     static race<T>(ms: number, promise: PromiseLike<T>): Promise<T | void>;
     // (undocumented)
-    readonly seconds: number;
+    get seconds(): number;
     static wait(ms: number): Promise<void>;
     wait(): Promise<void>;
 }
@@ -56,7 +56,7 @@ export class BeEvent<T extends Listener> {
     addOnce(listener: T, scope?: any): () => void;
     clear(): void;
     has(listener: T, scope?: any): boolean;
-    readonly numberOfListeners: number;
+    get numberOfListeners(): number;
     raiseEvent(...args: any[]): void;
     removeListener(listener: T, scope?: any): boolean;
 }
@@ -73,7 +73,7 @@ export class BentleyError extends Error {
     // (undocumented)
     errorNumber: number;
     getMetaData(): any;
-    readonly hasMetaData: boolean;
+    get hasMetaData(): boolean;
     protected _initName(): string;
 }
 
@@ -96,9 +96,9 @@ export class BeTimePoint {
     before(other: BeTimePoint): boolean;
     static beforeNow(val: BeDuration): BeTimePoint;
     static fromNow(val: BeDuration): BeTimePoint;
-    readonly isInFuture: boolean;
-    readonly isInPast: boolean;
-    readonly milliseconds: number;
+    get isInFuture(): boolean;
+    get isInPast(): boolean;
+    get milliseconds(): number;
     minus(duration: BeDuration): BeTimePoint;
     static now(): BeTimePoint;
     plus(duration: BeDuration): BeTimePoint;
@@ -136,20 +136,21 @@ export class ByteStream {
         byteLength: number;
     });
     advance(numBytes: number): boolean;
-    readonly arrayBuffer: ArrayBuffer | SharedArrayBuffer;
-    curPos: number;
-    readonly isPastTheEnd: boolean;
-    readonly length: number;
+    get arrayBuffer(): ArrayBuffer | SharedArrayBuffer;
+    get curPos(): number;
+    set curPos(pos: number);
+    get isPastTheEnd(): boolean;
+    get length(): number;
     nextBytes(numBytes: number): Uint8Array;
-    readonly nextFloat32: number;
-    readonly nextFloat64: number;
-    readonly nextId64: Id64String;
-    readonly nextInt32: number;
-    readonly nextUint16: number;
-    readonly nextUint32: number;
+    get nextFloat32(): number;
+    get nextFloat64(): number;
+    get nextId64(): Id64String;
+    get nextInt32(): number;
+    get nextUint16(): number;
+    get nextUint32(): number;
     // (undocumented)
     nextUint32s(numUint32s: number): Uint32Array;
-    readonly nextUint8: number;
+    get nextUint8(): number;
     readBytes(readPos: number, numBytes: number): Uint8Array;
     reset(): void;
     rewind(numBytes: number): boolean;
@@ -202,7 +203,7 @@ export class ClientRequestContext implements ClientRequestContextProps {
     readonly activityId: GuidString;
     readonly applicationId: string;
     readonly applicationVersion: string;
-    static readonly current: ClientRequestContext;
+    static get current(): ClientRequestContext;
     // (undocumented)
     protected static _current: ClientRequestContext;
     enter(): this;
@@ -210,7 +211,8 @@ export class ClientRequestContext implements ClientRequestContextProps {
     // @internal (undocumented)
     toJSON(): ClientRequestContextProps;
     // (undocumented)
-    useContextForRpc: boolean;
+    get useContextForRpc(): boolean;
+    set useContextForRpc(value: boolean);
     }
 
 // @public
@@ -424,7 +426,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
         equal: boolean;
     };
     set(key: K, value: V): void;
-    readonly size: number;
+    get size(): number;
     // (undocumented)
     protected _values: V[];
 }
@@ -546,12 +548,12 @@ export namespace Id64 {
         forEach(func: (lo: number, hi: number, value: T) => void): void;
         get(low: number, high: number): T | undefined;
         getById(id: Id64String): T | undefined;
-        readonly isEmpty: boolean;
+        get isEmpty(): boolean;
         // (undocumented)
         protected readonly _map: Map<number, Map<number, T>>;
         set(low: number, high: number, value: T): void;
         setById(id: Id64String, value: T): void;
-        readonly size: number;
+        get size(): number;
     }
     export interface Uint32Pair {
         lower: number;
@@ -569,10 +571,10 @@ export namespace Id64 {
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
-        readonly isEmpty: boolean;
+        get isEmpty(): boolean;
         // (undocumented)
         protected readonly _map: Map<number, Set<number>>;
-        readonly size: number;
+        get size(): number;
         toId64Array(): Id64Array;
         toId64Set(): Id64Set;
     }
@@ -874,9 +876,9 @@ export class IndexMap<T> {
     protected readonly _compareValues: OrderedComparator<T>;
     indexOf(value: T): number;
     insert(value: T, onInsert?: (value: T) => any): number;
-    readonly isEmpty: boolean;
-    readonly isFull: boolean;
-    readonly length: number;
+    get isEmpty(): boolean;
+    get isFull(): boolean;
+    get length(): number;
     // (undocumented)
     protected lowerBound(value: T): {
         index: number;
@@ -921,7 +923,8 @@ export class Logger {
     static isEnabled(category: string, level: LogLevel): boolean;
     static logError(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static logException(category: string, err: Error, log?: LogFunction, metaData?: GetMetaDataFunction): void;
-    static logExceptionCallstacks: boolean;
+    static set logExceptionCallstacks(b: boolean);
+    static get logExceptionCallstacks(): boolean;
     static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static logTrace(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static logWarning(category: string, message: string, metaData?: GetMetaDataFunction): void;
@@ -1054,11 +1057,11 @@ export class PriorityQueue<T> implements Iterable<T> {
     protected readonly _clone: CloneFunction<T>;
     // (undocumented)
     protected readonly _compare: OrderedComparator<T>;
-    readonly front: T | undefined;
+    get front(): T | undefined;
     // (undocumented)
     protected _heapify(index: number): void;
-    readonly isEmpty: boolean;
-    readonly length: number;
+    get isEmpty(): boolean;
+    get length(): number;
     protected _peek(index: number): T | undefined;
     pop(): T | undefined;
     protected _pop(index: number): T | undefined;
@@ -1136,8 +1139,8 @@ export class SortedArray<T> implements Iterable<T> {
     get(index: number): T | undefined;
     indexOf(value: T): number;
     insert(value: T, onInsert?: (value: T) => any): number;
-    readonly isEmpty: boolean;
-    readonly length: number;
+    get isEmpty(): boolean;
+    get length(): number;
     protected lowerBound(value: T): {
         index: number;
         equal: boolean;
@@ -1156,12 +1159,12 @@ export interface StatusCodeWithMessage<ErrorCodeType> {
 // @public
 export class StopWatch {
     constructor(description?: string | undefined, startImmediately?: boolean);
-    readonly current: BeDuration;
-    readonly currentSeconds: number;
+    get current(): BeDuration;
+    get currentSeconds(): number;
     // (undocumented)
     description?: string | undefined;
-    readonly elapsed: BeDuration;
-    readonly elapsedSeconds: number;
+    get elapsed(): BeDuration;
+    get elapsedSeconds(): number;
     reset(): void;
     start(): void;
     stop(): BeDuration;
@@ -1169,7 +1172,7 @@ export class StopWatch {
 
 // @public
 export class TransientIdSequence {
-    readonly next: Id64String;
+    get next(): Id64String;
 }
 
 // @public

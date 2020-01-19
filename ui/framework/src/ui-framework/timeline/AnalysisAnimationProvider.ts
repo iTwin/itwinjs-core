@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Timeline */
+/** @packageDocumentation
+ * @module Timeline
+ */
 
 import { BaseTimelineDataProvider, PlaybackSettings } from "@bentley/ui-components";
 import { ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";

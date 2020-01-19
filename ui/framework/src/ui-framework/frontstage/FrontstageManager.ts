@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Frontstage */
+/** @packageDocumentation
+ * @module Frontstage
+ */
 
 import * as React from "react";
 import { UiEvent } from "@bentley/ui-core";
@@ -176,6 +178,7 @@ export class FrontstageManager {
   }
 
   /** @internal */
+  public static get isInitialized(): boolean { return FrontstageManager._initialized; }
   public static set isInitialized(v: boolean) { FrontstageManager._initialized = v; }
 
   /** Returns true if Frontstage is loading its controls. If false the Frontstage content and controls have been created. */

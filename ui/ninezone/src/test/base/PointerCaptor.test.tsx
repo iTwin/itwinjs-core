@@ -7,7 +7,6 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { PointerCaptor, usePointerCaptor } from "../../ui-ninezone";
-import { SinonSpy } from "../Utils";
 
 describe("<PointerCaptor />", () => {
   it("should render", () => {
@@ -61,7 +60,7 @@ describe("<PointerCaptor />", () => {
 
 describe("usePointerCaptor", () => {
   it("should call onPointerDown", () => {
-    const spy = sinon.spy() as SinonSpy<NonNullable<Parameters<typeof usePointerCaptor>[0]>>;
+    const spy = sinon.spy(); // as SinonSpy<NonNullable<Parameters<typeof usePointerCaptor>[0]>>;
     const { result } = renderHook(() => usePointerCaptor(spy));
     const captured = document.createElement("div");
     act(() => {
@@ -90,7 +89,7 @@ describe("usePointerCaptor", () => {
   });
 
   it("should call onPointerMove", () => {
-    const spy = sinon.spy() as SinonSpy<NonNullable<Parameters<typeof usePointerCaptor>[1]>>;
+    const spy = sinon.spy(); // as SinonSpy<NonNullable<Parameters<typeof usePointerCaptor>[1]>>;
     const { result } = renderHook(() => usePointerCaptor(undefined, spy));
     const captured = document.createElement("div");
     act(() => {
@@ -109,7 +108,7 @@ describe("usePointerCaptor", () => {
   });
 
   it("should call onPointerUp", () => {
-    const spy = sinon.spy() as SinonSpy<NonNullable<Parameters<typeof usePointerCaptor>[2]>>;
+    const spy = sinon.spy(); // as SinonSpy<NonNullable<Parameters<typeof usePointerCaptor>[2]>>;
     const { result } = renderHook(() => usePointerCaptor(undefined, undefined, spy));
     const captured = document.createElement("div");
     act(() => {

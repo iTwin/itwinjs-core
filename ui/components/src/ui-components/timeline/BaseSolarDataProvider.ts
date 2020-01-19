@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Timeline */
+/** @packageDocumentation
+ * @module Timeline
+ */
 
 import { Cartographic, ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import { Point3d, Angle } from "@bentley/geometry-core";

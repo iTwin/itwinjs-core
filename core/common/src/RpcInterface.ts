@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";

@@ -1022,7 +1022,7 @@ export interface OverflowProps extends ExpandableItemProps {
 // @alpha
 export class Panel extends React.PureComponent<PanelProps> {
     // @deprecated
-    static readonly isPanelOpen: boolean;
+    static get isPanelOpen(): boolean;
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1298,11 +1298,14 @@ export class StagePanel extends React.PureComponent<StagePanelProps> {
 // @beta
 export class StagePanelManager {
     // (undocumented)
-    collapseOffset: number;
+    get collapseOffset(): number;
+    set collapseOffset(offset: number);
     // (undocumented)
-    maxSize: number;
+    get maxSize(): number;
+    set maxSize(size: number);
     // (undocumented)
-    minSize: number;
+    get minSize(): number;
+    set minSize(size: number);
     // (undocumented)
     resize<TProps extends StagePanelManagerProps>(resizeBy: number, props: TProps): TProps;
     // (undocumented)
@@ -2097,7 +2100,7 @@ export class ZonesManager {
     // @internal (undocumented)
     canBeMergedTo(zoneId: WidgetZoneId, targetZoneId: WidgetZoneId, props: ZonesManagerProps): boolean;
     // @internal (undocumented)
-    readonly draggedWidgetManager: DraggedWidgetManager;
+    get draggedWidgetManager(): DraggedWidgetManager;
     // (undocumented)
     findZoneWithWidget(widgetId: WidgetZoneId, props: ZonesManagerProps): ZoneManagerProps | undefined;
     // (undocumented)

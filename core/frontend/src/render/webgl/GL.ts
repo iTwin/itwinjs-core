@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 if (typeof (WebGLRenderingContext) === "undefined") {
   (global as any).WebGLRenderingContext = new Proxy({}, { get: () => 0 });

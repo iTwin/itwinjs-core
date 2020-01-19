@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module State */
+/** @packageDocumentation
+ * @module State
+ */
 
 // The following definitions are causing extract-api issues on linux so for now just using any until we can figure out the issue.
 // import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";

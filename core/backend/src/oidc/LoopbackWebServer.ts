@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 // Code based on the blog article @ https://authguidance.com
 
-/** @module Authentication */
+/** @packageDocumentation
+ * @module Authentication
+ */
 
 import { AuthorizationErrorJson, AuthorizationResponseJson } from "@openid/appauth";
 import * as Http from "http";

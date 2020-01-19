@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { Subject } from "rxjs/internal/Subject";
 import { from } from "rxjs/internal/observable/from";

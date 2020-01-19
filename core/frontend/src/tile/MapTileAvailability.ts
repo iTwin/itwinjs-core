@@ -8,7 +8,9 @@ import { Cartographic } from "@bentley/imodeljs-common";
 import { SortedArray } from "@bentley/bentleyjs-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tile
+ */
 
 /** @internal */
 class RectangleWithLevel extends MapTileRectangle {

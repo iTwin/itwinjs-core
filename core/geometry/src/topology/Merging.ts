@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 
 import { Geometry } from "../Geometry";
 import { LineSegment3d } from "../curve/LineSegment3d";

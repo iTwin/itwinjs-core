@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Polyface */
+/** @packageDocumentation
+ * @module Polyface
+ */
 
 // import { Point2d } from "./Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty*/
@@ -43,9 +45,8 @@ export abstract class Polyface extends GeometryQuery {
   }
   /** create and return a visitor for this concrete polyface. */
   public abstract createVisitor(_numWrap: number): PolyfaceVisitor;
-  /** Return the flag indicating if the mesh display must assume both sides are visible. */
+  /** Flag indicating if the mesh display must assume both sides are visible. */
   public get twoSided() { return this.data.twoSided; }
-  /** set the flag indicating if the mesh display must assume both sides are visible. */
   public set twoSided(value: boolean) { this.data.twoSided = value; }
   /**
      * Check validity of indices into a data array.

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/hypermodeling-plugin",
+      "comment": "Upgrade to TypeScript 3.7.2.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/hypermodeling-plugin",
+  "email": "Upgrade to TypeScript 3.7.2."
+}

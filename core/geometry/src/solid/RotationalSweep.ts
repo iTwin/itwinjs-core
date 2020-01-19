@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Solid */
+/** @packageDocumentation
+ * @module Solid
+ */
 
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";

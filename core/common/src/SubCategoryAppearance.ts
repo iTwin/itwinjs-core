@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Symbology */
+/** @packageDocumentation
+ * @module Symbology
+ */
 
 import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";

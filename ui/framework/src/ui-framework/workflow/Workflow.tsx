@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WorkflowTask */
+/** @packageDocumentation
+ * @module WorkflowTask
+ */
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiEvent } from "@bentley/ui-core";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { Tool } from "./Tool";
 import { PluginAdmin, PluginLoadResults, Plugin } from "../plugin/Plugin";

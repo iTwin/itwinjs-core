@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import { Logger, ObservableSet } from "@bentley/bentleyjs-core";
 import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@bentley/geometry-core";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModelHubClient */
+/** @packageDocumentation
+ * @module iModelHubClient
+ */
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { DefaultWsgRequestOptionsProvider, WsgClient, WsgRequestOptions } from "../WsgClient";
 import { RequestOptions, RequestQueryOptions } from "../Request";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { Range2d, Range3d, Point2d, Point3d } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";

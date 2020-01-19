@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Core */
+/** @packageDocumentation
+ * @module Core
+ */
 
 import { DisposeFunc, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";

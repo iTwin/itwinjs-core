@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { base64StringToUint8Array, dispose, disposeArray, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY } from "@bentley/geometry-core";

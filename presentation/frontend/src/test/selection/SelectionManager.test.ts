@@ -780,7 +780,7 @@ describe("SelectionManager", () => {
 
   describe("getHiliteSet", () => {
 
-    let factory: sinon.SinonStub;
+    let factory: sinon.SinonStub<[IModelConnection], HiliteSetProvider>;
 
     beforeEach(() => {
       const providerMock = moq.Mock.ofType<HiliteSetProvider>();

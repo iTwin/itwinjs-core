@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { useState, useEffect, useCallback } from "react";
 import { TreeModelSource, createDefaultNodeLoadHandler } from "./TreeModelSource";

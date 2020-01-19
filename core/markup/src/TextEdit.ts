@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module MarkupTools */
+/** @packageDocumentation
+ * @module MarkupTools
+ */
 
 import { BeButtonEvent, EventHandled, InputSource, ToolAssistance, IModelApp, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection, CoreTools } from "@bentley/imodeljs-frontend";
 import { G, Text as MarkupText } from "@svgdotjs/svg.js";

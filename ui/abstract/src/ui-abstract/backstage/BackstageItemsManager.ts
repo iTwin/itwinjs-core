@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Backstage */
+/** @packageDocumentation
+ * @module Backstage
+ */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { BackstageItem } from "./BackstageItem";
@@ -36,7 +38,6 @@ export class BackstageItemsManager {
     return this._items;
   }
 
-  /** @internal */
   public set items(items: ReadonlyArray<BackstageItem>) {
     if (this._items === items)
       return;

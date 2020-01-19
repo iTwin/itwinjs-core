@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utilities */
+/** @packageDocumentation
+ * @module Utilities
+ */
 
 /** Signature for [[Timer]] execute callback.
  * @public
@@ -32,13 +34,11 @@ export class Timer {
   }
 
   /** Time interval in milliseconds after which handler will be notified. */
-  public set delay(ms: number) {
-    this._delay = ms;
-  }
-
-  /** Time interval in milliseconds after which handler will be notified. */
   public get delay() {
     return this._delay;
+  }
+  public set delay(ms: number) {
+    this._delay = ms;
   }
 
   /** Set handler that is called after a set interval. */

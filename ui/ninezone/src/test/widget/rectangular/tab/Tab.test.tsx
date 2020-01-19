@@ -6,17 +6,17 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { PointProps } from "@bentley/ui-core";
-import { createRect, createPointerEvent } from "../../../Utils";
+import { createBoundingClientRect, createPointerEvent } from "../../../Utils";
 import { HorizontalAnchor, Tab, TabMode, TabModeHelpers } from "../../../../ui-ninezone";
 import { PointerCaptor } from "../../../../ui-ninezone/base/PointerCaptor";
 import { VerticalAnchor } from "../../../../ui-ninezone/widget/Stacked";
 import { DragHandle } from "../../../../ui-ninezone/base/DragHandle";
 
 describe("<Tab />", () => {
-  let createRefStub: sinon.SinonStub | undefined;
+  const sandbox = sinon.createSandbox();
 
   afterEach(() => {
-    createRefStub && createRefStub.restore();
+    sandbox.restore();
   });
 
   it("should render", () => {
@@ -74,7 +74,7 @@ describe("<Tab />", () => {
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const element = sut.getDOMNode() as HTMLDivElement;
-    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
+    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
     result.left.should.eq(10);
@@ -88,15 +88,14 @@ describe("<Tab />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef");
-    createRefStub.returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
     const sut = mount<Tab>(<Tab
       horizontalAnchor={HorizontalAnchor.Left}
       mode={TabMode.Open}
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const element = sut.getDOMNode() as HTMLDivElement;
-    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
+    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
     result.left.should.eq(0);
@@ -232,8 +231,7 @@ describe("<Tab />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef");
-    createRefStub.returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const spy = sinon.spy();
     const sut = mount(<Tab
@@ -260,7 +258,7 @@ describe("<Tab />", () => {
     />);
     const pointerCaptor = sut.find(PointerCaptor);
     const tabElement = sut.find("div").first().getDOMNode() as HTMLDivElement;
-    sinon.stub(tabElement, "getBoundingClientRect").returns(createRect(10, 10, 15, 15));
+    sinon.stub(tabElement, "getBoundingClientRect").returns(createBoundingClientRect(10, 10, 15, 15));
 
     const pointerUp = createPointerEvent();
     pointerCaptor.prop("onPointerUp")!(pointerUp);

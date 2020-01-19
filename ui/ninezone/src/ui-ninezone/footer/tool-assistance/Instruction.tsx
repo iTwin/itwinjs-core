@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ToolAssistance */
+/** @packageDocumentation
+ * @module ToolAssistance
+ */
 
 import * as React from "react";
 import * as classnames from "classnames";

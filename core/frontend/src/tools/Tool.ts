@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { Point2d, Point3d, PolygonOps, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, IModelError } from "@bentley/imodeljs-common";
@@ -168,7 +170,6 @@ export class BeButtonEvent implements BeButtonEventProps {
    * @internal
    */
   public get movement(): XAndY | undefined { return this._movement; }
-  /** @internal */
   public set movement(mov: XAndY | undefined) { this._movement = mov; }
 
   /** Mark this BeButtonEvent as invalid. Can only become valid again by calling [[init]] */

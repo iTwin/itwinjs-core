@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Events */
+/** @packageDocumentation
+ * @module Events
+ */
 
 /** A function invoked when a BeEvent is raised.
  * @public

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { FeatureOverrideProvider, Viewport } from "./Viewport";
 import { ColorDef, ColorDefProps, RgbColor } from "@bentley/imodeljs-common";
@@ -110,10 +112,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     return FeatureOverrideType.ColorAndAlpha;
   }
 
-  /** Get the current default appearance such as used by emphasizeElements. */
+  /** The current default appearance for use with overrideElements when not using emphasizeElements. */
   public get defaultAppearance(): FeatureSymbology.Appearance | undefined { return this._defaultAppearance; }
-
-  /** Set the current default appearance for use with overrideElements when not using emphasizeElements. */
   public set defaultAppearance(appearance: FeatureSymbology.Appearance | undefined) { this._defaultAppearance = appearance; }
 
   /** Create default appearance to use for emphasizeElements when not supplied by caller. */

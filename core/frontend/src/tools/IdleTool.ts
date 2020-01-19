@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { BeButton, BeButtonEvent, BeWheelEvent, InteractiveTool, EventHandled, BeTouchEvent } from "./Tool";
 import { ViewManip, ViewHandleType, FitViewTool, DefaultViewTouchTool } from "./ViewTool";

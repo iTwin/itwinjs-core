@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Hierarchies */
+/** @packageDocumentation
+ * @module Hierarchies
+ */
 
 import { NodeKey, NodeKeyJSON } from "./Key";
 import { LabelDefinitionJSON, LabelDefinition } from "../LabelDefinition";

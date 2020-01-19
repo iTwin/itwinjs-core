@@ -16,7 +16,6 @@ import {
   useGroupedItems,
 } from "../../ui-framework";
 import { getActionItem, getStageLauncherItem } from "./BackstageComposerItem.test";
-import { SinonSpy } from "../TestUtils";
 
 describe("BackstageComposer", () => {
   const sandbox = sinon.createSandbox();
@@ -73,7 +72,7 @@ describe("useGroupedItems", () => {
   };
 
   it("should omit invisible items", () => {
-    const spy = sandbox.spy() as SinonSpy<TestHookProps["renderItems"]>;
+    const spy = sandbox.stub<TestHookProps["renderItems"]>();
     const items: BackstageManager["itemsManager"]["items"] = [
       getActionItem({ isVisible: false }),
     ];
@@ -84,7 +83,7 @@ describe("useGroupedItems", () => {
   });
 
   it("should group items by group priority", () => {
-    const spy = sandbox.spy() as SinonSpy<TestHookProps["renderItems"]>;
+    const spy = sandbox.stub<TestHookProps["renderItems"]>();
     const items: BackstageManager["itemsManager"]["items"] = [
       getActionItem(),
       getStageLauncherItem(),

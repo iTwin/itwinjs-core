@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geo-photo-plugin",
+      "comment": "Upgrade to TypeScript 3.7.2.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geo-photo-plugin",
+  "email": "Upgrade to TypeScript 3.7.2."
+}

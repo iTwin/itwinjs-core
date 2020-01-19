@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import { RpcDefaultConfiguration, RpcConfiguration } from "./core/RpcConfiguration";
 import { RpcInterfaceDefinition } from "../RpcInterface";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane, XYAndZ } from "@bentley/geometry-core";
 

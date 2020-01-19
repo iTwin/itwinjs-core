@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
@@ -1202,7 +1204,6 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public get scheduleScriptFraction(): number { return this._scheduleScriptFraction; }
-  /** @internal */
   public set scheduleScriptFraction(fraction: number) {
     this._scheduleScriptFraction = fraction;
     this._scheduleScriptFractionValid = false;
@@ -1710,22 +1711,20 @@ export abstract class Viewport implements IDisposable {
     this._perModelCategoryVisibility.addOverrides(fs, ovrs);
   }
 
-  /** Sets an object which can customize the appearance of [[Feature]]s within a viewport.
+  /** An object which can customize the appearance of [[Feature]]s within a viewport.
    * If defined, the provider will be invoked whenever the overrides are determined to need updating.
    * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
    * the internal state of the provider changes such that the computed overrides must also change.
    * @see [[FeatureSymbology.Overrides]]
    */
+  public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
+    return this._featureOverrideProvider;
+  }
   public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
     if (provider !== this._featureOverrideProvider) {
       this._featureOverrideProvider = provider;
       this.setFeatureOverrideProviderChanged();
     }
-  }
-
-  /** Get the current FeatureOverrideProvider for this viewport if defined. */
-  public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
-    return this._featureOverrideProvider;
   }
 
   /** Notifies this viewport that the internal state of its [[FeatureOverrideProvider]] has changed such that its
@@ -3102,7 +3101,6 @@ export class ScreenViewport extends Viewport {
 
   /** @internal */
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
-  /** @internal */
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible(): boolean { return 0 < this._backStack.length; }

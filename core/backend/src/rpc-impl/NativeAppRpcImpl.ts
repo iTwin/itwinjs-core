@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import {
   IModelTokenProps,

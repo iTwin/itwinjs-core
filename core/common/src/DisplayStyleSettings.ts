@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module DisplayStyles */
+/** @packageDocumentation
+ * @module DisplayStyles
+ */
 
 import {
   assert,
@@ -238,7 +240,6 @@ export class DisplayStyleSettings {
   /** @alpha */
   public get backgroundMap(): BackgroundMapSettings { return this._backgroundMap; }
 
-  /** @alpha */
   public set backgroundMap(map: BackgroundMapSettings) {
     if (!this.backgroundMap.equals(map)) {
       this._backgroundMap = map; // it's an immutable type.

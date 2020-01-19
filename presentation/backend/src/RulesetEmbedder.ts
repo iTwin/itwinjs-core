@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Core */
+/** @packageDocumentation
+ * @module Core
+ */
 
 import { Ruleset } from "@bentley/presentation-common/lib/rules/Ruleset";
 import { IModelDb } from "@bentley/imodeljs-backend/lib/IModelDb";

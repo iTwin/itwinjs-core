@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { FeatureSymbology, EmphasizeElements, Viewport, IModelConnection, FeatureOverrideProvider } from "@bentley/imodeljs-frontend";
 import { Id64String, BeEvent } from "@bentley/bentleyjs-core";

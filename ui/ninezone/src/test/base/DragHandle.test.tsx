@@ -6,7 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { DragHandle, DragHandleProps } from "../../ui-ninezone/base/DragHandle";
-import { SinonSpy, createPointerEvent } from "../Utils";
+import { createPointerEvent } from "../Utils";
 import { PointerCaptor } from "../../ui-ninezone/base/PointerCaptor";
 
 describe("<DragHandle />", () => {
@@ -19,7 +19,7 @@ describe("<DragHandle />", () => {
   });
 
   it("should invoke onClick handler", () => {
-    const spy = sinon.spy() as SinonSpy<Required<DragHandleProps>["onClick"]>;
+    const spy = sinon.stub<Required<DragHandleProps>["onClick"]>();
     const sut = mount<DragHandle>(<DragHandle onClick={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 
@@ -29,7 +29,7 @@ describe("<DragHandle />", () => {
   });
 
   it("should not invoke onClick handler when dragging", () => {
-    const spy = sinon.spy() as SinonSpy<Required<DragHandleProps>["onClick"]>;
+    const spy = sinon.stub<Required<DragHandleProps>["onClick"]>();
     const sut = mount<DragHandle>(<DragHandle onClick={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
 

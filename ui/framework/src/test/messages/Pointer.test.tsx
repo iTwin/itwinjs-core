@@ -12,16 +12,14 @@ import { RelativePosition } from "@bentley/ui-abstract";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 
 describe("PointerMessage", () => {
-  let showMessage: sinon.SinonSpy;
-  let hideMessage: sinon.SinonSpy;
-  let updateMessage: sinon.SinonSpy;
+  const sandbox = sinon.createSandbox();
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
 
-    showMessage = sinon.spy(PointerMessage, "showMessage");
-    hideMessage = sinon.spy(PointerMessage, "hideMessage");
-    updateMessage = sinon.spy(PointerMessage, "updateMessage");
+  afterEach(() => {
+    sandbox.restore();
   });
 
   let notifications: AppNotificationManager;
@@ -41,25 +39,26 @@ describe("PointerMessage", () => {
   });
 
   it("should display the message", () => {
-    showMessage.resetHistory();
+    const showMessage = sandbox.spy(PointerMessage, "showMessage");
     notifications.outputMessage(details);
     expect(showMessage.called).to.be.true;
   });
 
   it("should hide the message", () => {
+    const hideMessage = sandbox.spy(PointerMessage, "hideMessage");
     notifications.closePointerMessage();
     expect(hideMessage.called).to.be.true;
   });
 
   it("should display a warning message", () => {
-    showMessage.resetHistory();
+    const showMessage = sandbox.spy(PointerMessage, "showMessage");
     const localDetails = new NotifyMessageDetails(OutputMessagePriority.Warning, "Brief", "Detailed", OutputMessageType.Pointer);
     notifications.outputMessage(localDetails);
     expect(showMessage.called).to.be.true;
   });
 
   it("should display an error message", () => {
-    showMessage.resetHistory();
+    const showMessage = sandbox.spy(PointerMessage, "showMessage");
     const localDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Brief", "Detailed", OutputMessageType.Pointer);
     notifications.outputMessage(localDetails);
     expect(showMessage.called).to.be.true;
@@ -92,6 +91,7 @@ describe("PointerMessage", () => {
   });
 
   it("should update the message", () => {
+    const updateMessage = sandbox.spy(PointerMessage, "updateMessage");
     notifications.updatePointerMessage({ x: 1, y: 1 }, RelativePosition.BottomRight);
     expect(updateMessage.called).to.be.true;
   });

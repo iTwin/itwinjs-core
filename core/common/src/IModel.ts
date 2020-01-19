@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 
 import { GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { AxisOrder, Matrix3d, Point3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps, Range3d, Angle, AxisIndex } from "@bentley/geometry-core";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module DragDrop */
+/** @packageDocumentation
+ * @module DragDrop
+ */
 import * as React from "react";
 import { DropTarget, DropTargetMonitor, ConnectDropTarget, DropTargetConnector, DndComponentClass } from "react-dnd";
 import { DropTargetArguments, DragSourceArguments, DropTargetProps } from "./DragDropDef";

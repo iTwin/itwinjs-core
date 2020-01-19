@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module UnifiedSelection */
+/** @packageDocumentation
+ * @module UnifiedSelection
+ */
 
 import { IDisposable, using, Id64Arg, Id64, Id64Array } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@bentley/imodeljs-frontend";

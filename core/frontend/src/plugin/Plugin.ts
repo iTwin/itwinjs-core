@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Plugins */
+/** @packageDocumentation
+ * @module Plugins
+ */
 import * as semver from "semver";
 import { IModelApp } from "../IModelApp";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
@@ -83,7 +85,6 @@ export abstract class Plugin {
   private _loader: PluginLoader | undefined;
   /** @internal */
   public get loader(): PluginLoader | undefined { return this._loader; }
-  /** @internal */
   public set loader(loader: PluginLoader | undefined) {
     this._loader = loader;
   }

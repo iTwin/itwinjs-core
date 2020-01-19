@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 
 /** Utility functions for converting from JSON objects, with default values.
  * @public

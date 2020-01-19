@@ -419,7 +419,7 @@ function propertyTypesMatch(propertyA: Property, propertyB: Property) {
 }
 
 function getPrimitiveType(property: Property): PrimitiveType | undefined {
-  if (property.isPrimitive)
+  if (property.isPrimitive())
     return (property as PrimitiveProperty).primitiveType;
 
   return undefined;

@@ -34,7 +34,9 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
   (window as any).iModelJsVersions.set("bentleyjs-core", BUILD_SEMVER);
 }
 
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 
 /** @docs-package-description
  * The bentleyjs-core package contains classes to solve problems that are common for both client and server use cases.

@@ -166,9 +166,10 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     // (undocumented)
     protected _cartographicCenter: Cartographic;
     // (undocumented)
-    day: Date;
+    get day(): Date;
+    set day(dayVal: Date);
     // (undocumented)
-    readonly dayStartMs: number;
+    get dayStartMs(): number;
     // (undocumented)
     getCartographicCenter(iModel: IModelConnection): Cartographic;
     // (undocumented)
@@ -178,23 +179,25 @@ export class BaseSolarDataProvider implements SolarDataProvider {
     // (undocumented)
     onTimeChanged: (_time: Date) => void;
     // (undocumented)
-    shadowColor: ColorDef;
+    get shadowColor(): ColorDef;
+    set shadowColor(color: ColorDef);
     // (undocumented)
     protected _shadowColor: ColorDef;
     // (undocumented)
-    readonly shouldShowTimeline: boolean;
+    get shouldShowTimeline(): boolean;
     // (undocumented)
-    readonly sunrise: Date;
+    get sunrise(): Date;
     // (undocumented)
-    readonly sunset: Date;
+    get sunset(): Date;
     // (undocumented)
     supportsTimelineAnimation: boolean;
     // (undocumented)
     timeOfDay: Date;
     // (undocumented)
     viewId: string;
+    set viewport(viewport: ScreenViewport | undefined);
     // (undocumented)
-    viewport: ScreenViewport | undefined;
+    get viewport(): ScreenViewport | undefined;
     // (undocumented)
     protected _viewport: ScreenViewport | undefined;
 }
@@ -204,7 +207,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     constructor(viewport?: ScreenViewport);
     // (undocumented)
     animationFraction: number;
-    readonly duration: number;
+    get duration(): number;
     // (undocumented)
     end: Date | undefined;
     // (undocumented)
@@ -217,11 +220,11 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     getSettings(): PlaybackSettings;
     // (undocumented)
     readonly id = "TestTimelineDataProvider";
-    readonly initialDuration: number;
+    get initialDuration(): number;
     // (undocumented)
     loadTimelineData(): Promise<boolean>;
     // (undocumented)
-    readonly loop: boolean;
+    get loop(): boolean;
     // (undocumented)
     protected _milestones: Milestone[];
     // (undocumented)
@@ -238,8 +241,9 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
     updateSettings(settings: PlaybackSettings): void;
     // (undocumented)
     viewId: string;
+    set viewport(viewport: ScreenViewport | undefined);
     // (undocumented)
-    viewport: ScreenViewport | undefined;
+    get viewport(): ScreenViewport | undefined;
     // (undocumented)
     protected _viewport: ScreenViewport | undefined;
 }
@@ -247,7 +251,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
 // @beta
 export class BasicPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    readonly reactElement: React.ReactNode;
+    get reactElement(): React.ReactNode;
 }
 
 // @beta
@@ -282,7 +286,7 @@ export class BeInspireTree<TNodePayload> {
     // (undocumented)
     props: BeInspireTreeProps<TNodePayload>;
     // (undocumented)
-    readonly ready: Promise<void>;
+    get ready(): Promise<void>;
     reload(): Promise<void>;
     removeAllListeners(event?: BeInspireTreeEvent | BeInspireTreeEvent[]): void;
     removeListener(event: BeInspireTreeEvent | BeInspireTreeEvent[], listener: (...values: any[]) => void): this;
@@ -470,7 +474,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
 // @beta
 export class BooleanPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    readonly reactElement: React.ReactNode;
+    get reactElement(): React.ReactNode;
 }
 
 // @public
@@ -482,7 +486,7 @@ export class BooleanTypeConverter extends TypeConverter {
     // @internal (undocumented)
     static getLocalizedTrueFalse(): void;
     // (undocumented)
-    readonly isBooleanType: boolean;
+    get isBooleanType(): boolean;
     // @internal (undocumented)
     static sl10nFalse: string;
     // @internal (undocumented)
@@ -639,7 +643,7 @@ export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNod
 export class BreadcrumbPath {
     constructor(dataProvider: TreeDataProvider);
     // (undocumented)
-    readonly BreadcrumbUpdateEvent: BreadcrumbUpdateEvent;
+    get BreadcrumbUpdateEvent(): BreadcrumbUpdateEvent;
     // (undocumented)
     getCurrentNode(): TreeNodeItem | undefined;
     // (undocumented)
@@ -702,7 +706,7 @@ export class CellEditingEngine {
     // (undocumented)
     deactivateEditor: () => void;
     // (undocumented)
-    readonly hasSubscriptions: boolean;
+    get hasSubscriptions(): boolean;
     // (undocumented)
     isEditingEnabled(node: BeInspireTreeNode<TreeNodeItem>): boolean | undefined;
     // (undocumented)
@@ -781,7 +785,7 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
     // @internal
     constructor(props: ColorPickerProps);
     // (undocumented)
-    static readonly defaultColors: ColorDef[];
+    static get defaultColors(): ColorDef[];
     // @internal (undocumented)
     static defaultProps: Partial<ColorPickerProps>;
     // @internal (undocumented)
@@ -805,7 +809,7 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
 // @beta
 export class ColorPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    readonly reactElement: React.ReactNode;
+    get reactElement(): React.ReactNode;
 }
 
 // @beta
@@ -994,7 +998,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 // @alpha
 export class CustomNumberPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    readonly reactElement: React.ReactNode;
+    get reactElement(): React.ReactNode;
 }
 
 // @beta
@@ -1040,7 +1044,7 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
     // (undocumented)
     isGreaterThanOrEqualTo(a: Date, b: Date): boolean;
     // (undocumented)
-    readonly isLessGreaterType: boolean;
+    get isLessGreaterType(): boolean;
     // (undocumented)
     isLessThan(a: Date, b: Date): boolean;
     // (undocumented)
@@ -1055,7 +1059,7 @@ export abstract class DateTimeTypeConverterBase extends TypeConverter implements
 export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
     constructor(props: DayPickerProps);
     // (undocumented)
-    readonly days: (Date | null)[];
+    get days(): (Date | null)[];
     // (undocumented)
     static isSameDay(a: Date, b: Date): boolean;
     // (undocumented)
@@ -1079,7 +1083,7 @@ export class DayPicker extends React.Component<DayPickerProps, DayPickerState> {
     // (undocumented)
     shortDayName(dayOfWeek: number): any;
     // (undocumented)
-    readonly weeks: (Date | null)[][];
+    get weeks(): (Date | null)[][];
 }
 
 // @public
@@ -1092,7 +1096,8 @@ export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
 export class DistinctValueCollection {
     constructor();
     // (undocumented)
-    values: any[];
+    get values(): any[];
+    set values(values: any[]);
     }
 
 // @alpha
@@ -1295,13 +1300,13 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 // @beta
 export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {
     // (undocumented)
-    readonly reactElement: React.ReactNode;
+    get reactElement(): React.ReactNode;
 }
 
 // @beta
 export class EnumPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    readonly reactElement: React.ReactNode;
+    get reactElement(): React.ReactNode;
 }
 
 // @public
@@ -1393,10 +1398,10 @@ export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterD
     constructor();
     add(item: TDescriptor): void;
     clear(): void;
-    readonly count: number;
+    get count(): number;
     // (undocumented)
-    readonly descriptors: TDescriptor[];
-    readonly isActive: boolean;
+    get descriptors(): TDescriptor[];
+    get isActive(): boolean;
     remove(item: TDescriptor): boolean;
 }
 
@@ -1602,7 +1607,7 @@ export interface IconPickerProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 // @alpha
 export class IconPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    readonly reactElement: React.ReactNode;
+    get reactElement(): React.ReactNode;
 }
 
 // @beta
@@ -1708,10 +1713,10 @@ export const isTreeDataProviderInterface: (provider: TreeDataProvider) => provid
 export const isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod;
 
 // @public
-export const isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is Promise<ImmediatelyLoadedTreeNodeItem[]>;
+export const isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is TreeDataProviderPromise;
 
 // @public
-export const isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is ImmediatelyLoadedTreeNodeItem[];
+export const isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is TreeDataProviderRaw;
 
 // @beta
 export function isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode;
@@ -2053,7 +2058,7 @@ export abstract class NumericTypeConverterBase extends TypeConverter implements 
     // (undocumented)
     isGreaterThanOrEqualTo(a: Primitives.Numeric, b: Primitives.Numeric): boolean;
     // (undocumented)
-    readonly isLessGreaterType: boolean;
+    get isLessGreaterType(): boolean;
     // (undocumented)
     isLessThan(a: Primitives.Numeric, b: Primitives.Numeric): boolean;
     // (undocumented)
@@ -2282,7 +2287,7 @@ export abstract class PropertyEditorBase implements DataController {
     // (undocumented)
     customDataController: DataController | undefined;
     // (undocumented)
-    abstract readonly reactElement: React.ReactNode;
+    abstract get reactElement(): React.ReactNode;
     // (undocumented)
     validateValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult>;
 }
@@ -2440,7 +2445,7 @@ export interface PropertyValueRendererContext {
 export class PropertyValueRendererManager {
     // (undocumented)
     protected _defaultArrayValueRenderer: IPropertyValueRenderer;
-    static readonly defaultManager: PropertyValueRendererManager;
+    static get defaultManager(): PropertyValueRendererManager;
     // (undocumented)
     protected _defaultMergedValueRenderer: IPropertyValueRenderer;
     // (undocumented)
@@ -2912,7 +2917,7 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
     // (undocumented)
     isNotEmpty(valueA: string): boolean;
     // (undocumented)
-    readonly isStringType: boolean;
+    get isStringType(): boolean;
     // (undocumented)
     sortCompare(valueA: Primitives.String, valueB: Primitives.String, ignoreCase?: boolean): number;
     // (undocumented)
@@ -2960,7 +2965,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // @internal (undocumented)
     componentWillUnmount(): void;
     // @internal
-    readonly filterDescriptors: CompositeFilterDescriptorCollection;
+    get filterDescriptors(): CompositeFilterDescriptorCollection;
     // @internal
     getPropertyDisplayValueExpression(property: string): string;
     // @internal (undocumented)
@@ -3023,7 +3028,7 @@ export class TableColumn extends FilterableColumnBase {
     distinctValueCollection?: DistinctValueCollection;
     getDistinctValues(maximumValueCount?: number): Promise<DistinctValueCollection>;
     // (undocumented)
-    readonly key: string;
+    get key(): string;
     // (undocumented)
     readonly reactDataGridColumn: ReactDataGridColumn;
 }
@@ -3284,7 +3289,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 // @beta
 export class TogglePropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    readonly reactElement: React.ReactNode;
+    get reactElement(): React.ReactNode;
 }
 
 // @internal (undocumented)
@@ -3783,11 +3788,11 @@ export abstract class TypeConverter implements SortComparer, OperatorProcessor {
     // (undocumented)
     convertToString(value?: Primitives.Value): string | Promise<string>;
     // (undocumented)
-    readonly isBooleanType: boolean;
+    get isBooleanType(): boolean;
     // (undocumented)
     isEqualTo(valueA: Primitives.Value, valueB: Primitives.Value): boolean;
     // (undocumented)
-    readonly isLessGreaterType: boolean;
+    get isLessGreaterType(): boolean;
     // (undocumented)
     isNotEqualTo(valueA: Primitives.Value, valueB: Primitives.Value): boolean;
     // (undocumented)
@@ -3795,9 +3800,9 @@ export abstract class TypeConverter implements SortComparer, OperatorProcessor {
     // (undocumented)
     isNull(value: Primitives.Value): boolean;
     // (undocumented)
-    readonly isNullableType: boolean;
+    get isNullableType(): boolean;
     // (undocumented)
-    readonly isStringType: boolean;
+    get isStringType(): boolean;
     // (undocumented)
     abstract sortCompare(valueA: Primitives.Value, valueB: Primitives.Value, _ignoreCase?: boolean): number;
 }
@@ -3818,13 +3823,13 @@ export interface TypeEditor {
 
 // @public
 export class UiComponents {
-    static readonly i18n: I18N;
-    static readonly i18nNamespace: string;
+    static get i18n(): I18N;
+    static get i18nNamespace(): string;
     static initialize(i18n: I18N): Promise<void>;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)
-    static readonly packageName: string;
+    static get packageName(): string;
     static terminate(): void;
     // @internal
     static translate(key: string | string[], options?: TranslationOptions): string;
@@ -4031,7 +4036,7 @@ export interface WeightPickerProps extends React.ButtonHTMLAttributes<HTMLButton
 // @beta
 export class WeightPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    readonly reactElement: React.ReactNode;
+    get reactElement(): React.ReactNode;
 }
 
 // @beta

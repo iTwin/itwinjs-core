@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Features */
+/** @packageDocumentation
+ * @module Features
+ */
 
 import { LDClient, LDUser, LDFlagValue, initialize } from "ldclient-js";
 import { Guid, assert, Logger } from "@bentley/bentleyjs-core";

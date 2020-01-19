@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tile
+ */
 import { Cartographic } from "@bentley/imodeljs-common";
 import { Point2d, Point3d, Angle, Range2d } from "@bentley/geometry-core";
 

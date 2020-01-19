@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ContentView */
+/** @packageDocumentation
+ * @module ContentView
+ */
 
 import { ScreenViewport, IModelApp, IModelConnection, ViewState, SpatialViewState, OrthographicViewState, DrawingViewState, SheetViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
@@ -40,9 +42,8 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
 
   /** Returns true if this control is a Viewport control. */
   public get isViewport(): boolean { return true; }
-  /** Gets the ScreenViewport */
+  /** The underlying ScreenViewport */
   public get viewport(): ScreenViewport | undefined { return this._viewport; }
-  /** Sets the ScreenViewport */
   public set viewport(v: ScreenViewport | undefined) {
     this._viewport = v;
     this.setIsReady();

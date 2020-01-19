@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Entities */
+/** @packageDocumentation
+ * @module Entities
+ */
 
 import { GuidString, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { AngleProps, LowAndHighXY, LowAndHighXYZ, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";

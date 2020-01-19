@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ECSQL */
+/** @packageDocumentation
+ * @module ECSQL
+ */
 
 import { DbResult, GuidString, Id64String, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@bentley/geometry-core";

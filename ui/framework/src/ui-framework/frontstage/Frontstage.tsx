@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Frontstage */
+/** @packageDocumentation
+ * @module Frontstage
+ */
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";

@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { XYParitySearchContext } from "./XYParitySearchContext";

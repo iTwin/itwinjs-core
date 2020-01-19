@@ -8,17 +8,17 @@ import * as sinon from "sinon";
 
 import { Point, Rectangle } from "@bentley/ui-core";
 
-import { createRect } from "../Utils";
+import { createBoundingClientRect } from "../Utils";
 import { Stacked, HorizontalAnchor } from "../../ui-ninezone";
 import { VerticalAnchorHelpers, VerticalAnchor, ResizeHandle } from "../../ui-ninezone/widget/Stacked";
 import { ResizeGrip } from "../../ui-ninezone/widget/rectangular/ResizeGrip";
 import { DisabledResizeHandles } from "../../ui-ninezone/utilities/DisabledResizeHandles";
 
 describe("<Stacked />", () => {
-  let createRefStub: sinon.SinonStub | undefined;
+  const sandbox = sinon.createSandbox();
 
   afterEach(() => {
-    createRefStub && createRefStub.restore();
+    sandbox.restore();
   });
 
   it("should render", () => {
@@ -413,8 +413,7 @@ describe("<Stacked />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef");
-    createRefStub.returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const spy = sinon.spy();
     const sut = mount(<Stacked
@@ -446,7 +445,7 @@ describe("<Stacked />", () => {
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const element = sut.getDOMNode() as HTMLDivElement;
-    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
+    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
     result.left.should.eq(10);
@@ -460,14 +459,13 @@ describe("<Stacked />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef");
-    createRefStub.returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
     const sut = mount<Stacked>(<Stacked
       horizontalAnchor={HorizontalAnchor.Right}
       verticalAnchor={VerticalAnchor.Middle}
     />);
     const element = sut.getDOMNode() as HTMLDivElement;
-    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
+    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
     result.left.should.eq(0);

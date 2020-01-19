@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Backstage */
+/** @packageDocumentation
+ * @module Backstage
+ */
 
 import { PropsHelper } from "../utils/PropsHelper";
 import { BackstageItemType as UIA_BackstageItemType, BackstageActionItem as UIA_BackstageActionItem, BackstageStageLauncher as UIA_BackstageStageLauncher } from "@bentley/ui-abstract";

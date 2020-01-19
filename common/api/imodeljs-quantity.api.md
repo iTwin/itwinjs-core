@@ -67,11 +67,11 @@ export enum DecimalPrecision {
 export class Format implements FormatProps {
     constructor(name: string);
     // (undocumented)
-    readonly decimalSeparator: string;
+    get decimalSeparator(): string;
     // (undocumented)
     protected _decimalSeparator: string;
     // (undocumented)
-    readonly formatTraits: FormatTraits;
+    get formatTraits(): FormatTraits;
     // (undocumented)
     protected _formatTraits: FormatTraits;
     static formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
@@ -79,17 +79,17 @@ export class Format implements FormatProps {
     fromJson(unitsProvider: UnitsProvider, jsonObj: any): Promise<void>;
     hasFormatTraitSet(formatTrait: FormatTraits): boolean;
     // (undocumented)
-    readonly hasUnits: boolean;
+    get hasUnits(): boolean;
     // (undocumented)
-    readonly includeZero: boolean | undefined;
+    get includeZero(): boolean | undefined;
     // (undocumented)
     protected _includeZero: boolean;
     // (undocumented)
-    readonly minWidth: number | undefined;
+    get minWidth(): number | undefined;
     // (undocumented)
     protected _minWidth?: number;
     // (undocumented)
-    readonly name: string;
+    get name(): string;
     static parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision;
     static parseFormatTrait(stringToCheck: string, currentFormatTrait: number): FormatTraits;
     static parseFormatType(jsonObjType: string, formatName: string): FormatType;
@@ -98,53 +98,53 @@ export class Format implements FormatProps {
     static parseScientificType(scientificType: string, formatName: string): ScientificType;
     static parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption;
     // (undocumented)
-    readonly precision: DecimalPrecision | FractionalPrecision;
+    get precision(): DecimalPrecision | FractionalPrecision;
     // (undocumented)
     protected _precision: number;
     // (undocumented)
-    readonly roundFactor: number;
+    get roundFactor(): number;
     // (undocumented)
     protected _roundFactor: number;
     // (undocumented)
-    readonly scientificType: ScientificType | undefined;
+    get scientificType(): ScientificType | undefined;
     // (undocumented)
     protected _scientificType?: ScientificType;
     // (undocumented)
     static scientificTypeToString(scientificType: ScientificType): string;
     // (undocumented)
-    readonly showSignOption: ShowSignOption;
+    get showSignOption(): ShowSignOption;
     // (undocumented)
     protected _showSignOption: ShowSignOption;
     static showSignOptionToString(showSign: ShowSignOption): string;
     // (undocumented)
-    readonly spacer: string | undefined;
+    get spacer(): string | undefined;
     // (undocumented)
     protected _spacer: string;
     // (undocumented)
-    readonly stationOffsetSize: number | undefined;
+    get stationOffsetSize(): number | undefined;
     // (undocumented)
     protected _stationOffsetSize?: number;
     // (undocumented)
-    readonly stationSeparator: string;
+    get stationSeparator(): string;
     // (undocumented)
     protected _stationSeparator: string;
     // (undocumented)
-    readonly thousandSeparator: string;
+    get thousandSeparator(): string;
     // (undocumented)
     protected _thousandSeparator: string;
     toJson(): {
         [value: string]: any;
     };
     // (undocumented)
-    readonly type: FormatType;
+    get type(): FormatType;
     // (undocumented)
     protected _type: FormatType;
     // (undocumented)
-    readonly units: Array<[UnitProps, string | undefined]> | undefined;
+    get units(): Array<[UnitProps, string | undefined]> | undefined;
     // (undocumented)
     protected _units?: Array<[UnitProps, string | undefined]>;
     // (undocumented)
-    readonly uomSeparator: string;
+    get uomSeparator(): string;
     // (undocumented)
     protected _uomSeparator: string;
     }
@@ -195,10 +195,10 @@ export class FormatterSpec {
     constructor(name: string, format: Format, conversions?: UnitConversionSpec[]);
     static create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec>;
     // (undocumented)
-    readonly format: Format;
+    get format(): Format;
     // (undocumented)
-    readonly name: string;
-    readonly unitConversions: UnitConversionSpec[];
+    get name(): string;
+    get unitConversions(): UnitConversionSpec[];
 }
 
 // @alpha (undocumented)
@@ -282,10 +282,10 @@ export class ParserSpec {
     constructor(outUnit: UnitProps, format: Format, conversions: UnitConversionSpec[]);
     static create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps): Promise<ParserSpec>;
     // (undocumented)
-    readonly format: Format;
+    get format(): Format;
     // (undocumented)
-    readonly outUnit: UnitProps;
-    readonly unitConversions: UnitConversionSpec[];
+    get outUnit(): UnitProps;
+    get unitConversions(): UnitConversionSpec[];
 }
 
 // @alpha
@@ -301,15 +301,15 @@ export class Quantity implements QuantityProps {
     constructor(unit?: UnitProps, magnitude?: number);
     convertTo(toUnit: UnitProps, conversion: UnitConversion): Quantity | undefined;
     // (undocumented)
-    readonly isValid: boolean;
+    get isValid(): boolean;
     // (undocumented)
     protected _isValid: boolean;
     // (undocumented)
-    readonly magnitude: number;
+    get magnitude(): number;
     // (undocumented)
     protected _magnitude: number;
     // (undocumented)
-    readonly unit: UnitProps;
+    get unit(): UnitProps;
     // (undocumented)
     protected _unit: UnitProps;
 }
@@ -348,8 +348,8 @@ export class QuantityConstants {
     static readonly CHAR_THREE_QUARTER = 190;
     // (undocumented)
     static readonly CHAR_UPPER_E = 69;
-    static readonly LocaleSpecificDecimalSeparator: string;
-    static readonly LocaleSpecificThousandSeparator: string;
+    static get LocaleSpecificDecimalSeparator(): string;
+    static get LocaleSpecificThousandSeparator(): string;
 }
 
 // @alpha

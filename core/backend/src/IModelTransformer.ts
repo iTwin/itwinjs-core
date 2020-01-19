@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 import { ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, IModel, IModelError, ModelProps, PrimitiveTypeCode, PropertyMetaData } from "@bentley/imodeljs-common";

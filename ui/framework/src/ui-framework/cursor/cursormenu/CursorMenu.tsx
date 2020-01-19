@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Cursor */
+/** @packageDocumentation
+ * @module Cursor
+ */
 
 import * as React from "react";
 import { GlobalContextMenu, CommonProps } from "@bentley/ui-core"; // ContextSubMenu,

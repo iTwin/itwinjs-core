@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { Geometry, AxisOrder, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -98,9 +100,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * read property for (reference to !!) matrix of vector0, vector90, unit normal
    */
   public get matrixRef(): Matrix3d { return this._matrix; }
-  /** property getter for the angle sweep */
+  /** Sweep of the angle. */
   public get sweep(): AngleSweep { return this._sweep; }
-  /** property setter for angle sweep */
   public set sweep(value: AngleSweep) { this._sweep.setFrom(value); }
   /**
    * An Arc3d extends along its complete elliptic arc

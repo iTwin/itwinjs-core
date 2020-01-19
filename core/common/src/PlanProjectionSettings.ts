@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module DisplayStyles */
+/** @packageDocumentation
+ * @module DisplayStyles
+ */
 
 /** Describes how to draw a "plan projection" model. A plan projection model is a 3d model whose geometry
  * lies in the XY plane. Multiple such models can be combined in a single view as "layers".

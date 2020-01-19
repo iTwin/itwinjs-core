@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Elements */
+/** @packageDocumentation
+ * @module Elements
+ */
 
 import { GeometricElement3d, TypeDefinitionElement, InformationPartitionElement } from "../Element";
 import { GeometricElement3dProps, TypeDefinitionElementProps } from "@bentley/imodeljs-common";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Button */
+/** @packageDocumentation
+ * @module Button
+ */
 
 import * as React from "react";
 import classnames from "classnames";

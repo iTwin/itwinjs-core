@@ -68,9 +68,9 @@ export class OidcAgentClient extends OidcBackendClient implements IAuthorization
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @deprecated
     getToken(requestContext: ClientRequestContext): Promise<AccessToken>;
-    readonly hasExpired: boolean;
-    readonly hasSignedIn: boolean;
-    readonly isAuthorized: boolean;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    get isAuthorized(): boolean;
     // @deprecated
     refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken>;
 }

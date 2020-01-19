@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tile
+ */
 
 import {
   BeDuration,
@@ -54,8 +56,8 @@ export abstract class TileAdmin {
    * bandwidth and memory consumption.
    * @alpha
    */
-  public abstract set maxActiveRequests(max: number);
   public abstract get maxActiveRequests(): number;
+  public abstract set maxActiveRequests(max: number);
 
   /** A default multiplier applied to the size in pixels of a [[Tile]] during tile selection for any [[Viewport]].
    * Individual Viewports can override this multiplier if desired.

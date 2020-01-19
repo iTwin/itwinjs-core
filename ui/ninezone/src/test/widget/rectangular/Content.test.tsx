@@ -8,10 +8,10 @@ import * as sinon from "sinon";
 import { HorizontalAnchor, WidgetContent } from "../../../ui-ninezone";
 
 describe("<WidgetContent />", () => {
-  let createRefStub: sinon.SinonStub | undefined;
+  const sandbox = sinon.createSandbox();
 
   afterEach(() => {
-    createRefStub && createRefStub.restore();
+    sandbox.restore();
   });
 
   it("should render", () => {
@@ -48,8 +48,7 @@ describe("<WidgetContent />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef");
-    createRefStub.returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const sut = mount<WidgetContent>(<WidgetContent anchor={HorizontalAnchor.Right} />);
     const child = sut.find("div").first();

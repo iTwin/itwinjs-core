@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 import { ProgressInfo, FileHandler, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import * as fs from "fs-extra";
 import * as path from "path";

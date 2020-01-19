@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 
 import { Range1d } from "../geometry3d/Range";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";

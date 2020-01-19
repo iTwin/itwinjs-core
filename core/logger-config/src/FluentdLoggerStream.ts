@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Logging */
+/** @packageDocumentation
+ * @module Logging
+ */
 
 import { Writable } from "stream";
 import * as domain from "domain";

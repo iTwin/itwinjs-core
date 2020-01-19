@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 
 import { AuthStatus, BentleyError, ClientRequestContext, Guid, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";

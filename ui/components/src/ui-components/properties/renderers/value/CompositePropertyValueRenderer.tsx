@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Properties */
+/** @packageDocumentation
+ * @module Properties
+ */
 
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { PropertyRecord, PropertyValueFormat, PrimitiveValue, Primitives } from "@bentley/imodeljs-frontend";

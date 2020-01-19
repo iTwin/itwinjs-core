@@ -181,19 +181,19 @@ export abstract class AnalyticalElement extends GeometricElement3d {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
 export abstract class AnalyticalModel extends GeometricModel3d {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
 export class AnalyticalPartition extends InformationPartitionElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
@@ -201,15 +201,15 @@ export class AnalyticalSchema extends Schema {
     // (undocumented)
     static registerSchema(): void;
     // (undocumented)
-    static readonly schemaFilePath: string;
+    static get schemaFilePath(): string;
     // (undocumented)
-    static readonly schemaName: string;
+    static get schemaName(): string;
 }
 
 // @beta
 export class AnalyticalSimulatesSpatialElement extends ElementRefersToElements {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
@@ -217,7 +217,7 @@ export abstract class AnalyticalType extends TypeDefinitionElement {
     // @internal
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -225,7 +225,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
     // @internal
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
@@ -250,19 +250,20 @@ export class AuthorizedBackendRequestContext extends AuthorizedClientRequestCont
 // @beta
 export class AutoPush {
     constructor(iModel: IModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor);
-    autoSchedule: boolean;
+    get autoSchedule(): boolean;
+    set autoSchedule(v: boolean);
     cancel(): void;
-    readonly durationOfLastPushMillis: number;
-    readonly endOfLastPushMillis: number;
+    get durationOfLastPushMillis(): number;
+    get endOfLastPushMillis(): number;
     event: BeEvent<AutoPushEventHandler>;
-    readonly iModel: IModelDb;
-    readonly lastError: any | undefined;
+    get iModel(): IModelDb;
+    get lastError(): any | undefined;
     // (undocumented)
     reserveCodes(): Promise<void>;
     // (undocumented)
     scheduleNextAutoPushIfNecessary(): void;
     scheduleNextPush(intervalSeconds?: number): void;
-    readonly state: AutoPushState;
+    get state(): AutoPushState;
     static validateAutoPushParams(params: any): void;
 }
 
@@ -302,7 +303,7 @@ export enum AutoPushState {
 export abstract class AuxCoordSystem extends DefinitionElement implements AuxCoordSystemProps {
     constructor(props: AuxCoordSystemProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     description?: string;
     // (undocumented)
@@ -315,7 +316,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
     // (undocumented)
     angle: number;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     origin?: Point2d;
@@ -325,7 +326,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
 export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3dProps {
     constructor(props: AuxCoordSystem3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     origin?: Point3d;
@@ -340,7 +341,7 @@ export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3d
 // @public
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
@@ -363,7 +364,7 @@ export class BackendActivityMonitor implements AppActivityMonitor {
     // (undocumented)
     idleIntervalSeconds: number;
     // (undocumented)
-    readonly isIdle: boolean;
+    get isIdle(): boolean;
 }
 
 // @public
@@ -402,9 +403,9 @@ export class BisCoreSchema extends Schema {
     // @internal (undocumented)
     static registerSchema(): void;
     // (undocumented)
-    static readonly schemaFilePath: string;
+    static get schemaFilePath(): string;
     // (undocumented)
-    static readonly schemaName: string;
+    static get schemaName(): string;
 }
 
 // @internal
@@ -413,19 +414,20 @@ export class BriefcaseEntry {
     briefcaseId: number;
     conflictError?: ConflictingCodesError;
     contextId: string;
-    readonly currentChangeSetId: GuidString;
-    readonly currentChangeSetIndex: number;
+    get currentChangeSetId(): GuidString;
+    get currentChangeSetIndex(): number;
     fileId?: string;
     getDebugInfo(): any;
     getKey(): string;
-    readonly hasReversedChanges: boolean;
+    get hasReversedChanges(): boolean;
     // (undocumented)
-    iModelDb: IModelDb | undefined;
+    get iModelDb(): IModelDb | undefined;
+    set iModelDb(iModelDb: IModelDb | undefined);
     iModelId: GuidString;
     isOpen: boolean;
     isPending: Promise<void>;
     // (undocumented)
-    readonly nativeDb: IModelJsNative.DgnDb;
+    get nativeDb(): IModelJsNative.DgnDb;
     readonly onAfterOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onBeforeOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>;
@@ -446,27 +448,27 @@ export class BriefcaseEntry {
 export class BriefcaseId {
     constructor(value?: number);
     // (undocumented)
-    static readonly Illegal: number;
+    static get Illegal(): number;
     // @internal (undocumented)
-    static readonly Master: number;
+    static get Master(): number;
     // @beta (undocumented)
-    static readonly Snapshot: number;
+    static get Snapshot(): number;
     // @internal (undocumented)
-    static readonly Standalone: number;
+    static get Standalone(): number;
     // (undocumented)
     toString(): string;
     // (undocumented)
-    readonly value: number;
+    get value(): number;
     }
 
 // @internal
 export class BriefcaseManager {
     static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus;
     // (undocumented)
-    static readonly cacheDir: string;
+    static get cacheDir(): string;
     static close(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
     static closeStandalone(briefcase: BriefcaseEntry): void;
-    static readonly connectClient: ConnectClient;
+    static get connectClient(): ConnectClient;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string>;
     static createStandalone(fileName: string, args: CreateIModelProps): BriefcaseEntry;
     static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken;
@@ -481,7 +483,8 @@ export class BriefcaseManager {
     static getChangedElementsPathName(iModelId: GuidString): string;
     // (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
-    static imodelClient: IModelClient;
+    static get imodelClient(): IModelClient;
+    static set imodelClient(cli: IModelClient);
     static open(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
     static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry;
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
@@ -516,7 +519,7 @@ export class CachedSqliteStatement {
 export abstract class Callout extends DetailingSymbol implements CalloutProps {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -524,7 +527,7 @@ export class Category extends DefinitionElement implements CategoryProps {
     // @internal
     constructor(props: CategoryProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     description?: string;
     myDefaultSubCategoryId(): Id64String;
@@ -548,7 +551,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
     constructor(props: CategorySelectorProps, iModel: IModelDb);
     categories: Id64String[];
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): CategorySelector;
@@ -568,10 +571,10 @@ export class ChangedElementsDb implements IDisposable {
     getChangeData(startChangesetId: GuidString, endChangesetId: GuidString): ChangeData | undefined;
     getChangedElements(startChangesetId: GuidString, endChangesetId: GuidString): ChangedElements | undefined;
     getChangedModels(startChangesetId: GuidString, endChangesetId: GuidString): ChangedModels | undefined;
-    readonly isOpen: boolean;
+    get isOpen(): boolean;
     isProcessed(changesetId: GuidString): boolean;
     // (undocumented)
-    readonly nativeDb: IModelJsNative.ChangedElementsECDb;
+    get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean): Promise<DbResult>;
 }
@@ -616,7 +619,7 @@ export class ChangeSummaryExtractContext {
     // (undocumented)
     readonly iModel: IModelDb;
     // (undocumented)
-    readonly iModelId: GuidString;
+    get iModelId(): GuidString;
 }
 
 // @beta
@@ -697,7 +700,7 @@ export interface CloudStorageServiceCredentials {
 // @internal (undocumented)
 export class CloudStorageTileUploader {
     // (undocumented)
-    readonly activeUploads: Iterable<Promise<void>>;
+    get activeUploads(): Iterable<Promise<void>>;
     // (undocumented)
     cacheTile(tokenProps: IModelTokenProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined): void;
     }
@@ -737,14 +740,14 @@ export class ConcurrencyControl {
     buildRequestForModel(model: Model, opcode: DbOpcode): void;
     // @internal
     buildRequestForRelationship(instance: Relationship, opcode: DbOpcode): void;
-    readonly codes: ConcurrencyControl.Codes;
+    get codes(): ConcurrencyControl.Codes;
     static convertRequestToAny(req: ConcurrencyControl.Request): any;
     static createRequest(): ConcurrencyControl.Request;
     // @internal
     extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request;
     // @internal (undocumented)
     getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy | undefined;
-    readonly hasPendingRequests: boolean;
+    get hasPendingRequests(): boolean;
     // @alpha
     hasSchemaLock(requestContext: AuthorizedClientRequestContext): Promise<boolean>;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
@@ -760,7 +763,7 @@ export class ConcurrencyControl {
     // @internal (undocumented)
     onUndoRedo(): void;
     // @internal (undocumented)
-    readonly pendingRequest: ConcurrencyControl.Request;
+    get pendingRequest(): ConcurrencyControl.Request;
     // (undocumented)
     queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, _value?: string): Promise<HubCode[]>;
     request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void>;
@@ -827,7 +830,7 @@ export abstract class DefinitionElement extends InformationContentElement implem
     // @internal
     constructor(props: DefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     isPrivate: boolean;
     // @internal (undocumented)
     toJSON(): DefinitionElementProps;
@@ -836,28 +839,28 @@ export abstract class DefinitionElement extends InformationContentElement implem
 // @public
 export class DefinitionModel extends InformationModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @public
 export class DefinitionPartition extends InformationPartitionElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public (undocumented)
 export class DetailCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public (undocumented)
 export abstract class DetailingSymbol extends GraphicalElement2d {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @internal
@@ -917,7 +920,7 @@ export class DevToolsStatsFormatter {
 // @public
 export class DictionaryModel extends DefinitionModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -925,14 +928,14 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
     // @internal
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // @alpha (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
     // (undocumented)
-    abstract readonly settings: DisplayStyleSettings;
+    abstract get settings(): DisplayStyleSettings;
 }
 
 // @public
@@ -940,11 +943,11 @@ export class DisplayStyle2d extends DisplayStyle {
     // @internal
     constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DisplayStyle2d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String;
     // (undocumented)
-    readonly settings: DisplayStyleSettings;
+    get settings(): DisplayStyleSettings;
     }
 
 // @public
@@ -952,11 +955,11 @@ export class DisplayStyle3d extends DisplayStyle {
     // @internal
     constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
     // (undocumented)
-    readonly settings: DisplayStyle3dSettings;
+    get settings(): DisplayStyle3dSettings;
     }
 
 // @public
@@ -995,27 +998,27 @@ export abstract class Document extends InformationContentElement {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @internal @deprecated
 export abstract class DocumentCarrier extends InformationCarrierElement {
     constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class DocumentListModel extends InformationModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @public
 export class DocumentPartition extends InformationPartitionElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1023,7 +1026,7 @@ export class Drawing extends Document {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String;
 }
@@ -1033,7 +1036,7 @@ export class DrawingCategory extends Category {
     // @internal
     constructor(opts: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DrawingCategory;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static getCodeSpecName(): string;
@@ -1046,25 +1049,25 @@ export class DrawingGraphic extends GraphicalElement2d {
     // @internal
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class DrawingGraphicRepresentsFunctionalElement extends DrawingGraphicRepresentsElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class DrawingModel extends GraphicalModel2d {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1072,7 +1075,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
     // @internal
     constructor(props: ViewDefinition2dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): DrawingViewDefinition;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String;
 }
@@ -1082,7 +1085,7 @@ export abstract class DriverBundleElement extends InformationContentElement {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1097,9 +1100,9 @@ export class ECDb implements IDisposable {
     // @internal
     getCachedStatementCount(): number;
     importSchema(pathName: string): void;
-    readonly isOpen: boolean;
+    get isOpen(): boolean;
     // @internal (undocumented)
-    readonly nativeDb: IModelJsNative.ECDb;
+    get nativeDb(): IModelJsNative.ECDb;
     openDb(pathName: string, openMode?: ECDbOpenMode): void;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
@@ -1218,9 +1221,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     getColumnCount(): number;
     getRow(): any;
     getValue(columnIx: number): ECSqlValue;
-    readonly isPrepared: boolean;
+    get isPrepared(): boolean;
     // @internal
-    readonly isShared: boolean;
+    get isShared(): boolean;
     next(): IteratorResult<any>;
     // @internal
     prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string): void;
@@ -1258,7 +1261,7 @@ export class ECSqlStatementCache {
 export class ECSqlValue {
     // @internal
     constructor(val: IModelJsNative.ECSqlValue);
-    readonly columnInfo: ECSqlColumnInfo;
+    get columnInfo(): ECSqlColumnInfo;
     getArray(): any[];
     getArrayIterator(): ECSqlValueIterator;
     getBlob(): Uint8Array;
@@ -1277,8 +1280,8 @@ export class ECSqlValue {
     getStructIterator(): ECSqlValueIterator;
     getXAndY(): XAndY;
     getXYAndZ(): XYAndZ;
-    readonly isNull: boolean;
-    readonly value: any;
+    get isNull(): boolean;
+    get value(): any;
 }
 
 // @public
@@ -1297,7 +1300,7 @@ export class Element extends Entity implements ElementProps {
     constructor(props: ElementProps, iModel: IModelDb);
     buildConcurrencyControlRequest(opcode: DbOpcode): void;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     readonly code: Code;
     // @alpha
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
@@ -1349,7 +1352,7 @@ export class ElementAspect extends Entity implements ElementAspectProps {
     // @internal
     constructor(props: ElementAspectProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     element: RelatedElement;
     // @beta
@@ -1373,7 +1376,7 @@ export class ElementDrivesElement extends Relationship implements ElementDrivesE
     // @internal
     constructor(props: ElementDrivesElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
     // (undocumented)
@@ -1401,7 +1404,7 @@ export class ElementEncapsulatesElements extends ElementOwnsChildElements {
 export class ElementGroupsMembers extends ElementRefersToElements {
     constructor(props: ElementGroupsMembersProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, memberPriority?: number): T;
     // (undocumented)
@@ -1417,7 +1420,7 @@ export interface ElementGroupsMembersProps extends RelationshipProps {
 // @public
 export class ElementMultiAspect extends ElementAspect {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1451,7 +1454,7 @@ export class ElementOwnsUniqueAspect extends RelatedElement {
 // @public
 export class ElementRefersToElements extends Relationship {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T;
     static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
 }
@@ -1459,20 +1462,20 @@ export class ElementRefersToElements extends Relationship {
 // @public
 export class ElementUniqueAspect extends ElementAspect {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public (undocumented)
 export class ElevationCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class EmbeddedFileLink extends LinkElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1480,13 +1483,13 @@ export class Entity implements EntityProps {
     // @internal
     constructor(props: EntityProps, iModel: IModelDb);
     // @internal
-    readonly asAny: any;
+    get asAny(): any;
     // @alpha
     buildConcurrencyControlRequest(_opcode: DbOpcode): void;
-    static readonly classFullName: string;
-    readonly classFullName: string;
-    static readonly className: string;
-    readonly className: string;
+    static get classFullName(): string;
+    get classFullName(): string;
+    static get className(): string;
+    get className(): string;
     // @internal @deprecated
     clone(): this;
     // @beta
@@ -1494,7 +1497,7 @@ export class Entity implements EntityProps {
     id: Id64String;
     iModel: IModelDb;
     static schema: typeof Schema;
-    readonly schemaName: string;
+    get schemaName(): string;
     // @internal (undocumented)
     toJSON(): EntityProps;
 }
@@ -1523,7 +1526,7 @@ export class EventSinkManager {
     // (undocumented)
     static readonly GLOBAL = "__globalEvents__";
     // (undocumented)
-    static readonly global: EventSink;
+    static get global(): EventSink;
     // (undocumented)
     static has(id: string): boolean;
     }
@@ -1666,7 +1669,7 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
     constructor(props: ExternalSourceAspectProps, iModel: IModelDb);
     checksum?: string;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     identifier: string;
     jsonProperties?: string;
     kind: string;
@@ -1691,7 +1694,7 @@ export abstract class FunctionalBreakdownElement extends FunctionalElement {
     // @internal
     constructor(props: FunctionalElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1699,7 +1702,7 @@ export abstract class FunctionalComponentElement extends FunctionalElement {
     // @internal
     constructor(props: FunctionalElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public (undocumented)
@@ -1707,7 +1710,7 @@ export class FunctionalComposite extends FunctionalBreakdownElement {
     // @internal
     constructor(props: FunctionalElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1715,7 +1718,7 @@ export abstract class FunctionalElement extends RoleElement implements Functiona
     // @internal
     constructor(props: FunctionalElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1724,14 +1727,14 @@ export class FunctionalElementIsOfType extends RelatedElement {
     // (undocumented)
     static classFullName: string;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class FunctionalModel extends RoleModel {
     constructor(props: ModelProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
@@ -1740,7 +1743,7 @@ export class FunctionalPartition extends InformationPartitionElement {
     // @internal
     constructor(props: InformationPartitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public (undocumented)
@@ -1750,9 +1753,9 @@ export class FunctionalSchema extends Schema {
     // (undocumented)
     static registerSchema(): void;
     // (undocumented)
-    static readonly schemaFilePath: string;
+    static get schemaFilePath(): string;
     // (undocumented)
-    static readonly schemaName: string;
+    static get schemaName(): string;
 }
 
 // @public
@@ -1760,7 +1763,7 @@ export abstract class FunctionalType extends TypeDefinitionElement {
     // @internal
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public (undocumented)
@@ -1768,9 +1771,9 @@ export class GenericSchema extends Schema {
     // (undocumented)
     static registerSchema(): void;
     // (undocumented)
-    static readonly schemaFilePath: string;
+    static get schemaFilePath(): string;
     // (undocumented)
-    static readonly schemaName: string;
+    static get schemaName(): string;
 }
 
 // @public
@@ -1781,14 +1784,14 @@ export abstract class GeometricElement extends Element implements GeometricEleme
     calculateRange3d(): AxisAlignedBox3d;
     category: Id64String;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     geom?: GeometryStreamProps;
     getPlacementTransform(): Transform;
     is2d(): this is GeometricElement2d;
     is3d(): this is GeometricElement3d;
-    abstract readonly placement: Placement2d | Placement3d;
+    abstract get placement(): Placement2d | Placement3d;
     // @internal (undocumented)
     toJSON(): GeometricElementProps;
 }
@@ -1798,7 +1801,7 @@ export abstract class GeometricElement2d extends GeometricElement implements Geo
     // @internal
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
@@ -1821,7 +1824,7 @@ export abstract class GeometricElement3d extends GeometricElement implements Geo
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
@@ -1844,7 +1847,7 @@ export class GeometricModel extends Model implements GeometricModelProps {
     // @internal
     constructor(props: GeometricModelProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     geometryGuid?: GuidString;
     queryExtents(): AxisAlignedBox3d;
@@ -1855,7 +1858,7 @@ export abstract class GeometricModel2d extends GeometricModel implements Geometr
     // @internal
     constructor(props: GeometricModel2dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     globalOrigin?: Point2d;
     // @internal (undocumented)
     toJSON(): GeometricModel2dProps;
@@ -1866,9 +1869,9 @@ export abstract class GeometricModel3d extends GeometricModel {
     // @internal
     constructor(props: GeometricModel3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     readonly isNotSpatiallyLocated: boolean;
-    readonly iSpatiallyLocated: boolean;
+    get iSpatiallyLocated(): boolean;
     readonly isPlanProjection: boolean;
     // @internal (undocumented)
     toJSON(): GeometricModel3dProps;
@@ -1881,7 +1884,7 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
     // (undocumented)
     bbox: ElementAlignedBox3d;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     geom?: GeometryStreamProps;
@@ -1893,7 +1896,7 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
 export class Graphic3d extends GraphicalElement3d {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1901,7 +1904,7 @@ export abstract class GraphicalElement2d extends GeometricElement2d {
     // @internal
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1916,31 +1919,31 @@ export abstract class GraphicalElement3d extends GeometricElement3d {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class GraphicalElement3dRepresentsElement extends ElementRefersToElements {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export abstract class GraphicalModel2d extends GeometricModel2d {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export abstract class GraphicalModel3d extends GeometricModel3d {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class GraphicalPartition3d extends InformationPartitionElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -1948,7 +1951,7 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
@@ -1956,32 +1959,32 @@ export abstract class GraphicalType2d extends TypeDefinitionElement {
 export class Group extends GroupInformationElement {
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export abstract class GroupInformationElement extends InformationReferenceElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export abstract class GroupInformationModel extends InformationModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class GroupInformationPartition extends InformationPartitionElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public (undocumented)
 export class GroupModel extends GroupInformationModel {
     constructor(props: ModelProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
@@ -1995,13 +1998,13 @@ export class ILinearElementProvidedBySource extends RelatedElement {
 // @beta
 export class ILinearLocationLocatesElement extends ElementRefersToElements {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
 export class ILinearlyLocatedAlongILinearElement extends ElementRefersToElements {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
@@ -2023,7 +2026,7 @@ export class IModelCloneContext {
     importCodeSpec(sourceCodeSpecId: Id64String): void;
     // @internal
     importFont(sourceFontNumber: number): void;
-    readonly isBetweenIModels: boolean;
+    get isBetweenIModels(): boolean;
     remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
     remapElement(sourceId: Id64String, targetId: Id64String): void;
     remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
@@ -2035,10 +2038,10 @@ export class IModelCloneContext {
 export class IModelDb extends IModel {
     abandonChanges(): void;
     // @internal (undocumented)
-    readonly briefcase: BriefcaseEntry;
+    get briefcase(): BriefcaseEntry;
     cancelSnap(sessionId: string): void;
     // @internal
-    readonly classMetaDataRegistry: MetaDataRegistry;
+    get classMetaDataRegistry(): MetaDataRegistry;
     clearSqliteStatementCache(): void;
     clearStatementCache(): void;
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
@@ -2046,9 +2049,9 @@ export class IModelDb extends IModel {
     closeSnapshot(): void;
     // @internal @deprecated
     closeStandalone(): void;
-    readonly codeSpecs: CodeSpecs;
+    get codeSpecs(): CodeSpecs;
     // @beta
-    readonly concurrencyControl: ConcurrencyControl;
+    get concurrencyControl(): ConcurrencyControl;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb>;
@@ -2064,14 +2067,14 @@ export class IModelDb extends IModel {
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
     // @internal
-    readonly eventSink: EventSink | undefined;
+    get eventSink(): EventSink | undefined;
     // @deprecated
     executeQuery(ecsql: string, bindings?: any[] | object): any[];
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static find(iModelToken: IModelToken): IModelDb;
     // (undocumented)
-    readonly fontMap: FontMap;
+    get fontMap(): FontMap;
     // (undocumented)
     protected _fontMap?: FontMap;
     static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean): void;
@@ -2088,19 +2091,19 @@ export class IModelDb extends IModel {
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
-    readonly isBriefcase: boolean;
+    get isBriefcase(): boolean;
     // @internal
-    readonly isOpen: boolean;
-    readonly isReadonly: boolean;
-    readonly isSnapshot: boolean;
+    get isOpen(): boolean;
+    get isReadonly(): boolean;
+    get isSnapshot(): boolean;
     // @deprecated
-    readonly isStandalone: boolean;
+    get isStandalone(): boolean;
     // (undocumented)
     static readonly maxLimit = 10000;
     // (undocumented)
     readonly models: IModelDb.Models;
     // @internal
-    readonly nativeDb: IModelJsNative.DgnDb;
+    get nativeDb(): IModelJsNative.DgnDb;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
@@ -2135,7 +2138,7 @@ export class IModelDb extends IModel {
     readFontJson(): string;
     // @beta
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    readonly relationships: Relationships;
+    get relationships(): Relationships;
     // (undocumented)
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     // @beta
@@ -2256,7 +2259,7 @@ export class IModelExporter {
     exportModelContents(modelId: Id64String, elementClassFullName?: string): void;
     exportRelationships(baseRelClassFullName: string): void;
     exportSubModels(parentModelId: Id64String): void;
-    protected readonly handler: IModelExportHandler;
+    protected get handler(): IModelExportHandler;
     registerHandler(handler: IModelExportHandler): void;
     readonly sourceDb: IModelDb;
     }
@@ -2264,7 +2267,7 @@ export class IModelExporter {
 // @beta
 export abstract class IModelExportHandler {
     // @internal
-    readonly callProtected: any;
+    get callProtected(): any;
     protected onDeleteElement(_elementId: Id64String): void;
     protected onDeleteModel(_modelId: Id64String): void;
     protected onDeleteRelationship(_relInstanceId: Id64String): void;
@@ -2283,40 +2286,41 @@ export abstract class IModelExportHandler {
 
 // @public
 export class IModelHost {
-    static readonly appAssetsDir: string | undefined;
+    static get appAssetsDir(): string | undefined;
     static applicationId: string;
     static applicationVersion: string;
-    static authorizationClient: IAuthorizationClient | undefined;
+    static get authorizationClient(): IAuthorizationClient | undefined;
+    static set authorizationClient(authorizationClient: IAuthorizationClient | undefined);
     // (undocumented)
     static backendVersion: string;
     // @internal
-    static readonly compressCachedTiles: boolean;
+    static get compressCachedTiles(): boolean;
     // (undocumented)
     static configuration?: IModelHostConfiguration;
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @internal (undocumented)
     static loadNative(region: number, dir?: string): void;
-    static readonly logTileLoadTimeThreshold: number;
-    static readonly logTileSizeThreshold: number;
+    static get logTileLoadTimeThreshold(): number;
+    static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
     static readonly onBeforeShutdown: BeEvent<() => void>;
     // @internal (undocumented)
-    static readonly platform: typeof IModelJsNative;
+    static get platform(): typeof IModelJsNative;
     // @internal
-    static readonly restrictTileUrlsByClientIp: boolean;
+    static get restrictTileUrlsByClientIp(): boolean;
     static sessionId: GuidString;
     static shutdown(): void;
     static startup(configuration?: IModelHostConfiguration): void;
     // @beta
     static tileCacheService: CloudStorageService;
     // @internal
-    static readonly tileContentRequestTimeout: number;
+    static get tileContentRequestTimeout(): number;
     // @internal
-    static readonly tileTreeRequestTimeout: number;
+    static get tileTreeRequestTimeout(): number;
     // @internal (undocumented)
     static tileUploader: CloudStorageTileUploader;
     // @internal
-    static readonly usingExternalTileCache: boolean;
+    static get usingExternalTileCache(): boolean;
     }
 
 // @public
@@ -2324,7 +2328,8 @@ export class IModelHostConfiguration {
     appAssetsDir?: string;
     // @alpha
     applicationType?: ApplicationType;
-    briefcaseCacheDir: string;
+    get briefcaseCacheDir(): string;
+    set briefcaseCacheDir(cacheDir: string);
     // @beta
     compressCachedTiles?: boolean;
     // (undocumented)
@@ -2481,7 +2486,7 @@ export interface IModelTransformOptions {
 export abstract class InformationCarrierElement extends Element {
     constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -2489,13 +2494,13 @@ export abstract class InformationContentElement extends Element {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export abstract class InformationModel extends Model {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -2503,7 +2508,7 @@ export abstract class InformationPartitionElement extends InformationContentElem
     // @internal
     constructor(props: InformationPartitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     description?: string;
@@ -2514,20 +2519,20 @@ export abstract class InformationRecordElement extends InformationContentElement
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class InformationRecordModel extends InformationModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
 // @public
 export class InformationRecordPartition extends InformationPartitionElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -2535,7 +2540,7 @@ export abstract class InformationReferenceElement extends InformationContentElem
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
@@ -2572,16 +2577,16 @@ export enum KeepBriefcase {
 
 // @public
 export class KnownLocations {
-    static readonly nativeAssetsDir: string;
-    static readonly packageAssetsDir: string;
-    static readonly tmpdir: string;
+    static get nativeAssetsDir(): string;
+    static get packageAssetsDir(): string;
+    static get tmpdir(): string;
 }
 
 // @internal
 export class LightLocation extends SpatialLocationElement implements LightLocationProps {
     constructor(props: LightLocationProps, iModel: IModelDb);
     // (undocumented)
-    static readonly className: string;
+    static get className(): string;
     enabled: boolean;
 }
 
@@ -2594,7 +2599,7 @@ export class LinearElement {
 export class LinearLocation extends LinearLocationElement {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String): LinearLocation;
     // (undocumented)
@@ -2611,7 +2616,7 @@ export class LinearLocation extends LinearLocationElement {
 export abstract class LinearLocationElement extends SpatialLocationElement implements LinearlyLocatedBase {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     getLinearElementId(): Id64String | undefined;
 }
@@ -2635,7 +2640,7 @@ export abstract class LinearlyLocatedAttribution extends SpatialLocationElement 
     // (undocumented)
     attributedElement?: ILinearlyLocatedAttributesElement;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     getLinearElementId(): Id64String | undefined;
 }
@@ -2684,7 +2689,7 @@ export class LinearlyReferencedAtLocation extends LinearlyReferencedLocation imp
     // (undocumented)
     atPosition: DistanceExpression;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     static create(iModel: IModelDb, locatedElementId: Id64String, at: DistanceExpression, fromReferentId?: Id64String): LinearlyReferencedAtLocation;
     // (undocumented)
@@ -2711,7 +2716,7 @@ export class LinearlyReferencedFromPositionRefersToReferent extends RelatedEleme
 export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation implements LinearlyReferencedFromToLocationAspectProps {
     constructor(props: LinearlyReferencedFromToLocationAspectProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     static create(iModel: IModelDb, locatedElementId: Id64String, from: DistanceExpression, to: DistanceExpression, fromReferentId?: Id64String, toReferentId?: Id64String): LinearlyReferencedFromToLocation;
     // (undocumented)
@@ -2729,7 +2734,7 @@ export class LinearlyReferencedFromToLocation extends LinearlyReferencedLocation
 // @beta
 export class LinearlyReferencedLocation extends ElementMultiAspect {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
@@ -2743,7 +2748,7 @@ export class LinearlyReferencedToPositionRefersToReferent extends RelatedElement
 export abstract class LinearPhysicalElement extends PhysicalElement {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
@@ -2753,9 +2758,9 @@ export class LinearReferencingSchema extends Schema {
     // (undocumented)
     static registerSchema(): void;
     // (undocumented)
-    static readonly schemaFilePath: string;
+    static get schemaFilePath(): string;
     // (undocumented)
-    static readonly schemaName: string;
+    static get schemaName(): string;
 }
 
 // @public
@@ -2763,7 +2768,7 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
     // @internal
     constructor(props: LineStyleProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     data: string;
@@ -2925,20 +2930,20 @@ export namespace LineStyleDefinition {
 // @public
 export abstract class LinkElement extends InformationReferenceElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
 // @public
 export class LinkModel extends InformationModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class LinkPartition extends InformationPartitionElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @internal
@@ -2953,7 +2958,7 @@ export class Model extends Entity implements ModelProps {
     constructor(props: ModelProps, iModel: IModelDb);
     buildConcurrencyControlRequest(opcode: DbOpcode): void;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     delete(): void;
     // (undocumented)
     getJsonProperty(name: string): any;
@@ -2999,7 +3004,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     // @internal
     constructor(props: ModelSelectorProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): ModelSelector;
@@ -3015,10 +3020,10 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
     constructor(clientConfiguration: OidcDesktopClientConfiguration);
     dispose(): void;
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    readonly hasExpired: boolean;
-    readonly hasSignedIn: boolean;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
     initialize(requestContext: ClientRequestContext): Promise<void>;
-    readonly isAuthorized: boolean;
+    get isAuthorized(): boolean;
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
     signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
@@ -3032,10 +3037,10 @@ export class OpenParams {
     timeout?: number | undefined);
     equals(other: OpenParams): boolean;
     static fixedVersion(): OpenParams;
-    readonly isBriefcase: boolean;
-    readonly isSnapshot: boolean;
+    get isBriefcase(): boolean;
+    get isSnapshot(): boolean;
     // @deprecated
-    readonly isStandalone: boolean;
+    get isStandalone(): boolean;
     readonly openMode: OpenMode;
     static pullAndPush(): OpenParams;
     // @deprecated
@@ -3048,7 +3053,7 @@ export class OpenParams {
 export class OrthographicViewDefinition extends SpatialViewDefinition {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): OrthographicViewDefinition;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
     setRange(range: Range3d): void;
@@ -3059,7 +3064,7 @@ export abstract class PhysicalElement extends SpatialElement {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3072,7 +3077,7 @@ export class PhysicalElementAssemblesElements extends ElementOwnsChildElements {
 // @public
 export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3085,7 +3090,7 @@ export class PhysicalElementIsOfType extends GeometricElement3dHasTypeDefinition
 // @public
 export class PhysicalModel extends SpatialModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
 }
 
@@ -3093,13 +3098,13 @@ export class PhysicalModel extends SpatialModel {
 export class PhysicalObject extends PhysicalElement {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class PhysicalPartition extends InformationPartitionElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3107,7 +3112,7 @@ export abstract class PhysicalType extends TypeDefinitionElement {
     // @internal
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
@@ -3115,35 +3120,35 @@ export abstract class PhysicalType extends TypeDefinitionElement {
 export class PlanCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class Platform {
     // @beta
-    static readonly electron: any;
+    static get electron(): any;
     // @beta
-    static readonly imodeljsMobile: any;
-    static readonly isDesktop: boolean;
-    static readonly isMobile: boolean;
-    static readonly isNodeJs: boolean;
+    static get imodeljsMobile(): any;
+    static get isDesktop(): boolean;
+    static get isMobile(): boolean;
+    static get isNodeJs(): boolean;
     // @internal (undocumented)
     static load(dir?: string): typeof IModelJsNative;
-    static readonly platformName: string;
+    static get platformName(): string;
 }
 
 // @internal
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
 export class Referent extends ReferentElement {
     constructor(props: ReferentElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     static create(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, referencedElementId: Id64String): Referent;
     // (undocumented)
@@ -3156,7 +3161,7 @@ export class Referent extends ReferentElement {
 export abstract class ReferentElement extends SpatialLocationElement implements ReferentElementProps, LinearlyLocatedBase {
     constructor(props: ReferentElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     getLinearElementId(): Id64String | undefined;
     // (undocumented)
@@ -3169,7 +3174,7 @@ export class Relationship extends Entity implements RelationshipProps {
     constructor(props: RelationshipProps, iModel: IModelDb);
     buildConcurrencyControlRequest(opcode: DbOpcode): void;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     delete(): void;
     // (undocumented)
     static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T;
@@ -3212,7 +3217,7 @@ export class RenderMaterialElement extends DefinitionElement implements RenderMa
     // @internal
     constructor(props: RenderMaterialProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElement.Params): RenderMaterialElement;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
     // (undocumented)
@@ -3252,32 +3257,32 @@ export class RenderMaterialOwnsRenderMaterials extends ElementOwnsChildElements 
 // @public
 export class RepositoryLink extends UrlLink {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class RepositoryModel extends DefinitionModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export abstract class RoleElement extends Element {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class RoleModel extends Model {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class Schema {
     // @internal
     protected constructor();
-    static readonly schemaName: string;
+    static get schemaName(): string;
 }
 
 // @internal (undocumented)
@@ -3298,7 +3303,7 @@ export class Schemas {
 export class SectionCallout extends Callout {
     constructor(props: CalloutProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3306,13 +3311,13 @@ export class SectionDrawing extends Drawing {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class SectionDrawingModel extends DrawingModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
@@ -3321,7 +3326,7 @@ export class SectionLocation extends SpatialLocationElement implements SectionLo
     constructor(props: SectionLocationProps, iModel: IModelDb);
     categorySelectorId: Id64String;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     clipGeometry?: string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
@@ -3338,7 +3343,7 @@ export class Sheet extends Document implements SheetProps {
     // @internal
     constructor(props: SheetProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -3357,7 +3362,7 @@ export class SheetBorderTemplate extends Document implements SheetBorderTemplate
     // @internal
     constructor(props: SheetBorderTemplateProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // (undocumented)
     height?: number;
     // (undocumented)
@@ -3367,7 +3372,7 @@ export class SheetBorderTemplate extends Document implements SheetBorderTemplate
 // @public
 export class SheetModel extends GraphicalModel2d {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3377,7 +3382,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
     // (undocumented)
     border?: Id64String;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
@@ -3389,7 +3394,7 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
 // @public
 export class SheetViewDefinition extends ViewDefinition2d {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3405,7 +3410,7 @@ export class SpatialCategory extends Category {
     // @internal
     constructor(opts: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): SpatialCategory;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static getCodeSpecName(): string;
@@ -3418,14 +3423,14 @@ export abstract class SpatialElement extends GeometricElement3d {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public (undocumented)
 export class SpatialLocation extends SpatialLocationElement {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3433,7 +3438,7 @@ export abstract class SpatialLocationElement extends SpatialElement {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3446,13 +3451,13 @@ export class SpatialLocationIsOfType extends GeometricElement3dHasTypeDefinition
 // @public
 export class SpatialLocationModel extends SpatialModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class SpatialLocationPartition extends InformationPartitionElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3460,14 +3465,14 @@ export abstract class SpatialLocationType extends TypeDefinitionElement {
     // @internal
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
 // @public
 export abstract class SpatialModel extends GeometricModel3d {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3475,7 +3480,7 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     // @internal
     constructor(props: SpatialViewDefinitionProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createWithCamera(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex, cameraAngle?: number): SpatialViewDefinition;
@@ -3496,9 +3501,9 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     getColumnCount(): number;
     getRow(): any;
     getValue(columnIx: number): SqliteValue;
-    readonly isPrepared: boolean;
-    readonly isReadonly: boolean;
-    readonly isShared: boolean;
+    get isPrepared(): boolean;
+    get isReadonly(): boolean;
+    get isShared(): boolean;
     next(): IteratorResult<any>;
     prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, sql: string): void;
     reset(): void;
@@ -3530,16 +3535,16 @@ export class SqliteStatementCache {
 // @internal
 export class SqliteValue {
     constructor(stmt: IModelJsNative.SqliteStatement, colIndex: number);
-    readonly columnName: string;
+    get columnName(): string;
     getBlob(): Uint8Array;
     getDouble(): number;
     getGuid(): GuidString;
     getId(): Id64String;
     getInteger(): number;
     getString(): string;
-    readonly isNull: boolean;
-    readonly type: SqliteValueType;
-    readonly value: any;
+    get isNull(): boolean;
+    get type(): SqliteValueType;
+    get value(): any;
 }
 
 // @internal
@@ -3570,7 +3575,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
     constructor(props: SubCategoryProps, iModel: IModelDb);
     appearance: SubCategoryAppearance;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props): SubCategory;
     static createCode(iModel: IModelDb, parentCategoryId: CodeScopeProps, codeValue: string): Code;
     description?: string;
@@ -3578,7 +3583,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
     getSubCategoryId(): Id64String;
     getSubCategoryName(): string;
     static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props): Id64String;
-    readonly isDefaultSubCategory: boolean;
+    get isDefaultSubCategory(): boolean;
     // @internal (undocumented)
     toJSON(): SubCategoryProps;
 }
@@ -3588,7 +3593,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
     // @internal
     constructor(props: SubjectProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Subject;
     static createCode(iModelDb: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
@@ -3622,26 +3627,26 @@ export enum SyncMode {
 export class TemplateRecipe2d extends RecipeDefinitionElement {
     constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @internal
 export class TemplateRecipe3d extends RecipeDefinitionElement {
     constructor(props: ElementProps, iModel: IModelDb);
     // (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @internal
 export class TemplateViewDefinition2d extends ViewDefinition2d {
     // (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @internal
 export class TemplateViewDefinition3d extends ViewDefinition3d {
     // (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3649,7 +3654,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
     // @internal
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3657,7 +3662,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3665,7 +3670,7 @@ export class Texture extends DefinitionElement implements TextureProps {
     // @internal
     constructor(props: TextureProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, format: ImageSourceFormat, data: string, width: number, height: number, description: string, flags: TextureFlags): Texture;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, name: string): Code;
     // (undocumented)
@@ -3689,7 +3694,7 @@ export class Texture extends DefinitionElement implements TextureProps {
 export class TitleText extends DetailingSymbol {
     constructor(props: GeometricElement2dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public (undocumented)
@@ -3723,13 +3728,13 @@ export class TxnManager {
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
     getUndoString(): string;
-    readonly hasFatalError: boolean;
-    readonly hasLocalChanges: boolean;
-    readonly hasPendingTxns: boolean;
-    readonly hasUnsavedChanges: boolean;
-    readonly isRedoPossible: boolean;
+    get hasFatalError(): boolean;
+    get hasLocalChanges(): boolean;
+    get hasPendingTxns(): boolean;
+    get hasUnsavedChanges(): boolean;
+    get isRedoPossible(): boolean;
     isTxnIdValid(txnId: TxnIdString): boolean;
-    readonly isUndoPossible: boolean;
+    get isUndoPossible(): boolean;
     readonly onAfterUndoRedo: BeEvent<(_action: TxnAction) => void>;
     // @internal (undocumented)
     protected _onAllInputsHandled(elClassName: string, elId: Id64String): void;
@@ -3766,7 +3771,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
     // @internal
     constructor(props: TypeDefinitionElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
@@ -3782,7 +3787,7 @@ export interface UpdateModelOptions extends ModelProps {
 // @public
 export class UrlLink extends LinkElement {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @beta
@@ -3796,7 +3801,7 @@ export interface ValidationError {
 export class ViewAttachment extends GraphicalElement2d implements ViewAttachmentProps {
     constructor(props: ViewAttachmentProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
@@ -3807,7 +3812,7 @@ export class ViewAttachment extends GraphicalElement2d implements ViewAttachment
 export class ViewAttachmentLabel extends DetailingSymbol implements ViewAttachmentLabelProps {
     constructor(props: ViewAttachmentLabelProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
@@ -3816,7 +3821,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     protected constructor(props: ViewDefinitionProps, iModel: IModelDb);
     categorySelectorId: Id64String;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
@@ -3838,7 +3843,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     angle: Angle;
     baseModelId: Id64String;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     delta: Point2d;
@@ -3856,7 +3861,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     camera: Camera;
     cameraOn: boolean;
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
     extents: Vector3d;
     loadDisplayStyle3d(): DisplayStyle3d;
     origin: Point3d;
@@ -3869,13 +3874,13 @@ export class VolumeElement extends SpatialLocationElement {
     // @internal
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 // @public
 export class WebMercatorModel extends SpatialModel {
     // @internal (undocumented)
-    static readonly className: string;
+    static get className(): string;
 }
 
 

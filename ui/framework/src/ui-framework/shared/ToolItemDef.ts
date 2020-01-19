@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @packageDocumentation
+ * @module Item
+ */
 
 import { OnItemExecutedFunc } from "@bentley/ui-abstract";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";

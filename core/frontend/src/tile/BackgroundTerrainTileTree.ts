@@ -3,7 +3,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tile
+ */
 import { BackgroundMapSettings, TerrainProviderName, TerrainHeightOriginMode, TerrainSettings, ViewFlag, RenderMode } from "@bentley/imodeljs-common";
 import { TileTree, TileTreeReference, TileTreeSet } from "./TileTree";
 import { Tile } from "./Tile";

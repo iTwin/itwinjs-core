@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 import { BentleyStatus, BeEvent, BeTimePoint, BeUiEvent, Id64Arg } from "@bentley/bentleyjs-core";
 import { GeometryStreamProps } from "@bentley/imodeljs-common";
 import { HitDetail } from "./HitDetail";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module MarkupTools */
+/** @packageDocumentation
+ * @module MarkupTools
+ */
 
 import { Point2d, Point3d, Transform, XAndY, Vector2d } from "@bentley/geometry-core";
 import { BeButtonEvent, BeModifierKeys, EventHandled, IModelApp, InputSource, BeButton, BeTouchEvent, ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection, CoreTools } from "@bentley/imodeljs-frontend";

@@ -6,17 +6,13 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Splitter } from "../../ui-ninezone";
-import { createRect } from "../Utils";
+import { createBoundingClientRect } from "../Utils";
 
 describe("<Splitter />", () => {
-  let addEventListenerSpy: sinon.SinonSpy | undefined;
-  let removeEventListenerSpy: sinon.SinonSpy | undefined;
-  let createRefStub: sinon.SinonStub | undefined;
+  const sandbox = sinon.createSandbox();
 
   afterEach(() => {
-    addEventListenerSpy && addEventListenerSpy.restore();
-    removeEventListenerSpy && removeEventListenerSpy.restore();
-    createRefStub && createRefStub.restore();
+    sandbox.restore();
   });
 
   it("should render", () => {
@@ -42,7 +38,7 @@ describe("<Splitter />", () => {
   });
 
   it("should add document event listeners", () => {
-    addEventListenerSpy = sinon.spy(document, "addEventListener");
+    const addEventListenerSpy = sandbox.spy(document, "addEventListener");
 
     mount(<Splitter />);
     addEventListenerSpy.calledWith("pointerup").should.true;
@@ -51,7 +47,7 @@ describe("<Splitter />", () => {
   });
 
   it("should remove event listeners", () => {
-    removeEventListenerSpy = sinon.spy(document, "removeEventListener");
+    const removeEventListenerSpy = sandbox.spy(document, "removeEventListener");
     const sut = mount(<Splitter />);
     sut.unmount();
 
@@ -90,7 +86,7 @@ describe("<Splitter />", () => {
     };
     sinon.stub(gripRef, "current").set(() => { });
 
-    createRefStub = sinon.stub(React, "createRef");
+    const createRefStub = sandbox.stub(React, "createRef");
     createRefStub.onSecondCall().returns(gripRef);
     createRefStub.returns({ current: null });
     const sut = mount<Splitter>(
@@ -134,10 +130,10 @@ describe("<Splitter />", () => {
     );
 
     const splitterNode = sut.getDOMNode() as HTMLElement;
-    sinon.stub(splitterNode, "getBoundingClientRect").returns(createRect(0, 0, 100, 0));
+    sinon.stub(splitterNode, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 100, 0));
     const grip = sut.find(".nz-grip");
     const gripNode = grip.getDOMNode() as HTMLElement;
-    sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(40, 0, 60, 0));
+    sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(40, 0, 60, 0));
 
     grip.simulate("pointerDown");
 
@@ -159,10 +155,10 @@ describe("<Splitter />", () => {
     );
 
     const splitterNode = sut.getDOMNode() as HTMLElement;
-    sinon.stub(splitterNode, "getBoundingClientRect").returns(createRect(0, 0, 0, 100));
+    sinon.stub(splitterNode, "getBoundingClientRect").returns(createBoundingClientRect(0, 0, 0, 100));
     const grip = sut.find(".nz-grip");
     const gripNode = grip.getDOMNode() as HTMLElement;
-    sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(0, 40, 0, 60));
+    sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(0, 40, 0, 60));
 
     grip.simulate("pointerDown");
 
@@ -179,7 +175,7 @@ describe("<Splitter />", () => {
     const gripRef = {
       current: null,
     };
-    createRefStub = sinon.stub(React, "createRef");
+    const createRefStub = sandbox.stub(React, "createRef");
     createRefStub.onSecondCall().returns(gripRef);
     createRefStub.returns({ current: null });
     const sut = mount<Splitter>(
@@ -197,7 +193,7 @@ describe("<Splitter />", () => {
 
     const grip = sut.find(".nz-grip");
     const gripNode = grip.getDOMNode() as HTMLElement;
-    sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(20, 0, 30, 0));
+    sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(20, 0, 30, 0));
 
     grip.simulate("pointerDown");
 
@@ -228,7 +224,7 @@ describe("<Splitter />", () => {
 
     const grip = sut.find(".nz-grip");
     const gripNode = grip.getDOMNode() as HTMLElement;
-    sinon.stub(gripNode, "getBoundingClientRect").returns(createRect(20, 0, 30, 0));
+    sinon.stub(gripNode, "getBoundingClientRect").returns(createBoundingClientRect(20, 0, 30, 0));
 
     grip.simulate("pointerDown");
 

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { Vector3d, Point3d, Matrix3d, Transform, Matrix4d } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";

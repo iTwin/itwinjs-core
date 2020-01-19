@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 
 import { IModelClient, ChangeSet, ChangeSetQuery, VersionQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelError } from "./IModelError";

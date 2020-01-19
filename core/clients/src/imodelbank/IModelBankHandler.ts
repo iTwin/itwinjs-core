@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModelHubClient */
+/** @packageDocumentation
+ * @module iModelHubClient
+ */
 import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler } from "../imodelhub/BaseHandler";
 import { FileHandler } from "../imodeljs-clients";

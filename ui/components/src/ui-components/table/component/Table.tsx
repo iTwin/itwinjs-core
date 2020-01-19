@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Table */
+/** @packageDocumentation
+ * @module Table
+ */
 
 import { memoize } from "lodash";
 import * as React from "react";

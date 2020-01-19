@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utilities */
+/** @packageDocumentation
+ * @module Utilities
+ */
 
 import { Store } from "redux";
 
@@ -136,7 +138,6 @@ export class UiFramework {
     return UiFramework._oidcClient;
   }
 
-  /** @beta */
   // istanbul ignore next
   public static set oidcClient(oidcClient: IOidcFrontendClient | undefined) {
     if (UiFramework._removeUserStateListener)

@@ -10,7 +10,9 @@ import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { RegionOps } from "../RegionOps";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 class MapCurvePrimitiveToCurveLocatioNDetailPairArray {
   public primitiveToPair = new Map<CurvePrimitive, CurveLocationDetailPair[]>();

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RPC */
+/** @packageDocumentation
+ * @module RPC
+ */
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";

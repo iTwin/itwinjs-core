@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Content */
+/** @packageDocumentation
+ * @module Content
+ */
 
 /**
  * Displayed content types. Affects how the content is formatted, e.g.
