@@ -24,6 +24,8 @@ import { LinearSweep } from "../../solid/LinearSweep";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { ParityRegion } from "../../curve/ParityRegion";
+import { GraphChecker } from "../topology/Graph.test";
+import { HalfEdgeGraph } from "../../topology/Graph";
 /* tslint:disable:no-console */
 
 describe("RegionBoolean", () => {
@@ -177,44 +179,81 @@ describe("RegionBoolean", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let xBase = 0.0;
-    for (const q of [0, 0, 1, 0]) {
-      let x0 = xBase;
-      let y0 = 0;
-      const a0 = -q;
-      const a1 = 12 + q;
-      const b0 = 4 - q;
-      const b1 = 8 + q;
-      const loopA = Loop.createPolygon(
-        GrowableXYZArray.create([[8, 0], [4, 0], [a0, a0], [0, 4], [0, 8], [a0, 12],
-        [4, 11], [8, 11], [a1, 12], [12, 8], [12, 4], [a1, a0], [8, 0]]));
-      // loopA.reverseChildrenInPlace();
-      const loopB = Loop.createPolygon(
-        GrowableXYZArray.create([[8, 0], [4, 0], [b0, 4], [4, 8], [8, 8], [b1, 4], [8, 0]]));
-      // loopB.reverseChildrenInPlace();
-      const region = ParityRegion.create();
-      region.tryAddChild(loopA);
-      region.tryAddChild(loopB);
-
-      const solid = LinearSweep.create(region, Vector3d.create(0, 0, 1), true)!;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, x0, y0);
-      y0 += 20;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, solid, x0, y0);
-      const builder = PolyfaceBuilder.create();
-      builder.addLinearSweep(solid);
-      const mesh = builder.claimPolyface();
-      y0 += 15;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
-      x0 += 15;
-      y0 = 0.0;
-      const fixedRegions = RegionOps.constructAllXYRegionLoops(region);
-      saveShiftedLoops(allGeometry, fixedRegions, x0, y0, 30.0);
-      const sortedLoops = RegionOps.sortOuterAndHoleLoopsXY([loopA, loopB]);
-      x0 += 15;
-      y0 = 0.0;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, sortedLoops, x0, y0);
-      xBase += 100;
+    let yBase = 0.0;
+    // q is an offset applied to corners to affect whether contiguous segments are colinear.
+    //  q=0 makes lots of colinear edges.
+    //  q=1 spreads corners to make all angles nonzero.
+    // q1,q2 is an offset applied to a single point of the interior shape to change it from
+    //   0,0 full edge touch
+    //   1,0 single point touch from inside.
+    //   1,1 full hole
+    // -1,-1 partly out.
+    for (const skewFactor of [0, 0.01]) {
+      for (const q1q2 of [[-1, -1], [0, 0], [0, 1], [1, 1], [-1, -1]]) {
+        for (const q of [1, 0]) {
+          const a0 = -q;
+          const a1 = 12 + q;
+          const b0 = 4 - q;
+          const b1 = 8 + q;
+          const q1 = q1q2[0];
+          const q2 = q1q2[1];
+          const pointArrayA = [[8, 0], [4, 0], [a0, a0], [0, 4], [0, 8], [a0, 12],
+          [4, 11], [8, 11], [a1, 12], [12, 8], [12, 4], [a1, a0], [8, 0]];
+          const pointArrayB = [[8, q2], [4, q1], [b0, 4], [4, 7], [8, 7], [b1, 4], [8, q2]];
+          for (const data of [pointArrayA, pointArrayB]) {
+            for (const xy of data) {
+              xy[1] += skewFactor * xy[0];
+            }
+          }
+          runRegionTest(allGeometry, pointArrayA, pointArrayB, xBase, yBase);
+          xBase += 100;
+        }
+        xBase += 200;
+      }
+      xBase = 0;
+      yBase += 100;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithCoincidentEdges");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("RegularizationFailure", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let xBase = 0.0;
+    let yBase = 0.0;
+    // q is an offset applied to corners to affect whether contiguous segments are colinear.
+    //  q=0 makes lots of colinear edges.
+    //  q=1 spreads corners to make all angles nonzero.
+    // q1,q2 is an offset applied to a single point of the interior shape to change it from
+    //   0,0 full edge touch
+    //   1,0 single point touch from inside.
+    //   1,1 full hole
+    // -1,-1 partly out.
+    for (const skewFactor of [0, 0.01]) {
+      for (const q1q2 of [[-1, -1]]) { // , [0, 0], [0, 1], [1, 1], [-1, -1]]) {
+        for (const q of [1, 0]) {
+          const a0 = -q;
+          const b0 = 4 - q;
+          const q1 = q1q2[0];
+          const q2 = q1q2[1];
+          const pointArrayA = [[8, 0], [4, 0], [a0, a0], [0, 10],
+          [8, 0]];
+          const pointArrayB = [[8, q2], [4, q1], [b0, 4], [8, q2]];
+          for (const data of [pointArrayA, pointArrayB]) {
+            for (const xy of data) {
+              xy[1] += skewFactor * xy[0];
+            }
+          }
+          runRegionTest(allGeometry, pointArrayA, pointArrayB, xBase, yBase);
+          xBase += 100;
+        }
+        xBase += 300;
+      }
+      // skew factors repeat at higher y ...
+      xBase = 0;
+      yBase += 300.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "RegularizationFailure");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -245,4 +284,60 @@ function saveShiftedLoops(allGeometry: GeometryQuery[], loops: SignedLoops | Sig
       }
     }
   }
+}
+function runRegionTest(allGeometry: GeometryQuery[], pointArrayA: number[][], pointArrayB: number[][], xBase: number, yBase: number) {
+  let x0 = xBase;
+  let y0 = yBase;
+  const loopA = Loop.createPolygon(GrowableXYZArray.create(pointArrayA));
+  // loopA.reverseChildrenInPlace();
+  const loopB = Loop.createPolygon(GrowableXYZArray.create(pointArrayB));
+  // loopB.reverseChildrenInPlace();
+  const region = ParityRegion.create();
+  region.tryAddChild(loopA);
+  region.tryAddChild(loopB);
+  // Output geometry:
+  //                    polygonXYAreaDifferenceLoopsToPolyface OffsetsOfPositives
+  //    Mesh            polygonXYAreaUnionLoopsToPolyface      SliverAreas
+  //    SweptSolid                                             NegativeAreas
+  //    ParityRegionA   ParityRegionB                          PositiveAreas      <repeat stack per connected component>
+  // Where ParityRegionA is by direct assembly of loops, let downstream sort.
+  //       ParityRegionB is assembled by sortOuterAndHoleLoopsXY
+  //
+  const solid = LinearSweep.create(region, Vector3d.create(0, 0, 1), true)!;
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, region, x0, y0);
+  y0 += 15;
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, solid, x0, y0);
+  const builder = PolyfaceBuilder.create();
+  builder.addLinearSweep(solid);
+  const mesh = builder.claimPolyface();
+  y0 += 15;
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+
+  const sortedLoops = RegionOps.sortOuterAndHoleLoopsXY([loopA, loopB]);
+  x0 += 20;
+  y0 = yBase;
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, sortedLoops, x0, y0);
+  y0 += 40;
+  let y1 = y0 + 100;
+  if (Checker.noisy.ParityRegionAnalysis) {
+    RegionOps.setCheckPointFunction(
+      (name: string, graph: HalfEdgeGraph, _properties: string, _extraData?: any) => {
+        GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y1 += 15);
+        const euler = graph.countVertexLoops() - graph.countNodes() / 2.0 + graph.countFaceLoops();
+        console.log(" Checkpoint " + name + "." + _properties,
+          { v: graph.countVertexLoops(), e: graph.countNodes(), f: graph.countFaceLoops(), eulerCharacteristic: euler});
+        GraphChecker.dumpGraph(graph);
+      });
+  }
+  const unionRegion = RegionOps.polygonXYAreaUnionLoopsToPolyface(pointArrayA, pointArrayB);
+  RegionOps.setCheckPointFunction();
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, unionRegion, x0, y0);
+  y0 += 20;
+  const diffRegion = RegionOps.polygonXYAreaDifferenceLoopsToPolyface(pointArrayA, pointArrayB);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, diffRegion, x0, y0);
+
+  x0 += 15;
+  y0 = yBase;
+  const fixedRegions = RegionOps.constructAllXYRegionLoops(region);
+  saveShiftedLoops(allGeometry, fixedRegions, x0, y0, 15.0);
 }

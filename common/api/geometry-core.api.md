@@ -2087,6 +2087,7 @@ export class HalfEdge {
     decommission(): void;
     distanceXY(other: HalfEdge): number;
     distanceXYZ(other: HalfEdge): number;
+    static dotProductNodeToNodeVectorsXY(baseA: HalfEdge, targetA: HalfEdge, baseB: HalfEdge, targetB: HalfEdge): number;
     get edgeMate(): HalfEdge;
     edgeTag?: any;
     get facePredecessor(): HalfEdge;
@@ -2107,6 +2108,7 @@ export class HalfEdge {
     get id(): any;
     isEqualXY(other: HalfEdge): boolean;
     isMaskSet(mask: HalfEdgeMask): boolean;
+    static isNodeVisibleInSector(spaceNode: HalfEdge, sectorNode: HalfEdge): boolean;
     maskBits: number;
     static nodeToId(node: HalfEdge): any;
     static nodeToIdMaskXY(node: HalfEdge): {
@@ -4965,7 +4967,7 @@ export class Triangulator {
     static directCreateFaceLoopFromCoordinates(graph: HalfEdgeGraph, data: LineStringDataVariant): HalfEdge | undefined;
     static flipTriangles(graph: HalfEdgeGraph): number;
     static flipTrianglesInEdgeSet(graph: HalfEdgeGraph, edgeSet: MarkedEdgeSet): number;
-    static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): void;
+    static triangulateAllPositiveAreaFaces(graph: HalfEdgeGraph): boolean;
     static triangulateSingleMonotoneFace(graph: HalfEdgeGraph, start: HalfEdge): boolean;
 }
 

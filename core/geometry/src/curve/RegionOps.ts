@@ -225,7 +225,7 @@ function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineS
     // split edges where they cross . . .
     HalfEdgeGraphMerge.splitIntersectingEdges(graph);
     if (graphCheckPoint)
-      graphCheckPoint("After splitIntersectingEdges", graph, "U");
+      graphCheckPoint("After splitIntersectingEdges", graph, "S");
     // sort radially around vertices.
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
     if (graphCheckPoint)
@@ -320,7 +320,7 @@ export class RegionOps {
         announceIsolatedLoop(graph, loopSeed);
     } else if (Array.isArray(data)) {
       if (data.length > 0) {
-        if (Point3d.isXAndY(data[0])) {
+        if (Point3d.isAnyImmediatePointType(data[0])) {
           const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(graph, data as LineStringDataVariant);
           if (loopSeed !== undefined)
             announceIsolatedLoop(graph, loopSeed);
