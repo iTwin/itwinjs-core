@@ -25,6 +25,7 @@ package-deps.json
 # trash
 *.bak
 *.orig
+.node-xmlhttprequest-sync*
 
 # xcode
 /**/xcuserdata
