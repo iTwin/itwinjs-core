@@ -33,6 +33,8 @@ import {
   TileAdmin,
   TileRequest,
   TileTree,
+  TileTreeLoadStatus,
+  tileTreeParamsFromJSON,
   ViewState,
 } from "@bentley/imodeljs-frontend";
 import { TileTestCase, TileTestData } from "./TileIO.data";
@@ -568,7 +570,7 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
   const owner = ref.treeOwner;
   owner.load();
   await waitUntil(() => {
-    return TileTree.LoadStatus.Loaded === owner.loadStatus;
+    return TileTreeLoadStatus.Loaded === owner.loadStatus;
   });
 
   const tree = owner.tileTree;
@@ -627,14 +629,14 @@ describe("mirukuru TileTree", () => {
     expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
 
     const loader = new IModelTileLoader(imodel, treeProps.formatVersion, BatchType.Primary, true, true, undefined);
-    const tree = new TileTree(TileTree.paramsFromJSON(treeProps, imodel, true, loader, "0x1c"));
+    const tree = new TileTree(tileTreeParamsFromJSON(treeProps, imodel, true, loader, "0x1c"));
 
     const response: TileRequest.Response = await loader.requestTileContent(tree.rootTile, () => false);
     expect(response).not.to.be.undefined;
     expect(response).instanceof(Uint8Array);
 
     const isCanceled = () => false; // Our tile has no Request, therefore not considered in "loading" state, so would be immediately treated as "canceled" during loading...
-    const gfx = await loader.loadTileContent(tree.rootTile, response as Uint8Array, isCanceled);
+    const gfx = await loader.loadTileContent(tree.rootTile, response as Uint8Array, IModelApp.renderSystem, isCanceled);
     expect(gfx).not.to.be.undefined;
     expect(gfx.graphic).not.to.be.undefined;
     expect(gfx.isLeaf).to.be.true;
@@ -684,7 +686,7 @@ describe("mirukuru TileTree", () => {
     expect(v3Props).not.to.be.undefined;
     const loader = new IModelTileLoader(imodel, v3Props.formatVersion, BatchType.Primary, false, false, undefined);
     v3Props.rootTile.contentId = loader.rootContentId;
-    const v3Tree = new TileTree(TileTree.paramsFromJSON(v3Props, imodel, true, loader, "0x1c"));
+    const v3Tree = new TileTree(tileTreeParamsFromJSON(v3Props, imodel, true, loader, "0x1c"));
     await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
   });
 

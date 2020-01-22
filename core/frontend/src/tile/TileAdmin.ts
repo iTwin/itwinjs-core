@@ -28,8 +28,11 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { Tile } from "./Tile";
-import { TileRequest } from "./TileRequest";
+import {
+  Tile,
+  TileLoadStatus,
+  TileRequest,
+} from "./internal";
 import { Viewport } from "../Viewport";
 
 /** Provides functionality associated with [[Tile]]s, mostly in the area of scheduling requests for tile content.
@@ -660,7 +663,7 @@ class Admin extends TileAdmin {
         // ###TODO: This assertion triggers for AttachmentViewports used for rendering 3d sheet attachments.
         // Determine why and fix.
         // assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
-        if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
+        if (TileLoadStatus.NotLoaded === tile.loadStatus) {
           const request = new TileRequest(tile, vp);
           tile.request = request;
           this._pendingRequests.append(request);

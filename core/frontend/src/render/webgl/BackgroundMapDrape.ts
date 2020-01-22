@@ -12,7 +12,7 @@ import { RenderGraphic } from "../System";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";
-import { TileTree } from "../../tile/TileTree";
+import { BackgroundMapTileTreeReference, GraphicsCollectorDrawArgs, TileTree } from "../../tile/internal";
 import { Frustum, FrustumPlanes, RenderTexture, ColorDef } from "@bentley/imodeljs-common";
 import { Matrix4d } from "@bentley/geometry-core";
 import { System } from "./System";
@@ -22,8 +22,6 @@ import { RenderPass } from "./RenderFlags";
 import { ViewState3d } from "../../ViewState";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { TextureDrape } from "./TextureDrape";
-import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
-import { GraphicsCollectorDrawArgs } from "./PlanarClassifier";
 import { FeatureSymbology } from "../FeatureSymbology";
 
 /** @internal */

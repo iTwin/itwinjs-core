@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import { Capabilities, RenderType, DepthType, System } from "../webgl";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
-import { TileAdmin } from "../tile/TileAdmin";
+import { TileAdmin } from "../tile/internal";
 import { RenderSystem } from "../render/System";
 import { WebGLRenderCompatibilityStatus, WebGLFeature } from "../RenderCompatibility";
 

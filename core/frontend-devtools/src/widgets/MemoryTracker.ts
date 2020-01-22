@@ -10,14 +10,14 @@
 import {
   IModelApp,
   RenderMemory,
-  TileTree,
+  TileTreeOwner,
   TileTreeSet,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { createComboBox, ComboBoxEntry } from "../ui/ComboBox";
 
-function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTree.Owner): void {
+function collectTileTreeMemory(stats: RenderMemory.Statistics, owner: TileTreeOwner): void {
   const tree = owner.tileTree;
   if (undefined !== tree)
     tree.collectStatistics(stats);

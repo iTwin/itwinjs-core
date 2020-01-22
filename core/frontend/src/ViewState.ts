@@ -35,9 +35,10 @@ import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManag
 import { GraphicType } from "./render/GraphicBuilder";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { TileTree, TileTreeReference, TileTreeSet } from "./tile/TileTree";
+import { TileTreeReference, TileTreeLoadStatus, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { Viewport, ViewingSpace } from "./Viewport";
+import { Viewport } from "./Viewport";
+import { ViewingSpace } from "./ViewingSpace";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
  * @public
@@ -288,7 +289,7 @@ export abstract class ViewState extends ElementState {
     let allLoaded = true;
     this.forEachTileTreeRef((ref) => {
       // Loaded or NotFound qualify as "loaded" - either the load succeeded or failed.
-      if (ref.treeOwner.loadStatus < TileTree.LoadStatus.Loaded)
+      if (ref.treeOwner.loadStatus < TileTreeLoadStatus.Loaded)
         allLoaded = false;
     });
 

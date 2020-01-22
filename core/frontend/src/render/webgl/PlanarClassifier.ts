@@ -6,17 +6,16 @@
  * @module WebGL
  */
 import { GL } from "./GL";
-import { dispose, BeTimePoint } from "@bentley/bentleyjs-core";
+import { dispose } from "@bentley/bentleyjs-core";
 import { FrameBuffer } from "./FrameBuffer";
-import { RenderClipVolume, RenderMemory, RenderGraphic, RenderPlanarClassifier } from "../System";
+import { RenderMemory, RenderGraphic, RenderPlanarClassifier } from "../System";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";
-import { TileTree } from "../../tile/TileTree";
-import { Tile } from "../../tile/Tile";
+import { GraphicsCollectorDrawArgs, TileTree } from "../../tile/internal";
 import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SpatialClassificationProps, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry, CombineTexturesGeometry } from "./CachedGeometry";
-import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Transform, Matrix4d, Map4d } from "@bentley/geometry-core";
+import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Matrix4d } from "@bentley/geometry-core";
 import { System } from "./System";
 import { TechniqueId } from "./TechniqueId";
 import { getDrawParams } from "./ScratchDrawParams";
@@ -29,28 +28,6 @@ import { RenderPass } from "./RenderFlags";
 import { ViewState3d } from "../../ViewState";
 import { PlanarTextureProjection } from "./PlanarTextureProjection";
 import { WebGLDisposable } from "./Disposable";
-
-export interface GraphicsCollector {
-  addGraphic(graphic: RenderGraphic): void;
-}
-
-export class GraphicsCollectorDrawArgs extends Tile.DrawArgs {
-  constructor(private _planes: FrustumPlanes, private _worldToViewMap: Map4d, private _collector: GraphicsCollector, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
-    super(context, location, root, now, purgeOlderThan, clip);
-  }
-  public get frustumPlanes(): FrustumPlanes { return this._planes; }
-  protected get worldToViewMap(): Map4d { return this._worldToViewMap; }
-  public drawGraphics(): void {
-    if (!this.graphics.isEmpty)
-      this._collector.addGraphic(this.context.createBranch(this.graphics, this.location));
-  }
-
-  public static create(context: SceneContext, collector: GraphicsCollector, tileTree: TileTree, planes: FrustumPlanes, worldToViewMap: Map4d) {
-    const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(tileTree.expirationTime);
-    return new GraphicsCollectorDrawArgs(planes, worldToViewMap, collector, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
-  }
-}
 
 class Textures implements WebGLDisposable {
   private constructor(

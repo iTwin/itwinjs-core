@@ -14,9 +14,7 @@ import {
   JsonUtils,
   utf8ToString,
 } from "@bentley/bentleyjs-core";
-import { TerrainTileLoaderBase, MapTileGeometryAttributionProvider, QuadId, MapTileTreeReference } from "./WebMapTileTree";
-import { TileRequest } from "./TileRequest";
-import { Tile } from "./Tile";
+import { GeographicTilingScheme, MapTilingScheme, QuadId, TerrainTileLoaderBase, TileRequest, Tile, TileAvailability, MapTile, TileContent, MapTileTreeReference, MapTileGeometryAttributionProvider } from "./internal";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { Range1d, Range3d, Point3d, BilinearPatch, Vector3d, Transform } from "@bentley/geometry-core";
 import {
@@ -35,10 +33,7 @@ import { IModelApp } from "../IModelApp";
 import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshParams } from "../render/primitives/VertexTable";
-import { GeographicTilingScheme, MapTilingScheme } from "./MapTilingScheme";
-import { TileAvailability } from "./MapTileAvailability";
-import { MapTile } from "./MapTileTree";
-import { GraphicBranch } from "../render/System";
+import { GraphicBranch, RenderSystem } from "../render/System";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {
@@ -182,12 +177,11 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
 
     return false;
   }
-  public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<Tile.Content> {
+  public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 
     assert(data instanceof Uint8Array);
-    const system = IModelApp.renderSystem;
     const blob = data as Uint8Array;
     const streamBuffer = new ByteStream(blob.buffer);
     const center = nextPoint3d64FromByteStream(streamBuffer);
@@ -371,7 +365,7 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
       graphic = system.createBranch(branch, Transform.createTranslation(rangeCenter));
     }
 
-    const content: Tile.Content = { graphic, contentRange: CesiumWorldTerrainTileLoader._scratchRange.clone() };
+    const content: TileContent = { graphic, contentRange: CesiumWorldTerrainTileLoader._scratchRange.clone() };
     return content;
   }
   private addTriangle(mesh: Mesh, i0: number, i1: number, i2: number) {

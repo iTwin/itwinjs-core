@@ -24,7 +24,7 @@ import { RenderSystemDebugControl } from '@bentley/imodeljs-frontend';
 import { RenderTargetDebugControl } from '@bentley/imodeljs-frontend';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
-import { Tile } from '@bentley/imodeljs-frontend';
+import { TileBoundingBoxes } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { Viewport } from '@bentley/imodeljs-frontend';
@@ -792,7 +792,7 @@ export class ShowTileVolumesTool extends Tool {
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(boxes?: Tile.DebugBoundingBoxes): boolean;
+    run(boxes?: TileBoundingBoxes): boolean;
     // (undocumented)
     static toolId: string;
 }

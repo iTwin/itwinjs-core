@@ -27,7 +27,7 @@ import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
 import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
-import { TileAdmin } from "./tile/TileAdmin";
+import { TileAdmin } from "./tile/internal";
 import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";

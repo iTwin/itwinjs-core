@@ -48,9 +48,8 @@ import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
-import { TileTree } from "../tile/TileTree";
+import { BackgroundMapTileTreeReference, TileTree } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
-import { BackgroundMapTileTreeReference } from "../tile/WebMapTileTree";
 
 // tslint:disable:no-const-enum
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh

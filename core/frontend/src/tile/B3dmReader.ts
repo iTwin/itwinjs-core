@@ -25,15 +25,15 @@ import {
   TileReadStatus,
 } from "@bentley/imodeljs-common";
 import {
+  BatchedTileIdMap,
   GltfReader,
   GltfReaderProps,
   GltfReaderResult,
   ShouldAbortReadGltf,
-} from "./GltfReader";
+} from "./internal";
 import { RenderSystem } from "../render/System";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
-import { BatchedTileIdMap } from "./TileTree";
 
 /**
  * Deserializes a tile in [b3dm](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/specification/TileFormats/Batched3DModel) format.

@@ -5,9 +5,7 @@
 /** @packageDocumentation
  * @module Tile
  */
-import {
-  assert,
-} from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import {
   Point3d,
   Range3d,
@@ -18,14 +16,14 @@ import {
   TileProps,
 } from "@bentley/imodeljs-common";
 import {
-  TileLoader,
- } from "./TileTree";
-import {
   Tile,
-} from "./Tile";
-import {
+  TileContent,
+  TileLoader,
+  TileLoadPriority,
+  TileParams,
   TileRequest,
-} from "./TileRequest";
+} from "./internal";
+import { RenderSystem } from "../render/System";
 
 /** @internal */
 export namespace A3xTile {
@@ -106,10 +104,10 @@ export namespace A3xTile {
     }
 
     public get maxDepth() { return this._maxDepth; }
-    public get priority() { return Tile.LoadPriority.Context; }
+    public get priority() { return TileLoadPriority.Context; }
     protected get _loadEdges() { return false; } // ###TODO why is this in base class??
 
-    public tileRequiresLoading(_params: Tile.Params): boolean {
+    public tileRequiresLoading(_params: TileParams): boolean {
       return true; // ###TODO?
     }
 
@@ -163,7 +161,7 @@ export namespace A3xTile {
       return undefined;
     }
 
-    public async loadTileContent(_tile: Tile, _data: TileRequest.ResponseData, _isCanceled?: () => boolean): Promise<Tile.Content> {
+    public async loadTileContent(_tile: Tile, _data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> {
       return { };
     }
 

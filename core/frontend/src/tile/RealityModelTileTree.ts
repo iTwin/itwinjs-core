@@ -19,13 +19,25 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Point3d, TransformProps, Range3dProps, Range3d, Transform, Vector3d, Matrix3d, XYZ, YawPitchRollAngles } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, RealityData } from "@bentley/imodeljs-clients";
-import { TileTree, TileTreeReference, TileTreeSet, ContextTileLoader, BatchedTileIdMap } from "./TileTree";
-import { Tile } from "./Tile";
-import { TileRequest } from "./TileRequest";
+import {
+  BatchedTileIdMap,
+  ContextTileLoader,
+  Tile,
+  TileLoadPriority,
+  TileParams,
+  TileRequest,
+  TileTree,
+  TileTreeOwner,
+  TileTreeReference,
+  TileTreeSet,
+  TileTreeSupplier,
+  tileTreeParamsFromJSON,
+} from "./internal";
 import { IModelApp } from "../IModelApp";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
-import { SpatialClassifierTileTreeReference, createClassifierTileTreeReference, SpatialClassifiers } from "../SpatialClassification";
+import { SpatialClassifiers } from "../SpatialClassifiers";
+import { SpatialClassifierTileTreeReference, createClassifierTileTreeReference } from "./ClassifierTileTree";
 import { SceneContext } from "../ViewContext";
 import { RenderMemory } from "../render/System";
 import { ViewState } from "../ViewState";
@@ -62,8 +74,8 @@ function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
   return 0;
 }
 
-class RealityTreeSupplier implements TileTree.Supplier {
-  public getOwner(treeId: RealityTreeId, iModel: IModelConnection): TileTree.Owner {
+class RealityTreeSupplier implements TileTreeSupplier {
+  public getOwner(treeId: RealityTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(treeId, this);
   }
 
@@ -221,8 +233,8 @@ class RealityModelTileLoader extends ContextTileLoader {
   public get doDrapeBackgroundMap(): boolean { return this._tree.doDrapeBackgroundMap; }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
-  public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Context; }
-  public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
+  public get priority(): TileLoadPriority { return TileLoadPriority.Context; }
+  public tileRequiresLoading(params: TileParams): boolean { return 0.0 !== params.maximumSize; }
   public get viewFlagOverrides() { return realityModelViewFlagOverrides; }
   public getBatchIdMap(): BatchedTileIdMap | undefined { return this._batchedIdMap; }
   public get clipLowResolutionTiles(): boolean { return true; }
@@ -306,7 +318,9 @@ class RealityModelTileLoader extends ContextTileLoader {
   }
 }
 
+/** @internal */
 export type RealityModelSource = ViewState | DisplayStyleState;
+
 /** @internal */
 export namespace RealityModelTileTree {
   export interface ReferenceProps {
@@ -326,7 +340,7 @@ export namespace RealityModelTileTree {
   export async function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb?: Transform): Promise<TileTree | undefined> {
     const props = await getTileTreeProps(url, tilesetToDb, iModel);
     const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel));
-    const params = TileTree.paramsFromJSON(props, iModel, true, loader, modelId);
+    const params = tileTreeParamsFromJSON(props, iModel, true, loader, modelId);
     return new TileTree(params);
   }
 
@@ -379,7 +393,7 @@ export namespace RealityModelTileTree {
  * @internal
  */
 class RealityTreeReference extends RealityModelTileTree.Reference {
-  public readonly treeOwner: TileTree.Owner;
+  public readonly treeOwner: TileTreeOwner;
   private readonly _name: string;
   private readonly _url: string;
   private readonly _classifier?: SpatialClassifierTileTreeReference;

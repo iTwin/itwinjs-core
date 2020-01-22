@@ -84,9 +84,8 @@ import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
-import { TileTree } from "../../tile/TileTree";
+import { BackgroundMapTileTreeReference, TileTree } from "../../tile/internal";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
-import { BackgroundMapTileTreeReference } from "../../tile/WebMapTileTree";
 import { ToolAdmin } from "../../tools/ToolAdmin";
 import { WebGLDisposable } from "./Disposable";
 

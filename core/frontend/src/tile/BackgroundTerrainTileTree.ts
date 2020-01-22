@@ -7,8 +7,7 @@
  * @module Tile
  */
 import { BackgroundMapSettings, TerrainProviderName, TerrainHeightOriginMode, TerrainSettings, ViewFlag, RenderMode } from "@bentley/imodeljs-common";
-import { TileTree, TileTreeReference, TileTreeSet } from "./TileTree";
-import { Tile } from "./Tile";
+import { WebMapTileLoader, WebMapTileTreeProps, MapTileLoaderBase, getGcsConverterAvailable, TerrainTileLoaderBase, getCesiumWorldTerrainLoader, TileTreeReference, TileTree, TileTreeSet, BingElevationProvider, MapTilingScheme, GeographicTilingScheme, MapTileTree, TileDrawArgs, TileTreeParams, tileTreeParamsFromJSON, TileTreeSupplier, TileTreeOwner, MapTileTreeReference } from "./internal";
 import { IModelConnection } from "../IModelConnection";
 import {
   assert,
@@ -16,16 +15,11 @@ import {
   compareStrings,
   BeTimePoint,
 } from "@bentley/bentleyjs-core";
-import { getCesiumWorldTerrainLoader } from "./CesiumWorldTerrainTileTree";
-import { WebMapTileLoader, WebMapTileTreeProps, MapTileTreeReference, MapTileLoaderBase, getGcsConverterAvailable, TerrainTileLoaderBase } from "./WebMapTileTree";
 import { SceneContext } from "../ViewContext";
 import { Point3d, Range3d, Plane3dByOriginAndUnitNormal, Transform, Matrix3d, Angle, Range1d } from "@bentley/geometry-core";
-import { BingElevationProvider } from "./BingElevation";
 import { RenderClipVolume } from "../render/System";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import { MapTilingScheme, GeographicTilingScheme } from "./MapTilingScheme";
-import { MapTileTree } from "./MapTileTree";
 import { ScreenViewport } from "../Viewport";
 
 interface BackgroundTerrainTreeId {
@@ -34,7 +28,7 @@ interface BackgroundTerrainTreeId {
   heightOriginMode: number;
   wantSkirts: boolean;
 }
-class BackgroundTerrainDrawArgs extends Tile.DrawArgs {
+class BackgroundTerrainDrawArgs extends TileDrawArgs {
   constructor(settings: TerrainSettings | undefined, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
     super(context, location, root, now, purgeOlderThan, clip);
     if (settings && settings.applyLighting) {
@@ -48,7 +42,7 @@ class BackgroundTerrainDrawArgs extends Tile.DrawArgs {
 }
 
 class BackgroundTerrainTileTree extends MapTileTree {
-  constructor(params: TileTree.Params, groundBias: number, public seaLevelOffset: number, gcsConverterAvailable: boolean, tilingScheme: MapTilingScheme, heightRange: Range1d) {
+  constructor(params: TileTreeParams, groundBias: number, public seaLevelOffset: number, gcsConverterAvailable: boolean, tilingScheme: MapTilingScheme, heightRange: Range1d) {
     super(params, groundBias, gcsConverterAvailable, tilingScheme, false, heightRange);
     this._fixedPoint = Point3d.create(0, 0, 0);   // Exaggerate about IModel zero.
   }
@@ -63,7 +57,7 @@ class BackgroundTerrainTileTree extends MapTileTree {
     return Transform.createRefs(origin, matrix);
   }
 
-  public createDrawArgs(context: SceneContext): Tile.DrawArgs {
+  public createDrawArgs(context: SceneContext): TileDrawArgs {
     const now = BeTimePoint.now();
     const purgeOlderThan = now.minus(this.expirationTime);
 
@@ -71,7 +65,7 @@ class BackgroundTerrainTileTree extends MapTileTree {
   }
 }
 
-class BackgroundTerrainTreeSupplier implements TileTree.Supplier {
+class BackgroundTerrainTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: BackgroundTerrainTreeId, rhs: BackgroundTerrainTreeId): number {
     if (lhs.wantSkirts !== rhs.wantSkirts)
       return lhs.wantSkirts ? 1 : -1;
@@ -121,7 +115,7 @@ class BackgroundTerrainTreeSupplier implements TileTree.Supplier {
       assert(false, "Invalid Terrain Provider");
       return undefined;
     }
-    return new BackgroundTerrainTileTree(TileTree.paramsFromJSON(treeProps, iModel, true, loader, modelId), heightBias, seaLevelOffset, gcsConverterAvailable, new GeographicTilingScheme(), heightRange);
+    return new BackgroundTerrainTileTree(tileTreeParamsFromJSON(treeProps, iModel, true, loader, modelId), heightBias, seaLevelOffset, gcsConverterAvailable, new GeographicTilingScheme(), heightRange);
   }
 }
 
@@ -146,7 +140,7 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
   /** Terrain  tiles do not contribute to the range used by "fit view". */
   public unionFitRange(_range: Range3d): void { }
 
-  public get treeOwner(): TileTree.Owner {
+  public get treeOwner(): TileTreeOwner {
     const id = {
       providerName: this.settings.terrainSettings.providerName,
       heightOrigin: this.settings.terrainSettings.heightOrigin,

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module SpatialClassification
+ * @module Tile
  */
 import { compareStrings, compareStringsOrUndefined, Id64String, Id64 } from "@bentley/bentleyjs-core";
 import {
@@ -11,16 +11,15 @@ import {
   ClassifierTileTreeId,
   compareIModelTileTreeIds,
   iModelTileTreeIdToString,
-  SpatialClassificationProps,
 } from "@bentley/imodeljs-common";
-import { IModelConnection } from "./IModelConnection";
-import { SceneContext } from "./ViewContext";
-import { TileTree, TileTreeReference, TileTreeSet } from "./tile/TileTree";
-import { IModelTileLoader } from "./tile/IModelTileLoader";
-import { ViewState } from "./ViewState";
-import { DisplayStyleState } from "./DisplayStyleState";
-import { GeometricModelState } from "./ModelState";
-import { IModelApp } from "./IModelApp";
+import { SpatialClassifiers } from "../SpatialClassifiers";
+import { IModelConnection } from "../IModelConnection";
+import { SceneContext } from "../ViewContext";
+import { TileTreeReference, IModelTileLoader, TileTreeSupplier, TileTreeOwner, tileTreeParamsFromJSON, TileTree, TileTreeSet, TileTreeLoadStatus } from "./internal";
+import { ViewState } from "../ViewState";
+import { DisplayStyleState } from "../DisplayStyleState";
+import { GeometricModelState } from "../ModelState";
+import { IModelApp } from "../IModelApp";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
   modelId: Id64String;
@@ -34,10 +33,10 @@ function compareIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
   return 0 === cmp ? compareIModelTileTreeIds(lhs, rhs) : cmp;
 }
 
-class ClassifierTreeSupplier implements TileTree.Supplier {
-  private readonly _nonexistentTreeOwner: TileTree.Owner = {
+class ClassifierTreeSupplier implements TileTreeSupplier {
+  private readonly _nonexistentTreeOwner: TileTreeOwner = {
     tileTree: undefined,
-    loadStatus: TileTree.LoadStatus.NotFound,
+    loadStatus: TileTreeLoadStatus.NotFound,
     load: () => undefined,
     dispose: () => undefined,
     loadTree: async () => Promise.resolve(undefined),
@@ -58,11 +57,11 @@ class ClassifierTreeSupplier implements TileTree.Supplier {
 
     const loader = new IModelTileLoader(iModel, props.formatVersion, id.type, false, false, model.geometryGuid);
     props.rootTile.contentId = loader.rootContentId;
-    const params = TileTree.paramsFromJSON(props, iModel, true, loader, id.modelId);
+    const params = tileTreeParamsFromJSON(props, iModel, true, loader, id.modelId);
     return new TileTree(params);
   }
 
-  public getOwner(id: ClassifierTreeId, iModel: IModelConnection): TileTree.Owner {
+  public getOwner(id: ClassifierTreeId, iModel: IModelConnection): TileTreeOwner {
     return Id64.isValid(id.modelId) ? iModel.tiles.getTileTreeOwner(id, this) : this._nonexistentTreeOwner;
   }
 }
@@ -81,7 +80,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private readonly _source: ViewState | DisplayStyleState;
   private readonly _iModel: IModelConnection;
   private readonly _classifiedTree: TileTreeReference;
-  private _owner: TileTree.Owner;
+  private _owner: TileTreeOwner;
 
   public constructor(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
     super();
@@ -95,7 +94,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 
   public get classifiers(): SpatialClassifiers { return this._classifiers; }
 
-  public get treeOwner(): TileTree.Owner {
+  public get treeOwner(): TileTreeOwner {
     const newId = this.createId(this._classifiers, this._source);
     if (0 !== compareIds(this._id, newId)) {
       this._id = newId;
@@ -155,107 +154,4 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 /** @internal */
 export function createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
   return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
-}
-
-/** @internal */
-export interface SpatialClassifiersContainer {
-  classifiers?: SpatialClassificationProps.Properties[];
-}
-
-/** Exposes a list of classifiers that allow one [[ModelState]] to classify another [[SpatialModel]] or reality model.
- * A spatial model can have a list of any number of available classifiers; at most one of those classifiers may be "active" at a given time.
- * @see [[SpatialModel.classifiers]]
- * @beta
- */
-export class SpatialClassifiers {
-  private readonly _jsonContainer: SpatialClassifiersContainer;
-  private _active?: SpatialClassificationProps.Properties;
-
-  /** @internal */
-  public constructor(jsonContainer: SpatialClassifiersContainer) {
-    this._jsonContainer = jsonContainer;
-    const json = jsonContainer.classifiers;
-    if (undefined !== json) {
-      for (const props of json) {
-        if (props.isActive) {
-          if (undefined === this._active)
-            this._active = props;
-          else
-            props.isActive = false;
-        }
-      }
-    }
-  }
-
-  /** The currently-active classifier, if any is active.
-   * @note If the `Classifier` object supplied to the setter did not originate from this `SpatialClassifier`'s list but an equivalent entry exists in the list, that entry
-   * will be set as active - **not** the object supplied to the setter.
-   */
-  public get active(): SpatialClassificationProps.Classifier | undefined {
-    return this._active;
-  }
-  public set active(active: SpatialClassificationProps.Classifier | undefined) {
-    if (undefined === active && undefined === this._active)
-      return;
-    else if (undefined !== active && undefined !== this._active && SpatialClassificationProps.equalClassifiers(active, this._active))
-      return;
-
-    if (undefined === active) {
-      if (undefined !== this._active)
-        this._active.isActive = false;
-
-      this._active = undefined;
-      return;
-    }
-
-    const classifiers = this._jsonContainer.classifiers;
-    if (undefined === classifiers)
-      return;
-
-    for (const classifier of classifiers) {
-      if (SpatialClassificationProps.equalClassifiers(classifier, active)) {
-        if (undefined !== this._active)
-          this._active.isActive = false;
-
-        this._active = classifier as SpatialClassificationProps.Properties;
-        this._active.isActive = true;
-        return;
-      }
-    }
-  }
-
-  /** Supplies an iterator over the list of available classifiers. */
-  public [Symbol.iterator](): Iterator<SpatialClassificationProps.Classifier> {
-    let classifiers = this._jsonContainer.classifiers;
-    if (undefined === classifiers)
-      classifiers = [];
-
-    return classifiers[Symbol.iterator]();
-  }
-
-  /** The number of available classifiers. */
-  public get length(): number {
-    const classifiers = this._jsonContainer.classifiers;
-    return undefined !== classifiers ? classifiers.length : 0;
-  }
-
-  /** Adds a new classifier to the list, if an equivalent classifier is not already present.
-   * @param classifier JSON representation of the new classifier
-   * @returns The copy of `classifier` that was added to the list, or undefined if an equivalent classifier already exists in the list.
-   */
-  public push(classifier: SpatialClassificationProps.Classifier): SpatialClassificationProps.Classifier | undefined {
-    for (const existing of this)
-      if (SpatialClassificationProps.equalClassifiers(existing, classifier))
-        return undefined;
-
-    let list = this._jsonContainer.classifiers;
-    if (undefined === list) {
-      list = [];
-      this._jsonContainer.classifiers = list;
-    }
-
-    const props: SpatialClassificationProps.Properties = { ...classifier, isActive: false };
-    list.push(props);
-    return props;
-  }
 }

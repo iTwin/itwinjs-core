@@ -25,18 +25,24 @@ import {
   HitDetail,
   IModelConnection,
   Tile,
+  TileDrawArgs,
   TiledGraphicsProvider,
   TileLoader,
+  TileLoadPriority,
+  TileParams,
   TileRequest,
   TileTree,
+  TileTreeOwner,
+  tileTreeParamsFromJSON,
   TileTreeReference,
   TileTreeSet,
+  TileTreeSupplier,
   Viewport,
   ViewState,
   ViewState2d,
 } from "@bentley/imodeljs-frontend";
 
-class ProxyTreeSupplier implements TileTree.Supplier {
+class ProxyTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: SectionLocationProps, rhs: SectionLocationProps): number {
     return compareStrings(lhs.id!, rhs.id!);
   }
@@ -79,7 +85,7 @@ const proxyTreeSupplier = new ProxyTreeSupplier();
 
 /** A proxy for a 2d tile tree to be drawn in the context of a spatial view. */
 class ProxyTreeReference extends TileTreeReference {
-  private readonly _owner: TileTree.Owner;
+  private readonly _owner: TileTreeOwner;
 
   public constructor(props: SectionLocationProps, iModel: IModelConnection) {
     super();
@@ -123,9 +129,9 @@ class ProxyLoader extends TileLoader {
 
   public async getChildrenProps(_parent: Tile): Promise<TileProps[]> { return Promise.resolve([]); }
   public async requestTileContent(_tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> { return Promise.resolve(undefined); }
-  public tileRequiresLoading(_params: Tile.Params): boolean { return false; }
+  public tileRequiresLoading(_params: TileParams): boolean { return false; }
   public get maxDepth(): number { return 1; }
-  public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Primary; }
+  public get priority(): TileLoadPriority { return TileLoadPriority.Primary; }
 }
 
 /** A proxy for a 2d tile tree to be drawn in the context of a spatial view. */
@@ -162,7 +168,7 @@ class ProxyTree extends TileTree {
     };
 
     const loader = new ProxyLoader(view);
-    const params = TileTree.paramsFromJSON(json, tree.iModel, false, loader, tree.modelId);
+    const params = tileTreeParamsFromJSON(json, tree.iModel, false, loader, tree.modelId);
     super(params);
 
     this.tree = tree;
@@ -195,7 +201,7 @@ class ProxyTile extends Tile {
   public get hasChildren() { return false; }
   public get hasGraphics() { return true; }
 
-  public drawGraphics(args: Tile.DrawArgs) {
+  public drawGraphics(args: TileDrawArgs) {
     const myTree = this.root as ProxyTree;
     const sectionTree = myTree.tree;
 

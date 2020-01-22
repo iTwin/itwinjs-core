@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ScreenViewport, TiledGraphicsProvider, Viewport } from "./Viewport";
 import { IModelApp } from "./IModelApp";
-import { TileTreeReference } from "./tile/TileTree";
+import { TileTreeReference } from "./tile/internal";
 
 /** Terrain provider that provides tile tree for display within a [[Viewport]].
  * @internal

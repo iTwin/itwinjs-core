@@ -45,7 +45,7 @@ import {
   GltfReaderProps,
   GltfReaderResult,
   ShouldAbortReadGltf,
-} from "./GltfReader";
+} from "./internal";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import {
   EdgeParams,

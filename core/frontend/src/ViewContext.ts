@@ -21,9 +21,14 @@ import {
   RenderPlanarClassifier,
   RenderTextureDrape,
 } from "./render/System";
-import { ScreenViewport, Viewport, ViewingSpace } from "./Viewport";
-import { Tile } from "./tile/Tile";
-import { TileTree } from "./tile/TileTree";
+import { ScreenViewport, Viewport } from "./Viewport";
+import { ViewingSpace } from "./ViewingSpace";
+import {
+  Tile,
+  TileGraphicType,
+  TileLoadStatus,
+  TileTree,
+} from "./tile/internal";
 import { IModelApp } from "./IModelApp";
 
 const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
@@ -445,7 +450,7 @@ export class SceneContext extends RenderContext {
   public readonly planarClassifiers = new Map<Id64String, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
   public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
   private _viewingSpace?: ViewingSpace;
-  private _graphicType: TileTree.GraphicType = TileTree.GraphicType.Scene;
+  private _graphicType: TileGraphicType = TileGraphicType.Scene;
   private _activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
   private _activeVolumeClassifierModelId?: Id64String;
 
@@ -459,10 +464,10 @@ export class SceneContext extends RenderContext {
 
   public outputGraphic(graphic: RenderGraphic): void {
     switch (this._graphicType) {
-      case TileTree.GraphicType.BackgroundMap:
+      case TileGraphicType.BackgroundMap:
         this.backgroundGraphics.push(graphic);
         break;
-      case TileTree.GraphicType.Overlay:
+      case TileGraphicType.Overlay:
         this.overlayGraphics.push(graphic);
         break;
       default:
@@ -473,9 +478,9 @@ export class SceneContext extends RenderContext {
 
   public insertMissingTile(tile: Tile): void {
     switch (tile.loadStatus) {
-      case Tile.LoadStatus.NotLoaded:
-      case Tile.LoadStatus.Queued:
-      case Tile.LoadStatus.Loading:
+      case TileLoadStatus.NotLoaded:
+      case TileLoadStatus.Queued:
+      case TileLoadStatus.Loading:
         this.missingTiles.add(tile);
         break;
     }
@@ -535,12 +540,12 @@ export class SceneContext extends RenderContext {
   public getActiveVolumeClassifierModelId(): Id64String | undefined { return this._activeVolumeClassifierModelId; }
   public setActiveVolumeClassifierModelId(modelId: Id64String | undefined) { this._activeVolumeClassifierModelId = modelId; }
 
-  public withGraphicTypeAndPlane(type: TileTree.GraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
+  public withGraphicTypeAndPlane(type: TileGraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
     const frust = undefined !== plane ? ViewingSpace.createFromViewportAndPlane(this.viewport, plane) : undefined;
     this.withGraphicTypeAndFrustum(type, frust, func);
   }
 
-  public withGraphicTypeAndFrustum(type: TileTree.GraphicType, frustum: ViewingSpace | undefined, func: () => void): void {
+  public withGraphicTypeAndFrustum(type: TileGraphicType, frustum: ViewingSpace | undefined, func: () => void): void {
     const prevType = this._graphicType;
     const prevFrust = this._viewingSpace;
 

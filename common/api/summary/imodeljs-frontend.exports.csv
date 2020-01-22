@@ -35,12 +35,15 @@ internal;AnimationBranchStates = Map
 beta;Animator
 beta;AppearanceOverrideProps
 beta;ArrayValue 
-internal;Attachments
+internal;class Attachment
+internal;AttachmentList
+internal;enum AttachmentSceneState
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
+internal;B3dmReader 
 internal;BackgroundMapTileTreeReference 
 internal;BackgroundTerrainTileTreeReference 
 beta;BasePropertyEditorParams
@@ -79,7 +82,6 @@ internal;Clips
 public;Cluster
 beta;ColorEditorParams 
 internal;CompassMode
-internal;computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number, tilingScheme: MapTilingScheme): Transform
 internal;ContextMode
 internal;ContextRealityModelState
 internal;class ContextTileLoader 
@@ -88,7 +90,10 @@ public;CoordinateLockOverrides
 public;CoordSource
 public;CoordSystem
 internal;CoreTools
+internal;createAttachment(props: ViewAttachmentProps, view: ViewState): Attachment
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
+internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
+internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise
 internal;CurrentInputState
 internal;CurrentState
@@ -146,10 +151,12 @@ public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
 internal;GeoConverter
+internal;GeographicTilingScheme 
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
 internal;GeoServices
+internal;getBackgroundMapTreeSupplier(): TileTreeSupplier
 beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise
 beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
@@ -165,6 +172,8 @@ public;GraphicBranch
 internal;GraphicBranchOptions
 public;class GraphicBuilder
 public;GraphicList = RenderGraphic[]
+internal;GraphicsCollector
+internal;GraphicsCollectorDrawArgs 
 public;GraphicType
 public;GridOrientationType
 internal;GroupMark
@@ -179,6 +188,7 @@ public;HitListHolder
 public;HitParentGeomType
 public;HitPriority
 public;HitSource
+internal;I3dmReader 
 beta;IconDefinition
 alpha;IconEditorParams 
 beta;IconListEditorParams 
@@ -221,9 +231,13 @@ beta;LookAndMoveTool
 public;LookViewTool 
 alpha;ManipulatorToolEvent
 internal;MapImageryTileTreeReference 
+internal;MapTile 
 internal;MapTileGeometryAttributionProvider
 internal;class MapTileLoaderBase 
+internal;MapTileRectangle 
+internal;MapTileTree 
 internal;class MapTileTreeReference 
+internal;class MapTilingScheme
 public;MarginPercent
 public;Marker 
 public;MarkerFillStyle = string | CanvasGradient | CanvasPattern
@@ -290,6 +304,11 @@ internal;QuadId
 alpha;QuantityFormatter 
 beta;QuantityType
 alpha;RangeEditorParams 
+internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined
+internal;RealityModelSource = ViewState | DisplayStyleState
+internal;RealityModelTileClient
+internal;RealityModelTileTree
+internal;RealityModelTileUtils
 public;RelativePosition
 beta;class RenderClipVolume 
 public;RenderContext
@@ -327,6 +346,7 @@ public;SelectionSet
 public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
 public;SelectionSetEventType
 public;SelectionTool 
+internal;enum SelectParent
 public;SelectRemoveEvent
 public;SelectReplaceEvent
 alpha;SetupCameraTool 
@@ -375,19 +395,32 @@ internal;TextureDrapeMap = Map
 internal;TextureImage
 internal;ThreeAxes
 internal;Tile 
-internal;Tile
 alpha;class TileAdmin
 alpha;TileAdmin
 internal;ViewportSet 
+internal;TileAvailability
+internal;enum TileBoundingBoxes
+internal;TileContent
 internal;TiledGraphicsProvider
+internal;TileDrawArgs
+internal;TileGraphicType
 internal;class TileLoader
+internal;enum TileLoadPriority
+internal;enum TileLoadStatus
+internal;TileParams
+internal;tileParamsFromJSON(props: TileProps, root: TileTree, parent?: Tile): TileParams
 internal;TileRequest
 internal;TileRequest
 internal;TileTree 
-internal;TileTree
 internal;TileTreeDiscloser
+internal;TileTreeLoadStatus
+internal;TileTreeOwner
+internal;TileTreeParams
+internal;tileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String): TileTreeParams
 internal;class TileTreeReference 
 internal;TileTreeSet
+internal;TileTreeSupplier
+internal;enum TileVisibility
 public;Tool
 public;ToolAdmin
 beta;ToolAssistance
@@ -461,6 +494,7 @@ beta;WebGLRenderCompatibilityStatus
 internal;WebMapTileLoader 
 internal;WebMapTileProps 
 internal;WebMapTileTreeProps 
+internal;WebMercatorTilingScheme 
 internal;WheelEventProcessor
 public;WindowAreaTool 
 public;ZoomToOptions

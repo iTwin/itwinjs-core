@@ -5,8 +5,7 @@
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { TileFormat, TileProps } from "@bentley/imodeljs-common";
 import { expect } from "chai";
-import { A3xTile } from "../tile/A3xTile";
-import { A3xTileIO } from "../tile/A3xTileIO";
+import { A3xTile, A3xTileIO } from "../tile/internal";
 
 function expectChunkHeader(hdr: A3xTileIO.Chunk, expectedType: A3xTileIO.ChunkType, expectedLength: number): void {
   expect(hdr.type).to.equal(expectedType);

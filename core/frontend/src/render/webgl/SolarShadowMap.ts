@@ -13,8 +13,7 @@ import { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";
 import { FrameBuffer } from "./FrameBuffer";
 import { SceneContext } from "../../ViewContext";
-import { TileTree } from "../../tile/TileTree";
-import { Tile } from "../../tile/Tile";
+import { Tile, TileDrawArgs, TileTree, TileVisibility } from "../../tile/internal";
 import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SolarShadows, ViewFlags } from "@bentley/imodeljs-common";
 import { System, RenderType } from "./System";
 import { RenderState } from "./RenderState";
@@ -25,53 +24,57 @@ import { EVSMGeometry } from "./CachedGeometry";
 import { getDrawParams } from "./ScratchDrawParams";
 import { WebGLDisposable } from "./Disposable";
 
-class SolarShadowMapDrawArgs extends Tile.DrawArgs {
-  private _useViewportMap?: boolean;
+function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowMap, tree: TileTree, frustumPlanes: FrustumPlanes): TileDrawArgs {
+  class SolarShadowMapDrawArgs extends TileDrawArgs {
+    private _useViewportMap?: boolean;
 
-  constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
-    super(context, location, root, now, purgeOlderThan, clip);
-  }
+    constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
+      super(context, location, root, now, purgeOlderThan, clip);
+    }
 
-  public get frustumPlanes(): FrustumPlanes {
-    if (true === this._useViewportMap)
-      return super.frustumPlanes;
-    else
-      return this._mapFrustumPlanes;
-  }
-  protected get worldToViewMap(): Map4d {
-    if (true === this._useViewportMap)
-      return super.worldToViewMap;
-    else
-      return this._shadowMap.worldToViewMap;
-  }
+    public get frustumPlanes(): FrustumPlanes {
+      if (true === this._useViewportMap)
+        return super.frustumPlanes;
+      else
+        return this._mapFrustumPlanes;
+    }
+    protected get worldToViewMap(): Map4d {
+      if (true === this._useViewportMap)
+        return super.worldToViewMap;
+      else
+        return this._shadowMap.worldToViewMap;
+    }
 
-  public drawGraphics(): void {
-    if (!this.graphics.isEmpty) {
-      this._shadowMap.addGraphic(this.context.createBranch(this.graphics, this.location));
+    public drawGraphics(): void {
+      if (!this.graphics.isEmpty) {
+        this._shadowMap.addGraphic(this.context.createBranch(this.graphics, this.location));
+      }
+    }
+
+    public getPixelSize(tile: Tile): number {
+      // For tiles that are part of the scene, size them based on the viewport frustum so that shadow map uses same resolution tiles as scene
+      // - otherwise artifacts like shadow acne may result.
+      // For tiles that are NOT part of the scene, size them based on the shadow frustum, not the viewport frustum
+      // - otherwise excessive numbers of excessively detailed may be requested for the shadow map.
+      if (undefined === this._useViewportMap) {
+        this._useViewportMap = true;
+        const vis = tile.computeVisibility(this);
+        this._useViewportMap = TileVisibility.OutsideFrustum !== vis;
+      }
+
+      const size = super.getPixelSize(tile);
+      this._useViewportMap = undefined;
+      return size;
+    }
+
+    public static create(context: SceneContext, shadowMap: SolarShadowMap, tileTree: TileTree, planes: FrustumPlanes) {
+      const now = BeTimePoint.now();
+      const purgeOlderThan = now.minus(tileTree.expirationTime);
+      return new SolarShadowMapDrawArgs(planes, shadowMap, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
     }
   }
 
-  public getPixelSize(tile: Tile): number {
-    // For tiles that are part of the scene, size them based on the viewport frustum so that shadow map uses same resolution tiles as scene
-    // - otherwise artifacts like shadow acne may result.
-    // For tiles that are NOT part of the scene, size them based on the shadow frustum, not the viewport frustum
-    // - otherwise excessive numbers of excessively detailed may be requested for the shadow map.
-    if (undefined === this._useViewportMap) {
-      this._useViewportMap = true;
-      const vis = tile.computeVisibility(this);
-      this._useViewportMap = Tile.Visibility.OutsideFrustum !== vis;
-    }
-
-    const size = super.getPixelSize(tile);
-    this._useViewportMap = undefined;
-    return size;
-  }
-
-  public static create(context: SceneContext, shadowMap: SolarShadowMap, tileTree: TileTree, planes: FrustumPlanes) {
-    const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(tileTree.expirationTime);
-    return new SolarShadowMapDrawArgs(planes, shadowMap, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
-  }
+  return SolarShadowMapDrawArgs.create(sceneContext, solarShadowMap, tree, frustumPlanes);
 }
 
 const shadowMapWidth = 4096;  // size of original depth buffer map
@@ -350,7 +353,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
       if (undefined === tileTree)
         return;
 
-      const drawArgs = SolarShadowMapDrawArgs.create(context, this, tileTree, this._scratchFrustumPlanes);
+      const drawArgs = createDrawArgs(context, this, tileTree, this._scratchFrustumPlanes);
       const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(tileTree.location, this._scratchTransform);
       const selectedTiles = tileTree.selectTiles(drawArgs);
 

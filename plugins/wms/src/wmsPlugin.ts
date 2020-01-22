@@ -15,8 +15,11 @@ import {
   Plugin,
   ScreenViewport,
   TiledGraphicsProvider,
+  TileGraphicType,
   TileTree,
+  TileTreeOwner,
   TileTreeReference,
+  TileTreeSupplier,
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -76,7 +79,7 @@ class WMSImageryProvider extends ImageryProviderEPSG3857 {
 /** Supplies a TileTree that can load and draw tiles based on our imagery provider.
  * The TileTree is uniquely identified by its imagery type.
  */
-class WMSTreeSupplier implements TileTree.Supplier {
+class WMSTreeSupplier implements TileTreeSupplier {
   private readonly _plugin: WMSPlugin;
 
   public constructor(plugin: WMSPlugin) {
@@ -108,14 +111,14 @@ class WMSTreeRef extends MapTileTreeReference {
   }
 
   /** Draw our tiles on top of all other geometry (semi-transparent). */
-  protected get _graphicType() { return TileTree.GraphicType.Overlay; }
+  protected get _graphicType() { return TileGraphicType.Overlay; }
   /** Draw our tiles at sea level. */
   protected get _groundBias() { return 0.0; }
   protected get _imageryProvider() { return this._plugin.currentImageryProvider; }
   protected get _transparency() { return 0.7; }
 
   /** Return the owner of the TileTree to draw. */
-  public get treeOwner(): TileTree.Owner {
+  public get treeOwner(): TileTreeOwner {
     return this.iModel.tiles.getTileTreeOwner(this._plugin.currentImageryType, this._plugin.treeSupplier);
   }
 }
@@ -138,7 +141,7 @@ class WMSGraphicsProvider implements TiledGraphicsProvider {
 
 class WMSPlugin extends Plugin {
   public readonly imageryProviders: WMSImageryProvider[] = [];
-  public readonly treeSupplier: TileTree.Supplier;
+  public readonly treeSupplier: TileTreeSupplier;
   private _currentImageryType = WMSImageryType.Precipitation;
   private _i18NNamespace?: I18NNamespace;
   private _graphicsProvider?: WMSGraphicsProvider;

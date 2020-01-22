@@ -28,7 +28,7 @@ import { IModelApp } from "./IModelApp";
 import { ModelState } from "./ModelState";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { TileTree } from "./tile/TileTree";
+import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
 import { ViewState } from "./ViewState";
 import { EventSource, EventSourceManager } from "./EventSource";
 
@@ -954,7 +954,7 @@ export namespace IModelConnection {
    */
   export class Tiles {
     private _iModel: IModelConnection;
-    private readonly _treesBySupplier = new Map<TileTree.Supplier, Dictionary<any, TreeOwner>>();
+    private readonly _treesBySupplier = new Map<TileTreeSupplier, Dictionary<any, TreeOwner>>();
     private _disposed = false;
 
     public get isDisposed() { return this._disposed; }
@@ -986,7 +986,7 @@ export namespace IModelConnection {
       return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
     }
 
-    public getTileTreeOwner(id: any, supplier: TileTree.Supplier): TileTree.Owner {
+    public getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner {
       let trees = this._treesBySupplier.get(supplier);
       if (undefined === trees) {
         trees = new Dictionary<any, TreeOwner>((lhs, rhs) => supplier.compareTileTreeIds(lhs, rhs));
@@ -1002,7 +1002,7 @@ export namespace IModelConnection {
       return tree;
     }
 
-    public dropSupplier(supplier: TileTree.Supplier): void {
+    public dropSupplier(supplier: TileTreeSupplier): void {
       const trees = this._treesBySupplier.get(supplier);
       if (undefined === trees)
         return;
@@ -1011,7 +1011,7 @@ export namespace IModelConnection {
       this._treesBySupplier.delete(supplier);
     }
 
-    public forEachTreeOwner(func: (owner: TileTree.Owner) => void): void {
+    public forEachTreeOwner(func: (owner: TileTreeOwner) => void): void {
       for (const dict of this._treesBySupplier.values())
         dict.forEach((_key, value) => func(value));
     }
@@ -1032,18 +1032,18 @@ export namespace IModelConnection {
   }
 }
 
-class TreeOwner implements TileTree.Owner {
+class TreeOwner implements TileTreeOwner {
   private _tileTree?: TileTree;
-  private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
-  private readonly _supplier: TileTree.Supplier;
+  private _loadStatus: TileTreeLoadStatus = TileTreeLoadStatus.NotLoaded;
+  private readonly _supplier: TileTreeSupplier;
   private readonly _iModel: IModelConnection;
 
   public readonly id: any;
 
   public get tileTree(): TileTree | undefined { return this._tileTree; }
-  public get loadStatus(): TileTree.LoadStatus { return this._loadStatus; }
+  public get loadStatus(): TileTreeLoadStatus { return this._loadStatus; }
 
-  public constructor(id: any, supplier: TileTree.Supplier, iModel: IModelConnection) {
+  public constructor(id: any, supplier: TileTreeSupplier, iModel: IModelConnection) {
     this.id = id;
     this._supplier = supplier;
     this._iModel = iModel;
@@ -1061,24 +1061,24 @@ class TreeOwner implements TileTree.Owner {
 
   public dispose(): void {
     this._tileTree = dispose(this._tileTree);
-    this._loadStatus = TileTree.LoadStatus.NotLoaded;
+    this._loadStatus = TileTreeLoadStatus.NotLoaded;
   }
 
   private async _load(): Promise<void> {
-    if (TileTree.LoadStatus.NotLoaded !== this.loadStatus)
+    if (TileTreeLoadStatus.NotLoaded !== this.loadStatus)
       return;
 
-    this._loadStatus = TileTree.LoadStatus.Loading;
+    this._loadStatus = TileTreeLoadStatus.Loading;
     let tree: TileTree | undefined;
-    let newStatus: TileTree.LoadStatus;
+    let newStatus: TileTreeLoadStatus;
     try {
       tree = await this._supplier.createTileTree(this.id, this._iModel);
-      newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTree.LoadStatus.Loaded : TileTree.LoadStatus.NotFound;
+      newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTreeLoadStatus.Loaded : TileTreeLoadStatus.NotFound;
     } catch (err) {
-      newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTree.LoadStatus.NotLoaded : TileTree.LoadStatus.NotFound;
+      newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.NotFound;
     }
 
-    if (TileTree.LoadStatus.Loading === this._loadStatus) {
+    if (TileTreeLoadStatus.Loading === this._loadStatus) {
       this._tileTree = tree;
       this._loadStatus = newStatus;
       IModelApp.viewManager.onNewTilesReady();

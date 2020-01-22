@@ -10,10 +10,9 @@ import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { SpatialModelState } from "./ModelState";
-import { TileTreeReference } from "./tile/TileTree";
-import { createRealityTileTreeReference, RealityModelTileClient, RealityModelTileUtils, RealityModelTileTree } from "./tile/RealityModelTileTree";
+import { TileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileUtils, RealityModelTileTree } from "./tile/internal";
 import { RealityDataServicesClient, RealityData, AccessToken } from "@bentley/imodeljs-clients";
-import { SpatialClassifiers } from "./SpatialClassification";
+import { SpatialClassifiers } from "./SpatialClassifiers";
 import { DisplayStyleState } from "./DisplayStyleState";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {

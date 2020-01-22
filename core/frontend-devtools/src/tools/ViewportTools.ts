@@ -13,7 +13,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   IModelApp,
-  Tile,
+  TileBoundingBoxes,
   Tool,
   Viewport,
 } from "@bentley/imodeljs-frontend";
@@ -63,20 +63,20 @@ export class ShowTileVolumesTool extends Tool {
   public static get minArgs() { return 0; }
   public static get maxArgs() { return 1; }
 
-  public run(boxes?: Tile.DebugBoundingBoxes): boolean {
+  public run(boxes?: TileBoundingBoxes): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp)
       return true;
 
     if (undefined === boxes)
-      boxes = Tile.DebugBoundingBoxes.Volume;
+      boxes = TileBoundingBoxes.Volume;
 
     vp.debugBoundingBoxes = boxes;
     return true;
   }
 
   public parseAndRun(...args: string[]): boolean {
-    let boxes: Tile.DebugBoundingBoxes | undefined;
+    let boxes: TileBoundingBoxes | undefined;
     if (0 !== args.length) {
       const arg = args[0].toLowerCase();
       for (let i = 0; i < boundingVolumeNames.length; i++) {
