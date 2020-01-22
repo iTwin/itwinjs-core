@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { WSStatus, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, BentleyError } from "@bentley/bentleyjs-core";
 import { IModelVersion, RpcPendingResponse } from "@bentley/imodeljs-common";
-import { AccessToken, WsgError, ChangeSet } from "@bentley/imodeljs-clients";
+import { AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUsers } from "../TestUsers";
 import { IModelDb, OpenParams, AuthorizedBackendRequestContext, BriefcaseManager } from "../../imodeljs-backend";
@@ -54,9 +54,8 @@ describe("IModelOpen (#integration)", () => {
       error = err;
     }
     assert.isDefined(error);
-    assert.isTrue(error instanceof WsgError);
+    assert.isTrue(error instanceof BentleyError);
     assert.equal(401, error.status);
-    assert.equal(WSStatus.LoginFailed, error.errorNumber);
 
     error = undefined;
     try {
@@ -65,9 +64,8 @@ describe("IModelOpen (#integration)", () => {
       error = err;
     }
     assert.isDefined(error);
-    assert.isTrue(error instanceof WsgError);
+    assert.isTrue(error instanceof BentleyError);
     assert.equal(401, error.status);
-    assert.equal(WSStatus.LoginFailed, error.errorNumber);
   });
 
   it("should throw a pending response after specified timeout", async () => {

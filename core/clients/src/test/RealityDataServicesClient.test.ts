@@ -89,7 +89,8 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
     chai.assert(url);
   });
 
-  it("should be able to get model data json", async () => {
+  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
+  it.skip("should be able to get model data json", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
@@ -105,7 +106,8 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
     chai.assert(modelData);
   });
 
-  it("should be able to get model data content", async () => {
+  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
+  it.skip("should be able to get model data content", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
@@ -524,7 +526,8 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
   });
 
-  it("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
+  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
+  it.skip("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesIdWithRootDocPath);
 
     // The root document of this reality should not be at the root of the blob
@@ -574,7 +577,8 @@ describe("RealityDataServicesClient Admin (#integration)", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
   });
 
-  it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
+  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
+  it.skip("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.

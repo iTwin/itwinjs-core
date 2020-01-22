@@ -46,7 +46,7 @@ describe("Opening IModelConnection (#integration)", () => {
     let promiseChainWithShortWaits: Promise<void> = Promise.resolve();
     let promiseChainWithFullWaits: Promise<void> = Promise.resolve();
     let n = 0;
-    while (++n < 100) {
+    while (++n < 10) {
       const openPromise = IModelConnection.open(testProjectId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
       const waitPromise = BeDuration.wait(5000); // 5 seconds
       const racePromise = Promise.race([openPromise, waitPromise]).then(() => Promise.resolve());

@@ -892,7 +892,7 @@
       ]
     },
     {
-      "name": "✔︝RPC Tests",
+      "name": "✔︝RPC Integration Tests",
       "configurations": [
         "⚠︝RPC Integration Tests (frontend)",
         "⚠︝RPC Integration Tests (backend)"

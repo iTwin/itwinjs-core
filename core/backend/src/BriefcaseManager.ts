@@ -331,29 +331,20 @@ export class BriefcaseManager {
   /** IModel Server Client to be used for all briefcase operations */
   public static get imodelClient(): IModelClient {
     if (!this._imodelClient) {
-      // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
-      if (MobileRpcConfiguration.isMobileBackend) {
-        this._imodelClient = new IModelHubClient(new IOSAzureFileHandler());
-      } else {
-        this._imodelClient = new IModelHubClient(new AzureFileHandler());
-      }
+      if (!this._initialized)
+        throw new Error("BriefcaseManager.initialize() should be called before any backend operations");
+      this.setupDefaultIModelClient();
     }
-    return this._imodelClient;
+
+    return this._imodelClient!;
   }
 
-  public static set imodelClient(cli: IModelClient) { this._imodelClient = cli; }
-
-  private static _connectClient?: ConnectClient;
   private static _firstChangeSetDir: string = "first";
+  private static _connectClient?: ConnectClient;
 
   /** Connect client to be used for all briefcase operations */
   public static get connectClient(): ConnectClient {
-    if (!BriefcaseManager._connectClient) {
-      if (!IModelHost.configuration)
-        throw new Error("IModelHost.startup() should be called before any backend operations");
-      BriefcaseManager._connectClient = new ConnectClient();
-    }
-    return BriefcaseManager._connectClient;
+    return BriefcaseManager._connectClient!;
   }
 
   /** Get the local path of the root folder storing the imodel seed file, change sets and briefcases */
@@ -426,13 +417,39 @@ export class BriefcaseManager {
     }
   }
 
-  private static onIModelHostShutdown() {
+  private static _initialized?: boolean;
+
+  private static setupDefaultIModelClient() {
+    if (MobileRpcConfiguration.isMobileBackend)
+      this._imodelClient = new IModelHubClient(new IOSAzureFileHandler());
+    else
+      this._imodelClient = new IModelHubClient(new AzureFileHandler());
+  }
+
+  private static setupConnectClient() {
+    BriefcaseManager._connectClient = new ConnectClient();
+  }
+
+  /** Initialize BriefcaseManager */
+  public static initialize(cacheRootDir: string, iModelClient?: IModelClient) {
+    if (this._initialized)
+      return;
+    this._imodelClient = iModelClient;
+    BriefcaseManager.setupCacheDir(cacheRootDir);
+    BriefcaseManager.setupConnectClient();
+    IModelHost.onBeforeShutdown.addListener(BriefcaseManager.finalize);
+    this._initialized = true;
+  }
+
+  /** Finalize/Reset BriefcaseManager */
+  private static finalize() {
     BriefcaseManager.closeAllBriefcases();
     BriefcaseManager.clearCache();
+    IModelHost.onBeforeShutdown.removeListener(BriefcaseManager.finalize);
     BriefcaseManager._imodelClient = undefined;
     BriefcaseManager._connectClient = undefined;
-    BriefcaseManager._cacheDir = undefined;
-    IModelHost.onBeforeShutdown.removeListener(BriefcaseManager.onIModelHostShutdown);
+    BriefcaseManager.clearCacheDir();
+    BriefcaseManager._initialized = false;
   }
 
   /** Create a directory, recursively setting up the path as necessary */
@@ -452,12 +469,7 @@ export class BriefcaseManager {
     return `v${BriefcaseManager._cacheMajorVersion}_${BriefcaseManager._cacheMinorVersion}`;
   }
 
-  private static findCacheSubDir(): string | undefined {
-    if (!IModelHost.configuration || !IModelHost.configuration.briefcaseCacheDir) {
-      assert(false, "Cache directory undefined");
-      return undefined;
-    }
-    const cacheRootDir = IModelHost.configuration.briefcaseCacheDir;
+  private static findCacheSubDir(cacheRootDir: string): string | undefined {
     let dirs: string[] | undefined;
     try {
       dirs = glob.sync(`v${BriefcaseManager._cacheMajorVersion}_*`, { cwd: cacheRootDir });
@@ -469,23 +481,24 @@ export class BriefcaseManager {
     return dirs[0];
   }
 
+  private static _cacheRootDir?: string;
   private static _cacheDir?: string;
   public static get cacheDir(): string {
-    if (!BriefcaseManager._cacheDir)
-      BriefcaseManager.setupCacheDir();
     return BriefcaseManager._cacheDir!;
   }
 
-  private static setupCacheDir() {
-    const cacheSubDirOnDisk = BriefcaseManager.findCacheSubDir();
+  private static setupCacheDir(cacheRootDir: string) {
+    this._cacheRootDir = cacheRootDir;
+
+    const cacheSubDirOnDisk = BriefcaseManager.findCacheSubDir(cacheRootDir);
     const cacheSubDir = BriefcaseManager.buildCacheSubDir();
-    const cacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, cacheSubDir);
+    const cacheDir = path.join(cacheRootDir, cacheSubDir);
 
     if (!cacheSubDirOnDisk) {
       // For now, just recreate the entire cache if the directory for the major version is not found
-      BriefcaseManager.deleteFolderRecursive(IModelHost.configuration!.briefcaseCacheDir!);
+      BriefcaseManager.deleteFolderRecursive(cacheRootDir);
     } else if (cacheSubDirOnDisk !== cacheSubDir) {
-      const cacheDirOnDisk = path.join(IModelHost.configuration!.briefcaseCacheDir!, cacheSubDirOnDisk);
+      const cacheDirOnDisk = path.join(cacheRootDir, cacheSubDirOnDisk);
       BriefcaseManager.deleteFolderRecursive(cacheDirOnDisk);
     }
 
@@ -493,6 +506,11 @@ export class BriefcaseManager {
       BriefcaseManager.makeDirectoryRecursive(cacheDir);
 
     BriefcaseManager._cacheDir = cacheDir;
+  }
+
+  private static clearCacheDir() {
+    this._cacheRootDir = undefined;
+    this._cacheDir = undefined;
   }
 
   /** Get the index of the change set from its id */
@@ -1139,7 +1157,7 @@ export class BriefcaseManager {
         deletedAllCacheDirs = false;
     }
     if (deletedAllCacheDirs) {
-      this.deleteFolderRecursive(IModelHost.configuration!.briefcaseCacheDir);
+      this.deleteFolderRecursive(this._cacheRootDir!);
     }
     return deletedAllCacheDirs;
   }

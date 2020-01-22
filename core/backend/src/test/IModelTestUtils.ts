@@ -322,17 +322,25 @@ export class IModelTestUtils {
     // dummy method to get this script included
   }
 
+  private static initDebugLogLevels(reset?: boolean) {
+    Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
+    Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
+    Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(ClientsLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Error);
+    Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Error);
+  }
+
   // Setup typical programmatic log level overrides here
   // Convenience method used to debug specific tests/fixtures
   public static setupDebugLogLevels() {
-    Logger.setLevelDefault(LogLevel.Warning);
-    Logger.setLevel(BentleyLoggerCategory.Performance, LogLevel.Info);
-    Logger.setLevel(BackendLoggerCategory.IModelDb, LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.Clients, LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.IModelHub, LogLevel.Trace);
-    Logger.setLevel(ClientsLoggerCategory.Request, LogLevel.Trace);
-    Logger.setLevel(NativeLoggerCategory.DgnCore, LogLevel.Error);
-    Logger.setLevel(NativeLoggerCategory.BeSQLite, LogLevel.Error);
+    IModelTestUtils.initDebugLogLevels(false);
+  }
+
+  public static resetDebugLogLevels() {
+    IModelTestUtils.initDebugLogLevels(true);
   }
 }
 

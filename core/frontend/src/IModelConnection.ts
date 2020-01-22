@@ -13,7 +13,7 @@ import {
 import { Angle, Point3d, Range3dProps, XYAndZ, XYZProps, Range3d } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeSpec, ElementProps, EntityQueryParams, FontMap, GeoCoordStatus,
-  ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelReadRpcInterface,
+  ImageSourceFormat, IModel, IModelError, IModelProps, IModelReadRpcInterface,
   IModelStatus, IModelToken, IModelVersion, IModelWriteRpcInterface, ModelProps, ModelQueryParams, QueryLimit,
   QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcNotFoundResponse, RpcOperation, RpcRequest,
   RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps,
@@ -303,11 +303,11 @@ export class IModelConnection extends IModel {
     return openResponse;
   }
 
-  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: IModelNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => {
-    if (!(response instanceof IModelNotFoundResponse))
+  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason: any) => void) => {
+    if (!response.hasOwnProperty("isIModelNotFoundResponse"))
       return;
 
-    const iModelToken: IModelToken = request.parameters[0];
+    const iModelToken: IModelToken = IModelToken.fromJSON(request.parameters[0]);
     if (this.iModelToken.key !== iModelToken.key)
       return; // The handler is called for a different connection than this
 

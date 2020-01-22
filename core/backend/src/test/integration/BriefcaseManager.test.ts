@@ -73,6 +73,10 @@ describe("BriefcaseManager (#integration)", () => {
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadWriteTest");
   });
 
+  after(() => {
+    // IModelTestUtils.resetDebugLogLevels();
+  });
+
   afterEach(() => {
     validateBriefcaseCache();
   });
@@ -101,7 +105,7 @@ describe("BriefcaseManager (#integration)", () => {
     };
 
     try {
-      const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
+      const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.first());
       assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
 
       iModel.onBeforeClose.addListener(onBeforeCloseListener);
@@ -109,7 +113,7 @@ describe("BriefcaseManager (#integration)", () => {
       // Validate that the IModelDb is readonly
       assert(iModel.openParams.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
 
-      const expectedChangeSetId = await IModelVersion.latest().evaluateChangeSet(requestContext, readOnlyTestIModel.id, BriefcaseManager.imodelClient);
+      const expectedChangeSetId = await IModelVersion.first().evaluateChangeSet(requestContext, readOnlyTestIModel.id, BriefcaseManager.imodelClient);
       assert.strictEqual<string>(iModel.briefcase.parentChangeSetId, expectedChangeSetId);
       assert.strictEqual<string>(iModel.iModelToken.changeSetId!, expectedChangeSetId);
 
@@ -119,7 +123,7 @@ describe("BriefcaseManager (#integration)", () => {
       const pathname = iModel.briefcase.pathname;
       assert.isTrue(IModelJsFs.existsSync(pathname));
       await iModel.close(requestContext, KeepBriefcase.No);
-      assert.isFalse(IModelJsFs.existsSync(pathname));
+      assert.isFalse(IModelJsFs.existsSync(pathname), `Briefcase continues to exist at ${pathname}`);
       assert.isTrue(onBeforeCloseCalled);
     } finally {
 
@@ -304,12 +308,10 @@ describe("BriefcaseManager (#integration)", () => {
     const config = new IModelHostConfiguration();
     config.briefcaseCacheDir = "\\\\blah\\blah\\blah";
     IModelTestUtils.shutdownBackend();
-    IModelHost.startup(config);
 
     let exceptionThrown = false;
     try {
-      const iModelShared: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
-      assert.notExists(iModelShared);
+      IModelHost.startup(config);
     } catch (error) {
       exceptionThrown = true;
     }

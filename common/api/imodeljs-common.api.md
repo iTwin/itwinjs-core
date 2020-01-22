@@ -3007,6 +3007,8 @@ export class IModelError extends BentleyError {
 
 // @public
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
+    // (undocumented)
+    isIModelNotFoundResponse: boolean;
 }
 
 // @public

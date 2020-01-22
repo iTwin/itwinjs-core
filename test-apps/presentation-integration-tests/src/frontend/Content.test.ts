@@ -47,7 +47,8 @@ describe("Content", () => {
     });
   });
 
-  describe("when request in the backend exceeds the backend timeout time", () => {
+  // NEEDS_WORK: Filed an issue - TFS#265657
+  describe.skip("when request in the backend exceeds the backend timeout time", () => {
     let raceStub: sinon.SinonStub<[Iterable<unknown>], Promise<unknown>>;
     beforeEach(async () => {
       terminate();

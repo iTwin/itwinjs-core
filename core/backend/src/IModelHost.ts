@@ -345,8 +345,7 @@ export class IModelHost {
       }
     }
 
-    if (configuration.imodelClient)
-      BriefcaseManager.imodelClient = configuration.imodelClient;
+    BriefcaseManager.initialize(configuration.briefcaseCacheDir, configuration.imodelClient);
 
     IModelHost.setupRpcRequestContext();
 

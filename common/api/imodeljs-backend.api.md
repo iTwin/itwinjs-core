@@ -484,7 +484,7 @@ export class BriefcaseManager {
     // (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
     static get imodelClient(): IModelClient;
-    static set imodelClient(cli: IModelClient);
+    static initialize(cacheRootDir: string, iModelClient?: IModelClient): void;
     static open(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
     static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry;
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
