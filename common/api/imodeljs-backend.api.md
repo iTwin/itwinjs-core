@@ -3826,12 +3826,24 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     displayStyleId: Id64String;
+    getAuxiliaryCoordinateSystemId(): Id64String;
+    // @internal
+    getDetail(name: string): any;
+    // @internal
+    getDetails(): any;
     isDrawingView(): this is DrawingViewDefinition;
     isSpatialView(): this is SpatialViewDefinition;
     isView2d(): this is ViewDefinition2d;
     isView3d(): this is ViewDefinition3d;
     loadCategorySelector(): CategorySelector;
     loadDisplayStyle(): DisplayStyle;
+    // @alpha (undocumented)
+    protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
+    // @internal
+    removeDetail(name: string): void;
+    setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
+    // @internal
+    setDetail(name: string, value: any): void;
     // @internal (undocumented)
     toJSON(): ViewDefinitionProps;
 }

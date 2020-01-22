@@ -18,7 +18,7 @@ import {
   ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
   InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
-  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SubCategory, Subject,
+  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SubCategory, Subject, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -944,6 +944,64 @@ export namespace IModelTransformerUtils {
     return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE UserLabel=:userLabel`, (statement: ECSqlStatement): Id64String => {
       statement.bindString("userLabel", userLabel);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
+    });
+  }
+
+  export function dumpIModelInfo(iModelDb: IModelDb): void {
+    const outputFileName: string = iModelDb.briefcase.pathname + ".dump.txt";
+    if (IModelJsFs.existsSync(outputFileName)) {
+      IModelJsFs.removeSync(outputFileName);
+    }
+    IModelJsFs.appendFileSync(outputFileName, `${iModelDb.briefcase.pathname}\n`);
+    IModelJsFs.appendFileSync(outputFileName, "\n=== CodeSpecs ===\n");
+    iModelDb.withPreparedStatement(`SELECT ECInstanceId,Name FROM BisCore:CodeSpec ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const codeSpecId: Id64String = statement.getValue(0).getId();
+        const codeSpecName: string = statement.getValue(1).getString();
+        IModelJsFs.appendFileSync(outputFileName, `${codeSpecId}, ${codeSpecName}\n`);
+      }
+    });
+    IModelJsFs.appendFileSync(outputFileName, "\n=== Schemas ===\n");
+    iModelDb.withPreparedStatement(`SELECT Name FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const schemaName: string = statement.getValue(0).getString();
+        IModelJsFs.appendFileSync(outputFileName, `${schemaName}\n`);
+      }
+    });
+    IModelJsFs.appendFileSync(outputFileName, "\n=== Models ===\n");
+    iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Model.classFullName} ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const modelId: Id64String = statement.getValue(0).getId();
+        const model: Model = iModelDb.models.getModel(modelId);
+        IModelJsFs.appendFileSync(outputFileName, `${modelId}, ${model.name}, ${model.parentModel}, ${model.classFullName}\n`);
+      }
+    });
+    IModelJsFs.appendFileSync(outputFileName, "\n=== ViewDefinitions ===\n");
+    iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${ViewDefinition.classFullName} ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const viewDefinitionId: Id64String = statement.getValue(0).getId();
+        const viewDefinition: ViewDefinition = iModelDb.elements.getElement<ViewDefinition>(viewDefinitionId);
+        IModelJsFs.appendFileSync(outputFileName, `${viewDefinitionId}, ${viewDefinition.code.getValue()}, ${viewDefinition.classFullName}\n`);
+      }
+    });
+    IModelJsFs.appendFileSync(outputFileName, "\n=== Elements ===\n");
+    iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): void => {
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const count: number = statement.getValue(0).getInteger();
+        IModelJsFs.appendFileSync(outputFileName, `Count of ${Element.classFullName}=${count}\n`);
+      }
+    });
+    iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${PhysicalObject.classFullName}`, (statement: ECSqlStatement): void => {
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const count: number = statement.getValue(0).getInteger();
+        IModelJsFs.appendFileSync(outputFileName, `Count of ${PhysicalObject.classFullName}=${count}\n`);
+      }
+    });
+    iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${GeometryPart.classFullName}`, (statement: ECSqlStatement): void => {
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const count: number = statement.getValue(0).getInteger();
+        IModelJsFs.appendFileSync(outputFileName, `Count of ${GeometryPart.classFullName}=${count}\n`);
+      }
     });
   }
 }

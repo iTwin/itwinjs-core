@@ -371,6 +371,21 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.categorySelectorId);
     predecessorIds.add(this.displayStyleId);
+    const acsId: Id64String = this.getAuxiliaryCoordinateSystemId();
+    if (Id64.isValidId64(acsId)) {
+      predecessorIds.add(acsId);
+    }
+  }
+
+  /** @alpha */
+  protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
+    super.onCloned(context, sourceElementProps, targetElementProps);
+    if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.viewDetails) {
+      const acsId: Id64String = Id64.fromJSON(targetElementProps.jsonProperties.viewDetails.acs);
+      if (Id64.isValidId64(acsId)) {
+        targetElementProps.jsonProperties.viewDetails.acs = context.findTargetElementId(acsId);
+      }
+    }
   }
 
   /** Type guard for `instanceof ViewDefinition3d`  */
@@ -387,6 +402,37 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
 
   /** Load this view's CategorySelector from the IModelDb. */
   public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement<CategorySelector>(this.categorySelectorId); }
+
+  /** Get details that are stored in the JsonProperties of this ViewDefinition element.
+   * @internal
+   */
+  public getDetails(): any { if (!this.jsonProperties.viewDetails) { this.jsonProperties.viewDetails = new Object(); } return this.jsonProperties.viewDetails; }
+  /** Get the current value of a view detail. If not present, returns an empty object.
+   * @internal
+   */
+  public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
+  /** Change the value of a view detail.
+   * @internal
+   */
+  public setDetail(name: string, value: any) { this.getDetails()[name] = value; }
+  /** Remove a view detail.
+   * @internal
+   */
+  public removeDetail(name: string) { delete this.getDetails()[name]; }
+  /** Get the Id of the auxiliary coordinate system for this ViewState
+   * @returns The Id of the AuxiliaryCoordinateSystem or `Id64.invalid` if not set.
+   */
+  public getAuxiliaryCoordinateSystemId(): Id64String { return Id64.fromJSON(this.getDetail("acs")); }
+  /** Set or clear the AuxiliaryCoordinateSystem for this ViewDefinition.
+   * @param acsId The Id of the new AuxiliaryCoordinateSystem. If `Id64.invalid` is passed, then no AuxiliaryCoordinateSystem will be used.
+   */
+  public setAuxiliaryCoordinateSystemId(acsId: Id64String) {
+    if (Id64.isValidId64(acsId)) {
+      this.setDetail("acs", acsId);
+    } else {
+      this.removeDetail("acs");
+    }
+  }
 
   /** Create a Code for a ViewDefinition given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb

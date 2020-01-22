@@ -8,7 +8,7 @@ import { AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, GeometricElement3d
 import { assert } from "chai";
 import * as path from "path";
 import {
-  BackendLoggerCategory, BackendRequestContext, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
+  BackendLoggerCategory, BackendRequestContext, BriefcaseManager, ECSqlStatement, Element, ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   IModelCloneContext, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, InformationRecordModel, InformationRecordPartition,
   PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, Subject,
 } from "../../imodeljs-backend";
@@ -160,6 +160,8 @@ describe("IModelTransformer", () => {
       transformer.dispose();
     }
 
+    IModelTransformerUtils.dumpIModelInfo(sourceDb);
+    IModelTransformerUtils.dumpIModelInfo(targetDb);
     sourceDb.closeSnapshot();
     targetDb.closeSnapshot();
   });
@@ -337,6 +339,7 @@ describe("IModelTransformer", () => {
       transformerA2S.context.remapElement(IModel.rootSubjectId, subjectId);
       transformerA2S.processAll();
       transformerA2S.dispose();
+      IModelTransformerUtils.dumpIModelInfo(iModelA);
       iModelA.closeSnapshot();
       iModelShared.saveChanges("Imported A");
       IModelTransformerUtils.assertSharedIModelContents(iModelShared, ["A"]);
@@ -352,6 +355,7 @@ describe("IModelTransformer", () => {
       transformerB2S.context.remapElement(IModel.rootSubjectId, subjectId);
       transformerB2S.processAll();
       transformerB2S.dispose();
+      IModelTransformerUtils.dumpIModelInfo(iModelB);
       iModelB.closeSnapshot();
       iModelShared.saveChanges("Imported B");
       IModelTransformerUtils.assertSharedIModelContents(iModelShared, ["A", "B"]);
@@ -380,9 +384,11 @@ describe("IModelTransformer", () => {
       transformerS2C.processRelationships(ElementRefersToElements.classFullName);
       transformerS2C.dispose();
       IModelTransformerUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
+      IModelTransformerUtils.dumpIModelInfo(iModelConsolidated);
       iModelConsolidated.closeSnapshot();
     }
 
+    IModelTransformerUtils.dumpIModelInfo(iModelShared);
     iModelShared.closeSnapshot();
   });
 
@@ -398,5 +404,66 @@ describe("IModelTransformer", () => {
     assert.throws(() => cloneContext.remapCodeSpec("SourceNotFound", "TargetNotFound"));
     cloneContext.dispose();
     iModelDb.closeSnapshot();
+  });
+
+  // WIP: Included as skipped until test file management strategy can be refined.
+  it.skip("Merge test", async () => {
+    const mergedIModelFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "MergeTest.bim");
+    const mergedDb: IModelDb = IModelDb.createSnapshot(mergedIModelFileName, { rootSubject: { name: "Merge Test" } });
+    const campusSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Campus");
+    assert.isTrue(Id64.isValidId64(campusSubjectId));
+    const garageSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Garage");
+    assert.isTrue(Id64.isValidId64(garageSubjectId));
+    const buildingSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Building");
+    assert.isTrue(Id64.isValidId64(buildingSubjectId));
+    mergedDb.saveChanges("Create Subject hierarchy");
+    BriefcaseManager.createStandaloneChangeSet(mergedDb.briefcase); // subsequent calls to importSchemas will fail if this is not called to flush local changes
+
+    // Import campus
+    if (true) {
+      const campusIModelFileName: string = "D:/data/bim/MergeTest/Campus.bim";
+      const campusDb: IModelDb = IModelDb.openSnapshot(campusIModelFileName);
+      IModelTransformerUtils.dumpIModelInfo(campusDb);
+      const transformer = new IModelTransformer(campusDb, mergedDb, { targetScopeElementId: campusSubjectId });
+      await transformer.processSchemas(new BackendRequestContext());
+      transformer.context.remapElement(IModel.rootSubjectId, campusSubjectId);
+      transformer.processAll();
+      transformer.dispose();
+      mergedDb.saveChanges("Imported Campus");
+      BriefcaseManager.createStandaloneChangeSet(mergedDb.briefcase); // subsequent calls to importSchemas will fail if this is not called to flush local changes
+      campusDb.closeSnapshot();
+    }
+
+    // Import garage
+    if (true) {
+      const garageIModelFileName: string = "D:/data/bim/MergeTest/Garage.bim";
+      const garageDb: IModelDb = IModelDb.openSnapshot(garageIModelFileName);
+      IModelTransformerUtils.dumpIModelInfo(garageDb);
+      const transformer = new IModelTransformer(garageDb, mergedDb, { targetScopeElementId: garageSubjectId });
+      transformer.context.remapElement(IModel.rootSubjectId, garageSubjectId);
+      transformer.processAll();
+      transformer.dispose();
+      mergedDb.saveChanges("Imported Garage");
+      BriefcaseManager.createStandaloneChangeSet(mergedDb.briefcase); // subsequent calls to importSchemas will fail if this is not called to flush local changes
+      garageDb.closeSnapshot();
+    }
+
+    // Import building
+    if (true) {
+      const buildingIModelFileName: string = "D:/data/bim/MergeTest/Building.bim";
+      const buildingDb: IModelDb = IModelDb.openSnapshot(buildingIModelFileName);
+      IModelTransformerUtils.dumpIModelInfo(buildingDb);
+      const transformer = new IModelTransformer(buildingDb, mergedDb, { targetScopeElementId: buildingSubjectId });
+      await transformer.processSchemas(new BackendRequestContext());
+      transformer.context.remapElement(IModel.rootSubjectId, buildingSubjectId);
+      transformer.processAll();
+      transformer.dispose();
+      mergedDb.saveChanges("Imported Building");
+      BriefcaseManager.createStandaloneChangeSet(mergedDb.briefcase); // subsequent calls to importSchemas will fail if this is not called to flush local changes
+      buildingDb.closeSnapshot();
+    }
+
+    IModelTransformerUtils.dumpIModelInfo(mergedDb);
+    mergedDb.closeSnapshot();
   });
 });
