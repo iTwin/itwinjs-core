@@ -68,6 +68,7 @@ alpha;ColumnFilterDescriptor
 beta;CompletionObserver
 alpha;CompositeFilterDescriptor 
 alpha;CompositeFilterDescriptorCollection
+public;CompositeTypeConverter 
 internal;ContextMenu 
 internal;ContextMenuItem 
 internal;ContextMenuProps 

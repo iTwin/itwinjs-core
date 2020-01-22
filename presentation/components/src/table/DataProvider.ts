@@ -22,7 +22,7 @@ import {
 import { ContentDataProvider, CacheInvalidationProps, IContentDataProvider } from "../common/ContentDataProvider";
 import { ContentBuilder } from "../common/ContentBuilder";
 import { PageContainer, Page } from "../common/PageContainer";
-import { priorityAndNameSortFunction } from "../common/Utils";
+import { priorityAndNameSortFunction, createLabelRecord, translate } from "../common/Utils";
 
 interface PromisedPage<TItem> extends Page<TItem> {
   promise?: Promise<void>;
@@ -233,9 +233,15 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
   }
 }
 
-const createColumns = (descriptor: Readonly<Descriptor> | undefined): ColumnDescription[] => {
+const DISPLAY_LABEL_COLUMN_KEY = "/DisplayLabel/";
+
+const createColumns = async (descriptor: Readonly<Descriptor> | undefined): Promise<ColumnDescription[]> => {
   if (!descriptor)
     return [];
+
+  if (descriptor.displayType === DefaultContentDisplayTypes.List)
+    return [await createLabelColumn()];
+
   const sortedFields = [...descriptor.fields].sort(priorityAndNameSortFunction);
   return sortedFields.map((field) => createColumn(field));
 };
@@ -252,6 +258,16 @@ const createColumn = (field: Readonly<Field>): ColumnDescription => {
   };
 };
 
+const createLabelColumn = async (): Promise<ColumnDescription> => {
+  return {
+    key: DISPLAY_LABEL_COLUMN_KEY,
+    label: await translate("general.display-label"),
+    sortable: true,
+    editable: false,
+    filterable: false,
+  };
+};
+
 const createRows = (c: Readonly<Content> | undefined): RowItem[] => {
   if (!c)
     return [];
@@ -263,8 +279,20 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>): RowI
     // note: for table view we expect the record to always have only 1 primary key
     throw new PresentationError(PresentationStatus.InvalidArgument, "item.primaryKeys");
   }
+
+  const key = JSON.stringify(item.primaryKeys[0]);
+  if (descriptor.displayType === DefaultContentDisplayTypes.List) {
+    return {
+      key,
+      cells: [{
+        key: DISPLAY_LABEL_COLUMN_KEY,
+        record: createLabelRecord(item.labelDefinition, "content_item_label"),
+      }],
+    };
+  }
+
   return {
-    key: JSON.stringify(item.primaryKeys[0]),
+    key,
     cells: descriptor.fields.map((field): CellItem => ({
       key: field.name,
       record: ContentBuilder.createPropertyRecord(field, item),

@@ -902,6 +902,14 @@ export interface CompositeFilterDescriptorCollection {
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
+// @public
+export class CompositeTypeConverter extends TypeConverter {
+    // (undocumented)
+    convertToString(value?: Primitives.Composite): string | Promise<string>;
+    // (undocumented)
+    sortCompare(valueA: Primitives.Composite, valueB: Primitives.Composite, ignoreCase?: boolean | undefined): number;
+}
+
 // @internal
 export class ContextMenu extends React.Component<ContextMenuProps> {
     // (undocumented)
@@ -2846,6 +2854,8 @@ export enum StandardTypeConverterTypeNames {
     Bool = "bool",
     // (undocumented)
     Boolean = "boolean",
+    // (undocumented)
+    Composite = "composite",
     // (undocumented)
     DateTime = "dateTime",
     // (undocumented)
