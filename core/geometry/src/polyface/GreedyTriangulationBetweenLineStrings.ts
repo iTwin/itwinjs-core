@@ -11,7 +11,9 @@ import { Angle } from "../geometry3d/Angle";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollectionInterval } from "../geometry3d/IndexedCollectionInterval";
 
-/** @module Polyface */
+/** @packageDocumentation
+ * @module Polyface
+ */
 /**
  * * Context for constructing triangulations between linestrings with dis-similar point counts and distribution.
  * @internal

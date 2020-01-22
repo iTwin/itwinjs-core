@@ -39,13 +39,16 @@ Once you have a Bentley User account, you will need to register the application 
 
 **[Register Here](./registration-dashboard.md)**
 
-There are two types of apps you can register:
+There are three types of apps you can register:
 
-[Interactive Application](../learning/app.md/#interactive-apps)<br/>
+[Web Application](../learning/app.md/#interactive-apps)<br/>
 An interactive application obtains information from an iModel and presents that information in a user interface.
 
 [Agent Application](../learning/app.md/#agents-and-services)<br/>
 iModel agents and services are apps that have no interactive user interface.
+
+[Desktop Application](../learning/app.md/#desktop-apps)<br/>
+An interactive application obtains information from an iModel and presents that information in a user interface. The app runs in Electron on the user's desktop.
 
 ## 4. Create a Sample Project
 
@@ -61,7 +64,7 @@ OR
 
 **[Register Project Here](./registration-dashboard?tab=1)**
 
-_Note: The “iModel Testdrive” organization is intended for developer testing only.  See <a href="https://learn.bentley.com/app/VideoPlayer/LinkToIndividualCourse?LearningPathID=109270&CourseId=114330&MediaID=5006537" target="_blank">this page</a> for information about administering a CONNECT project in your own organization._
+*Note: The “iModel Testdrive” organization is intended for developer testing only.  See <a href="https://learn.bentley.com/app/VideoPlayer/LinkToIndividualCourse?LearningPathID=109270&CourseId=114330&MediaID=5006537" target="_blank">this page</a> for information about administering a CONNECT project in your own organization.*
 
 ## 5. Get the Sample Code
 

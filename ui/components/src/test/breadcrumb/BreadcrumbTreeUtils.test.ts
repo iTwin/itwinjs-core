@@ -12,7 +12,7 @@ import { mockInterfaceTreeDataProvider } from "./mockTreeDataProvider";
 
 describe("BreadcrumbTreeUtils", () => {
   before(async () => {
-    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+    await TestUtils.initializeUiComponents();
   });
 
   const getColFromRowByKey = async (row: RowItem, key: string): Promise<CellItem | undefined> => {

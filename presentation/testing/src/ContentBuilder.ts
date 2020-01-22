@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Content */
+/** @packageDocumentation
+ * @module Content
+ */
 import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
 import { Presentation } from "@bentley/presentation-frontend";
 import { InstanceKey, KeySet, Ruleset, RegisteredRuleset, PageOptions, DefaultContentDisplayTypes, Content } from "@bentley/presentation-common";

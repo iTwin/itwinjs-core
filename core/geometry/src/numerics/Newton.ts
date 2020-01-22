@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 
 import { Geometry } from "../Geometry";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";

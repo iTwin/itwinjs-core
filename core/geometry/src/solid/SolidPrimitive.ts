@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Solid */
+/** @packageDocumentation
+ * @module Solid
+ */
 
 import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -50,9 +52,8 @@ export abstract class SolidPrimitive extends GeometryQuery {
   /** flag indicating whether cap region is considered closed (i.e. a planar region, rather than just a wire in space) */
   protected _capped: boolean;
   protected constructor(capped: boolean) { super(); this._capped = capped; }
-  /** Ask if this is a capped solid */
+  /** Whether this is a capped solid */
   public get capped(): boolean { return this._capped; }
-  /** Set the capped flag */
   public set capped(capped: boolean) { this._capped = capped; }
   /** Return a cross section at specified vFraction. */
   public abstract constantVSection(_vFraction: number): CurveCollection | undefined;

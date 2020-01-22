@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { useState } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -51,7 +53,7 @@ function createDataProvider(props: PresentationNodeLoaderProps) {
     dataProvider = provider;
   }
   if (props.preloadingEnabled && dataProvider.loadHierarchy) {
-    dataProvider.loadHierarchy(); // tslint:disable-line: no-floating-promises
+    dataProvider.loadHierarchy(); // tslint:disable-line:no-floating-promises
   }
   return dataProvider;
 }

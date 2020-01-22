@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 import {
   ViewFlags,
   ColorDef,
@@ -108,7 +110,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @beta
    */
   public get backgroundMapSettings(): BackgroundMapSettings { return this._backgroundMap.settings; }
-  /** @beta */
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this._backgroundMap.settings = settings;
     this._backgroundDrapeMap.settings = settings;
@@ -184,8 +185,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }
-
-  /** @internal  */
   public set scheduleScript(script: RenderScheduleState.Script | undefined) {
     if (undefined === script) {
       this._scheduleScript = undefined;

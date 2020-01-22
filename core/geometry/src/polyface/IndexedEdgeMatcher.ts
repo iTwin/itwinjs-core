@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Polyface */
+/** @packageDocumentation
+ * @module Polyface
+ */
 
 // For boundary sorting, an edge exists as a (packed!) Float64Array.
 // Fixed entries are:

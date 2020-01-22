@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 
 import { assert, DbOpcode, Id64, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, CodeQuery, CodeState, HubCode, Lock, LockLevel, LockType, LockQuery } from "@bentley/imodeljs-clients";

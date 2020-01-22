@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Item */
+/** @packageDocumentation
+ * @module Item
+ */
 
 /** Specifies type of badge, if any, that should be overlaid on UI component.
  * @beta

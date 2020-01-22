@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Zone */
+/** @packageDocumentation
+ * @module Zone
+ */
 
 import { RectangleProps, Rectangle } from "@bentley/ui-core";
 import { WidgetZoneId, getZoneCell } from "./Zones";

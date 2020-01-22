@@ -53,8 +53,8 @@ describe("DefaultToolUiSettingsProvider", () => {
         {
           type: PropertyEditorParamTypes.ButtonGroupData,
           buttons: [
-            { iconSpec: "testIconOne"},
-            { iconSpec: "testIconTwo"},
+            { iconSpec: "testIconOne" },
+            { iconSpec: "testIconTwo" },
           ],
         } as ButtonGroupEditorParams,
         {
@@ -65,8 +65,8 @@ describe("DefaultToolUiSettingsProvider", () => {
     },
     enum: {
       choices: [
-        { label: "Choice 1", value: 10},
-        { label: "Choice 2", value: 20},
+        { label: "Choice 1", value: 10 },
+        { label: "Choice 2", value: 20 },
       ],
     },
   };
@@ -81,9 +81,9 @@ describe("DefaultToolUiSettingsProvider", () => {
         {
           type: PropertyEditorParamTypes.ButtonGroupData,
           buttons: [
-            { iconSpec: "plusOne"},
-            { iconSpec: "plusTwo"},
-            { iconSpec: "plusThree"},
+            { iconSpec: "plusOne" },
+            { iconSpec: "plusTwo" },
+            { iconSpec: "plusThree" },
           ],
         } as ButtonGroupEditorParams,
         {
@@ -94,9 +94,9 @@ describe("DefaultToolUiSettingsProvider", () => {
     },
     enum: {
       choices: [
-        { label: "Plus 1", value: 100},
-        { label: "Plus 2", value: 200},
-        { label: "Plus 3", value: 300},
+        { label: "Plus 1", value: 100 },
+        { label: "Plus 2", value: 200 },
+        { label: "Plus 3", value: 300 },
       ],
     },
   };
@@ -169,7 +169,7 @@ describe("DefaultToolUiSettingsProvider", () => {
     const frontstageDef = FrontstageManager.findFrontstageDef("ToolUiProvider-TestFrontstage");
     expect(frontstageDef).to.not.be.undefined;
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
       FrontstageManager.ensureToolInformationIsSet(firstToolId);
 
@@ -195,15 +195,15 @@ describe("DefaultToolUiSettingsProvider", () => {
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
       const toolSettingsProperties: ToolSettingsPropertyRecord[] = [];
       const useLengthValue = new ToolSettingsValue(false);
       const lengthValue = new ToolSettingsValue(1.2345, "1.2345");
       const enumValue = new ToolSettingsValue("1");
-      const methodsValue = new ToolSettingsValue (0);
-      const groupOneValue = new ToolSettingsValue (10);
-      const groupTwoValue = new ToolSettingsValue (100);
+      const methodsValue = new ToolSettingsValue(0);
+      const groupOneValue = new ToolSettingsValue(10);
+      const groupTwoValue = new ToolSettingsValue(100);
 
       toolSettingsProperties.push(new ToolSettingsPropertyRecord(useLengthValue.clone() as PrimitiveValue, useLengthDescription, { rowPriority: 0, columnIndex: 1 }));
       toolSettingsProperties.push(new ToolSettingsPropertyRecord(lengthValue.clone() as PrimitiveValue, lengthDescription, { rowPriority: 0, columnIndex: 3 }));
@@ -286,7 +286,7 @@ describe("DefaultToolUiSettingsProvider", () => {
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      await FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
       const toolSettingsProperties: ToolSettingsPropertyRecord[] = [];
       const useLengthValue = new ToolSettingsValue(false);

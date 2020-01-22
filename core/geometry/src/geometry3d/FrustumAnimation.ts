@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Solid */
+/** @packageDocumentation
+ * @module Solid
+ */
 
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";

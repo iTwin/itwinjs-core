@@ -20,10 +20,14 @@ In order to maintain consistency in the iModel.js UI source code, please abide b
 * Document __all__ exported classes, interfaces, enums, types, etc.
 * Add release tags (`@public`, `@beta`, `@alpha` or `@internal`) to all exported classes, interfaces, enums, types, etc. For more information on release tags, see [Release Tags](https://github.com/imodeljs/imodeljs/blob/master/docs/learning/guidelines/release-tags-guidelines.md).
 * In addition, it’s preferable that all *Props interface members and component public methods be documented. You can put `@internal` on React lifecycle and render methods.
-* Add a `/** @module xyz */` comment to the top of the TypeScript file for the documentation module. An existing documentation module will often be appropriate to use. However, if you need to add a documentation module, see additional guidelines below. Example of `@module` comment:
+* Add a `/** @packageDocumentation
+ * @module xyz
+ */` comment to the top of the TypeScript file for the documentation module. An existing documentation module will often be appropriate to use. However, if you need to add a documentation module, see additional guidelines below. Example of `@module` comment:
 
 ```typescript
-/** @module Button */
+/** @packageDocumentation
+ * @module Button
+ */
 ```
 
 * Use the theme colors (e.g. $buic-text-color, $buic-background-control, $buic-background-widget, etc.). These are located in `imodeljs/ui/core/src/ui-core/style/themecolors.scss`. Please do __not__ use $uicore-text-color, $uicore-black, $uicore-white,  $uicore-gray*, etc.)

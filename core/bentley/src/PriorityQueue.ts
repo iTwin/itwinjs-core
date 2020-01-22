@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Collections */
+/** @packageDocumentation
+ * @module Collections
+ */
 
 import { CloneFunction, shallowClone } from "./SortedArray";
 import { OrderedComparator } from "./Compare";

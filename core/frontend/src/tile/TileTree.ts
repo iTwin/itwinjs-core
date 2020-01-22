@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tile
+ */
 
 import {
   assert,
@@ -544,6 +546,7 @@ export abstract class TileLoader {
   public get drawAsRealityTiles(): boolean { return false; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
   public forceTileLoad(_tile: Tile): boolean { return false; }
+  public onActiveRequestCanceled(_tile: Tile): void { }
 
   public computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
     return tile.depth;

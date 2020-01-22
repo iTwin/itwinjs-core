@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 import { Id64, Id64Arg, Id64String } from "@bentley/bentleyjs-core";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import * as React from "react";
 import { ControlledTreeProps, TreeModelSource, useVisibleTreeNodes } from "@bentley/ui-components";

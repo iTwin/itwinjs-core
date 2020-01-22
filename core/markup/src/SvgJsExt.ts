@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module MarkupApp */
+/** @packageDocumentation
+ * @module MarkupApp
+ */
 
 import { Transform } from "@bentley/geometry-core";
 import { Box, Element as MarkupElement, extend, G, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";

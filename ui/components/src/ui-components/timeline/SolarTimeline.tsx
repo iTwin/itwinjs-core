@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Timeline */
+/** @packageDocumentation
+ * @module Timeline
+ */
 
 // component is in alpha state - it may change after usability testing - test coverage not complete
 /* istanbul ignore file */

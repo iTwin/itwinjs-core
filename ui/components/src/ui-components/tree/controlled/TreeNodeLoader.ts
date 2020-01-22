@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { Observable as RxjsObservable } from "rxjs/internal/Observable";
 import { defer } from "rxjs/internal/observable/defer";

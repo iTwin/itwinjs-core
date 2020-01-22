@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Measure */
+/** @packageDocumentation
+ * @module Measure
+ */
 
 import { CanvasDecoration, GraphicType } from "../rendering";
 import { Point3d, XYAndZ, XAndY, Vector3d, Matrix3d, PointString3d, AxisOrder, Point2d, IModelJson, Plane3dByOriginAndUnitNormal, PolygonOps } from "@bentley/geometry-core";

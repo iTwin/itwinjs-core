@@ -2,6 +2,21 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "1.11.0",
+      "tag": "@bentley/frontend-devtools_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "TileStatisticsTracker now reports number of aborted requests for the session."
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.10.0",
       "tag": "@bentley/frontend-devtools_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",

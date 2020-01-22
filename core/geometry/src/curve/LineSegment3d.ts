@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { Geometry, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
@@ -317,6 +319,6 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param fractionB [in] end fraction
    */
   public clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
-    return LineString3d.create(this.fractionToPoint(fractionA), this.fractionToPoint(fractionB));
+    return LineSegment3d.create(this.fractionToPoint(fractionA), this.fractionToPoint(fractionB));
   }
 }

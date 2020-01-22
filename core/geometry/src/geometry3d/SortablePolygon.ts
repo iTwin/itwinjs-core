@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 import { IndexedXYZCollection, IndexedReadWriteXYZCollection } from "./IndexedXYZCollection";
 import { Range3d } from "./Range";
 import { PolygonOps } from "./PolygonOps";

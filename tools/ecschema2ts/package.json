@@ -2,24 +2,23 @@
   "name": "@bentley/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "bin": {
-    "ecschema2ts": "./lib/index.js"
+    "ecschema2ts": "./bin/index.js"
   },
-  "main": "./lib/main",
+  "main": "bin/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/ecschema2tss"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/tools/ecschema2ts"
   },
   "scripts": {
-    "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
+    "build": "tsc 1>&2 && npm run copy:test-assets && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib .rush package-deps.json",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ecschema2ts",
-    "copy:assets": "cpx ./src/index.js ./lib",
     "lint": "tslint --project . 1>&2",
     "docs": "",
-    "prebuild": "npm run copy:assets",
-    "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./src/test/",
+    "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "test:watch": "betools test-tsnode --watch",
     "cli:dev": "npm run clean & npm run build & npm link",
     "cover": "nyc npm test"
@@ -36,10 +35,9 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "1.10.0",
+    "@bentley/build-tools": "1.11.0",
     "@types/chai": "^4.1.4",
     "@types/chai-string": "^1.4.1",
-    "@types/chalk": "^2.2.0",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
@@ -53,17 +51,17 @@
     "tslint": "^5.11.0",
     "source-map-support": "^0.5.6",
     "ts-node": "^7.0.1",
-    "typescript": "~3.6.2"
+    "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "1.10.0",
-    "@bentley/ecschema-metadata": "1.10.0",
-    "@bentley/ecschema-locaters": "1.10.0",
-    "@bentley/imodeljs-clients": "1.10.0",
-    "@bentley/imodeljs-clients-backend": "1.10.0",
-    "@bentley/imodeljs-common": "1.10.0",
-    "@bentley/imodeljs-backend": "1.10.0",
-    "@bentley/geometry-core": "1.10.0",
+    "@bentley/bentleyjs-core": "1.11.0",
+    "@bentley/ecschema-metadata": "1.11.0",
+    "@bentley/ecschema-locaters": "1.11.0",
+    "@bentley/imodeljs-clients": "1.11.0",
+    "@bentley/imodeljs-clients-backend": "1.11.0",
+    "@bentley/imodeljs-common": "1.11.0",
+    "@bentley/imodeljs-backend": "1.11.0",
+    "@bentley/geometry-core": "1.11.0",
     "@types/chai-string": "^1.4.1",
     "@types/xmldom": "^0.1.29",
     "chai-string": "^1.5.0",

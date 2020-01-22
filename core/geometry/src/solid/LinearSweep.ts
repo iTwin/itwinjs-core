@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Solid */
+/** @packageDocumentation
+ * @module Solid
+ */
 
 import { XAndY } from "../geometry3d/XYZProps";
 import { Vector3d } from "../geometry3d/Point3dVector3d";

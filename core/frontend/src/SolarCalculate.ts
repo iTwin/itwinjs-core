@@ -2,10 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 
 import { Cartographic } from "@bentley/imodeljs-common";
 import { Angle, Vector3d } from "@bentley/geometry-core";
+
+// cspell:ignore mrad sinm sint aarg
 
 // Code below loosely translated from  https://www.esrl.noaa.gov/gmd/grad/solcalc/
 function calcTimeJulianCent(jd: number) {

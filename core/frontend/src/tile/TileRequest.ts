@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tile
+ */
 
 import { AbandonedError, assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { ImageSource } from "@bentley/imodeljs-common";
@@ -98,6 +100,9 @@ export class TileRequest {
   /** Cancels this request. This leaves the associated Tile's state untouched. */
   public cancel(): void {
     this.notifyAndClear();
+    if (TileRequest.State.Dispatched === this._state)
+      this.loader.onActiveRequestCanceled(this.tile);
+
     this._state = TileRequest.State.Failed;
   }
 

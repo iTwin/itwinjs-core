@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module BeSQLite */
+/** @packageDocumentation
+ * @module BeSQLite
+ */
 
 /** Whether to open a database readonly or writeable.
  * @public

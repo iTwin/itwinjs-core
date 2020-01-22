@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import {
   BeTimePoint,
@@ -198,6 +200,7 @@ export abstract class ViewState extends ElementState {
   private _clipVector?: ClipVector;
   public description?: string;
   public isPrivate?: boolean;
+
   /** Selects the categories that are display by this ViewState. */
   public categorySelector: CategorySelectorState;
   /** Selects the styling parameters for this this ViewState. */
@@ -266,8 +269,11 @@ export abstract class ViewState extends ElementState {
     this._auxCoordSystem = undefined;
     const acsId = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValid(acsId)) {
-      const props = await this.iModel.elements.getProps(acsId);
-      this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
+      try {
+        const props = await this.iModel.elements.getProps(acsId);
+        if (0 !== props.length)
+          this._auxCoordSystem = AuxCoordSystemState.fromProps(props[0], this.iModel);
+      } catch { }
     }
 
     const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
@@ -420,7 +426,7 @@ export abstract class ViewState extends ElementState {
 
   /**  Get the point at the geometric center of the view. */
   public getCenter(result?: Point3d): Point3d {
-    const delta = this.getRotation().transpose().multiplyVector(this.getExtents());
+    const delta = this.getRotation().multiplyTransposeVector(this.getExtents());
     return this.getOrigin().plusScaled(delta, 0.5, result);
   }
 
@@ -631,33 +637,19 @@ export abstract class ViewState extends ElementState {
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
   public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
 
-  /** Adjust the supplied origin and extents arguments to match the aspect ratio of the window (taking into consideration the aspect ratio skew),
-   * by adjusting one dimension or the other.
-   * @param origin origin of view. adjusted by this method.
-   * @param extents view aligned extents (note: aspect ratio = `x/y`). Either extents.x or extents.y is adjusted by this method.
-   * @param windowAspect the aspect ratio (width/height) to match.
+  /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
    */
-  public adjustAspectRatio(origin: Point3d, extents: Vector3d, windowAspect: number) {
-    const origExtents = extents.clone();
-    if (extents.x > (windowAspect * extents.y))
-      extents.y = extents.x / windowAspect;
-    else
-      extents.x = extents.y * windowAspect;
-
-    extents.y /= this.getAspectRatioSkew(); // skew always adjusts y
-
-    const rotation = this.getRotation();
-    rotation.multiplyVectorInPlace(origin); // get origin into view-aligned coordinates
-    origin.addScaledInPlace(origExtents.minus(extents, origExtents), .5); // adjust by half of the distance we modified extents to keep centered
-    rotation.multiplyTransposeVectorInPlace(origin); // back to world coordinates
-  }
-
-  /** @internal */
   public fixAspectRatio(windowAspect: number): void {
-    const extents = this.getExtents().clone();
+    const origExtents = this.getExtents();
+    const extents = origExtents.clone();
+    extents.y = extents.x / (windowAspect * this.getAspectRatioSkew());
+    if (extents.isAlmostEqual(origExtents))
+      return;
+
+    // adjust origin by half of the distance we modified extents to keep centered
     const origin = this.getOrigin().clone();
-    this.adjustAspectRatio(origin, extents, windowAspect);
+    origin.addScaledInPlace(this.getRotation().multiplyTransposeVector(extents.vectorTo(origExtents, origExtents)), .5);
     this.setOrigin(origin);
     this.setExtents(extents);
   }
@@ -696,7 +688,7 @@ export abstract class ViewState extends ElementState {
 
     delta.x = limitWindowSize(delta.x, false);
     delta.y = limitWindowSize(delta.y, false);
-    delta.z = limitWindowSize(delta.z, true);   // We ignore z error messages for the sake of 2D views
+    delta.z = limitWindowSize(delta.z, true);   // We ignore z error messages for the sake of 2d views
 
     if (messageNeeded && error !== ViewStatus.Success)
       this.showFrustumErrorMessage(error);
@@ -945,8 +937,17 @@ export abstract class ViewState extends ElementState {
 
     viewRot.multiplyTransposeVectorInPlace(newOrigin);
 
-    if (aspect)
-      this.adjustAspectRatio(newOrigin, newDelta, aspect);
+    if (aspect) {
+      const origExtents = newDelta.clone();
+      aspect *= this.getAspectRatioSkew();
+      if (newDelta.x > (aspect * newDelta.y))
+        newDelta.y = newDelta.x / aspect;
+      else
+        newDelta.x = newDelta.y * aspect;
+
+      // adjust origin by half of the distance we modified extents to keep centered
+      newOrigin.addScaledInPlace(viewRot.multiplyTransposeVector(newDelta.vectorTo(origExtents, origExtents)), .5);
+    }
 
     this.setExtents(newDelta);
     this.setOrigin(newOrigin);
@@ -1051,6 +1052,10 @@ export abstract class ViewState3d extends ViewState {
     this.rotation = YawPitchRollAngles.fromJSON(props.angles).toMatrix3d();
     assert(this.rotation.isRigid());
     this.camera = new Camera(props.camera);
+
+    // if the camera is on, make sure the eyepoint is centered.
+    if (this.isCameraEnabled())
+      this.centerEyePoint();
   }
 
   /** @internal */
@@ -1059,20 +1064,11 @@ export abstract class ViewState3d extends ViewState {
   /** @internal */
   public applyPose(val: ViewPose3d): this {
     this._cameraOn = val.cameraOn;
-    this.origin.setFrom(val.origin);
-    this.extents.setFrom(val.extents);
+    this.setOrigin(val.origin);
+    this.setExtents(val.extents);
     this.rotation.setFrom(val.rotation);
     this.camera.setFrom(val.camera);
     return this;
-  }
-
-  /** @internal */
-  public fixAspectRatio(windowAspect: number): void {
-    super.fixAspectRatio(windowAspect);
-    if (this._cameraOn) {
-      this.setLensAngle(this.calcLensAngle());
-      this.centerEyePoint();
-    }
   }
 
   public toJSON(): ViewDefinition3dProps {
@@ -1375,8 +1371,8 @@ export abstract class ViewState3d extends ViewState {
   public centerEyePoint(backDistance?: number): void {
     const eyePoint = this.getExtents().scale(0.5);
     eyePoint.z = backDistance ? backDistance : this.getBackDistance();
-    const eye = this.getRotation().multiplyTransposeXYZ(eyePoint.x, eyePoint.y, eyePoint.z);
-    this.camera.setEyePoint(this.getOrigin().plus(eye));
+    const eye = this.getOrigin().plus(this.getRotation().multiplyTransposeXYZ(eyePoint.x, eyePoint.y, eyePoint.z));
+    this.camera.setEyePoint(eye);
   }
 
   /** Center the focus distance of the camera halfway between the front plane and the back plane, keeping the eyepoint,
@@ -1811,8 +1807,8 @@ export abstract class ViewState2d extends ViewState {
 
   /** @internal */
   public applyPose(val: ViewPose2d) {
-    this.origin.setFrom(val.origin);
-    this.delta.setFrom(val.delta);
+    this.setOrigin(val.origin);
+    this.setExtents(val.delta);
     this.angle.setFrom(val.angle);
     return this;
   }
@@ -1850,10 +1846,10 @@ export abstract class ViewState2d extends ViewState {
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
   public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
-  public setExtents(delta: Vector3d) { this.delta.set(delta.x, delta.y); }
-  public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
+  public setExtents(delta: XAndY) { this.delta.set(delta.x, delta.y); }
+  public setOrigin(origin: XAndY) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: Matrix3d) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
-  public viewsModel(modelId: Id64String) { return this.baseModelId.toString() === modelId.toString(); }
+  public viewsModel(modelId: Id64String) { return this.baseModelId === modelId; }
   public forEachModel(func: (model: GeometricModelState) => void) {
     const model = this.iModel.models.getLoaded(this.baseModelId);
     if (undefined !== model && undefined !== model.asGeometricModel2d)

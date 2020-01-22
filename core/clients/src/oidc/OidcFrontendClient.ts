@@ -3,7 +3,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Authentication */
+/** @packageDocumentation
+ * @module Authentication
+ */
 
 import { IDisposable, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "../Token";

@@ -5,7 +5,9 @@ import { HalfEdgeGraph, HalfEdgeMask, HalfEdge } from "./Graph";
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 /**
  * A class to manage a set of edges as both (a) an array of possible members and (b) mask bits.
  * * A half edge is "in the MarkSet" if its mask is set.

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyEditors */
+/** @packageDocumentation
+ * @module PropertyEditors
+ */
 
 // cSpell:ignore customnumber testid
 
@@ -231,8 +233,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   }
 
   private _onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (e.target.focus)
-      e.target.select();
+    e.target.select();
   }
 
   /** @internal */

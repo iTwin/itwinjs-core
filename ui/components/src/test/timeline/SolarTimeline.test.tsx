@@ -29,7 +29,7 @@ describe("<SpeedTimeline />", () => {
 
   before(async () => {
     // need to initialize to get localized strings
-    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+    await TestUtils.initializeUiComponents();
   });
 
   afterEach(() => {
@@ -60,7 +60,7 @@ describe("<SolarTimeline />", () => {
 
   before(async () => {
     // need to initialize to get localized strings
-    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+    await TestUtils.initializeUiComponents();
 
     // JSDom used in testing does not provide implementations for requestAnimationFrame/cancelAnimationFrame so add dummy ones here.
     window.requestAnimationFrame = rafSpy;

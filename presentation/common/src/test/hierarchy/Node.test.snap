@@ -2,59 +2,69 @@
 
 exports[`Node fromJSON creates valid Node from JSON 1`] = `
 Object {
-  "backColor": undefined,
-  "description": undefined,
-  "foreColor": "#80E076",
-  "hasChildren": true,
-  "imageId": "customized",
+  "backColor": "rgb(
+    182,
+    131,
+    203
+  )",
+  "description": "Ab ea eveniet ullam occaecati aperiam non ab.",
+  "foreColor": undefined,
+  "hasChildren": false,
+  "imageId": "bandwidth",
   "isCheckboxEnabled": true,
   "isCheckboxVisible": false,
   "isChecked": true,
-  "isEditable": true,
-  "isExpanded": true,
-  "isSelectionDisabled": false,
+  "isEditable": false,
+  "isExpanded": false,
+  "isSelectionDisabled": true,
   "key": Object {
     "instanceKey": Object {
-      "className": "Functionality",
-      "id": "0x154f7000000a54e",
+      "className": "Afghanistan",
+      "id": "0x13ce90000002ea7",
     },
     "pathFromRoot": Array [
-      "4843c512-9f82-4b52-b6d8-74ba3b8ff740",
-      "4881193c-08eb-445a-b7dd-b7a30f33c975",
+      "5129f82b-5276-4d87-8ba3-b8ff74048811",
+      "93c08eb4-5a77-4ddb-ba30-f33c97571e0f",
     ],
     "type": "ECInstanceNode",
   },
-  "label": "Technician Shoes",
+  "label": "utilize",
+  "labelDefinition": Object {
+    "displayValue": "utilize",
+    "rawValue": "Central",
+    "typeName": "string",
+  },
 }
 `;
 
 exports[`Node fromJSON creates valid Node from serialized JSON 1`] = `
 Object {
-  "backColor": "rgb(
-    62,
-    40,
-    232
-  )",
-  "description": "Rerum eius fugiat dolores repellat ut excepturi.",
+  "foreColor": "#D7FE8A",
   "hasChildren": false,
-  "isCheckboxEnabled": true,
-  "isCheckboxVisible": true,
-  "isChecked": false,
+  "imageId": "Credit Card Account",
+  "isCheckboxEnabled": false,
+  "isCheckboxVisible": false,
+  "isChecked": true,
   "isEditable": false,
   "isExpanded": false,
   "isSelectionDisabled": false,
   "key": Object {
     "instanceKey": Object {
-      "className": "website",
-      "id": "0x5e58000000b378",
+      "className": "24/7",
+      "id": "0x13072000000c8dc",
     },
     "pathFromRoot": Array [
-      "5242abda-2a79-46dd-b8d9-fe71dab8e435",
-      "8d78e06d-c620-4f5a-82b9-ecb87afe9470",
+      "41ce5242-abda-42a7-96dd-f8d9fe71dab8",
+      "e4358d78-e06d-4c62-8f5a-02b9ecb87afe",
     ],
     "type": "ECInstanceNode",
   },
-  "label": "Tennessee THX",
+  "label": "website",
+  "labelDefinition": Object {
+    "displayValue": "website",
+    "rawValue": "Forest",
+    "typeName": "string",
+  },
 }
 `;
 
@@ -62,57 +72,71 @@ exports[`Node listFromJSON creates valid Node[] from JSON 1`] = `
 Array [
   Object {
     "backColor": "rgb(
-    8,
-    226,
-    135
+    114,
+    183,
+    43
   )",
-    "description": "Officia id quia ducimus porro ipsum ut labore non odit.",
-    "foreColor": undefined,
-    "hasChildren": true,
-    "imageId": "payment",
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": false,
-    "isChecked": false,
-    "isEditable": true,
-    "isExpanded": true,
-    "isSelectionDisabled": true,
-    "key": Object {
-      "instanceKey": Object {
-        "className": "generating",
-        "id": "0xa1f40000015019",
-      },
-      "pathFromRoot": Array [
-        "a4e3157e-9efc-44ab-9ccd-51f6568818bb",
-        "5969c069-8a07-4d76-8acd-5b9e0d056fcd",
-      ],
-      "type": "ECInstanceNode",
-    },
-    "label": "Massachusetts",
-  },
-  Object {
-    "backColor": undefined,
     "description": undefined,
     "foreColor": undefined,
-    "hasChildren": true,
-    "imageId": "calculate",
-    "isCheckboxEnabled": false,
+    "hasChildren": false,
+    "imageId": undefined,
+    "isCheckboxEnabled": true,
     "isCheckboxVisible": true,
     "isChecked": false,
-    "isEditable": true,
-    "isExpanded": true,
-    "isSelectionDisabled": true,
+    "isEditable": false,
+    "isExpanded": false,
+    "isSelectionDisabled": false,
     "key": Object {
       "instanceKey": Object {
-        "className": "algorithm",
-        "id": "0x116990000004b3f",
+        "className": "Refined Steel Gloves",
+        "id": "0x17ac2000000a3a1",
       },
       "pathFromRoot": Array [
-        "e690a051-8d92-4dd1-89f9-a8a212f6872f",
-        "d8f9f659-cef9-4c2d-bb44-acc219c15dbf",
+        "d20e88ab-2d4b-4a4e-b157-e9efc4ab5ccd",
+        "51f65688-18bb-4596-9c06-98a07d760acd",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "compress payment Tanzanian Shilling",
+    "label": "optical",
+    "labelDefinition": Object {
+      "displayValue": "optical",
+      "rawValue": "Turkmenistan",
+      "typeName": "string",
+    },
+  },
+  Object {
+    "backColor": "rgb(
+    192,
+    167,
+    181
+  )",
+    "description": "Earum placeat ut est mollitia soluta.",
+    "foreColor": undefined,
+    "hasChildren": true,
+    "imageId": undefined,
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": true,
+    "isChecked": true,
+    "isEditable": true,
+    "isExpanded": false,
+    "isSelectionDisabled": true,
+    "key": Object {
+      "instanceKey": Object {
+        "className": "Plastic",
+        "id": "0x4b3f0000000e4e",
+      },
+      "pathFromRoot": Array [
+        "3e690a05-18d9-42dd-989f-9a8a212f6872",
+        "fd8f9f65-9cef-49c2-9bb4-4acc219c15db",
+      ],
+      "type": "ECInstanceNode",
+    },
+    "label": "sensor",
+    "labelDefinition": Object {
+      "displayValue": "sensor",
+      "rawValue": "Money Market Account",
+      "typeName": "string",
+    },
   },
 ]
 `;
@@ -120,55 +144,58 @@ Array [
 exports[`Node listFromJSON creates valid Node[] from serialized JSON 1`] = `
 Array [
   Object {
-    "backColor": "rgb(
-    142,
-    32,
-    151
-  )",
-    "description": "Qui facilis nihil veniam non quia et odit.",
-    "foreColor": "#825EAE",
     "hasChildren": true,
-    "isCheckboxEnabled": true,
+    "imageId": "Savings Account",
+    "isCheckboxEnabled": false,
     "isCheckboxVisible": true,
     "isChecked": true,
-    "isEditable": true,
-    "isExpanded": true,
+    "isEditable": false,
+    "isExpanded": false,
     "isSelectionDisabled": true,
     "key": Object {
       "instanceKey": Object {
-        "className": "withdrawal",
-        "id": "0x963e0000011977",
+        "className": "Borders",
+        "id": "0xb50a0000000fa4",
       },
       "pathFromRoot": Array [
-        "b791d53b-d36d-4463-a93b-d6f88836fa7b",
-        "bcc61160-44ce-4214-88a0-7beca55cff90",
+        "f2825eae-2829-48de-ba99-b791d53bd36d",
+        "463293bd-6f88-4836-ba7b-bcc6116044ce",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "Baby reboot Pre-emptive",
+    "label": "circuit",
+    "labelDefinition": Object {
+      "displayValue": "circuit",
+      "rawValue": "bluetooth",
+      "typeName": "string",
+    },
   },
   Object {
-    "description": "Sint sunt ut.",
-    "hasChildren": true,
-    "imageId": "Kip",
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": false,
-    "isChecked": false,
-    "isEditable": true,
-    "isExpanded": true,
+    "foreColor": "#903169",
+    "hasChildren": false,
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": true,
+    "isChecked": true,
+    "isEditable": false,
+    "isExpanded": false,
     "isSelectionDisabled": true,
     "key": Object {
       "instanceKey": Object {
-        "className": "Manager",
-        "id": "0x1489c0000004432",
+        "className": "Libyan Dinar",
+        "id": "0x1118a000000961c",
       },
       "pathFromRoot": Array [
-        "969ce80c-c7a4-46b3-b4ba-8b1b8f5df1f0",
-        "18740c50-8a89-4eb7-ab84-4fa51f5b070a",
+        "0047b71e-154a-47dd-9bf1-d5a969ce80cc",
+        "7a46b3f4-ba8b-41b8-b5df-1f018740c508",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "Fresh Refined Plastic Chair Gorgeous Granite Chicken",
+    "label": "Indiana",
+    "labelDefinition": Object {
+      "displayValue": "Indiana",
+      "rawValue": "web-enabled",
+      "typeName": "string",
+    },
   },
 ]
 `;
@@ -176,27 +203,69 @@ Array [
 exports[`Node toJSON serializes Node 1`] = `
 Object {
   "backColor": undefined,
-  "description": "Dicta ut est autem suscipit laboriosam dolore placeat quam.",
-  "foreColor": undefined,
-  "hasChildren": true,
-  "imageId": "array",
+  "description": "Est esse quo dicta ut.",
+  "foreColor": "#553B65",
+  "hasChildren": false,
+  "imageId": undefined,
   "isCheckboxEnabled": true,
   "isCheckboxVisible": false,
   "isChecked": true,
-  "isEditable": false,
+  "isEditable": true,
   "isExpanded": true,
   "isSelectionDisabled": true,
   "key": Object {
     "instanceKey": Object {
-      "className": "Accounts",
-      "id": "0x16f0900000018e7",
+      "className": "International",
+      "id": "0x15d4700000161fd",
     },
     "pathFromRoot": Array [
-      "49751a56-5950-4ae3-be3b-c39c1d6f2a17",
-      "055caccb-47fb-48ce-938e-485a20877ad8",
+      "1a565950-ae3f-4e3b-839c-1d6f2a17055c",
+      "accb47fb-8ce5-438e-885a-20877ad8fc1f",
     ],
     "type": "ECInstanceNode",
   },
-  "label": "circuit Dynamic multimedia",
+  "label": "methodical",
+  "labelDefinition": Object {
+    "displayValue": "methodical",
+    "rawValue": "Berkshire",
+    "typeName": "string",
+  },
+}
+`;
+
+exports[`Node toJSON serializes Node without labelDefinition 1`] = `
+Object {
+  "backColor": "rgb(
+    153,
+    118,
+    239
+  )",
+  "description": undefined,
+  "foreColor": undefined,
+  "hasChildren": false,
+  "imageId": "parsing",
+  "isCheckboxEnabled": true,
+  "isCheckboxVisible": true,
+  "isChecked": false,
+  "isEditable": true,
+  "isExpanded": false,
+  "isSelectionDisabled": false,
+  "key": Object {
+    "instanceKey": Object {
+      "className": "National",
+      "id": "0x1578700000143e5",
+    },
+    "pathFromRoot": Array [
+      "ea188cf7-d7fb-441a-ac80-5d650de79565",
+      "9ee961c1-df2f-46a2-8c6e-57e6f9c31ed3",
+    ],
+    "type": "ECInstanceNode",
+  },
+  "label": "transmit",
+  "labelDefinition": Object {
+    "displayValue": "transmit",
+    "rawValue": "transmit",
+    "typeName": "string",
+  },
 }
 `;

@@ -11,7 +11,7 @@ import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
 import { BeEvent, Id64String, BeUiEvent } from "@bentley/bentleyjs-core";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { SelectionManager, SelectionChangeEvent, Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
-import { KeySet, ECInstanceNodeKey, StandardNodeTypes } from "@bentley/presentation-common";
+import { KeySet, ECInstanceNodeKey, ECInstancesNodeKey, StandardNodeTypes, InstanceKey } from "@bentley/presentation-common";
 import TestUtils from "../../TestUtils";
 import { ControlledCategoryTree, CategoryVisibilityHandler, Category } from "../../../ui-framework/imodel-components/category-tree/ControlledCategoriesTree";
 
@@ -385,15 +385,54 @@ describe("CategoryVisibilityHandler", () => {
 
   describe("setEnableAll", () => {
 
-    it("enables categories and subCategories", () => {
-      visibilityHandler.setEnableAll(true);
+    it("enables categories and subCategories", async () => {
+      await visibilityHandler.setEnableAll(true);
       selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey", "SecondCategoryKey"], true, true), moq.Times.once());
     });
 
-    it("disables categories and subCategories", () => {
-      visibilityHandler.setEnableAll(false);
+    it("disables categories and subCategories", async () => {
+      await visibilityHandler.setEnableAll(false);
       selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey", "SecondCategoryKey"], false, true), moq.Times.once());
       selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryKey", false), moq.Times.once());
+    });
+
+    describe("with filtered data provider", () => {
+      const filteredProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
+
+      beforeEach(() => {
+        filteredProviderMock.reset();
+
+        const node: TreeNodeItem = {
+          id: "nodeId",
+          label: "nodeLabel",
+        };
+        const instanceKey: InstanceKey = {
+          className: "class name",
+          id: "CategoryKey",
+        };
+        const key: ECInstancesNodeKey = {
+          type: StandardNodeTypes.ECInstancesNode,
+          instanceKeys: [instanceKey],
+          instanceKey,
+          pathFromRoot: [],
+        };
+        filteredProviderMock.setup((x) => x.getNodes()).returns(async () => [node]);
+        filteredProviderMock.setup((x) => x.getNodeKey(node)).returns(() => key);
+
+        visibilityHandler = new CategoryVisibilityHandler(imodelMock.object, categories, filteredProviderMock.object);
+      });
+
+      it("enables categories and subCategories", async () => {
+        await visibilityHandler.setEnableAll(true);
+        selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey"], true, true), moq.Times.once()); // no SecondCategoryKey
+      });
+
+      it("disables categories and subCategories", async () => {
+        await visibilityHandler.setEnableAll(false);
+        selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey"], false, true), moq.Times.once()); // no SecondCategoryKey
+        selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryKey", false), moq.Times.once());
+      });
+
     });
 
   });

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModelHub */
+/** @packageDocumentation
+ * @module iModelHub
+ */
 import { Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, request, RequestOptions } from "@bentley/imodeljs-clients";
 import * as fs from "fs";

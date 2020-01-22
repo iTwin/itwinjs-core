@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Properties */
+/** @packageDocumentation
+ * @module Properties
+ */
 
 import { Id64String } from "@bentley/bentleyjs-core";
 
@@ -25,6 +27,17 @@ export namespace Primitives {
   export type Point3d = string[] | number[] | { x: number, y: number, z: number };
 
   export type Point = Point2d | Point3d;
+
+  export interface CompositePart {
+    displayValue: string;
+    rawValue: Value;
+    typeName: string;
+  }
+  export interface Composite {
+    separator: string;
+    parts: CompositePart[];
+  }
+
   // tslint:disable-next-line
-  export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point;
+  export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite;
 }

@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { Geometry, AxisOrder, BeJSONFunctions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";

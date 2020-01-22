@@ -373,6 +373,26 @@ describe("CubeNavigationAid", () => {
         fireEvent.mouseUp(faceCell);
         expect(cellClick).to.be.called;
       });
+
+      it("should be called when cell is touched", () => {
+        const cellClick = sinon.spy();
+        const pos = Vector3d.create(1, 1, 1);
+        const component = render(<FaceCell onFaceCellClick={cellClick} onFaceCellHoverChange={sinon.fake()} hoverMap={{}} vector={pos} face={Face.Top} />);
+        const faceCell = component.getByTestId("nav-cube-face-cell-top-1-1-1");
+        fireEvent.touchStart(faceCell, {
+          targetTouches: [{
+            clientX: 10,
+            clientY: 10,
+          }],
+        });
+        fireEvent.touchEnd(faceCell, {
+          changedTouches: [{
+            clientX: 10,
+            clientY: 10,
+          }],
+        });
+        expect(cellClick).to.be.called;
+      });
     });
     describe("onFaceCellHoverChange", () => {
       afterEach(cleanup);

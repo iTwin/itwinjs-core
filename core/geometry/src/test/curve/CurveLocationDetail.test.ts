@@ -9,6 +9,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 // import { Point3d, Transform } from "../PointVector";
 import { Checker } from "../Checker";
 import { expect } from "chai";
+import { Geometry } from "../../Geometry";
 /* tslint:disable:no-console */
 describe("CurveLocationDetail", () => {
   it("HelloWorld", () => {
@@ -33,4 +34,25 @@ describe("CurveLocationDetail", () => {
     ck.checkpoint("CurveLocationDetail.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("InverseFraction", () => {
+    const ck = new Checker();
+    const segmentA = LineSegment3d.createXYXY(1, 2, 5, 2);
+    const f0 = 0.10;
+    const f1 = 0.83;
+    // a normal two-point detail ...
+    const detailA0 = CurveLocationDetail.createCurveEvaluatedFractionFraction(segmentA, f0, f1);
+    const g0 = 1000.0;
+    const g = 0.34;
+    const f = Geometry.interpolate(detailA0.fraction, g, detailA0.fraction1!);
+    const g1 = detailA0.inverseInterpolateFraction(f, g0);
+    ck.testExactNumber(g, g1, "inverse interpolation in simple interval.");
+    // a degenerate two-point detail
+    const detailA2 = CurveLocationDetail.createCurveEvaluatedFractionFraction(segmentA, f0, f0);  // degenerate !
+    const g2 = detailA2.inverseInterpolateFraction(f0, g0);
+    ck.testExactNumber(g0, g2, "inverse interpolate in degenerate interval");
+
+    ck.checkpoint("CurveLocationDetail.InverseFraction");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

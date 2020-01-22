@@ -100,11 +100,9 @@ export abstract class BaseSchemaChange implements ISchemaChange {
       this._changeType = this.defaultChangeType;
     return this._changeType;
   }
-
-  /** Sets the change type (Delta or Missing). */
   public set changeType(changeType: ChangeType) { this._changeType = changeType; }
 
-  /** Gets the default ChangeType */
+  /** The default ChangeType (Delta or Missing). */
   public abstract get defaultChangeType(): ChangeType;
 
   /** Gets a string representation of the schema change. */

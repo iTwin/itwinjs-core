@@ -28,7 +28,7 @@ describe("useIsBackstageOpen", () => {
   };
 
   it("should return is backstage open", () => {
-    const spy = sinon.spy() as sinon.SinonSpy<[ReturnType<typeof useIsBackstageOpen>]>;
+    const spy = sinon.stub<[ReturnType<typeof useIsBackstageOpen>]>();
     const manager = new BackstageManager();
     shallow(<TestHook
       onRender={() => spy(useIsBackstageOpen(manager))}
@@ -48,7 +48,7 @@ describe("useIsBackstageOpen", () => {
   });
 
   it("should update isOpen", () => {
-    const spy = sinon.spy() as sinon.SinonSpy<[ReturnType<typeof useIsBackstageOpen>]>;
+    const spy = sinon.stub<[ReturnType<typeof useIsBackstageOpen>]>();
     const manager = new BackstageManager();
     mount(<TestHook
       onRender={() => spy(useIsBackstageOpen(manager))}

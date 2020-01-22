@@ -22,7 +22,7 @@ export default class RulesetSelector extends React.Component<RulesetSelectorProp
     this.state = {};
   }
   public componentDidMount() {
-    // tslint:disable-next-line: no-floating-promises
+    // tslint:disable-next-line:no-floating-promises
     this.initAvailableRulesets();
   }
   private async initAvailableRulesets() {

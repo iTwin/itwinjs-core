@@ -324,7 +324,7 @@ class DependentTracker {
       new ModuleInfo(_isDevelopment, "@bentley/ui-ninezone", "ui-ninezone.js", undefined),
       new ModuleInfo(_isDevelopment, "@bentley/presentation-common", "presentation-common.js", undefined),
       new ModuleInfo(_isDevelopment, "@bentley/presentation-components", "presentation-components.js", undefined, "lib/public"),
-      new ModuleInfo(_isDevelopment, "@bentley/presentation-frontend", "presentation-frontend.js", undefined),
+      new ModuleInfo(_isDevelopment, "@bentley/presentation-frontend", "presentation-frontend.js", undefined, "lib/public"),
       new ModuleInfo(_isDevelopment, "react", undefined, path.join("react", _isDevelopment ? "umd/react.development.js" : "umd/react.production.min.js")),
       new ModuleInfo(_isDevelopment, "react-dnd", undefined, path.join("react-dnd", _isDevelopment ? "dist/ReactDnD.js" : "dist/ReactDnD.min.js")),
       new ModuleInfo(_isDevelopment, "react-dnd-html5-backend", undefined, path.join("react-dnd-html5-backend", _isDevelopment ? "dist/ReactDnDHTML5Backend.js" : "dist/ReactDnDHTML5Backend.min.js")),

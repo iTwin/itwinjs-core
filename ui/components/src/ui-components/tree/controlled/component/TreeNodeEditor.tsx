@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import * as React from "react";
 import { PrimitiveValue, PropertyValueFormat, PropertyDescription, PropertyRecord } from "@bentley/imodeljs-frontend";
@@ -56,12 +58,14 @@ export const TreeNodeEditor: React.FC<TreeNodeEditorProps> = (props: TreeNodeEdi
   );
 };
 
-function createPropertyRecord(value: string, typename: string = "text", editor?: string) {
-  const v: PrimitiveValue = {
+function createPropertyRecord(label: string | PropertyRecord, typename: string = "text", editor?: string) {
+  const createPrimitiveValue = (value: string): PrimitiveValue => ({
     valueFormat: PropertyValueFormat.Primitive,
     value,
     displayValue: value,
-  };
+  });
+
+  const v = typeof label === "string" ? createPrimitiveValue(label) : label.value;
 
   const p: PropertyDescription = {
     name: "tree-node-editor",

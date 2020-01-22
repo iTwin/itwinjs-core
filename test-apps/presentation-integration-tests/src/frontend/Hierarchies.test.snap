@@ -14,6 +14,11 @@ Array [
       "type": "ECClassGroupingNode",
     },
     "label": "Definition Model",
+    "labelDefinition": Object {
+      "displayValue": "Definition Model",
+      "rawValue": "Definition Model",
+      "typeName": "string",
+    },
   },
   Object {
     "description": "The singleton container for repository-specific definition elements.",
@@ -27,6 +32,11 @@ Array [
       "type": "ECClassGroupingNode",
     },
     "label": "Dictionary Model",
+    "labelDefinition": Object {
+      "displayValue": "Dictionary Model",
+      "rawValue": "Dictionary Model",
+      "typeName": "string",
+    },
   },
   Object {
     "description": "Contains a list of document elements.",
@@ -40,6 +50,11 @@ Array [
       "type": "ECClassGroupingNode",
     },
     "label": "Document List",
+    "labelDefinition": Object {
+      "displayValue": "Document List",
+      "rawValue": "Document List",
+      "typeName": "string",
+    },
   },
   Object {
     "hasChildren": true,
@@ -52,6 +67,11 @@ Array [
       "type": "ECClassGroupingNode",
     },
     "label": "Group Model",
+    "labelDefinition": Object {
+      "displayValue": "Group Model",
+      "rawValue": "Group Model",
+      "typeName": "string",
+    },
   },
   Object {
     "description": "A container for persisting link elements.",
@@ -65,6 +85,11 @@ Array [
       "type": "ECClassGroupingNode",
     },
     "label": "Link Model",
+    "labelDefinition": Object {
+      "displayValue": "Link Model",
+      "rawValue": "Link Model",
+      "typeName": "string",
+    },
   },
   Object {
     "description": "A container for persisting physical elements that model physical space.",
@@ -78,6 +103,11 @@ Array [
       "type": "ECClassGroupingNode",
     },
     "label": "Physical Model",
+    "labelDefinition": Object {
+      "displayValue": "Physical Model",
+      "rawValue": "Physical Model",
+      "typeName": "string",
+    },
   },
   Object {
     "description": "The singleton container of repository-related information elements.",
@@ -91,6 +121,11 @@ Array [
       "type": "ECClassGroupingNode",
     },
     "label": "Repository Model",
+    "labelDefinition": Object {
+      "displayValue": "Repository Model",
+      "rawValue": "Repository Model",
+      "typeName": "string",
+    },
   },
 ]
 `;
@@ -118,6 +153,11 @@ Array [
             "type": "nodeType",
           },
           "label": "filter ch1",
+          "labelDefinition": Object {
+            "displayValue": "filter ch1",
+            "rawValue": "filter ch1",
+            "typeName": "string",
+          },
         },
       },
       Object {
@@ -142,6 +182,11 @@ Array [
                 "type": "nodeType",
               },
               "label": "filter ch4",
+              "labelDefinition": Object {
+                "displayValue": "filter ch4",
+                "rawValue": "filter ch4",
+                "typeName": "string",
+              },
             },
           },
         ],
@@ -163,6 +208,11 @@ Array [
             "type": "nodeType",
           },
           "label": "other ch3",
+          "labelDefinition": Object {
+            "displayValue": "other ch3",
+            "rawValue": "other ch3",
+            "typeName": "string",
+          },
         },
       },
     ],
@@ -183,6 +233,11 @@ Array [
         "type": "nodeType",
       },
       "label": "filter r1",
+      "labelDefinition": Object {
+        "displayValue": "filter r1",
+        "rawValue": "filter r1",
+        "typeName": "string",
+      },
     },
   },
   Object {
@@ -206,6 +261,11 @@ Array [
             "type": "nodeType",
           },
           "label": "filter ch6",
+          "labelDefinition": Object {
+            "displayValue": "filter ch6",
+            "rawValue": "filter ch6",
+            "typeName": "string",
+          },
         },
       },
     ],
@@ -226,6 +286,11 @@ Array [
         "type": "nodeType",
       },
       "label": "other r3",
+      "labelDefinition": Object {
+        "displayValue": "other r3",
+        "rawValue": "other r3",
+        "typeName": "string",
+      },
     },
   },
 ]
@@ -269,6 +334,11 @@ Array [
                     "type": "ECInstancesNode",
                   },
                   "label": "BisCore.DictionaryModel",
+                  "labelDefinition": Object {
+                    "displayValue": "BisCore.DictionaryModel",
+                    "rawValue": "BisCore.DictionaryModel",
+                    "typeName": "string",
+                  },
                 },
               },
             ],
@@ -293,6 +363,11 @@ Array [
                 "type": "ECClassGroupingNode",
               },
               "label": "Definition Partition",
+              "labelDefinition": Object {
+                "displayValue": "Definition Partition",
+                "rawValue": "Definition Partition",
+                "typeName": "string",
+              },
             },
           },
           Object {
@@ -327,6 +402,11 @@ Array [
                     "type": "ECInstancesNode",
                   },
                   "label": "BisCore.RealityDataSources",
+                  "labelDefinition": Object {
+                    "displayValue": "BisCore.RealityDataSources",
+                    "rawValue": "BisCore.RealityDataSources",
+                    "typeName": "string",
+                  },
                 },
               },
             ],
@@ -351,6 +431,11 @@ Array [
                 "type": "ECClassGroupingNode",
               },
               "label": "Link Partition",
+              "labelDefinition": Object {
+                "displayValue": "Link Partition",
+                "rawValue": "Link Partition",
+                "typeName": "string",
+              },
             },
           },
         ],
@@ -381,6 +466,11 @@ Array [
             "type": "ECInstancesNode",
           },
           "label": "DgnV8Bridge",
+          "labelDefinition": Object {
+            "displayValue": "DgnV8Bridge",
+            "rawValue": "DgnV8Bridge",
+            "typeName": "string",
+          },
         },
       },
     ],
@@ -410,6 +500,11 @@ Array [
         "type": "ECInstancesNode",
       },
       "label": "DgnV8Bridge",
+      "labelDefinition": Object {
+        "displayValue": "DgnV8Bridge",
+        "rawValue": "DgnV8Bridge",
+        "typeName": "string",
+      },
     },
   },
 ]

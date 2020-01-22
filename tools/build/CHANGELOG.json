@@ -2,6 +2,21 @@
   "name": "@bentley/build-tools",
   "entries": [
     {
+      "version": "1.11.0",
+      "tag": "@bentley/build-tools_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          },
+          {
+            "comment": "Update tests to pass '--inspect' instead of '--debug' to Node to support Node 12."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.10.0",
       "tag": "@bentley/build-tools_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",

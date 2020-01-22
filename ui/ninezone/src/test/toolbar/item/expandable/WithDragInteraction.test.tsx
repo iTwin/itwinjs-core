@@ -62,7 +62,7 @@ describe("<WithDragInteraction />", () => {
     sandbox.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
-    spy.calledOnceWithExactly().should.false;
+    spy.notCalled.should.true;
   });
 
   it("should not invoke onOpenPanel handler if distance is < 20", () => {
@@ -80,7 +80,7 @@ describe("<WithDragInteraction />", () => {
     sandbox.stub(pointerMove, "clientX").get(() => 19);
     document.dispatchEvent(pointerMove);
 
-    spy.calledOnceWithExactly().should.false;
+    spy.notCalled.should.true;
   });
 
   it("should reset initial position on pointer up", () => {
@@ -102,7 +102,7 @@ describe("<WithDragInteraction />", () => {
     sandbox.stub(pointerMove, "clientX").get(() => 30);
     document.dispatchEvent(pointerMove);
 
-    spy.calledOnceWithExactly().should.false;
+    spy.notCalled.should.true;
   });
 
   it("should remove event listeners on unmount", () => {
@@ -148,7 +148,7 @@ describe("<WithDragInteraction />", () => {
 
     div.simulate("click");
 
-    spy.calledOnceWithExactly().should.false;
+    spy.notCalled.should.true;
   });
 
   it("should invoke onOpenPanel handler on long press", () => {
@@ -185,7 +185,7 @@ describe("<WithDragInteraction />", () => {
 
     fakeTimers.tick(750);
 
-    spy.calledOnceWithExactly().should.false;
+    spy.notCalled.should.true;
   });
 });
 

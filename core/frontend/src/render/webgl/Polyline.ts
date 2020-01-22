@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { Point3d } from "@bentley/geometry-core";
 import { FeatureIndexType, QParams3d, RenderMode, PolylineTypeFlags } from "@bentley/imodeljs-common";

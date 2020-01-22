@@ -35,11 +35,12 @@ describe("ContentControl", () => {
     ConfigurableUiManager.registerControl("TestContentControl", TestContentControl);
   });
 
-  it("activated", () => {
+  it("activated", async () => {
     const myContentGroup: ContentGroup = new ContentGroup({
       id: "myContentGroup",
       contents: [
-        { classId: "TestContentControl" },
+        { classId: TestContentControl, applicationData: "data1" },
+        { classId: TestContentControl, applicationData: "data2" },
       ],
     });
 
@@ -67,21 +68,21 @@ describe("ContentControl", () => {
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
       const contentGroup = frontstageDef.contentGroup;
       expect(contentGroup).to.not.be.undefined;
 
       if (contentGroup) {
         const contentSet = contentGroup.getContentNodes();
-        expect(contentSet.length).to.eq(1);
+        expect(contentSet.length).to.eq(2);
 
-        const contentControl = contentGroup.getControlFromElement(contentSet[0]);
+        const contentControl = contentGroup.getControlFromElement(contentSet[1]);
         expect(contentControl).to.not.be.undefined;
 
         if (contentControl) {
           const activatedMethod = sinon.spy(contentControl, "onActivated");
-          ContentViewManager.setActiveContent(contentSet[0]);
-          expect(activatedMethod.calledOnce).to.be.true;
+          ContentViewManager.setActiveContent(contentSet[1]);
+          expect(activatedMethod.calledOnce, `onActivated called ${activatedMethod.callCount} times`).to.be.true;
 
           expect(contentControl.isViewport).to.be.false;
           expect(contentControl.viewport).to.be.undefined;
@@ -91,7 +92,7 @@ describe("ContentControl", () => {
     }
   });
 
-  it("deactivated", () => {
+  it("deactivated", async () => {
     const contentGroup2: ContentGroup = new ContentGroup({
       id: "contentGroup2",
       contents: [
@@ -125,7 +126,7 @@ describe("ContentControl", () => {
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+      await FrontstageManager.setActiveFrontstageDef(frontstageDef);
       const contentGroup = frontstageDef.contentGroup;
       expect(contentGroup).to.not.be.undefined;
 
@@ -137,16 +138,13 @@ describe("ContentControl", () => {
         expect(contentControl).to.not.be.undefined;
 
         if (contentControl) {
-          const activatedMethod = sinon.spy(contentControl, "onActivated");
-          ContentViewManager.setActiveContent(contentSet[0]);
-          expect(activatedMethod.calledOnce).to.be.true;
-
           const deactivatedMethod = sinon.spy(contentControl, "onDeactivated");
           ContentViewManager.setActiveContent(contentSet[1]);
           expect(deactivatedMethod.calledOnce).to.be.true;
 
+          const activatedMethod = sinon.spy(contentControl, "onActivated");
           ContentViewManager.refreshActiveContent(contentSet[0]);
-          expect(activatedMethod.calledTwice).to.be.true;
+          expect(activatedMethod.calledOnce).to.be.true;
         }
       }
     }

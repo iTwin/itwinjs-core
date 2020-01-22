@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module LocatingElements */
+/** @packageDocumentation
+ * @module LocatingElements
+ */
 
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d } from "@bentley/geometry-core";

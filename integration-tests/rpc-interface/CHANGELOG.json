@@ -1,0 +1,53 @@
+{
+  "name": "@bentley/rpcinterface-integration-test",
+  "entries": [
+    {
+      "version": "1.11.7",
+      "tag": "@bentley/rpcinterface-integration-test_v1.11.7",
+      "date": "Thu, 16 Jan 2020 06:01:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.11.6",
+      "tag": "@bentley/rpcinterface-integration-test_v1.11.6",
+      "date": "Wed, 15 Jan 2020 06:00:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.11.5",
+      "tag": "@bentley/rpcinterface-integration-test_v1.11.5",
+      "date": "Tue, 14 Jan 2020 14:22:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.11.4",
+      "tag": "@bentley/rpcinterface-integration-test_v1.11.4",
+      "date": "Tue, 14 Jan 2020 06:01:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.11.3",
+      "tag": "@bentley/rpcinterface-integration-test_v1.11.3",
+      "date": "Mon, 13 Jan 2020 22:24:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.11.2",
+      "tag": "@bentley/rpcinterface-integration-test_v1.11.2",
+      "date": "Mon, 13 Jan 2020 06:01:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.11.1",
+      "tag": "@bentley/rpcinterface-integration-test_v1.11.1",
+      "date": "Fri, 10 Jan 2020 06:01:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "1.11.0",
+      "tag": "@bentley/rpcinterface-integration-test_v1.11.0",
+      "date": "Thu, 09 Jan 2020 06:01:07 GMT",
+      "comments": {}
+    }
+  ]
+}

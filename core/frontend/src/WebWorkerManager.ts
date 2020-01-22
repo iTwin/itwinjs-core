@@ -8,6 +8,8 @@
 // code. The Web Worker javascript  must be set up to handle the set of WorkerOperation's that are sent by
 // calls to queueOperation on WebWorkerManager.
 
+// cSpell:words proxys
+
 type resolveFunc = ((arg: any) => void);
 type rejectFunc = ((arg: Error) => void);
 

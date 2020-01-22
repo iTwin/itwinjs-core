@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 import { BeJSONFunctions, Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 /**
@@ -11,16 +13,14 @@ import { Angle } from "../geometry3d/Angle";
  */
 export class Complex implements BeJSONFunctions {
   private _x: number;
-  /** (propety set) Real part */
-  set x(value: number) { this._x = value; }
-  /** (propety get) Real part */
+  /** Real part */
   get x(): number { return this._x; }
+  set x(value: number) { this._x = value; }
 
   private _y: number;
-  /** (propety set) Imaginary part */
-  set y(value: number) { this._y = value; }
-  /** (propety get) Imaginary part */
+  /** Imaginary part */
   get y(): number { return this._y; }
+  set y(value: number) { this._y = value; }
 
   public constructor(x: number = 0, y: number = 0) { this._x = x; this._y = y; }
   /** set x and y parts from args. */

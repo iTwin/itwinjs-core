@@ -35,10 +35,8 @@
   bottom: 0px;
 
   > .icon {
-    position: absolute;
-    top: 50%;
-    right: 0;
-    line-height: 0;
+    align-self: center;
+    border: none;
   }
 }
 

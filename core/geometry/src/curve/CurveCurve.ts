@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { GeometryQuery } from "./GeometryQuery";
 import { Matrix4d } from "../geometry4d/Matrix4d";
@@ -75,6 +77,24 @@ export class CurveCurve {
     const handler = new CurveCurveIntersectXYZ(geometryA, extendA, geometryB, extendB);
     geometryA.dispatchToGeometryHandler(handler);
     return handler.grabResults();
+  }
+  /**
+   * Return xy intersections of 2 curves.
+   * @param geometryA second geometry
+   * @param extendA true to allow geometryA to extend
+   * @param geometryB second geometry
+   * @param extendB true to allow geometryB to extend
+   */
+  public static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[]): CurveLocationDetailPair[] {
+    const handler = new CurveCurveIntersectXY(undefined, undefined, false, undefined, false);
+    for (let i = 0; i < primitives.length; i++) {
+      const geometryA = primitives[i];
+      for (let j = i + 1; j < primitives.length; j++) {
+        handler.resetGeometry(geometryA, false, primitives[j], false);
+        geometryA.dispatchToGeometryHandler (handler);
+      }
+    }
+    return handler.grabPairedResults();
   }
 
 }

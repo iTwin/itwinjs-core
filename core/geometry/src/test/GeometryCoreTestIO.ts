@@ -19,6 +19,8 @@ import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Loop } from "../curve/Loop";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { UVSurface } from "../geometry3d/GeometryHandler";
+import { CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { CurveChainWireOffsetContext } from "../curve/PolygonOffsetContext";
 /* tslint:disable:no-console */
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
@@ -238,4 +240,28 @@ export class GeometryCoreTestIO {
     builder.addUVGridBody(patch, numX, numY);
     this.captureGeometry(collection, builder.claimPolyface(), dx, dy, dz);
   }
+  public static captureCurveLocationDetails(collection: GeometryQuery[], data: CurveLocationDetail | CurveLocationDetailPair | CurveLocationDetail[] | CurveLocationDetailPair[], markerSize: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (Array.isArray(data)) {
+      for (const item of data) {
+        this.captureCurveLocationDetails(collection, item, markerSize, dx, dy, dz);
+      }
+    } else if (data instanceof CurveLocationDetail) {
+      if (data.hasFraction1) {
+        if (data.curve) {
+          const partialCurve = data.curve!.clonePartialCurve(data.fraction, data.fraction1!);
+          if (partialCurve) {
+            const curveB = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(partialCurve, 0.6 * markerSize);
+            this.captureGeometry(collection, curveB, dx, dy, dz);
+          }
+        }
+      } else {
+        this.createAndCaptureXYMarker(collection, 0, data.point, markerSize, dx, dy, dz);
+      }
+    } else if (data instanceof CurveLocationDetailPair) {
+      this.captureCurveLocationDetails(collection, data.detailA, markerSize, dx, dy, dz);
+      this.captureCurveLocationDetails(collection, data.detailB, markerSize * 0.75, dx, dy, dz);
+    }
+
+  }
+
 }

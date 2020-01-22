@@ -1,0 +1,311 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DockedToolSettings should render 1`] = `
+<div
+  class="nz-toolSettings-docked"
+>
+  <div
+    class="nz-toolSettings-handle"
+  >
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+  <div>
+    Entry 1
+  </div>
+  Entry 2
+  Entry 3
+  <span>
+    Entry 4
+  </span>
+  <div
+    class="nz-toolSettings-overflow"
+  >
+    <div
+      class="nz-base-ellipsis"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DockedToolSettings should render overflow button 1`] = `
+<div
+  class="nz-toolSettings-docked"
+>
+  <div
+    class="nz-toolSettings-handle"
+  >
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+  Entry 1
+  Entry 2
+  Entry 3
+  <div
+    class="nz-toolSettings-overflow"
+  >
+    <div
+      class="nz-base-ellipsis"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DockedToolSettings should render overflown entries 1`] = `
+<div
+  class="nz-toolSettings-docked"
+>
+  <div
+    class="nz-toolSettings-handle"
+  >
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+  Entry 1
+  Entry 2
+  Entry 3
+  <div
+    class="nz-toolSettings-overflow"
+  >
+    <div
+      class="nz-base-ellipsis"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DockedToolSettings should render panel container 1`] = `
+<div
+  class="nz-toolSettings-docked"
+>
+  <div
+    class="nz-toolSettings-handle"
+  >
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+  <div
+    class="nz-toolSettings-setting"
+  >
+    Entry 1
+  </div>
+  <div
+    class="nz-toolSettings-setting"
+  >
+    Entry 2
+  </div>
+  <div
+    class="nz-toolSettings-overflow"
+  >
+    <div
+      class="nz-base-ellipsis"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+  <div
+    class="nz-toolSettings-panel"
+  >
+    <div
+      class="panel-container"
+    >
+      <div
+        class="nz-toolSettings-setting nz-overflown"
+      >
+        Entry 3
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DockedToolSettings should render w/o entries 1`] = `
+<div
+  class="nz-toolSettings-docked"
+>
+  <div
+    class="nz-toolSettings-handle"
+  >
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+    <div
+      class="nz-row"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+</div>
+`;

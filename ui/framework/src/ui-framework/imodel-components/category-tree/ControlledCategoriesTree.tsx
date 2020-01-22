@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module IModelComponents */
+/** @packageDocumentation
+ * @module IModelComponents
+ */
 
 import * as React from "react";
 import { IModelConnection, Viewport, IModelApp, SpatialViewState } from "@bentley/imodeljs-frontend";
@@ -80,7 +82,7 @@ export const ControlledCategoryTree: React.FC<ControlledCategoryTreeProps> = (pr
 
   const categories = useCategories(props.iModel, activeView);
 
-  const visibilityHandler = useCategoryVisibilityHandler(props.iModel, categories, props.allViewports, props.categoryVisibilityHandler);
+  const visibilityHandler = useCategoryVisibilityHandler(props.iModel, categories, filteredNodeLoader, props.allViewports, props.categoryVisibilityHandler);
   const eventHandler = useEventHandler(filteredModelSource, filteredNodeLoader, visibilityHandler, activeView);
 
   React.useEffect(() => {
@@ -88,10 +90,10 @@ export const ControlledCategoryTree: React.FC<ControlledCategoryTreeProps> = (pr
   }, [activeView]);
 
   React.useEffect(() => {
-    if (props.selectAll)
-      eventHandler.selectAll();
     if (props.clearAll)
-      eventHandler.clearAll();
+      eventHandler.clearAll(); // tslint:disable-line: no-floating-promises
+    else if (props.selectAll)
+      eventHandler.selectAll(); // tslint:disable-line: no-floating-promises
   }, [props.selectAll, props.clearAll, eventHandler]);
 
   const visibleNodes = useVisibleTreeNodes(filteredModelSource);
@@ -175,24 +177,26 @@ function useEventHandler(
   return eventHandler;
 }
 
-function useCategoryVisibilityHandler(imodel: IModelConnection, categories: Category[], allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
-  const [handler, setHandler] = React.useState(() => createCategoryVisibilityHandler(imodel, categories, allViewports, visibilityHandler));
+function useCategoryVisibilityHandler(imodel: IModelConnection, categories: Category[], filteredNodeLoader?: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
+  const [handler, setHandler] = React.useState(() => createCategoryVisibilityHandler(imodel, categories, filteredNodeLoader, allViewports, visibilityHandler));
 
   useEffectSkipFirst(() => {
-    setHandler(() => createCategoryVisibilityHandler(imodel, categories, allViewports, visibilityHandler));
-  }, [imodel, categories, allViewports, visibilityHandler]);
+    setHandler(() => createCategoryVisibilityHandler(imodel, categories, filteredNodeLoader, allViewports, visibilityHandler));
+  }, [imodel, categories, filteredNodeLoader, allViewports, visibilityHandler]);
 
   return handler;
 }
 
-function createCategoryVisibilityHandler(imodel: IModelConnection, categories: Category[], allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
+function createCategoryVisibilityHandler(imodel: IModelConnection, categories: Category[], filteredNodeLoader?: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
+  const filteredProvider = filteredNodeLoader ? filteredNodeLoader.getDataProvider() : undefined;
   if (visibilityHandler) {
     visibilityHandler.categories = categories;
+    visibilityHandler.filteredProvider = filteredProvider;
     visibilityHandler.allViewports = allViewports;
     return visibilityHandler;
   }
 
-  return new CategoryVisibilityHandler(imodel, categories, allViewports);
+  return new CategoryVisibilityHandler(imodel, categories, filteredProvider, allViewports);
 }
 
 function useCategories(iModel: IModelConnection, view?: Viewport) {
@@ -235,7 +239,7 @@ async function setViewType(activeView?: Viewport) {
 
   const view = activeView.view as SpatialViewState;
   const viewType = view.is3d() ? "3d" : "2d";
-  await Presentation.presentation.vars(RULESET.id).setString("ViewType", viewType); // tslint:disable-line:no-floating-promises
+  await Presentation.presentation.vars(RULESET.id).setString("ViewType", viewType);
 }
 
 /** @internal */
@@ -248,11 +252,13 @@ export interface Category {
 export class CategoryVisibilityHandler {
   private _imodel: IModelConnection;
   private _categories: Category[];
+  private _filteredProvider?: IPresentationTreeDataProvider;
   private _allViewports?: boolean;
 
-  constructor(imodel: IModelConnection, categories: Category[], allViewports?: boolean) {
+  constructor(imodel: IModelConnection, categories: Category[], filteredProvider?: IPresentationTreeDataProvider, allViewports?: boolean) {
     this._imodel = imodel;
     this._categories = categories;
+    this._filteredProvider = filteredProvider;
     this._allViewports = allViewports;
   }
 
@@ -260,16 +266,36 @@ export class CategoryVisibilityHandler {
     this._categories = categories;
   }
 
+  public set filteredProvider(filteredProvider: IPresentationTreeDataProvider | undefined) {
+    this._filteredProvider = filteredProvider;
+  }
+
   public set allViewports(allViewports: boolean | undefined) {
     this._allViewports = allViewports;
   }
 
-  public setEnableAll(enable: boolean) {
-    const ids = this._categories.map((category: Category) => category.key);
+  public async setEnableAll(enable: boolean) {
+    let ids: string[];
+    if (this._filteredProvider) {
+      const nodes = await this._filteredProvider.getNodes();
+      ids = nodes.map((node) => this.getIdFromTreeNodeItem(node, this._filteredProvider!));
+    } else
+      ids = this._categories.map((category: Category) => category.key);
+
     // istanbul ignore else
     if (ids.length > 0) {
       this.enableCategory(ids, enable);
     }
+  }
+
+  private getIdFromTreeNodeItem(node: TreeNodeItem, dataProvider: IPresentationTreeDataProvider) {
+    const key = dataProvider.getNodeKey(node);
+    // istanbul ignore else
+    if (NodeKey.isInstancesNodeKey(key) && key.instanceKey)
+      return key.instanceKey.id;
+
+    // istanbul ignore next
+    return "";
   }
 
   /** Change category display in the viewport */
@@ -373,13 +399,13 @@ class EventHandler extends TreeEventHandler {
     this._dispose();
   }
 
-  public selectAll() {
-    this._visibilityHandler.setEnableAll(true);
+  public async selectAll() {
+    await this._visibilityHandler.setEnableAll(true);
     this.updateCheckboxes();
   }
 
-  public clearAll() {
-    this._visibilityHandler.setEnableAll(false);
+  public async clearAll() {
+    await this._visibilityHandler.setEnableAll(false);
     this.updateCheckboxes();
   }
 

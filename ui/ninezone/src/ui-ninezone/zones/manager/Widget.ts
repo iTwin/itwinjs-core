@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Zone */
+/** @packageDocumentation
+ * @module Zone
+ */
 
 import { Point, PointProps } from "@bentley/ui-core";
 import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";

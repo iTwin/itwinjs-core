@@ -7,7 +7,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as UiCore from "@bentley/ui-core";
-import { createRect } from "../../Utils";
+import { createBoundingClientRect } from "../../Utils";
 
 import { Toast } from "../../../ui-ninezone";
 
@@ -91,7 +91,7 @@ describe("<Toast />", () => {
       animateOutTo={animateOutTo}
     />);
     const sut = mounted.find(".nz-toast").getDOMNode() as HTMLDivElement;
-    sinon.stub(sut, "getBoundingClientRect").returns(createRect(10, 20, 40, 80));
+    sinon.stub(sut, "getBoundingClientRect").returns(createBoundingClientRect(10, 20, 40, 80));
 
     fakeTimers.tick(2000);
     fakeTimers.tick(1);

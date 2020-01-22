@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 
 import { BeJSONFunctions } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";

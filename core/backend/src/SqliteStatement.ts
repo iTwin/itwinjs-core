@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module SQLite */
+/** @packageDocumentation
+ * @module SQLite
+ */
 
 import { Id64String, GuidString, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECJsNames } from "@bentley/imodeljs-common";

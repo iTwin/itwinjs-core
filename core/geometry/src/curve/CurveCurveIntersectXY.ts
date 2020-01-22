@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { NullGeometryHandler } from "../geometry3d/GeometryHandler";
 import { GeometryQuery } from "./GeometryQuery";
@@ -89,7 +91,7 @@ export class CurveLocationDetailArrayPair {
 export class CurveCurveIntersectXY extends NullGeometryHandler {
   // private geometryA: GeometryQuery;  // nb never used -- passed through handlers.
   private _extendA: boolean;
-  private _geometryB: GeometryQuery;
+  private _geometryB: GeometryQuery | undefined;
   private _extendB: boolean;
   private _results!: CurveLocationDetailPair[];
   private _worldToLocalPerspective: Matrix4d | undefined;
@@ -106,7 +108,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
    * @param geometryB second curve for intersection.  Saved for reference by specific handler methods.
    * @param extendB flag for extension of geometryB.
    */
-  public constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean) {
+  public constructor(worldToLocal: Matrix4d | undefined, _geometryA: GeometryQuery | undefined, extendA: boolean, geometryB: GeometryQuery | undefined, extendB: boolean) {
     super();
     // this.geometryA = _geometryA;
     this._extendA = extendA;
@@ -122,8 +124,9 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     this._coincidentGeometryContext = CoincidentGeometryQuery.create();
     this.reinitialize();
   }
-  /** Reset the geometry flags, leaving all other parts unchanged (and preserving accumulated intersections) */
+  /** Reset the geometry and flags, leaving all other parts unchanged (and preserving accumulated intersections) */
   public resetGeometry(_geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean) {
+
     this._extendA = extendA;
     this._geometryB = geometryB;
     this._extendB = extendB;
@@ -149,14 +152,21 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
 
   private static _workVector2dA = Vector2d.create();
 
-  private acceptFraction(extend0: boolean, fraction: number, extend1: boolean) {
-    if (!extend0 && fraction < 0.0)
+  private acceptFraction(extend0: boolean, fraction: number, extend1: boolean, fractionTol: number = 1.0e-12) {
+    if (!extend0 && fraction < -fractionTol)
       return false;
-    if (!extend1 && fraction > 1.0)
+    if (!extend1 && fraction > 1.0 + fractionTol)
       return false;
     return true;
   }
-
+  // Test the fraction by strict parameter, but allow physical (metric) test at ends.
+  private acceptFractionOnLine(extend0: boolean, fraction: number, extend1: boolean, pointA: Point3d, pointB: Point3d) {
+    if (!extend0 && fraction < 0) {
+      return Geometry.isSmallMetricDistance(fraction * pointA.distanceXY(pointB));
+    } else if (!extend1 && fraction > 1.0)
+      return Geometry.isSmallMetricDistance(fraction * pointA.distanceXY(pointB));
+    return true;
+  }
   /**
    * * Return the results structure for the intersection calculation, structured as an array of CurveLocationDetailPair
    * @param reinitialize if true, a new results structure is created for use by later calls.
@@ -167,6 +177,9 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     if (reinitialize)
       this.reinitialize();
     return result;
+  }
+  private sameCurveAndFraction(cp: CurvePrimitive, fraction: number, detail: CurveLocationDetail): boolean {
+    return cp === detail.curve && Geometry.isAlmostEqualNumber(fraction, detail.fraction);
   }
   /** compute intersection of two line segments.
    * filter by extension rules.
@@ -185,11 +198,12 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     intervalDetails?: undefined | CurveLocationDetailPair) {
     let globalFractionA, globalFractionB;
     let globalFractionA1, globalFractionB1;
-    if (intervalDetails) {
-      globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
-      globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
-      globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction1!, fractionA1);
-      globalFractionB1 = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction1!, fractionB1);
+    const isInterval = intervalDetails !== undefined && intervalDetails.detailA.hasFraction1 && intervalDetails.detailB.hasFraction1;
+    if (isInterval) {
+      globalFractionA = Geometry.interpolate(fractionA0, intervalDetails!.detailA.fraction, fractionA1);
+      globalFractionB = Geometry.interpolate(fractionB0, intervalDetails!.detailB.fraction, fractionB1);
+      globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails!.detailA.fraction1!, fractionA1);
+      globalFractionB1 = Geometry.interpolate(fractionB0, intervalDetails!.detailB.fraction1!, fractionB1);
     } else {
       globalFractionA = globalFractionA1 = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
       globalFractionB = globalFractionB1 = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
@@ -197,14 +211,14 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     }
     // ignore duplicate of most recent point .  ..
     const numPrevious = this._results.length;
-    if (numPrevious > 0) {
-      const topFractionA = this._results[numPrevious - 1].detailA.fraction;
-      const topFractionB = this._results[numPrevious - 1].detailB.fraction;
+    if (numPrevious > 0 && !isInterval) {
+      const oldDetailA = this._results[numPrevious - 1].detailA;
+      const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (Geometry.isAlmostEqualNumber(topFractionA, globalFractionB) && Geometry.isAlmostEqualNumber(topFractionB, globalFractionA))
+        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailB) && this.sameCurveAndFraction(cpB, globalFractionB, oldDetailA))
           return;
       } else {
-        if (Geometry.isAlmostEqualNumber(topFractionA, globalFractionA) && Geometry.isAlmostEqualNumber(topFractionB, globalFractionB))
+        if (this.sameCurveAndFraction(cpA, globalFractionA, oldDetailA) && this.sameCurveAndFraction(cpB, globalFractionB, oldDetailB))
           return;
       }
     }
@@ -213,7 +227,7 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     const detailB = CurveLocationDetail.createCurveFractionPoint(cpB,
       globalFractionB, cpB.fractionToPoint(globalFractionB));
 
-    if (intervalDetails) {
+    if (isInterval) {
       detailA.captureFraction1Point1(globalFractionA1, cpA.fractionToPoint(globalFractionA1));
       detailB.captureFraction1Point1(globalFractionB1, cpB.fractionToPoint(globalFractionB1));
     } else {
@@ -264,22 +278,25 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     reversed: boolean,
   ) {
     const uv = CurveCurveIntersectXY._workVector2dA;
-    if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(
+    // Problem: Normal practice is to do the (quick, simple) transverse intersection first
+    // But the transverse intersector notion of coincidence is based on the determinant ratios, which are hard to relate
+    //     to physical tolerance.
+    //  So do the overlap first.  This should do a quick exit in non-coincident case.
+    const overlap = this._coincidentGeometryContext.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1);
+    if (overlap) {
+      this.recordPointWithLocalFractions(
+        overlap.detailA.fraction, cpA, fractionA0, fractionA1,
+        overlap.detailB.fraction, cpB, fractionB0, fractionB1, reversed, overlap);
+    } else if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(
       pointA0, pointA1,
       pointB0, pointB1, uv)) {
-      if (this.acceptFraction(extendA0, uv.x, extendA1)
-        && this.acceptFraction(extendB0, uv.y, extendB1)) {
+      if (this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1)
+        && this.acceptFractionOnLine(extendB0, uv.y, extendB1, pointB0, pointB1)) {
         this.recordPointWithLocalFractions(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
-      }
-    } else {
-      const overlap = this._coincidentGeometryContext.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1);
-      if (overlap) {
-        this.recordPointWithLocalFractions(
-          overlap.detailA.fraction, cpA, fractionA0, fractionA1,
-          overlap.detailB.fraction, cpB, fractionB0, fractionB1, reversed, overlap);
       }
     }
   }
+
   private static _workPointA0H = Point4d.create();
   private static _workPointA1H = Point4d.create();
   private static _workPointB0H = Point4d.create();

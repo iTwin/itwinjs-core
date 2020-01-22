@@ -6,10 +6,17 @@
 
 import { Config } from "@bentley/imodeljs-clients";
 import { OidcConfiguration } from "@bentley/oidc-signin-tool";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 export interface UserCredentials {
   email: string;
   password: string;
+}
+
+export class TestConfig {
+  public static get projectName(): string { return Config.App.get("imjs_test_project_name"); }
+  public static get iModelName(): string { return Config.App.get("imjs_test_imodel_name"); }
 }
 
 /** Test users with various permissions */
@@ -25,6 +32,18 @@ export class TestUsers {
 
   public static get scopes(): string {
     return Config.App.getString("imjs_oidc_browser_test_scopes");
+  }
+
+  /** ulas Oidc configuration */
+  public static get ulasOidcConfig(): OidcConfiguration {
+    return {
+      clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
+      redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
+    };
+  }
+
+  public static get ulasScopes(): string {
+    return Config.App.getString("imjs_oidc_ulas_test_scopes");
   }
 
   /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */

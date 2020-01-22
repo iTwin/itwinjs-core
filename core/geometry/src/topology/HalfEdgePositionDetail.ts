@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 
 import { HalfEdge } from "./Graph";
 import { XYAndZ } from "../geometry3d/XYZProps";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Hooks */
+/** @packageDocumentation
+ * @module Hooks
+ */
 
 import { useState, useEffect } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";

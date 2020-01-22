@@ -162,6 +162,20 @@ export class IModelTestUtils {
     return new AuthorizedBackendRequestContext(accessToken);
   }
 
+  public static async getUlasTestUserRequestContext(userCredentials: UserCredentials = TestUsers.regular): Promise<AuthorizedBackendRequestContext> {
+    // TODO: This caching won't work if the current token times out.  Need to implement some kind of refresh or purge it from the cache when it expires
+    // to trigger another signin cycle.
+    let accessToken: AccessToken;
+    if (IModelTestUtils._testUsers.has(userCredentials.email))
+      accessToken = IModelTestUtils._testUsers.get(userCredentials.email)!;
+    else {
+      accessToken = await getToken(userCredentials.email, userCredentials.password, TestUsers.ulasScopes, TestUsers.ulasOidcConfig, Config.App.getNumber("imjs_buddi_resolve_url_using_region", 0));
+      IModelTestUtils._testUsers.set(userCredentials.email, accessToken);
+    }
+
+    return new AuthorizedBackendRequestContext(accessToken);
+  }
+
   /** Prepare for an output file by:
    * - Resolving the output file name under the known test output directory
    * - Making directories as necessary

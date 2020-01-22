@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module UnifiedSelection */
+/** @packageDocumentation
+ * @module UnifiedSelection
+ */
 
 import { Id64Arg } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -40,9 +42,8 @@ export class SelectionScopesManager {
   /** Get active locale */
   public get activeLocale() { return this._getLocale(); }
 
-  /** Get active selection scope or its id */
+  /** The active selection scope or its id */
   public get activeScope() { return this._activeScope; }
-  /** Set active selection scope or its id */
   public set activeScope(scope: SelectionScope | string | undefined) { this._activeScope = scope; }
 
   /**

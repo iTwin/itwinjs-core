@@ -13,8 +13,8 @@ import { getPropertyKey } from "../../../ui-components/propertygrid/component/Pr
 describe("SelectablePropertyBlock", () => {
   let props: SelectablePropertyBlockProps;
 
-  before(() => {
-    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+  before(async () => {
+    await TestUtils.initializeUiComponents();
   });
 
   beforeEach(() => {

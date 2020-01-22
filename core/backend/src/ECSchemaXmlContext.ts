@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Schema */
+/** @packageDocumentation
+ * @module Schema
+ */
 
 import { IModelError } from "@bentley/imodeljs-common";
 import { IModelHost } from "./IModelHost";

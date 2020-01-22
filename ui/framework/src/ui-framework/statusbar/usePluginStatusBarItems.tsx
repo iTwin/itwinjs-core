@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module StatusBar */
+/** @packageDocumentation
+ * @module StatusBar
+ */
 
 import * as React from "react";
 import { PluginUiManager, StatusBarItemsManager, StageUsage, StatusBarItemsChangedArgs, CommonStatusBarItem } from "@bentley/ui-abstract";

@@ -37,7 +37,7 @@ export class AccessToken extends Token {
     // @internal
     static fromTokenString(tokenStr: string): AccessToken;
     // @internal
-    readonly isJwt: boolean;
+    get isJwt(): boolean;
     // @internal
     toTokenString(includePrefix?: IncludePrefix): string;
 }
@@ -192,7 +192,7 @@ export class ChangeSet extends WsgInstance {
     userCreated?: string;
 }
 
-// @beta
+// @internal
 export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
     // (undocumented)
     briefcaseId?: number;
@@ -345,7 +345,7 @@ export class CodeHandler {
     constructor(handler: IModelBaseHandler);
     deleteAll(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: CodeQuery): Promise<HubCode[]>;
-    readonly sequences: CodeSequenceHandler;
+    get sequences(): CodeSequenceHandler;
     update(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]>;
     }
 
@@ -359,7 +359,7 @@ export class CodeQuery extends WsgQuery {
     // @internal
     static defaultPageSize: number;
     // @internal
-    readonly isMultiCodeQuery: boolean;
+    get isMultiCodeQuery(): boolean;
     unavailableCodes(briefcaseId: number): this;
 }
 
@@ -405,7 +405,7 @@ export interface CodeUpdateOptions {
 
 // @public
 export class Config {
-    static readonly App: Config;
+    static get App(): Config;
     get(varName: string, defaultVal?: boolean | string | number): any;
     getBoolean(name: string, defaultVal?: boolean): boolean;
     getContainer(): any;
@@ -594,7 +594,7 @@ export class EventHandler extends EventBaseHandler {
     createListener(requestContext: ClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, iModelId: GuidString, listener: (event: IModelHubEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number): Promise<IModelHubEvent | undefined>;
     getSASToken(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<EventSAS>;
-    readonly subscriptions: EventSubscriptionHandler;
+    get subscriptions(): EventSubscriptionHandler;
 }
 
 // @beta
@@ -722,7 +722,7 @@ export interface FileHandler {
 // @internal
 export function getArrayBuffer(requestContext: ClientRequestContext, url: string): Promise<any>;
 
-// @beta
+// @internal
 export enum GetEventOperationType {
     Destructive = 0,
     Peek = 1
@@ -731,21 +731,20 @@ export enum GetEventOperationType {
 // @internal
 export function getJson(requestContext: ClientRequestContext, url: string): Promise<any>;
 
-// @beta
+// @internal
 export class GlobalEventHandler extends EventBaseHandler {
-    // @internal
     constructor(handler: IModelBaseHandler);
     createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void;
     getEvent(requestContext: ClientRequestContext, sasToken: string, baseAddress: string, subscriptionId: string, timeout?: number, getOperation?: GetEventOperationType): Promise<IModelHubGlobalEvent | undefined>;
     getSASToken(requestContext: AuthorizedClientRequestContext): Promise<GlobalEventSAS>;
-    readonly subscriptions: GlobalEventSubscriptionHandler;
+    get subscriptions(): GlobalEventSubscriptionHandler;
 }
 
-// @beta
+// @internal
 export class GlobalEventSAS extends BaseEventSAS {
 }
 
-// @beta
+// @internal
 export class GlobalEventSubscription extends WsgInstance {
     // (undocumented)
     eventTypes?: GlobalEventType[];
@@ -753,27 +752,26 @@ export class GlobalEventSubscription extends WsgInstance {
     subscriptionId?: string;
 }
 
-// @beta
+// @internal
 export class GlobalEventSubscriptionHandler {
-    // @internal
     constructor(handler: IModelBaseHandler);
     create(requestContext: AuthorizedClientRequestContext, subscriptionId: GuidString, globalEvents: GlobalEventType[]): Promise<GlobalEventSubscription>;
     delete(requestContext: AuthorizedClientRequestContext, subscriptionId: string): Promise<void>;
     update(requestContext: AuthorizedClientRequestContext, subscription: GlobalEventSubscription): Promise<GlobalEventSubscription>;
 }
 
-// @beta
+// @internal
 export type GlobalEventType =
 /** Sent when an iModel is put into the archive. See [[SoftiModelDeleteEvent]].
- * @beta Rename to SoftIModelDeleteEvent
+ * @internal Rename to SoftIModelDeleteEvent
  */
 "SoftiModelDeleteEvent" |
 /** Sent when an archived iModel is completely deleted from the storage. See [[HardiModelDeleteEvent]].
- * @beta Rename to HardIModelDeleteEvent
+ * @internal Rename to HardIModelDeleteEvent
  */
 "HardiModelDeleteEvent" |
 /** Sent when an iModel is created. See [[IModelCreatedEvent]].
- * @beta Rename to IModelCreatedEvent
+ * @internal Rename to IModelCreatedEvent
  */
 "iModelCreatedEvent" |
 /** Sent when a [[ChangeSet]] is pushed. See [[ChangeSetCreatedEvent]]. */
@@ -781,7 +779,7 @@ export type GlobalEventType =
 /** Sent when a named [[Version]] is created. See [[NamedVersionCreatedEvent]]. */
 "NamedVersionCreatedEvent";
 
-// @beta
+// @internal
 export class HardiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
@@ -809,12 +807,6 @@ export class HubUserInfo extends WsgInstance {
     firstName?: string;
     id?: string;
     lastName?: string;
-}
-
-// @alpha
-export interface IAngularOidcFrontendClient extends IOidcFrontendClient {
-    // (undocumented)
-    handleRedirectCallback(): Promise<boolean>;
 }
 
 // @beta
@@ -892,31 +884,32 @@ export class IModelBaseHandler extends WsgClient {
 export abstract class IModelClient {
     constructor(baseHandler: IModelBaseHandler, fileHandler?: FileHandler);
     // @internal
-    readonly briefcases: BriefcaseHandler;
-    readonly changeSets: ChangeSetHandler;
+    get briefcases(): BriefcaseHandler;
+    get changeSets(): ChangeSetHandler;
     // @alpha
-    readonly checkpoints: CheckpointHandler;
+    get checkpoints(): CheckpointHandler;
     // @alpha
-    readonly codes: CodeHandler;
-    readonly events: EventHandler;
-    readonly globalEvents: GlobalEventHandler;
+    get codes(): CodeHandler;
+    get events(): EventHandler;
+    // @internal
+    get globalEvents(): GlobalEventHandler;
     // (undocumented)
     protected _handler: IModelBaseHandler;
-    readonly iModel: IModelHandler;
-    readonly iModels: IModelsHandler;
+    get iModel(): IModelHandler;
+    get iModels(): IModelsHandler;
     // @alpha
-    readonly locks: LockHandler;
+    get locks(): LockHandler;
     // @internal
-    readonly requestOptions: CustomRequestOptions;
+    get requestOptions(): CustomRequestOptions;
     setFileHandler(fileHandler: FileHandler): void;
     // @alpha
-    readonly thumbnails: ThumbnailHandler;
+    get thumbnails(): ThumbnailHandler;
     // @alpha
-    readonly users: UserInfoHandler;
-    readonly versions: VersionHandler;
+    get users(): UserInfoHandler;
+    get versions(): VersionHandler;
 }
 
-// @beta
+// @internal
 export class IModelCreatedEvent extends IModelHubGlobalEvent {
 }
 
@@ -1007,11 +1000,10 @@ export abstract class IModelHubEvent extends IModelHubBaseEvent {
     iModelId?: GuidString;
 }
 
-// @beta
+// @internal
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     contextId?: string;
     contextTypeId?: ContextType;
-    // @internal
     fromJson(obj: any): void;
     iModelId?: GuidString;
     projectId?: string;
@@ -1067,9 +1059,9 @@ export class ImsFederatedAuthenticationClient extends Client {
 // @internal @deprecated
 export class ImsTestAuthorizationClient implements IAuthorizationClient {
     getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    readonly hasExpired: boolean;
-    readonly hasSignedIn: boolean;
-    readonly isAuthorized: boolean;
+    get hasExpired(): boolean;
+    get hasSignedIn(): boolean;
+    get isAuthorized(): boolean;
     // (undocumented)
     signIn(requestContext: ClientRequestContext, userCredentials: ImsUserCredentials, relyingPartyUri?: string): Promise<AccessToken>;
     }
@@ -1180,7 +1172,7 @@ export class LockQuery extends WsgQuery {
     // @internal
     static defaultPageSize: number;
     // @internal
-    readonly isMultiLockQuery: boolean;
+    get isMultiLockQuery(): boolean;
     unavailableLocks(briefcaseId: number, lastChangeSetIndex: string): this;
 }
 
@@ -1233,7 +1225,7 @@ export class MultiLock extends LockBase {
     objectIds?: Id64String[];
 }
 
-// @beta
+// @internal
 export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
     // (undocumented)
     changeSetId?: string;
@@ -1770,7 +1762,7 @@ export enum SettingsStatus {
 export class SmallThumbnail extends Thumbnail {
 }
 
-// @beta
+// @internal
 export class SoftiModelDeleteEvent extends IModelHubGlobalEvent {
 }
 
@@ -1846,12 +1838,14 @@ export abstract class Token {
     protected _x509Certificate?: string;
 }
 
-// @internal
+// @internal @deprecated
 export class UlasClient extends Client {
     constructor();
     getAccessToken(requestContext: ClientRequestContext, authorizationToken: AuthorizationToken): Promise<AccessToken>;
     protected getUrlSearchKey(): string;
+    // @deprecated
     logFeature(requestContext: AuthorizedClientRequestContext, ...entries: FeatureLogEntry[]): Promise<LogPostingResponse>;
+    // @deprecated
     logUsage(requestContext: AuthorizedClientRequestContext, entry: UsageLogEntry): Promise<LogPostingResponse>;
     // (undocumented)
     protected setupOptionDefaults(options: RequestOptions): Promise<void>;
@@ -1962,7 +1956,7 @@ export class UserInfoHandler {
     // @internal
     constructor(handler: IModelBaseHandler);
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: UserInfoQuery): Promise<HubUserInfo[]>;
-    readonly statistics: UserStatisticsHandler;
+    get statistics(): UserStatisticsHandler;
 }
 
 // @alpha
@@ -1974,7 +1968,7 @@ export class UserInfoQuery extends WsgQuery {
     // @internal
     getId(): string | undefined;
     // @internal (undocumented)
-    readonly isQueriedByIds: boolean;
+    get isQueriedByIds(): boolean;
     }
 
 // @alpha
@@ -2003,7 +1997,7 @@ export class UserStatisticsQuery extends WsgQuery {
     // @internal
     getId(): string | undefined;
     // @internal
-    readonly isQueriedByIds: boolean;
+    get isQueriedByIds(): boolean;
     selectAll(): this;
     selectBriefcasesCount(): this;
     selectLastChangeSetPushDate(): this;

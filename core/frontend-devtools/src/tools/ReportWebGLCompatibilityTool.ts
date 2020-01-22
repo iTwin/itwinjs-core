@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import {
   IModelApp,

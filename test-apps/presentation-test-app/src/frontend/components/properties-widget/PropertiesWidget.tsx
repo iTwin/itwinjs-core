@@ -62,7 +62,7 @@ export default class PropertiesWidget extends React.Component<Props, State> {
   private _onPropertyContextMenu = (args: PropertyGridContextMenuArgs) => {
     args.event.persist();
     this.setState({ contextMenu: args });
-    // tslint:disable-next-line: no-floating-promises
+    // tslint:disable-next-line:no-floating-promises
     this.buildContextMenu(args);
   }
   private _onContextMenuOutsideClick = () => {
@@ -198,7 +198,7 @@ class FavoriteActionButton extends React.Component<{ field: Field }> {
   }
 
   private _onActionButtonClicked = () => {
-    this.toggleFavoriteProperty(); // tslint:disable-line: no-floating-promises
+    this.toggleFavoriteProperty(); // tslint:disable-line:no-floating-promises
   }
 
   private async toggleFavoriteProperty() {

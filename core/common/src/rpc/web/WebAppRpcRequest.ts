@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import { BentleyStatus, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";

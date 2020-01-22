@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import TestUtils, { SinonSpy } from "../TestUtils";
+import TestUtils from "../TestUtils";
 import { Zone } from "../../ui-framework";
 import { ZoneRuntimeProps } from "../../ui-framework/zones/Zone";
 import { WidgetState, WidgetDef } from "../../ui-framework/widgets/WidgetDef";
@@ -30,7 +30,7 @@ describe("Zone", () => {
   });
 
   it("should maintain active tab index when preceding tab is removed", () => {
-    const spy = sinon.spy() as SinonSpy<ZoneRuntimeProps["widgetChangeHandler"]["handleTabClick"]>;
+    const spy = sinon.stub<ZoneRuntimeProps["widgetChangeHandler"]["handleTabClick"]>();
     const runtimeProps: ZoneRuntimeProps = {
       activeTabIndex: 2,
       widgetChangeHandler: {

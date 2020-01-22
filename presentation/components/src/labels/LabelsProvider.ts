@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module DisplayLabels */
+/** @packageDocumentation
+ * @module DisplayLabels
+ */
 
 import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";

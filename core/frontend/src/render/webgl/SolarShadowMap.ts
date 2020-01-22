@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 import { GL } from "./GL";
 import { dispose, assert, BeTimePoint } from "@bentley/bentleyjs-core";
 import { RenderMemory, RenderGraphic, RenderClipVolume } from "../System";
@@ -94,10 +96,6 @@ class Bundle implements WebGLDisposable {
     if (undefined === depthTextureHandle)
       return undefined;
 
-    const fbo = FrameBuffer.create([], depthTextureHandle);
-    if (undefined === fbo)
-      return undefined;
-
     let pixelDataType = GL.Texture.DataType.Float;
     switch (System.instance.capabilities.maxRenderType) {
       case RenderType.TextureFloat:
@@ -112,6 +110,22 @@ class Bundle implements WebGLDisposable {
       default:
         return undefined;
     }
+
+    const colorTextures: TextureHandle[] = [];
+
+    // Check if the system can render to a depth texture without a renderable color texture bound as well.
+    // If it cannot, add a renderable color texture to the framebuffer.
+    // MacOS Safari exhibited this behavior, which necessitated this code path.
+    if (!System.instance.capabilities.canRenderDepthWithoutColor) {
+      const colTex = TextureHandle.createForAttachment(shadowMapWidth, shadowMapHeight, GL.Texture.Format.Rgba, pixelDataType);
+      if (undefined === colTex)
+        return undefined;
+      colorTextures.push(colTex);
+    }
+
+    const fbo = FrameBuffer.create(colorTextures, depthTextureHandle);
+    if (undefined === fbo)
+      return undefined;
 
     // shadowMap texture is 1/4 size the depth texture (and averaged down when converting)
     const shadowMapTextureHandle = TextureHandle.createForAttachment(evsmWidth, evsmHeight, GL.Texture.Format.Rgba, pixelDataType);

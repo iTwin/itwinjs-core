@@ -107,6 +107,8 @@ public;ElementUniqueAspect
 public;ElevationCallout 
 public;EmbeddedFileLink 
 public;Entity 
+internal;EventSink
+internal;EventSinkManager
 internal;EventSinkOptions
 public;ExportGraphics
 beta;areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean

@@ -2,6 +2,33 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "1.11.0",
+      "tag": "@bentley/imodeljs-common_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Simplify iterator for QPoint3dList."
+          },
+          {
+            "comment": "Native apps can now cancel tile requests in progress on the backend."
+          },
+          {
+            "comment": "Remove echo test function from devTools"
+          },
+          {
+            "comment": "Clean up documentation modules; add PlanProjectionSettings for display styles."
+          },
+          {
+            "comment": "Allow outline fill to be specified by subcategory appearance."
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.10.0",
       "tag": "@bentley/imodeljs-common_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",

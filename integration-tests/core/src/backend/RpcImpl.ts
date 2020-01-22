@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcManager, IModelTokenProps, IModelToken } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/imodeljs-clients";
-import { IModelDb, ChangeSummaryExtractOptions, ChangeSummaryManager, BriefcaseManager, IModelJsFs, IModelHost } from "@bentley/imodeljs-backend";
-import { TestRpcInterface } from "../common/RpcInterfaces";
+import { IModelDb, ChangeSummaryExtractOptions, ChangeSummaryManager, BriefcaseManager, IModelJsFs, IModelHost, EventSinkManager } from "@bentley/imodeljs-backend";
+import { TestRpcInterface, EventsTestRpcInterface } from "../common/RpcInterfaces";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {
@@ -52,5 +52,22 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return context.toJSON();
   }
 }
+/** The backend implementation of WipRpcInterface.
+ * @internal
+ */
+export class EventsTestRpcImpl extends RpcInterface implements EventsTestRpcInterface {
+  public static register() { RpcManager.registerImpl(EventsTestRpcInterface, EventsTestRpcImpl); }
 
+  // set event that will be send to the frontend
+  public async echo(tokenProps: IModelTokenProps, id: GuidString, message: string): Promise<void> {
+    if (EventSinkManager.GLOBAL === tokenProps.key) {
+      EventSinkManager.global.emit(EventsTestRpcInterface.name, "echo", { id, message });
+    } else {
+      const iModelToken = IModelToken.fromJSON(tokenProps);
+      const iModelDb = IModelDb.find(iModelToken);
+      iModelDb.eventSink!.emit(EventsTestRpcInterface.name, "echo", { id, message });
+    }
+  }
+}
+EventsTestRpcImpl.register();
 TestRpcImpl.register();

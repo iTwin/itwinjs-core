@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 import { Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { AxisAlignedBox3d, ElementAspectProps, ElementProps, GeometricElement3dProps, IModelError, ModelProps, Placement3d } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";

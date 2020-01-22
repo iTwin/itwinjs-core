@@ -1670,9 +1670,10 @@ interface GroupColumnExpanderProps {
 }
 
 function GroupColumnExpander(props: GroupColumnExpanderProps) {
+  const { onClick, itemId } = props;
   const handleClick = React.useCallback(() => {
-    props.onClick(props.itemId);
-  }, [props.onClick, props.itemId]);
+    onClick(itemId);
+  }, [onClick, itemId]);
   const activateOnPointerUp = React.useContext(ToolGroupSelectionContext);
   return (
     <GroupToolExpander
@@ -1693,9 +1694,10 @@ interface GroupColumnToolProps {
 }
 
 function GroupColumnTool(props: GroupColumnToolProps) {
+  const { onClick, itemId } = props;
   const handleClick = React.useCallback(() => {
-    props.onClick(props.itemId);
-  }, [props.onClick, props.itemId]);
+    onClick(itemId);
+  }, [onClick, itemId]);
   const activateOnPointerUp = React.useContext(ToolGroupSelectionContext);
   return (
     <GroupTool

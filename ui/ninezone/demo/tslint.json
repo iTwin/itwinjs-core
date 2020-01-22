@@ -3,7 +3,9 @@
   "rules": {
     "await-promise": false,
     "completed-docs": false,
+    "deprecation": false,
     "no-floating-promises": false,
+    "no-unused-variable": false,
     "promise-function-async": false,
     "require-basic-rpc-values": false
   }

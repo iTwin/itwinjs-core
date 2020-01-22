@@ -28,7 +28,7 @@ describe("Backstage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
+    await FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
   after(() => {

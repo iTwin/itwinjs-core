@@ -11,7 +11,7 @@ Object {
   "isMarked": false,
   "node": Object {
     "backColor": undefined,
-    "description": "Alias harum nihil.",
+    "description": undefined,
     "foreColor": undefined,
     "hasChildren": false,
     "isCheckboxEnabled": false,
@@ -31,7 +31,12 @@ Object {
       ],
       "type": "ECInstanceNode",
     },
-    "label": "initiative",
+    "label": "Corners",
+    "labelDefinition": Object {
+      "displayValue": "Corners",
+      "rawValue": "Kids",
+      "typeName": "string",
+    },
   },
 }
 `;
@@ -39,16 +44,21 @@ Object {
 exports[`NodePathElement fromJSON creates valid NodePathElement from serialized JSON 1`] = `
 Object {
   "children": Array [],
-  "index": 364,
+  "filteringData": Object {
+    "childMatchesCount": 46073,
+    "matchesCount": 75986,
+  },
+  "index": 540,
+  "isMarked": false,
   "node": Object {
-    "foreColor": "#E7920B",
+    "foreColor": "#0B8631",
     "hasChildren": false,
-    "isCheckboxEnabled": true,
-    "isCheckboxVisible": true,
-    "isChecked": true,
-    "isEditable": false,
+    "isCheckboxEnabled": false,
+    "isCheckboxVisible": false,
+    "isChecked": false,
+    "isEditable": true,
     "isExpanded": false,
-    "isSelectionDisabled": false,
+    "isSelectionDisabled": true,
     "key": Object {
       "instanceKey": Object {
         "className": "Chair",
@@ -60,7 +70,12 @@ Object {
       ],
       "type": "ECInstanceNode",
     },
-    "label": "tan",
+    "label": "Bedfordshire",
+    "labelDefinition": Object {
+      "displayValue": "Bedfordshire",
+      "rawValue": "Central",
+      "typeName": "string",
+    },
   },
 }
 `;
@@ -69,19 +84,22 @@ exports[`NodePathElement listFromJSON creates valid NodePathElement[] from JSON 
 Array [
   Object {
     "children": Array [],
-    "index": 781,
-    "isMarked": false,
+    "index": 805,
     "node": Object {
-      "backColor": undefined,
-      "description": "Quia est culpa ad voluptates temporibus.",
-      "foreColor": undefined,
-      "hasChildren": false,
+      "backColor": "rgb(
+    249,
+    200,
+    205
+  )",
+      "description": undefined,
+      "foreColor": "#ECBA67",
+      "hasChildren": true,
       "isCheckboxEnabled": true,
-      "isCheckboxVisible": true,
-      "isChecked": true,
-      "isEditable": false,
-      "isExpanded": true,
-      "isSelectionDisabled": false,
+      "isCheckboxVisible": false,
+      "isChecked": false,
+      "isEditable": true,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
       "key": Object {
         "instanceKey": Object {
           "className": "Seychelles Rupee",
@@ -93,40 +111,46 @@ Array [
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Rand Namibia Dollar Convertible Marks",
+      "label": "hub",
+      "labelDefinition": Object {
+        "displayValue": "hub",
+        "rawValue": "Soap",
+        "typeName": "string",
+      },
     },
   },
   Object {
     "children": Array [],
-    "filteringData": Object {
-      "childMatchesCount": 46966,
-      "matchesCount": 1803,
-    },
-    "index": 632,
+    "index": 862,
     "isMarked": true,
     "node": Object {
       "backColor": undefined,
-      "description": "Quas quia aliquid numquam quibusdam repellat harum.",
-      "foreColor": "#EC8E27",
-      "hasChildren": true,
+      "description": "Repellat harum voluptatem saepe et unde rerum qui dolores.",
+      "foreColor": undefined,
+      "hasChildren": false,
       "isCheckboxEnabled": true,
-      "isCheckboxVisible": false,
+      "isCheckboxVisible": true,
       "isChecked": false,
       "isEditable": false,
       "isExpanded": false,
       "isSelectionDisabled": false,
       "key": Object {
         "instanceKey": Object {
-          "className": "Future",
-          "id": "0x111200000008d67",
+          "className": "Creative",
+          "id": "0x71550000008d27",
         },
         "pathFromRoot": Array [
-          "2bc066ae-d258-4295-b217-85af6dff8fd9",
-          "8ef6bb87-99c5-4bb3-bbcd-e2e3a8095be3",
+          "6aed2582-9532-4178-9af6-dff8fd98ef6b",
+          "b8799c5b-b37b-4cde-ae3a-8095be3e45bf",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Creative B2B Metal",
+      "label": "Borders",
+      "labelDefinition": Object {
+        "displayValue": "Borders",
+        "rawValue": "Plastic",
+        "typeName": "string",
+      },
     },
   },
 ]
@@ -136,18 +160,22 @@ exports[`NodePathElement listFromJSON creates valid NodePathElement[] from seria
 Array [
   Object {
     "children": Array [],
-    "index": 952,
-    "isMarked": false,
+    "index": 776,
     "node": Object {
-      "description": "Voluptatibus incidunt doloremque.",
-      "foreColor": "#D20659",
-      "hasChildren": false,
+      "backColor": "rgb(
+    67,
+    86,
+    243
+  )",
+      "description": "Dolorem qui accusantium iure.",
+      "foreColor": "#987A4A",
+      "hasChildren": true,
       "isCheckboxEnabled": false,
       "isCheckboxVisible": false,
       "isChecked": true,
       "isEditable": false,
-      "isExpanded": false,
-      "isSelectionDisabled": true,
+      "isExpanded": true,
+      "isSelectionDisabled": false,
       "key": Object {
         "instanceKey": Object {
           "className": "compress",
@@ -159,38 +187,52 @@ Array [
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Handmade interactive",
+      "label": "Small",
+      "labelDefinition": Object {
+        "displayValue": "Small",
+        "rawValue": "Manager",
+        "typeName": "string",
+      },
     },
   },
   Object {
     "children": Array [],
     "filteringData": Object {
-      "childMatchesCount": 23633,
-      "matchesCount": 32064,
+      "childMatchesCount": 48882,
+      "matchesCount": 13008,
     },
-    "index": 887,
+    "index": 96,
+    "isMarked": true,
     "node": Object {
-      "description": "Quisquam dolores eum nihil.",
-      "foreColor": "#F33220",
+      "backColor": "rgb(
+    205,
+    218,
+    57
+  )",
       "hasChildren": true,
       "isCheckboxEnabled": false,
-      "isCheckboxVisible": true,
-      "isChecked": true,
+      "isCheckboxVisible": false,
+      "isChecked": false,
       "isEditable": true,
-      "isExpanded": false,
+      "isExpanded": true,
       "isSelectionDisabled": false,
       "key": Object {
         "instanceKey": Object {
-          "className": "connecting",
-          "id": "0x15128000000b8d8",
+          "className": "open-source",
+          "id": "0x345c000000a46e",
         },
         "pathFromRoot": Array [
-          "fb71c667-cfaa-4f4d-96b1-7d81d24b5b12",
-          "5e76533d-9bbd-46f3-9fb5-d9ef170f7c7e",
+          "7cfaaf4d-16b1-47d8-9d24-b5b125e76533",
+          "d9bbd6f3-5fb5-4d9e-b170-f7c7ed87d78c",
         ],
         "type": "ECInstanceNode",
       },
-      "label": "Senegal open-source",
+      "label": "mint green",
+      "labelDefinition": Object {
+        "displayValue": "mint green",
+        "rawValue": "Steel",
+        "typeName": "string",
+      },
     },
   },
 ]
@@ -200,39 +242,40 @@ exports[`NodePathElement toJSON serializes NodePathElement 1`] = `
 Object {
   "children": Array [],
   "filteringData": Object {
-    "childrenOccurances": 73591,
-    "occurances": 11060,
+    "childrenOccurances": 64421,
+    "occurances": 36084,
   },
-  "index": 187,
+  "index": 976,
   "isMarked": true,
   "node": Object {
-    "backColor": "rgb(
-    102,
-    62,
-    97
-  )",
-    "description": undefined,
-    "foreColor": "#0BD4D0",
-    "hasChildren": true,
-    "imageId": undefined,
-    "isCheckboxEnabled": true,
+    "backColor": undefined,
+    "description": "Dolor ullam accusantium quo vero minima officiis sit sit.",
+    "foreColor": undefined,
+    "hasChildren": false,
+    "imageId": "Innovative",
+    "isCheckboxEnabled": false,
     "isCheckboxVisible": false,
     "isChecked": false,
     "isEditable": false,
-    "isExpanded": false,
-    "isSelectionDisabled": true,
+    "isExpanded": true,
+    "isSelectionDisabled": false,
     "key": Object {
       "instanceKey": Object {
-        "className": "Ergonomic",
-        "id": "0x7f3400000111dd",
+        "className": "e-tailers",
+        "id": "0x11def0000000023",
       },
       "pathFromRoot": Array [
-        "34ffccbe-474a-4f05-9fe9-3f2bbc0fbbd1",
-        "6d4c3d32-d8df-4acc-8337-aad1b7901083",
+        "ccbe474a-f05d-4fe9-bf2b-bc0fbbd16d4c",
+        "3d32d8df-acc0-4337-aad1-b790108333b5",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "ability program",
+    "label": "black",
+    "labelDefinition": Object {
+      "displayValue": "black",
+      "rawValue": "Metrics",
+      "typeName": "string",
+    },
   },
 }
 `;
@@ -247,7 +290,7 @@ Object {
     176,
     8
   )",
-    "description": "Suscipit rerum distinctio eaque aut hic.",
+    "description": "Rerum distinctio eaque aut hic.",
     "foreColor": undefined,
     "hasChildren": false,
     "imageId": undefined,
@@ -259,16 +302,21 @@ Object {
     "isSelectionDisabled": false,
     "key": Object {
       "instanceKey": Object {
-        "className": "one-to-one",
-        "id": "0xe15600000160bc",
+        "className": "Universal",
+        "id": "0x1e33000000d6d9",
       },
       "pathFromRoot": Array [
-        "d4ce248b-ceac-4fde-9a91-26435a77370c",
-        "91fc73b8-0ac2-430f-a8b3-364e44126dad",
+        "248bceac-fde5-4a91-a643-5a77370c91fc",
+        "73b80ac2-30fa-48b3-b64e-44126dad53e9",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "Customer",
+    "label": "compressing",
+    "labelDefinition": Object {
+      "displayValue": "compressing",
+      "rawValue": "solid state",
+      "typeName": "string",
+    },
   },
 }
 `;
@@ -276,31 +324,36 @@ Object {
 exports[`NodePathElement toJSON serializes NodePathElement with undefined filtering data 1`] = `
 Object {
   "children": Array [],
-  "index": 276,
+  "index": 5,
   "node": Object {
     "backColor": undefined,
-    "description": "Et hic dolorem ratione labore et illo vel consequatur.",
+    "description": undefined,
     "foreColor": undefined,
     "hasChildren": true,
-    "imageId": "orchestrate",
-    "isCheckboxEnabled": false,
+    "imageId": "copying",
+    "isCheckboxEnabled": true,
     "isCheckboxVisible": false,
-    "isChecked": true,
+    "isChecked": false,
     "isEditable": false,
     "isExpanded": true,
     "isSelectionDisabled": false,
     "key": Object {
       "instanceKey": Object {
-        "className": "superstructure",
-        "id": "0x1163d0000017dbd",
+        "className": "interface",
+        "id": "0xad25000001764f",
       },
       "pathFromRoot": Array [
-        "10fd8457-4f94-4369-a601-2eae22d2e7a0",
-        "64d403a7-ecee-4202-9756-af76faccdd1e",
+        "84574f94-369a-4601-aeae-22d2e7a064d4",
+        "03a7ecee-2025-4756-af76-faccdd1e5efb",
       ],
       "type": "ECInstanceNode",
     },
-    "label": "productize functionalities gold",
+    "label": "Steel",
+    "labelDefinition": Object {
+      "displayValue": "Steel",
+      "rawValue": "Creative",
+      "typeName": "string",
+    },
   },
 }
 `;

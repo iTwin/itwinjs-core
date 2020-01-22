@@ -1,7 +1,7 @@
 sep=;
 Release Tag;API Item
 beta;AbandonedError 
-beta;assert(condition: boolean, msg?: string): void
+beta;assert(condition: boolean, msg?: string): asserts condition
 alpha;AsyncMutex
 alpha;AsyncMutexUnlockFnType = () => void
 beta;AuthStatus

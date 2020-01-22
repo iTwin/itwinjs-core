@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 
 import { Geometry, BeJSONFunctions } from "../Geometry";
 import { Point3d } from "../geometry3d/Point3dVector3d";

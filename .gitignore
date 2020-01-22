@@ -10,6 +10,7 @@ package-lock.json
 /out
 **/DevBuild.txt
 coverage
+integration_test_results
 
 # rush-specific
 /common/temp
@@ -27,3 +28,5 @@ package-deps.json
 
 # xcode
 /**/xcuserdata
+
+.env

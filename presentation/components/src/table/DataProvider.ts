@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Table */
+/** @packageDocumentation
+ * @module Table
+ */
 
 import * as _ from "lodash";
 import { SortDirection as UiSortDirection } from "@bentley/ui-core";

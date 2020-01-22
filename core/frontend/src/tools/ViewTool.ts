@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry, Constant, Arc3d, AngleSweep, Plane3dByOriginAndUnitNormal, XAndY } from "@bentley/geometry-core";
 import { ColorDef, Frustum, Npc, NpcCenter, LinePixels } from "@bentley/imodeljs-common";
@@ -1225,6 +1227,16 @@ class ViewLook extends ViewingToolHandle {
     return true;
   }
 
+  public onWheel() {
+    const tool = this.viewTool;
+    if (!tool.inHandleModify)
+      return;
+    tool.nPts = 0; // start over
+    tool.inHandleModify = false;
+    tool.inDynamicUpdate = false;
+    tool.viewHandles.setFocus(-1);
+  }
+
   public doManipulation(ev: BeButtonEvent, _inDynamics: boolean): boolean {
     const tool = this.viewTool;
     const viewport = tool.viewport!;
@@ -1511,6 +1523,16 @@ class ViewZoom extends ViewingToolHandle {
     return true;
   }
 
+  public onWheel() {
+    const tool = this.viewTool;
+    if (!tool.inHandleModify)
+      return;
+    tool.nPts = 0; // start over
+    tool.inHandleModify = false;
+    tool.inDynamicUpdate = false;
+    tool.viewHandles.setFocus(-1);
+  }
+
   protected getDirection(): Vector3d | undefined {
     const dir = this._anchorPtView.vectorTo(this._lastPtView); dir.z = 0;
     return dir.magnitudeSquared() < 36 ? undefined : dir; // dead zone around starting point
@@ -1542,7 +1564,11 @@ class ViewZoom extends ViewingToolHandle {
     }
 
     frustum.transformBy(transform, frustum);
-    return viewport.setupViewFromFrustum(frustum);
+    if (ViewStatus.Success !== view.setupFromFrustum(frustum))
+      return false;
+    if (view.isCameraEnabled())
+      this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
+    return ViewStatus.Success === viewport.setupFromView();
   }
 
   /** @internal */

@@ -1,6 +1,33 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 07 Jan 2020 19:44:01 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- For fit, adjust the aspect ratio so that one dimension is increased rather than just adjusting Y.
+- Fixed minor typo on RealityData rootDocument property
+- TileAdmin.Props.useProjectExtents now defaults to true for better performance.
+- Ensure ViewState3d's with camera enabled always have the eyepoint centered when they're created
+- Fix aspect ratio adjustment bug in camera views
+- Small fix for Fit when aspectRatioSkew isn't 1.0.
+- Fix shadows not updating after clearing emphasized/isolated elements.
+- Simplify iterator for GeometryList.
+- Fix shadow rendering on MacOS Safari and any other unknown client that could fail in the same way.
+- Native apps can now cancel tile requests in progress on the backend.
+- Reduce tile level-of-detail (thereby improving FPS and memory usage) for models that are small relative to the project extents.
+- Remvoe echo test function from devTools
+- #258853 Fix for pickDepthPoint
+- Add isSpatiallyLocated and isPlanProjection to GeometricModel3dState.
+- Added primitive composite value.
+- Make hilite and flash target syncing not depend on BeTimePoint.
+- Upgrade to TypeScript 3.7.2.
+- Add a FeatureToggleClient to iModelApp.
+- Gracefully handle an invalid acs id
+- ViewZoom not sets focus from depth point.
+- #257813 Rest zoom and look tools is mouse wheel is used to zoom.
 
 ## 1.10.0
 Tue, 07 Jan 2020 19:44:01 GMT

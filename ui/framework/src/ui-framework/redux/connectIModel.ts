@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module State */
+/** @packageDocumentation
+ * @module State
+ */
 
 import { connect } from "react-redux";
 import { UiFramework } from "../UiFramework";

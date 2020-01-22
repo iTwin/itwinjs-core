@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 import { assert } from "@bentley/bentleyjs-core";
 import { VariableType, ProgramBuilder, FragmentShaderBuilder, FragmentShaderComponent } from "../ShaderBuilder";
 import { TextureUnit } from "../RenderFlags";

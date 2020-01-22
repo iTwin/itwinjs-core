@@ -1,6 +1,15 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 07 Jan 2020 19:44:01 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Remove the @types/linkify-it as a real dependency and make it a devDependency.
+- Allow TreeNodeItem and PropertyData label to be represented as PropertyRecord
+- Upgrade to TypeScript 3.7.2.
 
 ## 1.10.0
 Tue, 07 Jan 2020 19:44:01 GMT

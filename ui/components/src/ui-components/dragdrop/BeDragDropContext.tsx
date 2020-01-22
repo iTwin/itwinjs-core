@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module DragDrop  */
+/** @packageDocumentation
+ * @module DragDrop
+ */
 
 import * as React from "react";
 import HTML5Backend from "react-dnd-html5-backend";

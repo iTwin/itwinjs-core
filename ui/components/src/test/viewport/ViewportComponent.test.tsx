@@ -22,7 +22,7 @@ describe("ViewportComponent", () => {
 
   before(async () => {
     ViewportComponentEvents.terminate();
-    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+    await TestUtils.initializeUiComponents();
     MockRender.App.startup();
   });
 

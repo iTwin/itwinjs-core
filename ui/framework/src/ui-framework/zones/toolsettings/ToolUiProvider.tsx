@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ToolSettings */
+/** @packageDocumentation
+ * @module ToolSettings
+ */
 
 import * as React from "react";
 import { ConfigurableUiControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../configurableui/ConfigurableUiControl";
@@ -19,9 +21,8 @@ export class ToolUiProvider extends ConfigurableUiControl {
     super(info, options);
   }
 
-  /** Gets the Tool Settings React node */
+  /** The Tool Settings React node */
   public get toolSettingsNode(): React.ReactNode { return this._toolSettingsNode; }
-  /** Sets the Tool Settings React node */
   public set toolSettingsNode(r: React.ReactNode) { this._toolSettingsNode = r; }
 
   /** Gets the type of ConfigurableUiControl, which is 'ToolUiProvider' in this case */

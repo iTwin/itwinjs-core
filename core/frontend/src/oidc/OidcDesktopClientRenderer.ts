@@ -3,7 +3,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Authentication */
+/** @packageDocumentation
+ * @module Authentication
+ */
 
 import { BeEvent, ClientRequestContext, isElectronRenderer, electronRenderer, assert, Logger } from "@bentley/bentleyjs-core";
 import { IOidcFrontendClient, AccessToken, UserInfo } from "@bentley/imodeljs-clients";

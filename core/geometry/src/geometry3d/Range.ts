@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module CartesianGeometry */
+/** @packageDocumentation
+ * @module CartesianGeometry
+ */
 
 import { BeJSONFunctions, Geometry, AxisIndex } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";

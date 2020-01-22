@@ -2,9 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Hierarchies */
+/** @packageDocumentation
+ * @module Hierarchies
+ */
 
 import { NodeKey, NodeKeyJSON } from "./Key";
+import { LabelDefinitionJSON, LabelDefinition } from "../LabelDefinition";
 
 /**
  * Data structure that describes a tree node.
@@ -13,8 +16,12 @@ import { NodeKey, NodeKeyJSON } from "./Key";
 export interface Node {
   /** A key that uniquely identifies a node. */
   key: NodeKey;
-  /** Display label */
+  /** Display label
+   * @deprecated use 'labelDefinition' instead
+   */
   label: string;
+  /** Definition of node display label */
+  labelDefinition?: LabelDefinition;
   /** Extensive description */
   description?: string;
   /** Image ID */
@@ -49,7 +56,9 @@ export interface Node {
  */
 export interface NodeJSON {
   key: NodeKeyJSON;
-  label: string;
+  /** @deprecated use labelDefinition instead */
+  label?: string;
+  labelDefinition: LabelDefinitionJSON;
   description?: string;
   imageId?: string;
   foreColor?: string;
@@ -71,7 +80,12 @@ export namespace Node {
    * @internal
    */
   export function toJSON(node: Node): NodeJSON {
-    return { ...node, key: NodeKey.toJSON(node.key) };
+    return {
+      ...node,
+      key: NodeKey.toJSON(node.key),
+      labelDefinition: LabelDefinition.toJSON(node.labelDefinition ? node.labelDefinition : LabelDefinition.fromLabelString(node.label)),
+      label: (node.labelDefinition && node.labelDefinition.displayValue) || node.label,
+    };
   }
 
   /**
@@ -86,6 +100,8 @@ export namespace Node {
       return JSON.parse(json, reviver);
     return Object.assign({}, json, {
       key: NodeKey.fromJSON(json.key),
+      labelDefinition: LabelDefinition.fromJSON(json.labelDefinition),
+      label: json.labelDefinition.displayValue,
     });
   }
 

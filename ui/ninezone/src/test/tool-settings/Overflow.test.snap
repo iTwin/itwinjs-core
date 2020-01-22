@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DockedToolSettingsOverflow should render 1`] = `
+<div
+  class="nz-toolSettings-overflow"
+>
+  <div
+    class="nz-base-ellipsis"
+  >
+    <div
+      class="nz-dot"
+    />
+    <div
+      class="nz-dot"
+    />
+    <div
+      class="nz-dot"
+    />
+  </div>
+</div>
+`;

@@ -6,16 +6,16 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ToolSettings, ResizeHandle } from "../../ui-ninezone";
-import { createRect, CreateRefStub, SinonSpy } from "../Utils";
+import { createBoundingClientRect } from "../Utils";
 import { ToolSettingsProps } from "../../ui-ninezone/widget/ToolSettings";
 import { ResizeGrip } from "../../ui-ninezone/widget/rectangular/ResizeGrip";
 import { Point, Rectangle } from "@bentley/ui-core";
 
 describe("<ToolSettings />", () => {
-  let createRefStub: CreateRefStub | undefined;
+  const sandbox = sinon.createSandbox();
 
   afterEach(() => {
-    createRefStub && createRefStub.restore();
+    sandbox.restore();
   });
 
   it("should render", () => {
@@ -47,7 +47,7 @@ describe("<ToolSettings />", () => {
   it("should get bounds", () => {
     const sut = mount<ToolSettings>(<ToolSettings />);
     const element = sut.find(".nz-widget").getDOMNode() as HTMLDivElement;
-    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
+    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
     result.left.should.eq(10);
@@ -61,11 +61,10 @@ describe("<ToolSettings />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef");
-    createRefStub.returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
     const sut = mount<ToolSettings>(<ToolSettings />);
     const element = sut.getDOMNode() as HTMLDivElement;
-    sinon.stub(element, "getBoundingClientRect").returns(createRect(10, 15, 20, 30));
+    sinon.stub(element, "getBoundingClientRect").returns(createBoundingClientRect(10, 15, 20, 30));
 
     const result = sut.instance().getBounds();
     result.left.should.eq(0);
@@ -75,7 +74,7 @@ describe("<ToolSettings />", () => {
   });
 
   it("should resize top", () => {
-    const spy = sinon.spy() as SinonSpy<Required<ToolSettingsProps>["onResize"]>;
+    const spy = sinon.stub<Required<ToolSettingsProps>["onResize"]>();
     const sut = mount(<ToolSettings
       onResize={spy}
     />);
@@ -92,7 +91,7 @@ describe("<ToolSettings />", () => {
   });
 
   it("should resize bottom", () => {
-    const spy = sinon.spy() as SinonSpy<Required<ToolSettingsProps>["onResize"]>;
+    const spy = sinon.stub<Required<ToolSettingsProps>["onResize"]>();
     const sut = mount(<ToolSettings
       onResize={spy}
     />);
@@ -109,7 +108,7 @@ describe("<ToolSettings />", () => {
   });
 
   it("should resize right", () => {
-    const spy = sinon.spy() as SinonSpy<Required<ToolSettingsProps>["onResize"]>;
+    const spy = sinon.stub<Required<ToolSettingsProps>["onResize"]>();
     const sut = mount(<ToolSettings
       onResize={spy}
     />);
@@ -126,7 +125,7 @@ describe("<ToolSettings />", () => {
   });
 
   it("should resize left", () => {
-    const spy = sinon.spy() as SinonSpy<Required<ToolSettingsProps>["onResize"]>;
+    const spy = sinon.stub<Required<ToolSettingsProps>["onResize"]>();
     const sut = mount(<ToolSettings
       onResize={spy}
     />);
@@ -143,7 +142,7 @@ describe("<ToolSettings />", () => {
   });
 
   it("should not resize if resize is not started", () => {
-    const spy = sinon.spy() as SinonSpy<Required<ToolSettingsProps>["onResize"]>;
+    const spy = sinon.stub<Required<ToolSettingsProps>["onResize"]>();
     const sut = mount(<ToolSettings
       onResize={spy}
     />);
@@ -156,7 +155,7 @@ describe("<ToolSettings />", () => {
   });
 
   it("should not resize if resize is started and ended", () => {
-    const spy = sinon.spy() as SinonSpy<Required<ToolSettingsProps>["onResize"]>;
+    const spy = sinon.stub<Required<ToolSettingsProps>["onResize"]>();
     const sut = mount(<ToolSettings
       onResize={spy}
     />);

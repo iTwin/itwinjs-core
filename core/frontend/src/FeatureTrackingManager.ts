@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Features */
+/** @packageDocumentation
+ * @module Features
+ */
 import { FeatureLogEntry, UsageType } from "@bentley/imodeljs-clients";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { GuidString } from "@bentley/bentleyjs-core";

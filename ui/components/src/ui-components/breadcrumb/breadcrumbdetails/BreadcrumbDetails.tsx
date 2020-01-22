@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Breadcrumb */
+/** @packageDocumentation
+ * @module Breadcrumb
+ */
 
 import * as React from "react";
 import classnames from "classnames";
@@ -11,7 +13,7 @@ import { using } from "@bentley/bentleyjs-core";
 import { TableDataProvider, RowItem, ColumnDescription } from "../../table/TableDataProvider";
 import { Table, TableProps } from "../../table/component/Table";
 import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
-import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../../tree/TreeDataProvider";
+import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, getLabelString } from "../../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/component/BeInspireTree";
 import { UiComponents } from "../../UiComponents";
@@ -153,7 +155,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   }
 
   private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
-    using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
+    using((this._tree as any).pauseRendering(), async () => {
       await this._tree.reload();
     });
   }
@@ -161,7 +163,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   private static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>): BeInspireTreeNodeConfig {
     const node: BeInspireTreeNodeConfig = {
       id: item.id,
-      text: item.label,
+      text: getLabelString(item.label),
       itree: {
         state: { collapsed: false },
       },

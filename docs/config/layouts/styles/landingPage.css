@@ -144,8 +144,8 @@ p.digital-twin {
   min-width: 0;
   flex-shrink: 0;
   -ms-flex-shrink: 0;
-  max-height: 403.2px;
-  max-width: 856.4px;
+  max-height: 25vw;
+  max-width: 45vw;
   margin: 0 4vw 0 1vw;
 }
 
@@ -208,7 +208,6 @@ p.digital-twin {
 }
 
 ul#bottom-content-container {
-  margin: 0px 10%;
   list-style: none !important;
   flex-wrap: wrap;
   display: flex;
@@ -218,6 +217,8 @@ ul#bottom-content-container {
   -webkit-padding-start: 0px !important;
   -webkit-margin-before: 0px !important;
   -webkit-margin-after: 0px !important;
+  width: 87vw;
+  padding: 0px;
 }
 
 ul.list-unstyled.list-inline {

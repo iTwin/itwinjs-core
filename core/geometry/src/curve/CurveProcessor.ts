@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 import { CurvePrimitive } from "./CurvePrimitive";
 import { AnyCurve } from "./CurveChain";
 import { UnionRegion } from "./UnionRegion";

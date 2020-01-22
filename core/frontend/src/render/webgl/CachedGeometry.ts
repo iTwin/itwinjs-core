@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Frustum, Npc, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";

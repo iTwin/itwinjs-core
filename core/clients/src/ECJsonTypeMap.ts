@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module iTwinServiceClients */
+/** @packageDocumentation
+ * @module iTwinServiceClients
+ */
 
 /**
  * Manages the mapping between TypeScript and EC Classes/Properties to transform back and forth

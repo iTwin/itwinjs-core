@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module AccuDraw */
+/** @packageDocumentation
+ * @module AccuDraw
+ */
 
 /** @internal */
 export enum CalculatorOperator {  // tslint:disable-line: completed-docs

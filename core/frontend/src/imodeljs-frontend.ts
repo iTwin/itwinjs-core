@@ -57,6 +57,7 @@ export * from "./properties/Record";
 export * from "./properties/ToolSettingsValue";
 export * from "./properties/Value";
 export * from "./render/FeatureSymbology";
+export * from "./FeatureToggleClient";
 export * from "./render/GraphicBuilder";
 export * from "./render/MockRender";
 export * from "./render/System";

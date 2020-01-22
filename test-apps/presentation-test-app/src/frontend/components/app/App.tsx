@@ -77,7 +77,7 @@ export default class App extends React.Component<{}, State> {
       return;
 
     // no need to wait on this - we just want to queue a request and forget it
-    // tslint:disable-next-line: no-floating-promises
+    // tslint:disable-next-line:no-floating-promises
     Presentation.presentation.loadHierarchy({ imodel, rulesetId });
   }
 

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { BeInspireTree, BeInspireTreeNode, toNode, toNodes } from "./component/BeInspireTree";
 import { TreeNodeItem } from "./TreeDataProvider";
@@ -260,7 +262,7 @@ export class NodeLoadingOrchestrator {
 
     const promises = Array.from(take(this._pendingNodeTracker, this._model.props.pageSize!))
       .map(async (node) => this.requestNodeLoad(node));
-    // tslint:disable-next-line: no-floating-promises
+    // tslint:disable-next-line:no-floating-promises
     Promise.all(promises).then((loadedNodes) => {
       const collectedLoadedNodes: Array<BeInspireTreeNode<TreeNodeItem>> = [];
       for (const loadedNode of loadedNodes) {

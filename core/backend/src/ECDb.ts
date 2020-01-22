@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ECDb */
+/** @packageDocumentation
+ * @module ECDb
+ */
 
 import { assert, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus, QueryLimit, QueryPriority, QueryResponse, QueryResponseStatus, QueryQuota } from "@bentley/imodeljs-common";

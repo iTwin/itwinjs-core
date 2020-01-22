@@ -4,11 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { createRandomECClassInfoJSON, createRandomECInstanceKeyJSON } from "../_helpers/random";
+import { createRandomECClassInfoJSON, createRandomECInstanceKeyJSON, createRandomLabelDefinitionJSON, createRandomLabelDefinition } from "../_helpers/random";
 import { Item, ItemJSON } from "../../content/Item";
 import { NestedContentValueJSON } from "../../content/Value";
 
 describe("Item", () => {
+
+  describe("constructor", () => {
+
+    it("creates valid item with label", () => {
+      const item = new Item([], faker.random.word(), faker.random.uuid(),
+        undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
+      expect(item).to.matchSnapshot();
+    });
+
+    it("creates valid item with label definition", () => {
+      const item = new Item([], createRandomLabelDefinition(), faker.random.uuid(),
+        undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
+      expect(item).to.matchSnapshot();
+    });
+
+  });
 
   describe("fromJSON", () => {
 
@@ -16,7 +32,7 @@ describe("Item", () => {
     beforeEach(() => {
       testItemJSON = {
         primaryKeys: [],
-        label: faker.random.words(),
+        labelDefinition: createRandomLabelDefinitionJSON(),
         imageId: faker.random.uuid(),
         classInfo: createRandomECClassInfoJSON(),
         values: {

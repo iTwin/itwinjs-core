@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d } from "@bentley/geometry-core";
@@ -175,8 +177,8 @@ export class DecorateContext extends RenderContext {
   public addHtmlDecoration(decoration: HTMLElement) { this.decorationDiv.appendChild(decoration); }
 
   private getClippedGridPlanePoints(vp: Viewport, plane: Plane3dByOriginAndUnitNormal, loopPt: Point3d): Point3d[] | undefined {
-    const frus = vp.getFrustum();
-    const geom = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([ClipPlane.createPlane(plane)]), frus.toRange(), true, false, true);
+    const frust = vp.getFrustum();
+    const geom = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([ClipPlane.createPlane(plane)]), frust.toRange(), true, false, true);
     if (undefined === geom || 1 !== geom.length)
       return undefined;
     const loop = geom[0];
@@ -188,7 +190,7 @@ export class DecorateContext extends RenderContext {
 
     const work = new GrowableXYZArray();
     const finalPoints = new GrowableXYZArray();
-    const convexSet = frus.getRangePlanes(false, false, 0);
+    const convexSet = frust.getRangePlanes(false, false, 0);
     convexSet.polygonClip(child.points, finalPoints, work);
     if (finalPoints.length < 4)
       return undefined;

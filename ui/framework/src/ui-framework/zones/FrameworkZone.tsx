@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Zone */
+/** @packageDocumentation
+ * @module Zone
+ */
 
 import * as React from "react";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";

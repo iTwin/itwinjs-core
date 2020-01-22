@@ -9,8 +9,8 @@ import { Format } from "../src/Formatter/Format";
 import { QuantityError } from "../src/Exception";
 import { FormatTraits } from "../src/Formatter/FormatEnums";
 
-process.on('unhandledRejection', (reason, p) => {
-  console.log('Unhandled Rejection at:', p, 'reason:', reason);
+process.on("unhandledRejection", (reason, p) => {
+  console.log("Unhandled Rejection at:", p, "reason:", reason);
   // application specific logging, throwing an error, or other logic here
 });
 
@@ -22,7 +22,7 @@ describe("Formatting tests:", () => {
       formatTraits: ["keepSingleZero", "showUnitLabel", "fractionDash"],
       precision: 8,
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -38,7 +38,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: 1,
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -54,7 +54,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "badType",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -69,7 +69,7 @@ describe("Formatting tests:", () => {
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       type: "Decimal",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -85,7 +85,7 @@ describe("Formatting tests:", () => {
       precision: "8",
       type: "Decimal",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -101,7 +101,7 @@ describe("Formatting tests:", () => {
       precision: 8.8,
       type: "Decimal",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -117,7 +117,7 @@ describe("Formatting tests:", () => {
       precision: 13,
       type: "Decimal",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -134,7 +134,7 @@ describe("Formatting tests:", () => {
       type: "Decimal",
       showSignOption: "bad",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -150,7 +150,7 @@ describe("Formatting tests:", () => {
       precision: 0,
       type: "Fractional",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -166,7 +166,7 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -182,8 +182,8 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: " ",
-      roundFactor: "0.5"
-    }
+      roundFactor: "0.5",
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -199,8 +199,8 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: " ",
-      roundFactor: 0.5
-    }
+      roundFactor: 0.5,
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch(() => { });
@@ -214,8 +214,8 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: " ",
-      roundFactor: 0.0
-    }
+      roundFactor: 0.0,
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch(() => { });
@@ -229,8 +229,8 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: " ",
-      minWidth: "25"
-    }
+      minWidth: "25",
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -246,8 +246,8 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: " ",
-      minWidth: -5
-    }
+      minWidth: -5,
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -263,8 +263,8 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: " ",
-      showSignOption: 4
-    }
+      showSignOption: 4,
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -280,8 +280,8 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: " ",
-      showSignOption: "onlyNegative"
-    }
+      showSignOption: "onlyNegative",
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch(() => {
@@ -297,7 +297,7 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -313,7 +313,7 @@ describe("Formatting tests:", () => {
       type: "Decimal",
       uomSeparator: " ",
       decimalSeparator: 2,
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -329,7 +329,7 @@ describe("Formatting tests:", () => {
       type: "Decimal",
       uomSeparator: " ",
       decimalSeparator: "**",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -345,7 +345,7 @@ describe("Formatting tests:", () => {
       type: "Decimal",
       uomSeparator: " ",
       decimalSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch(() => {
@@ -361,7 +361,7 @@ describe("Formatting tests:", () => {
       type: "Decimal",
       uomSeparator: " ",
       thousandSeparator: 2,
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -377,7 +377,7 @@ describe("Formatting tests:", () => {
       type: "Decimal",
       uomSeparator: " ",
       thousandSeparator: "**",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -393,7 +393,7 @@ describe("Formatting tests:", () => {
       type: "Decimal",
       uomSeparator: " ",
       thousandSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch(() => {
@@ -408,7 +408,7 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: 1,
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -423,7 +423,7 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: "**",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -438,7 +438,7 @@ describe("Formatting tests:", () => {
       precision: 12,
       type: "Decimal",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch(() => {
@@ -454,8 +454,8 @@ describe("Formatting tests:", () => {
       uomSeparator: " ",
       stationOffsetSize: 2,
       type: "Station",
-      stationSeparator: 1
-    }
+      stationSeparator: 1,
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -471,8 +471,8 @@ describe("Formatting tests:", () => {
       uomSeparator: " ",
       stationOffsetSize: 2,
       type: "Station",
-      stationSeparator: "**"
-    }
+      stationSeparator: "**",
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -488,8 +488,8 @@ describe("Formatting tests:", () => {
       uomSeparator: " ",
       stationOffsetSize: 2,
       type: "Station",
-      stationSeparator: "+"
-    }
+      stationSeparator: "+",
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch(() => {
@@ -505,7 +505,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Scientific",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -522,7 +522,7 @@ describe("Formatting tests:", () => {
       type: "Scientific",
       scientificType: "bad",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -539,7 +539,7 @@ describe("Formatting tests:", () => {
       type: "Scientific",
       scientificType: 1,
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -554,13 +554,13 @@ describe("Formatting tests:", () => {
       composite: {
         includeZero: true,
         spacer: "",
-        units: "bad"
+        units: "bad",
       },
       formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -580,7 +580,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -595,13 +595,13 @@ describe("Formatting tests:", () => {
       composite: {
         includeZero: true,
         spacer: "",
-        units: []
+        units: [],
       },
       formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -626,7 +626,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -652,7 +652,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -677,7 +677,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -707,7 +707,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -723,7 +723,7 @@ describe("Formatting tests:", () => {
       minWidth: 2,
       precision: 2,
       type: "Station",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -740,7 +740,7 @@ describe("Formatting tests:", () => {
       precision: 2,
       stationOffsetSize: "2",
       type: "Station",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -757,7 +757,7 @@ describe("Formatting tests:", () => {
       precision: 2,
       stationOffsetSize: 0,
       type: "Station",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -787,7 +787,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -817,7 +817,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -847,7 +847,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Fractional",
       uomSeparator: "",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json).catch((err) => {
@@ -863,7 +863,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Decimal",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json);
@@ -879,7 +879,7 @@ describe("Formatting tests:", () => {
     assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.ZeroEmpty));
 
     const outJson = testFormat.toJson();
-    assert.isTrue(outJson["formatTraits"].length === 10);
+    assert.isTrue(outJson.formatTraits!.length === 10);
   });
 
   it("Read/Write Empty Format Traits", async () => {
@@ -890,7 +890,7 @@ describe("Formatting tests:", () => {
       precision: 8,
       type: "Decimal",
       uomSeparator: " ",
-    }
+    };
     const testFormat = new Format("test");
 
     await testFormat.fromJson(unitsProvider, json);
@@ -906,9 +906,8 @@ describe("Formatting tests:", () => {
     assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.ZeroEmpty));
 
     const outJson = testFormat.toJson();
-    assert.isTrue(outJson["formatTraits"].length === 0);
+    assert.isTrue(outJson.formatTraits!.length === 0);
   });
-
 
   it("Load Formats from Json", async () => {
     const unitsProvider = new TestUnitsProvider();

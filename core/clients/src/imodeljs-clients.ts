@@ -45,7 +45,6 @@ export * from "./imodelhub/Thumbnails";
 
 export * from "./oidc/OidcClient";
 export * from "./oidc/OidcFrontendClient";
-export * from "./oidc/AngularOidcFrontendClient";
 
 export * from "./ulas/LogEntryConverter";
 export * from "./ulas/UlasClient";

@@ -53,6 +53,8 @@ const defaultWidgetTabs = {
 };
 
 describe("WidgetStack", () => {
+  const sandbox = sinon.createSandbox();
+
   before(async () => {
     await TestUtils.initializeUiFramework();
 
@@ -138,7 +140,6 @@ describe("WidgetStack", () => {
     widgets: [],
     widgetTabs: defaultWidgetTabs,
   };
-  let createRefStub: sinon.SinonStub | undefined;
 
   beforeEach(() => {
     getWidgetContentRef.reset();
@@ -146,7 +147,7 @@ describe("WidgetStack", () => {
   });
 
   afterEach(() => {
-    createRefStub && createRefStub.restore();
+    sandbox.restore();
   });
 
   it("should produce a WidgetStack with 2 widgets", async () => {
@@ -265,7 +266,7 @@ describe("WidgetStack", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef").returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const sut = mount(<WidgetStack
       {...props}
@@ -339,7 +340,8 @@ describe("WidgetStackTabs", () => {
 describe("WidgetStackTabGroup", () => {
   const onTabClick = moq.Mock.ofType<WidgetStackTabGroupProps["onTabClick"]>();
   const onTabDragStart = moq.Mock.ofType<WidgetStackTabGroupProps["onTabDragStart"]>();
-  let createRefStub: sinon.SinonStub | undefined;
+  const sandbox = sinon.createSandbox();
+
   const props = {
     activeTabIndex: 0,
     draggedWidget: undefined,
@@ -362,7 +364,7 @@ describe("WidgetStackTabGroup", () => {
   });
 
   afterEach(() => {
-    createRefStub && createRefStub.restore();
+    sandbox.restore();
   });
 
   it("should render with draggedWidget", () => {
@@ -451,7 +453,7 @@ describe("WidgetStackTabGroup", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef").returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const sut = mount<WidgetStackTabGroup>(<WidgetStackTabGroup
       {...props}
@@ -471,7 +473,7 @@ describe("WidgetStackTabGroup", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef").returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const sut = mount<WidgetStackTabGroup>(<WidgetStackTabGroup
       {...props}

@@ -8,7 +8,6 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 import { IModelApp, NoRenderApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { useActiveViewport } from "../../ui-framework/hooks/useActiveViewport";
-import { SinonSpy } from "../TestUtils";
 
 // tslint:disable-next-line: variable-name
 const ActiveViewport = (props: { children?: (activeViewport: ReturnType<typeof useActiveViewport>) => React.ReactNode }) => {
@@ -59,7 +58,7 @@ describe("useActiveViewport", () => {
   });
 
   it("should update active viewport", () => {
-    const spy = sandbox.spy() as SinonSpy<NonNullable<Parameters<typeof ActiveViewport>[0]["children"]>>;
+    const spy = sandbox.stub<NonNullable<Parameters<typeof ActiveViewport>[0]["children"]>>();
     mount(<ActiveViewport children={spy} />);
     spy.resetHistory();
 

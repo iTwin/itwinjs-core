@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { AuxChannel, AuxParamChannel, AuxDisplacementChannel } from "../../primitives/AuxChannelTable";
 import { VertexShaderComponent, VertexShaderBuilder, VariableType } from "../ShaderBuilder";

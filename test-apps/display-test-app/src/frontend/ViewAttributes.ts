@@ -145,7 +145,7 @@ export class ViewAttributes {
 
     const update = (view: ViewState) => {
       const visible = !only3d || view.is3d();
-      elems.div.style.display = visible ? "block" : "none";
+      elems.div.style.display = visible ? "" : "none";
       if (visible)
         elems.checkbox.checked = view.viewFlags[flag];
     };
@@ -187,8 +187,8 @@ export class ViewAttributes {
     const update = (view: ViewState) => {
       const vf = view.viewFlags;
       const visible = view.is3d();
-      elems.div.style.display = visible ? "block" : "none";
-      shadowsColorInput.div.style.display = (visible && vf.shadows) ? "inline" : "none";
+      elems.div.style.display = visible ? "" : "none";
+      shadowsColorInput.div.style.display = (visible && vf.shadows) ? "" : "none";
       updateUI(view);
       if (visible)
         elems.checkbox.checked = vf.shadows;
@@ -210,7 +210,7 @@ export class ViewAttributes {
     const update = (view: ViewState) => {
       const vf = view.viewFlags;
       const visible = view.is3d() && RenderMode.SmoothShade === vf.renderMode;
-      elems.div.style.display = visible ? "block" : "none";
+      elems.div.style.display = visible ? "" : "none";
       if (visible)
         elems.checkbox.checked = vf.lighting;
     };

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import { RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
 import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";
@@ -389,7 +391,7 @@ export namespace RenderScheduleState {
       this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
     }
     public getModelAnimationId(modelId: Id64String): Id64String | undefined {
-      // Only if the animation contains animation (transform or cutting plane) of individual elements do we require seperate tilesets for animations.
+      // Only if the animation contains animation (transform or cutting plane) of individual elements do we require separate tilesets for animations.
       if (Id64.isTransient(modelId))
         return undefined;
 

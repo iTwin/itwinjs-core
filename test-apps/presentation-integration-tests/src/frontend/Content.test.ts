@@ -48,7 +48,7 @@ describe("Content", () => {
   });
 
   describe("when request in the backend exceeds the backend timeout time", () => {
-    let raceStub: sinon.SinonStub;
+    let raceStub: sinon.SinonStub<[Iterable<unknown>], Promise<unknown>>;
     beforeEach(async () => {
       terminate();
       await initialize(500);

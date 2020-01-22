@@ -34,9 +34,9 @@ import { ViewStateProps } from '@bentley/imodeljs-common';
 // @beta
 export class AnimationIntervalTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -51,9 +51,9 @@ export function appendDataListEntries(dl: DataList, entries: DataListEntry[]): v
 // @beta
 export class ApplyViewTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: undefined;
+    static get maxArgs(): undefined;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -116,9 +116,9 @@ export abstract class ChangeHiliteTool extends Tool {
     // (undocumented)
     protected abstract getCurrentSettings(vp: Viewport): Hilite.Settings;
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -128,9 +128,9 @@ export abstract class ChangeHiliteTool extends Tool {
 // @beta
 export class ChangeUnitsTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -142,9 +142,9 @@ export class ChangeUnitsTool extends Tool {
 // @beta
 export class ChangeViewFlagsTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: undefined;
+    static get maxArgs(): undefined;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -191,7 +191,7 @@ export class ClearIsolatedElementsTool extends EmphasizeElementsTool {
     // (undocumented)
     static toolId: string;
     // (undocumented)
-    protected readonly _wantCreate: boolean;
+    protected get _wantCreate(): boolean;
 }
 
 // @alpha (undocumented)
@@ -349,9 +349,9 @@ export interface DataListProps {
 // @alpha
 export class DefaultTileSizeModifierTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -369,7 +369,7 @@ export class DiagnosticsPanel {
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    readonly element: HTMLElement;
+    get element(): HTMLElement;
     // (undocumented)
     readonly keyinField?: KeyinField;
     }
@@ -393,7 +393,7 @@ export abstract class EmphasizeElementsTool extends Tool {
     // (undocumented)
     run(_args: any[]): boolean;
     // (undocumented)
-    protected readonly _wantCreate: boolean;
+    protected get _wantCreate(): boolean;
 }
 
 // @beta
@@ -401,9 +401,9 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     // (undocumented)
     execute(emph: EmphasizeElements, vp: ScreenViewport): void;
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -413,9 +413,9 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
 // @beta
 export class FadeOutTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -434,9 +434,9 @@ export class FpsTracker {
 // @beta
 export class FreezeSceneTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -457,7 +457,7 @@ export class FrustumDecorator implements Decorator {
     static disable(): void;
     static enable(vp: Viewport): void;
     // (undocumented)
-    static readonly isEnabled: boolean;
+    static get isEnabled(): boolean;
 }
 
 // @alpha (undocumented)
@@ -475,9 +475,9 @@ export class InspectElementTool extends PrimitiveTool {
     // (undocumented)
     filterHit(hit: HitDetail, _out: LocateResponse): Promise<LocateFilterStatus>;
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)
@@ -693,9 +693,9 @@ export interface RadioBoxProps {
 // @alpha (undocumented)
 export class RealityTransitionTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -739,9 +739,9 @@ export class SaveViewTool extends Tool {
 // @beta
 export class SelectElementsByIdTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: undefined;
+    static get maxArgs(): undefined;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -756,9 +756,9 @@ export function serializeViewState(view: ViewState): ViewStateProps;
 // @alpha (undocumented)
 export class SetAspectRatioSkewTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -786,9 +786,9 @@ export class SetVolClassIntersectOn extends RenderTargetDebugControlTool {
 // @beta
 export class ShowTileVolumesTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -883,9 +883,9 @@ export class ToggleDrapeFrustumTool extends RenderTargetDebugControlTool {
 // @beta
 export class ToggleFrustumSnapshotTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -907,9 +907,9 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
     // (undocumented)
     execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -922,9 +922,9 @@ export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean
 // @beta
 export class ToggleProjectExtentsTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -944,9 +944,9 @@ export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
 // @beta
 export class ToggleSelectedViewFrustumTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -958,9 +958,9 @@ export class ToggleSelectedViewFrustumTool extends Tool {
 // @beta
 export class ToggleShadowFrustumTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -980,9 +980,9 @@ export class ToggleSkyboxTool extends Tool {
 // @beta
 export class ToggleTileRequestDecorationTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -1009,9 +1009,9 @@ export class ToolSettingsTracker {
 // @alpha
 export class ViewportAddRealityModel extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
@@ -1023,9 +1023,9 @@ export class ViewportAddRealityModel extends Tool {
 // @alpha
 export class ViewportTileSizeModifierTool extends Tool {
     // (undocumented)
-    static readonly maxArgs: number;
+    static get maxArgs(): number;
     // (undocumented)
-    static readonly minArgs: number;
+    static get minArgs(): number;
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)

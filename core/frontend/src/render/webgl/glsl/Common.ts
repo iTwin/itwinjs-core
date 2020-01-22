@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { addModelViewMatrix } from "./Vertex";
 import { ShaderBuilder, ProgramBuilder, VariableType, ShaderType } from "../ShaderBuilder";

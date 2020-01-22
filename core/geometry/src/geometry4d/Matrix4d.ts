@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Numerics */
+/** @packageDocumentation
+ * @module Numerics
+ */
 
 import { Geometry, BeJSONFunctions } from "../Geometry";
 import { XYAndZ } from "../geometry3d/XYZProps";

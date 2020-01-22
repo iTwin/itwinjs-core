@@ -33,7 +33,11 @@ There is only one spatial coordinate system in an iModel for all [SpatialModel](
 
 It is often helpful to know the *volume of space of interest* for an iModel (e.g. for a "zoom to extents" command, or limiting volumes for Geometric queries.) To facilitate this, iModels hold a property called **Project Extents** that is an [Axis Aligned Bounding Box](https://en.wikipedia.org/wiki/Minimum_bounding_box#Axis-aligned_minimum_bounding_box) that defines the extrema for {X,Y,Z} coordinates in the iModel. Any elements, or parts of elements, outside of [IModel.projectExtents]($common) are considered invalid and are not displayed.
 
-By converting the minium and maximum values of the Project Extent to two [Cartographic]($common) points, it is possible to get a geographic rectangle that describes the location of the IModel, aligned to its coordinate system.
+As mentioned above, the Project Extents are aligned with the axes of of the project. To convert the Project Extents into a shape in [Cartographic]($common) coordinates, or to determine the minimum and maximum lat/long, you can use logic like:
+
+```ts
+[[include:ProjectExtents_toCartographic]]
+```
 
 ### The Global Origin
 

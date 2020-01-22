@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Rendering */
+/** @packageDocumentation
+ * @module Rendering
+ */
 import { Target } from "./Target";
 import { TileTree } from "../../tile/TileTree";
 import { Frustum, RenderMode, FrustumPlanes, Npc } from "@bentley/imodeljs-common";

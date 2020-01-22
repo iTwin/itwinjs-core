@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Authentication */
+/** @packageDocumentation
+ * @module Authentication
+ */
 
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "@bentley/imodeljs-clients";
 import { ClientRequestContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
@@ -20,7 +22,7 @@ export interface OidcAgentClientConfigurationV1 extends OidcBackendClientConfigu
 
 /** Utility to generate OIDC/OAuth tokens for agent or service applications
  * @internal
- * @deprecated Use [[OidcAgentClient]]
+ * @deprecated Use [[OidcAgentClient]].  Will be removed in iModel.js 2.0
  */
 export class OidcAgentClientV1 extends OidcBackendClient {
   constructor(private _agentConfiguration: OidcAgentClientConfigurationV1) {

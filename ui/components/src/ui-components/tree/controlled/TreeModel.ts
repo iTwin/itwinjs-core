@@ -2,10 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 import { immerable } from "immer";
 import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { SparseTree, SparseArray } from "./internal/SparseTree";
 import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../TreeDataProvider";
 
@@ -23,7 +26,7 @@ export interface TreeModelNode {
 
   readonly description: string | undefined;
   readonly isExpanded: boolean;
-  readonly label: string;
+  readonly label: string | PropertyRecord;
   readonly isSelected: boolean;
 
   /** Specifies that node is in editing mode. It holds callbacks that are used by node editor. */
@@ -55,7 +58,7 @@ export interface MutableTreeModelNode extends TreeModelNode {
 
   description: string;
   isExpanded: boolean;
-  label: string;
+  label: string | PropertyRecord;
   isSelected: boolean;
 
   /** Specifies that node is in editing mode. It holds callbacks that are used by node editor. */
@@ -117,7 +120,7 @@ export interface TreeModelNodeInput {
   readonly isExpanded: boolean;
   readonly id: string;
   readonly item: TreeNodeItem;
-  readonly label: string;
+  readonly label: string | PropertyRecord;
   readonly isLoading: boolean;
   readonly numChildren?: number;
   readonly isSelected: boolean;

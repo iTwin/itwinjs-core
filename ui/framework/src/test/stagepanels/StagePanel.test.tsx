@@ -195,7 +195,7 @@ describe("StagePanel", () => {
     const frontstageProvider = new Frontstage1();
     ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
     expect(frontstageProvider.frontstageDef).to.not.be.undefined;
-    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef); // tslint:disable-line:no-floating-promises
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
 
     if (frontstageProvider.frontstageDef) {
       const widgetDef = frontstageProvider.frontstageDef.findWidgetDef("stagePanelWidget");

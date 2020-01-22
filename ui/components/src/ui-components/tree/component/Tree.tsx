@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @packageDocumentation
+ * @module Tree
+ */
 
 // third-party imports
 import _ from "lodash";
@@ -26,7 +28,7 @@ import {
 import {
   TreeDataProvider, TreeNodeItem,
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem,
-  isTreeDataProviderInterface,
+  isTreeDataProviderInterface, getLabelString,
 } from "../TreeDataProvider";
 import { NodeEventManager } from "../NodeEventManager";
 import { NodeLoadingOrchestrator } from "../NodeLoadingOrchestrator";
@@ -672,7 +674,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
-    using((this.state.model.pauseRendering() as any), async () => { // tslint:disable-line:no-floating-promises
+    using((this.state.model.pauseRendering() as any), async () => {
       for (const item of items) {
         if (item) {
           // specific node needs to be reloaded
@@ -726,7 +728,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     const node: BeInspireTreeNodeConfig = {
       ...base,
       id: item.id,
-      text: item.label,
+      text: getLabelString(item.label),
       itree: {
         ...base.itree,
         state: {

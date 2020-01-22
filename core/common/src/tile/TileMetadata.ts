@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tile
+ */
 
 import {
   assert,
@@ -16,7 +18,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   BatchType,
-} from "../Render";
+} from "../FeatureTable";
 import { TileProps } from "../TileProps";
 import {
   CurrentImdlVersion,

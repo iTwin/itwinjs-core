@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module OtherServices */
+/** @packageDocumentation
+ * @module OtherServices
+ */
 import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { WsgClient } from "./WsgClient";

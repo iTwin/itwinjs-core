@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { LogLevel, BeEvent, GuidString } from "@bentley/bentleyjs-core";
+import { LogLevel } from "@bentley/bentleyjs-core";
 import { DevToolsRpcInterface, IModelToken, DevToolsStatsOptions } from "@bentley/imodeljs-common";
-import { EventSourceManager } from "./EventSource";
 
 /**
  * Results of the ping test
@@ -32,36 +31,12 @@ export class DevTools {
   public static connectToBackendInstance(iModelToken: IModelToken): DevTools {
     return new DevTools(iModelToken);
   }
-  /**
-   * Backend event handler.
-   */
-  public readonly onEcho = new BeEvent<(id: GuidString, message: string) => void>();
 
   /** Constructor */
   private constructor(
     private readonly _iModelToken: IModelToken) {
-    // setup backend event handler.
-    const eventSourceId = this._iModelToken.key!;
-    EventSourceManager.get(eventSourceId, this._iModelToken)
-      .on(DevToolsRpcInterface.name, "echo", (data: any) => {
-        this.onEcho.raiseEvent(data.id, data.message);
-      });
   }
 
-  /** Sets up a log level at the backend and returns the old log level */
-  public async echo(id: GuidString, message: string): Promise<string> {
-    return new Promise<string>(async (resolve) => {
-      const listener = this.onEcho.addListener((echoId: GuidString, msg: string) => {
-        if (id === echoId) {
-          if (msg !== message)
-            throw new Error("Message does not match");
-          resolve(message);
-        }
-      });
-      await DevToolsRpcInterface.getClient().echo(this._iModelToken.toJSON(), id, message);
-      this.onEcho.removeListener(listener);
-    });
-  }
   /** Measures the round trip times for one or more pings to the backend
    * @param count Number of pings to send to the backend
    * @return Result of ping test.

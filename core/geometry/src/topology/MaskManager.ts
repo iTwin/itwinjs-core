@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 /**
  * Methods to "grab and drop" mask bits.
  * * Caller code (e.g. HalfEdgeGraph) initializes with a block of bits to be managed.

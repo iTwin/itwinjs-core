@@ -65,7 +65,6 @@ beta;ColorTheme
 public;CombinedReducerState
 public;combineReducers: CombineReducersFunction
 public;CombineReducersFunction = 
-public;CommandHandler = CommandHandler_2
 public;CommandItemDef 
 public;CommandItemProps 
 public;CommandLaunchBackstageItem 
@@ -141,7 +140,6 @@ beta;DefaultNavigationProps
 beta;DefaultNavigationWidget 
 internal;DefaultToolSettingsProvider 
 alpha;DefaultViewOverlay 
-public;DescriptionProps = DescriptionProps_2
 public;DialogChangedEvent 
 public;DialogChangedEventArgs
 public;DialogInfo
@@ -253,7 +251,6 @@ public;KeyboardShortcutMenuState
 public;KeyboardShortcutProps 
 alpha;KeyinBrowser 
 alpha;KeyinBrowserProps 
-public;LabelProps = LabelProps_2
 public;LayoutFragmentProps
 public;LayoutHorizontalSplitProps 
 public;LayoutSplit
@@ -422,7 +419,6 @@ public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
-public;StringGetter = StringGetter_2
 public;SupportsViewSelectorChange
 alpha;SyncPropertiesChangeEvent 
 alpha;SyncPropertiesChangeEventArgs
@@ -432,7 +428,6 @@ public;SyncUiEvent
 public;SyncUiEventArgs
 public;SyncUiEventDispatcher
 public;SyncUiEventId
-public;SyncUiProps = SyncUiProps_2
 public;TargetChangeHandler
 public;Task 
 public;TaskActivatedEvent 
@@ -469,7 +464,6 @@ public;ToolItemDef
 public;ToolItemProps 
 internal;ToolSettingsZone 
 internal;ToolSettingsZoneProps 
-public;TooltipProps = TooltipProps_2
 internal;ToolUiManager
 public;ToolUiProvider 
 public;ToolWidget 
@@ -487,7 +481,7 @@ beta;useActiveViewport(): ScreenViewport | undefined
 internal;useAvailablePluginUiProviders(): readonly string[]
 internal;useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 beta;useBackstageManager: () => BackstageManager
-internal;useGroupedItems: (manager: BackstageItemsManager) => readonly (readonly BackstageItem[])[]
+internal;useGroupedItems: (manager: BackstageItemsManager) => GroupedItems
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
 beta;usePluginStatusBarItems: (manager: StatusBarItemsManager_2 | undefined) => readonly CommonStatusBarItem[]
 public;UserProfileBackstageItem 

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Viewport */
+/** @packageDocumentation
+ * @module Viewport
+ */
 
 import { IModelApp, Viewport, SelectedViewportChangedArgs, StandardViewId } from "@bentley/imodeljs-frontend";
 import { UiEvent, Face } from "@bentley/ui-core";

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Curve */
+/** @packageDocumentation
+ * @module Curve
+ */
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { CurvePrimitive } from "./CurvePrimitive";
@@ -102,11 +104,43 @@ export class CurveLocationDetail {
     this.point1 = point1;
   }
 
+  /** test if this pair has fraction1 defined */
+  public get hasFraction1(): boolean {
+    return this.fraction1 !== undefined;
+  }
+
   /** test if this is an isolated point. This is true if intervalRole is any of (undefined, isolated, isolatedAtVertex) */
   public get isIsolated(): boolean {
     return this.intervalRole === undefined
       || this.intervalRole === CurveIntervalRole.isolated
       || this.intervalRole === CurveIntervalRole.isolatedAtVertex;
+  }
+
+  /** return the fraction delta. (0 if no fraction1) */
+  public get fractionDelta(): number {
+    return this.fraction1 !== undefined ? this.fraction1 - this.fraction : 0.0;
+  }
+
+  /** If (fraction1, point1) are defined, make them the primary (and only) data.
+   * * No action if undefined.
+   */
+  public collapseToEnd() {
+    if (this.fraction1 !== undefined) {
+      this.fraction = this.fraction1;
+      this.fraction1 = undefined;
+    }
+    if (this.point1) {
+      this.point = this.point1;
+      this.point1 = undefined;
+    }
+  }
+
+  /** make (fraction, point) the primary (and only) data.
+   * * No action if undefined.
+   */
+  public collapseToStart() {
+    this.fraction1 = undefined;
+    this.point1 = undefined;
   }
 
   /** Return a complete copy, WITH CAVEATS . . .
@@ -119,6 +153,8 @@ export class CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = this.curve;
     result.fraction = this.fraction;
+    result.fraction1 = this.fraction1;
+    result.point1 = this.point1;
     result.point.setFromPoint3d(this.point);
     result.vectorInCurveLocationDetail = optionalVectorUpdate(this.vectorInCurveLocationDetail, result.vectorInCurveLocationDetail);
     result.a = this.a;

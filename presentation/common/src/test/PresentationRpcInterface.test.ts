@@ -212,6 +212,24 @@ describe("PresentationRpcInterface", () => {
       mock.verify(async (x) => x(toArguments(token, options, keys)), moq.Times.once());
     });
 
+    it("forwards getDisplayLabelDefinition call", async () => {
+      const key = createRandomECInstanceKey();
+      const options: LabelRpcRequestOptions = {
+        ...defaultRpcOptions,
+      };
+      await rpcInterface.getDisplayLabelDefinition(token, options, key);
+      mock.verify(async (x) => x(toArguments(token, options, key)), moq.Times.once());
+    });
+
+    it("forwards getDisplayLabelsDefinitions call", async () => {
+      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+      const options: LabelRpcRequestOptions = {
+        ...defaultRpcOptions,
+      };
+      await rpcInterface.getDisplayLabelsDefinitions(token, options, keys);
+      mock.verify(async (x) => x(toArguments(token, options, keys)), moq.Times.once());
+    });
+
     it("forwards getSelectionScopes call", async () => {
       const options: SelectionScopeRpcRequestOptions = {
         ...defaultRpcOptions,

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RangeSearch */
+/** @packageDocumentation
+ * @module RangeSearch
+ */
 
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Range3d } from "../geometry3d/Range";

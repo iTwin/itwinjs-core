@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Viewport */
+/** @packageDocumentation
+ * @module Viewport
+ */
 
 import * as React from "react";
 import { IDisposable, using } from "@bentley/bentleyjs-core";

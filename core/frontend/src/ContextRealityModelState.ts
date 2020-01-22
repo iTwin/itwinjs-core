@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 import { ContextRealityModelProps, CartographicRange } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
@@ -158,7 +160,7 @@ export async function findAvailableUnattachedRealityModels(projectid: string, iM
       realityDataName = currentRealityData.name as string;
     } else if (currentRealityData.rootDocument) {
       // In case root document contains a relative path we only keep the filename
-      const rootDocParts = (currentRealityData.rootDocumentb as string).split("/");
+      const rootDocParts = (currentRealityData.rootDocument as string).split("/");
       realityDataName = rootDocParts[rootDocParts.length - 1];
     } else {
       // This case would not occur normally but if it does the RD is considered invalid

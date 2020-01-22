@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "1.11.0",
+      "tag": "@bentley/imodeljs-clients_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Move the iModelHub Global Event APIs to internal.  Only Bentley can use them since they require a service account."
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          },
+          {
+            "comment": "Added TypeScript wrapper over the native SaaSClient."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.10.0",
       "tag": "@bentley/imodeljs-clients_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",

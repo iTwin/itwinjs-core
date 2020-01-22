@@ -8,7 +8,7 @@ import sinon from "sinon";
 import * as faker from "faker";
 import { BeEvent, BeUiEvent } from "@bentley/bentleyjs-core";
 import { TreeModelSource, createModelSourceForNodeLoader, createDefaultNodeLoadHandler } from "../../../ui-components/tree/controlled/TreeModelSource";
-import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
+import { ITreeDataProvider, TreeDataChangesListener, getLabelString } from "../../../ui-components/tree/TreeDataProvider";
 import { TreeModelNodeInput, MutableTreeModel, VisibleTreeNodes, TreeNodeItemData } from "../../../ui-components/tree/controlled/TreeModel";
 import { ITreeNodeLoader, LoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { createRandomTreeNodeItems, createRandomTreeNodeItem } from "./RandomTreeNodesHelpers";
@@ -141,7 +141,7 @@ describe("createDefaultNodeLoadHandler", () => {
       isExpanded: !!item.autoExpand,
       id: item.id,
       item,
-      label: item.label,
+      label: getLabelString(item.label),
       isLoading: false,
       numChildren,
       isSelected: false,

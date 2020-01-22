@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module State */
+/** @packageDocumentation
+ * @module State
+ */
 
 import { ConfigurableUiState, ConfigurableUiReducer } from "../configurableui/state";
 import { SessionState, SessionStateReducer } from "./SessionState";

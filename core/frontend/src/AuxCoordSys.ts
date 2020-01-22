@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import { AuxCoordSystemProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, BisCodeSpec, Code, IModel, Npc, ColorDef, LinePixels } from "@bentley/imodeljs-common";
 import { Angle, Point3d, Point2d, Vector3d, YawPitchRollAngles, XYAndZ, XAndY, Matrix3d, Transform, Arc3d, AngleSweep } from "@bentley/geometry-core";
@@ -267,11 +269,11 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     else if ((options & ACSDisplayOptions.Active) !== ACSDisplayOptions.None)
       pixelSize *= 0.9;
 
-    const exagg = context.viewport.view.getAspectRatioSkew();
+    const exaggerate = context.viewport.view.getAspectRatioSkew();
     const scale = context.getPixelSizeAtPoint(drawOrigin) * pixelSize;
     const rMatrix = this.getRotation();
     rMatrix.inverse(rMatrix);
-    rMatrix.scaleRows(scale, scale / exagg, scale, rMatrix);
+    rMatrix.scaleRows(scale, scale / exaggerate, scale, rMatrix);
     const transform = Transform.createOriginAndMatrix(drawOrigin, rMatrix);
 
     const builder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform);

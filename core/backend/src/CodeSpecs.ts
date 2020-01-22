@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Codes */
+/** @packageDocumentation
+ * @module Codes
+ */
 
 import { DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, IModelError, IModelStatus } from "@bentley/imodeljs-common";

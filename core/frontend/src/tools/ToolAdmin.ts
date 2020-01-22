@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tools */
+/** @packageDocumentation
+ * @module Tools
+ */
 
 import { BeEvent, AbandonedError, Logger } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
@@ -306,27 +308,19 @@ export class ToolAdmin {
   private _saveLocateCircle = false;
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
-  /** Return the name of the [[PrimitiveTool]] to use as the default tool, if any.
+  /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select".
    * @see [[startDefaultTool]]
    * @internal
    */
   public get defaultToolId(): string { return this._defaultToolId; }
-  /** Set the name of the [[PrimitiveTool]] to use as the default tool, if any.
-   * @see [[startDefaultTool]]
-   * @internal
-   */
   public set defaultToolId(toolId: string) { this._defaultToolId = toolId; }
   /** Return the default arguments to pass in when starting the default tool, if any.
    * @see [[startDefaultTool]]
    * @internal
    */
   public get defaultToolArgs(): any[] | undefined { return this._defaultToolArgs; }
-
-  /** Set the default arguments to pass in when starting the default tool, if any.
-   * @see [[startDefaultTool]]
-   * @internal
-   */
   public set defaultToolArgs(args: any[] | undefined) { this._defaultToolArgs = args; }
+
   /** Apply operations such as transform, copy or delete to all members of an assembly. */
   public assemblyLock = false;
   /** If Grid Lock is on, project data points to grid. */
@@ -390,14 +384,13 @@ export class ToolAdmin {
    */
   private _toolSettingsChangeHandler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined = undefined;
 
-  /** @internal */
-  /** Set by object that will be provide UI for tool settings properties. */
+  /** Set by object that will be provide UI for tool settings properties.
+   * @internal
+   */
+  public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
   public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined) {
     this._toolSettingsChangeHandler = handler;
   }
-
-  /** @internal */
-  public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
 
   /** Handler for keyboard events. */
   private static _keyEventHandler = (ev: KeyboardEvent) => {

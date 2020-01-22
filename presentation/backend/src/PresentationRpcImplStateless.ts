@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RPC */
+/** @packageDocumentation
+ * @module RPC
+ */
 
 import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
@@ -16,7 +18,7 @@ import {
   PresentationRpcResponse, PresentationRpcRequestOptions,
   HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   SelectionScopeRpcRequestOptions, ClientStateSyncRequestOptions,
-  LabelRpcRequestOptions, PresentationRpcInterface, Ruleset,
+  LabelRpcRequestOptions, PresentationRpcInterface, Ruleset, LabelDefinition,
 } from "@bentley/presentation-common";
 import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
 import { NodeKeyJSON } from "@bentley/presentation-common/lib/hierarchy/Key";
@@ -27,6 +29,7 @@ import { NodePathElementJSON } from "@bentley/presentation-common/lib/hierarchy/
 import { ContentJSON } from "@bentley/presentation-common/lib/content/Content";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
+import { LabelDefinitionJSON } from "@bentley/presentation-common/lib/LabelDefinition";
 
 type ContentGetter<TResult = any> = (requestContext: ClientRequestContext, requestOptions: any) => TResult;
 
@@ -160,7 +163,7 @@ export class PresentationRpcImplStateless extends PresentationRpcInterface {
   public async loadHierarchy(token: IModelToken, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
     return this.makeRequest(token, requestOptions, async (requestContext, options) => {
       // note: we intentionally don't await here - don't want frontend waiting for this task to complete
-      // tslint:disable-next-line: no-floating-promises
+      // tslint:disable-next-line:no-floating-promises
       this.getManager(requestOptions.clientId).loadHierarchy(requestContext, options)
         .catch((e) => Logger.logWarning("Presentation", `Error loading '${getRulesetId(requestOptions)}' hierarchy: ${e}`));
     });
@@ -208,16 +211,34 @@ export class PresentationRpcImplStateless extends PresentationRpcInterface {
     );
   }
 
+  /** @deprecated */
   public async getDisplayLabel(token: IModelToken, requestOptions: LabelRpcRequestOptions, key: InstanceKeyJSON): PresentationRpcResponse<string> {
     return this.makeRequest(token, requestOptions, async (requestContext, options) =>
       this.getManager(requestOptions.clientId).getDisplayLabel(requestContext, options, InstanceKey.fromJSON(key)),
     );
   }
 
+  /** @deprecated */
   public async getDisplayLabels(token: IModelToken, requestOptions: LabelRpcRequestOptions, keys: InstanceKeyJSON[]): PresentationRpcResponse<string[]> {
     return this.makeRequest(token, requestOptions, async (requestContext, options) =>
       this.getManager(requestOptions.clientId).getDisplayLabels(requestContext, options, keys.map(InstanceKey.fromJSON)),
     );
+  }
+
+  public async getDisplayLabelDefinition(token: IModelToken, requestOptions: LabelRpcRequestOptions, key: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON> {
+    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+      const label = await this.getManager(requestOptions.clientId).getDisplayLabelDefinition(requestContext, options, InstanceKey.fromJSON(key));
+      requestContext.enter();
+      return LabelDefinition.toJSON(label);
+    });
+  }
+
+  public async getDisplayLabelsDefinitions(token: IModelToken, requestOptions: LabelRpcRequestOptions, keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]> {
+    return this.makeRequest(token, requestOptions, async (requestContext, options) => {
+      const labels = await this.getManager(requestOptions.clientId).getDisplayLabelsDefinitions(requestContext, options, keys.map(InstanceKey.fromJSON));
+      requestContext.enter();
+      return labels.map(LabelDefinition.toJSON);
+    });
   }
 
   public async getSelectionScopes(token: IModelToken, requestOptions: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {

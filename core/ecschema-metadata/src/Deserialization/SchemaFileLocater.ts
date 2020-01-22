@@ -63,7 +63,7 @@ export class FileSchemaKey extends SchemaKey {
 
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
- * @alpha - Needs further testing and possibly moved to a separate package.
+ * @alpha @deprecated - Needs further testing and possibly moved to a separate package.
  */
 export abstract class SchemaFileLocater {
   public searchPaths: string[];
@@ -89,8 +89,8 @@ export abstract class SchemaFileLocater {
 
   public async fileExists(filePath: string): Promise<boolean | undefined> {
     return new Promise<boolean | undefined>((resolve) => {
-      fs.exists(filePath, (data) => {
-        resolve(data);
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        resolve(err ? false : true);
       });
     });
   }

@@ -14,7 +14,6 @@ import { Range3d } from "@bentley/geometry-core";
 describe("Example Code", () => {
   let iModel: IModelDb;
 
-  // tslint:prefer-const:false
   const accessToken: AccessToken = (AccessToken as any);
   const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken);
 

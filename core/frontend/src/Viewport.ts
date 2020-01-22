@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Views */
+/** @packageDocumentation
+ * @module Views
+ */
 
 import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
@@ -540,15 +542,16 @@ export class ViewingSpace {
     return corners;
   }
 
-  private constructor(view: ViewState, clientWidth: number, clientHeight: number, displayedPlanes: Plane3dByOriginAndUnitNormal[]) {
-    this._view = view;
-    this._clientWidth = clientWidth;
-    this._clientHeight = clientHeight;
+  private constructor(vp: Viewport, displayedPlanes: Plane3dByOriginAndUnitNormal[]) {
+    const view = this._view = vp.view;
+    const viewRect = vp.viewRect;
+    this._clientWidth = viewRect.width;
+    this._clientHeight = viewRect.height;
     this._displayedPlanes = displayedPlanes;
 
-    const origin = this.view.getOrigin().clone();
-    const delta = this.view.getExtents().clone();
-    this.rotation.setFrom(this.view.getRotation());
+    const origin = view.getOrigin().clone();
+    const delta = view.getExtents().clone();
+    this.rotation.setFrom(view.getRotation());
 
     // first, make sure none of the deltas are negative
     delta.x = Math.abs(delta.x);
@@ -630,14 +633,14 @@ export class ViewingSpace {
 
   /** @internal */
   public static createFromViewport(vp: Viewport): ViewingSpace | undefined {
-    return new ViewingSpace(vp.view, vp.viewRect.width, vp.viewRect.height, vp.getDisplayedPlanes());
+    return new ViewingSpace(vp, vp.getDisplayedPlanes());
   }
 
   /** @internal */
   public static createFromViewportAndPlane(vp: Viewport, plane: Plane3dByOriginAndUnitNormal): ViewingSpace | undefined {
     const planes = vp.getDisplayedPlanes();
     planes.push(plane);
-    const vf = new ViewingSpace(vp.view, vp.viewRect.width, vp.viewRect.height, planes);
+    const vf = new ViewingSpace(vp, planes);
     return 0 === vf.frustFraction ? undefined : vf;
   }
 
@@ -1201,7 +1204,6 @@ export abstract class Viewport implements IDisposable {
 
   /** @internal */
   public get scheduleScriptFraction(): number { return this._scheduleScriptFraction; }
-  /** @internal */
   public set scheduleScriptFraction(fraction: number) {
     this._scheduleScriptFraction = fraction;
     this._scheduleScriptFractionValid = false;
@@ -1656,6 +1658,7 @@ export abstract class Viewport implements IDisposable {
 
       this._alwaysDrawnExclusive = false;
       this._changeFlags.setAlwaysDrawn();
+      this.invalidateShadows();
     }
   }
 
@@ -1666,6 +1669,7 @@ export abstract class Viewport implements IDisposable {
     if (undefined !== this.neverDrawn && 0 < this.neverDrawn.size) {
       this.neverDrawn.clear();
       this._changeFlags.setNeverDrawn();
+      this.invalidateShadows();
     }
   }
 
@@ -1675,6 +1679,7 @@ export abstract class Viewport implements IDisposable {
   public setNeverDrawn(ids: Id64Set): void {
     this._neverDrawn = ids;
     this._changeFlags.setNeverDrawn();
+    this.invalidateShadows();
   }
 
   /** Specify the Ids of a set of elements which should always be rendered within this view, regardless of category and subcategory visibility.
@@ -1687,6 +1692,7 @@ export abstract class Viewport implements IDisposable {
     this._alwaysDrawn = ids;
     this._alwaysDrawnExclusive = exclusive;
     this._changeFlags.setAlwaysDrawn();
+    this.invalidateShadows();
   }
 
   /** Returns true if the set of elements in the [[alwaysDrawn]] set are the *only* elements rendered within this view. */
@@ -1705,22 +1711,20 @@ export abstract class Viewport implements IDisposable {
     this._perModelCategoryVisibility.addOverrides(fs, ovrs);
   }
 
-  /** Sets an object which can customize the appearance of [[Feature]]s within a viewport.
+  /** An object which can customize the appearance of [[Feature]]s within a viewport.
    * If defined, the provider will be invoked whenever the overrides are determined to need updating.
    * The overrides can be explicitly marked as needing a refresh by calling [[Viewport.setFeatureOverrideProviderChanged]]. This is typically called when
    * the internal state of the provider changes such that the computed overrides must also change.
    * @see [[FeatureSymbology.Overrides]]
    */
+  public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
+    return this._featureOverrideProvider;
+  }
   public set featureOverrideProvider(provider: FeatureOverrideProvider | undefined) {
     if (provider !== this._featureOverrideProvider) {
       this._featureOverrideProvider = provider;
       this.setFeatureOverrideProviderChanged();
     }
-  }
-
-  /** Get the current FeatureOverrideProvider for this viewport if defined. */
-  public get featureOverrideProvider(): FeatureOverrideProvider | undefined {
-    return this._featureOverrideProvider;
   }
 
   /** Notifies this viewport that the internal state of its [[FeatureOverrideProvider]] has changed such that its
@@ -1820,10 +1824,10 @@ export abstract class Viewport implements IDisposable {
 
   /** Change the ViewState of this Viewport
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
-   * @param _opts options for how the view change operation should work
+   * @param _opts options for how the view change operation  should work
    */
   public changeView(view: ViewState, _opts?: ViewChangeOptions) {
-    const prevView =  this.view;
+    const prevView = this.view;
 
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
@@ -2991,10 +2995,13 @@ export class ScreenViewport extends Viewport {
     const boresite = Ray3d.create(pickPoint, direction);
     const projectedPt = Point3d.createZero();
 
-    // returns true if there's an intersection in the forward direction
+    // returns true if there's an intersection that isn't behind the front plane
     const boresiteIntersect = (plane: Plane3dByOriginAndUnitNormal) => {
       const dist = boresite.intersectionWithPlane(plane, projectedPt);
-      return dist !== undefined && dist > 0;
+      if (undefined === dist)
+        return false;
+      const npcPt = this.worldToNpc(projectedPt);
+      return npcPt.z < 1.0;
     };
 
     if (undefined !== this.backgroundMapPlane && boresiteIntersect(this.backgroundMapPlane))
@@ -3094,7 +3101,6 @@ export class ScreenViewport extends Viewport {
 
   /** @internal */
   public get viewCmdTargetCenter(): Point3d | undefined { return this._viewCmdTargetCenter; }
-  /** @internal */
   public set viewCmdTargetCenter(center: Point3d | undefined) { this._viewCmdTargetCenter = center ? center.clone() : undefined; }
   /** True if an undoable viewing operation exists on the stack */
   public get isUndoPossible(): boolean { return 0 < this._backStack.length; }

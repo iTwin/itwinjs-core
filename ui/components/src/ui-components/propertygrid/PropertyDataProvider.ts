@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyGrid */
+/** @packageDocumentation
+ * @module PropertyGrid
+ */
 
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { PropertyRecord, IModelConnection } from "@bentley/imodeljs-frontend";
@@ -22,7 +24,7 @@ export interface PropertyCategory {
  * @public
  */
 export interface PropertyData {
-  label: string;
+  label: string | PropertyRecord;
   description?: string;
   categories: PropertyCategory[];
   records: { [categoryName: string]: PropertyRecord[] };

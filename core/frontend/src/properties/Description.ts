@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Properties */
+/** @packageDocumentation
+ * @module Properties
+ */
 
 import { PropertyEditorParams } from "./EditorParams";
 import { QuantityType } from "../QuantityFormatter";

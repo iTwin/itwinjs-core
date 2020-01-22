@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module ArraysAndInterfaces */
+/** @packageDocumentation
+ * @module ArraysAndInterfaces
+ */
 
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";

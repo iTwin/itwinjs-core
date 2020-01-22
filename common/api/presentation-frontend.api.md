@@ -20,6 +20,7 @@ import { InstanceKey } from '@bentley/presentation-common';
 import { Key } from '@bentley/presentation-common';
 import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
+import { LabelDefinition } from '@bentley/presentation-common';
 import { LabelRequestOptions } from '@bentley/presentation-common';
 import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
@@ -99,15 +100,16 @@ export class PersistenceHelper {
 
 // @public
 export class Presentation {
-    // @internal (undocumented)
-    static favoriteProperties: FavoritePropertiesManager;
-    // @internal (undocumented)
-    static i18n: I18N;
+    // @beta
+    static get favoriteProperties(): FavoritePropertiesManager;
+    static set favoriteProperties(value: FavoritePropertiesManager);
+    static get i18n(): I18N;
+    static set i18n(value: I18N);
     static initialize(props?: PresentationManagerProps): void;
-    // @internal (undocumented)
-    static presentation: PresentationManager;
-    // @internal (undocumented)
-    static selection: SelectionManager;
+    static get presentation(): PresentationManager;
+    static set presentation(value: PresentationManager);
+    static get selection(): SelectionManager;
+    static set selection(value: SelectionManager);
     static terminate(): void;
 }
 
@@ -124,8 +126,12 @@ export class PresentationManager implements IDisposable {
     }>;
     getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
     getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
+    // @deprecated
     getDisplayLabel(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<string>;
+    getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition>;
+    // @deprecated
     getDisplayLabels(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<string[]>;
+    getDisplayLabelsDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]>;
     getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
     getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
@@ -140,7 +146,7 @@ export class PresentationManager implements IDisposable {
     // @internal
     onNewiModelConnection(_: IModelConnection): Promise<void>;
     // @internal (undocumented)
-    readonly rpcRequestsHandler: RpcRequestsHandler;
+    get rpcRequestsHandler(): RpcRequestsHandler;
     rulesets(): RulesetManager;
     vars(rulesetId: string): RulesetVariablesManager;
 }
@@ -257,8 +263,9 @@ export interface SelectionManagerProps {
 // @public
 export class SelectionScopesManager {
     constructor(props: SelectionScopesManagerProps);
-    readonly activeLocale: string | undefined;
-    activeScope: SelectionScope | string | undefined;
+    get activeLocale(): string | undefined;
+    get activeScope(): SelectionScope | string | undefined;
+    set activeScope(scope: SelectionScope | string | undefined);
     computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string): Promise<KeySet>;
     getSelectionScopes(imodel: IModelConnection, locale?: string): Promise<SelectionScope[]>;
     }

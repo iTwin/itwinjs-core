@@ -142,8 +142,9 @@ export interface BackstageItemsChangedArgs {
 export class BackstageItemsManager {
     // (undocumented)
     add(itemOrItems: BackstageItem | ReadonlyArray<BackstageItem>): void;
-    // @internal (undocumented)
-    items: ReadonlyArray<BackstageItem>;
+    // (undocumented)
+    get items(): ReadonlyArray<BackstageItem>;
+    set items(items: ReadonlyArray<BackstageItem>);
     // @internal
     readonly onChanged: BeEvent<(args: BackstageItemsChangedArgs) => void>;
     // (undocumented)
@@ -316,10 +317,10 @@ export class PluginUiManager {
     static getPluginUiProvider(providerId: string): PluginUiProvider | undefined;
     static getStatusbarItems(stageId: string, stageUsage: StageUsage): CommonStatusBarItem[];
     static getToolbarItems(toolBarId: string): ToolbarItemInsertSpec[];
-    static readonly hasRegisteredProviders: boolean;
+    static get hasRegisteredProviders(): boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiProviderRegisteredEventArgs) => void>;
     static register(uiProvider: PluginUiProvider): void;
-    static readonly registeredProviderIds: string[];
+    static get registeredProviderIds(): string[];
     static unregister(uiProviderId: string): void;
 }
 
@@ -373,8 +374,8 @@ export interface StatusBarItemsChangedArgs {
 export class StatusBarItemsManager {
     // (undocumented)
     add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>): void;
-    // @internal (undocumented)
-    items: ReadonlyArray<CommonStatusBarItem>;
+    get items(): ReadonlyArray<CommonStatusBarItem>;
+    set items(items: ReadonlyArray<CommonStatusBarItem>);
     // @internal
     loadItems(items: ReadonlyArray<CommonStatusBarItem>): void;
     // @internal
@@ -442,13 +443,13 @@ export interface TooltipProps {
 
 // @public
 export class UiAbstract {
-    static readonly i18n: I18N;
-    static readonly i18nNamespace: string;
+    static get i18n(): I18N;
+    static get i18nNamespace(): string;
     static initialize(i18n: I18N): Promise<void>;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal (undocumented)
-    static readonly packageName: string;
+    static get packageName(): string;
     static terminate(): void;
     // @internal
     static translate(key: string | string[], options?: TranslationOptions): string;
@@ -457,7 +458,7 @@ export class UiAbstract {
 // @beta
 export class UiAdmin {
     createXAndY(x: number, y: number): XAndY;
-    readonly cursorPosition: XAndY;
+    get cursorPosition(): XAndY;
     hideCalculator(): boolean;
     hideInputEditor(): boolean;
     hideMenuButton(_id: string): boolean;

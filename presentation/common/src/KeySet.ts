@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Core */
+/** @packageDocumentation
+ * @module Core
+ */
 
 import { Id64, GuidString, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";

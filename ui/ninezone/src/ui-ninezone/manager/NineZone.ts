@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Zone */
+/** @packageDocumentation
+ * @module Zone
+ */
 
 import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { ZonesManagerProps, WidgetZoneId, ZonesManager } from "../zones/manager/Zones";

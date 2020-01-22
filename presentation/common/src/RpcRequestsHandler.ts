@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RPC */
+/** @packageDocumentation
+ * @module RPC
+ */
 
 import { Guid, IDisposable, Id64String } from "@bentley/bentleyjs-core";
 import { IModelToken, RpcManager } from "@bentley/imodeljs-common";
@@ -12,6 +14,7 @@ import { InstanceKeyJSON } from "./EC";
 import { NodeKeyJSON } from "./hierarchy/Key";
 import { NodeJSON } from "./hierarchy/Node";
 import { NodePathElementJSON } from "./hierarchy/NodePathElement";
+import { LabelDefinitionJSON } from "./LabelDefinition";
 import { SelectionInfo, DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ContentJSON } from "./content/Content";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -147,6 +150,15 @@ export class RpcRequestsHandler implements IDisposable {
   public async getDisplayLabels(options: LabelRequestOptions<IModelToken>, keys: InstanceKeyJSON[]): Promise<string[]> {
     return this.request<string[], LabelRequestOptions<IModelToken>, any>(
       this.rpcClient, this.rpcClient.getDisplayLabels, this.createRequestOptions(options), keys);
+  }
+
+  public async getDisplayLabelDefinition(options: LabelRequestOptions<IModelToken>, key: InstanceKeyJSON): Promise<LabelDefinitionJSON> {
+    return this.request<LabelDefinitionJSON, LabelRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getDisplayLabelDefinition, this.createRequestOptions(options), key);
+  }
+  public async getDisplayLabelsDefinitions(options: LabelRequestOptions<IModelToken>, keys: InstanceKeyJSON[]): Promise<LabelDefinitionJSON[]> {
+    return this.request<LabelDefinitionJSON[], LabelRequestOptions<IModelToken>, any>(
+      this.rpcClient, this.rpcClient.getDisplayLabelsDefinitions, this.createRequestOptions(options), keys);
   }
 
   public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelToken>): Promise<SelectionScope[]> {

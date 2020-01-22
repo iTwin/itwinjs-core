@@ -2,15 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { GuidString, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { GuidString } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import {
-  ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken, AccessToken, HubIModel,
+  AccessToken, HubIModel,
   IModelHubClient, IModelClient, ConnectClient, Project, Config, IModelQuery, AuthorizedClientRequestContext,
-  ImsUserCredentials,
 } from "@bentley/imodeljs-clients";
-import { TestUsers } from "./TestUsers";
+import { TestUsers, UserCredentials } from "./TestUsers";
+import { getToken } from "@bentley/oidc-signin-tool";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
@@ -28,20 +27,17 @@ export class TestConfig {
   public static readonly enableMocks: boolean = isOfflineSet();
   public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && !!JSON.parse(Config.App.get("imjs_test_imodel_bank"));
 
-  /** Login the specified user and return the AuthorizationToken */
-  public static async login(user: ImsUserCredentials = TestUsers.regular): Promise<AuthorizationToken> {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== 0)
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Dev requires that SSL certificate checks be bypassed
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(new ClientRequestContext(), user);
-    expect(authToken);
-    return authToken;
-  }
+  private static _testUsers: Map<string, AccessToken> = new Map<string, AccessToken>();
 
   /** Login the specified user and return the AccessToken */
-  public static async getAccessToken(user: ImsUserCredentials = TestUsers.regular): Promise<AccessToken> {
-    const authToken: AuthorizationToken = await TestConfig.login(user);
-    const accessToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(new ClientRequestContext(), authToken);
-    expect(accessToken);
+  public static async getAccessToken(user: UserCredentials = TestUsers.regular): Promise<AccessToken> {
+    let accessToken: AccessToken;
+    if (TestConfig._testUsers.has(user.email))
+      accessToken = TestConfig._testUsers.get(user.email)!;
+    else {
+      accessToken = await getToken(user.email, user.password, TestUsers.scopes, TestUsers.oidcConfig, Config.App.getNumber("imjs_buddi_resolve_url_using_region", 0));
+      TestConfig._testUsers.set(user.email, accessToken);
+    }
     return accessToken;
   }
 

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module UnifiedSelection */
+/** @packageDocumentation
+ * @module UnifiedSelection
+ */
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";

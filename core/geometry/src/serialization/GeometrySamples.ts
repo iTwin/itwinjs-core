@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Serialization */
+/** @packageDocumentation
+ * @module Serialization
+ */
 
 import { Geometry, AxisOrder } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";

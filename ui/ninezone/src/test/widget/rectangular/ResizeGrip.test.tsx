@@ -7,13 +7,13 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { ResizeGrip, ResizeDirection, ResizeDirectionHelpers, ResizeGripResizeArgs } from "../../../ui-ninezone";
 import { PointerCaptor } from "../../../ui-ninezone/base/PointerCaptor";
-import { createRect, createPointerEvent } from "../../Utils";
+import { createBoundingClientRect, createPointerEvent } from "../../Utils";
 
 describe("<ResizeGrip />", () => {
-  let createRefStub: sinon.SinonStub | undefined;
+  const sandbox = sinon.createSandbox();
 
   afterEach(() => {
-    createRefStub && createRefStub.restore();
+    sandbox.restore();
   });
 
   it("should render", () => {
@@ -31,7 +31,7 @@ describe("<ResizeGrip />", () => {
       onResize={spy} />);
     const pointerCaptor = sut.find(PointerCaptor);
     const gripElement = pointerCaptor.find("div").at(2).getDOMNode() as HTMLDivElement;
-    sinon.stub(gripElement, "getBoundingClientRect").returns(createRect(20, 0, 25, 200));
+    sinon.stub(gripElement, "getBoundingClientRect").returns(createBoundingClientRect(20, 0, 25, 200));
 
     const pointerDown = createPointerEvent();
     pointerCaptor.prop("onPointerDown")!(pointerDown);
@@ -121,8 +121,7 @@ describe("<ResizeGrip />", () => {
       current: null,
     };
     sinon.stub(ref, "current").set(() => { });
-    createRefStub = sinon.stub(React, "createRef");
-    createRefStub.returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const spy = sinon.spy();
     const sut = mount(<ResizeGrip
@@ -140,8 +139,7 @@ describe("<ResizeGrip />", () => {
     const ref = {
       current: null,
     };
-    createRefStub = sinon.stub(React, "createRef");
-    createRefStub.returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const spy = sinon.spy();
     const sut = mount(<ResizeGrip
@@ -207,8 +205,7 @@ describe("<ResizeGrip />", () => {
     const ref = {
       current: null,
     };
-    createRefStub = sinon.stub(React, "createRef");
-    createRefStub.returns(ref);
+    sandbox.stub(React, "createRef").returns(ref);
 
     const spy = sinon.spy();
     const sut = mount(<ResizeGrip

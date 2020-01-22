@@ -5,15 +5,13 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Backstage, SafeAreaInsets } from "../../ui-ninezone";
+import { Backstage, BackstageProps, SafeAreaInsets } from "../../ui-ninezone";
 
 describe("<Backstage />", () => {
-  let addEventListenerSpy: sinon.SinonSpy | undefined;
-  let removeEventListenerSpy: sinon.SinonSpy | undefined;
+  const sandbox = sinon.createSandbox();
 
   afterEach(() => {
-    addEventListenerSpy && addEventListenerSpy.restore();
-    removeEventListenerSpy && removeEventListenerSpy.restore();
+    sandbox.restore();
   });
 
   it("should render", () => {
@@ -41,14 +39,14 @@ describe("<Backstage />", () => {
   });
 
   it("should add event listener", () => {
-    addEventListenerSpy = sinon.spy(document, "addEventListener");
+    const addEventListenerSpy = sandbox.spy(document, "addEventListener");
 
     mount(<Backstage />);
     addEventListenerSpy.calledOnce.should.true;
   });
 
   it("should remove event listener", () => {
-    removeEventListenerSpy = sinon.spy(document, "removeEventListener");
+    const removeEventListenerSpy = sandbox.spy(document, "removeEventListener");
     const sut = mount(<Backstage />);
     sut.unmount();
 
@@ -56,18 +54,18 @@ describe("<Backstage />", () => {
   });
 
   it("should handle overlay click events", () => {
-    const handler = sinon.spy();
-    const component = mount(<Backstage onClose={handler} />);
+    const spy = sinon.stub<Required<BackstageProps>["onClose"]>();
+    const component = mount(<Backstage onClose={spy} />);
 
     component.find(".nz-backstage-backstage_overlay").simulate("click");
-    handler.calledOnce.should.true;
+    spy.calledOnce.should.true;
   });
 
   it("should handle escape key down close event", () => {
-    const handler = sinon.spy();
-    mount(<Backstage isOpen onClose={handler} />);
+    const spy = sinon.stub<Required<BackstageProps>["onClose"]>();
+    mount(<Backstage isOpen onClose={spy} />);
 
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
-    handler.calledOnce.should.true;
+    spy.calledOnce.should.true;
   });
 });

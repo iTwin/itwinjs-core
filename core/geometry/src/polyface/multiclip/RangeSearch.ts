@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RangeSearch */
+/** @packageDocumentation
+ * @module RangeSearch
+ */
 
 import { Range2d } from "../../geometry3d/Range";
 import { RangeLengthData } from "../RangeLengthData";

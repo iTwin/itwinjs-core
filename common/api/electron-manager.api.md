@@ -13,7 +13,7 @@ export class IModelJsElectronManager extends StandardElectronManager {
     // (undocumented)
     appIconPath: string;
     // (undocumented)
-    protected readonly _defaultWindowOptions: {
+    protected get _defaultWindowOptions(): {
         autoHideMenuBar: boolean;
         icon: string;
     };
@@ -26,10 +26,10 @@ export class IModelJsElectronManager extends StandardElectronManager {
 // @beta
 export abstract class StandardElectronManager {
     // (undocumented)
-    protected readonly _defaultWindowOptions: BrowserWindowConstructorOptions;
-    abstract readonly frontendURL: string;
+    protected get _defaultWindowOptions(): BrowserWindowConstructorOptions;
+    abstract get frontendURL(): string;
     initialize(windowOptions?: BrowserWindowConstructorOptions): Promise<void>;
-    readonly mainWindow: BrowserWindow | undefined;
+    get mainWindow(): BrowserWindow | undefined;
     }
 
 // @beta
@@ -38,7 +38,7 @@ export class WebpackDevServerElectronManager extends StandardElectronManager {
     // (undocumented)
     appIconPath: string;
     // (undocumented)
-    protected readonly _defaultWindowOptions: {
+    protected get _defaultWindowOptions(): {
         autoHideMenuBar: boolean;
         icon: string;
     };

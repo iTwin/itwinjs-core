@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Topology */
+/** @packageDocumentation
+ * @module Topology
+ */
 
 import { HalfEdgeMask, HalfEdge, HalfEdgeGraph } from "./Graph";
 import { XAndY, XYAndZ } from "../geometry3d/XYZProps";

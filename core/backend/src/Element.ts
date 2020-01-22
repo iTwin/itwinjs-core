@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Elements */
+/** @packageDocumentation
+ * @module Elements
+ */
 
 import { DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";

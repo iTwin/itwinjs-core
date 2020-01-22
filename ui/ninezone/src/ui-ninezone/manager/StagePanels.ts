@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module StagePanels */
+/** @packageDocumentation
+ * @module StagePanels
+ */
 
 import { StagePanelsManagerProps, StagePanelsManager } from "../stage-panels/manager/StagePanels";
 import { StagePanelType } from "../stage-panels/StagePanel";

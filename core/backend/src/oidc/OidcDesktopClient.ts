@@ -4,7 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 // Code based on the blog article @ https://authguidance.com
 
-/** @module Authentication */
+/** @packageDocumentation
+ * @module Authentication
+ */
 
 import { BeEvent, BentleyError, AuthStatus, Logger, assert, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, UserInfo, OidcClient, IOidcFrontendClient, request, RequestOptions } from "@bentley/imodeljs-clients";

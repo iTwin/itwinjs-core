@@ -2,6 +2,30 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "1.11.0",
+      "tag": "@bentley/imodeljs-backend_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Native apps can now cancel tile requests in progress on the backend."
+          },
+          {
+            "comment": "Remove echo test function from devTools"
+          },
+          {
+            "comment": "Allow outline fill to be specified by subcategory appearance."
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          },
+          {
+            "comment": "Added TypeScript wrapper over the native SaaSClient."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.10.0",
       "tag": "@bentley/imodeljs-backend_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",

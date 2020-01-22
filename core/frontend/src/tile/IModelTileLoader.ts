@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tile
+ */
 
 import {
   BatchType,
@@ -76,5 +78,9 @@ export class IModelTileLoader extends TileLoader {
 
   public adjustContentIdSizeMultiplier(contentId: string, sizeMultiplier: number): string {
     return this._contentIdProvider.idFromParentAndMultiplier(contentId, sizeMultiplier);
+  }
+
+  public onActiveRequestCanceled(tile: Tile): void {
+    IModelApp.tileAdmin.onActiveRequestCanceled(tile);
   }
 }

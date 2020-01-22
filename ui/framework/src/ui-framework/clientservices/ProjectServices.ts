@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module ClientServices */
+/** @packageDocumentation
+ * @module ClientServices
+ */
 
 // This file defines the Project-related service interface that applications can provide if they want to override the default behavior.
 

@@ -75,27 +75,32 @@ export class ContentBuilder {
 export class ContentDataProvider implements IContentDataProvider {
     constructor(imodel: IModelConnection, ruleset: string | Ruleset, displayType: string);
     protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor;
-    readonly displayType: string;
+    get displayType(): string;
     dispose(): void;
     getContent(pageOptions?: PageOptions): Promise<Content | undefined>;
     getContentDescriptor: (() => Promise<Descriptor | undefined>) & _.MemoizedFunction;
     getContentSetSize(): Promise<number>;
     protected getDescriptorOverrides(): DescriptorOverrides;
     getFieldByPropertyRecord(propertyRecord: PropertyRecord): Promise<Field | undefined>;
-    imodel: IModelConnection;
+    get imodel(): IModelConnection;
+    set imodel(imodel: IModelConnection);
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldHidden(_field: Field): boolean;
-    keys: KeySet;
-    pagingSize: number | undefined;
-    rulesetId: string;
-    selectionInfo: SelectionInfo | undefined;
+    get keys(): KeySet;
+    set keys(keys: KeySet);
+    get pagingSize(): number | undefined;
+    set pagingSize(value: number | undefined);
+    get rulesetId(): string;
+    set rulesetId(value: string);
+    get selectionInfo(): SelectionInfo | undefined;
+    set selectionInfo(info: SelectionInfo | undefined);
     protected shouldConfigureContentDescriptor(): boolean;
     protected shouldExcludeFromDescriptor(field: Field): boolean;
     protected shouldRequestContentForEmptyKeyset(): boolean;
 }
 
 // @beta
-export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
+export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
 
 // @beta
 export interface ControlledTreeWithFilteringSupportProps {
@@ -108,7 +113,7 @@ export interface ControlledTreeWithFilteringSupportProps {
 }
 
 // @beta
-export function controlledTreeWithModelSource<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithModelSourceProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "modelSource" | Exclude<keyof P, "visibleNodes">>>;
+export function controlledTreeWithModelSource<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithModelSourceProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "modelSource" | Exclude<keyof P, "visibleNodes">>>;
 
 // @beta
 export interface ControlledTreeWithModelSourceProps extends Omit<ControlledTreeProps, "visibleNodes"> {
@@ -116,7 +121,7 @@ export interface ControlledTreeWithModelSourceProps extends Omit<ControlledTreeP
 }
 
 // @beta
-export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FunctionComponent<Pick<P & ControlledTreeWithUnifiedSelectionProps, "nodeLoader" | Exclude<keyof P, "visibleNodes">>>;
+export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithUnifiedSelectionProps, "nodeLoader" | Exclude<keyof P, "visibleNodes">>>;
 
 // @beta
 export interface ControlledTreeWithUnifiedSelectionProps {
@@ -226,8 +231,10 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     getData(): Promise<PropertyData>;
     protected getDescriptorOverrides(): DescriptorOverrides;
     protected getMemoizedData: (() => Promise<PropertyData>) & _.MemoizedFunction;
-    includeFieldsWithCompositeValues: boolean;
-    includeFieldsWithNoValues: boolean;
+    get includeFieldsWithCompositeValues(): boolean;
+    set includeFieldsWithCompositeValues(value: boolean);
+    get includeFieldsWithNoValues(): boolean;
+    set includeFieldsWithNoValues(value: boolean);
     protected invalidateCache(props: CacheInvalidationProps): void;
     protected isFieldFavorite: (field: Field) => boolean;
     protected isFieldHidden(field: Field): boolean;
@@ -242,7 +249,8 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
 export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
     constructor(props: PresentationTableDataProviderProps);
     protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor;
-    filterExpression: string | undefined;
+    get filterExpression(): string | undefined;
+    set filterExpression(value: string | undefined);
     getColumns: (() => Promise<ColumnDescription[]>) & _.MemoizedFunction;
     getLoadedRow(rowIndex: number): Readonly<RowItem> | undefined;
     getRow(rowIndex: number): Promise<RowItem>;
@@ -255,9 +263,9 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     // (undocumented)
     onRowsChanged: TableDataChangeEvent;
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
-    readonly sortColumn: Promise<ColumnDescription | undefined>;
-    readonly sortColumnKey: string | undefined;
-    readonly sortDirection: SortDirection;
+    get sortColumn(): Promise<ColumnDescription | undefined>;
+    get sortColumnKey(): string | undefined;
+    get sortDirection(): SortDirection;
     }
 
 // @public
@@ -276,11 +284,12 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     getNodeKey(node: TreeNodeItem): NodeKey;
     getNodes(parentNode?: TreeNodeItem, pageOptions?: PageOptions_2): Promise<DelayLoadedTreeNodeItem[]>;
     getNodesCount(parentNode?: TreeNodeItem): Promise<number>;
-    readonly imodel: IModelConnection;
+    get imodel(): IModelConnection;
     // @alpha
     loadHierarchy(): Promise<void>;
-    pagingSize: number | undefined;
-    readonly rulesetId: string;
+    get pagingSize(): number | undefined;
+    set pagingSize(value: number | undefined);
+    get rulesetId(): string;
     }
 
 // @public

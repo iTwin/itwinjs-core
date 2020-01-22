@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Polyface */
+/** @packageDocumentation
+ * @module Polyface
+ */
 
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";

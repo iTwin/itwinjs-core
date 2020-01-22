@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Settings */
+/** @packageDocumentation
+ * @module Settings
+ */
 import { request, RequestOptions, Response } from "./Request";
 import { Client } from "./Client";
 import { AuthorizationToken, AccessToken } from "./Token";

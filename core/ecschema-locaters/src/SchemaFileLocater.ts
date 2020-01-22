@@ -84,7 +84,11 @@ export abstract class SchemaFileLocater {
   }
 
   public async fileExists(filePath: string): Promise<boolean | undefined> {
-    return this.fileExistsSync(filePath);
+    return new Promise<boolean | undefined>((resolve) => {
+      fs.access(filePath, fs.constants.F_OK, (err) => {
+        resolve(err ? false : true);
+      });
+    });
   }
 
   public fileExistsSync(filePath: string): boolean | undefined {

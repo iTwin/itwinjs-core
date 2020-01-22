@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import {
   IModelTokenProps,
@@ -11,8 +13,10 @@ import {
   QueuedEvent,
   RpcInterface,
   RpcManager,
+  TileTreeContentIds,
 } from "@bentley/imodeljs-common";
-import { EventSinkManager } from "./EventSink";
+import { EventSinkManager } from "../EventSink";
+import { cancelTileContentRequests } from "./IModelTileRpcImpl";
 
 /** The backend implementation of NativeAppRpcInterface.
  * @internal
@@ -28,5 +32,9 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
       key = tokenProps.key;
 
     return EventSinkManager.get(key).fetch(limit);
+  }
+
+  public async cancelTileContentRequests(tokenProps: IModelTokenProps, contentIds: TileTreeContentIds[]): Promise<void> {
+    return cancelTileContentRequests(tokenProps, contentIds);
   }
 }

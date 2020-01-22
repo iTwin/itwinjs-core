@@ -23,21 +23,19 @@ import { getDefaultZonesManagerProps } from "@bentley/ui-ninezone";
 import { ZoneDef } from "../../ui-framework/zones/ZoneDef";
 
 describe("Frontstage", () => {
-  let widgetElementComponentDidMountSpy: sinon.SinonSpy | undefined;
   const sandbox = sinon.createSandbox();
 
   before(async () => {
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageDefs();
-    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
-  });
-
-  after(() => {
-    sandbox.restore();
   });
 
   beforeEach(() => {
-    widgetElementComponentDidMountSpy && widgetElementComponentDidMountSpy.restore();
+    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+  });
+
+  afterEach(() => {
+    sandbox.restore();
   });
 
   it("should render", () => {
@@ -131,7 +129,7 @@ describe("Frontstage", () => {
     const widget = FrontstageManager.findWidget("widget3");
     sinon.stub(widget!, "widgetControl").get(() => undefined);
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
-    widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
+    const widgetElementComponentDidMountSpy = sandbox.spy(TestWidgetElement.prototype, "componentDidMount");
 
     expect(contentRenderer.state().widgetKey).eq(1);
 
@@ -165,7 +163,7 @@ describe("Frontstage", () => {
     const widget = FrontstageManager.findWidget("widget3");
     sinon.stub(widget!.widgetControl!, "restoreTransientState").returns(false);
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
-    widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
+    const widgetElementComponentDidMountSpy = sandbox.spy(TestWidgetElement.prototype, "componentDidMount");
 
     expect(contentRenderer.state().widgetKey).eq(1);
 
@@ -199,7 +197,7 @@ describe("Frontstage", () => {
     const widget = FrontstageManager.findWidget("widget3");
     sinon.stub(widget!.widgetControl!, "restoreTransientState").returns(true);
     const componentWillUnmountSpy = sinon.spy(widgetElement.instance(), "componentWillUnmount");
-    widgetElementComponentDidMountSpy = sinon.spy(TestWidgetElement.prototype, "componentDidMount");
+    const widgetElementComponentDidMountSpy = sandbox.spy(TestWidgetElement.prototype, "componentDidMount");
 
     expect(contentRenderer.state().widgetKey).eq(1);
 

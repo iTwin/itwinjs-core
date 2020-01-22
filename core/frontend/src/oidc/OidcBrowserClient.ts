@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module OIDC */
+/** @packageDocumentation
+ * @module OIDC
+ */
 
 import { AuthStatus, BeEvent, BentleyError, ClientRequestContext, Logger, LogLevel, assert } from "@bentley/bentleyjs-core";
 import { AccessToken, IOidcFrontendClient, OidcClient, OidcFrontendClientConfiguration, UserInfo, IncludePrefix } from "@bentley/imodeljs-clients";
@@ -225,7 +227,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       data: {
         successRedirectUrl: successRedirectUrl || window.location.href,
       },
-    }); // tslint:disable-line:no-floating-promises
+    });
   }
 
   /**
@@ -237,7 +239,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
    */
   public async signOut(requestContext: ClientRequestContext): Promise<void> {
     requestContext.enter();
-    await this._userManager!.signoutRedirect(); // tslint:disable-line:no-floating-promises
+    await this._userManager!.signoutRedirect();
   }
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
@@ -406,6 +408,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
 /**
  * Utility to get the legacy SAML token at the frontend of SPA/Electron applications
  * @internal
+ * @deprecated  Will be removed in iModel.js 2.0.
  */
 export class OidcBrowserSamlClient extends OidcBrowserClient {
 

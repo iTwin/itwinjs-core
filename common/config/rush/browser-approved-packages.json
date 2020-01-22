@@ -16,7 +16,7 @@
     },
     {
       "name": "@bentley/certa",
-      "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/config-loader",
@@ -40,7 +40,7 @@
     },
     {
       "name": "@bentley/express-server",
-      "allowedCategories": [ "internal", "plugins" ]
+      "allowedCategories": [ "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/frontend-devtools",
@@ -80,7 +80,7 @@
     },
     {
       "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "common", "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-markup",
@@ -92,7 +92,7 @@
     },
     {
       "name": "@bentley/imodeljs-quantity",
-      "allowedCategories": [ "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-webserver",
@@ -104,7 +104,7 @@
     },
     {
       "name": "@bentley/oidc-signin-tool",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@bentley/perf-tools",
@@ -323,6 +323,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "dotenv-expand",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "electron",
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
@@ -491,6 +495,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "ldclient-js",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "linkify-it",
       "allowedCategories": [ "frontend" ]
     },
@@ -560,7 +568,7 @@
     },
     {
       "name": "npm-run-all",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "null-loader",
@@ -739,6 +747,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "resize-observer-polyfill",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
@@ -912,7 +924,7 @@
     },
     {
       "name": "webpack-cli",
-      "allowedCategories": [ "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "webpack-dev-server",
@@ -940,7 +952,7 @@
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
       "name": "xpath",

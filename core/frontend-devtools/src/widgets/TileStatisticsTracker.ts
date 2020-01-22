@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @module Widgets */
+/** @packageDocumentation
+ * @module Widgets
+ */
 
 import {
   IModelApp,
@@ -44,6 +46,7 @@ const statEntries: StatEntry[] = [
   { getValue: (stats, _vp) => stats.totalElidedTiles, label: "Elided" },
   { getValue: (stats, _vp) => stats.totalCacheMisses, label: "Cache Misses" },
   { getValue: (stats, _vp) => stats.totalDispatchedRequests, label: "Dispatched" },
+  { getValue: (stats, _vp) => stats.totalAbortedRequests, label: "Aborted" },
 ];
 
 const indexOfFirstGlobalStatistic = 7; // "Completed"

@@ -56,7 +56,7 @@ describe("Test VBO creation", () => {
 });
 
 async function testViewportsWithDpr(imodel: IModelConnection, rect: ViewRect, test: (vp: TestViewport) => Promise<void>): Promise<void> {
-  const devicePixelRatios = [ 1.0, 1.25, 1.5, 2.0 ];
+  const devicePixelRatios = [1.0, 1.25, 1.5, 2.0];
   for (const dpr of devicePixelRatios)
     await testViewports("0x24", imodel, rect.width, rect.height, test, dpr);
 }

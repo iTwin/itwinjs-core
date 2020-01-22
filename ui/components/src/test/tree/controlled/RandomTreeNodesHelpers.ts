@@ -10,16 +10,17 @@ import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 /** Returns random MutableTreeModelNode. */
 export const createRandomMutableTreeModelNode = (parentNodeId?: string, selected?: boolean): MutableTreeModelNode => {
   const nodeId = faker.random.uuid();
+  const label = faker.random.word();
   return {
     id: nodeId,
     description: faker.random.word(),
     isLoading: faker.random.boolean(),
-    label: faker.random.word(),
+    label,
     isExpanded: faker.random.boolean(),
     isSelected: selected !== undefined ? selected : faker.random.boolean(),
     checkbox: { state: CheckBoxState.Off, isVisible: faker.random.boolean(), isDisabled: faker.random.boolean() },
     depth: faker.random.number(),
-    item: createRandomTreeNodeItem(nodeId, parentNodeId),
+    item: createRandomTreeNodeItem(nodeId, parentNodeId, label),
     parentId: parentNodeId,
     numChildren: faker.random.number(),
   };
@@ -50,10 +51,10 @@ export const createRandomTreeNodeItems = (count?: number, parentId?: string, cre
 };
 
 /** Returns random TreeNodeItem */
-export const createRandomTreeNodeItem = (itemId?: string, parentId?: string): TreeNodeItem => {
+export const createRandomTreeNodeItem = (itemId?: string, parentId?: string, label?: string): TreeNodeItem => {
   return {
     id: itemId || faker.random.uuid(),
-    label: faker.random.word(),
+    label: label || faker.random.word(),
     autoExpand: faker.random.boolean(),
     description: faker.random.word(),
     icon: faker.random.word(),

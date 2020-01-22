@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PropertyGrid */
+/** @packageDocumentation
+ * @module PropertyGrid
+ */
 
 import { PropertyRecord } from "@bentley/imodeljs-frontend";
 import { IPropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChangeEvent } from "./PropertyDataProvider";

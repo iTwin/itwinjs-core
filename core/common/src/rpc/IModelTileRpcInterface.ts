@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module RpcInterface */
+/** @packageDocumentation
+ * @module RpcInterface
+ */
 
 import { AbandonedError, Id64Array } from "@bentley/bentleyjs-core";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";

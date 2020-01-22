@@ -44,7 +44,7 @@ describe("FrontstageManager", () => {
   });
 
   it("findWidget should return undefined when no active frontstage", async () => {
-    await FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
+    await FrontstageManager.setActiveFrontstageDef(undefined);
     expect(FrontstageManager.findWidget("xyz")).to.be.undefined;
   });
 

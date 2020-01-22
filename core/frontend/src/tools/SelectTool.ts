@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module SelectionSet */
+/** @packageDocumentation
+ * @module SelectionSet
+ */
 
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";

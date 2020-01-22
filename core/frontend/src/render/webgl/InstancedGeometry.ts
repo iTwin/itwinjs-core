@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module WebGL */
+/** @packageDocumentation
+ * @module WebGL
+ */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Range3d, Point3d, Transform } from "@bentley/geometry-core";
@@ -138,10 +140,8 @@ export class InstanceBuffers implements WebGLDisposable {
 
     this._range = new Range3d();
     const tfs = this._transforms;
-    if (undefined === tfs) {
-      assert(false);
+    if (undefined === tfs)
       return this._range.clone(out);
-    }
 
     this._transforms = undefined;
 

@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @packageDocumentation
+ * @module Utils
+ */
 
 import { assert } from "./Assert";
 import { Id64, Id64String } from "./Id";
@@ -37,9 +39,8 @@ export class ByteStream {
   /** Returns true if the current read position has been advanced past the end of the stream */
   public get isPastTheEnd(): boolean { return this.curPos > this.length; }
 
-  /** Returns the current read position as an index into the stream of bytes */
+  /** The current read position as an index into the stream of bytes */
   public get curPos(): number { return this._curPos; }
-  /** Sets the current read position to the specified index into the stream of bytes */
   public set curPos(pos: number) { this._curPos = pos; assert(!this.isPastTheEnd); }
 
   /** Add the specified number of bytes to the current read position */
