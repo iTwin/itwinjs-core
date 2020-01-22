@@ -59,7 +59,7 @@ export namespace InstanceKey {
 
 /**
  * A serialized version of [[InstanceKey]]
- * @internal
+ * @public
  */
 export interface InstanceKeyJSON {
   className: string;

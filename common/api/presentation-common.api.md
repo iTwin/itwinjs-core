@@ -382,11 +382,27 @@ export interface ECInstanceNodeKey extends BaseNodeKey {
     type: StandardNodeTypes.ECInstanceNode;
 }
 
+// @public @deprecated
+export interface ECInstanceNodeKeyJSON extends BaseNodeKey {
+    // (undocumented)
+    instanceKey: InstanceKeyJSON;
+    // (undocumented)
+    type: StandardNodeTypes.ECInstanceNode;
+}
+
 // @public
 export interface ECInstancesNodeKey extends BaseNodeKey {
     // @alpha
     instanceKey: InstanceKey;
     instanceKeys: InstanceKey[];
+    // (undocumented)
+    type: StandardNodeTypes.ECInstancesNode;
+}
+
+// @public
+export interface ECInstancesNodeKeyJSON extends BaseNodeKey {
+    // (undocumented)
+    instanceKeys: InstanceKeyJSON[];
     // (undocumented)
     type: StandardNodeTypes.ECInstancesNode;
 }
@@ -528,6 +544,14 @@ export namespace InstanceKey {
 }
 
 // @public
+export interface InstanceKeyJSON {
+    // (undocumented)
+    className: string;
+    // (undocumented)
+    id: string;
+}
+
+// @public
 export interface InstanceLabelOverride extends RuleBase {
     class: SingleSchemaClassSpecification;
     ruleType: RuleTypes.InstanceLabelOverride;
@@ -658,7 +682,6 @@ export class KeySet {
     delete(value: Keys | Key): KeySet;
     forEach(callback: (key: Key, index: number) => void): void;
     forEachBatch(batchSize: number, callback: (batch: KeySet, index: number) => void): void;
-    // @internal
     static fromJSON(json: KeySetJSON): KeySet;
     get guid(): GuidString;
     has(value: Key): boolean;
@@ -670,8 +693,13 @@ export class KeySet {
     get nodeKeys(): Set<NodeKey>;
     get nodeKeysCount(): number;
     get size(): number;
-    // @internal
     toJSON(): KeySetJSON;
+}
+
+// @public
+export interface KeySetJSON {
+    instanceKeys: Array<[string, string[]]>;
+    nodeKeys: NodeKeyJSON[];
 }
 
 // @public
@@ -897,6 +925,9 @@ export namespace NodeKey {
     // @internal
     export function toJSON(key: NodeKey): NodeKeyJSON;
 }
+
+// @public
+export type NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 
 // @public
 export type NodeKeyPath = NodeKey[];

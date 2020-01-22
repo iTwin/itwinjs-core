@@ -51,7 +51,9 @@ public;DisplayValuesArray
 public;DisplayValuesMap 
 public;ECClassGroupingNodeKey 
 public;ECInstanceNodeKey 
+public;ECInstanceNodeKeyJSON 
 public;ECInstancesNodeKey 
+public;ECInstancesNodeKeyJSON 
 public;ECPropertyGroupingNodeKey 
 public;ECPropertyValueQuerySpecification 
 public;EditorDescription
@@ -73,6 +75,7 @@ public;InstanceKey
 public;InstanceKey
 internal;fromJSON(json: InstanceKeyJSON):
 internal;toJSON(json: InstanceKey): InstanceKeyJSON
+public;InstanceKeyJSON
 public;InstanceLabelOverride 
 public;InstanceLabelOverrideBriefcaseIdSpecification 
 public;InstanceLabelOverrideClassLabelSpecification 
@@ -89,6 +92,7 @@ public;Key = Readonly
 public;Key
 public;Keys = ReadonlyArray
 public;KeySet
+public;KeySetJSON
 public;KindOfQuantityInfo
 public;LabelCompositeValue
 public;LabelCompositeValue
@@ -129,6 +133,7 @@ public;NodeKey
 internal;fromJSON(json: NodeKeyJSON): NodeKey
 deprecated;isInstanceNodeKey(key: NodeKey): key is ECInstanceNodeKey
 internal;toJSON(key: NodeKey): NodeKeyJSON
+public;NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKeyPath = NodeKey[]
 public;NodePathElement
 public;NodePathElement

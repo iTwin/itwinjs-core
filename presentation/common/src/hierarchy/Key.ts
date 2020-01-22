@@ -135,7 +135,7 @@ export interface ECInstanceNodeKey extends BaseNodeKey {
 
 /**
  * Serialized [[ECInstanceNodeKey]] JSON representation.
- * @internal
+ * @public
  * @deprecated Use `ECInstancesNodeKeyJSON`
  */
 export interface ECInstanceNodeKeyJSON extends BaseNodeKey {
@@ -162,7 +162,7 @@ export interface ECInstancesNodeKey extends BaseNodeKey {
 
 /**
  * Serialized [[ECInstanceNodeKey]] JSON representation.
- * @internal
+ * @public
  */
 export interface ECInstancesNodeKeyJSON extends BaseNodeKey {
   type: StandardNodeTypes.ECInstancesNode;
@@ -220,6 +220,6 @@ export interface LabelGroupingNodeKey extends GroupingNodeKey {
 
 /**
  * One of the serialized node key types
- * @internal
+ * @public
  */
 export type NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
