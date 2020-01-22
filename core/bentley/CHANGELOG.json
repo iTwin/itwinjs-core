@@ -2,6 +2,21 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "1.11.0",
+      "tag": "@bentley/bentleyjs-core_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "VSS$257397: Temporary fix for checking electron renderer. "
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.10.0",
       "tag": "@bentley/bentleyjs-core_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",

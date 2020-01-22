@@ -2,6 +2,27 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "1.11.0",
+      "tag": "@bentley/geometry-core_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Detect \"end to end\" connection of colinear line segments during curve-curve intersection methods."
+          },
+          {
+            "comment": "RegionOps planar subdivision support."
+          },
+          {
+            "comment": "#1.11.0-dev.5_4384: XY linework and Region cleanup methods"
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.10.0",
       "tag": "@bentley/geometry-core_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",

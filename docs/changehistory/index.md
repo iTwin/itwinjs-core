@@ -1,63 +1,61 @@
-# 1.10.0 Change Notes
+# 1.11.0 Change Notes
 
-## View transition animations
+## TypeScript 3.7.4
 
-iModel.js will now perform smooth animations when changing between saved views, if possible. If the beginning and ending views are in the same direction but far apart, a *zoom out then in* path is followed to provide context. See [ScreenViewport.animation]($frontend) for settings that control view animations.
+iModel.js now compiles with [TypeScript 3.7.2](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html). Aside from keeping current, the primary motivations for the upgrade include [uncalled function checks](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#uncalled-function-checks) and [assertion functions](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions).
 
-[Viewport.synchWithView]($frontend) previously accepted a `boolean` argument indicating whether or not the changes should be saved in the undo buffer. It now alternatively accepts a [ViewChangeOptions]($frontend) allowing further customization of its behavior, including whether and how to animate the transition.
+[assert]($bentley) is now an [assertion function](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions). This assures the compiler that code following a call to `assert` will never execute unless the asserted condition is true. Bear in mind that because calls to `assert` are stripped out of production builds, this assurance is only true in development builds - so reserve use of `assert` for conditions that are truly never expected to occur, and use ordinary validation and exception handling for other conditions.
 
-## IModel Transformation and Data Exchange
+## api-extractor 7.7.3
 
-[IModelExporter]($backend), [IModelTransformer]($backend), and [IModelImporter]($backend) are now beta and provide low-level functionality needed for iModel transformation and data exchange.
-See the [iModel Transformation and Data Exchange]($docs/learning/backend/IModelTransformation.md) article for more information.
+Upgrading to TypeScript 3.7.2 necessitated an upgrade to a new version of [api-extractor](https://api-extractor.com/), primarily due to changes to the JavaScript emitted by tsc for property getters and setters. api-extractor now requires that documentation and release tags are applied only to the *getter*, never the *setter*. This imposes some constraints which were temporarily relaxed in api-extractor 3.6:
 
-## High-DPI display support
+- Write-only properties (having only a setter, no getter) are rejected.
+- A setter cannot have a different release tag than the corresponding getter.
 
-Beta support for [device pixel ratio](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio) was introduced in v1.9.0. 1.10.0 fixes a handful of bugs associated with this feature. In particular, device pixel ratio may vary between different [Viewport]($frontend)s. As a result, the previously free-standing APIs have moved to the [Viewport]($frontend) class:
+## Module documentation
 
-* [Viewport.devicePixelRatio]($frontend) replaces `queryDevicePixelRatio`.
-* [Viewport.cssPixelsToDevicePixels]($frontend) replaces `cssPixelsToDevicePixels`.
+Upgrading to TypeScript 3.7.2 necessitated an upgrade to [typedoc 0.15.1](https://typedoc.org/) and v2.1.0 of the [typedoc plugin](https://www.npmjs.com/package/typedoc-plugin-external-module-name) used to support external module declarations. This changes the format of `@module` comments.
 
-Do not assume that `Viewport.devicePixelRatio` will always return [`window.devicePixelRatio`](https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio).
+Previous syntax for `@module` comments:
+```ts
+/** @module ModuleName */
+```
 
-## Viewing tools
+New syntax for `@module` comments:
+```ts
+/** @packageDocumentation
+ * @module ModuleName
+ */
+```
 
-* New walk tool [LookAndMoveTool]($frontend).
-  * Supports mouse look and keyboard (wasd) for movement.
-  * Touch screen control sticks for look and move.
-* Improved responsiveness when using touch controls.
-
-## Visualization
-
-* Reduced CPU overhead associated with binding uniform shader program variables, resulting in up to 30% improvement in frames per second.
-* Graphics for reality models and background maps load much more quickly and smoothly.
+Without the `@packageDocumentation`, the documentation generator will fail to recognize that the source file should be mapped to the `ModuleName` external module.
 
 ## Geometry
 
-### Matrix3d inverse state bug fix
+* new public methods in RegionOps:
 
-* BUG: matrix times matrix multipliers (multiplyMatrixMatrix, multiplyMatrixMatrixInverse, multiplyMatrixInverseMatrix, multiplyMatrixMatrixTranspose, multiplyMatrixTransposeMatrix) did not transfer inverse coefficient arrays into the product.
-* When an existing result matrix marked "inverseStored" was supplied, the "inverseStored" marking persisted, but the product inverse coefficient matrix was not constructed
-* When no result was supplied in the call, there were no problems.
-* As corrected, all 5 multiplications construct inverse products when possible, and mark up appropriately.
+  * RegionOps.sortOuterAndHoleLoopsXY
+  * apply parity logic to determine containment of holes in parents (or holes in islands)
+  * RegionOps.constructAllXYRegionLoops
+    * Compute intersections among unstructured input curves
+    * Construct areas bounded by those inputs.
+  * RegionOps.curveArrayRange
+    * construct range of unstructured array of curves.
+  * RegionOps.expandLineStrings
+    * In an array of curve primitives, replace each LineString3d with expansion to LineSegment3d
 
-### `CurveCurve.intersectionPairsXY` returns details of line-line and arc-arc coincident geometry
+* (new method) CurveCurve.allIntersectionsAmongPrimitivesXY
+  * Supporting changes in CurveCurveIntersectionXY context class.
+* CurveLocationDetail
+  * new method to ask if fraction1 is present (i.e. this is an interval rather than single point.
+* Make implementations of CurvePrimitive and CurveCollection methods to collect leaf primitives and strokes more consistent:
 
-* `CurveLocationDetail` data carrier has new optional members
-  * `fraction1` = fractional position for end of coincident section
-  * `point` = point at end of coincident section
-  * `detail.captureFraction1Point1 (f,xyz)` directly captures (no clone) fraction and point.
-  * CurveLocationDetail.createCurveEvaluatedFractionFraction` constructor with 2 fractions.
-  * `detail.inverseInterpolateFraction (f, defaultLocalFraction)` maps input fraction f to local fraction of the `fraction, fraction1` interval of the detail.
-  * `detail.swapFractionsAndPoints ()` swaps the `[fraction,point]` and `[fraction1, point1]` values (if both defined)
-
-### Miscellaneous
-
-* New `Arc3d` method `arc.scaleAboutCenterInPlace (scaleFactor);`
-* New `Matrix3d` method `matrixA.multiplyMatrixInverseMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined`
-* New `Segment1d` method `segment.clampDirectedTo01(): boolean;`
-  * intersect with [0,1] interval
-  * maintain current direction
-    * return false if empty after clip.
-  * New `Segment1d` method `segment.`reverseIfNeededForDeltaSign(sign?: number): void;`
-    * maintain endpoints, but reverse so direction corresponds to request.
+  * collectCurvePrimitives method
+    * new optional args for (a) preallocated collector, (b) controlling expansion of CurveChainWithDistanceIndex
+    * public entry RegionOps.collectCurvePrimitives
+    * internal entries in CurveCollection, CurvePrimitive
+    * internal "Go" methods in: CurveChainWithDistanceIndex,
+  * CurveChain.cloneStroked is abstract (implemented by Path, Loop, CurveChainWithDistanceIndex
+* CurveFactory
+  * New method to create xy rectangles with optional fillets.

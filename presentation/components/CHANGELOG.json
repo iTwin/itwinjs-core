@@ -2,6 +2,21 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "1.11.0",
+      "tag": "@bentley/presentation-components_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Create PropertyRecord to represent TreeNodeItem label if node's LabelDefinition is provided"
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.10.0",
       "tag": "@bentley/presentation-components_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",

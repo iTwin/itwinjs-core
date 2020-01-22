@@ -2,6 +2,78 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.11.0",
+      "tag": "@bentley/imodeljs-frontend_v1.11.0",
+      "date": "Wed, 22 Jan 2020 19:24:12 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "For fit, adjust the aspect ratio so that one dimension is increased rather than just adjusting Y."
+          },
+          {
+            "comment": "Fixed minor typo on RealityData rootDocument property"
+          },
+          {
+            "comment": "TileAdmin.Props.useProjectExtents now defaults to true for better performance."
+          },
+          {
+            "comment": "Ensure ViewState3d's with camera enabled always have the eyepoint centered when they're created"
+          },
+          {
+            "comment": "Fix aspect ratio adjustment bug in camera views"
+          },
+          {
+            "comment": "Small fix for Fit when aspectRatioSkew isn't 1.0."
+          },
+          {
+            "comment": "Fix shadows not updating after clearing emphasized/isolated elements."
+          },
+          {
+            "comment": "Simplify iterator for GeometryList."
+          },
+          {
+            "comment": "Fix shadow rendering on MacOS Safari and any other unknown client that could fail in the same way."
+          },
+          {
+            "comment": "Native apps can now cancel tile requests in progress on the backend."
+          },
+          {
+            "comment": "Reduce tile level-of-detail (thereby improving FPS and memory usage) for models that are small relative to the project extents."
+          },
+          {
+            "comment": "Remvoe echo test function from devTools"
+          },
+          {
+            "comment": "#258853 Fix for pickDepthPoint"
+          },
+          {
+            "comment": "Add isSpatiallyLocated and isPlanProjection to GeometricModel3dState."
+          },
+          {
+            "comment": "Added primitive composite value."
+          },
+          {
+            "comment": "Make hilite and flash target syncing not depend on BeTimePoint."
+          },
+          {
+            "comment": "Upgrade to TypeScript 3.7.2."
+          },
+          {
+            "comment": "Add a FeatureToggleClient to iModelApp."
+          },
+          {
+            "comment": "Gracefully handle an invalid acs id"
+          },
+          {
+            "comment": "ViewZoom not sets focus from depth point."
+          },
+          {
+            "comment": "#257813 Rest zoom and look tools is mouse wheel is used to zoom."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.10.0",
       "tag": "@bentley/imodeljs-frontend_v1.10.0",
       "date": "Tue, 07 Jan 2020 19:44:01 GMT",

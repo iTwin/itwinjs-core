@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Tue, 07 Jan 2020 19:44:01 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:12 GMT
+
+### Updates
+
+- Native apps can now cancel tile requests in progress on the backend.
+- Remove echo test function from devTools
+- Allow outline fill to be specified by subcategory appearance.
+- Upgrade to TypeScript 3.7.2.
+- Added TypeScript wrapper over the native SaaSClient.
 
 ## 1.10.0
 Tue, 07 Jan 2020 19:44:01 GMT

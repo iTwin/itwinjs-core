@@ -1,6 +1,14 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Tue, 07 Jan 2020 19:44:01 GMT and should not be manually modified.
+This log was last generated on Wed, 22 Jan 2020 19:24:11 GMT and should not be manually modified.
+
+## 1.11.0
+Wed, 22 Jan 2020 19:24:11 GMT
+
+### Updates
+
+- VSS$257397: Temporary fix for checking electron renderer. 
+- Upgrade to TypeScript 3.7.2.
 
 ## 1.10.0
 Tue, 07 Jan 2020 19:44:01 GMT
