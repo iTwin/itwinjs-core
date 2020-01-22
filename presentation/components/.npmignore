@@ -7,7 +7,7 @@
 !lib/**/*.*css
 !lib/**/*.json
 !lib/public/**/*
-!package.json
 !*.md
 # then ignore some stuff again
 lib/test
+lib/tsconfig.json

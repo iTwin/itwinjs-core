@@ -4,6 +4,5 @@
 !lib/**/*.js
 lib/**/test/*.d.ts
 lib/**/test/*.js
-!lib/package.json
 !lib/rulesets/**/*
 !certa.json

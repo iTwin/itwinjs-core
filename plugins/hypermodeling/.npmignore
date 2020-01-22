@@ -3,5 +3,4 @@
 !lib/plugin/**
 assets/**
 test
-!package.json
 !*.md

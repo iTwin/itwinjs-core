@@ -3,5 +3,4 @@
 !lib/**/*.d.ts
 !lib/**/*.js
 !scripts/**/*.js
-!package.json
 !*.md
