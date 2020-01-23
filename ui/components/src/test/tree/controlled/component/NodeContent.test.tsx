@@ -122,13 +122,12 @@ describe("NodeContent", () => {
   it("passes highlight callback to values renderer", () => {
     const highlightingProps: HighlightableTreeNodeProps = { searchText: "label" };
 
-    const spy = sinon.spy(HighlightingEngine, "renderNodeLabel");
+    const spy = sinon.stub(HighlightingEngine, "renderNodeLabel");
 
     rendererManagerMock.reset();
     rendererManagerMock
       .setup((x) => x.render(moq.It.isAny(), moq.It.isAny()))
-      .callback((_, context) => { context.textHighlighter(); })
-      .returns(() => "HighlightedLabel");
+      .callback((_, context) => { context.textHighlighter(); });
 
     render(
       <TreeNodeContent
@@ -138,6 +137,7 @@ describe("NodeContent", () => {
       />);
 
     expect(spy).to.be.called;
+    spy.restore();
   });
 
   it("updates label", () => {
