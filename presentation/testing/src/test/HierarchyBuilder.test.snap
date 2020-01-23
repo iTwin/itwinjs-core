@@ -6,13 +6,49 @@ Array [
     "children": Array [
       Object {
         "label": "Child 1",
+        "labelDefinition": PropertyRecord {
+          "property": Object {
+            "displayLabel": "Label",
+            "name": "node_label",
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "Child 1",
+            "value": "Child 1",
+            "valueFormat": 0,
+          },
+        },
       },
       Object {
         "label": "Child 2",
+        "labelDefinition": PropertyRecord {
+          "property": Object {
+            "displayLabel": "Label",
+            "name": "node_label",
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "Child 2",
+            "value": "Child 2",
+            "valueFormat": 0,
+          },
+        },
       },
     ],
     "hasChildren": true,
     "label": "Root Node",
+    "labelDefinition": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Root Node",
+        "value": "Root Node",
+        "valueFormat": 0,
+      },
+    },
   },
 ]
 `;

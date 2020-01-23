@@ -19,7 +19,9 @@ import { PrimitiveValue, PropertyRecord } from "@bentley/imodeljs-frontend";
 export interface TreeNodeItem {
   id: string;
   parentId?: string;
-  label: string | PropertyRecord;
+  label: string;
+  /** @alpha temporary property */
+  labelDefinition?: PropertyRecord;
   description?: string;
   autoExpand?: boolean;
   icon?: string;

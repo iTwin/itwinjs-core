@@ -1967,7 +1967,7 @@ export interface MutableTreeModelNode extends TreeModelNode {
     // (undocumented)
     item: TreeNodeItem;
     // (undocumented)
-    label: string | PropertyRecord;
+    label: string;
 }
 
 // @public
@@ -2258,7 +2258,9 @@ export interface PropertyData {
     // (undocumented)
     description?: string;
     // (undocumented)
-    label: string | PropertyRecord;
+    label: string;
+    // @alpha
+    labelDefinition?: PropertyRecord;
     // (undocumented)
     records: {
         [categoryName: string]: PropertyRecord[];
@@ -3488,7 +3490,7 @@ export interface TreeModelNode {
     // (undocumented)
     readonly item: TreeNodeItem;
     // (undocumented)
-    readonly label: string | PropertyRecord;
+    readonly label: string;
     // (undocumented)
     readonly numChildren: number | undefined;
     // (undocumented)
@@ -3518,7 +3520,7 @@ export interface TreeModelNodeInput {
     // (undocumented)
     readonly item: TreeNodeItem;
     // (undocumented)
-    readonly label: string | PropertyRecord;
+    readonly label: string;
     // (undocumented)
     readonly numChildren?: number;
 }
@@ -3604,7 +3606,9 @@ export interface TreeNodeItem {
     // (undocumented)
     isEditable?: boolean;
     // (undocumented)
-    label: string | PropertyRecord;
+    label: string;
+    // @alpha
+    labelDefinition?: PropertyRecord;
     // (undocumented)
     parentId?: string;
     // (undocumented)

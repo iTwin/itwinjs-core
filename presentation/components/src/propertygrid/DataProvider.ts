@@ -234,7 +234,8 @@ class PropertyDataBuilder {
     const records = await this.createCategorizedRecords(fields);
     return {
       ...records,
-      label: createLabelRecord(this._contentItem.labelDefinition, "content_item_name"),
+      label: this._contentItem.label,
+      labelDefinition: createLabelRecord(this._contentItem.labelDefinition, "content_item_name"),
       description: this._contentItem.classInfo ? this._contentItem.classInfo.label : undefined,
     } as PropertyData;
   }

@@ -18,7 +18,8 @@ Object {
   "id": "96ab449d-f282-409d-8ff6-91955c55e9e3/2a046127-f623-4128-9848-8bc1c9d119fb",
   "isCheckboxDisabled": true,
   "isCheckboxVisible": true,
-  "label": PropertyRecord {
+  "label": "Indian Rupee Ngultrum",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "node_label",
@@ -58,7 +59,8 @@ Object {
   "id": "0ef0a772-c3d3-403a-80a8-4a6a8c62fda6/dc48ca2b-1044-4800-bce7-a4f6d779f7dd",
   "isCheckboxDisabled": true,
   "isCheckboxVisible": true,
-  "label": PropertyRecord {
+  "label": "Mews",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "node_label",
@@ -98,7 +100,8 @@ Object {
   "hasChildren": true,
   "icon": "Automotive",
   "id": "175c270d-a1a3-4ba3-94ef-8866c2a100d7/559da389-bc4e-4ef0-a5d0-cb8b62e60b80",
-  "label": PropertyRecord {
+  "label": "JBOD",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "node_label",
@@ -131,6 +134,18 @@ Object {
   "icon": "Direct",
   "id": "9d2bd13d-baba-48d5-a16f-11a6bebd4508/c7ea16a7-b57b-4973-b341-ed11dd8506c2",
   "label": "calculate",
+  "labelDefinition": PropertyRecord {
+    "property": Object {
+      "displayLabel": "Label",
+      "name": "node_label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "calculate",
+      "value": "calculate",
+      "valueFormat": 0,
+    },
+  },
 }
 `;
 
@@ -155,7 +170,8 @@ Array [
     "id": "ce78d049-0790-4e52-8185-2841f2ddecb9/61ac32e0-9daf-4f7d-a66e-d5ccf6b5e845",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": PropertyRecord {
+    "label": "systematic",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -187,7 +203,8 @@ Array [
     },
     "hasChildren": true,
     "id": "f471908f-cd9c-4af2-9d63-3b21a81337a8/62600815-3750-4f3d-aeab-b1421892b75e",
-    "label": PropertyRecord {
+    "label": "Assurance",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -226,7 +243,8 @@ Array [
     "checkBoxState": 1,
     "id": "7d2ec992-c8d5-4f77-a6e2-d57cff276d24/a72a9ca8-debb-43f2-90e0-38b00330fde0",
     "isCheckboxVisible": true,
-    "label": PropertyRecord {
+    "label": "Harbors",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -265,7 +283,8 @@ Array [
     "id": "bda1c500-d4d5-4d63-809e-4f2bdad7ba2e/29db17a7-2702-4f3a-b980-5abe6ed9fcd7",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": PropertyRecord {
+    "label": "Cambridgeshire",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

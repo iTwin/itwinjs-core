@@ -122,7 +122,7 @@ describe("UnifiedSelectionEventHandler", () => {
     const nodeItem = createRandomTreeNodeItem(nodeKeyGenerator());
     const node: MutableTreeModelNode = {
       id: nodeItem.id,
-      label: typeof nodeItem.label === "string" ? nodeItem.label : (nodeItem.label.value as PrimitiveValue).displayValue || "",
+      label: nodeItem.label,
       isLoading: false,
       isSelected: false,
       depth: 0,

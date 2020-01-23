@@ -57,7 +57,8 @@ Object {
     },
   ],
   "description": "Egyptian Pound",
-  "label": PropertyRecord {
+  "label": "Toys",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -128,7 +129,8 @@ exports[`PropertyDataProvider getData nested content handling removes nested con
 Object {
   "categories": Array [],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "Mission Personal Loan Account",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -159,7 +161,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "Investment Account",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -226,7 +229,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "Florida",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -285,7 +289,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "transmitting Small",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -349,7 +354,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "Metrics Fantastic Metrics",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -461,7 +467,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "Legacy deposit superstructure",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -553,7 +560,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "Berkshire",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -675,7 +683,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "deposit",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -823,7 +832,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "Connecticut projection web-enabled",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -946,7 +956,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "Iowa",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -1030,7 +1041,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "Avon circuit",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -1088,7 +1100,8 @@ Object {
     },
   ],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "user-centric",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -1138,7 +1151,8 @@ exports[`PropertyDataProvider getData nested content handling returns nothing fo
 Object {
   "categories": Array [],
   "description": undefined,
-  "label": PropertyRecord {
+  "label": "Sudan Berkshire",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -1164,7 +1178,8 @@ Object {
     },
   ],
   "description": "teal Personal Loan Account transmitting",
-  "label": PropertyRecord {
+  "label": "Customer solutions",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -1235,7 +1250,8 @@ Object {
     },
   ],
   "description": "Analyst Assistant",
-  "label": PropertyRecord {
+  "label": "Electronics",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",
@@ -1282,7 +1298,8 @@ Object {
     },
   ],
   "description": "Metal Venezuela",
-  "label": PropertyRecord {
+  "label": "navigating hack Refined",
+  "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "content_item_name",

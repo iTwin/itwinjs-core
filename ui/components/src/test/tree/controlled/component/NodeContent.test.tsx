@@ -100,7 +100,7 @@ describe("NodeContent", () => {
 
   it("uses label record from item node", () => {
     const customLabelRecord = TestUtils.createPrimitiveStringProperty("node_label_record", "Custom Label Record");
-    node.item.label = customLabelRecord;
+    node.item.labelDefinition = customLabelRecord;
 
     let recordFromRendererManager: PropertyRecord;
     rendererManagerMock.reset();
