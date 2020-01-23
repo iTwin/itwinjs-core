@@ -214,14 +214,14 @@ function faceToFaceSearchFromOuterLoop(_graph: HalfEdgeGraph,
  *   * sort edges around vertices
  *   * add regularization edges so holes are connected to their parent.
  */
-function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, faceSelectFunction: (inA: boolean, inB: boolean) => boolean, graphCheckPoint?: GraphCheckPointFunction): Polyface | undefined {
+function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, faceSelectFunction: (inA: boolean, inB: boolean) => boolean, graphCheckPoint?: GraphCheckPointFunction): HalfEdgeGraph | undefined {
   const graph = new HalfEdgeGraph();
   const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
   const seedA = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsA, baseMask, 1);
   const seedB = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsB, baseMask, 2);
   if (graphCheckPoint)
     graphCheckPoint("unmerged loops", graph, "U");
-  if (seedA && seedB) {
+  if (seedA || seedB) {
     // split edges where they cross . . .
     HalfEdgeGraphMerge.splitIntersectingEdges(graph);
     if (graphCheckPoint)
@@ -252,7 +252,7 @@ function doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineS
       graphCheckPoint("After faceToFaceSearchFromOuterLoop", graph, "MRX");
     graph.dropMask(faceVisitedMask);
     graph.dropMask(nodeVisitedMask);
-    return PolyfaceBuilder.graphToPolyface(graph);
+    return graph;
   }
   return undefined;
 }
@@ -351,7 +351,23 @@ export class RegionOps {
       return loopSeeds;
     return undefined;
   }
-
+/**
+ * Given a graph just produced by booleans, convert to a polyface
+ * * "just produced" implies exterior face markup.
+ *
+ * @param graph
+ * @param triangulate
+ */
+  private static finishGraphToPolyface(graph: HalfEdgeGraph | undefined, triangulate: boolean): Polyface | undefined {
+    if (graph) {
+      if (triangulate) {
+        Triangulator.triangulateAllPositiveAreaFaces(graph);
+        Triangulator.flipTriangles(graph);
+      }
+      return PolyfaceBuilder.graphToPolyface(graph);
+    }
+    return undefined;
+  }
   /**
    * return a polyface containing the area union of two XY regions.
    * * Within each region, in and out is determined by parity rules.
@@ -360,10 +376,11 @@ export class RegionOps {
    * @param loopsA first set of loops
    * @param loopsB second set of loops
    */
-  public static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined {
-    return doPolygonBoolean(loopsA, loopsB,
+  public static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
+    const graph = doPolygonBoolean(loopsA, loopsB,
       (inA: boolean, inB: boolean) => (inA && inB),
       this._graphCheckPointFunction);
+    return this.finishGraphToPolyface(graph, triangulate);
   }
 
   /**
@@ -374,10 +391,11 @@ export class RegionOps {
    * @param loopsA first set of loops
    * @param loopsB second set of loops
    */
-  public static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined {
-    return doPolygonBoolean(loopsA, loopsB,
+  public static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
+    const graph = doPolygonBoolean(loopsA, loopsB,
       (inA: boolean, inB: boolean) => (inA || inB),
       this._graphCheckPointFunction);
+    return this.finishGraphToPolyface(graph, triangulate);
   }
   /**
    * return a polyface containing the area difference of two XY regions.
@@ -387,10 +405,11 @@ export class RegionOps {
    * @param loopsA first set of loops
    * @param loopsB second set of loops
    */
-  public static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined {
-    return doPolygonBoolean(loopsA, loopsB,
+  public static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false): Polyface | undefined {
+    const graph = doPolygonBoolean(loopsA, loopsB,
       (inA: boolean, inB: boolean) => (inA && !inB),
       this._graphCheckPointFunction);
+    return this.finishGraphToPolyface(graph, triangulate);
   }
 
   /** Construct a wire (not area!!) that is offset from given polyline or polygon.

@@ -26,6 +26,7 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { GraphChecker } from "../topology/Graph.test";
 import { HalfEdgeGraph } from "../../topology/Graph";
+import { PolyfaceQuery, DuplicateFacetClusterSelector } from "../../polyface/PolyfaceQuery";
 /* tslint:disable:no-console */
 
 describe("RegionBoolean", () => {
@@ -179,6 +180,28 @@ describe("RegionBoolean", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let xBase = 0.0;
+    const yBase = 0;
+    for (const q of [0, 1, -1]) {
+      const a0 = -q;
+      const a1 = 12 + q;
+      const b0 = 4 - q;
+      const b1 = 8 + q;
+      for (const q1 of [0, -1, 1]) {
+        const pointArrayA = [[8, +q1], [4, 0], [a0, a0], [0, 4], [0, 8], [a0, 12],
+        [4, 11], [8, 11], [a1, 12], [12, 8], [12, 4], [a1, a0], [8, 0]];
+        const pointArrayB = [[8, 0], [4, 0], [b0, 4], [4, 8], [8, 8], [b1, 4], [8, 0]];
+        // loopB.reverseChildrenInPlace();
+        runRegionTest(allGeometry, pointArrayA, pointArrayB, xBase, yBase);
+        xBase += 100;
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithCoincidentEdges");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ParityRegionWithBadBoundary", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let xBase = 0.0;
     let yBase = 0.0;
     // q is an offset applied to corners to affect whether contiguous segments are colinear.
     //  q=0 makes lots of colinear edges.
@@ -188,7 +211,7 @@ describe("RegionBoolean", () => {
     //   1,0 single point touch from inside.
     //   1,1 full hole
     // -1,-1 partly out.
-    for (const skewFactor of [0, 0.01]) {
+    for (const skewFactor of [0, 0.01, 0.072312]) {
       for (const q1q2 of [[-1, -1], [0, 0], [0, 1], [1, 1], [-1, -1]]) {
         for (const q of [1, 0]) {
           const a0 = -q;
@@ -213,47 +236,7 @@ describe("RegionBoolean", () => {
       xBase = 0;
       yBase += 100;
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithCoincidentEdges");
-    expect(ck.getNumErrors()).equals(0);
-  });
-  it("RegularizationFailure", () => {
-    const ck = new Checker();
-    const allGeometry: GeometryQuery[] = [];
-    let xBase = 0.0;
-    let yBase = 0.0;
-    // q is an offset applied to corners to affect whether contiguous segments are colinear.
-    //  q=0 makes lots of colinear edges.
-    //  q=1 spreads corners to make all angles nonzero.
-    // q1,q2 is an offset applied to a single point of the interior shape to change it from
-    //   0,0 full edge touch
-    //   1,0 single point touch from inside.
-    //   1,1 full hole
-    // -1,-1 partly out.
-    for (const skewFactor of [0, 0.01]) {
-      for (const q1q2 of [[-1, -1]]) { // , [0, 0], [0, 1], [1, 1], [-1, -1]]) {
-        for (const q of [1, 0]) {
-          const a0 = -q;
-          const b0 = 4 - q;
-          const q1 = q1q2[0];
-          const q2 = q1q2[1];
-          const pointArrayA = [[8, 0], [4, 0], [a0, a0], [0, 10],
-          [8, 0]];
-          const pointArrayB = [[8, q2], [4, q1], [b0, 4], [8, q2]];
-          for (const data of [pointArrayA, pointArrayB]) {
-            for (const xy of data) {
-              xy[1] += skewFactor * xy[0];
-            }
-          }
-          runRegionTest(allGeometry, pointArrayA, pointArrayB, xBase, yBase);
-          xBase += 100;
-        }
-        xBase += 300;
-      }
-      // skew factors repeat at higher y ...
-      xBase = 0;
-      yBase += 300.0;
-    }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "RegularizationFailure");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithBadBoundary");
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -310,8 +293,11 @@ function runRegionTest(allGeometry: GeometryQuery[], pointArrayA: number[][], po
   const builder = PolyfaceBuilder.create();
   builder.addLinearSweep(solid);
   const mesh = builder.claimPolyface();
+  const mesh1 = PolyfaceQuery.cloneByFacetDuplication(mesh, true, DuplicateFacetClusterSelector.SelectOneByParity);
   y0 += 15;
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
+  y0 += 15;
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0, y0);
 
   const sortedLoops = RegionOps.sortOuterAndHoleLoopsXY([loopA, loopB]);
   x0 += 20;
@@ -325,7 +311,7 @@ function runRegionTest(allGeometry: GeometryQuery[], pointArrayA: number[][], po
         GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y1 += 15);
         const euler = graph.countVertexLoops() - graph.countNodes() / 2.0 + graph.countFaceLoops();
         console.log(" Checkpoint " + name + "." + _properties,
-          { v: graph.countVertexLoops(), e: graph.countNodes(), f: graph.countFaceLoops(), eulerCharacteristic: euler});
+          { v: graph.countVertexLoops(), e: graph.countNodes(), f: graph.countFaceLoops(), eulerCharacteristic: euler });
         GraphChecker.dumpGraph(graph);
       });
   }

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { PolyfaceQuery, DuplicateFacetClusterSelector } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -213,8 +213,7 @@ it("PartitionFacetsByConnectivity", () => {
     }
     const polyface = builder.claimPolyface();
     polyface.twoSided = true;
-    const partitionArray = [PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface),
-      PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface)];
+    const partitionArray = [PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface), PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface)];
     const expectedComponentCountArray = [numVertexConnectedComponents, numEdgeConnectedComponents];
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
     y0 = - 2 * numVertexConnectedComponents * a;
@@ -504,5 +503,83 @@ describe("ReOrientFacets", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+  it("DuplicateFacetPurge", () => {
+
+    const ck = new Checker();
+    // 7,8,9
+    // 4,5,6
+    // 1,2,3,10
+    // initialize as 2x2 grid with a triangle added ... point indices start at various quadrants of the facets
+    const meshDataA = {
+      indexedMesh: {
+        point: [
+          [0, 0, 0],
+          [1, 0, 0],
+          [2, 0, 0],
+          [0, 1, 0],
+          [1, 1, 0],
+          [2, 1, 0],
+          [0, 2, 0],
+          [1, 2, 0],
+          [2, 2, 0],
+        ],
+        pointIndex: [
+          1, 2, 5, 4, 0,
+          3, 6, 5, 2, 0,
+          7, 4, 5, 8, 0,
+          9, 8, 5, 6, 0,
+          3, 10, 6, 0,
+        ],
+      },
+    };
+
+    testDuplicateFacetCounts(ck, "Original No Duplicates", meshDataA, 5, 0, 0, 0);
+    // add a forward dup ...
+    meshDataA.indexedMesh.pointIndex.push(1, 2, 5, 4, 0);
+    testDuplicateFacetCounts(ck, "Single Quad Duplicate", meshDataA, 4, 1, 1, 0);
+    // add reverse of the tri ..
+    meshDataA.indexedMesh.pointIndex.push(6, 10, 3, 0);
+    testDuplicateFacetCounts(ck, "Reversed Triangle Duplicate", meshDataA, 3, 2, 2, 0);
+    // and again ..
+    meshDataA.indexedMesh.pointIndex.push(6, 10, 3, 0);
+    testDuplicateFacetCounts(ck, "Additional Triangle Duplicate", meshDataA, 3, 2, 1, 1);
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });
+/**
+ * * Restructure mesh data as a polyface.
+ * * collectDuplicateFacetIndices
+ * * check singleton and cluster counts
+ * @param ck
+ * @param meshData
+ * @param numSingleton
+ * @param numClusters total number of clusters
+ * @param num2Cluster number of clusters with 2 facets
+ * @param num3Cluster number of clusters with 3 facets
+ */
+function testDuplicateFacetCounts(ck: Checker, title: string, meshData: object, numSingleton: number, numCluster: number, num2Cluster: number, num3Cluster: number) {
+  const mesh = IModelJson.Reader.parse(meshData) as IndexedPolyface;
+  const dupData0 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, false);
+  const dupData1 = PolyfaceQuery.collectDuplicateFacetIndices(mesh, true);
+  ck.testExactNumber(numSingleton, dupData1.length - dupData0.length, title + "Singletons");
+  ck.testExactNumber(numCluster, dupData0.length, "Clusters");
+  ck.testExactNumber(num2Cluster, countArraysBySize(dupData0, 2), title + "num2Cluster");
+  ck.testExactNumber(num3Cluster, countArraysBySize(dupData0, 3), title + "num3Cluster");
+
+  const singletons = PolyfaceQuery.cloneByFacetDuplication(mesh, true, DuplicateFacetClusterSelector.SelectNone) as IndexedPolyface;
+  const oneOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAny) as IndexedPolyface;
+  const allOfEachCluster = PolyfaceQuery.cloneByFacetDuplication(mesh, false, DuplicateFacetClusterSelector.SelectAll) as IndexedPolyface;
+  ck.testExactNumber(numSingleton, singletons.facetCount, title + " cloned singletons");
+  ck.testExactNumber(numCluster, oneOfEachCluster.facetCount, title + " cloned one per cluster");
+  ck.testExactNumber(mesh.facetCount - numSingleton, allOfEachCluster.facetCount, title + " cloned all in clusters");
+}
+// return the number of arrays with target size.
+function countArraysBySize(data: number[][], target: number): number {
+  let result = 0;
+  for (const entry of data) {
+    if (entry.length === target)
+      result++;
+  }
+  return result;
+}

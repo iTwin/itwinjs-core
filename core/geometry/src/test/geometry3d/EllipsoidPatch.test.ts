@@ -538,6 +538,18 @@ describe("Ellipsoid", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "ProjectSpacePoint");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("LocalToWorld", () => {
+    const ck = new Checker();
+    const ellipsoid = Ellipsoid.create(Transform.createOriginAndMatrix(undefined, tippedEarthEllipsoidMatrix()));
+    for (const angles of [LongitudeLatitudeNumber.createDegrees(0, 0), LongitudeLatitudeNumber.createDegrees(20, 10)]) {
+      const xyz0 = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians)!;
+      const uvw0 = ellipsoid.worldToLocal(xyz0)!;
+      const xyz1 = ellipsoid.localToWorld(uvw0);
+      ck.testPoint3d(xyz0, xyz1, "world to local round trip", angles, xyz0, uvw0, xyz1);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("SectionPlanes", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

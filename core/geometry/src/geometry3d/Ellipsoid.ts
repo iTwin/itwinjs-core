@@ -28,6 +28,7 @@ import { NewtonEvaluatorRRtoRRD, Newton2dUnboundedWithDerivative } from "../nume
 import { Arc3d } from "../curve/Arc3d";
 import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
+import { XYAndZ } from "./XYZProps";
 /**
  * For one component (x,y, or z) on the sphere
  *    f(theta,phi) = c + (u * cos(theta) + v * sin(theta)) * cos(phi) + w * sin(phi)
@@ -177,7 +178,34 @@ export class Ellipsoid {
     const scaledAxes = axes.scaleColumns(radiusX, radiusY, radiusZ);
     return new Ellipsoid(Transform.createOriginAndMatrix(center, scaledAxes));
   }
+  /** Return a (REFERENCE TO) the transform from world space to the mapped sphere space.
+   * * This maps coordinates "relative to the sphere" to world.
+   * * Its inverse maps world coordinates into the sphere space.
+   *   * In the sphere space, an xyz (vector from origin) with magnitude equal to 1 is ON the sphere (hence its world image is ON the ellipsoid)
+   *   * In the sphere space, an xyz (vector from origin) with magnitude less than 1 is INSIDE the sphere (hence its world image is INSIDE the ellipsoid)
+   *   * In the sphere space, an xyz (vector from origin) with magnitude greater than 1 is OUTSIDE the sphere (hence its world image is OUTSIDE the ellipsoid)
+   */
   public get transformRef(): Transform { return this._transform; }
+  /**
+   * * Convert a world point to point within the underlying mapped sphere space.
+   *   * In the sphere space, an xyz (vector from origin) with magnitude equal to 1 is ON the sphere (hence its world image is ON the ellipsoid)
+   *   * In the sphere space, an xyz (vector from origin) with magnitude less than 1 is INSIDE the sphere (hence its world image is INSIDE the ellipsoid)
+   *   * In the sphere space, an xyz (vector from origin) with magnitude greater than 1 is OUTSIDE the sphere (hence its world image is OUTSIDE the ellipsoid)
+   * * This is undefined in the highly unusual case that the ellipsoid frame is singular.
+   */
+  public worldToLocal(worldPoint: XYAndZ, result?: Point3d): Point3d | undefined {
+    return this._transform.multiplyInversePoint3d(worldPoint, result);
+  }
+  /**
+   * * Convert a point within the underlying mapped sphere space to world coordinates.
+   *   * In the sphere space, an xyz (vector from origin) with magnitude equal to 1 is ON the sphere (hence its world image is ON the ellipsoid)
+   *   * In the sphere space, an xyz (vector from origin) with magnitude less than 1 is INSIDE the sphere (hence its world image is INSIDE the ellipsoid)
+   *   * In the sphere space, an xyz (vector from origin) with magnitude greater than 1 is OUTSIDE the sphere (hence its world image is OUTSIDE the ellipsoid)
+   */
+  public localToWorld(localPoint: XYAndZ, result?: Point3d): Point3d {
+    return this._transform.multiplyPoint3d(localPoint, result);
+  }
+
   /** return a clone with same coordinates */
   public clone(): Ellipsoid {
     return new Ellipsoid(this._transform.clone());
@@ -498,7 +526,7 @@ export class Ellipsoid {
         this._transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi),
         matrix.multiplyXYZ(-sinTheta * cosPhiA, cosTheta * cosPhiA, 0),
         matrix.multiplyXYZ(-sinPhi * cosTheta, -sinPhi * sinTheta, cosPhi));
-    // inplace modification requires direct reference to members of the result ...
+    // in place modification requires direct reference to members of the result ...
     this._transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi, result.origin);
     matrix.multiplyXYZ(-sinTheta * cosPhiA, cosTheta * cosPhiA, 0, result.vectorU);
     matrix.multiplyXYZ(-sinPhi * cosTheta, -sinPhi * sinTheta, cosPhi, result.vectorV);

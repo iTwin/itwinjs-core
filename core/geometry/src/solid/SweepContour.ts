@@ -22,6 +22,8 @@ import { ParityRegion } from "../curve/ParityRegion";
 import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { PolygonOps } from "../geometry3d/PolygonOps";
+import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
+import { RegionOps } from "../curve/RegionOps";
 
 /**
  * Sweepable contour with Transform for local to world interaction.
@@ -172,11 +174,18 @@ export class SweepContour {
             }
           }
           const graph = Triangulator.createTriangulatedGraphFromLoops(strokes);
-          if (graph) {
+          if (graph && HalfEdgeGraphSearch.isTriangulatedCCW(graph)) {
             Triangulator.flipTriangles(graph);
             const unflippedPoly = PolyfaceBuilder.graphToPolyface(graph, options);
             this._facets = unflippedPoly;
             this._facets.tryTransformInPlace(this.localToWorld);
+          } else {
+            // earcut failed. Restart with full merge and parity analysis.
+            const polyface = RegionOps.polygonXYAreaUnionLoopsToPolyface(strokes, [], true);
+            if (polyface) {
+              this._facets = polyface as IndexedPolyface;
+              this._facets.tryTransformInPlace(this.localToWorld);
+            }
           }
         }
       }
