@@ -26,4 +26,5 @@ export interface SVTConfiguration {
   useFakeCloudStorageTileCache?: boolean; // default OFF
   dpiAwareViewports?: boolean; // default ON
   cancelBackendTileRequests?: boolean; // default ON
+  disableEdges?: boolean; // default OFF
 }

@@ -134,6 +134,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, do not respect the DPI of the system when rendering viewports.
  * SVT_NO_CANCEL_TILE_REQUESTS
   * If defined, do not cancel tile requests on backend when cancelled on front-end.
+ * SVT_DISABLE_EDGE_DISPLAY
+  * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 
 ## Key-ins
 
