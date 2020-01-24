@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Id64String, Id64, DbResult } from "@bentley/bentleyjs-core";
 import { SpatialCategory, IModelDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { GeometricElementProps, Code, SubCategoryAppearance, ColorDef, IModel, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { Point3d, Arc3d, Point2d } from "@bentley/geometry-core";
+import { GeometricElementProps, Code, SubCategoryAppearance, ColorDef, IModel, GeometryStreamProps, ElementAspectProps } from "@bentley/imodeljs-common";
+import { Point3d, Arc3d, Point2d, Cone } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BackendRequestContext } from "../../BackendRequestContext";
@@ -23,7 +23,7 @@ interface IPrimitiveBase {
   bin?: Uint8Array;
   p2d?: Point2d;
   p3d?: Point3d;
-  g?: Uint8Array;
+  g?: GeometryStreamProps;
 }
 
 interface IPrimitive extends IPrimitiveBase {
@@ -40,7 +40,7 @@ interface IPrimitiveArrayBase {
   array_bin?: Uint8Array[];
   array_p2d?: Point2d[];
   array_p3d?: Point3d[];
-  array_g?: Uint8Array[];
+  array_g?: GeometryStreamProps[];
   array_st?: ComplexStruct[];
 }
 
@@ -48,11 +48,11 @@ interface IPrimitiveArray extends IPrimitiveArrayBase {
   array_st?: ComplexStruct[];
 }
 
-interface ComplexStruct extends IPrimitiveArrayBase, IPrimitiveBase {
-}
+interface ComplexStruct extends IPrimitiveArrayBase, IPrimitiveBase { }
 
-interface TestElement extends IPrimitive, IPrimitiveArray, GeometricElementProps {
-}
+interface TestElement extends IPrimitive, IPrimitiveArray, GeometricElementProps { }
+
+interface TestElementAspect extends IPrimitive, IPrimitiveArray, ElementAspectProps { }
 
 function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimitiveBase) {
   if (expectedValue.i) assert.equal(actualValue.i, expectedValue.i, "'integer' type property did not roundtrip as expected");
@@ -71,6 +71,7 @@ function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimit
     assert.equal(actualValue.p3d!.z, expectedValue.p3d!.z, "'Point3d.z' type property did not roundtrip as expected");
   }
   if (expectedValue.bin) assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
+  if (expectedValue.g) expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
 }
 
 function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValue: IPrimitiveArrayBase) {
@@ -112,6 +113,13 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     assert.equal(actualValue.array_dt!.length, expectedValue.array_dt!.length, "'dateTime[].length' array length missmatch");
     expectedValue.array_dt!.forEach((value, index) => {
       assert.equal(actualValue.array_dt![index], value, "'dateTime[]' type property did not roundtrip as expected");
+    });
+  }
+
+  if (expectedValue.array_g) {
+    assert.equal(actualValue.array_g!.length, expectedValue.array_g!.length, "'geometry[].length' array length missmatch");
+    expectedValue.array_g!.forEach((value, index) => {
+      expect(actualValue.array_g![index], "'geometry[]' type property did not roundtrip as expected").to.deep.equal(value);
     });
   }
 
@@ -164,6 +172,11 @@ function verifyTestElement(actualValue: TestElement, expectedValue: TestElement)
   verifyPrimitiveArray(actualValue, expectedValue);
 }
 
+function verifyTestElementAspect(actualValue: TestElementAspect, expectedValue: TestElementAspect) {
+  verifyPrimitive(actualValue, expectedValue);
+  verifyPrimitiveArray(actualValue, expectedValue);
+}
+
 function initElemProps(className: string, _iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
   // add Geometry
   const geomArray: Arc3d[] = [
@@ -190,6 +203,20 @@ function initElemProps(className: string, _iModelName: IModelDb, modId: Id64Stri
 
   return elementProps;
 }
+
+function initElementAspectProps(className: string, _iModelName: IModelDb, elId: Id64String, autoHandledProp: any) {
+  // Create props
+  const elementProps: ElementAspectProps = {
+    classFullName: "ElementRoundTripTest:" + className,
+    element: { id: elId },
+  };
+
+  if (autoHandledProp)
+    Object.assign(elementProps, autoHandledProp);
+
+  return elementProps;
+}
+
 function blobEqual(lhs: any, rhs: any) {
   if (!(lhs instanceof Uint8Array) || !(rhs instanceof Uint8Array))
     throw new Error("expecting uint8array");
@@ -204,7 +231,7 @@ function blobEqual(lhs: any, rhs: any) {
   return true;
 }
 
-describe("Element roundtrip test for all type of properties", () => {
+describe("Element and ElementAspect roundtrip test for all type of properties", () => {
   const testSchema = `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="ElementRoundTripTest" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
       <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
@@ -213,6 +240,11 @@ describe("Element roundtrip test for all type of properties", () => {
         <BaseClass>bis:PhysicalElement</BaseClass>
         <BaseClass>IPrimitive</BaseClass>
         <BaseClass>IPrimitiveArray</BaseClass>
+      </ECEntityClass>
+      <ECEntityClass typeName="TestElementAspect" modifier="None">
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+        <BaseClass>IPrimitiveAspect</BaseClass>
+        <BaseClass>IPrimitiveArrayAspect</BaseClass>
       </ECEntityClass>
       <ECEntityClass typeName="IPrimitive" modifier="Abstract">
         <ECCustomAttributes>
@@ -232,10 +264,46 @@ describe("Element roundtrip test for all type of properties", () => {
         <ECProperty propertyName="g" typeName="Bentley.Geometry.Common.IGeometry"/>
         <ECStructProperty propertyName="st" typeName="ComplexStruct"/>
       </ECEntityClass>
+      <ECEntityClass typeName="IPrimitiveAspect" modifier="Abstract">
+        <ECCustomAttributes>
+          <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+            <AppliesToEntityClass>bis:ElementUniqueAspect</AppliesToEntityClass>
+          </IsMixin>
+        </ECCustomAttributes>
+        <ECProperty propertyName="i" typeName="int"/>
+        <ECProperty propertyName="l" typeName="long"/>
+        <ECProperty propertyName="d" typeName="double"/>
+        <ECProperty propertyName="b" typeName="boolean"/>
+        <ECProperty propertyName="dt" typeName="dateTime"/>
+        <ECProperty propertyName="s" typeName="string"/>
+        <ECProperty propertyName="bin" typeName="binary"/>
+        <ECProperty propertyName="p2d" typeName="point2d"/>
+        <ECProperty propertyName="p3d" typeName="point3d"/>
+        <ECProperty propertyName="g" typeName="Bentley.Geometry.Common.IGeometry"/>
+        <ECStructProperty propertyName="st" typeName="ComplexStruct"/>
+      </ECEntityClass>
       <ECEntityClass typeName="IPrimitiveArray" modifier="Abstract">
         <ECCustomAttributes>
           <IsMixin xmlns="CoreCustomAttributes.01.00.03">
             <AppliesToEntityClass>bis:PhysicalElement</AppliesToEntityClass>
+          </IsMixin>
+        </ECCustomAttributes>
+        <ECArrayProperty propertyName="array_i" typeName="int"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_l" typeName="long"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_d" typeName="double"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_b" typeName="boolean"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_dt" typeName="dateTime"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_s" typeName="string"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_bin" typeName="binary"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_p2d" typeName="point2d"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_p3d" typeName="point3d"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECArrayProperty propertyName="array_g" typeName="Bentley.Geometry.Common.IGeometry"  minOccurs="0" maxOccurs="unbounded"/>
+        <ECStructArrayProperty propertyName="array_st" typeName="ComplexStruct"  minOccurs="0" maxOccurs="unbounded"/>
+      </ECEntityClass>
+      <ECEntityClass typeName="IPrimitiveArrayAspect" modifier="Abstract">
+        <ECCustomAttributes>
+          <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+            <AppliesToEntityClass>bis:ElementUniqueAspect</AppliesToEntityClass>
           </IsMixin>
         </ECCustomAttributes>
         <ECArrayProperty propertyName="array_i" typeName="int"  minOccurs="0" maxOccurs="unbounded"/>
@@ -280,6 +348,64 @@ describe("Element roundtrip test for all type of properties", () => {
   const subDirName = "ElementRoundTrip";
   const iModelPath = IModelTestUtils.prepareOutputFile(subDirName, iModelFileName);
 
+  const primInst1: IPrimitiveBase = {
+    i: 101,
+    l: 12334343434,
+    d: 1023.34,
+    b: true,
+    dt: "2017-01-01T00:00:00.000",
+    s: "Test string Inst1",
+    bin: new Uint8Array([1, 2, 3]),
+    g: GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1), 0.5, 0.5, false) as Cone),
+    p2d: new Point2d(1.034, 2.034),
+    p3d: new Point3d(-1.0, 2.3, 3.0001),
+  };
+
+  const primInst2: IPrimitiveBase = {
+    i: 4322,
+    l: 98283333,
+    d: -2343.342,
+    b: false,
+    dt: "2010-01-01T11:11:11.000",
+    s: "Test string Inst2",
+    bin: new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22]),
+    g: GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 0), Point3d.create(0, 0, 1), 0.5, 0.5, false) as Cone),
+    p2d: new Point2d(1111.11, 2222.22),
+    p3d: new Point3d(-111.11, -222.22, -333.33),
+  };
+
+  const primArrInst1: IPrimitiveArrayBase = {
+    array_i: [101, 202, -345],
+    array_l: [12334343434, 3434343434, 12],
+    array_d: [1023.34, 3023.34, -3432.033],
+    array_b: [true, false, true, false],
+    array_dt: ["2017-01-01T00:00:00.000", "2018-01-01T00:00:00.000"],
+    array_s: ["Test string 1", "Test string 2", "Test string 3"],
+    array_bin: [new Uint8Array([1, 2, 3]), new Uint8Array([4, 2, 3, 3, 4, 55, 6, 65])],
+    array_p2d: [new Point2d(1, 2), new Point2d(2, 4)],
+    array_p3d: [new Point3d(1, 2, 3), new Point3d(4, 5, 6)],
+    array_g: [
+      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 0), Point3d.create(0, 0, 2), 0.5, 0.5, false) as Cone),
+      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 1), Point3d.create(0, 0, 2), 0.5, 0.5, false) as Cone),
+    ],
+  };
+
+  const primArrInst2: IPrimitiveArrayBase = {
+    array_i: [0, 1, 2, 3, 4, 5, 6666],
+    array_l: [-23422, -343343434, -12333434, 23423423],
+    array_d: [-21023.34, -33023.34, -34432.033],
+    array_b: [false, true],
+    array_dt: ["2017-01-01T00:00:00.000", "2018-01-01T00:00:00.000", "2011-01-01T00:00:00.000"],
+    array_s: ["Test string 1 - inst2", "Test string 2 - inst2", "Test string 3 - inst2"],
+    array_bin: [new Uint8Array([1, 2, 3, 3, 4]), new Uint8Array([0, 0, 0, 0]), new Uint8Array([1, 2, 3, 4])],
+    array_p2d: [new Point2d(-123, 244.23232), new Point2d(232, 324.2323), new Point2d(322, 2324.23322)],
+    array_p3d: [new Point3d(133, 2333, 333), new Point3d(4123, 5123, 6123)],
+    array_g: [
+      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 0), Point3d.create(0, 0, 2), 0.5, 0.5, false) as Cone),
+      GeomJson.Writer.toIModelJson(Cone.createAxisPoints(Point3d.create(0, 1, 1), Point3d.create(0, 0, 2), 0.5, 0.5, false) as Cone),
+    ],
+  };
+
   before(async () => {
     // write schema to disk as we do not have api to import xml directly
     const testSchemaPath = IModelTestUtils.prepareOutputFile(subDirName, schemaFileName);
@@ -303,54 +429,6 @@ describe("Element roundtrip test for all type of properties", () => {
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
-
-    const primInst1: IPrimitiveBase = {
-      i: 101,
-      l: 12334343434,
-      d: 1023.34,
-      b: true,
-      dt: "2017-01-01T00:00:00.000",
-      s: "Test string Inst1",
-      bin: new Uint8Array([1, 2, 3]),
-      p2d: new Point2d(1.034, 2.034),
-      p3d: new Point3d(-1.0, 2.3, 3.0001),
-    };
-
-    const primInst2: IPrimitiveBase = {
-      i: 4322,
-      l: 98283333,
-      d: -2343.342,
-      b: false,
-      dt: "2010-01-01T11:11:11.000",
-      s: "Test string Inst2",
-      bin: new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22]),
-      p2d: new Point2d(1111.11, 2222.22),
-      p3d: new Point3d(-111.11, -222.22, -333.33),
-    };
-
-    const primArrInst1: IPrimitiveArrayBase = {
-      array_i: [101, 202, -345],
-      array_l: [12334343434, 3434343434, 12],
-      array_d: [1023.34, 3023.34, -3432.033],
-      array_b: [true, false, true, false],
-      array_dt: ["2017-01-01T00:00:00.000", "2018-01-01T00:00:00.000"],
-      array_s: ["Test string 1", "Test string 2", "Test string 3"],
-      array_bin: [new Uint8Array([1, 2, 3]), new Uint8Array([4, 2, 3, 3, 4, 55, 6, 65])],
-      array_p2d: [new Point2d(1, 2), new Point2d(2, 4)],
-      array_p3d: [new Point3d(1, 2, 3), new Point3d(4, 5, 6)],
-    };
-
-    const primArrInst2: IPrimitiveArrayBase = {
-      array_i: [0, 1, 2, 3, 4, 5, 6666],
-      array_l: [-23422, -343343434, -12333434, 23423423],
-      array_d: [-21023.34, -33023.34, -34432.033],
-      array_b: [false, true],
-      array_dt: ["2017-01-01T00:00:00.000", "2018-01-01T00:00:00.000", "2011-01-01T00:00:00.000"],
-      array_s: ["Test string 1 - inst2", "Test string 2 - inst2", "Test string 3 - inst2"],
-      array_bin: [new Uint8Array([1, 2, 3, 3, 4]), new Uint8Array([0, 0, 0, 0]), new Uint8Array([1, 2, 3, 4])],
-      array_p2d: [new Point2d(-123, 244.23232), new Point2d(232, 324.2323), new Point2d(322, 2324.23322)],
-      array_p3d: [new Point3d(133, 2333, 333), new Point3d(4123, 5123, 6123)],
-    };
 
     // create element with auto handled properties
     const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {
@@ -414,6 +492,86 @@ describe("Element roundtrip test for all type of properties", () => {
       assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
       const stmtRow = stmt.getRow() as TestElement;
       verifyTestElement(stmtRow, actualValue);
+    });
+
+    imodel.closeSnapshot();
+  });
+
+  it("Roundtrip all type of properties via ElementAspectApi, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
+    const testFileName = IModelTestUtils.prepareOutputFile(subDirName, "roundtrip_apsect_correct_data.bim");
+    const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
+    const spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+
+    // create element to use with the ElementAspects
+    const expectedValue = initElemProps("TestElement", imodel, newModelId, spatialCategoryId!, {}) as TestElement;
+
+    // insert a element
+    const geomElement = imodel.elements.createElement(expectedValue);
+    const elId = imodel.elements.insertElement(geomElement);
+    assert.isTrue(Id64.isValidId64(elId), "insert worked");
+
+    const expectedAspectValue = initElementAspectProps("TestElementAspect", imodel, elId, {
+      ...primInst1,
+      ...primArrInst1,
+      st: { ...primArrInst2, ...primInst1 },
+      array_st: [{ ...primInst1, ...primArrInst2 }, { ...primInst2, ...primArrInst1 }],
+    }) as TestElementAspect;
+
+    // insert a element aspect
+    imodel.elements.insertAspect(expectedAspectValue);
+    imodel.saveChanges();
+
+    // verify inserted element aspect properties
+    const actualAspectValue: ElementAspectProps[] = imodel.elements.getAspects(elId, expectedAspectValue.classFullName);
+    assert.equal(actualAspectValue.length, 1);
+    verifyTestElementAspect(actualAspectValue[0], expectedAspectValue);
+
+    // verify via concurrent query
+    let rowCount = 0;
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect")) {
+      verifyTestElementAspect(row as TestElementAspect, expectedAspectValue);
+      rowCount++;
+    }
+    assert.equal(rowCount, 1);
+
+    // verify via ecsql statement
+    await imodel.withPreparedStatement("SELECT * FROM ts.TestElementAspect", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      const stmtRow = stmt.getRow() as TestElementAspect;
+      verifyTestElementAspect(stmtRow, expectedAspectValue);
+    });
+
+    // update the element autohandled properties
+    Object.assign(actualAspectValue[0], {
+      ...primInst2,
+      ...primArrInst2,
+      st: { ...primArrInst1, ...primInst2 },
+      array_st: [{ ...primInst2, ...primArrInst2 }, { ...primInst1, ...primArrInst1 }],
+    });
+
+    // update element
+    imodel.elements.updateAspect(actualAspectValue[0]);
+    imodel.saveChanges();
+
+    // verify updated values
+    const updatedAspectValue: ElementAspectProps[] = imodel.elements.getAspects(elId, expectedAspectValue.classFullName);
+    assert.equal(updatedAspectValue.length, 1);
+    verifyTestElementAspect(updatedAspectValue[0], actualAspectValue[0]);
+
+    // verify via concurrent query
+    rowCount = 0;
+    for await (const row of imodel.query("SELECT * FROM ts.TestElementAspect")) {
+      verifyTestElementAspect(row as TestElementAspect, actualAspectValue[0]);
+      rowCount++;
+    }
+    assert.equal(rowCount, 1);
+
+    // verify via ecsql statement
+    await imodel.withPreparedStatement("SELECT * FROM ts.TestElementAspect", async (stmt: ECSqlStatement) => {
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
+      const stmtRow = stmt.getRow() as TestElementAspect;
+      verifyTestElementAspect(stmtRow, actualAspectValue[0]);
     });
 
     imodel.closeSnapshot();
