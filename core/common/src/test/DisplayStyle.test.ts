@@ -23,7 +23,6 @@ describe("PlanProjectionSettings", () => {
       const output = settings.toJSON();
       expect(output.elevation).to.equal(expected!.elevation);
       expect(output.transparency).to.equal(expected!.transparency);
-      expect(output.priority).to.equal(expected!.priority);
       expect(output.overlay).to.equal(expected!.overlay);
     };
 
@@ -39,7 +38,7 @@ describe("PlanProjectionSettings", () => {
     roundTrip({ transparency: 1.1 }, { transparency: 1.0 });
     roundTrip({ transparency: -0.1 }, { transparency: 0.0 });
 
-    roundTrip({ elevation: 123.5, priority: -987 }, "input");
+    roundTrip({ elevation: 123.5 }, "input");
   });
 
   it("clones", () => {
@@ -47,7 +46,6 @@ describe("PlanProjectionSettings", () => {
       const settings = new PlanProjectionSettings(input);
       const output = settings.clone(changed);
       expect(output.elevation).to.equal(expected.elevation);
-      expect(output.priority).to.equal(expected.priority);
       expect(output.transparency).to.equal(expected.transparency);
       expect(output.overlay).to.equal(expected.overlay);
     };
@@ -61,10 +59,10 @@ describe("PlanProjectionSettings", () => {
     clone({ transparency: 0.5 }, { transparency: 0.75 }, { transparency: 0.75, overlay: false });
     clone({ transparency: 0.5 }, { transparency: 1.25 }, { transparency: 1.0, overlay: false });
 
-    clone({ }, { elevation: 1, priority: -1, transparency: 0.2 }, { elevation: 1, priority: -1, transparency: 0.2, overlay: false });
-    clone({ elevation: 1, priority: -1, transparency: 0.2 }, { }, { elevation: 1, priority: -1, transparency: 0.2, overlay: false });
-    clone({ elevation: 1, overlay: true }, { priority: -1, transparency: 0.2 }, { elevation: 1, priority: -1, transparency: 0.2, overlay: true });
-    clone({ elevation: 1, priority: -1 }, { elevation: -1, transparency: 0.75 }, { elevation: -1, priority: -1, transparency: 0.75, overlay: false });
+    clone({ }, { elevation: 1, transparency: 0.2 }, { elevation: 1, transparency: 0.2, overlay: false });
+    clone({ elevation: 1, transparency: 0.2 }, { }, { elevation: 1, transparency: 0.2, overlay: false });
+    clone({ elevation: 1, overlay: true }, { transparency: 0.2 }, { elevation: 1, transparency: 0.2, overlay: true });
+    clone({ elevation: 1 }, { elevation: -1, transparency: 0.75 }, { elevation: -1, transparency: 0.75, overlay: false });
   });
 });
 
@@ -83,7 +81,7 @@ describe("DisplayStyleSettings", () => {
     roundTrip({ "not an id": { transparency: 0.5 } });
     roundTrip({ "0x1": { overlay: true } });
     roundTrip({ "0x1": { overlay: false } });
-    roundTrip({ "0x1": { priority: 5 }, "0x2": { elevation: -5 } });
+    roundTrip({ "0x1": { transparency: 0.5 }, "0x2": { elevation: -5 } });
   });
 
   it("sets and round-trips plan projection settings", () => {
@@ -106,7 +104,7 @@ describe("DisplayStyleSettings", () => {
     roundTrip({ "not an id": { transparency: 0.5 } }, { });
     roundTrip({ "0x1": { overlay: true } }, "input");
     roundTrip({ "0x1": { overlay: false } }, { });
-    roundTrip({ "0x1": { priority: 5 }, "0x2": { elevation: -5 } }, "input");
+    roundTrip({ "0x1": { transparency: 0.5 }, "0x2": { elevation: -5 } }, "input");
   });
 
   it("deletes plan projection settings", () => {
@@ -134,9 +132,9 @@ describe("DisplayStyleSettings", () => {
     expect(countSettings()).to.equal(2);
     expect(settings.getPlanProjectionSettings("0x2")!.elevation).to.equal(2);
 
-    settings.setPlanProjectionSettings("0x2", makeSettings({ priority: 2 }));
+    settings.setPlanProjectionSettings("0x2", makeSettings({ transparency: 0.2 }));
     expect(countSettings()).to.equal(2);
-    expect(settings.getPlanProjectionSettings("0x2")!.priority).to.equal(2);
+    expect(settings.getPlanProjectionSettings("0x2")!.transparency).to.equal(0.2);
     expect(settings.getPlanProjectionSettings("0x2")!.elevation).to.be.undefined;
 
     settings.setPlanProjectionSettings("0x3", undefined);

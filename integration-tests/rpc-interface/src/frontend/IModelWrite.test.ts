@@ -13,7 +13,7 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Range3d } from "@bentley/geometry-core";
 
-describe("IModel Connection", () => {
+describe("IModel Read/Write Connection", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 

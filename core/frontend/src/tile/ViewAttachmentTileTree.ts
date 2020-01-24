@@ -47,7 +47,21 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicList, RenderClipVolume, RenderGraphic, RenderPlan, RenderTarget } from "../render/System";
-import { TileDrawArgs, TileParams, TileTree, TileTreeLoadStatus, TileTreeSet, tileTreeParamsFromJSON, TileLoader, TileTreeReference, TileRequest, SelectParent, Tile, TileLoadPriority, TileVisibility } from "./internal";
+import {
+  SelectParent,
+  Tile,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileLoader,
+  TileParams,
+  TileRequest,
+  TileTree,
+  TileTreeLoadStatus,
+  TileTreeReference,
+  TileTreeSet,
+  TileVisibility,
+  tileTreeParamsFromJSON,
+} from "./internal";
 import { SceneContext } from "../ViewContext";
 import { ChangeFlags, CoordSystem, OffScreenViewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
@@ -148,12 +162,7 @@ class Tile2d extends Tile {
     const myRoot = this.root as Tree2d;
     const viewRoot = myRoot.viewRoot;
 
-    const drawArgs = viewRoot.createDrawArgs(args.context);
-    drawArgs.location.setFrom(myRoot.drawingToAttachment);
-    drawArgs.clipVolume = myRoot.graphicsClip;
-    drawArgs.graphics.setViewFlagOverrides(this.root.viewFlagOverrides);
-    drawArgs.graphics.symbologyOverrides = myRoot.symbologyOverrides;
-
+    const drawArgs = TileDrawArgs.fromTileTree(args.context, myRoot.drawingToAttachment.clone(), viewRoot, this.root.viewFlagOverrides, myRoot.graphicsClip, args.parentsAndChildrenExclusive, myRoot.symbologyOverrides);
     viewRoot.draw(drawArgs);
   }
 }
@@ -488,12 +497,12 @@ class Tree2d extends Tree {
     worldToAttachment.z = RenderTarget.depthFromDisplayPriority(attachment.displayPriority);
 
     const location = Transform.createOriginAndMatrix(worldToAttachment, Matrix3d.createIdentity());
-    this.location.setFrom(location);
+    this.iModelTransform.setFrom(location);
 
     const aspectRatioSkew = view.getAspectRatioSkew();
     this.drawingToAttachment = Transform.createOriginAndMatrix(Point3d.create(), view.getRotation());
     this.drawingToAttachment.matrix.scaleColumns(scale.x, aspectRatioSkew * scale.y, 1, this.drawingToAttachment.matrix);
-    const translation = viewRoot.location.origin.cloneAsPoint3d();
+    const translation = viewRoot.iModelTransform.origin.cloneAsPoint3d();
     const viewOrg = view.getOrigin().minus(translation);
     this.drawingToAttachment.multiplyPoint3d(viewOrg, viewOrg);
     translation.plus(viewOrg, viewOrg);
@@ -647,7 +656,7 @@ class Tree3d extends Tree {
     this._rootTile = Tile3d.create(this, undefined, Tile3dPlacement.Root);
     (this._rootTile as Tile3d).createPolyfaces(sceneContext);    // graphics clip must be set before creating polys (the polys that represent the tile)
 
-    this.location.setFrom(this.viewport.toParent.clone());
+    this.iModelTransform.setFrom(this.viewport.toParent.clone());
     this.expirationTime = BeDuration.fromSeconds(15);
   }
 
@@ -895,6 +904,14 @@ export abstract class Attachment {
     builder.addLineString2d(rect, 0);
     const attachmentBorder = builder.finish();
     context.outputGraphic(attachmentBorder);
+  }
+
+  public draw(context: SceneContext): void {
+    if (this.isReady && undefined !== this._tree) {
+      const tree = this._tree;
+      const args = TileDrawArgs.fromTileTree(context, tree.iModelTransform, tree, tree.viewFlagOverrides, tree.clipVolume, tree.loader.parentsAndChildrenExclusive);
+      tree.draw(args);
+    }
   }
 }
 

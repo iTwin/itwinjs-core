@@ -564,6 +564,7 @@ async function getPrimaryTileTree(model: GeometricModelState, edgesRequired = tr
     viewFlags: {
       edgesRequired: () => edgesRequired,
     },
+    is3d: () => true,
   };
 
   const ref = model.createTileTreeReference(fakeViewState as ViewState);
@@ -763,6 +764,7 @@ describe("mirukuru TileTree", () => {
     const viewState = {
       iModel: imodel,
       viewFlags: { edgesRequired: () => edgesRequired },
+      is3d: () => true,
     };
 
     const treeRef = model.createTileTreeReference(viewState as ViewState);

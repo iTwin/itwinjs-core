@@ -113,6 +113,12 @@
     },
     "ViewportAddRealityModel": {
       "keyin": "fdt attach reality model"
+    },
+    "DumpLayerSettings": {
+      "keyin": "fdt layer dump"
+    },
+    "ChangeLayerSettings": {
+      "keyin": "fdt layer set"
     }
   }
 }

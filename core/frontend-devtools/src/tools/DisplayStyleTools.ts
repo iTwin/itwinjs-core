@@ -8,6 +8,7 @@
  */
 
 import {
+  DisplayStyle3dState,
   Environment,
   IModelApp,
   Tool,
@@ -29,6 +30,33 @@ const booleanFlagNames: BooleanFlagName[] = [
 ];
 
 const lowercaseBooleanFlagNames = booleanFlagNames.map((name) => name.toLowerCase());
+
+/** Modifies the selected viewport's DisplayStyleState.
+ * @beta
+ */
+export abstract class DisplayStyleTool extends Tool {
+  protected get require3d() { return false; }
+  // Return true if the display style was modified - we will invalidate the viewport's render plan.
+  protected abstract execute(vp: Viewport): boolean;
+  // Return false if failed to parse.
+  protected abstract parse(args: string[]): boolean;
+
+  public run(): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.execute(vp))
+      vp.displayStyle = vp.view.displayStyle;
+
+    return true;
+  }
+
+  public parseAndRun(...args: string[]): boolean {
+    const vp = IModelApp.viewManager.selectedView;
+    if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.parse(args))
+      return this.run();
+    else
+      return false;
+  }
+}
 
 /** Modifies the selected viewport's ViewFlags.
  * The keyin syntax is as follows:
@@ -96,21 +124,18 @@ export class ChangeViewFlagsTool extends Tool {
 }
 
 /** Toggles the skybox.
- * ###TODO Generalize this to modify any aspect of display style.
  * @beta
  */
-export class ToggleSkyboxTool extends Tool {
+export class ToggleSkyboxTool extends DisplayStyleTool {
   public static toolId = "ToggleSkybox";
 
-  public run(): boolean {
-    const vp = IModelApp.viewManager.selectedView;
-    const view = undefined !== vp ? vp.view : undefined;
-    if (undefined !== view && view.is3d()) {
-      const style = view.getDisplayStyle3d();
-      style.environment = new Environment({ sky: { display: !style.environment.sky.display } });
-      vp!.invalidateRenderPlan();
-    }
+  public get require3d() { return true; }
 
+  public parse(_args: string[]) { return true; } // no arguments
+
+  public execute(vp: Viewport): boolean {
+    const style = vp.view.displayStyle as DisplayStyle3dState;
+    style.environment = new Environment({ sky: { display: !style.environment.sky.display } });
     return true;
   }
 }

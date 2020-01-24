@@ -175,7 +175,7 @@ async function main() {
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
-  const rpcInterfaces = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface, NativeAppRpcInterface ];
+  const rpcInterfaces = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface, NativeAppRpcInterface];
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
     rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
@@ -258,6 +258,7 @@ async function initView(iModel: IModelConnection | undefined) {
     const viewer = await DisplayTestApp.surface.createViewer({
       iModel,
       defaultViewName: configuration.viewName,
+      disableEdges: true === configuration.disableEdges,
     });
 
     viewer.dock(Dock.Full);

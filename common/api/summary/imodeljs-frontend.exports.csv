@@ -491,6 +491,7 @@ internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | 
 beta;WebGLFeature
 beta;WebGLRenderCompatibilityInfo
 beta;WebGLRenderCompatibilityStatus
+internal;WebMapDrawArgs 
 internal;WebMapTileLoader 
 internal;WebMapTileProps 
 internal;WebMapTileTreeProps 

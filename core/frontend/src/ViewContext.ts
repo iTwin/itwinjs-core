@@ -27,7 +27,7 @@ import {
   Tile,
   TileGraphicType,
   TileLoadStatus,
-  TileTree,
+  TileTreeReference,
 } from "./tile/internal";
 import { IModelApp } from "./IModelApp";
 
@@ -490,7 +490,7 @@ export class SceneContext extends RenderContext {
     IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
   }
 
-  public addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree): RenderPlanarClassifier | undefined {
+  public addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTreeReference, classifiedTree: TileTreeReference): RenderPlanarClassifier | undefined {
     // Have we already seen this classifier before?
     const id = props.modelId;
     let classifier = this.planarClassifiers.get(id);
@@ -510,12 +510,17 @@ export class SceneContext extends RenderContext {
 
     return classifier;
   }
+
   public getPlanarClassifierForModel(modelId: Id64String) {
     const classifierId = this.modelClassifiers.get(modelId);
     return undefined === classifierId ? undefined : this.planarClassifiers.get(classifierId);
   }
 
-  public addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined {
+  public addBackgroundDrapedModel(drapedTreeRef: TileTreeReference): RenderTextureDrape | undefined {
+    const drapedTree = drapedTreeRef.treeOwner.tileTree;
+    if (undefined === drapedTree)
+      return undefined;
+
     const id = drapedTree.modelId;
     let drape = this.getTextureDrapeForModel(id);
     if (undefined !== drape)
@@ -523,13 +528,14 @@ export class SceneContext extends RenderContext {
 
     drape = this.viewport.target.getTextureDrape(id);
     if (undefined === drape)
-      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTree, this.viewport.displayStyle.backgroundDrapeMap);
+      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTreeRef, this.viewport.displayStyle.backgroundDrapeMap);
 
     if (undefined !== drape)
       this.textureDrapes.set(id, drape);
 
     return drape;
   }
+
   public getTextureDrapeForModel(modelId: Id64String) {
     return this.textureDrapes.get(modelId);
   }

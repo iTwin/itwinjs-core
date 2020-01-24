@@ -3994,7 +3994,6 @@ export class PlanProjectionSettings {
     // (undocumented)
     static fromJSON(props: PlanProjectionSettingsProps | undefined): PlanProjectionSettings | undefined;
     readonly overlay: boolean;
-    readonly priority?: number;
     // (undocumented)
     toJSON(): PlanProjectionSettingsProps;
     readonly transparency?: number;
@@ -4004,7 +4003,6 @@ export class PlanProjectionSettings {
 export interface PlanProjectionSettingsProps {
     elevation?: number;
     overlay?: boolean;
-    priority?: number;
     transparency?: number;
 }
 

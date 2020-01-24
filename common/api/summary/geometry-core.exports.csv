@@ -92,6 +92,7 @@ internal;DeepCompare
 internal;Degree2PowerPolynomial
 internal;Degree3PowerPolynomial
 internal;Degree4PowerPolynomial
+public;DuplicateFacetClusterSelector
 public;Ellipsoid
 public;EllipsoidPatch 
 public;FacetFaceData

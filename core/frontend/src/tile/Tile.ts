@@ -301,15 +301,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     return this._rangeGraphic;
   }
 
-  /** Returns the range of this tile's contents in world coordinates. */
-  public computeWorldContentRange(): ElementAlignedBox3d {
-    const range = new Range3d();
-    if (!this.contentRange.isNull)
-      this.root.location.multiplyRange(this.contentRange, range);
-
-    return range;
-  }
-
   public computeVisibility(args: TileDrawArgs): TileVisibility {
     const forcedDepth = this.root.debugForcedDepth;
     if (undefined !== forcedDepth) {

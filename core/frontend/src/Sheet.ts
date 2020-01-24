@@ -239,8 +239,7 @@ export class SheetViewState extends ViewState2d {
 
     // Draw all attachments that have a status of ready
     for (const attachment of this._attachments.list)
-      if (attachment.isReady)
-        attachment.tree!.drawScene(context);
+      attachment.draw(context);
   }
 
   /** Create a sheet border decoration graphic. */

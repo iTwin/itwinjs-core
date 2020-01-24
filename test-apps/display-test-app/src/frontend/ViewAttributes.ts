@@ -65,7 +65,7 @@ export class ViewAttributes {
     this._displayStylePickerDiv!.appendChild(newComboBox.div);
   }
 
-  public constructor(vp: Viewport, parent: HTMLElement) {
+  public constructor(vp: Viewport, parent: HTMLElement, disableEdges = false) {
     this._vp = vp;
     this._parent = parent;
     this._element = document.createElement("div");
@@ -107,7 +107,8 @@ export class ViewAttributes {
     this.addLightingToggle(flagsDiv);
     this.addCameraToggle(flagsDiv);
 
-    this.addEdgeDisplay();
+    if (!disableEdges)
+      this.addEdgeDisplay();
 
     this.addEnvironmentEditor();
 
@@ -661,11 +662,13 @@ export class ViewAttributesPanel extends ToolBarDropDown {
   private readonly _parent: HTMLElement;
   private _attributes?: ViewAttributes;
   private _displayStylePickerInput?: ComboBox;
+  private _disableEdges: boolean;
 
-  public constructor(vp: Viewport, parent: HTMLElement) {
+  public constructor(vp: Viewport, parent: HTMLElement, disableEdges: boolean) {
     super();
     this._vp = vp;
     this._parent = parent;
+    this._disableEdges = disableEdges;
     this.open();
   }
 
@@ -714,7 +717,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
 
   public get isOpen() { return undefined !== this._attributes; }
   protected _open(): void {
-    this._attributes = new ViewAttributes(this._vp, this._parent);
+    this._attributes = new ViewAttributes(this._vp, this._parent, this._disableEdges);
     const loadingComboBox = createComboBox({
       name: "Style: ",
       id: "DisplayStyles",

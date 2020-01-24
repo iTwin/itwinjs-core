@@ -120,4 +120,8 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * "transparent" - Fade from reality model to BIM model.
 * `fdt attach reality model` - Attach a "context" reality model to the currently selected viewport.
   * the URL for the reality model root JSON file.
-
+* `fdt layer dump` - Dump to the notification manager a JSON representation of the current plan projection settings for the selected viewport. Optional argument `copy` also copies the JSON to the clipboard.
+* `fdt layer set` - change plan projection settings for the selected viewport. The first argument is required and specifies the plan projection model(s) to be affected, either as `all` or as a comma-separated list of modeld Ids (e.g., `0x1c,0x9a`). Subsequent arguments are optional and are used to build a PlanProjectionSettings. Any arguments omitted will get their default values. Only the first character of each argument is significant; the name of the setting is separated from the value by an `=` sign:
+  * `transparency=`: transparency in [0..1].
+  * `elevation=`: elevation in meters.
+  * `overlay=`: 1 to draw as an overlay, 0 to draw normally (with depth).

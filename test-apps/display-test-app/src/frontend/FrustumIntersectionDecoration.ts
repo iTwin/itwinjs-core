@@ -78,11 +78,7 @@ class FrustumIntersectionDecoration {
 
     builder.setSymbology(ColorDef.white, ColorDef.white, 2, LinePixels.Solid);
     this._vp.view.forEachModelTreeRef((ref) => {
-      const tree = ref.treeOwner.tileTree;
-      if (undefined === tree)
-        return;
-
-      const range = tree.computeTileRangeForFrustum(this._vp);
+      const range = ref.computeTileRangeForFrustum(this._vp);
       if (undefined !== range)
         builder.addRangeBox(range);
     });

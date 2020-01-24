@@ -175,7 +175,7 @@ class ProxyTree extends TileTree {
     this.ref = ref;
     this.symbologyOverrides = new FeatureSymbology.Overrides(view);
 
-    const range = tree.location.multiplyRange(tree.rootTile.range);
+    const range = tree.iModelTransform.multiplyRange(tree.rootTile.range);
     const inverse = location.inverse();
     if (undefined !== inverse)
       inverse.multiplyRange(range, range);
@@ -205,11 +205,8 @@ class ProxyTile extends Tile {
     const myTree = this.root as ProxyTree;
     const sectionTree = myTree.tree;
 
-    const drawArgs = sectionTree.createDrawArgs(args.context);
-    drawArgs.graphics.setViewFlagOverrides(myTree.viewFlagOverrides);
-    drawArgs.graphics.symbologyOverrides = myTree.symbologyOverrides;
-    myTree.location.multiplyTransformTransform(drawArgs.location, drawArgs.location);
-
+    const location = myTree.iModelTransform.multiplyTransformTransform(sectionTree.iModelTransform);
+    const drawArgs = TileDrawArgs.fromTileTree(args.context, location, sectionTree, myTree.viewFlagOverrides, sectionTree.clipVolume, args.parentsAndChildrenExclusive, myTree.symbologyOverrides);
     sectionTree.draw(drawArgs);
   }
 }

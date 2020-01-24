@@ -48,7 +48,7 @@ import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
-import { BackgroundMapTileTreeReference, TileTree } from "../tile/internal";
+import { BackgroundMapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
 
 // tslint:disable:no-const-enum
@@ -356,7 +356,7 @@ export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
  */
 export abstract class RenderPlanarClassifier implements IDisposable {
   public abstract dispose(): void;
-  public abstract collectGraphics(context: SceneContext, classifiedTree: TileTree, tileTree: TileTree): void;
+  public abstract collectGraphics(context: SceneContext, classifiedTree: TileTreeReference, tileTree: TileTreeReference): void;
 }
 
 /** @internal */
@@ -473,7 +473,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
   public readonly ownsEntries: boolean;
-  private _viewFlagOverrides = new ViewFlag.Overrides();
+  public viewFlagOverrides = new ViewFlag.Overrides();
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
   /** Optional animation branch Id.
@@ -489,11 +489,11 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
   /** Add a graphic to this branch. */
   public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
   /** @internal */
-  public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this._viewFlagOverrides.apply(flags.clone(out)); }
+  public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this.viewFlagOverrides.apply(flags.clone(out)); }
   /** @internal */
-  public setViewFlags(flags: ViewFlags): void { this._viewFlagOverrides.overrideAll(flags); }
+  public setViewFlags(flags: ViewFlags): void { this.viewFlagOverrides.overrideAll(flags); }
   /** @internal */
-  public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this._viewFlagOverrides.copyFrom(ovr); }
+  public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this.viewFlagOverrides.copyFrom(ovr); }
 
   public dispose() { this.clear(); }
   public get isEmpty(): boolean { return 0 === this.entries.length; }
@@ -924,7 +924,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
   /** @internal */
-  public createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
+  public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
     const rasterTile = new MeshArgs();

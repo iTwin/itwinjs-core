@@ -62,7 +62,7 @@ OR
 
 - **You can use your own** – Follow <a href="https://communities.bentley.com/products/microstation/b/microstation_blog/posts/publishing-an-imodel-in-bentley-view" target="_blank">these steps</a> to format your content into a ‘Snapshot iModel’ (.bim) before proceeding to the Project Registration page below.
 
-**[Register Project Here](./registration-dashboard?tab=1)**
+**[Register Project Here](/getting-started/registration-dashboard?tab=1)**
 
 *Note: The “iModel Testdrive” organization is intended for developer testing only.  See <a href="https://learn.bentley.com/app/VideoPlayer/LinkToIndividualCourse?LearningPathID=109270&CourseId=114330&MediaID=5006537" target="_blank">this page</a> for information about administering a CONNECT project in your own organization.*
 

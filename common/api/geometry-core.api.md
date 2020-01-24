@@ -1614,6 +1614,14 @@ export class Degree4PowerPolynomial {
 }
 
 // @public
+export enum DuplicateFacetClusterSelector {
+    SelectAll = 2,
+    SelectAny = 1,
+    SelectNone = 0,
+    SelectOneByParity = 3
+}
+
+// @public
 export class Ellipsoid {
     anglePairToGreatArc(angleA: LongitudeLatitudeNumber, angleB: LongitudeLatitudeNumber, result?: Arc3d): Arc3d | undefined;
     clone(): Ellipsoid;
@@ -1626,6 +1634,7 @@ export class Ellipsoid {
     createSectionArcPointPointVectorInPlane(pointAnglesA: LongitudeLatitudeNumber, pointAnglesB: LongitudeLatitudeNumber, inPlaneVector: Vector3d, result?: Arc3d): Arc3d | undefined;
     intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number;
     isAlmostEqual(other: Ellipsoid): boolean;
+    localToWorld(localPoint: XYAndZ, result?: Point3d): Point3d;
     otherEllipsoidAnglesToThisEllipsoidAngles(otherEllipsoid: Ellipsoid | undefined, otherAngles: LongitudeLatitudeNumber, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber | undefined;
     patchRangeStartEndRadians(theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d;
     projectPointToSurface(spacePoint: Point3d): LongitudeLatitudeNumber | undefined;
@@ -1641,10 +1650,10 @@ export class Ellipsoid {
     surfaceNormalToAngles(normal: Vector3d, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber;
     // @deprecated
     surfaceNormalToRadians(normal: Vector3d, result?: Point2d): Point2d;
-    // (undocumented)
     get transformRef(): Transform;
     tryTransformInPlace(transform: Transform): boolean;
-    }
+    worldToLocal(worldPoint: XYAndZ, result?: Point3d): Point3d | undefined;
+}
 
 // @public
 export class EllipsoidPatch implements UVSurface {
@@ -3883,11 +3892,14 @@ export class PolyfaceData {
 
 // @public
 export class PolyfaceQuery {
+    static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
     static boundaryEdges(source: Polyface, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
+    static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface;
     static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[];
     static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
     static cloneWithTVertexFixup(polyface: Polyface): Polyface;
+    static collectDuplicateFacetIndices(polyface: Polyface, includeSingletons?: boolean): number[][];
     static collectRangeLengthData(polyface: Polyface | PolyfaceVisitor): RangeLengthData;
     static computeFacetUnitNormal(visitor: PolyfaceVisitor, facetIndex: number, result?: Vector3d): Vector3d | undefined;
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
@@ -4386,9 +4398,9 @@ export class RegionOps {
     static createLoopPathOrBagOfCurves(curves: CurvePrimitive[], wrap?: boolean): CurveCollection | undefined;
     static curveArrayRange(curves: AnyCurve[]): Range3d;
     static expandLineStrings(candidates: CurvePrimitive[]): CurvePrimitive[];
-    static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
-    static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
-    static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant): Polyface | undefined;
+    static polygonXYAreaDifferenceLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
+    static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
+    static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint?: boolean): Transform | undefined;
     // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;

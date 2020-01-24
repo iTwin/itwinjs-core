@@ -74,7 +74,7 @@ class OidcPublicClient {
     const authorizationUrl = client.authorizationUrl(authParams);
 
     // Launch puppeteer with no sandbox only on linux
-    let launchOptions: puppeteer.LaunchOptions = { dumpio: true };
+    let launchOptions: puppeteer.LaunchOptions = { dumpio: true }; // , headless: false, slowMo: 500 };
     if (os.platform() === "linux") {
       launchOptions = {
         args: ["--no-sandbox"], // , "--disable-setuid-sandbox"],
@@ -154,12 +154,18 @@ class OidcPublicClient {
       await page.type("#Password", password);
       await Promise.all([
         page.waitForNavigation({
-          timeout: 60000,
-          waitUntil: "networkidle2",
+          // Need to wait for 'load' here instead of using 'networkidle2' because during a federated login there is a second redirect. With a fast connection,
+          // the redirect happens so quickly it doesn't hit the 500 ms threshold that puppeteer expects for an idle network.
+          waitUntil: "load",
         }),
         page.$eval("#submitLogon", (button: any) => button.click()),
       ]);
     }
+
+    // There are two page loads if it's a federated user because of a second redirect.
+    // Note: On a fast internet connection this is not needed but on slower ones it will be.  See comment above for previous 'waitForNavigation' for details.
+    if (-1 !== page.url().indexOf("wsfed"))
+      await page.waitForNavigation({ waitUntil: "networkidle2" });
 
     // Check if there were any errors when performing sign-in
     await this.checkErrorOnPage(page, "#errormessage");
@@ -179,7 +185,10 @@ class OidcPublicClient {
       page.$eval("#idSIButton9", (button: any) => button.click()),
     ]);
 
-    await page.waitForNavigation({ waitUntil: "networkidle2" });
+    // For federated login, there are 2 pages in a row.  The one to load to the redirect page (i.e. "Taking you to your organization's sign-in page...")
+    // and then actually loading to the page with the forms for sign-in.
+
+    await page.waitForNavigation({ waitUntil: "networkidle2" }); // Waits for the actual sign-in page to load.
 
     // Checks for the error in username entered
     await this.checkErrorOnPage(page, "#usernameError");
@@ -196,7 +205,6 @@ class OidcPublicClient {
       page.$eval("#submitButton", (button: any) => button.click()),
     ]);
 
-    // Chjecks for the error in username entered
     await this.checkErrorOnPage(page, "#errorText");
 
     await Promise.all([

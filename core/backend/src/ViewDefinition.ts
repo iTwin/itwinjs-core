@@ -8,7 +8,7 @@
 
 import { Id64, Id64Array, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BackgroundMapProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags } from "@bentley/imodeljs-common";
+import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BackgroundMapProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags, DisplayStyle3dProps, SkyBoxImageProps } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -49,7 +49,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
   /** @alpha */
   protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
-    if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.styles) {
+    if (context.isBetweenIModels && targetElementProps?.jsonProperties?.styles) {
       const subCategoryOverrides = JsonUtils.asArray(targetElementProps.jsonProperties.styles.subCategoryOvr);
       if (undefined !== subCategoryOverrides) {
         for (const subCategoryOverride of subCategoryOverrides) {
@@ -132,7 +132,7 @@ export interface DisplayStyleCreationOptions {
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
  * @public
  */
-export class DisplayStyle3d extends DisplayStyle {
+export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps {
   /** @internal */
   public static get className(): string { return "DisplayStyle3d"; }
   private readonly _settings: DisplayStyle3dSettings;
@@ -140,9 +140,51 @@ export class DisplayStyle3d extends DisplayStyle {
   public get settings(): DisplayStyle3dSettings { return this._settings; }
 
   /** @internal */
-  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+  public constructor(props: DisplayStyle3dProps, iModel: IModelDb) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
+  }
+
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    const skyBoxImageProps: SkyBoxImageProps | undefined = this.settings.environment?.sky?.image;
+    if (skyBoxImageProps?.texture) {
+      predecessorIds.add(Id64.fromJSON(skyBoxImageProps.texture));
+    }
+    if (skyBoxImageProps?.textures) {
+      if (skyBoxImageProps.textures.back) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.back)); }
+      if (skyBoxImageProps.textures.bottom) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.bottom)); }
+      if (skyBoxImageProps.textures.front) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.front)); }
+      if (skyBoxImageProps.textures.left) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.left)); }
+      if (skyBoxImageProps.textures.right) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.right)); }
+      if (skyBoxImageProps.textures.top) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.top)); }
+    }
+  }
+  /** @alpha */
+  protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
+    super.onCloned(context, sourceElementProps, targetElementProps);
+    if (context.isBetweenIModels) {
+      const skyBoxImageProps: SkyBoxImageProps | undefined = targetElementProps?.jsonProperties?.styles?.environment?.sky?.image;
+      if (skyBoxImageProps?.texture) {
+        const textureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.texture));
+        skyBoxImageProps.texture = Id64.isValidId64(textureId) ? textureId : undefined;
+      }
+      if (skyBoxImageProps?.textures) {
+        const backTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.back));
+        skyBoxImageProps.textures.back = Id64.isValidId64(backTextureId) ? backTextureId : undefined;
+        const bottomTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.bottom));
+        skyBoxImageProps.textures.bottom = Id64.isValidId64(bottomTextureId) ? bottomTextureId : undefined;
+        const frontTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.front));
+        skyBoxImageProps.textures.front = Id64.isValidId64(frontTextureId) ? frontTextureId : undefined;
+        const leftTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.left));
+        skyBoxImageProps.textures.left = Id64.isValidId64(leftTextureId) ? leftTextureId : undefined;
+        const rightTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.right));
+        skyBoxImageProps.textures.right = Id64.isValidId64(rightTextureId) ? rightTextureId : undefined;
+        const topTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.top));
+        skyBoxImageProps.textures.top = Id64.isValidId64(topTextureId) ? topTextureId : undefined;
+      }
+    }
   }
 
   /** Create a DisplayStyle3d for use by a ViewDefinition.
@@ -172,7 +214,7 @@ export class DisplayStyle3d extends DisplayStyle {
         stylesIn.backgroundMap = options.backgroundMap;
     }
 
-    const displayStyleProps: DisplayStyleProps = {
+    const displayStyleProps: DisplayStyle3dProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
       model: definitionModelId,

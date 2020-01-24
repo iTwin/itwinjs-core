@@ -6,13 +6,31 @@
  * @module Tile
  */
 
+import { BeTimePoint } from "@bentley/bentleyjs-core";
 import {
+  Matrix4d,
   Plane3dByOriginAndUnitNormal,
   Range3d,
+  Transform,
 } from "@bentley/geometry-core";
+import {
+  ElementAlignedBox3d,
+  FrustumPlanes,
+  ViewFlag,
+} from "@bentley/imodeljs-common";
 import { HitDetail } from "../HitDetail";
-import { RenderMemory } from "../render/System";
-import { TileTreeOwner, TileTreeSet } from "./internal";
+import { Viewport } from "../Viewport";
+import {
+  RenderClipVolume,
+  RenderMemory,
+} from "../render/System";
+import { FeatureSymbology } from "../render/FeatureSymbology";
+import {
+  TileDrawArgs,
+  TileTree,
+  TileTreeOwner,
+  TileTreeSet,
+} from "./internal";
 import {
   DecorateContext,
   SceneContext,
@@ -54,9 +72,13 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
 
   /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.drawScene]] on the referenced TileTree, if it is loaded. */
   public addToScene(context: SceneContext): void {
-    const tree = this.treeOwner.load();
-    if (undefined !== tree)
-      tree.drawScene(context);
+    const args = this.createDrawArgs(context);
+    if (undefined !== args)
+      this.draw(args);
+  }
+
+  public draw(args: TileDrawArgs): void {
+    args.root.draw(args);
   }
 
   /** Optionally return a tooltip describing the hit. */
@@ -71,11 +93,7 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
    * Override this function if a reference's range should not be included in the fit range, or a range different from its tile tree's range should be used.
    */
   public unionFitRange(union: Range3d): void {
-    const tree = this.treeOwner.load();
-    if (undefined === tree || undefined === tree.rootTile)
-      return;
-
-    const contentRange = tree.rootTile.computeWorldContentRange();
+    const contentRange = this.computeWorldContentRange();
     if (!contentRange.isNull)
       union.extendRange(contentRange);
   }
@@ -84,6 +102,77 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
     const tree = this.treeOwner.tileTree;
     if (undefined !== tree)
       tree.collectStatistics(stats);
+  }
+
+  /** Create context for drawing the tile tree, if it is ready for drawing.
+   * TileTreeReferences can override individual portions of the context, e.g. apply their own transform.
+   */
+  public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    const tree = this.treeOwner.load();
+    if (undefined === tree)
+      return undefined;
+
+    const now = BeTimePoint.now();
+    const purgeOlderThan = now.minus(tree.expirationTime);
+    const transform = this.computeTransform(tree);
+    const clipVolume = this.getClipVolume(tree);
+    const viewFlagOverrides = this.getViewFlagOverrides(tree);
+
+    return new TileDrawArgs(context, transform, tree, now, purgeOlderThan, viewFlagOverrides, clipVolume, tree.loader.parentsAndChildrenExclusive, this.getSymbologyOverrides(tree));
+  }
+
+  /** Supply transform from this tile tree reference's location to iModel coordinate space.
+   * @returns undefined if the TileTree is not yet loaded.
+   */
+  public getLocation(): Transform | undefined {
+    const tree = this.treeOwner.load();
+    return undefined !== tree ? this.computeTransform(tree) : undefined;
+  }
+
+  protected computeTransform(tree: TileTree): Transform {
+    return tree.iModelTransform.clone();
+  }
+
+  /** Compute the range of this tile tree's contents in world coordinates.
+   * @returns a null range if the tile tree is not loaded or has no content range.
+   */
+  public computeWorldContentRange(): ElementAlignedBox3d {
+    const range = new Range3d();
+    const tree = this.treeOwner.tileTree;
+    if (undefined !== tree && !tree.rootTile.contentRange.isNull)
+      this.computeTransform(tree).multiplyRange(tree.rootTile.contentRange, range);
+
+    return range;
+  }
+
+  public computeTileRangeForFrustum(vp: Viewport): Range3d | undefined {
+    const tree = this.treeOwner.tileTree;
+    if (undefined === tree)
+      return undefined;
+
+    return tree.computeTileRangeForFrustum(this.computeTransform(tree), vp.viewingSpace);
+  }
+
+  protected getClipVolume(tree: TileTree): RenderClipVolume | undefined {
+    return tree.clipVolume;
+  }
+
+  protected getViewFlagOverrides(tree: TileTree): ViewFlag.Overrides {
+    return tree.viewFlagOverrides;
+  }
+
+  protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
+    return undefined;
+  }
+
+  /* Extend range to include transformed range of this tile tree */
+  public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes) {
+    const tree = this.treeOwner.tileTree;
+    if (undefined === tree)
+      return;
+
+    const location = this.computeTransform(tree);
+    tree.accumulateTransformedRange(range, matrix, location, frustumPlanes);
   }
 
   public addPlanes(_planes: Plane3dByOriginAndUnitNormal[]): void { }

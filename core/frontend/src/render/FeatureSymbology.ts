@@ -547,6 +547,18 @@ export namespace FeatureSymbology {
           }
         }
       }
+
+      if (!view.is3d())
+        return;
+
+      const planProjectionSettings = view.getDisplayStyle3d().settings.planProjectionSettings;
+      if (undefined === planProjectionSettings)
+        return;
+
+      for (const [modelId, projSettings] of planProjectionSettings) {
+        if (undefined !== projSettings.transparency)
+          this.overrideModel(modelId, Appearance.fromJSON({ transparency: projSettings.transparency }));
+      }
     }
 
     private _initSubCategoryOverrides(view: ViewState): void {

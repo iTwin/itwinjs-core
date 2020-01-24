@@ -819,6 +819,7 @@ export abstract class Viewport implements IDisposable {
   public set viewFlags(viewFlags: ViewFlags) {
     if (!this.viewFlags.equals(viewFlags)) {
       this._changeFlags.setDisplayStyle();
+      this.invalidateRenderPlan();
       this.view.displayStyle.viewFlags = viewFlags;
     }
   }
@@ -830,6 +831,7 @@ export abstract class Viewport implements IDisposable {
   public set displayStyle(style: DisplayStyleState) {
     this.view.displayStyle = style;
     this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
   }
 
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
@@ -839,6 +841,7 @@ export abstract class Viewport implements IDisposable {
   public dropSubCategoryOverride(id: Id64String): void {
     this.view.displayStyle.dropSubCategoryOverride(id);
     this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
   }
 
   /** Override the symbology of geometry belonging to a specific subcategory when rendered within this viewport.
@@ -849,6 +852,7 @@ export abstract class Viewport implements IDisposable {
   public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void {
     this.view.displayStyle.overrideSubCategory(id, ovr);
     this._changeFlags.setDisplayStyle();
+    this.invalidateRenderPlan();
   }
 
   /** Query the symbology overrides applied to geometry belonging to a specific subcategory when rendered within this viewport.
