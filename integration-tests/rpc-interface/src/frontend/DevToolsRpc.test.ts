@@ -16,7 +16,7 @@ describe("DevTools", () => {
   before(async function () {
     const testContext = await TestContext.instance();
 
-    if (undefined === testContext.settings.runDevToolsRpcTests)
+    if (!testContext.settings.runDevToolsRpcTests)
       this.skip();
 
     iModel = await testContext.iModelWithChangesets!.getConnection();

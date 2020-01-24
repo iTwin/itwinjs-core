@@ -26,10 +26,10 @@ describe("PresentationRpcInterface tests", () => {
 
   before(async function () {
     const testContext = await TestContext.instance();
-    client = RpcManager.getClientForInterface(PresentationRpcInterface);
-
     if (!testContext.settings.runPresentationRpcTests)
       this.skip();
+
+    client = RpcManager.getClientForInterface(PresentationRpcInterface);
 
     Presentation.initialize();
 
@@ -121,7 +121,12 @@ describe("PresentationRpcInterface tests", () => {
     const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
     const keys = new KeySet([key1, key2]);
 
-    before(async () => {
+    before(async function () {
+      // Needed in all nested describes.  See https://github.com/mochajs/mocha/issues/2683.
+      const testContext = await TestContext.instance();
+      if (!testContext.settings.runPresentationRpcTests)
+        this.skip();
+
       ruleset = getRelatedDistinctValues as any;
       props = { imodel: iModel, rulesetId: ruleset.id };
     });

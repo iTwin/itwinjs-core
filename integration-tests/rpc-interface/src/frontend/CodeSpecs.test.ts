@@ -17,7 +17,7 @@ describe("Get Code Specs", () => {
   before(async function () {
     testContext = await TestContext.instance();
 
-    if (undefined === testContext.settings.runiModelReadRpcTests)
+    if (!testContext.settings.runiModelReadRpcTests)
       this.skip();
   });
 

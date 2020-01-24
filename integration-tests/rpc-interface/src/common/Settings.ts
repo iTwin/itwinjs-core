@@ -46,6 +46,14 @@ export function getRpcInterfaces(settings: Settings) {
   return rpcInterfaces;
 }
 
+function checkEnabled(envVariable: string | undefined): boolean {
+  if (undefined === envVariable)
+    return false;
+
+  const regex = /true/i;
+  return regex.test(envVariable);
+}
+
 export class Settings {
   private _backend: Backend = {} as Backend;
   public env: number = 0;
@@ -65,11 +73,11 @@ export class Settings {
 
   public get Backend(): Backend { return this._backend; }
 
-  public get runiModelTileRpcTests(): boolean { return undefined === process.env.RPC_IMODELTILE_ENABLE ? false : true; }
-  public get runPresentationRpcTests(): boolean { return undefined === process.env.RPC_PRESENTATION_ENABLE ? false : true; }
-  public get runiModelReadRpcTests(): boolean { return undefined === process.env.RPC_IMODELREAD_ENABLE ? false : true; }
-  public get runiModelWriteRpcTests(): boolean { return undefined === process.env.RPC_IMODELWRITE_ENABLE ? false : true; }
-  public get runDevToolsRpcTests(): boolean { return undefined === process.env.RPC_DEVTOOLS_ENABLE ? false : true; }
+  public get runiModelTileRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELTILE_ENABLE); }
+  public get runPresentationRpcTests(): boolean { return checkEnabled(process.env.RPC_PRESENTATION_ENABLE); }
+  public get runiModelReadRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELREAD_ENABLE); }
+  public get runiModelWriteRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELWRITE_ENABLE); }
+  public get runDevToolsRpcTests(): boolean { return checkEnabled(process.env.RPC_DEVTOOLS_ENABLE); }
 
   constructor(env: NodeJS.ProcessEnv) {
     const isFrontend = (typeof (process) === "undefined");

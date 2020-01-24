@@ -796,7 +796,7 @@
         "--grep",
         "#integration",
         "--invert",
-        "--inspect"
+        "--debug"
       ],
       "smartStep": true,
       "sourceMaps": true,
@@ -830,7 +830,7 @@
         "run-script",
         "test:integration:chrome",
         "--",
-        "--inspect"
+        "--debug"
       ],
       "smartStep": true,
       "sourceMaps": true,
