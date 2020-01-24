@@ -355,8 +355,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "presentation-integration-tests",
-      "projectFolder": "test-apps/presentation-integration-tests",
+      "packageName": "presentation-full-stack-tests",
+      "projectFolder": "test-apps/presentation-full-stack-tests",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -373,20 +373,20 @@
       "shouldPublish": false
     },
     {
-      "packageName": "core-integration-tests",
-      "projectFolder": "integration-tests/core",
+      "packageName": "core-full-stack-tests",
+      "projectFolder": "full-stack-tests/core",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
-      "packageName": "rpc-integration-tests",
-      "projectFolder": "integration-tests/rpc",
+      "packageName": "rpc-full-stack-tests",
+      "projectFolder": "full-stack-tests/rpc",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/rpcinterface-integration-test",
-      "projectFolder": "integration-tests/rpc-interface",
+      "packageName": "@bentley/rpcinterface-full-stack-test",
+      "projectFolder": "full-stack-tests/rpc-interface",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

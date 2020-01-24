@@ -2,9 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// Testing order of initialization for imodeljs-frontend and imodeljs-common
+import * as frontend from "@bentley/imodeljs-frontend";
+frontend;
+
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, IModelToken, RpcOperation, RpcConfiguration } from "@bentley/imodeljs-common";
-import { rpcInterfaces } from "./common/RpcInterfaces";
+import { rpcInterfaces } from "../common/RpcInterfaces";
 import { assert } from "chai";
 
 RpcConfiguration.developmentMode = true;

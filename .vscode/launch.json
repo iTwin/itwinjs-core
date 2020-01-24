@@ -485,9 +485,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "[Presentation] Tests: Integration",
-      "program": "${workspaceFolder}/test-apps/presentation-integration-tests/node_modules/mocha/bin/_mocha",
-      "cwd": "${workspaceFolder}/test-apps/presentation-integration-tests",
+      "name": "[Presentation] Tests: Full Stack",
+      "program": "${workspaceFolder}/test-apps/presentation-full-stack-tests/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/test-apps/presentation-full-stack-tests",
       "args": [
         "--opts",
         "mocha.opts",
@@ -642,7 +642,7 @@
       ],
       "protocol": "inspector",
       "outputCapture": "std",
-      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
+      "port": 5858 // NB: This must match ports.debugging in full-stack-tests/core/certa.json
     },
     {
       "name": "⚠︝Clients Tests (Integration - Frontend)",
@@ -678,7 +678,7 @@
       ],
       "protocol": "inspector",
       "outputCapture": "std",
-      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
+      "port": 5858 // NB: This must match ports.debugging in full-stack-tests/core/certa.json
     },
     {
       "name": "⚠︝GeoPhoto Plugin Tests (Integration - Frontend)",
@@ -695,8 +695,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠︝Integration Tests (backend)",
-      "cwd": "${workspaceRoot}/integration-tests/core/",
+      "name": "⚠︝Full Stack Core Tests (backend)",
+      "cwd": "${workspaceRoot}/full-stack-tests/core/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
       "runtimeArgs": [
         "--max-http-header-size=16000",
@@ -712,19 +712,19 @@
       "smartStep": true,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/integration-tests/core/lib/**/*.js",
+        "${workspaceRoot}/full-stack-tests/core/lib/**/*.js",
         "${workspaceRoot}/core/*/lib/**/*.js",
         "${workspaceRoot}/tools/certa/lib/**/*.js"
       ],
       "protocol": "inspector",
       "outputCapture": "std",
-      "port": 5858 // NB: This must match ports.debugging in integration-tests/core/certa.json
+      "port": 5858 // NB: This must match ports.debugging in full-stack-tests/core/certa.json
     },
     {
-      "name": "⚠︝Integration Tests (frontend)",
+      "name": "⚠︝Full Stack Core Tests (frontend)",
       "type": "chrome",
       "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/core/certa.json
+      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/core/certa.json
       "sourceMaps": true,
       "timeout": 200000,
       "smartStep": true,
@@ -786,8 +786,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠︝RPC Integration Tests (backend)",
-      "cwd": "${workspaceRoot}/integration-tests/rpc/",
+      "name": "⚠︝Full Stack RPC Tests (backend)",
+      "cwd": "${workspaceRoot}/full-stack-tests/rpc/",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run-script",
@@ -801,19 +801,19 @@
       "smartStep": true,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/integration-tests/rpc/lib/**/*.js",
+        "${workspaceRoot}/full-stack-tests/rpc/lib/**/*.js",
         "${workspaceRoot}/core/*/lib/**/*.js",
         "${workspaceRoot}/tools/certa/lib/**/*.js"
       ],
       "protocol": "inspector",
       "outputCapture": "std",
-      "port": 5858 // NB: This must match ports.debugging in integration-tests/rpc/certa.json
+      "port": 5858 // NB: This must match ports.debugging in full-stack-tests/rpc/certa.json
     },
     {
-      "name": "⚠︝RPC Integration Tests (frontend)",
+      "name": "⚠︝Full Stack RPC Tests (frontend)",
       "type": "chrome",
       "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/rpc/certa.json
+      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/rpc/certa.json
       "sourceMaps": true,
       "timeout": 200000,
       "smartStep": true,
@@ -823,8 +823,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠︝RPC Interface Integration Tests (certa backend)",
-      "cwd": "${workspaceRoot}/integration-tests/rpc-interface/",
+      "name": "⚠︝Full Stack RPC Interface Tests (certa backend)",
+      "cwd": "${workspaceRoot}/full-stack-tests/rpc-interface/",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run-script",
@@ -835,33 +835,33 @@
       "smartStep": true,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/integration-tests/rpc-interface/lib/**/*.js",
+        "${workspaceRoot}/full-stack-tests/rpc-interface/lib/**/*.js",
         "${workspaceRoot}/core/*/lib/**/*.js",
         "${workspaceRoot}/tools/certa/lib/**/*.js"
       ],
       "protocol": "inspector",
       "outputCapture": "std",
-      "port": 5858 // NB: This must match ports.debugging in integration-tests/rpc-interface/certa.json
+      "port": 5858 // NB: This must match ports.debugging in full-stack-tests/rpc-interface/certa.json
     },
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠︝RPC Interface Integration Tests (backend)",
-      "cwd": "${workspaceRoot}/integration-tests/rpc-interface/",
-      "program": "${workspaceRoot}/integration-tests/rpc-interface/lib/test/backend.js",
+      "name": "⚠︝Full Stack RPC Interface Tests (backend)",
+      "cwd": "${workspaceRoot}/full-stack-tests/rpc-interface/",
+      "program": "${workspaceRoot}/full-stack-tests/rpc-interface/lib/test/backend.js",
       "smartStep": true,
       "sourceMaps": true,
       "outFiles": [
-        "${workspaceRoot}/integration-tests/rpc-interface/lib/**/*.js",
+        "${workspaceRoot}/full-stack-tests/rpc-interface/lib/**/*.js",
         "${workspaceRoot}/core/*/lib/**/*.js"
       ],
       "protocol": "inspector"
     },
     {
-      "name": "⚠︝RPC Interface Integration Tests (frontend)",
+      "name": "⚠︝Full Stack RPC Interface Tests (frontend)",
       "type": "chrome",
       "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in integration-tests/rpc-interface/certa.json
+      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/rpc-interface/certa.json
       "sourceMaps": true,
       "timeout": 200000,
       "smartStep": true,
@@ -871,64 +871,64 @@
   ],
   "compounds": [
     {
-      "name": "✔︝Frontend Tests",
+      "name": "✔Frontend Tests",
       "configurations": [
         "⚠︝Frontend Tests (chrome)",
         "⚠︝Frontend Tests (certa/backend)"
       ]
     },
     {
-      "name": "✔︝Markup Tests",
+      "name": "✔Markup Tests",
       "configurations": [
         "⚠︝Markup Tests (chrome)",
         "⚠︝Markup Tests (certa/backend)"
       ]
     },
     {
-      "name": "✔︝Integration Tests",
+      "name": "✔Full Stack Core Tests",
       "configurations": [
-        "⚠︝Integration Tests (frontend)",
-        "⚠︝Integration Tests (backend)"
+        "⚠︝Full Stack Core Tests (frontend)",
+        "⚠︝Full Stack Core Tests (backend)"
       ]
     },
     {
-      "name": "✔︝RPC Integration Tests",
+      "name": "✔Full Stack RPC Tests",
       "configurations": [
-        "⚠︝RPC Integration Tests (frontend)",
-        "⚠︝RPC Integration Tests (backend)"
+        "⚠︝Full Stack RPC Tests (frontend)",
+        "⚠︝Full Stack RPC Tests (backend)"
       ]
     },
     {
-      "name": "✔︝RPC Interface Tests",
+      "name": "✔Full Stack RPC Interface Tests",
       "configurations": [
-        "⚠︝RPC Interface Integration Tests (frontend)",
-        "⚠︝RPC Interface Integration Tests (certa backend)",
-        "⚠︝RPC Interface Integration Tests (backend)"
+        "⚠︝Full Stack RPC Interface Tests (frontend)",
+        "⚠︝Full Stack RPC Interface Tests (certa backend)",
+        "⚠︝Full Stack RPC Interface Tests (backend)"
       ]
     },
     {
-      "name": "display-test-app Electron (frontend + backend)",
+      "name": "✔display-test-app Electron (frontend + backend)",
       "configurations": [
         "display-test-app Electron (backend)",
         "display-test-app (frontend)"
       ]
     },
     {
-      "name": "ui-test-app Electron (frontend + backend)",
+      "name": "✔ui-test-app Electron (frontend + backend)",
       "configurations": [
         "ui-test-app Electron (backend)",
         "ui-test-app Electron (frontend)"
       ]
     },
     {
-      "name": "✔︝Clients Tests (Integration)",
+      "name": "✔Clients Tests (Integration)",
       "configurations": [
         "⚠︝Clients Tests (Integration - Certa/Backend)",
         "⚠︝Clients Tests (Integration - Frontend)"
       ]
     },
     {
-      "name": "✔︝GeoPhoto Plugin Tests (Integration)",
+      "name": "✔GeoPhoto Plugin Tests (Integration)",
       "configurations": [
         "⚠︝GeoPhoto Plugin Tests (Integration - Certa/Backend)",
         "⚠︝GeoPhoto Plugin Tests (Integration - Frontend)"

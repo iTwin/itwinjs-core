@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geo-photo-plugin",
+      "comment": "Renamed the folder and name of tests that run both the frontend and backend to \"fullstack\" instead of \"integration\". ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geo-photo-plugin",
+  "email": "Ramanujam.Raman@bentley.com"
+}
