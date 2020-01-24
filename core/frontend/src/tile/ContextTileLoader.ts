@@ -28,6 +28,7 @@ export abstract class ContextTileLoader extends TileLoader {
   }
 
   public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number {
-    return TileLoader.computeTileClosestToEyePriority(tile, viewports);
+    // ###TODO: Handle case where tile tree reference(s) have a transform different from tree's (background map with ground bias).
+    return TileLoader.computeTileClosestToEyePriority(tile, viewports, tile.root.iModelTransform);
   }
 }

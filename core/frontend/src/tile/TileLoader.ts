@@ -137,10 +137,10 @@ export abstract class TileLoader {
   public get viewFlagOverrides(): ViewFlag.Overrides { return defaultViewFlagOverrides; }
   public adjustContentIdSizeMultiplier(contentId: string, _sizeMultiplier: number): string { return contentId; }
 
-  public static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>): number {
+  public static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number {
     // Prioritize tiles closer to eye.
     // NB: In NPC coords, 0 = far plane, 1 = near plane.
-    const center = tile.root.location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
+    const center = location.multiplyPoint3d(tile.center, scratchTileCenterWorld);
     let minDistance = 1.0;
     for (const viewport of viewports) {
       const npc = viewport.worldToNpc(center, scratchTileCenterView);

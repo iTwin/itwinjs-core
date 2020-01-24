@@ -6,25 +6,14 @@
  * @module Tile
  */
 
+import { Map4d } from "@bentley/geometry-core";
+import { FrustumPlanes } from "@bentley/imodeljs-common";
 import {
-  BeTimePoint,
-} from "@bentley/bentleyjs-core";
-import {
-  Map4d,
-  Transform,
-} from "@bentley/geometry-core";
-import {
-  FrustumPlanes,
-} from "@bentley/imodeljs-common";
-import {
-  TileTree,
   TileDrawArgs,
+  TileTreeReference,
 } from "./internal";
 import { SceneContext } from "../ViewContext";
-import {
-  RenderClipVolume,
-  RenderGraphic,
-} from "../render/System";
+import { RenderGraphic } from "../render/System";
 
 /** @internal */
 export interface GraphicsCollector {
@@ -33,9 +22,18 @@ export interface GraphicsCollector {
 
 /** @internal */
 export class GraphicsCollectorDrawArgs extends TileDrawArgs {
-  constructor(private _planes: FrustumPlanes, private _worldToViewMap: Map4d, private _collector: GraphicsCollector, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
-    super(context, location, root, now, purgeOlderThan, clip);
+  private _planes: FrustumPlanes;
+  private _worldToViewMap: Map4d;
+  private _collector: GraphicsCollector;
+
+  private constructor(planes: FrustumPlanes, worldToViewMap: Map4d, collector: GraphicsCollector, args: TileDrawArgs) {
+    super(args.context, args.location, args.root, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
+
+    this._planes = planes;
+    this._worldToViewMap = worldToViewMap;
+    this._collector = collector;
   }
+
   public get frustumPlanes(): FrustumPlanes { return this._planes; }
   protected get worldToViewMap(): Map4d { return this._worldToViewMap; }
   public drawGraphics(): void {
@@ -43,9 +41,11 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
       this._collector.addGraphic(this.context.createBranch(this.graphics, this.location));
   }
 
-  public static create(context: SceneContext, collector: GraphicsCollector, tileTree: TileTree, planes: FrustumPlanes, worldToViewMap: Map4d) {
-    const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(tileTree.expirationTime);
-    return new GraphicsCollectorDrawArgs(planes, worldToViewMap, collector, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
+  public static create(context: SceneContext, collector: GraphicsCollector, ref: TileTreeReference, planes: FrustumPlanes, worldToViewMap: Map4d): TileDrawArgs | undefined {
+    const args = ref.createDrawArgs(context);
+    if (undefined === args)
+      return undefined;
+
+    return new GraphicsCollectorDrawArgs(planes, worldToViewMap, collector, args);
   }
 }

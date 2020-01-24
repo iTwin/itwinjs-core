@@ -38,9 +38,16 @@ import {
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch, RenderClipVolume, RenderMemory } from "../render/System";
-import { SceneContext } from "../ViewContext";
-import { CoordSystem, Viewport } from "../Viewport";
-import { Tile, TileLoadPriority, TileLoader, TileDrawArgs, tileParamsFromJSON, TileTreeParams } from "./internal";
+import { CoordSystem } from "../Viewport";
+import { ViewingSpace } from "../ViewingSpace";
+import {
+  Tile,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileLoader,
+  TileTreeParams,
+  tileParamsFromJSON,
+} from "./internal";
 
 function pointIsContained(point: Point3d, range: Range3d): boolean {
   const tol = 1.0e-6;
@@ -180,7 +187,10 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   private _lastSelected = BeTimePoint.now();
   public readonly iModel: IModelConnection;
   public readonly is3d: boolean;
-  public readonly location: Transform;
+  /** Transforms from the tile tree's coordinate space to the iModel's coordinate space.
+   * @note Individual [[TileTreeReference]]s may opt to relocate the TileTree using their own transforms.
+   */
+  public readonly iModelTransform: Transform;
   public readonly id: string;
   public readonly modelId: Id64String;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
@@ -203,7 +213,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.is3d = props.is3d;
     this.id = props.id;
     this.modelId = Id64.fromJSON(props.modelId);
-    this.location = props.location;
+    this.iModelTransform = props.location;
 
     if (undefined !== props.clipVector)
       this.clipVolume = IModelApp.renderSystem.createClipVolume(props.clipVector);
@@ -214,10 +224,10 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.viewFlagOverrides = this.loader.viewFlagOverrides;
     this.yAxisUp = props.yAxisUp ? props.yAxisUp : false;
     this.contentRange = props.contentRange;
-    if (!this.loader.isContentUnbounded) {
-      const worldContentRange = this.rootTile.computeWorldContentRange();
-      if (!worldContentRange.isNull)
-        this.iModel.displayedExtents.extendRange(worldContentRange);
+
+    if (!this.loader.isContentUnbounded && !this.rootTile.contentRange.isNull) {
+      const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
+      this.iModel.displayedExtents.extendRange(worldContentRange);
     }
 
     const admin = IModelApp.tileAdmin;
@@ -244,7 +254,13 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   /** The most recent time when tiles were selected for drawing. Used for purging least-recently-used tile trees to free up memory. */
   public get lastSelectedTime(): BeTimePoint { return this._lastSelected; }
 
-  public selectTilesForScene(context: SceneContext): Tile[] { return this.loader.drawAsRealityTiles ? this.selectRealityTiles(this.createDrawArgs(context), new Array<Tile[]>()) : this.selectTiles(this.createDrawArgs(context)); }
+  public selectTilesForScene(args: TileDrawArgs): Tile[] {
+    if (this.loader.drawAsRealityTiles)
+      return this.selectRealityTiles(args, []);
+    else
+      return this.selectTiles(args);
+  }
+
   public selectTiles(args: TileDrawArgs): Tile[] {
     this._lastSelected = BeTimePoint.now();
     const selected: Tile[] = [];
@@ -276,7 +292,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
             if (undefined === clipVector) {
               args.graphics.add(graphics);
             } else {
-              clipVector.transformInPlace(this.location);
+              clipVector.transformInPlace(args.location);
               if (builder) displayedDescendant.addBoundingRectangle(builder, ColorDef.blue);
               const branch = new GraphicBranch();
               const doClipOverride = new ViewFlag.Overrides();
@@ -344,12 +360,12 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     console.log(label + ": " + tiles.length + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // tslint:disable-line
   }
 
-  public computeTileRangeForFrustum(vp: Viewport): Range3d | undefined {
+  public computeTileRangeForFrustum(location: Transform, viewingSpace: ViewingSpace): Range3d | undefined {
     if (this.range.isNull)
       return undefined;
 
-    const range = this.location.multiplyRange(this.range);
-    const frustum = vp.getFrustum(CoordSystem.World, true);
+    const range = location.multiplyRange(this.range);
+    const frustum = viewingSpace.getFrustum(CoordSystem.World, true);
     const frustumPlanes = new FrustumPlanes(frustum);
     const planes = ConvexClipPlaneSet.createPlanes(frustumPlanes.planes!);
     const points: Point3d[] = [];
@@ -366,10 +382,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     return useTileRange ? computeTileRangeContainingPoints(range, points, this.is2d) : computeSubRangeContainingPoints(range, points, this.is2d);
   }
 
-  public drawScene(context: SceneContext): void {
-    this.draw(this.createDrawArgs(context));
-  }
-
   public draw(args: TileDrawArgs): void {
     if (this.loader.drawAsRealityTiles)
       return this.drawRealityTiles(args);
@@ -382,22 +394,18 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     args.context.viewport.numSelectedTiles += selectedTiles.length;
   }
 
-  public createDrawArgs(context: SceneContext): TileDrawArgs {
-    const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(this.expirationTime);
-    return new TileDrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVolume, this.loader.parentsAndChildrenExclusive);
-  }
-
   public debugForcedDepth?: number; // For debugging purposes - force selection of tiles of specified depth.
   private static _scratchFrustum = new Frustum();
   private static _scratchPoint4d = Point4d.createZero();
   private extendRangeForTileContent(range: Range3d, tile: Tile, matrix: Matrix4d, treeTransform: Transform, frustumPlanes?: FrustumPlanes) {
     if (tile.isEmpty || tile.contentRange.isNull)
       return;
+
     const box = Frustum.fromRange(tile.contentRange, TileTree._scratchFrustum);
     box.transformBy(treeTransform, box);
     if (frustumPlanes !== undefined && FrustumPlanes.Containment.Outside === frustumPlanes.computeFrustumContainment(box))
       return;
+
     if (tile.children === undefined) {
       for (const boxPoint of box.points) {
         matrix.multiplyPoint3d(boxPoint, 1, TileTree._scratchPoint4d);
@@ -413,8 +421,8 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   }
 
   /* extend range to include transformed range of this tile tree */
-  public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes) {
-    this.extendRangeForTileContent(range, this.rootTile, matrix, this.location, frustumPlanes);
+  public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, location: Transform, frustumPlanes?: FrustumPlanes) {
+    this.extendRangeForTileContent(range, this.rootTile, matrix, location, frustumPlanes);
   }
 
   public countTiles(): number {

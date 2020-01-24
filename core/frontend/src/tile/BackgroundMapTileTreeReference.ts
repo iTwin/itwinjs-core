@@ -9,7 +9,15 @@
 import { BackgroundMapSettings } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
-import { MapTileTreeReference, ImageryProvider, TileGraphicType, getBackgroundMapTreeSupplier, TileTreeOwner } from "./internal";
+import { SceneContext } from "../ViewContext";
+import {
+  ImageryProvider,
+  MapTileTreeReference,
+  TileGraphicType,
+  TileTreeOwner,
+  WebMapDrawArgs,
+  getBackgroundMapTreeSupplier,
+} from "./internal";
 
 /** A reference to a TileTree used for drawing a background map. To change the type of tiles drawn simply modify the `settings` property.
  * @internal
@@ -53,5 +61,13 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
   protected get _imageryProvider(): ImageryProvider | undefined {
     const tree = this.treeOwner.tileTree;
     return undefined !== tree ? (tree.loader as any).imageryProvider : undefined;
+  }
+
+  public createDrawArgs(context: SceneContext) {
+    let args = super.createDrawArgs(context);
+    if (undefined !== args)
+      args = new WebMapDrawArgs(args);
+
+    return args;
   }
 }

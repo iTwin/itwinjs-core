@@ -6,7 +6,12 @@
  * @module Tile
  */
 
-import { compareBooleans, compareStrings, Id64String } from "@bentley/bentleyjs-core";
+import {
+  compareBooleans,
+  compareStrings,
+  Id64String,
+} from "@bentley/bentleyjs-core";
+import { Transform } from "@bentley/geometry-core";
 import {
   BatchType,
   compareIModelTileTreeIds,
@@ -14,8 +19,20 @@ import {
   PrimaryTileTreeId,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { TileTree, TileTreeReference, TileTreeOwner, TileTreeSupplier, tileTreeParamsFromJSON, IModelTileLoader } from "./internal";
-import { ViewState } from "../ViewState";
+import {
+  IModelTileLoader,
+  TileDrawArgs,
+  TileGraphicType,
+  TileTree,
+  TileTreeOwner,
+  TileTreeReference,
+  TileTreeSupplier,
+  tileTreeParamsFromJSON,
+} from "./internal";
+import {
+  ViewState,
+  ViewState3d,
+} from "../ViewState";
 import { IModelApp } from "../IModelApp";
 import { GeometricModelState } from "../ModelState";
 
@@ -62,8 +79,8 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 const primaryTreeSupplier = new PrimaryTreeSupplier();
 
 class PrimaryTreeReference extends TileTreeReference {
-  private readonly _view: ViewState;
-  private readonly _model: GeometricModelState;
+  protected readonly _view: ViewState;
+  protected readonly _model: GeometricModelState;
   private _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
 
@@ -104,7 +121,50 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 }
 
+class PlanProjectionTreeReference extends PrimaryTreeReference {
+  private _view3d: ViewState3d;
+  private _curTransform?: { transform: Transform, elevation?: number };
+
+  public constructor(view: ViewState3d, model: GeometricModelState) {
+    super(view, model);
+    this._view3d = view;
+  }
+
+  protected computeTransform(tree: TileTree): Transform {
+    const settings = this.getSettings();
+    const elevation = undefined !== settings ? settings.elevation : undefined;
+    if (undefined === this._curTransform) {
+      this._curTransform = { transform: tree.iModelTransform.clone() };
+    } else if (this._curTransform.elevation !== elevation) {
+      const transform = tree.iModelTransform.clone();
+      if (undefined !== elevation)
+        transform.origin.z += elevation;
+
+      this._curTransform.transform = transform;
+      this._curTransform.elevation = elevation;
+    }
+
+    return this._curTransform.transform;
+  }
+
+  public draw(args: TileDrawArgs): void {
+    const settings = this.getSettings();
+    if (undefined === settings || !settings.overlay)
+      super.draw(args);
+    else
+      args.context.withGraphicTypeAndPlane(TileGraphicType.Overlay, undefined, () => args.root.draw(args));
+  }
+
+  private getSettings() {
+    return this._view3d.getDisplayStyle3d().settings.getPlanProjectionSettings(this._model.id);
+  }
+}
+
 /** @internal */
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference {
+  const model3d = view.is3d() ? model.asGeometricModel3d : undefined;
+  if (undefined !== model3d && model3d.isPlanProjection)
+    return new PlanProjectionTreeReference(view as ViewState3d, model);
+
   return new PrimaryTreeReference(view, model);
 }

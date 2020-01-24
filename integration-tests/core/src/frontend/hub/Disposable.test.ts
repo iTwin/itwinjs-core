@@ -15,7 +15,7 @@ import {
   SceneContext,
   ScreenViewport,
   TextureDrapeMap,
-  TileTree,
+  TileTreeReference,
   } from "@bentley/imodeljs-frontend";
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
@@ -325,7 +325,7 @@ describe("Disposal of WebGL Resources", () => {
   class Classifier extends RenderPlanarClassifier {
     public disposed = false;
     public constructor() { super(); }
-    public collectGraphics(_context: SceneContext, _classified: TileTree, _classifier: TileTree): void { }
+    public collectGraphics(_context: SceneContext, _classified: TileTreeReference, _classifier: TileTreeReference): void { }
     public dispose(): void {
       expect(this.disposed).to.be.false;
       this.disposed = true;

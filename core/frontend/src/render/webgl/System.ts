@@ -84,7 +84,7 @@ import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 import { Debug } from "./Diagnostics";
-import { BackgroundMapTileTreeReference, TileTree } from "../../tile/internal";
+import { BackgroundMapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { BackgroundMapDrape } from "./BackgroundMapDrape";
 import { ToolAdmin } from "../../tools/ToolAdmin";
 import { WebGLDisposable } from "./Disposable";
@@ -898,7 +898,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
     return clipVolume;
   }
-  public createBackgroundMapDrape(drapedTree: TileTree, mapTree: BackgroundMapTileTreeReference) {
+  public createBackgroundMapDrape(drapedTree: TileTreeReference, mapTree: BackgroundMapTileTreeReference) {
     return BackgroundMapDrape.create(drapedTree, mapTree);
   }
 

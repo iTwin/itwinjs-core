@@ -14,7 +14,9 @@ import {
 import {
   ImageryProvider,
   Tile,
+  TileDrawArgs,
   TileGraphicType,
+  TileTree,
   TileTreeReference,
 } from "./internal";
 import {
@@ -65,12 +67,12 @@ export abstract class MapTileTreeReference extends TileTreeReference {
 
   /** Select the tiles that would be displayed in the viewport. */
   public getTilesForView(viewport: Viewport): Tile[] {
+    const sceneContext = viewport.createSceneContext();
+    const args = this.createDrawArgs(sceneContext);
+
     let tiles: Tile[] = [];
-    const tree = this.treeOwner.tileTree;
-    if (undefined !== tree) {
-      const sceneContext = viewport.createSceneContext();
-      sceneContext.withGraphicTypeAndPlane(this._graphicType, this.plane, () => tiles = tree.selectTilesForScene(sceneContext));
-    }
+    if (undefined !== args)
+      sceneContext.withGraphicTypeAndPlane(this._graphicType, this.plane, () => tiles = args.root.selectTilesForScene(args));
 
     return tiles;
   }
@@ -95,15 +97,12 @@ export abstract class MapTileTreeReference extends TileTreeReference {
   }
 
   /** Draw the tiles into the viewport. */
-  public addToScene(context: SceneContext): void {
-    const tree = this.treeOwner.load();
-    if (undefined === tree)
-      return;
+  public draw(args: TileDrawArgs): void {
+    args.context.withGraphicTypeAndPlane(this._graphicType, this.plane, () => args.root.draw(args));
+  }
 
-    const args = tree.createDrawArgs(context);
-    args.graphics.symbologyOverrides = this._symbologyOverrides;
-
-    context.withGraphicTypeAndPlane(this._graphicType, this.plane, () => tree.draw(args));
+  protected getSymbologyOverrides(_tree: TileTree) {
+    return this._symbologyOverrides;
   }
 
   private get _symbologyOverrides(): FeatureSymbology.Overrides {

@@ -12,7 +12,7 @@ import { RenderMemory, RenderGraphic, RenderPlanarClassifier } from "../System";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";
-import { GraphicsCollectorDrawArgs, TileTree } from "../../tile/internal";
+import { GraphicsCollectorDrawArgs, TileTreeReference } from "../../tile/internal";
 import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SpatialClassificationProps, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
 import { ViewportQuadGeometry, CombineTexturesGeometry } from "./CachedGeometry";
 import { Plane3dByOriginAndUnitNormal, Point3d, Vector3d, Matrix4d } from "@bentley/geometry-core";
@@ -326,13 +326,17 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this.pushBatches(batchState, this._graphics);
   }
 
-  public collectGraphics(context: SceneContext, classifiedTree: TileTree, tileTree: TileTree) {
+  public collectGraphics(context: SceneContext, classifiedRef: TileTreeReference, treeRef: TileTreeReference) {
     this._graphics.length = 0;
     if (undefined === context.viewingSpace)
       return;
 
     const viewState = context.viewingSpace!.view as ViewState3d;
     if (undefined === viewState)
+      return;
+
+    const classifiedTree = classifiedRef.treeOwner.load();
+    if (undefined === classifiedTree)
       return;
 
     // TBD - Refine resolution calculation -- increase height based on viewing angle.
@@ -345,7 +349,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._width = requiredWidth;
     this._height = requiredHeight;
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, classifiedTree, tileTree, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, classifiedRef, treeRef, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -353,8 +357,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
 
-    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, tileTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
-    tileTree.draw(drawArgs);
+    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, new FrustumPlanes(this._frustum), projection.worldToViewMap);
+    if (undefined !== drawArgs)
+      treeRef.draw(drawArgs);
 
     // Shader behaves slightly differently when classifying surfaces vs point clouds.
     this._isClassifyingPointCloud = classifiedTree.loader.containsPointClouds;

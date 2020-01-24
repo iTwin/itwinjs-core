@@ -16,10 +16,14 @@ import {
   Range3d,
   Transform,
 } from "@bentley/geometry-core";
-import { FrustumPlanes } from "@bentley/imodeljs-common";
+import {
+  FrustumPlanes,
+  ViewFlag,
+} from "@bentley/imodeljs-common";
 import { Tile, TileTree } from "./internal";
 import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
+import { FeatureSymbology } from "../render/FeatureSymbology";
 import {
   GraphicBranch,
   RenderClipVolume,
@@ -38,7 +42,7 @@ export class TileDrawArgs {
   public readonly root: TileTree;
   public clipVolume?: RenderClipVolume;
   public readonly context: SceneContext;
-  public viewFrustum?: ViewingSpace;
+  public viewingSpace: ViewingSpace;
   public readonly graphics: GraphicBranch = new GraphicBranch();
   public readonly now: BeTimePoint;
   public readonly purgeOlderThan: BeTimePoint;
@@ -62,20 +66,30 @@ export class TileDrawArgs {
     return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
   }
   protected get worldToViewMap(): Map4d {
-    return this.viewFrustum ? this.viewFrustum!.worldToViewMap : this.context.viewport.viewingSpace.worldToViewMap;
+    return this.viewingSpace.worldToViewMap;
   }
 
-  public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume, parentsAndChildrenExclusive = true) {
+  public static fromTileTree(context: SceneContext, location: Transform, root: TileTree, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = false, symbologyOverrides?: FeatureSymbology.Overrides) {
+    const now = BeTimePoint.now();
+    const purgeOlderThan = now.minus(root.expirationTime);
+    return new TileDrawArgs(context, location, root, now, purgeOlderThan, viewFlagOverrides, clip, parentsAndChildrenExclusive, symbologyOverrides);
+  }
+
+  public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = true, symbologyOverrides?: FeatureSymbology.Overrides) {
     this.location = location;
     this.root = root;
     this.clipVolume = clip;
     this.context = context;
+
     this.now = now;
     this.purgeOlderThan = purgeOlderThan;
-    this.graphics.setViewFlagOverrides(root.viewFlagOverrides);
-    this.viewFrustum = context.viewingSpace;
-    if (this.viewFrustum !== undefined)
-      this._frustumPlanes = new FrustumPlanes(this.viewFrustum.getFrustum());
+
+    this.graphics.setViewFlagOverrides(viewFlagOverrides);
+    this.graphics.symbologyOverrides = symbologyOverrides;
+    this.graphics.animationId = root.modelId;
+
+    this.viewingSpace = context.viewingSpace;
+    this._frustumPlanes = new FrustumPlanes(this.viewingSpace.getFrustum());
 
     this.planarClassifier = context.getPlanarClassifierForModel(root.modelId);
     this.drape = context.getTextureDrapeForModel(root.modelId);
@@ -84,7 +98,6 @@ export class TileDrawArgs {
     if (context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
       this.viewClip = context.viewport.view.getViewClip();
 
-    this.graphics.animationId = root.modelId;
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
   }
 

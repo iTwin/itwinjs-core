@@ -1,4 +1,3 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -6,18 +5,51 @@
 /** @packageDocumentation
  * @module Tile
  */
-import { BackgroundMapSettings, TerrainProviderName, TerrainHeightOriginMode, TerrainSettings, ViewFlag, RenderMode } from "@bentley/imodeljs-common";
-import { WebMapTileLoader, WebMapTileTreeProps, MapTileLoaderBase, getGcsConverterAvailable, TerrainTileLoaderBase, getCesiumWorldTerrainLoader, TileTreeReference, TileTree, TileTreeSet, BingElevationProvider, MapTilingScheme, GeographicTilingScheme, MapTileTree, TileDrawArgs, TileTreeParams, tileTreeParamsFromJSON, TileTreeSupplier, TileTreeOwner, MapTileTreeReference } from "./internal";
-import { IModelConnection } from "../IModelConnection";
+
 import {
   assert,
   compareNumbers,
   compareStrings,
-  BeTimePoint,
 } from "@bentley/bentleyjs-core";
+import {
+  Angle,
+  Matrix3d,
+  Plane3dByOriginAndUnitNormal,
+  Point3d,
+  Range1d,
+  Range3d,
+  Transform,
+} from "@bentley/geometry-core";
+import {
+  BackgroundMapSettings,
+  RenderMode,
+  TerrainHeightOriginMode,
+  TerrainProviderName,
+  TerrainSettings,
+  ViewFlag,
+} from "@bentley/imodeljs-common";
+import {
+  BingElevationProvider,
+  GeographicTilingScheme,
+  MapTileLoaderBase,
+  MapTileTree,
+  MapTileTreeReference,
+  MapTilingScheme,
+  TerrainTileLoaderBase,
+  TileTree,
+  TileTreeOwner,
+  TileTreeParams,
+  TileTreeReference,
+  TileTreeSet,
+  TileTreeSupplier,
+  WebMapTileLoader,
+  WebMapTileTreeProps,
+  getCesiumWorldTerrainLoader,
+  getGcsConverterAvailable,
+  tileTreeParamsFromJSON,
+} from "./internal";
+import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
-import { Point3d, Range3d, Plane3dByOriginAndUnitNormal, Transform, Matrix3d, Angle, Range1d } from "@bentley/geometry-core";
-import { RenderClipVolume } from "../render/System";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { ScreenViewport } from "../Viewport";
@@ -28,18 +60,11 @@ interface BackgroundTerrainTreeId {
   heightOriginMode: number;
   wantSkirts: boolean;
 }
-class BackgroundTerrainDrawArgs extends TileDrawArgs {
-  constructor(settings: TerrainSettings | undefined, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
-    super(context, location, root, now, purgeOlderThan, clip);
-    if (settings && settings.applyLighting) {
-      const viewFlagLightsOnOverrides = new ViewFlag.Overrides();
-      viewFlagLightsOnOverrides.setApplyLighting(true);
-      viewFlagLightsOnOverrides.setRenderMode(RenderMode.SmoothShade);
-      viewFlagLightsOnOverrides.setShowClipVolume(false);
-      this.graphics.setViewFlagOverrides(viewFlagLightsOnOverrides);
-    }
-  }
-}
+
+const lightsOnOverrides = new ViewFlag.Overrides();
+lightsOnOverrides.setApplyLighting(true);
+lightsOnOverrides.setRenderMode(RenderMode.SmoothShade);
+lightsOnOverrides.setShowClipVolume(false);
 
 class BackgroundTerrainTileTree extends MapTileTree {
   constructor(params: TileTreeParams, groundBias: number, public seaLevelOffset: number, gcsConverterAvailable: boolean, tilingScheme: MapTilingScheme, heightRange: Range1d) {
@@ -55,13 +80,6 @@ class BackgroundTerrainTileTree extends MapTileTree {
     const matrix = Matrix3d.createScale(1.0, 1.0, this.settings ? this.settings.exaggeration : 1.0);
     const origin = Matrix3d.xyzMinusMatrixTimesXYZ(this._fixedPoint, matrix, this._fixedPoint);
     return Transform.createRefs(origin, matrix);
-  }
-
-  public createDrawArgs(context: SceneContext): TileDrawArgs {
-    const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(this.expirationTime);
-
-    return new BackgroundTerrainDrawArgs(this.settings, context, this.getLocationTransform(this.settings).clone(), this, now, purgeOlderThan, this.clipVolume);
   }
 }
 
@@ -93,6 +111,7 @@ class BackgroundTerrainTreeSupplier implements TileTreeSupplier {
         return heightOrigin + await elevationProvider.getGeodeticToSeaLevelOffset(projectCenter, iModel);
     }
   }
+
   public async createTileTree(id: BackgroundTerrainTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     assert(id.providerName === "CesiumWorldTerrain");
     // ###TODO: Doesn't seem like each tile tree should need its own imagery provider instance...
@@ -137,6 +156,7 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     this.settings = settings;
     this._iModel = iModel;
   }
+
   /** Terrain  tiles do not contribute to the range used by "fit view". */
   public unionFitRange(_range: Range3d): void { }
 
@@ -150,38 +170,57 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
 
     return this._iModel.tiles.getTileTreeOwner(id, backgroundTerrainTreeSupplier);
   }
+
   /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.drawScene]] on the referenced TileTree, if it is loaded. */
   public addToScene(context: SceneContext): void {
-    const tree = this.treeOwner.load();
-    if (undefined !== tree && context.viewFlags.backgroundMap) {
-      const terrainTree = tree as BackgroundTerrainTileTree;
-      if (undefined === terrainTree) {
-        assert(false);
-        return;
-      }
+    if (!context.viewFlags.backgroundMap)
+      return;
 
-      if (this._doDrape)
-        context.addBackgroundDrapedModel(tree);
-      // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
-      this._mapDrapeTree = context.viewport.displayStyle.backgroundDrapeMap;
-      terrainTree.settings = context.viewport.displayStyle.backgroundMapSettings.terrainSettings;
-      const args = terrainTree.createDrawArgs(context);
-      args.graphics.symbologyOverrides = this._symbologyOverrides;
+    const tree = context.viewFlags.backgroundMap ? this.treeOwner.load() as BackgroundTerrainTileTree : undefined;
+    if (undefined === tree)
+      return;
+
+    if (this._doDrape)
+      context.addBackgroundDrapedModel(this);
+
+    // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
+    this._mapDrapeTree = context.viewport.displayStyle.backgroundDrapeMap;
+
+    tree.settings = context.viewport.displayStyle.backgroundMapSettings.terrainSettings;
+    const args = this.createDrawArgs(context);
+    if (undefined !== args)
       tree.draw(args);
-      terrainTree.settings = undefined;
-    }
+
+    tree.settings = undefined;
   }
+
+  protected getViewFlagOverrides(tree: TileTree) {
+    const settings = (tree as BackgroundTerrainTileTree).settings;
+    return undefined !== settings && settings.applyLighting ? lightsOnOverrides : super.getViewFlagOverrides(tree);
+  }
+
+  protected getSymbologyOverrides(_tree: TileTree) {
+    return this._symbologyOverrides;
+  }
+
+  protected computeTransform(tree: TileTree) {
+    const root = tree as BackgroundTerrainTileTree;
+    return root.getLocationTransform(root.settings);
+  }
+
   public discloseTileTrees(trees: TileTreeSet): void {
     super.discloseTileTrees(trees);
 
     if (undefined !== this._mapDrapeTree)
       trees.disclose(this._mapDrapeTree);
   }
+
   public getHeightRange(): Range1d | undefined {
     if (undefined !== this.treeOwner.tileTree && this.treeOwner.tileTree.loader instanceof MapTileLoaderBase)
       return this.treeOwner.tileTree.loader.heightRange;
     return undefined;
   }
+
   public addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void {
     const heightRange = this.getHeightRange();
     if (undefined !== heightRange) {
@@ -192,6 +231,7 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
       planes.push(Plane3dByOriginAndUnitNormal.createXYPlane(new Point3d(0, 0, 0)));
     }
   }
+
   public getToolTip(hit: HitDetail): HTMLElement | string | undefined {
     const tree = this.treeOwner.tileTree as BackgroundTerrainTileTree;
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.sourceId)
@@ -209,6 +249,7 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     div.innerHTML = strings.join("<br>");
     return div;
   }
+
   /** Add logo cards to logo div. */
   public addLogoCards(logoDiv: HTMLTableElement, vp: ScreenViewport): void {
     const drapeTree = this._mapDrapeTree as MapTileTreeReference;

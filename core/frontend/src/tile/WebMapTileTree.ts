@@ -9,7 +9,6 @@
 /// cSpell:ignore quadkey
 
 import {
-  BeTimePoint,
   Id64String,
   assert,
   compareBooleans,
@@ -63,8 +62,7 @@ import {
 } from "./internal";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
-import { SceneContext } from "../ViewContext";
-import { RenderClipVolume, RenderSystem } from "../render/System";
+import { RenderSystem } from "../render/System";
 
 /** @internal */
 export class WebMapTileTreeProps implements TileTreeProps {
@@ -146,12 +144,14 @@ export abstract class MapTileLoaderBase extends ContextTileLoader {
   }
 }
 
-class WebMapDrawArgs extends TileDrawArgs {
+/** @internal */
+export class WebMapDrawArgs extends TileDrawArgs {
   private readonly _tileToView: Matrix4d;
   private readonly _scratchViewCorner = Point4d.createZero();
 
-  public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
-    super(context, location, root, now, purgeOlderThan, clip, false);
+  public constructor(args: TileDrawArgs) {
+    super(args.context, args.location, args.root, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, false);
+
     const tileToWorld = Matrix4d.createTransform(this.location);
     this._tileToView = tileToWorld.multiplyMatrixMatrix(this.worldToViewMap.transform0);
   }
@@ -325,15 +325,6 @@ export async function getGcsConverterAvailable(iModel: IModelConnection) {
   return haveConverter;
 }
 
-class BackgroundMapTileTree extends MapTileTree {
-
-  public createDrawArgs(context: SceneContext): TileDrawArgs {
-    const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(this.expirationTime);
-    return new WebMapDrawArgs(context, this.location.clone(), this, now, purgeOlderThan, this.clipVolume);
-  }
-}
-
 /** Represents the service that is providing map tiles for Web Mercator models (background maps).
  * @internal
  */
@@ -349,7 +340,7 @@ export async function createTileTreeFromImageryProvider(imageryProvider: Imagery
   const haveConverter = await getGcsConverterAvailable(iModel);
   const loader = new WebMapTileLoader(imageryProvider, iModel, modelId, groundBias, tilingScheme, filterTextures);
   const tileTreeProps = new WebMapTileTreeProps(groundBias, modelId);
-  return new BackgroundMapTileTree(tileTreeParamsFromJSON(tileTreeProps, iModel, true, loader, modelId), groundBias, haveConverter, tilingScheme, true, heightRange);
+  return new MapTileTree(tileTreeParamsFromJSON(tileTreeProps, iModel, true, loader, modelId), groundBias, haveConverter, tilingScheme, true, heightRange);
 }
 
 /** A specialization of MapTileTreeReference associated with a specific ImageryProvider. Provided mostly as a convenience.

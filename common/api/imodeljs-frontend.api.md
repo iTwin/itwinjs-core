@@ -1622,6 +1622,8 @@ export abstract class Attachment {
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
     displayPriority: number;
+    // (undocumented)
+    draw(context: SceneContext): void;
     getOrCreateClip(transform?: Transform): ClipVector;
     // (undocumented)
     id: Id64String;
@@ -1769,6 +1771,8 @@ export class B3dmReader extends GltfReader {
 export class BackgroundMapTileTreeReference extends MapTileTreeReference {
     constructor(settings: BackgroundMapSettings, iModel: IModelConnection, forDrape?: boolean);
     // (undocumented)
+    createDrawArgs(context: SceneContext): import("./TileDrawArgs").TileDrawArgs | undefined;
+    // (undocumented)
     protected get _graphicType(): TileGraphicType.BackgroundMap | TileGraphicType.Scene;
     // (undocumented)
     protected get _groundBias(): number;
@@ -1790,11 +1794,17 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void;
     addToScene(context: SceneContext): void;
     // (undocumented)
+    protected computeTransform(tree: TileTree): Transform;
+    // (undocumented)
     discloseTileTrees(trees: TileTreeSet): void;
     // (undocumented)
     getHeightRange(): Range1d | undefined;
     // (undocumented)
+    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
+    // (undocumented)
     getToolTip(hit: HitDetail): HTMLElement | string | undefined;
+    // (undocumented)
+    protected getViewFlagOverrides(tree: TileTree): ViewFlag.Overrides;
     // (undocumented)
     settings: BackgroundMapSettings;
     // (undocumented)
@@ -3654,7 +3664,9 @@ export class GraphicBranch implements IDisposable {
     // @internal (undocumented)
     setViewFlags(flags: ViewFlags): void;
     symbologyOverrides?: FeatureSymbology.Overrides;
-    }
+    // (undocumented)
+    viewFlagOverrides: ViewFlag.Overrides;
+}
 
 // @internal
 export interface GraphicBranchOptions {
@@ -3719,9 +3731,8 @@ export interface GraphicsCollector {
 
 // @internal (undocumented)
 export class GraphicsCollectorDrawArgs extends TileDrawArgs {
-    constructor(_planes: FrustumPlanes, _worldToViewMap: Map4d, _collector: GraphicsCollector, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume);
     // (undocumented)
-    static create(context: SceneContext, collector: GraphicsCollector, tileTree: TileTree, planes: FrustumPlanes, worldToViewMap: Map4d): GraphicsCollectorDrawArgs;
+    static create(context: SceneContext, collector: GraphicsCollector, ref: TileTreeReference, planes: FrustumPlanes, worldToViewMap: Map4d): TileDrawArgs | undefined;
     // (undocumented)
     drawGraphics(): void;
     // (undocumented)
@@ -4811,7 +4822,9 @@ export abstract class MapTileTreeReference extends TileTreeReference {
     addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void;
     // (undocumented)
     addPlanes(planes: Plane3dByOriginAndUnitNormal[]): void;
-    addToScene(context: SceneContext): void;
+    draw(args: TileDrawArgs): void;
+    // (undocumented)
+    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides;
     getTilesForView(viewport: Viewport): Tile[];
     // (undocumented)
     protected abstract get _graphicType(): TileGraphicType;
@@ -6604,7 +6617,7 @@ export class RenderPlan {
 // @internal
 export abstract class RenderPlanarClassifier implements IDisposable {
     // (undocumented)
-    abstract collectGraphics(context: SceneContext, classifiedTree: TileTree, tileTree: TileTree): void;
+    abstract collectGraphics(context: SceneContext, classifiedTree: TileTreeReference, tileTree: TileTreeReference): void;
     // (undocumented)
     abstract dispose(): void;
 }
@@ -6760,7 +6773,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
     // @internal (undocumented)
-    createBackgroundMapDrape(_drapedTree: TileTree, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined;
+    createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: BackgroundMapTileTreeReference): RenderTextureDrape | undefined;
     // @internal
     abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
     createBranch(branch: GraphicBranch, transform: Transform): RenderGraphic;
@@ -7061,9 +7074,9 @@ export class SavedState {
 export class SceneContext extends RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
     // (undocumented)
-    addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined;
+    addBackgroundDrapedModel(drapedTreeRef: TileTreeReference): RenderTextureDrape | undefined;
     // (undocumented)
-    addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree): RenderPlanarClassifier | undefined;
+    addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTreeReference, classifiedTree: TileTreeReference): RenderPlanarClassifier | undefined;
     // (undocumented)
     readonly backgroundGraphics: RenderGraphic[];
     // (undocumented)
@@ -8339,7 +8352,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
     computeVisibility(args: TileDrawArgs): TileVisibility;
-    computeWorldContentRange(): ElementAlignedBox3d;
     // (undocumented)
     contentId: string;
     // (undocumented)
@@ -8609,7 +8621,7 @@ export interface TiledGraphicsProvider {
 
 // @internal
 export class TileDrawArgs {
-    constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume, parentsAndChildrenExclusive?: boolean);
+    constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive?: boolean, symbologyOverrides?: FeatureSymbology.Overrides);
     // (undocumented)
     get clip(): ClipVector | undefined;
     // (undocumented)
@@ -8620,6 +8632,8 @@ export class TileDrawArgs {
     drape?: RenderTextureDrape;
     // (undocumented)
     drawGraphics(): void;
+    // (undocumented)
+    static fromTileTree(context: SceneContext, location: Transform, root: TileTree, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive?: boolean, symbologyOverrides?: FeatureSymbology.Overrides): TileDrawArgs;
     // (undocumented)
     get frustumPlanes(): FrustumPlanes;
     // (undocumented)
@@ -8650,7 +8664,7 @@ export class TileDrawArgs {
     // (undocumented)
     readonly viewClip?: ClipVector;
     // (undocumented)
-    viewFrustum?: ViewingSpace;
+    viewingSpace: ViewingSpace;
     // (undocumented)
     protected get worldToViewMap(): Map4d;
 }
@@ -8669,7 +8683,7 @@ export abstract class TileLoader {
     // (undocumented)
     protected get _batchType(): BatchType;
     // (undocumented)
-    static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>): number;
+    static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number;
     // (undocumented)
     computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number;
     // (undocumented)
@@ -8802,7 +8816,7 @@ export namespace TileRequest {
 export class TileTree implements IDisposable, RenderMemory.Consumer {
     constructor(props: TileTreeParams);
     // (undocumented)
-    accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
+    accumulateTransformedRange(range: Range3d, matrix: Matrix4d, location: Transform, frustumPlanes?: FrustumPlanes): void;
     // (undocumented)
     get clipVector(): ClipVector | undefined;
     // (undocumented)
@@ -8810,13 +8824,11 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
-    computeTileRangeForFrustum(vp: Viewport): Range3d | undefined;
+    computeTileRangeForFrustum(location: Transform, viewingSpace: ViewingSpace): Range3d | undefined;
     // (undocumented)
     readonly contentRange?: ElementAlignedBox3d;
     // (undocumented)
     countTiles(): number;
-    // (undocumented)
-    createDrawArgs(context: SceneContext): TileDrawArgs;
     // (undocumented)
     debugForcedDepth?: number;
     // (undocumented)
@@ -8832,8 +8844,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     drawRealityTiles(args: TileDrawArgs): void;
     // (undocumented)
-    drawScene(context: SceneContext): void;
-    // (undocumented)
     expirationTime: BeDuration;
     // (undocumented)
     getTraversalChildren(depth: number): TraversalChildrenDetails;
@@ -8841,6 +8851,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     readonly id: string;
     // (undocumented)
     readonly iModel: IModelConnection;
+    readonly iModelTransform: Transform;
     // (undocumented)
     get is2d(): boolean;
     // (undocumented)
@@ -8848,8 +8859,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     get lastSelectedTime(): BeTimePoint;
     // (undocumented)
     readonly loader: TileLoader;
-    // (undocumented)
-    readonly location: Transform;
     // (undocumented)
     readonly maxTilesToSkip: number;
     // (undocumented)
@@ -8865,7 +8874,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     selectTiles(args: TileDrawArgs): Tile[];
     // (undocumented)
-    selectTilesForScene(context: SceneContext): Tile[];
+    selectTilesForScene(args: TileDrawArgs): Tile[];
     // (undocumented)
     traversalChildrenByDepth: TraversalChildrenDetails[];
     // (undocumented)
@@ -8933,13 +8942,30 @@ export function tileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConne
 // @internal
 export abstract class TileTreeReference implements RenderMemory.Consumer {
     // (undocumented)
+    accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
+    // (undocumented)
     addPlanes(_planes: Plane3dByOriginAndUnitNormal[]): void;
     addToScene(context: SceneContext): void;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
+    // (undocumented)
+    computeTileRangeForFrustum(vp: Viewport): Range3d | undefined;
+    // (undocumented)
+    protected computeTransform(tree: TileTree): Transform;
+    computeWorldContentRange(): ElementAlignedBox3d;
+    createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     decorate(_context: DecorateContext): void;
     discloseTileTrees(trees: TileTreeSet): void;
+    // (undocumented)
+    draw(args: TileDrawArgs): void;
+    // (undocumented)
+    protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
+    getLocation(): Transform | undefined;
+    // (undocumented)
+    protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     getToolTip(_hit: HitDetail): HTMLElement | string | undefined;
+    // (undocumented)
+    protected getViewFlagOverrides(tree: TileTree): ViewFlag.Overrides;
     abstract get treeOwner(): TileTreeOwner;
     unionFitRange(union: Range3d): void;
 }
@@ -11146,6 +11172,13 @@ export enum WebGLRenderCompatibilityStatus {
     MissingOptionalFeatures = 1,
     MissingRequiredFeatures = 3
 }
+
+// @internal (undocumented)
+export class WebMapDrawArgs extends TileDrawArgs {
+    constructor(args: TileDrawArgs);
+    // (undocumented)
+    getPixelSize(tile: Tile): number;
+    }
 
 // @internal (undocumented)
 export class WebMapTileLoader extends MapTileLoaderBase {

@@ -27,7 +27,10 @@ import {
   IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
 import { InspectElementTool } from "./tools/InspectElementTool";
-import { ChangeViewFlagsTool, ToggleSkyboxTool } from "./tools/ChangeViewFlagsTool";
+import {
+  ChangeViewFlagsTool,
+  ToggleSkyboxTool,
+} from "./tools/DisplayStyleTools";
 import {
   SaveViewTool,
   ApplyViewTool,
@@ -56,6 +59,10 @@ import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
 import { SelectElementsByIdTool } from "./tools/SelectionTools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
+import {
+  ChangePlanProjectionSettingsTool,
+  DumpPlanProjectionSettingsTool,
+} from "./tools/PlanProjectionTools";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -78,55 +85,51 @@ export class FrontendDevTools {
     this._initialized = true;
 
     const i18n = IModelApp.i18n.registerNamespace("FrontendDevTools");
+    const tools = [
+      AnimationIntervalTool,
+      ApplyViewTool,
+      ChangeEmphasisSettingsTool,
+      ChangeHiliteSettingsTool,
+      ChangePlanProjectionSettingsTool,
+      ChangeUnitsTool,
+      ChangeViewFlagsTool,
+      ClearIsolatedElementsTool,
+      CompileShadersTool,
+      DefaultTileSizeModifierTool,
+      DumpPlanProjectionSettingsTool,
+      EmphasizeSelectedElementsTool,
+      FadeOutTool,
+      FreezeSceneTool,
+      InspectElementTool,
+      IsolateSelectedElementsTool,
+      LoseWebGLContextTool,
+      MeasureTileLoadTimeTool,
+      RealityTransitionTool,
+      ReportWebGLCompatibilityTool,
+      SaveViewTool,
+      SelectElementsByIdTool,
+      SetAspectRatioSkewTool,
+      SetVolClassIntersectOff,
+      SetVolClassIntersectOn,
+      ShowTileVolumesTool,
+      ToggleDrapeFrustumTool,
+      ToggleFrustumSnapshotTool,
+      ToggleLogZTool,
+      TogglePrimitiveVisibilityTool,
+      ToggleProjectExtentsTool,
+      ToggleReadPixelsTool,
+      ToggleSelectedViewFrustumTool,
+      ToggleShadowFrustumTool,
+      ToggleSkyboxTool,
+      ToggleTileRequestDecorationTool,
+      ToggleToolTipsTool,
+      ToggleWiremeshTool,
+      ViewportAddRealityModel,
+      ViewportTileSizeModifierTool,
+    ];
 
-    InspectElementTool.register(i18n);
-    ReportWebGLCompatibilityTool.register(i18n);
-
-    LoseWebGLContextTool.register(i18n);
-    ToggleWiremeshTool.register(i18n);
-    CompileShadersTool.register(i18n);
-
-    ToggleReadPixelsTool.register(i18n);
-    ToggleLogZTool.register(i18n);
-    TogglePrimitiveVisibilityTool.register(i18n);
-    ToggleDrapeFrustumTool.register(i18n);
-
-    ClearIsolatedElementsTool.register(i18n);
-    EmphasizeSelectedElementsTool.register(i18n);
-    IsolateSelectedElementsTool.register(i18n);
-
-    ChangeViewFlagsTool.register(i18n);
-    ToggleSkyboxTool.register(i18n);
-
-    SaveViewTool.register(i18n);
-    ApplyViewTool.register(i18n);
-
-    ToggleProjectExtentsTool.register(i18n);
-    ToggleToolTipsTool.register(i18n);
-
-    ToggleFrustumSnapshotTool.register(i18n);
-    ToggleSelectedViewFrustumTool.register(i18n);
-    ToggleShadowFrustumTool.register(i18n);
-
-    FreezeSceneTool.register(i18n);
-    SetAspectRatioSkewTool.register(i18n);
-    ShowTileVolumesTool.register(i18n);
-    ChangeHiliteSettingsTool.register(i18n);
-    ChangeEmphasisSettingsTool.register(i18n);
-    FadeOutTool.register(i18n);
-    DefaultTileSizeModifierTool.register(i18n);
-    ViewportTileSizeModifierTool.register(i18n);
-    ViewportAddRealityModel.register(i18n);
-
-    RealityTransitionTool.register(i18n);
-    ChangeUnitsTool.register(i18n);
-    ToggleTileRequestDecorationTool.register(i18n);
-    MeasureTileLoadTimeTool.register(i18n);
-    SelectElementsByIdTool.register(i18n);
-    AnimationIntervalTool.register(i18n);
-
-    SetVolClassIntersectOn.register(i18n);
-    SetVolClassIntersectOff.register(i18n);
+    for (const tool of tools)
+      tool.register(i18n);
 
     return i18n.readFinished;
   }

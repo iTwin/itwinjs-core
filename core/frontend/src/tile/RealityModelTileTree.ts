@@ -428,7 +428,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
       // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
       this._mapDrapeTree = context.viewport.displayStyle.backgroundMap;
-      context.addBackgroundDrapedModel(tree);
+      context.addBackgroundDrapedModel(this);
     }
 
     super.addToScene(context);

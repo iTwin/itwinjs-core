@@ -9,6 +9,7 @@ alpha;ButtonProps
 beta;ChangeEmphasisSettingsTool 
 beta;ChangeHiliteSettingsTool 
 beta;class ChangeHiliteTool 
+alpha;class ChangePlanProjectionSettingsTool 
 beta;ChangeUnitsTool 
 beta;ChangeViewFlagsTool 
 alpha;CheckBox
@@ -44,6 +45,8 @@ alpha;DefaultTileSizeModifierTool
 beta;deserializeViewState(props: ViewStateProps, iModel: IModelConnection): Promise
 beta;DiagnosticsPanel
 beta;DiagnosticsPanelProps
+beta;class DisplayStyleTool 
+alpha;DumpPlanProjectionSettingsTool 
 beta;class EmphasizeElementsTool 
 beta;EmphasizeSelectedElementsTool 
 beta;FadeOutTool 

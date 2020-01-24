@@ -6,7 +6,7 @@
  * @module Rendering
  */
 import { Target } from "./Target";
-import { TileTree } from "../../tile/internal";
+import { TileTreeReference } from "../../tile/internal";
 import { Frustum, RenderMode, FrustumPlanes, Npc } from "@bentley/imodeljs-common";
 import { Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Matrix3d, Matrix4d, Ray3d, Map4d, Range1d, Range2d, ConvexClipPlaneSet, ClipUtilities, GrowableXYZArray } from "@bentley/geometry-core";
 import { RenderState } from "./RenderState";
@@ -22,7 +22,12 @@ export class PlanarTextureProjection {
         rangePoints.push(point);
     }, true, true, false);
   }
-  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewingSpace, drapedTileTree: TileTree, drapeTileTree: TileTree, viewState: ViewState3d, textureWidth: number, textureHeight: number, _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
+  public static computePlanarTextureProjection(texturePlane: Plane3dByOriginAndUnitNormal, viewFrustum: ViewingSpace, drapedRef: TileTreeReference, drapeRef: TileTreeReference, viewState: ViewState3d, textureWidth: number, textureHeight: number, _heightRange?: Range1d): { textureFrustum?: Frustum, worldToViewMap?: Map4d, projectionMatrix?: Matrix4d, debugFrustum?: Frustum, zValue?: number } {
+    const drapedTileTree = drapedRef.treeOwner.tileTree;
+    const drapeTileTree = drapeRef.treeOwner.tileTree;
+    if (undefined === drapedTileTree || undefined === drapeTileTree)
+      return { };
+
     const textureZ = texturePlane.getNormalRef();
     // const textureDepth = textureZ.dotProduct(texturePlane.getOriginRef());
     const viewX = viewFrustum.rotation.rowX();
@@ -49,7 +54,7 @@ export class PlanarTextureProjection {
     const rangePoints = new Array<Point3d>();
     const viewPlanes = new FrustumPlanes(textureViewFrustum);
     const viewClipPlanes = ConvexClipPlaneSet.createPlanes(viewPlanes.planes!);
-    const drapedContentRange = textureTransform.multiplyRange(drapedTileTree.rootTile.computeWorldContentRange());
+    const drapedContentRange = textureTransform.multiplyRange(drapedRef.computeWorldContentRange());
     const epsilon = .01;
 
     if (undefined === drapedContentRange)
@@ -68,7 +73,7 @@ export class PlanarTextureProjection {
     } else {
       // In this case (classification) we don't know the drape geometry exists on the texture plane.
       // We expand the depth to include the drape geometry - but limit the area to intersection of drape with draped.
-      const drapeRange = drapeTileTree.rootTile.computeWorldContentRange();
+      const drapeRange = drapeRef.computeWorldContentRange();
       if (drapeRange.isNull)
         return {};
 

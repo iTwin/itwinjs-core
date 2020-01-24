@@ -1827,10 +1827,12 @@ export abstract class ViewState2d extends ViewState {
   public getViewedExtents(): AxisAlignedBox3d {
     if (undefined === this._viewedExtents) {
       const treeRef = this._tileTreeRef;
-      const tree = undefined !== treeRef ? treeRef.treeOwner.load() : undefined;
-      if (undefined !== tree) {
+      const tree = treeRef?.treeOwner.load();
+      const location = treeRef?.getLocation();
+
+      if (undefined !== tree && undefined !== location) {
         this._viewedExtents = Range3d.create(tree.range.low, tree.range.high);
-        tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
+        location.multiplyRange(this._viewedExtents, this._viewedExtents);
       }
     }
 

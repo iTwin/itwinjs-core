@@ -33,11 +33,14 @@ class ExternalTreeRef extends TileTreeReference {
       return;
 
     // ###TODO transform
-    const args = tree.createDrawArgs(context);
+    const args = this.createDrawArgs(context);
+    if (undefined === args)
+      return;
+
     tree.draw(args);
 
     args.graphics.symbologyOverrides = this._ovrs;
-    const branch = context.createBranch(args.graphics, tree.location);
+    const branch = context.createBranch(args.graphics, args.location);
     context.outputGraphic(branch);
   }
 }

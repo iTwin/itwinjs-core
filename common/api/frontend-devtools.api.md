@@ -125,6 +125,22 @@ export abstract class ChangeHiliteTool extends Tool {
     run(settings?: Hilite.Settings): boolean;
 }
 
+// @alpha
+export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool {
+    // (undocumented)
+    protected execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected parse(args: string[]): boolean;
+    // (undocumented)
+    protected get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export class ChangeUnitsTool extends Tool {
     // (undocumented)
@@ -384,6 +400,36 @@ export interface DiagnosticsPanelProps {
         gpuProfiler?: boolean;
         toolSettings?: boolean;
     };
+}
+
+// @beta
+export abstract class DisplayStyleTool extends Tool {
+    // (undocumented)
+    protected abstract execute(vp: Viewport): boolean;
+    // (undocumented)
+    protected abstract parse(args: string[]): boolean;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    protected get require3d(): boolean;
+    // (undocumented)
+    run(): boolean;
+}
+
+// @alpha
+export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
+    // (undocumented)
+    protected execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected parse(args: string[]): boolean;
+    // (undocumented)
+    protected get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @beta
@@ -970,9 +1016,13 @@ export class ToggleShadowFrustumTool extends Tool {
 }
 
 // @beta
-export class ToggleSkyboxTool extends Tool {
+export class ToggleSkyboxTool extends DisplayStyleTool {
     // (undocumented)
-    run(): boolean;
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    parse(_args: string[]): boolean;
+    // (undocumented)
+    get require3d(): boolean;
     // (undocumented)
     static toolId: string;
 }

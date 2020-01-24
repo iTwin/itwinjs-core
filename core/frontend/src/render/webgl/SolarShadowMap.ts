@@ -6,14 +6,14 @@
  * @module WebGL
  */
 import { GL } from "./GL";
-import { dispose, assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { RenderMemory, RenderGraphic, RenderClipVolume } from "../System";
+import { dispose, assert } from "@bentley/bentleyjs-core";
+import { RenderMemory, RenderGraphic } from "../System";
 import { Geometry, Vector3d, Point3d, Map4d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
 import { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";
 import { FrameBuffer } from "./FrameBuffer";
 import { SceneContext } from "../../ViewContext";
-import { Tile, TileDrawArgs, TileTree, TileVisibility } from "../../tile/internal";
+import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
 import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SolarShadows, ViewFlags } from "@bentley/imodeljs-common";
 import { System, RenderType } from "./System";
 import { RenderState } from "./RenderState";
@@ -24,12 +24,12 @@ import { EVSMGeometry } from "./CachedGeometry";
 import { getDrawParams } from "./ScratchDrawParams";
 import { WebGLDisposable } from "./Disposable";
 
-function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowMap, tree: TileTree, frustumPlanes: FrustumPlanes): TileDrawArgs {
+function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowMap, tree: TileTreeReference, frustumPlanes: FrustumPlanes): TileDrawArgs | undefined {
   class SolarShadowMapDrawArgs extends TileDrawArgs {
     private _useViewportMap?: boolean;
 
-    constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
-      super(context, location, root, now, purgeOlderThan, clip);
+    constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, args: TileDrawArgs) {
+      super(args.context, args.location, args.root, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
     }
 
     public get frustumPlanes(): FrustumPlanes {
@@ -38,6 +38,7 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
       else
         return this._mapFrustumPlanes;
     }
+
     protected get worldToViewMap(): Map4d {
       if (true === this._useViewportMap)
         return super.worldToViewMap;
@@ -67,10 +68,9 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
       return size;
     }
 
-    public static create(context: SceneContext, shadowMap: SolarShadowMap, tileTree: TileTree, planes: FrustumPlanes) {
-      const now = BeTimePoint.now();
-      const purgeOlderThan = now.minus(tileTree.expirationTime);
-      return new SolarShadowMapDrawArgs(planes, shadowMap, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
+    public static create(context: SceneContext, shadowMap: SolarShadowMap, tileTree: TileTreeReference, planes: FrustumPlanes) {
+      const args = tileTree.createDrawArgs(context);
+      return undefined !== args ? new SolarShadowMapDrawArgs(planes, shadowMap, args) : undefined;
     }
   }
 
@@ -322,9 +322,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
       const viewTileRange = Range3d.createNull();
       this._scratchFrustumPlanes.init(this._params.viewFrustum);
       view.forEachModelTreeRef((ref) => {
-        const tree = ref.treeOwner.load();
-        if (undefined !== tree)
-          tree.accumulateTransformedRange(viewTileRange, worldToMap, this._scratchFrustumPlanes);
+        ref.accumulateTransformedRange(viewTileRange, worldToMap, this._scratchFrustumPlanes);
       });
 
       if (!viewTileRange.isNull)
@@ -349,13 +347,12 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     const tileRange = Range3d.createNull();
     this._scratchFrustumPlanes.init(this._shadowFrustum);
     view.forEachModelTreeRef(((ref) => {
-      const tileTree = ref.treeOwner.tileTree;
-      if (undefined === tileTree)
+      const drawArgs = createDrawArgs(context, this, ref, this._scratchFrustumPlanes);
+      if (undefined === drawArgs)
         return;
 
-      const drawArgs = createDrawArgs(context, this, tileTree, this._scratchFrustumPlanes);
-      const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(tileTree.location, this._scratchTransform);
-      const selectedTiles = tileTree.selectTiles(drawArgs);
+      const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(drawArgs.location, this._scratchTransform);
+      const selectedTiles = drawArgs.root.selectTiles(drawArgs);
 
       for (const selectedTile of selectedTiles) {
         tileRange.extendRange(tileToMapTransform.multiplyRange(selectedTile.range, this._scratchRange));
