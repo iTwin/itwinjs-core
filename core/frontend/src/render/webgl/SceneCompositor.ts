@@ -794,29 +794,29 @@ abstract class Compositor extends SceneCompositor {
   public get fullHeight(): number { return this.target.viewRect.height; }
 
   public drawForReadPixels(commands: RenderCommands, overlays?: GraphicList) {
-    this.target.beginPerfMetricRecord("Render Background");
+    this.target.beginPerfMetricRecord("Render Background", true);
     if (!this.preDraw()) {
-      this.target.endPerfMetricRecord(); // End Render Background record if returning
+      this.target.endPerfMetricRecord(true); // End Render Background record if returning
       assert(false);
       return;
     }
 
     this.clearOpaque(false);
-    this.target.endPerfMetricRecord();
+    this.target.endPerfMetricRecord(true);
 
     // On entry the RenderCommands has been initialized for all scene graphics and pickable decorations with the exception of world overlays.
     // It's possible we have no pickable scene graphics or decorations, but do have pickable world overlays.
     const haveRenderCommands = !commands.isEmpty;
     if (haveRenderCommands) {
-      this.target.beginPerfMetricRecord("Enable Clipping");
+      this.target.beginPerfMetricRecord("Enable Clipping", true);
       this.target.pushActiveVolume();
-      this.target.endPerfMetricRecord();
-      this.target.beginPerfMetricRecord("Render VolumeClassification");
+      this.target.endPerfMetricRecord(true);
+      this.target.beginPerfMetricRecord("Render VolumeClassification", true);
       this.renderVolumeClassification(commands, CompositeFlags.None, true);
-      this.target.endPerfMetricRecord();
-      this.target.beginPerfMetricRecord("Render Opaque");
+      this.target.endPerfMetricRecord(true);
+      this.target.beginPerfMetricRecord("Render Opaque", true);
       this.renderOpaque(commands, CompositeFlags.None, true);
-      this.target.endPerfMetricRecord();
+      this.target.endPerfMetricRecord(true);
       this.target.popActiveVolume();
     }
 

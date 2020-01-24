@@ -8011,9 +8011,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected abstract _beginPaint(): void;
     // (undocumented)
-    beginPerfMetricFrame(sceneMilSecElapsed?: number): void;
+    beginPerfMetricFrame(sceneMilSecElapsed?: number, readPixels?: boolean): void;
     // (undocumented)
-    beginPerfMetricRecord(operation: string): void;
+    beginPerfMetricRecord(operation: string, readPixels?: boolean): void;
     // (undocumented)
     changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier, modelId?: Id64String): void;
     // (undocumented)
@@ -8102,9 +8102,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected abstract _endPaint(): void;
     // (undocumented)
-    endPerfMetricFrame(): void;
+    endPerfMetricFrame(readPixels?: boolean): void;
     // (undocumented)
-    endPerfMetricRecord(): void;
+    endPerfMetricRecord(readPixels?: boolean): void;
     // (undocumented)
     protected _fbo?: FrameBuffer;
     // (undocumented)

@@ -28,8 +28,8 @@ export class PerformanceMetrics {
   private _allTimePoints2: AllTimePoints[] = []; // queue 2 of data needed to make frameTimings; use 2 copies for double buffering
   private _updateallTimePoints1 = true; // determine which buffer to use for the frame timings; used for double buffering the frame timings
   public frameTimings = new Map<string, number>();
-  public gatherGlFinish = false;
-  public gatherCurPerformanceMetrics = false;
+  public gatherGlFinish = false; // Set to true if gathering data for display-performance-test-app
+  public gatherCurPerformanceMetrics = false; // Set to true if gathering data for Profile GPU
   public curSpfTimeIndex = 0;
   public spfTimes: number[] = [];
   public spfSum: number = 0;

@@ -699,36 +699,44 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return ColorInfo.createUniform(this._visibleEdgeOverrides.color!);
   }
 
-  public beginPerfMetricFrame(sceneMilSecElapsed?: number) {
-    if (this.renderSystem.isGLTimerSupported)
-      this.renderSystem.glTimer.beginFrame();
-    if (this.performanceMetrics)
-      this.performanceMetrics.beginFrame(sceneMilSecElapsed);
+  public beginPerfMetricFrame(sceneMilSecElapsed?: number, readPixels = false) {
+    if (!readPixels || (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)) { // only capture readPixel data if in disp-perf-test-app
+      if (this.renderSystem.isGLTimerSupported)
+        this.renderSystem.glTimer.beginFrame();
+      if (this.performanceMetrics)
+        this.performanceMetrics.beginFrame(sceneMilSecElapsed);
+    }
   }
 
-  public endPerfMetricFrame() {
-    if (this.renderSystem.isGLTimerSupported)
-      this.renderSystem.glTimer.endFrame();
+  public endPerfMetricFrame(readPixels = false) {
+    if (!readPixels || (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)) { // only capture readPixel data if in disp-perf-test-app
+      if (this.renderSystem.isGLTimerSupported)
+        this.renderSystem.glTimer.endFrame();
 
-    if (undefined === this.performanceMetrics)
-      return;
+      if (undefined === this.performanceMetrics)
+        return;
 
-    this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
-    this.performanceMetrics.completeFrameTimings(this._fbo!);
+      this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
+      this.performanceMetrics.completeFrameTimings(this._fbo!);
+    }
   }
 
-  public beginPerfMetricRecord(operation: string): void {
-    if (this.renderSystem.isGLTimerSupported)
-      this.renderSystem.glTimer.beginOperation(operation);
-    if (this.performanceMetrics)
-      this.performanceMetrics.beginOperation(operation);
+  public beginPerfMetricRecord(operation: string, readPixels = false): void {
+    if (!readPixels || (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)) { // only capture readPixel data if in disp-perf-test-app
+      if (this.renderSystem.isGLTimerSupported)
+        this.renderSystem.glTimer.beginOperation(operation);
+      if (this.performanceMetrics)
+        this.performanceMetrics.beginOperation(operation);
+    }
   }
 
-  public endPerfMetricRecord(): void {
-    if (this.renderSystem.isGLTimerSupported)
-      this.renderSystem.glTimer.endOperation();
-    if (this.performanceMetrics)
-      this.performanceMetrics.endOperation();
+  public endPerfMetricRecord(readPixels = false): void {
+    if (!readPixels || (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)) { // only capture readPixel data if in disp-perf-test-app
+      if (this.renderSystem.isGLTimerSupported)
+        this.renderSystem.glTimer.endOperation();
+      if (this.performanceMetrics)
+        this.performanceMetrics.endOperation();
+    }
   }
 
   private paintScene(sceneMilSecElapsed?: number): void {
@@ -736,10 +744,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
     }
 
-    this.beginPerfMetricFrame(sceneMilSecElapsed);
-    this.beginPerfMetricRecord("Begin Paint");
+    this.beginPerfMetricFrame(sceneMilSecElapsed, this.drawForReadPixels);
+    this.beginPerfMetricRecord("Begin Paint", this.drawForReadPixels);
     this._beginPaint();
-    this.endPerfMetricRecord();
+    this.endPerfMetricRecord(this.drawForReadPixels);
 
     const gl = this.renderSystem.context;
     const rect = this.viewRect;
@@ -754,9 +762,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       const state = BranchState.create(this.uniforms.branch.top.symbologyOverrides, vf);
       this.pushState(state);
 
-      this.beginPerfMetricRecord("Init Commands");
+      this.beginPerfMetricRecord("Init Commands", this.drawForReadPixels);
       this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
-      this.endPerfMetricRecord();
+      this.endPerfMetricRecord(this.drawForReadPixels);
 
       this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
       this.uniforms.branch.pop();
@@ -805,11 +813,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
 
-    this.beginPerfMetricRecord("End Paint");
+    this.beginPerfMetricRecord("End Paint", this.drawForReadPixels);
     this._endPaint();
-    this.endPerfMetricRecord();
+    this.endPerfMetricRecord(this.drawForReadPixels);
 
-    this.endPerfMetricFrame();
+    this.endPerfMetricFrame(this.drawForReadPixels);
   }
 
   private drawPass(pass: RenderPass): void {
@@ -835,7 +843,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
-    this.beginPerfMetricFrame();
+    // if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)
+    this.beginPerfMetricFrame(undefined, true);
 
     rect = this.cssViewRectToDeviceViewRect(rect);
 
@@ -889,7 +898,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private readonly _scratchTmpFrustum = new Frustum();
   private readonly _scratchRectFrustum = new Frustum();
   private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
-    this.beginPerfMetricRecord("Init Commands");
+    // const collectReadPixelsTimings = this.performanceMetrics !== undefined && !this.performanceMetrics.gatherCurPerformanceMetrics; // Only collect data here if in display-perf-test-app
+    // if (collectReadPixelsTimings) this.beginPerfMetricRecord("Init Commands");
+    this.beginPerfMetricRecord("Init Commands", true);
 
     this._isReadPixelsInProgress = true;
     this._readPixelsSelector = selector;
@@ -939,12 +950,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
     this._renderCommands.clearCheckRange();
 
-    this.endPerfMetricRecord(); // End "Init Commands"
+    this.endPerfMetricRecord(true); // End "Init Commands"
 
     // Draw the scene
     this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
 
-    if (this.performanceMetrics) {
+    if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) { // Only collect readPixels data if in disp-perf-test-app
       this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
       if (this.performanceMetrics.gatherGlFinish && !this.renderSystem.isGLTimerSupported) {
         // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
@@ -961,14 +972,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // Restore the state
     this.uniforms.branch.pop();
 
-    this.beginPerfMetricRecord("Read Pixels");
+    this.beginPerfMetricRecord("Read Pixels", true);
     const result = this.compositor.readPixels(rect, selector);
-    this.endPerfMetricRecord();
+    this.endPerfMetricRecord(true);
 
-    if (this.renderSystem.isGLTimerSupported)
-      this.renderSystem.glTimer.endFrame();
-    if (this.performanceMetrics)
-      this.performanceMetrics.endFrame();
+    if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) { // Only collect readPixels data if in disp-perf-test-app
+      if (this.renderSystem.isGLTimerSupported)
+        this.renderSystem.glTimer.endFrame();
+      if (this.performanceMetrics)
+        this.performanceMetrics.endFrame();
+    }
 
     this._isReadPixelsInProgress = false;
     return result;
