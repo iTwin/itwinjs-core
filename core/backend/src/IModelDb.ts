@@ -1832,7 +1832,7 @@ export namespace IModelDb {
       const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(aspectProps, iModel);
 
-      const status = iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
+      const status = iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory, () => ({ classFullName: aspectProps.classFullName }));
 
@@ -1848,7 +1848,7 @@ export namespace IModelDb {
       const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(aspectProps, iModel);
 
-      const status = iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps));
+      const status = iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory, () => ({ aspectInstanceId: aspectProps.id }));
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "Fix IGeometry roundtripping issue through ECSql.  Fix insert/update binary properties for Element Aspect.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}
