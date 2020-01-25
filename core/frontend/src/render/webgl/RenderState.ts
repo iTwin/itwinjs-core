@@ -68,7 +68,7 @@ export class RenderStateFlags {
 
   public static enableOrDisable(currentFlag: boolean, value: number, previousFlag: boolean) {
     if (currentFlag !== previousFlag) {
-      const gl: WebGLRenderingContext = System.instance.context;
+      const gl = System.instance.context;
       if (currentFlag) {
         gl.enable(value);
       } else {
@@ -95,7 +95,7 @@ export class RenderStateBlend {
   }
 
   public apply(previousBlend?: RenderStateBlend): void {
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
 
     if (previousBlend === undefined || !this.equalColors(previousBlend)) {
       gl.blendColor(this.color[0], this.color[1], this.color[2], this.color[3]);

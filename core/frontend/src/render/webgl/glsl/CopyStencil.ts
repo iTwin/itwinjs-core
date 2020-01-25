@@ -18,6 +18,7 @@ import { TextureUnit } from "../RenderFlags";
 import { AttributeMap } from "../AttributeMap";
 import { TechniqueId } from "../TechniqueId";
 import { unquantizeVertexPosition } from "./Vertex";
+import { System } from "../System";
 
 const computehiliteColor = "return vec4(u_hilite_color.rgb, 1.0);";
 
@@ -76,7 +77,7 @@ function setScratchColor(display: SpatialClassificationProps.Display, hilite: Fl
 }
 
 /** @internal */
-export function createVolClassColorUsingStencilProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createVolClassColorUsingStencilProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true); // TODO: I think this should pass in false since there are no textures being used.
   const frag = builder.frag;
   frag.set(FragmentShaderComponent.ComputeBaseColor, computehiliteColor);
@@ -96,7 +97,7 @@ export function createVolClassColorUsingStencilProgram(context: WebGLRenderingCo
 }
 
 /** @internal */
-export function createVolClassCopyZProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createVolClassCopyZProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord); // TODO: I think this is not necessary because it's already added from the create above
@@ -119,14 +120,15 @@ export function createVolClassCopyZProgram(context: WebGLRenderingContext): Shad
     });
   });
 
-  frag.addExtension("GL_EXT_frag_depth");
+  if (!System.instance.capabilities.isWebGL2)
+    frag.addExtension("GL_EXT_frag_depth");
   frag.set(FragmentShaderComponent.FinalizeDepth, depthFromTexture);
 
   return builder.buildProgram(context);
 }
 
 /** @internal */
-export function createVolClassCopyZUsingPointsProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createVolClassCopyZUsingPointsProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.VolClassCopyZ, false);
   const builder = new ProgramBuilder(attrMap);
 
@@ -155,7 +157,7 @@ export function createVolClassCopyZUsingPointsProgram(context: WebGLRenderingCon
 }
 
 /** @internal */
-export function createVolClassSetBlendProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createVolClassSetBlendProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);
@@ -205,7 +207,7 @@ export function createVolClassSetBlendProgram(context: WebGLRenderingContext): S
 }
 
 /** @internal */
-export function createVolClassBlendProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createVolClassBlendProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
 
   builder.addInlineComputedVarying("v_texCoord", VariableType.Vec2, computeTexCoord);

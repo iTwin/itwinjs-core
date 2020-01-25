@@ -82,6 +82,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_NO_CANCEL_TILE_REQUESTS)
     configuration.cancelBackendTileRequests = false;
 
+  if (undefined !== process.env.SVT_USE_WEBGL2)
+    configuration.useWebGL2 = true;
+
   const extensions = process.env.SVT_DISABLED_EXTENSIONS;
   if (undefined !== extensions)
     configuration.disabledExtensions = extensions.split(";");

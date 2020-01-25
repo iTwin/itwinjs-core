@@ -111,10 +111,15 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
         break;
       }
       case RenderType.TextureHalfFloat: {
-        const ext = System.instance.capabilities.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
-        if (undefined !== ext) {
-          pixelDataType = ext.HALF_FLOAT_OES;
+        if (System.instance.capabilities.isWebGL2) {
+          pixelDataType = (System.instance.context as WebGL2RenderingContext).HALF_FLOAT;
           break;
+        } else {
+          const ext = System.instance.capabilities.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
+          if (undefined !== ext) {
+            pixelDataType = ext.HALF_FLOAT_OES;
+            break;
+          }
         }
       }
       /* falls through */

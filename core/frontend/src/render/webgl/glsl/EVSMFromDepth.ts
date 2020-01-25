@@ -49,7 +49,7 @@ const computeEVSM = `
 `;
 
 /** @internal */
-export function createEVSMProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createEVSMProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
   const vert = builder.vert;
   const frag = builder.frag;

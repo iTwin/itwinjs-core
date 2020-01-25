@@ -248,7 +248,7 @@ describe("RenderState", () => {
     }
 
     // A default-constructed RenderState object should match the initial state of a newly-created WebGLRenderingContext.
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
     const rs = new RenderState();
 
     type TestCase = [number, number | boolean];
@@ -301,7 +301,7 @@ describe("RenderState", () => {
       return;
     }
 
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
 
     const prevState = new RenderState();
     const newState = new RenderState();

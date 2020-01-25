@@ -13,7 +13,7 @@ import { WebGLRenderCompatibilityStatus, WebGLFeature } from "../RenderCompatibi
 class OverriddenFunctions {
   public origCreateContext = System.createContext;
 
-  public overrideCreateContext(newGetParameter?: (ctx: WebGLRenderingContext, pname: number) => any, useContextAttributes: boolean = true) {
+  public overrideCreateContext(newGetParameter?: (ctx: WebGLRenderingContext | WebGL2RenderingContext, pname: number) => any, useContextAttributes: boolean = true) {
     System.createContext = (canvas, attr) => {
       const ctx = this.origCreateContext(canvas, useContextAttributes ? attr : undefined);
       if (undefined !== ctx && undefined !== newGetParameter) {
@@ -74,7 +74,7 @@ describe("Render Compatibility", () => {
   });
 
   it("should query proper render compatibility info assuming not enough texture units", () => {
-    overriddenFunctions.overrideCreateContext((ctx: WebGLRenderingContext, pname: number): any => {
+    overriddenFunctions.overrideCreateContext((ctx: WebGLRenderingContext | WebGL2RenderingContext, pname: number): any => {
       if (ctx.MAX_TEXTURE_IMAGE_UNITS === pname)
         return 0;
       return undefined;
@@ -87,7 +87,7 @@ describe("Render Compatibility", () => {
   });
 
   it("should query proper render compatibility info assuming lack of MRT support", () => {
-    overriddenFunctions.overrideCreateContext((ctx: WebGLRenderingContext, pname: number): any => {
+    overriddenFunctions.overrideCreateContext((ctx: WebGLRenderingContext | WebGL2RenderingContext, pname: number): any => {
       const dbExt = ctx.getExtension("WEBGL_draw_buffers");
       if (null === dbExt)
         return undefined;
@@ -231,7 +231,7 @@ describe("System WebGL Capabilities", () => {
   /*
   it("capabilities should be able to be initialized", () => {
     const context = new WebGLTestContext();
-    const gl: WebGLRenderingContext | undefined = context.context;
+    const gl = context.context;
     if (undefined === gl) {
       // do not enable below assert until we know GL can succeed on PRG
       // assert.isOk(false, "Could not initialize GL");
@@ -245,7 +245,7 @@ describe("System WebGL Capabilities", () => {
 
   it("capabilities should be able to be read", () => {
     const context = new WebGLTestContext();
-    const gl: WebGLRenderingContext | undefined = context.context;
+    const gl = context.context;
     if (undefined === gl) {
       // do not enable below assert until we know GL can succeed on PRG
       // assert.isOk(false, "Could not initialize GL");

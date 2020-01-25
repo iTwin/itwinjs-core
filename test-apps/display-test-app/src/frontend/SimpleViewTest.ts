@@ -149,6 +149,7 @@ async function main() {
     filterMapTextures: true === configuration.filterMapTextures,
     filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
+    useWebGL2: true === configuration.useWebGL2,
   };
 
   const tileAdminProps = DisplayTestApp.tileAdminProps;

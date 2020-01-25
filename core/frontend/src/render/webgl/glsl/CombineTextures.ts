@@ -23,7 +23,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createCombineTexturesProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createCombineTexturesProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

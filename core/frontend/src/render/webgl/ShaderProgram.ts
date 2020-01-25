@@ -130,7 +130,7 @@ export class ShaderProgram implements WebGLDisposable {
   private readonly _graphicUniforms = new Array<GraphicUniform>();
   private readonly _attrMap?: Map<string, AttributeDetails>;
 
-  public constructor(gl: WebGLRenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, maxClippingPlanes: number) {
+  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, maxClippingPlanes: number) {
     this._description = description;
     this.vertSource = vertSource;
     this.fragSource = fragSource;
@@ -156,7 +156,7 @@ export class ShaderProgram implements WebGLDisposable {
   public get isUncompiled() { return CompileStatus.Uncompiled === this._status; }
 
   private compileShader(type: GL.ShaderType): WebGLShader | undefined {
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
 
     const shader = gl.createShader(type);
     if (null === shader)
@@ -178,7 +178,7 @@ export class ShaderProgram implements WebGLDisposable {
     if (undefined === this._glProgram || null === this._glProgram) // because WebGL APIs used Thing|null, not Thing|undefined...
       return false;
 
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
     gl.attachShader(this._glProgram, vert);
     gl.attachShader(this._glProgram, frag);
 

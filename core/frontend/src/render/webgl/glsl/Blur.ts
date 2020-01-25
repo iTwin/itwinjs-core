@@ -48,7 +48,7 @@ const computeBlur = `
 `;
 
 /** @internal */
-export function createBlurProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createBlurProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

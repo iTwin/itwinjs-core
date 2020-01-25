@@ -118,7 +118,7 @@ const computeTranslucentBaseColor = "return computeColor();";
 const computeAmbientOcclusionBaseColor = `\nreturn computeOpaqueColor();\n`;
 
 /** @internal */
-export function createCompositeProgram(flags: CompositeFlags, context: WebGLRenderingContext): ShaderProgram {
+export function createCompositeProgram(flags: CompositeFlags, context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   assert(CompositeFlags.None !== flags);
 
   const wantHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);

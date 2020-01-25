@@ -18,7 +18,7 @@ export class RenderBuffer implements WebGLDisposable {
   public getHandle() { return this._glBuffer; }
 
   public static create(width: number, height: number, format = GL.RenderBuffer.Format.DepthComponent16) {
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
 
     const glBuffer = gl.createRenderbuffer();
     if (null === glBuffer) {

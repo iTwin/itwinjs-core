@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geo-photo-plugin",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geo-photo-plugin",
+  "email": "Marc.Neely@bentley.com"
+}

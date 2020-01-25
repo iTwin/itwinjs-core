@@ -1099,7 +1099,7 @@ export abstract class RenderSystem implements IDisposable {
 export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" |
   "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" |
   "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" |
-  "EXT_frag_depth" | "EXT_disjoint_timer_query";
+  "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2";
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
  * An application rarely interacts directly with the RenderSystem; instead it interacts with types like [[Viewport]] which
@@ -1174,6 +1174,14 @@ export namespace RenderSystem {
      * @deprecated This setting no longer has any effect.
      */
     directScreenRendering?: boolean;
+
+    /** If true will attempt to create a WebGL2 context.
+     *
+     * Default value: false
+     *
+     * @internal
+     */
+    useWebGL2?: boolean;
   }
 }
 

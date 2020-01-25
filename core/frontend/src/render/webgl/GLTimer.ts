@@ -8,11 +8,23 @@ import { GLTimerResult, GLTimerResultCallback } from "./../System";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
 
-class DisjointTimerExtension {
+abstract class DisjointTimerExtension {
+  public abstract get isSupported(): boolean;
+  public abstract didDisjointEventHappen(): boolean;
+  public abstract createQuery(): WebGLObject;
+  public abstract deleteQuery(q: WebGLObject): void;
+  public abstract beginQuery(q: WebGLObject): void;
+  public abstract endQuery(): void;
+  public abstract isResultAvailable(q: WebGLObject): boolean;
+  public abstract getResult(q: WebGLObject): number;
+}
+
+class DisjointTimerExtensionWebGL1 extends DisjointTimerExtension {
   private _e: any; // EXT_disjoint_timer_query, not available in lib.dom.d.ts
   private _context: WebGLRenderingContext;
 
   public constructor(system: System) {
+    super();
     this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
     this._context = system.context;
   }
@@ -23,7 +35,7 @@ class DisjointTimerExtension {
     return this._context.getParameter(this._e.GPU_DISJOINT_EXT);
   }
 
-  public createQuery() { return this._e.createQueryEXT() as WebGLObject; }
+  public createQuery(): WebGLObject { return this._e.createQueryEXT() as WebGLObject; }
   public deleteQuery(q: WebGLObject) { this._e.deleteQueryEXT(q); }
 
   public beginQuery(q: WebGLObject) { this._e.beginQueryEXT(this._e.TIME_ELAPSED_EXT, q); }
@@ -34,6 +46,38 @@ class DisjointTimerExtension {
   }
   public getResult(q: WebGLObject): number {
     return this._e.getQueryObjectEXT(q, this._e.QUERY_RESULT_EXT);
+  }
+}
+class DisjointTimerExtensionWebGL2 extends DisjointTimerExtension {
+  private _e: any; // EXT_disjoint_timer_query, not available in lib.dom.d.ts
+  private _context: WebGL2RenderingContext;
+
+  public constructor(system: System) {
+    super();
+    if (system.capabilities.isWebGL2)
+      this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2");
+    else
+      this._e = undefined;
+    this._context = system.context as WebGL2RenderingContext;
+  }
+
+  public get isSupported(): boolean { return this._e !== undefined; }
+
+  public didDisjointEventHappen(): boolean {
+    return this._context.getParameter(this._e.GPU_DISJOINT_EXT);
+  }
+
+  public createQuery(): WebGLObject { return this._context.createQuery() as WebGLObject; }
+  public deleteQuery(q: WebGLObject) { this._context.deleteQuery(q); }
+
+  public beginQuery(q: WebGLObject) { this._context.beginQuery(this._e.TIME_ELAPSED_EXT, q); }
+  public endQuery() { this._context.endQuery(this._e.TIME_ELAPSED_EXT); }
+
+  public isResultAvailable(q: WebGLObject): boolean {
+    return this._context.getQueryParameter(q, this._context.QUERY_RESULT_AVAILABLE);
+  }
+  public getResult(q: WebGLObject): number {
+    return this._context.getQueryParameter(q, this._context.QUERY_RESULT);
   }
 }
 
@@ -63,7 +107,10 @@ export class GLTimer {
   private _resultsCallback?: GLTimerResultCallback;
 
   private constructor(system: System) {
-    this._extension = new DisjointTimerExtension(system);
+    if (system.capabilities.isWebGL2)
+      this._extension = new DisjointTimerExtensionWebGL2(system);
+    else
+      this._extension = new DisjointTimerExtensionWebGL1(system);
     this._queryStack = [];
     this._resultsCallback = undefined;
   }

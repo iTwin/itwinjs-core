@@ -94,11 +94,15 @@ export abstract class BuffersContainer implements WebGLDisposable {
   public abstract dispose(): void; // NB: BufferHandle objects contained within BufferHandleLinkage entries are disposed where they are created because they could be shared among multiple BuffersContainer objects.
 
   public static create(): BuffersContainer {
-    const vaoExt = System.instance.capabilities.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object");
-    if (undefined !== vaoExt) {
-      return new VAOContainer(vaoExt);
-    } else {
-      return new VBOContainer();
+    if (System.instance.capabilities.isWebGL2)
+      return new VAOContainerWebGL2(System.instance.context as WebGL2RenderingContext);
+    else {
+      const vaoExt = System.instance.capabilities.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object");
+      if (undefined !== vaoExt) {
+        return new VAOContainerWebGL1(vaoExt);
+      } else {
+        return new VBOContainer();
+      }
     }
   }
 }
@@ -107,23 +111,15 @@ export abstract class BuffersContainer implements WebGLDisposable {
  * A BuffersContainer implementation which uses VAOs for binding and unbinding buffer state.
  * @internal
  */
-export class VAOContainer extends BuffersContainer {
-  private _vaoExt: OES_vertex_array_object;
-  private _vao: VertexArrayObjectHandle;
+export abstract class VAOContainer extends BuffersContainer {
 
-  public constructor(vaoExt: OES_vertex_array_object) {
+  public constructor() {
     super();
-    this._vaoExt = vaoExt;
-    this._vao = new VertexArrayObjectHandle(this._vaoExt);
   }
 
-  public bind(): void {
-    this._vao.bind();
-  }
+  public bind(): void { }
 
-  public unbind(): void {
-    VertexArrayObjectHandle.unbind(this._vaoExt);
-  }
+  public unbind(): void { }
 
   public addBuffer(buffer: BufferHandle, params: BufferParameters[]): void {
     const linkage = BufferHandleLinkage.create(buffer, params);
@@ -149,6 +145,62 @@ export class VAOContainer extends BuffersContainer {
       System.instance.context.vertexAttribPointer(p.glAttribLoc, p.glSize, p.glType, p.glNormalized, p.glStride, p.glOffset);
     }
     this.unbind();
+  }
+
+  public get isDisposed(): boolean { return false; }
+
+  public dispose(): void { }
+}
+
+/**
+ * A BuffersContainer implementation for WebGL1 which uses VAOs for binding and unbinding buffer state.
+ * @internal
+ */
+export class VAOContainerWebGL1 extends VAOContainer {
+  protected _vao: VertexArrayObjectHandle;
+  private _vaoExt: OES_vertex_array_object;
+
+  public constructor(context: OES_vertex_array_object) {
+    super();
+    this._vaoExt = context;
+    this._vao = new VertexArrayObjectHandle(this._vaoExt);
+  }
+
+  public bind(): void {
+    this._vao.bind();
+  }
+
+  public unbind(): void {
+    VertexArrayObjectHandle.unbind(this._vaoExt);
+  }
+
+  public get isDisposed(): boolean { return this._vao.isDisposed; }
+
+  public dispose(): void {
+    this._vao.dispose();
+  }
+}
+
+/**
+ * A BuffersContainer implementation for WebGL2 which uses VAOs for binding and unbinding buffer state.
+ * @internal
+ */
+export class VAOContainerWebGL2 extends VAOContainer {
+  protected _vao: VertexArrayObjectHandleWebGL2;
+  private _context: WebGL2RenderingContext;
+
+  public constructor(context: WebGL2RenderingContext) {
+    super();
+    this._context = context;
+    this._vao = new VertexArrayObjectHandleWebGL2(this._context);
+  }
+
+  public bind(): void {
+    this._vao.bind();
+  }
+
+  public unbind(): void {
+    VertexArrayObjectHandleWebGL2.unbind(this._context);
   }
 
   public get isDisposed(): boolean { return this._vao.isDisposed; }
@@ -197,6 +249,53 @@ export class VBOContainer extends BuffersContainer {
   private _isDisposed = false;
   public get isDisposed(): boolean { return this._isDisposed; }
   public dispose() { this._isDisposed = true; }
+}
+
+/**
+ * A handle to a WebGLVertexArrayObjectOES for WebGL2.
+ * The WebGLVertexArrayObjectOES is allocated by the constructor and should be freed by a call to dispose().
+ * @internal
+ */
+export class VertexArrayObjectHandleWebGL2 implements WebGLDisposable {
+  private _context: WebGL2RenderingContext;
+  private _arrayObject?: WebGLVertexArrayObjectOES;
+
+  /** Allocates the WebGLVertexArrayObjectOES using the supplied context. Free the WebGLVertexArrayObjectOES using dispose() */
+  public constructor(context: WebGL2RenderingContext) {
+    this._context = context;
+    const arrayObject = this._context.createVertexArray();
+
+    // vaoExt.createVertexArrayOES() returns WebGLVertexArrayObjectOES | null...
+    if (null !== arrayObject) {
+      this._arrayObject = arrayObject;
+    } else {
+      this._arrayObject = undefined;
+    }
+
+    assert(!this.isDisposed);
+  }
+
+  public get isDisposed(): boolean { return this._arrayObject === undefined; }
+
+  /** Frees the WebGL vertex array object */
+  public dispose(): void {
+    if (!this.isDisposed) {
+      this._context.deleteVertexArray(this._arrayObject!);
+      this._arrayObject = undefined;
+    }
+  }
+
+  /** Binds this vertex array object */
+  public bind(): void {
+    if (undefined !== this._arrayObject) {
+      this._context.bindVertexArray(this._arrayObject);
+    }
+  }
+
+  /** Ensures no vertex array object is bound */
+  public static unbind(context: WebGL2RenderingContext): void {
+    context.bindVertexArray(null);
+  }
 }
 
 /**

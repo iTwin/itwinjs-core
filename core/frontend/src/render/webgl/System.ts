@@ -138,7 +138,73 @@ const knownExtensions: WebGLExtensionName[] = [
   "OES_vertex_array_object",
   "WEBGL_lose_context",
   "EXT_disjoint_timer_query",
+  "EXT_disjoint_timer_query_webgl2",
 ];
+/** Describes WebGL extension methods.
+ * @internal
+ */
+abstract class WebGLExtensions {
+  private _system: System;
+  public constructor(system: System) {
+    this._system = system;
+  }
+  public get system() { return this._system; }
+  public abstract setDrawBuffers(attachments: GLenum[]): void;
+  public abstract vertexAttribDivisor(index: number, divisor: number): void;
+  public abstract drawArraysInst(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void;
+}
+
+/** Describes WebGL1 extension methods.
+ * @internal
+ */
+class WebGL1Extensions extends WebGLExtensions {
+  private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
+  private readonly _instancingExtension?: ANGLE_instanced_arrays;
+
+  public constructor(system: System, drawBuffersExt: WEBGL_draw_buffers | undefined, instancingExt: ANGLE_instanced_arrays | undefined) {
+    super(system);
+    this._drawBuffersExtension = drawBuffersExt;
+    this._instancingExtension = instancingExt;
+  }
+
+  public setDrawBuffers(attachments: GLenum[]): void {
+    // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
+    if (undefined !== this._drawBuffersExtension)
+      this._drawBuffersExtension.drawBuffersWEBGL(attachments);
+  }
+
+  public vertexAttribDivisor(index: number, divisor: number): void {
+    assert(undefined !== this._instancingExtension);
+    this._instancingExtension!.vertexAttribDivisorANGLE(index, divisor);
+  }
+
+  public drawArraysInst(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void {
+    if (undefined !== this._instancingExtension) {
+      this._instancingExtension.drawArraysInstancedANGLE(type, first, count, numInstances);
+    }
+  }
+}
+
+/** Describes WebGL2 extension methods.
+ * @internal
+ */
+class WebGL2Extensions extends WebGLExtensions {
+  private _context: WebGL2RenderingContext;
+  public constructor(system: System) {
+    super(system);
+    this._context = system.context as WebGL2RenderingContext;
+  }
+
+  public setDrawBuffers(attachments: GLenum[]): void {
+    this._context.drawBuffers(attachments);
+  }
+
+  public vertexAttribDivisor(index: number, divisor: number): void {
+    this._context.vertexAttribDivisor(index, divisor);
+  }
+
+  public drawArraysInst(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void { this._context.drawArraysInstanced(type, first, count, numInstances); }
+}
 
 /** Describes the rendering capabilities of the host system.
  * @internal
@@ -160,6 +226,8 @@ export class Capabilities {
   private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
   private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
 
+  private _isWebGL2: boolean = false;
+
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
   public get maxTextureSize(): number { return this._maxTextureSize; }
@@ -171,21 +239,22 @@ export class Capabilities {
   public get maxVertUniformVectors(): number { return this._maxVertUniformVectors; }
   public get maxVaryingVectors(): number { return this._maxVaryingVectors; }
   public get maxFragUniformVectors(): number { return this._maxFragUniformVectors; }
+  public get isWebGL2(): boolean { return this._isWebGL2; }
 
   /** These getters check for existence of extension objects to determine availability of features.  In WebGL2, could just return true for some. */
   public get supportsNonPowerOf2Textures(): boolean { return false; }
-  public get supportsDrawBuffers(): boolean { return this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers") !== undefined; }
-  public get supportsInstancing(): boolean { return this.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays") !== undefined; }
-  public get supports32BitElementIndex(): boolean { return this.queryExtensionObject<OES_element_index_uint>("OES_element_index_uint") !== undefined; }
-  public get supportsTextureFloat(): boolean { return this.queryExtensionObject<OES_texture_float>("OES_texture_float") !== undefined; }
-  public get supportsTextureFloatLinear(): boolean { return this.queryExtensionObject<OES_texture_float_linear>("OES_texture_float_linear") !== undefined; }
-  public get supportsTextureHalfFloat(): boolean { return this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined; }
-  public get supportsTextureHalfFloatLinear(): boolean { return this.queryExtensionObject<OES_texture_half_float_linear>("OES_texture_half_float_linear") !== undefined; }
+  public get supportsDrawBuffers(): boolean { return this._isWebGL2 || this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers") !== undefined; }
+  public get supportsInstancing(): boolean { return this._isWebGL2 || this.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays") !== undefined; }
+  public get supports32BitElementIndex(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_element_index_uint>("OES_element_index_uint") !== undefined; }
+  public get supportsTextureFloat(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_texture_float>("OES_texture_float") !== undefined; }
+  public get supportsTextureFloatLinear(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_texture_float_linear>("OES_texture_float_linear") !== undefined; }
+  public get supportsTextureHalfFloat(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float") !== undefined; }
+  public get supportsTextureHalfFloatLinear(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_texture_half_float_linear>("OES_texture_half_float_linear") !== undefined; }
   public get supportsTextureFilterAnisotropic(): boolean { return this.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic") !== undefined; }
-  public get supportsShaderTextureLOD(): boolean { return this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
-  public get supportsVertexArrayObjects(): boolean { return this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined; }
-  public get supportsFragDepth(): boolean { return this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined; }
-  public get supportsDisjointTimerQuery(): boolean { return this.queryExtensionObject<any>("EXT_disjoint_timer_query") !== undefined; }
+  public get supportsShaderTextureLOD(): boolean { return this._isWebGL2 || this.queryExtensionObject<EXT_shader_texture_lod>("EXT_shader_texture_lod") !== undefined; }
+  public get supportsVertexArrayObjects(): boolean { return this._isWebGL2 || this.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object") !== undefined; }
+  public get supportsFragDepth(): boolean { return this._isWebGL2 || this.queryExtensionObject<EXT_frag_depth>("EXT_frag_depth") !== undefined; }
+  public get supportsDisjointTimerQuery(): boolean { return (this._isWebGL2 && this.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2") !== undefined) || this.queryExtensionObject<any>("EXT_disjoint_timer_query") !== undefined; }
 
   public get supportsMRTTransparency(): boolean { return this.maxColorAttachments >= 2; }
   public get supportsMRTPickShaders(): boolean { return this.maxColorAttachments >= 3; }
@@ -193,7 +262,7 @@ export class Capabilities {
   public get canRenderDepthWithoutColor(): boolean { return this._canRenderDepthWithoutColor; }
 
   public get supportsShadowMaps(): boolean {
-    return (undefined !== this.findExtension("OES_texture_float") || undefined !== this.findExtension("OES_texture_half_float"));
+    return this.supportsTextureFloat || this.supportsTextureHalfFloat;
   }
 
   private findExtension(name: WebGLExtensionName): any {
@@ -237,9 +306,9 @@ export class Capabilities {
     const features: WebGLFeature[] = [];
 
     // simply check for presence of various extensions if that gives enough information
-    if (this._extensionMap["OES_element_index_uint" as WebGLExtensionName] !== undefined)
+    if (this._isWebGL2 || this._extensionMap["OES_element_index_uint" as WebGLExtensionName] !== undefined)
       features.push(WebGLFeature.UintElementIndex);
-    if (this._extensionMap["ANGLE_instanced_arrays" as WebGLExtensionName] !== undefined)
+    if (this._isWebGL2 || this._extensionMap["ANGLE_instanced_arrays" as WebGLExtensionName] !== undefined)
       features.push(WebGLFeature.Instancing);
 
     if (this.supportsMRTTransparency)
@@ -274,7 +343,10 @@ export class Capabilities {
   }
 
   /** Initializes the capabilities based on a GL context. Must be called first. */
-  public init(gl: WebGLRenderingContext, disabledExtensions?: WebGLExtensionName[]): WebGLRenderCompatibilityInfo {
+  public init(gl: WebGLRenderingContext | WebGL2RenderingContext, disabledExtensions?: WebGLExtensionName[]): WebGLRenderCompatibilityInfo {
+    const gl2 = !(gl instanceof WebGLRenderingContext) ? gl : undefined;
+    this._isWebGL2 = undefined !== gl2;
+
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
     this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
@@ -298,22 +370,29 @@ export class Capabilities {
       }
     }
 
-    const dbExt: WEBGL_draw_buffers | undefined = this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
-    this._maxColorAttachments = dbExt !== undefined ? gl.getParameter(dbExt.MAX_COLOR_ATTACHMENTS_WEBGL) : 1;
-    this._maxDrawBuffers = dbExt !== undefined ? gl.getParameter(dbExt.MAX_DRAW_BUFFERS_WEBGL) : 1;
+    if (this._isWebGL2 && undefined !== gl2) {
+      this._maxColorAttachments = gl.getParameter(gl2.MAX_COLOR_ATTACHMENTS);
+      this._maxDrawBuffers = gl.getParameter(gl2.MAX_DRAW_BUFFERS);
+    } else {
+      const dbExt: WEBGL_draw_buffers | undefined = this.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
+      this._maxColorAttachments = dbExt !== undefined ? gl.getParameter(dbExt.MAX_COLOR_ATTACHMENTS_WEBGL) : 1;
+      this._maxDrawBuffers = dbExt !== undefined ? gl.getParameter(dbExt.MAX_DRAW_BUFFERS_WEBGL) : 1;
+    }
 
     // Determine the maximum color-renderable attachment type.
     const allowFloatRender = undefined === disabledExtensions || -1 === disabledExtensions.indexOf("OES_texture_float");
-    if (allowFloatRender && this.isTextureRenderable(gl, gl.FLOAT))
+    if (allowFloatRender && this.isTextureRenderable(gl, gl.FLOAT)) {
       this._maxRenderType = RenderType.TextureFloat;
-    else {
+    } else if (this.isWebGL2) {
+      this._maxRenderType = (this.isTextureRenderable(gl, (gl as WebGL2RenderingContext).HALF_FLOAT)) ? RenderType.TextureHalfFloat : RenderType.TextureUnsignedByte;
+    } else {
       const hfExt: OES_texture_half_float | undefined = this.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
       this._maxRenderType = (hfExt !== undefined && this.isTextureRenderable(gl, hfExt.HALF_FLOAT_OES)) ? RenderType.TextureHalfFloat : RenderType.TextureUnsignedByte;
     }
 
     // Determine the maximum depth attachment type.
     // this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt32 : DepthType.RenderBufferUnsignedShort16;
-    this._maxDepthType = this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
+    this._maxDepthType = this._isWebGL2 || this.queryExtensionObject("WEBGL_depth_texture") !== undefined ? DepthType.TextureUnsignedInt24Stencil8 : DepthType.RenderBufferUnsignedShort16;
 
     this._canRenderDepthWithoutColor = this._maxDepthType === DepthType.TextureUnsignedInt24Stencil8 ? this.isDepthRenderableWithoutColor(gl) : false;
 
@@ -337,7 +416,7 @@ export class Capabilities {
     };
   }
 
-  public static create(gl: WebGLRenderingContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined {
+  public static create(gl: WebGLRenderingContext | WebGL2RenderingContext, disabledExtensions?: WebGLExtensionName[]): Capabilities | undefined {
     const caps = new Capabilities();
     const compatibility = caps.init(gl, disabledExtensions);
     if (WebGLRenderCompatibilityStatus.CannotCreateContext === compatibility.status || WebGLRenderCompatibilityStatus.MissingRequiredFeatures === compatibility.status)
@@ -346,10 +425,16 @@ export class Capabilities {
   }
 
   /** Determines if a particular texture type is color-renderable on the host system. */
-  private isTextureRenderable(gl: WebGLRenderingContext, texType: number): boolean {
+  private isTextureRenderable(gl: WebGLRenderingContext | WebGL2RenderingContext, texType: number): boolean {
     const tex: WebGLTexture | null = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, texType, null);
+    if (this.isWebGL2) {
+      if (gl.FLOAT === texType)
+        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as WebGL2RenderingContext).RGBA32F, 1, 1, 0, gl.RGBA, texType, null);
+      else
+        gl.texImage2D(gl.TEXTURE_2D, 0, (gl as WebGL2RenderingContext).RGBA16F, 1, 1, 0, gl.RGBA, texType, null);
+    } else
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, texType, null);
 
     const fb: WebGLFramebuffer | null = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fb);
@@ -366,7 +451,7 @@ export class Capabilities {
   }
 
   /** Determines if depth textures can be rendered without also having a color attachment bound on the host system. */
-  private isDepthRenderableWithoutColor(gl: WebGLRenderingContext): boolean {
+  private isDepthRenderableWithoutColor(gl: WebGLRenderingContext | WebGL2RenderingContext): boolean {
     const dtExt = this.queryExtensionObject<WEBGL_depth_texture>("WEBGL_depth_texture");
     if (dtExt === undefined)
       return false;
@@ -389,7 +474,7 @@ export class Capabilities {
     return fbStatus === gl.FRAMEBUFFER_COMPLETE;
   }
 
-  private debugPrint(gl: WebGLRenderingContext, missingRequiredFeatures: WebGLFeature[], _missingOptionalFeatures: WebGLFeature[]) {
+  private debugPrint(gl: WebGLRenderingContext | WebGL2RenderingContext, missingRequiredFeatures: WebGLFeature[], _missingOptionalFeatures: WebGLFeature[]) {
     if (!Debug.printEnabled)
       return;
 
@@ -608,13 +693,12 @@ function createPrimitive(createGeom: (viOrigin: Point3d | undefined) => CachedGe
 export class System extends RenderSystem implements RenderSystemDebugControl, RenderMemory.Consumer, WebGLDisposable {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
-  public readonly context: WebGLRenderingContext;
+  public readonly context: WebGLRenderingContext | WebGL2RenderingContext;
   public readonly frameBufferStack = new FrameBufferStack();  // frame buffers are not owned by the system
   public readonly capabilities: Capabilities;
   public readonly resourceCache: Map<IModelConnection, IdMap>;
   public readonly glTimer: GLTimer;
-  private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
-  private readonly _instancingExtension?: ANGLE_instanced_arrays;
+  private readonly _extensions: WebGLExtensions;
   private readonly _textureBindings: TextureBinding[] = [];
   private _removeEventListener?: () => void;
 
@@ -645,20 +729,21 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
 
-  public setDrawBuffers(attachments: GLenum[]): void {
-    // NB: The WEBGL_draw_buffers member is not exported directly because that type name is not available in some contexts (e.g. test-imodel-service).
-    if (undefined !== this._drawBuffersExtension)
-      this._drawBuffersExtension.drawBuffersWEBGL(attachments);
-  }
+  public setDrawBuffers(attachments: GLenum[]): void { this._extensions.setDrawBuffers(attachments); }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
-  public static createContext(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes): WebGLRenderingContext | undefined {
-    let context = canvas.getContext("webgl", contextAttributes);
+  public static createContext(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes, useWebGL2?: boolean): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+    let context = null;
+    if (useWebGL2) // optionally first try using a WebGL2 context
+      context = canvas.getContext("webgl2", contextAttributes);
+    if (null === context)
+      context = canvas.getContext("webgl", contextAttributes);
     if (null === context) {
-      context = canvas.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null; // IE, Edge...
-      if (null === context) {
+      const context2 = canvas.getContext("experimental-webgl", contextAttributes) as WebGLRenderingContext | null; // IE, Edge...
+      if (null === context2) {
         return undefined;
       }
+      return context2;
     }
     return context;
   }
@@ -704,7 +789,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     if (null === canvas)
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
 
-    const context = System.createContext(canvas);
+    const useWebGL2 = (undefined === options.useWebGL2 ? false : options.useWebGL2);
+    const context = System.createContext(canvas, undefined, useWebGL2);
     if (undefined === context) {
       throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
     }
@@ -811,8 +897,13 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
         return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
       }
       case DepthType.TextureUnsignedInt24Stencil8: {
-        const dtExt: WEBGL_depth_texture | undefined = this.capabilities.queryExtensionObject<WEBGL_depth_texture>("WEBGL_depth_texture");
-        return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, dtExt!.UNSIGNED_INT_24_8_WEBGL);
+        if (this.capabilities.isWebGL2) {
+          const context2 = this.context as WebGL2RenderingContext;
+          return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, context2.UNSIGNED_INT_24_8);
+        } else {
+          const dtExt: WEBGL_depth_texture | undefined = this.capabilities.queryExtensionObject<WEBGL_depth_texture>("WEBGL_depth_texture");
+          return TextureHandle.createForAttachment(width, height, GL.Texture.Format.DepthStencil, dtExt!.UNSIGNED_INT_24_8_WEBGL);
+        }
       }
       default: {
         assert(false);
@@ -902,15 +993,20 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return BackgroundMapDrape.create(drapedTree, mapTree);
   }
 
-  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
+  private constructor(canvas: HTMLCanvasElement, context: WebGLRenderingContext | WebGL2RenderingContext, capabilities: Capabilities, options: RenderSystem.Options) {
     super(options);
     this.canvas = canvas;
     this.context = context;
     this.capabilities = capabilities;
-    this._drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
-    this._instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
     this.resourceCache = new Map<IModelConnection, IdMap>();
     this.glTimer = GLTimer.create(this);
+    if (capabilities.isWebGL2)
+      this._extensions = new WebGL2Extensions(this);
+    else {
+      const drawBuffersExtension = capabilities.queryExtensionObject<WEBGL_draw_buffers>("WEBGL_draw_buffers");
+      const instancingExtension = capabilities.queryExtensionObject<ANGLE_instanced_arrays>("ANGLE_instanced_arrays");
+      this._extensions = new WebGL1Extensions(this, drawBuffersExtension, instancingExtension);
+    }
 
     // Make this System a subscriber to the the IModelConnection onClose event
     this._removeEventListener = IModelConnection.onClose.addListener((imodel) => this.removeIModelMap(imodel));
@@ -1136,15 +1232,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     }
   }
 
-  public vertexAttribDivisor(index: number, divisor: number) {
-    assert(undefined !== this._instancingExtension);
-    this._instancingExtension!.vertexAttribDivisorANGLE(index, divisor);
-  }
+  public vertexAttribDivisor(index: number, divisor: number) { this._extensions.vertexAttribDivisor(index, divisor); }
 
   public drawArrays(type: GL.PrimitiveType, first: number, count: number, numInstances: number): void {
     if (0 !== numInstances) {
-      if (undefined !== this._instancingExtension)
-        this._instancingExtension.drawArraysInstancedANGLE(type, first, count, numInstances);
+      this._extensions.drawArraysInst(type, first, count, numInstances);
     } else {
       this.context.drawArrays(type, first, count);
     }

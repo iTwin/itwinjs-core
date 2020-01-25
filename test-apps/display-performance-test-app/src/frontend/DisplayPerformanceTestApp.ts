@@ -173,6 +173,9 @@ function getRenderOpts(): string {
       case "logarithmicZBuffer":
         if (value) optString += "+logZBuf";
         break;
+      case "useWebGL2":
+        if (value) optString += "+webGL2";
+        break;
       default:
         if (value) optString += "+" + key;
     }

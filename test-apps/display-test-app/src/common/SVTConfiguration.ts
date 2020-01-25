@@ -27,4 +27,5 @@ export interface SVTConfiguration {
   dpiAwareViewports?: boolean; // default ON
   cancelBackendTileRequests?: boolean; // default ON
   disableEdges?: boolean; // default OFF
+  useWebGL2?: boolean; // default OFF
 }

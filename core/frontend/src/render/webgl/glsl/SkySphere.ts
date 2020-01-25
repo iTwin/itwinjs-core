@@ -66,7 +66,7 @@ const scratchVec3 = new Vector3d();
 const scratchPoint3 = new Point3d();
 
 /** @internal */
-export function createSkySphereProgram(context: WebGLRenderingContext, isGradient: boolean): ShaderProgram {
+export function createSkySphereProgram(context: WebGLRenderingContext | WebGL2RenderingContext, isGradient: boolean): ShaderProgram {
   const attrMap = AttributeMap.findAttributeMap(isGradient ? TechniqueId.SkySphereGradient : TechniqueId.SkySphereTexture, false);
   const builder = createViewportQuadBuilder(false, attrMap);
   if (isGradient) {
