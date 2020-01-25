@@ -972,7 +972,7 @@ export namespace IModelTransformerUtils {
   }
 
   export function dumpIModelInfo(iModelDb: IModelDb): void {
-    const outputFileName: string = iModelDb.briefcase.pathname + ".dump.txt";
+    const outputFileName: string = iModelDb.briefcase.pathname + ".info.txt";
     if (IModelJsFs.existsSync(outputFileName)) {
       IModelJsFs.removeSync(outputFileName);
     }

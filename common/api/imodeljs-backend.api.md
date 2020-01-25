@@ -2025,6 +2025,8 @@ export class IModelCloneContext {
     // @internal
     cloneElement(sourceElement: Element): ElementProps;
     dispose(): void;
+    // @internal
+    dump(outputFileName: string): void;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
     // @internal
