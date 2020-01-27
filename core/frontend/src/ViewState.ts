@@ -658,6 +658,9 @@ export abstract class ViewState extends ElementState {
 
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
 
+  /** @deprecated Use the type-safe ViewState.details API instead. */
+  public getDetails(): any { return this.details.getJSON(); }
+
   /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
    */

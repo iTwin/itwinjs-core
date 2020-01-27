@@ -53,8 +53,8 @@ export enum GridOrientationType {
 
 /** @internal */
 export interface ViewDetails3dProps extends ViewDetailsProps {
-  /** Whether viewing tools are allowed to operate in 3 dimensions on this view. Default: true. */
-  allow3dManipulations?: boolean;
+  /** Whether viewing tools are prohibited from operating in 3 dimensions on this view. Default: false. */
+  disable3dManipulations?: boolean;
 }
 
 /** Encapsulates access to optional view details stored in JSON properties.
@@ -81,9 +81,14 @@ export class ViewDetails {
     this._json.acs = Id64.isValidId64(id) ? id : undefined;
   }
 
+  /** Maximum aspect ratio skew. Apps can override this by changing its value.
+   * @internal
+   */
+  public static maxSkew = 25;
+
   /** The aspect ratio skew (x/y, usually 1.0) used to exaggerate the y axis of the view. */
   public get aspectRatioSkew(): number {
-    const maxSkew = 25;
+    const maxSkew = ViewDetails.maxSkew;
     const skew = JsonUtils.asDouble(this._json.aspectSkew, 1.0);
     return Geometry.clamp(skew, 1 / maxSkew, maxSkew);
   }
@@ -137,10 +142,10 @@ export class ViewDetails {
       this._json.clip = undefined;
   }
 
-  /** Returns internal JSON representation. This is *not* a copy.
+  /** Returns the internal JSON representation. This is *not* a copy.
    * @internal
    */
-  public toJSON(): ViewDetailsProps {
+  public getJSON(): ViewDetailsProps {
     return this._json;
   }
 }
@@ -162,14 +167,16 @@ export class ViewDetails3d extends ViewDetails {
    * @beta
    */
   public get allow3dManipulations(): boolean {
-    return JsonUtils.asBool(this._json3d.allow3dManipulations, true);
+    return !JsonUtils.asBool(this._json3d.disable3dManipulations, false);
   }
   public set allow3dManipulations(allow: boolean) {
-    this._json3d.allow3dManipulations = allow ? undefined : false;
+    this._json3d.disable3dManipulations = allow ? undefined : true;
   }
 
-  /** @internal */
-  public toJSON(): ViewDetails3dProps {
+  /** Returns the internal JSON representation. This is *not* a copy.
+   * @internal
+   */
+  public getJSON(): ViewDetails3dProps {
     return this._json3d;
   }
 }

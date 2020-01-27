@@ -71,8 +71,8 @@ describe("ViewState", () => {
     assert.isTrue(viewState.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)), "View extents as expected");
     assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
     assert.isTrue(viewState.rotation.isIdentity, "View rotation is identity");
-    assert.equal(viewState.jsonProperties.viewDetails.gridOrient, 0, "Grid orientation as expected");
-    assert.equal(viewState.jsonProperties.viewDetails.gridSpaceX, 0.001, "GridSpaceX as expected");
+    assert.equal(viewState.details.gridOrientation, 0, "Grid orientation as expected");
+    assert.equal(viewState.details.gridSpacing.x, 0.001, "GridSpaceX as expected");
 
     assert.isDefined(viewState.displayStyle);
     assert.instanceOf(viewState.categorySelector, CategorySelectorState);
@@ -414,17 +414,18 @@ describe("ViewState", () => {
     expect(view2.extentLimits.max).not.to.equal(view.extentLimits.max);
   });
 
-  it.only("should preserve 3d manipulations flag", async () => {
+  it("should preserve 3d manipulations flag", async () => {
     const view = await imodel2.views.load("0x46") as SpatialViewState;
     expect(view.allow3dManipulations()).to.be.true;
 
     view.setAllow3dManipulations(true);
     expect(view.allow3dManipulations()).to.be.true;
     expect(view.details.allow3dManipulations).to.be.true;
-    expect(view.details.toJSON().allow3dManipulations).to.be.undefined;
+    expect(view.details.getJSON().disable3dManipulations).to.be.undefined;
 
     view.setAllow3dManipulations(false);
     expect(view.allow3dManipulations()).to.be.false;
+    expect(view.details.getJSON().disable3dManipulations).to.be.true;
 
     const clone = view.clone();
     expect(clone.allow3dManipulations()).to.be.false;
