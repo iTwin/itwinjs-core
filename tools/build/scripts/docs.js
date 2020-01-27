@@ -31,6 +31,8 @@ const includeOptions = (argv.includes === undefined) ? [] : ["--includes", argv.
 let excludeList = "**/node_modules/**/*,**/*test*/**/*";
 if (argv.excludes !== undefined)
   excludeList += ",**/" + argv.excludes + "/**/*";
+if (argv.excludeGlob !== undefined)
+  excludeList += "," + argv.excludeGlob;
 
 let outputOptions = [
   "--json", json
