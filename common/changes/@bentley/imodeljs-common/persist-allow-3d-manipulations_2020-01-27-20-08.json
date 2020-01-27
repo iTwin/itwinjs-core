@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Define ViewDetails for manipulating optional detail settings of ViewDefinition and ViewState.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Paul.Connelly@bentley.com"
+}

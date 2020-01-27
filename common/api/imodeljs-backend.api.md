@@ -157,6 +157,8 @@ import { ViewAttachmentProps } from '@bentley/imodeljs-common';
 import { ViewDefinition2dProps } from '@bentley/imodeljs-common';
 import { ViewDefinition3dProps } from '@bentley/imodeljs-common';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
+import { ViewDetails } from '@bentley/imodeljs-common';
+import { ViewDetails3d } from '@bentley/imodeljs-common';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { ViewQueryParams } from '@bentley/imodeljs-common';
 import { ViewStateProps } from '@bentley/imodeljs-common';
@@ -3832,12 +3834,10 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @beta
+    abstract get details(): ViewDetails;
     displayStyleId: Id64String;
     getAuxiliaryCoordinateSystemId(): Id64String;
-    // @internal
-    getDetail(name: string): any;
-    // @internal
-    getDetails(): any;
     isDrawingView(): this is DrawingViewDefinition;
     isSpatialView(): this is SpatialViewDefinition;
     isView2d(): this is ViewDefinition2d;
@@ -3846,11 +3846,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     loadDisplayStyle(): DisplayStyle;
     // @alpha (undocumented)
     protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
-    // @internal
-    removeDetail(name: string): void;
     setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
-    // @internal
-    setDetail(name: string, value: any): void;
     // @internal (undocumented)
     toJSON(): ViewDefinitionProps;
 }
@@ -3866,6 +3862,8 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     delta: Point2d;
+    // @beta
+    get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;
     origin: Point2d;
     // @internal (undocumented)
@@ -3881,6 +3879,8 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     cameraOn: boolean;
     // @internal (undocumented)
     static get className(): string;
+    // @beta
+    get details(): ViewDetails3d;
     extents: Vector3d;
     loadDisplayStyle3d(): DisplayStyle3d;
     origin: Point3d;

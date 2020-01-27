@@ -61,6 +61,7 @@ export interface ViewDetails3dProps extends ViewDetailsProps {
  * @beta
  */
 export class ViewDetails {
+  /** @internal */
   protected readonly _json: ViewDetailsProps;
   private _clipVector?: ClipVector;
 
