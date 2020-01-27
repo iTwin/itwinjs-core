@@ -10823,6 +10823,8 @@ export abstract class ViewState extends ElementState {
     getAspectRatioSkew(): number;
     getAuxiliaryCoordinateSystemId(): Id64String;
     getCenter(result?: Point3d): Point3d;
+    // @deprecated (undocumented)
+    getDetails(): any;
     abstract getExtents(): Vector3d;
     getGridOrientation(): GridOrientationType;
     getGridSettings(vp: Viewport, origin: Point3d, rMatrix: Matrix3d, orientation: GridOrientationType): void;

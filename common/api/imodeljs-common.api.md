@@ -6147,6 +6147,8 @@ export class ViewDetails {
     set auxiliaryCoordinateSystemId(id: Id64String);
     get clipVector(): ClipVector | undefined;
     set clipVector(clip: ClipVector | undefined);
+    // @internal
+    getJSON(): ViewDetailsProps;
     get gridOrientation(): GridOrientationType;
     set gridOrientation(orientation: GridOrientationType);
     get gridSpacing(): XAndY;
@@ -6156,7 +6158,7 @@ export class ViewDetails {
     // @internal (undocumented)
     protected readonly _json: ViewDetailsProps;
     // @internal
-    toJSON(): ViewDetailsProps;
+    static maxSkew: number;
 }
 
 // @beta
@@ -6167,13 +6169,13 @@ export class ViewDetails3d extends ViewDetails {
     });
     get allow3dManipulations(): boolean;
     set allow3dManipulations(allow: boolean);
-    // @internal (undocumented)
-    toJSON(): ViewDetails3dProps;
-}
+    // @internal
+    getJSON(): ViewDetails3dProps;
+    }
 
 // @internal (undocumented)
 export interface ViewDetails3dProps extends ViewDetailsProps {
-    allow3dManipulations?: boolean;
+    disable3dManipulations?: boolean;
 }
 
 // @internal (undocumented)
