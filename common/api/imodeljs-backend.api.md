@@ -1870,7 +1870,7 @@ export abstract class GeometricModel2d extends GeometricModel implements Geometr
 }
 
 // @public
-export abstract class GeometricModel3d extends GeometricModel {
+export abstract class GeometricModel3d extends GeometricModel implements GeometricModel3dProps {
     // @internal
     constructor(props: GeometricModel3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -3098,7 +3098,7 @@ export class PhysicalElementIsOfType extends GeometricElement3dHasTypeDefinition
 export class PhysicalModel extends SpatialModel {
     // @internal (undocumented)
     static get className(): string;
-    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
 }
 
 // @public (undocumented)
@@ -3459,6 +3459,7 @@ export class SpatialLocationIsOfType extends GeometricElement3dHasTypeDefinition
 export class SpatialLocationModel extends SpatialModel {
     // @internal (undocumented)
     static get className(): string;
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
 }
 
 // @public

@@ -8,7 +8,7 @@
 
 import { Id64, Id64Array, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BackgroundMapProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags, DisplayStyle3dProps, SkyBoxImageProps } from "@bentley/imodeljs-common";
+import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BackgroundMapProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags, DisplayStyle3dProps, SkyBoxImageProps, PlanProjectionSettingsProps } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -160,6 +160,11 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
       if (skyBoxImageProps.textures.right) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.right)); }
       if (skyBoxImageProps.textures.top) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.top)); }
     }
+    if (this.settings.planProjectionSettings) {
+      for (const planProjectionSetting of this.settings.planProjectionSettings) {
+        predecessorIds.add(planProjectionSetting[0]);
+      }
+    }
   }
   /** @alpha */
   protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
@@ -183,6 +188,16 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
         skyBoxImageProps.textures.right = Id64.isValidId64(rightTextureId) ? rightTextureId : undefined;
         const topTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.top));
         skyBoxImageProps.textures.top = Id64.isValidId64(topTextureId) ? topTextureId : undefined;
+      }
+      if (targetElementProps?.jsonProperties?.styles?.planProjections) {
+        const remappedPlanProjections: { [modelId: string]: PlanProjectionSettingsProps } = {};
+        for (const entry of Object.entries(targetElementProps.jsonProperties.styles.planProjections)) {
+          const remappedModelId: Id64String = context.findTargetElementId(entry[0]);
+          if (Id64.isValidId64(remappedModelId)) {
+            remappedPlanProjections[remappedModelId] = entry[1];
+          }
+        }
+        targetElementProps.jsonProperties.styles.planProjections = remappedPlanProjections;
       }
     }
   }

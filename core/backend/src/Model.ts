@@ -9,7 +9,7 @@
 import { DbOpcode, GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
-import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition } from "./Element";
+import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
@@ -129,7 +129,7 @@ export class GeometricModel extends Model implements GeometricModelProps {
 /** A container for persisting 3d geometric elements.
  * @public
  */
-export abstract class GeometricModel3d extends GeometricModel {
+export abstract class GeometricModel3d extends GeometricModel implements GeometricModel3dProps {
   /** If true, then the elements in this GeometricModel3d are expected to be in an XY plane.
    * @note The associated ECProperty was added to the BisCore schema in version 1.0.8
    */
@@ -209,14 +209,15 @@ export abstract class SpatialModel extends GeometricModel3d {
 export class PhysicalModel extends SpatialModel {
   /** @internal */
   public static get className(): string { return "PhysicalModel"; }
-  /** Insert a PhysicalPartition and a PhysicalModel that breaks it down.
+  /** Insert a PhysicalPartition and a PhysicalModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
-   * @param name The name of the PhysicalPartition that the new PhysicalModel will break down.
+   * @param name The name of the PhysicalPartition that the new PhysicalModel will sub-model.
+   * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
    * @returns The Id of the newly inserted PhysicalPartition and PhysicalModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -224,10 +225,12 @@ export class PhysicalModel extends SpatialModel {
       code: PhysicalPartition.createCode(iModelDb, parentSubjectId, name),
     };
     const partitionId = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+    const modelProps: GeometricModel3dProps = {
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
-    });
+      isPlanProjection,
+    };
+    return iModelDb.models.insertModel(modelProps);
   }
 }
 
@@ -238,6 +241,29 @@ export class PhysicalModel extends SpatialModel {
 export class SpatialLocationModel extends SpatialModel {
   /** @internal */
   public static get className(): string { return "SpatialLocationModel"; }
+  /** Insert a SpatialLocationPartition and a SpatialLocationModel that sub-models it.
+   * @param iModelDb Insert into this iModel
+   * @param parentSubjectId The SpatialLocationPartition will be inserted as a child of this Subject element.
+   * @param name The name of the SpatialLocationPartition that the new SpatialLocationModel will sub-model.
+   * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
+   * @returns The Id of the newly inserted SpatialLocationPartition and SpatialLocationModel (same value).
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+    const partitionProps: InformationPartitionElementProps = {
+      classFullName: SpatialLocationPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
+      code: SpatialLocationPartition.createCode(iModelDb, parentSubjectId, name),
+    };
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    const modelProps: GeometricModel3dProps = {
+      classFullName: this.classFullName,
+      modeledElement: { id: partitionId },
+      isPlanProjection,
+    };
+    return iModelDb.models.insertModel(modelProps);
+  }
 }
 
 /** A 2d model that holds [[DrawingGraphic]]s. DrawingModels may be dimensional or non-dimensional.
@@ -299,10 +325,10 @@ export class InformationRecordModel extends InformationModel {
   /** @internal */
   public static get className(): string { return "InformationRecordModel"; }
 
-  /** Insert a InformationRecordPartition and a InformationRecordModel that breaks it down.
+  /** Insert a InformationRecordPartition and a InformationRecordModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The InformationRecordPartition will be inserted as a child of this Subject element.
-   * @param name The name of the InformationRecordPartition that the new InformationRecordModel will break down.
+   * @param name The name of the InformationRecordPartition that the new InformationRecordModel will sub-model.
    * @returns The Id of the newly inserted InformationRecordModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
@@ -329,10 +355,10 @@ export class DefinitionModel extends InformationModel {
   /** @internal */
   public static get className(): string { return "DefinitionModel"; }
 
-  /** Insert a DefinitionPartition and a DefinitionModel that breaks it down.
+  /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DefinitionPartition will be inserted as a child of this Subject element.
-   * @param name The name of the DefinitionPartition that the new DefinitionModel will break down.
+   * @param name The name of the DefinitionPartition that the new DefinitionModel will sub-model.
    * @returns The Id of the newly inserted DefinitionModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
@@ -366,10 +392,10 @@ export class RepositoryModel extends DefinitionModel {
 export class DocumentListModel extends InformationModel {
   /** @internal */
   public static get className(): string { return "DocumentListModel"; }
-  /** Insert a DocumentPartition and a DocumentListModel that breaks it down.
+  /** Insert a DocumentPartition and a DocumentListModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
-   * @param name The name of the DocumentPartition that the new DocumentListModel will break down.
+   * @param name The name of the DocumentPartition that the new DocumentListModel will sub-model.
    * @returns The Id of the newly inserted DocumentPartition and DocumentListModel (same value)
    * @throws [[IModelError]] if there is an insert problem.
    */
