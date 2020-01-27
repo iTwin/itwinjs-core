@@ -611,10 +611,11 @@ export class RealityDataServicesClient extends WsgClient {
   public getRealityDataIdFromUrl(url: string): string | undefined {
     let realityDataId: string | undefined;
 
-    const formattedUrl = url.replace(/~2F/g, "/");
+    const formattedUrl = url.replace(/~2F/g, "/").replace(/\\/g, "/");
     const urlParts = formattedUrl.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
 
-    if ((urlParts[4] === "Repositories") && urlParts[5].match("S3MXECPlugin--*") && (urlParts[6] === "S3MX")) {
+    const partOffset: number = ((urlParts[1] === "") ? 4 : 3);
+    if ((urlParts[partOffset] === "Repositories") && urlParts[partOffset + 1].match("S3MXECPlugin--*") && (urlParts[partOffset + 2] === "S3MX")) {
       // URL appears tpo be a correctly formed URL to Reality Data Service ... obtain the first GUID
       realityDataId = urlParts.find(Guid.isGuid);
     }

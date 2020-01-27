@@ -30,6 +30,23 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
     chai.assert.isDefined(projectId);
   });
 
+  it("should be able to parse RDS/Context Share URL both valid and invalid.", async () => {
+    // Test
+    const realityDataId: string | undefined = realityDataServiceClient.getRealityDataIdFromUrl("http://connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--95b8160c-8df9-437b-a9bf-22ad01fecc6b/S3MX/RealityData/73226b81-6d95-45d3-9473-20e52703aea5");
+    chai.assert(realityDataId);
+    chai.assert(realityDataId === "73226b81-6d95-45d3-9473-20e52703aea5");
+
+    const realityDataId2: string | undefined = realityDataServiceClient.getRealityDataIdFromUrl("http:\\\\connect-realitydataservices.bentley.com\\v2.4\\Repositories/S3MXECPlugin--95b8160c-8df9-437b-a9bf-22ad01fecc6b\\S3MX\\RealityData\\73226b81-6d95-45d3-9473-20e52703aea5");
+
+    chai.assert(realityDataId2);
+    chai.assert(realityDataId2 === "73226b81-6d95-45d3-9473-20e52703aea5");
+
+    const realityDataId3: string | undefined = realityDataServiceClient.getRealityDataIdFromUrl("http:\\connect-realitydataservices.bentley.com\\v2.4\\Repositories/S3MXECPlugin--95b8160c-8df9-437b-a9bf-22ad01fecc6b\\S3MX\\RealityData\\73226b81-6d95-45d3-9473-20e52703aea5");
+
+    chai.assert(realityDataId3);
+    chai.assert(realityDataId3 === "73226b81-6d95-45d3-9473-20e52703aea5");
+  });
+
   it("should be able to retrieve reality data properties", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
     chai.assert(realityData);

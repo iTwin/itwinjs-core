@@ -520,8 +520,12 @@ export class RealityModelTileClient {
 
   // ###TODO temporary means of extracting the tileId and projectId from the given url
   // This is the method that determines if the url refers to Reality Data stored on PW Context Share. If not then undefined is returned.
+  // ###TODO This method should be replaced by realityDataServiceClient.getRealityDataIdFromUrl()
+  // We obtain the projectId from URL but it should be used normally. The iModel context should be used everywhere: verify!
   private parseUrl(url: string): RDSClientProps | undefined {
-    const urlParts = url.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
+    // We have URLs with incorrect slashes that must be supported. The ~2F are WSG encoded slashes and may prevent parsing out the reality data id.
+    const workUrl: string = url.replace(/~2F/g, "/").replace(/\\/g, "/");
+    const urlParts = workUrl.split("/").map((entry: string) => entry.replace(/%2D/g, "-"));
     const tilesId = urlParts.find(Guid.isGuid);
     let props: RDSClientProps | undefined;
     if (undefined !== tilesId) {
