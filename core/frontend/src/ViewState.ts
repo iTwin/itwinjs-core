@@ -42,6 +42,7 @@ import { ViewingSpace } from "./ViewingSpace";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
  * @public
+ * @deprecated use GridOrientationType from imodeljs-common.
  */
 export enum GridOrientationType {
   /** Oriented with the view. */
@@ -746,9 +747,6 @@ export abstract class ViewState extends ElementState {
 
   /**  Get the aspect ratio (width/height) of this view */
   public getAspectRatio(): number { const extents = this.getExtents(); return extents.x / extents.y; }
-
-  /** @internal */
-  public static maxSkew = 25;
 
   /** Get the aspect ratio skew (x/y, usually 1.0) that is used to exaggerate the y axis of the view. */
   public getAspectRatioSkew(): number {
