@@ -39,7 +39,7 @@ import { HitDetail } from "../HitDetail";
 import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SpatialClassifierTileTreeReference, createClassifierTileTreeReference } from "./ClassifierTileTree";
 import { SceneContext } from "../ViewContext";
-import { RenderMemory } from "../render/System";
+import { RenderMemory } from "../render/RenderSystem";
 import { ViewState } from "../ViewState";
 import { DisplayStyleState } from "../DisplayStyleState";
 

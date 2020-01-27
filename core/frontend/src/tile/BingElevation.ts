@@ -15,7 +15,8 @@ import { VertexKey } from "../render/primitives/VertexKey";
 import { MeshParams } from "../render/primitives/VertexTable";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { IModelConnection } from "../IModelConnection";
-import { RenderSystem, RenderGraphic } from "../render/System";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderSystem } from "../render/RenderSystem";
 
 /** @internal */
 export class BingElevationProvider {

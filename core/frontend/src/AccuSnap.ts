@@ -17,7 +17,7 @@ import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
 import { SnapRequestProps } from "@bentley/imodeljs-common";
-import { CanvasDecoration } from "./rendering";
+import { CanvasDecoration } from "./render/CanvasDecoration";
 
 // cspell:ignore dont primitivetools
 

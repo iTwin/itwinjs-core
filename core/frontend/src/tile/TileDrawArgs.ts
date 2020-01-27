@@ -24,12 +24,10 @@ import { Tile, TileTree } from "./internal";
 import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import {
-  GraphicBranch,
-  RenderClipVolume,
-  RenderPlanarClassifier,
-  RenderTextureDrape,
-} from "../render/System";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { RenderClipVolume } from "../render/RenderClipVolume";
+import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
+import { RenderTextureDrape } from "../render/RenderSystem";
 
 const scratchRange = new Range3d();
 

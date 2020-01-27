@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
 import { IModelApp } from "../IModelApp";
-import { ClippingType, RenderSystem } from "../render/System";
+import { ClippingType } from "../render/RenderClipVolume";
+import { RenderSystem } from "../render/RenderSystem";
 import {
   AttributeMap,
   DrawParams,

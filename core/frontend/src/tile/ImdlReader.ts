@@ -67,12 +67,10 @@ import {
   AuxChannelTable,
   AuxChannelTableProps,
 } from "../render/primitives/AuxChannelTable";
-import {
-  GraphicBranch,
-  InstancedGraphicParams,
-  RenderGraphic,
-  RenderSystem,
-} from "../render/System";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { RenderSystem } from "../render/RenderSystem";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";

@@ -25,10 +25,8 @@ import {
 } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { TileRequest, TileContent, TileDrawArgs, TileParams, BatchedTileIdMap, readPointCloudTileContent, GltfReader, B3dmReader, I3dmReader, ImdlReader, Tile, TileLoadPriority } from "./internal";
-import {
-  GraphicBranch,
-  RenderSystem,
-} from "../render/System";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { RenderSystem } from "../render/RenderSystem";
 
 const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
   renderMode: RenderMode.SmoothShade,

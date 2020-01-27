@@ -47,12 +47,10 @@ import {
   TextureMapping,
   TileReadStatus,
 } from "@bentley/imodeljs-common";
-import {
-  GraphicBranch,
-  InstancedGraphicParams,
-  RenderGraphic,
-  RenderSystem,
-} from "../render/System";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { RenderSystem } from "../render/RenderSystem";
 import {
   getImageSourceFormatForMimeType,
   imageElementFromImageSource,

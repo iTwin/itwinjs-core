@@ -21,7 +21,7 @@ import { ElementLocateManager } from "./ElementLocateManager";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./QuantityFormatter";
 import { FrontendRequestContext } from "./FrontendRequestContext";
-import { RenderSystem } from "./render/System";
+import { RenderSystem } from "./render/RenderSystem";
 import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";

@@ -23,7 +23,7 @@ import {
   TileParams,
   TileRequest,
 } from "./internal";
-import { RenderSystem } from "../render/System";
+import { RenderSystem } from "../render/RenderSystem";
 
 /** @internal */
 export namespace A3xTile {

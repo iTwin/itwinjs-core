@@ -6,13 +6,16 @@ import { expect } from "chai";
 import * as path from "path";
 import { TestViewport, testViewports, comparePixelData, Color, testOnScreenViewport, createOnScreenTestViewport } from "../TestViewport";
 import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
-import { RenderMemory, Pixel, RenderSystem, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
+  GraphicType,
   IModelApp,
   IModelConnection,
   FeatureOverrideProvider,
   FeatureSymbology,
   OffScreenViewport,
+  Pixel,
+  RenderMemory,
+  RenderSystem,
   SpatialViewState,
   Viewport,
   ViewRect,

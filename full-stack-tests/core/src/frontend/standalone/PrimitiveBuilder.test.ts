@@ -4,18 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { IModelApp, IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { GraphicType, IModelApp, IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
 import * as path from "path";
 import {
-  Geometry,
-  StrokesPrimitiveList,
-  StrokesPrimitivePointLists,
-  StrokesPrimitivePointList,
-  PrimitiveBuilder,
-  GraphicType,
-  GeometryAccumulator,
   DisplayParams,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+  Geometry,
+  GeometryAccumulator,
+  PrimitiveBuilder,
+  StrokesPrimitiveList,
+  StrokesPrimitivePointList,
+  StrokesPrimitivePointLists,
+} from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Branch } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Arc3d, Point3d, LineString3d, Loop, Path, Transform, Range3d, Polyface, IndexedPolyface, Point2d } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";

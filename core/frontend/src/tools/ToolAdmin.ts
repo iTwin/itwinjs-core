@@ -14,7 +14,7 @@ import { LocateOptions } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { ToolSettingsPropertySyncItem, ToolSettingsPropertyItem, ToolSettingsValue } from "../properties/ToolSettingsValue";
-import { CanvasDecoration } from "../render/System";
+import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { linePlaneIntersect, ScreenViewport, Viewport, ViewChangeOptions } from "../Viewport";

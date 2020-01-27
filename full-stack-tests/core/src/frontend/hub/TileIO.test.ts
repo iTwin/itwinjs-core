@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { SurfaceType } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Batch, MeshGraphic, GraphicsArray, Primitive, PolylineGeometry, RenderOrder } from "@bentley/imodeljs-frontend/lib/webgl";
 import {
   BatchType,

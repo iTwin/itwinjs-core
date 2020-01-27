@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import { MockRender, IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { GraphicType, MockRender, IModelConnection, SpatialViewState, StandardViewId, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { GraphicParams, ColorDef } from "@bentley/imodeljs-common";
 import {
   Range3d,
@@ -22,12 +22,11 @@ import {
   MeshBuilder,
   Mesh,
   ToleranceRatio,
-  GraphicType,
   PrimitiveBuilder,
   StrokesPrimitiveList,
   StrokesPrimitivePointLists,
   Triangle,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+} from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");

@@ -8,7 +8,7 @@
 import { GL } from "./GL";
 import { dispose, assert } from "@bentley/bentleyjs-core";
 import { FrameBuffer } from "./FrameBuffer";
-import { RenderGraphic } from "../System";
+import { RenderGraphic } from "../RenderGraphic";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";

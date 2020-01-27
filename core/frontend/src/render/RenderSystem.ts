@@ -6,21 +6,13 @@
  * @module Rendering
  */
 
-import { base64StringToUint8Array, dispose, disposeArray, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform, XAndY } from "@bentley/geometry-core";
+import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion,
-  AnalysisStyle,
-  BatchType,
   ColorDef,
   ElementAlignedBox3d,
-  Feature,
   FeatureIndexType,
-  Frustum,
-  GeometryClass,
   Gradient,
-  HiddenLine,
-  Hilite,
   ImageBuffer,
   ImageSource,
   ImageSourceFormat,
@@ -30,26 +22,32 @@ import {
   QPoint3dList,
   RenderMaterial,
   RenderTexture,
-  SpatialClassificationProps,
   TextureProps,
-  ViewFlag,
-  ViewFlags,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { HiliteSet } from "../SelectionSet";
-import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
-import { FeatureSymbology } from "./FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 import { BackgroundMapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
+import { RenderTarget } from "./RenderTarget";
+import { InstancedGraphicParams } from "./InstancedGraphicParams";
+import {
+  GraphicList,
+  RenderGraphic,
+  RenderGraphicOwner,
+} from "./RenderGraphic";
+import { RenderClipVolume } from "./RenderClipVolume";
+import {
+  GraphicBranch,
+  GraphicBranchOptions,
+} from "./GraphicBranch";
 
 // tslint:disable:no-const-enum
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -203,141 +201,6 @@ export namespace RenderMemory {
   }
 }
 
-/** A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
- * @internal
- */
-export class RenderPlan {
-  public readonly is3d: boolean;
-  public readonly viewFlags: ViewFlags;
-  public readonly bgColor: ColorDef;
-  public readonly monoColor: ColorDef;
-  public readonly hiliteSettings: Hilite.Settings;
-  public readonly emphasisSettings: Hilite.Settings;
-  public readonly activeVolume?: ClipVector;
-  public readonly hline?: HiddenLine.Settings;
-  public readonly analysisStyle?: AnalysisStyle;
-  public readonly ao?: AmbientOcclusion.Settings;
-  public readonly isFadeOutActive: boolean;
-  public readonly analysisTexture?: RenderTexture;
-  public readonly classificationTextures?: Map<Id64String, RenderTexture>;
-  public readonly frustum: Frustum;
-  public readonly fraction: number;
-
-  public static createFromViewport(vp: Viewport): RenderPlan {
-    return new RenderPlan(vp);
-  }
-
-  public static createEmpty(): RenderPlan {
-    return new RenderPlan();
-  }
-
-  private constructor(vp?: Viewport) {
-    if (undefined !== vp) {
-      const view = vp.view;
-      const style = view.displayStyle;
-
-      this.is3d = view.is3d();
-      this.frustum = vp.viewingSpace.getFrustum();
-      this.fraction = vp.viewingSpace.frustFraction;
-      this.viewFlags = style.viewFlags;
-      this.bgColor = view.backgroundColor;
-      this.monoColor = style.monochromeColor;
-      this.hiliteSettings = vp.hilite;
-      this.emphasisSettings = vp.emphasisSettings;
-      this.isFadeOutActive = vp.isFadeOutActive;
-      this.activeVolume = view.getViewClip();
-      this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
-      this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
-      this.analysisStyle = style.analysisStyle;
-
-      if (undefined !== this.analysisStyle && undefined !== this.analysisStyle.scalarThematicSettings)
-        this.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(this.analysisStyle.scalarThematicSettings), vp.iModel);
-    } else {
-      this.is3d = true;
-      this.viewFlags = new ViewFlags();
-      this.bgColor = ColorDef.white.clone();
-      this.monoColor = ColorDef.white.clone();
-      this.hiliteSettings = new Hilite.Settings();
-      this.emphasisSettings = new Hilite.Settings();
-      this.frustum = new Frustum();
-      this.fraction = 0;
-      this.isFadeOutActive = false;
-    }
-  }
-}
-
-/** Abstract representation of an object which can be rendered by a [[RenderSystem]].
- * Two broad classes of graphics exist:
- *  - "Scene" graphics generated on the back-end to represent the contents of the models displayed in a [[Viewport]]; and
- *  - [[Decorations]] created on the front-end to be rendered along with the scene.
- * The latter are produced using a [[GraphicBuilder]].
- * @public
- */
-export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Consumer */ {
-  public abstract dispose(): void;
-
-  /** @internal */
-  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
-}
-
-/** A graphic that owns another graphic. By default, every time a [[Viewport]]'s decorations or dynamics graphics change, the previous graphics are disposed of.
- * Use a GraphicOwner to prevent disposal of a graphic that you want to reuse. The graphic owner can be added to decorations and list of dynamics just like any other graphic, but the graphic it owns
- * will never be automatically disposed of. Instead, you assume responsibility for disposing of the owned graphic by calling [[disposeGraphic]] when the owned graphic is no longer in use. Failure
- * to do so will result in leaks of graphics memory or other webgl resources.
- * @public
- */
-export abstract class RenderGraphicOwner extends RenderGraphic {
-  /** The owned graphic. */
-  public abstract get graphic(): RenderGraphic;
-  /** Does nothing. To dispose of the owned graphic, use [[disposeGraphic]]. */
-  public dispose(): void { }
-  /** Disposes of the owned graphic. */
-  public disposeGraphic(): void { this.graphic.dispose(); }
-  /** @internal */
-  public collectStatistics(stats: RenderMemory.Statistics): void { this.graphic.collectStatistics(stats); }
-}
-
-/** Default implementation of RenderGraphicOwner. */
-class GraphicOwner extends RenderGraphicOwner {
-  public constructor(private readonly _graphic: RenderGraphic) { super(); }
-  public get graphic(): RenderGraphic { return this._graphic; }
-}
-
-/** Describes the type of a RenderClipVolume.
- * @beta
- */
-export const enum ClippingType {
-  /** No clip volume. */
-  None,
-  /** A 2d mask which excludes geometry obscured by the mask. */
-  Mask,
-  /** A 3d set of convex clipping planes which excludes geometry outside of the planes. */
-  Planes,
-}
-
-/** An opaque representation of a clip volume applied to geometry within a [[Viewport]].
- * A RenderClipVolume is created from a [[ClipVector]] and takes ownership of that ClipVector, expecting that it will not be modified while the RenderClipVolume still references it.
- * @see [System.createClipVolume]
- * @beta
- */
-export abstract class RenderClipVolume implements IDisposable /* , RenderMemory.Consumer */ {
-  /** The ClipVector from which this volume was created. It must not be modified. */
-  public readonly clipVector: ClipVector;
-
-  protected constructor(clipVector: ClipVector) {
-    this.clipVector = clipVector;
-  }
-
-  /** Returns the type of this clipping volume. */
-  public abstract get type(): ClippingType;
-
-  /** Disposes of any WebGL resources owned by this volume. Must be invoked when finished with the clip volume object to prevent memory leaks. */
-  public abstract dispose(): void;
-
-  /** @internal */
-  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
-}
-
 /** An opaque representation of a texture draped on geometry within a [[Viewport]].
  * @internal
  */
@@ -350,373 +213,6 @@ export abstract class RenderTextureDrape implements IDisposable {
 }
 /** @internal */
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
-
-/** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
- * @internal
- */
-export abstract class RenderPlanarClassifier implements IDisposable {
-  public abstract dispose(): void;
-  public abstract collectGraphics(context: SceneContext, classifiedTree: TileTreeReference, tileTree: TileTreeReference): void;
-}
-
-/** @internal */
-export type PlanarClassifierMap = Map<Id64String, RenderPlanarClassifier>;
-
-/** An array of [[RenderGraphic]]s.
- * @public
- */
-export type GraphicList = RenderGraphic[];
-
-/** A [Decoration]($docs/learning/frontend/ViewDecorations#canvas-decorations) that is drawn onto the
- * [2d canvas](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D) on top of a ScreenViewport.
- * CanvasDecorations may be pickable by implementing [[pick]].
- * @public
- */
-export interface CanvasDecoration {
-  /**
-   * Required method to draw this decoration into the supplied [CanvasRenderingContext2D](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D). This method is called every time a frame is rendered.
-   * @param ctx The CanvasRenderingContext2D for the [[ScreenViewport]] being rendered.
-   * @note Before this this function is called, the state of the CanvasRenderingContext2D is [saved](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/save),
-   * and it is [restored](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/restore) when this method returns. Therefore,
-   * it is *not* necessary for implementers to save/restore themselves.
-   */
-  drawDecoration(ctx: CanvasRenderingContext2D): void;
-  /**
-   * Optional view coordinates position of this overlay decoration. If present, [ctx.translate](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/translate) is called
-   * with this point before [[drawDecoration]] is called.
-   */
-  position?: XAndY;
-  /** Optional method to provide feedback when mouse events occur on this decoration.
-   * @param pt The position of the mouse in the ScreenViewport
-   * @return true if the mouse is inside this decoration.
-   * @note If this method is not present, no mouse events are directed to this decoration.
-   */
-  pick?(pt: XAndY): boolean;
-  /** Optional method to be called whenever this decorator is picked and the mouse first enters this decoration. */
-  onMouseEnter?(ev: BeButtonEvent): void;
-  /** Optional method to be called whenever when the mouse leaves this decoration. */
-  onMouseLeave?(): void;
-  /** Optional method to be called whenever when the mouse moves inside this decoration. */
-  onMouseMove?(ev: BeButtonEvent): void;
-  /**
-   * Optional method to be called whenever this decorator is picked and a mouse button is pressed or released inside this decoration.
-   * @return true if the event was handled by this decoration and should *not* be forwarded to the active tool.
-   * @note This method is called for both mouse up and down events. If it returns `true` for a down event, it should also return `true` for the
-   * corresponding up event.
-   */
-  onMouseButton?(ev: BeButtonEvent): boolean;
-  /**
-   * Optional method to be called when the mouse wheel is rolled with the pointer over this decoration.
-   * @return true to indicate that the event has been handled and should not be propagated to default handler
-   */
-  onWheel?(ev: BeWheelEvent): boolean;
-  /** Cursor to use when mouse is inside this decoration. Default is "pointer". */
-  decorationCursor?: string;
-}
-
-/** An array of [[CanvasDecoration]]s.
- * @public
- */
-export type CanvasDecorationList = CanvasDecoration[];
-
-/** A set of [[RenderGraphic]]s and [[CanvasDecoration]]s produced by [[Tool]]s and [[Decorator]]s, used to decorate the contents of a [[Viewport]].
- * @public
- */
-export class Decorations implements IDisposable {
-  private _skyBox?: RenderGraphic;
-  private _viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
-  private _normal?: GraphicList;       // drawn with zbuffer, with scene lighting
-  private _world?: GraphicList;        // drawn with zbuffer, with default lighting, smooth shading
-  private _worldOverlay?: GraphicList; // drawn in overlay mode, world units
-  private _viewOverlay?: GraphicList;  // drawn in overlay mode, view units
-
-  public canvasDecorations?: CanvasDecorationList;
-
-  /** A view decoration created from a [[SkyBox]] rendered behind all other geometry to provide environmental context. */
-  public get skyBox(): RenderGraphic | undefined { return this._skyBox; }
-  public set skyBox(skyBox: RenderGraphic | undefined) { dispose(this._skyBox); this._skyBox = skyBox; }
-  /** A view decoration drawn as the background of the view. @see [[GraphicType.ViewBackground]]. */
-  public get viewBackground(): RenderGraphic | undefined { return this._viewBackground; }
-  public set viewBackground(viewBackground: RenderGraphic | undefined) { dispose(this._viewBackground); this._viewBackground = viewBackground; }
-  /** Decorations drawn as if they were part of the scene. @see [[GraphicType.Scene]]. */
-  public get normal(): GraphicList | undefined { return this._normal; }
-  public set normal(normal: GraphicList | undefined) { disposeArray(this._normal); this._normal = normal; }
-  /** Decorations drawn as if they were part of the world, but ignoring the view's [[ViewFlags]]. @see [[GraphicType.WorldDecoration]]. */
-  public get world(): GraphicList | undefined { return this._world; }
-  public set world(world: GraphicList | undefined) { disposeArray(this._world); this._world = world; }
-  /** Overlay decorations drawn in world coordinates. @see [[GraphicType.WorldOverlay]]. */
-  public get worldOverlay(): GraphicList | undefined { return this._worldOverlay; }
-  public set worldOverlay(worldOverlay: GraphicList | undefined) { disposeArray(this._worldOverlay); this._worldOverlay = worldOverlay; }
-  /** Overlay decorations drawn in view coordinates. @see [[GraphicType.ViewOverlay]]. */
-  public get viewOverlay(): GraphicList | undefined { return this._viewOverlay; }
-  public set viewOverlay(viewOverlay: GraphicList | undefined) { disposeArray(this._viewOverlay); this._viewOverlay = viewOverlay; }
-
-  public dispose() {
-    this.skyBox = undefined;
-    this.viewBackground = undefined;
-    this.world = undefined;
-    this.worldOverlay = undefined;
-    this.viewOverlay = undefined;
-    this.normal = undefined;
-  }
-}
-
-/**
- * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,
- * and a transform, symbology overrides, and clip volume which are to be applied when rendering them.
- * Branches can be nested to build an arbitrarily-complex scene graph.
- * @see [[RenderSystem.createBranch]]
- * @public
- */
-export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ {
-  /** The child nodes of this branch */
-  public readonly entries: RenderGraphic[] = [];
-  /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
-  public readonly ownsEntries: boolean;
-  public viewFlagOverrides = new ViewFlag.Overrides();
-  /** Optional symbology overrides to be applied to all graphics in this branch */
-  public symbologyOverrides?: FeatureSymbology.Overrides;
-  /** Optional animation branch Id.
-   * @internal
-   */
-  public animationId?: string;
-
-  /** Constructor
-   * @param ownsEntries If true, when this branch is [[dispose]]d, all of the [[RenderGraphic]]s it contains will also be disposed.
-   */
-  public constructor(ownsEntries: boolean = false) { this.ownsEntries = ownsEntries; }
-
-  /** Add a graphic to this branch. */
-  public add(graphic: RenderGraphic): void { this.entries.push(graphic); }
-  /** @internal */
-  public getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags { return this.viewFlagOverrides.apply(flags.clone(out)); }
-  /** @internal */
-  public setViewFlags(flags: ViewFlags): void { this.viewFlagOverrides.overrideAll(flags); }
-  /** @internal */
-  public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this.viewFlagOverrides.copyFrom(ovr); }
-
-  public dispose() { this.clear(); }
-  public get isEmpty(): boolean { return 0 === this.entries.length; }
-
-  /** Empties the list of [[RenderGraphic]]s contained in this branch, and if the [[GraphicBranch.ownsEntries]] flag is set, also disposes of them. */
-  public clear(): void {
-    if (this.ownsEntries)
-      disposeArray(this.entries);
-    else
-      this.entries.length = 0;
-  }
-
-  /** @internal */
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const entry of this.entries)
-      entry.collectStatistics(stats);
-  }
-}
-
-/** Describes aspects of a pixel as read from a [[Viewport]].
- * @see [[Viewport.readPixels]]
- * @beta
- */
-export namespace Pixel {
-  /** Describes a single pixel within a [[Pixel.Buffer]]. */
-  export class Data {
-    public readonly feature?: Feature;
-    public readonly distanceFraction: number;
-    public readonly type: GeometryType;
-    public readonly planarity: Planarity;
-    /** @internal */
-    public readonly featureTable?: PackedFeatureTable;
-    /** @internal */
-    public readonly iModel?: IModelConnection;
-    /** @internal */
-    public readonly tileId?: string;
-    /** @internal */
-    public get isClassifier(): boolean { return undefined !== this.featureTable && BatchType.Primary !== this.featureTable.type; }
-
-    /** @internal */
-    public constructor(feature?: Feature, distanceFraction = -1.0, type = GeometryType.Unknown, planarity = Planarity.Unknown, featureTable?: PackedFeatureTable, iModel?: IModelConnection, tileId?: string) {
-      this.feature = feature;
-      this.distanceFraction = distanceFraction;
-      this.type = type;
-      this.planarity = planarity;
-      this.featureTable = featureTable;
-      this.iModel = iModel;
-      this.tileId = tileId;
-    }
-
-    public get elementId(): Id64String | undefined { return undefined !== this.feature ? this.feature.elementId : undefined; }
-    public get subCategoryId(): Id64String | undefined { return undefined !== this.feature ? this.feature.subCategoryId : undefined; }
-    public get geometryClass(): GeometryClass | undefined { return undefined !== this.feature ? this.feature.geometryClass : undefined; }
-  }
-
-  /** Describes the foremost type of geometry which produced the [[Pixel.Data]]. */
-  export const enum GeometryType {
-    /** [[Pixel.Selector.GeometryAndDistance]] was not specified, or the type could not be determined. */
-    Unknown, // Geometry was not selected, or type could not be determined
-    /** No geometry was rendered to this pixel. */
-    None,
-    /** A surface produced this pixel. */
-    Surface,
-    /** A point primitive or polyline produced this pixel. */
-    Linear,
-    /** This pixel was produced by an edge of a surface. */
-    Edge,
-    /** This pixel was produced by a silhouette edge of a curved surface. */
-    Silhouette,
-  }
-
-  /** Describes the planarity of the foremost geometry which produced the pixel. */
-  export const enum Planarity {
-    /** [[Pixel.Selector.GeometryAndDistance]] was not specified, or the planarity could not be determined. */
-    Unknown,
-    /** No geometry was rendered to this pixel. */
-    None,
-    /** Planar geometry produced this pixel. */
-    Planar,
-    /** Non-planar geometry produced this pixel. */
-    NonPlanar,
-  }
-
-  /**
-   * Bit-mask by which callers of [[Viewport.readPixels]] specify which aspects are of interest.
-   * Aspects not specified will be omitted from the returned data.
-   */
-  export const enum Selector {
-    None = 0,
-    /** Select the [[Feature]] which produced each pixel, as well as the [[PackedFeatureTable]] from which the feature originated. */
-    Feature = 1 << 0,
-    /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
-    GeometryAndDistance = 1 << 2,
-    /** Select all aspects of each pixel. */
-    All = GeometryAndDistance | Feature,
-  }
-
-  /** A rectangular array of pixels as read from a [[Viewport]]'s frame buffer. Each pixel is represented as a [[Pixel.Data]] object.
-   * The contents of the pixel buffer will be specified using device pixels, not CSS pixels. See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
-   * @see [[Viewport.readPixels]].
-   */
-  export interface Buffer {
-    /** Retrieve the data associated with the pixel at (x,y) in view coordinates. */
-    getPixel(x: number, y: number): Data;
-  }
-
-  /** A function which receives the results of a call to [[Viewport.readPixels]].
-   * @note The contents of the buffer become invalid once the Receiver function returns. Do not store a reference to it.
-   */
-  export type Receiver = (pixels: Buffer | undefined) => void;
-}
-
-/** Used for debugging purposes, to toggle display of instanced or batched primitives.
- * @see [[RenderTargetDebugControl]].
- * @alpha
- */
-export const enum PrimitiveVisibility {
-  /** Draw all primitives. */
-  All,
-  /** Only draw instanced primitives. */
-  Instanced,
-  /** Only draw un-instanced primitives. */
-  Uninstanced,
-}
-
-/** An interface optionally exposed by a RenderTarget that allows control of various debugging features.
- * @beta
- */
-export interface RenderTargetDebugControl {
-  /** If true, render to the screen as if rendering off-screen for readPixels(). */
-  drawForReadPixels: boolean;
-  /** If true, use log-z depth buffer (assuming supported by client). */
-  useLogZ: boolean;
-  /** @alpha */
-  primitiveVisibility: PrimitiveVisibility;
-  /** @internal */
-  vcSupportIntersectingVolumes: boolean;
-  /** @internal */
-  readonly shadowFrustum: Frustum | undefined;
-  /** @internal */
-  displayDrapeFrustum: boolean;
-  /** Override device pixel ratio for on-screen targets only. This supersedes window.devicePixelRatio. Undefined clears the override. Chiefly useful for tests.
-   * @internal
-   */
-  devicePixelRatioOverride?: number;
-}
-
-/** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
- * Application code rarely interacts directly with a RenderTarget - instead, it interacts with a Viewport which forwards requests to the implementation
- * of the RenderTarget.
- * @internal
- */
-export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
-  public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }
-
-  public static get frustumDepth2d(): number { return 1.0; } // one meter
-  public static get maxDisplayPriority(): number { return (1 << 23) - 32; }
-  public static get minDisplayPriority(): number { return -this.maxDisplayPriority; }
-
-  /** Returns a transform mapping an object's display priority to a depth from 0 to frustumDepth2d. */
-  public static depthFromDisplayPriority(priority: number): number {
-    return (priority - this.minDisplayPriority) / (this.maxDisplayPriority - this.minDisplayPriority) * this.frustumDepth2d;
-  }
-
-  public abstract get renderSystem(): RenderSystem;
-
-  /** NB: *Device pixels*, not CSS pixels! */
-  public abstract get viewRect(): ViewRect;
-
-  public get devicePixelRatio(): number { return 1; }
-  public cssPixelsToDevicePixels(cssPixels: number): number {
-    return Math.floor(cssPixels * this.devicePixelRatio);
-  }
-
-  public abstract get wantInvertBlackBackground(): boolean;
-
-  public abstract get animationFraction(): number;
-  public abstract set animationFraction(fraction: number);
-
-  public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
-  public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
-
-  /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
-  public updateSolarShadows(_context: SceneContext | undefined): void { }
-  public getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined { return undefined; }
-  public createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined { return undefined; }
-  public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
-
-  public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
-
-  public dispose(): void { }
-  public reset(): void { }
-  public abstract changeScene(scene: GraphicList): void;
-  public abstract changeBackgroundMap(_graphics: GraphicList): void;
-  public abstract changeOverlayGraphics(_scene: GraphicList): void;
-  public changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void { }
-  public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
-  public changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier, _modelId?: Id64String): void { }
-  public abstract changeDynamics(dynamics?: GraphicList): void;
-  public abstract changeDecorations(decorations: Decorations): void;
-  public abstract changeRenderPlan(plan: RenderPlan): void;
-  public abstract drawFrame(sceneMilSecElapsed?: number): void;
-  public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
-  public setHiliteSet(_hilited: HiliteSet): void { }
-  public setFlashed(_elementId: Id64String, _intensity: number): void { }
-  public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
-  public onResized(): void { }
-  public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
-  /** `rect` is specified in *CSS* pixels. */
-  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
-  /** `_rect` is specified in *CSS* pixels. */
-  public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
-  public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
-  public collectStatistics(_stats: RenderMemory.Statistics): void { }
-
-  /** Specify whether webgl content should be rendered directly to the screen.
-   * If rendering to screen becomes enabled, returns the canvas to which to render the webgl content.
-   * Returns undefined if rendering to screen becomes disabled, or is not supported by this RenderTarget.
-   */
-  public setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined { return undefined; }
-
-  public get debugControl(): RenderTargetDebugControl | undefined { return undefined; }
-}
 
 /** Describes a texture loaded from an HTMLImageElement
  * @internal
@@ -740,49 +236,6 @@ export const enum RenderDiagnostics {
   All = DebugOutput | WebGL,
 }
 
-/** Parameters for creating a [[RenderGraphic]] representing a collection of instances of shared geometry.
- * Each instance is drawn using the same graphics, but with its own transform and (optionally) [[Feature]] Id.
- * @internal
- */
-export interface InstancedGraphicParams {
-  /** The number of instances.
-   * Must be greater than zero.
-   * Must be equal to (transforms.length / 12)
-   * If featureIds is defined, must be equal to (featureIds.length / 3)
-   * If symbologyOverrides is defined, must be equal to (symbologyOverrides.length / 8)
-   */
-  readonly count: number;
-
-  /** An array of instance-to-model transforms.
-   * Each transform consists of 3 rows of 4 columns where the 4th column holds the translation.
-   * The translations are relative to the `transformCenter` property.
-   */
-  readonly transforms: Float32Array;
-
-  /** A point roughly in the center of the range of all of the instances, to which each instance's translation is relative.
-   * This is used to reduce precision errors when transforming the instances in shader code.
-   */
-  readonly transformCenter: Point3d;
-
-  /** If defined, an array of little-endian 24-bit unsigned integers containing the feature ID of each instance. */
-  readonly featureIds?: Uint8Array;
-
-  /**
-   * If defined, as array of bytes (8 per instance) encoding the symbology overrides for each instance. The encoding matches that used by FeatureOverrides, though only the RGB, alpha, line weight, and line code are used.
-   * @internal
-   */
-  readonly symbologyOverrides?: Uint8Array;
-}
-
-/** Options passed to [[RenderSystem.createGraphicBranch]].
- * @internal
- */
-export interface GraphicBranchOptions {
-  clipVolume?: RenderClipVolume;
-  classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
-  iModel?: IModelConnection;
-}
-
 /** @internal */
 export interface GLTimerResult {
   /** Label from GLTimer.beginOperation */
@@ -797,6 +250,12 @@ export interface GLTimerResult {
 
 /** @internal */
 export type GLTimerResultCallback = (result: GLTimerResult) => void;
+
+/** Default implementation of RenderGraphicOwner. */
+class GraphicOwner extends RenderGraphicOwner {
+  public constructor(private readonly _graphic: RenderGraphic) { super(); }
+  public get graphic(): RenderGraphic { return this._graphic; }
+}
 
 /** An interface optionally exposed by a RenderSystem that allows control of various debugging features.
  * @beta
@@ -1184,18 +643,3 @@ export namespace RenderSystem {
     useWebGL2?: boolean;
   }
 }
-
-/** Clip/Transform for a branch that are varied over time.
- * @internal
- */
-export class AnimationBranchState {
-  public readonly omit?: boolean;
-  public readonly transform?: Transform;
-  public readonly clip?: RenderClipVolume;
-  constructor(transform?: Transform, clip?: RenderClipVolume, omit?: boolean) { this.transform = transform; this.clip = clip; this.omit = omit; }
-}
-
-/** Mapping from node/branch IDs to animation branch state
- * @internal
- */
-export type AnimationBranchStates = Map<string, AnimationBranchState>;

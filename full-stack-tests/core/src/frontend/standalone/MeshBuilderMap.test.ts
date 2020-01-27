@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect, assert } from "chai";
-import { MockRender, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
+import { GraphicType, MockRender, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { Range3d, Point3d, Arc3d, LineString3d, Loop, Transform } from "@bentley/geometry-core";
 import * as path from "path";
 import {
@@ -14,11 +14,10 @@ import {
   Geometry,
   Mesh,
   ToleranceRatio,
-  GraphicType,
   PrimitiveBuilder,
   StrokesPrimitiveList,
   MeshBuilderMap,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+} from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 

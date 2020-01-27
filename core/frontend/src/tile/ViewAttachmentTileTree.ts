@@ -46,7 +46,13 @@ import {
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import { GraphicList, RenderClipVolume, RenderGraphic, RenderPlan, RenderTarget } from "../render/System";
+import {
+  GraphicList,
+  RenderGraphic,
+} from "../render/RenderGraphic";
+import { RenderPlan } from "../render/RenderPlan";
+import { RenderClipVolume } from "../render/RenderClipVolume";
+import { RenderTarget } from "../render/RenderTarget";
 import {
   SelectParent,
   Tile,

@@ -10,8 +10,8 @@ import { expect } from "chai";
 import {
   GraphicBranch,
   GraphicBranchOptions,
-  RenderGraphic,
-} from "../../render/System";
+} from "../../render/GraphicBranch";
+import { RenderGraphic } from "../../render/RenderGraphic";
 import { MockRender } from "../../render/MockRender";
 
 function addIsDisposed(disposable: IDisposable): void {

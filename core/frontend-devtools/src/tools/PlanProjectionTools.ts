@@ -103,6 +103,9 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
         case "o":
           props.overlay = 0 !== value;
           break;
+        case "p":
+          props.enforceDisplayPriority = 0 !== value;
+          break;
         case "e":
           props.elevation = value;
           break;

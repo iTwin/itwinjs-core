@@ -24,7 +24,9 @@ import {
 import { Vector2d, Vector3d, Transform } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
-import { Pixel, GraphicList, RenderMemory } from "../System";
+import { Pixel } from "../Pixel";
+import { GraphicList } from "../RenderGraphic";
+import { RenderMemory } from "../RenderSystem";
 import { ViewRect } from "../../ViewRect";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, dispose } from "@bentley/bentleyjs-core";

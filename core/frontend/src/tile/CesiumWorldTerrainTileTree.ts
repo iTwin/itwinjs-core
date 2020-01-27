@@ -33,7 +33,8 @@ import { IModelApp } from "../IModelApp";
 import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { MeshParams } from "../render/primitives/VertexTable";
-import { GraphicBranch, RenderSystem } from "../render/System";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { RenderSystem } from "../render/RenderSystem";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {

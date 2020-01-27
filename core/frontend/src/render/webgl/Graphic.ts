@@ -11,7 +11,15 @@ import { ViewFlags, ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imo
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
 import { IModelConnection } from "../../IModelConnection";
-import { RenderGraphic, GraphicBranch, GraphicBranchOptions, GraphicList, RenderMemory } from "../System";
+import {
+  GraphicList,
+  RenderGraphic,
+} from "../RenderGraphic";
+import {
+  GraphicBranch,
+  GraphicBranchOptions,
+} from "../GraphicBranch";
+import { RenderMemory } from "../RenderSystem";
 import { RenderCommands } from "./RenderCommands";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { FeatureOverrides } from "./FeatureOverrides";

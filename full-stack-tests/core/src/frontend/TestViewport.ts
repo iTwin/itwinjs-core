@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
-  IModelConnection,
-  Viewport,
-  ScreenViewport,
-  OffScreenViewport,
-  ViewRect,
   IModelApp,
+  IModelConnection,
+  OffScreenViewport,
+  Pixel,
+  ScreenViewport,
+  ViewRect,
+  Viewport,
 } from "@bentley/imodeljs-frontend";
 import { Feature, GeometryClass } from "@bentley/imodeljs-common";
 

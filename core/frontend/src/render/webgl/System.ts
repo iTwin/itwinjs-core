@@ -36,21 +36,25 @@ import {
   Triangulator,
 } from "@bentley/geometry-core";
 import {
-  GLTimerResultCallback,
   GraphicBranch,
   GraphicBranchOptions,
+} from "../GraphicBranch";
+import {
   GraphicList,
-  InstancedGraphicParams,
-  RenderClipVolume,
-  RenderDiagnostics,
   RenderGraphic,
   RenderGraphicOwner,
+} from "../RenderGraphic";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { RenderClipVolume } from "../RenderClipVolume";
+import { RenderTarget } from "../RenderTarget";
+import {
+  GLTimerResultCallback,
+  RenderDiagnostics,
   RenderMemory,
   RenderSystem,
   RenderSystemDebugControl,
-  RenderTarget,
   WebGLExtensionName,
-} from "../System";
+} from "../RenderSystem";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
 import { GraphicBuilder, GraphicType } from "../GraphicBuilder";

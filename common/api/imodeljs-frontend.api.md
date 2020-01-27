@@ -5928,7 +5928,7 @@ export namespace Pixel {
         // (undocumented)
         readonly type: GeometryType;
     }
-    export const enum GeometryType {
+    export enum GeometryType {
         Edge = 4,
         Linear = 3,
         None = 1,
@@ -5936,14 +5936,14 @@ export namespace Pixel {
         Surface = 2,
         Unknown = 0
     }
-    export const enum Planarity {
+    export enum Planarity {
         None = 1,
         NonPlanar = 3,
         Planar = 2,
         Unknown = 0
     }
     export type Receiver = (pixels: Buffer | undefined) => void;
-    export const enum Selector {
+    export enum Selector {
         All = 5,
         Feature = 1,
         GeometryAndDistance = 4,
@@ -6904,7 +6904,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
     // (undocumented)
-    createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): GraphicBuilder;
+    createGraphicBuilder(type: GraphicType, viewport: Viewport, placement?: Transform, pickableId?: Id64String): import("./GraphicBuilder").GraphicBuilder;
     // (undocumented)
     createPlanarClassifier(_properties: SpatialClassificationProps.Classifier): RenderPlanarClassifier | undefined;
     // (undocumented)
@@ -7173,7 +7173,7 @@ export class ScreenViewport extends Viewport {
     openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void;
     readonly parentDiv: HTMLDivElement;
     // @internal (undocumented)
-    pickCanvasDecoration(pt: XAndY): import("./render/System").CanvasDecoration | undefined;
+    pickCanvasDecoration(pt: XAndY): import("./imodeljs-frontend").CanvasDecoration | undefined;
     // @alpha
     pickDepthPoint(pickPoint: Point3d, radius?: number, options?: DepthPointOptions): {
         plane: Plane3dByOriginAndUnitNormal;

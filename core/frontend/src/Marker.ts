@@ -13,7 +13,7 @@ import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { imageElementFromUrl } from "./ImageUtil";
 import { IModelApp } from "./IModelApp";
 import { ToolTipOptions } from "./NotificationManager";
-import { CanvasDecoration } from "./render/System";
+import { CanvasDecoration } from "./render/CanvasDecoration";
 import { BeButtonEvent } from "./tools/Tool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";

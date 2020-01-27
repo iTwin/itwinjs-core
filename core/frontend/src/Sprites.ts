@@ -11,7 +11,7 @@ import { Point2d, Point3d, XYAndZ } from "@bentley/geometry-core";
 import { ImageSource } from "@bentley/imodeljs-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { imageElementFromImageSource, imageElementFromUrl } from "./ImageUtil";
-import { CanvasDecoration } from "./render/System";
+import { CanvasDecoration } from "./render/CanvasDecoration";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
 

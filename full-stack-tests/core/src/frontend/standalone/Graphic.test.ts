@@ -6,8 +6,8 @@ import { expect } from "chai";
 import * as path from "path";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { RenderGraphic, MeshArgs, RenderMemory } from "@bentley/imodeljs-frontend/lib/rendering";
+import { IModelConnection, IModelApp, RenderGraphic, RenderMemory } from "@bentley/imodeljs-frontend";
+import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
 
 export class FakeGraphic extends RenderGraphic {
   public dispose(): void { }

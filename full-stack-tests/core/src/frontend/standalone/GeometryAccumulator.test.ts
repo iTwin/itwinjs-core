@@ -7,7 +7,7 @@ import { expect, assert } from "chai";
 import {
   IModelApp,
   IModelConnection,
-  // Viewport,
+  RenderGraphic,
   SpatialViewState,
   StandardViewId,
 } from "@bentley/imodeljs-frontend";
@@ -20,8 +20,7 @@ import {
   PolyfacePrimitive,
   GeometryAccumulator,
   GeometryOptions,
-  RenderGraphic,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+} from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Branch, System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Transform, Range3d, StrokeOptions, LineString3d, Path, Point3d, Loop } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";

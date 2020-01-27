@@ -5,6 +5,9 @@
 import { expect, assert } from "chai";
 import { ByteStream } from "@bentley/bentleyjs-core";
 import {
+  Decorations,
+  GraphicList,
+  GraphicType,
   ImdlReader,
   IModelApp,
   IModelConnection,
@@ -19,7 +22,7 @@ import {
   } from "@bentley/imodeljs-frontend";
 import { ColorDef, ImageBuffer, ImageBufferFormat, RenderTexture, QPoint3dList, QParams3d, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { MeshArgs, GraphicType, Decorations, GraphicList } from "@bentley/imodeljs-frontend/lib/rendering";
+import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { OnScreenTarget, Target, Batch, WorldDecorations, TextureHandle } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Point3d, Range3d, Arc3d } from "@bentley/geometry-core";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";

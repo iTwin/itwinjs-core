@@ -62,7 +62,7 @@ import {
 } from "./internal";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
-import { RenderSystem } from "../render/System";
+import { RenderSystem } from "../render/RenderSystem";
 
 /** @internal */
 export class WebMapTileTreeProps implements TileTreeProps {

@@ -3991,6 +3991,7 @@ export class PlanProjectionSettings {
     constructor(props: PlanProjectionSettingsProps);
     clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings;
     readonly elevation?: number;
+    readonly enforceDisplayPriority?: boolean;
     // (undocumented)
     static fromJSON(props: PlanProjectionSettingsProps | undefined): PlanProjectionSettings | undefined;
     readonly overlay: boolean;
@@ -4002,6 +4003,7 @@ export class PlanProjectionSettings {
 // @alpha
 export interface PlanProjectionSettingsProps {
     elevation?: number;
+    enforceDisplayPriority?: boolean;
     overlay?: boolean;
     transparency?: number;
 }
