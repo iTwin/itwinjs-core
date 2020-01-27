@@ -19,7 +19,7 @@ import {
   Tool,
   ToolTipOptions,
 } from "@bentley/imodeljs-frontend";
-import { FrontendDevTools } from "@bentley/frontend-devtools";
+import { FrontendDevTools, parseToggle } from "@bentley/frontend-devtools";
 import ToolTip from "tooltip.js";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { showError, showStatus } from "./Utils";
