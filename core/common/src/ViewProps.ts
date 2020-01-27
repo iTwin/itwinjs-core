@@ -12,6 +12,7 @@ import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geome
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { DisplayStyleProps } from "./DisplayStyleSettings";
 import { CameraProps } from "./Camera";
+import { ViewDetailsProps, ViewDetails3dProps } from "./ViewDetails";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend)
  * @public
@@ -55,6 +56,10 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
   categorySelectorId: Id64String;
   displayStyleId: Id64String;
   description?: string;
+  /** @internal */
+  jsonProperties?: {
+    viewDetails?: ViewDetailsProps;
+  };
 }
 
 /** Parameters to construct a ViewDefinition3d
@@ -71,6 +76,10 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
   angles?: YawPitchRollProps;
   /** The camera used for this view. */
   camera: CameraProps;
+  /** @internal */
+  jsonProperties?: {
+    viewDetails?: ViewDetails3dProps;
+  };
 }
 
 /** Parameters to construct a SpatialViewDefinition

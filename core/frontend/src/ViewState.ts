@@ -19,9 +19,24 @@ import {
   Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
-  SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
-  ViewFlags, ViewStateProps,
+  AnalysisStyle,
+  AxisAlignedBox3d,
+  Camera,
+  ColorDef,
+  Frustum,
+  GraphicParams,
+  Npc,
+  RenderMaterial,
+  SpatialViewDefinitionProps,
+  SubCategoryOverride,
+  TextureMapping,
+  ViewDefinition2dProps,
+  ViewDefinition3dProps,
+  ViewDefinitionProps,
+  ViewDetails,
+  ViewDetails3d,
+  ViewFlags,
+  ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -42,6 +57,7 @@ import { ViewingSpace } from "./ViewingSpace";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]].
  * @public
+ * @deprecated use GridOrientationType from imodeljs-common.
  */
 export enum GridOrientationType {
   /** Oriented with the view. */
@@ -322,6 +338,11 @@ export abstract class ViewState extends ElementState {
 
     return !ovr.invisible;
   }
+
+  /** Provides access to optional detail settings for this view.
+   * @beta
+   */
+  public abstract get details(): ViewDetails;
 
   /** Returns true if this ViewState is-a [[ViewState3d]] */
   public is3d(): this is ViewState3d { return this instanceof ViewState3d; }
@@ -636,7 +657,9 @@ export abstract class ViewState extends ElementState {
   public abstract get defaultExtentLimits(): ExtentLimits;
 
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
-  public getDetails(): any { if (!this.jsonProperties.viewDetails) this.jsonProperties.viewDetails = new Object(); return this.jsonProperties.viewDetails; }
+
+  /** @deprecated Use the type-safe ViewState.details API instead. */
+  public getDetails(): any { return this.details.getJSON(); }
 
   /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
@@ -697,26 +720,6 @@ export abstract class ViewState extends ElementState {
     return error;
   }
 
-  /** Returns the view detail associated with the specified name, or undefined if none such exists.
-   * @internal
-   */
-  public peekDetail(name: string): any { return this.getDetails()[name]; }
-
-  /** Get the current value of a view detail. If not present, returns an empty object.
-   * @internal
-   */
-  public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
-
-  /** Change the value of a view detail.
-   * @internal
-   */
-  public setDetail(name: string, value: any) { this.getDetails()[name] = value; }
-
-  /** Remove a view detail.
-   * @internal
-   */
-  public removeDetail(name: string) { delete this.getDetails()[name]; }
-
   /** Set the CategorySelector for this view. */
   public setCategorySelector(categories: CategorySelectorState) { this.categorySelector = categories; }
 
@@ -728,17 +731,15 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the Id of the auxiliary coordinate system for this ViewState */
-  public getAuxiliaryCoordinateSystemId(): Id64String { return Id64.fromJSON(this.getDetail("acs")); }
+  public getAuxiliaryCoordinateSystemId(): Id64String {
+    return this.details.auxiliaryCoordinateSystemId;
+  }
 
   /** Set or clear the AuxiliaryCoordinateSystem for this view.
    * @param acs the new AuxiliaryCoordinateSystem for this view. If undefined, no AuxiliaryCoordinateSystem will be used.
    */
   public setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState) {
-    this._auxCoordSystem = acs;
-    if (acs)
-      this.setDetail("acs", acs.id);
-    else
-      this.removeDetail("acs");
+    this.details.auxiliaryCoordinateSystemId = undefined !== acs ? acs.id : Id64.invalid;
   }
 
   /** Determine whether the specified Category is displayed in this view */
@@ -747,22 +748,14 @@ export abstract class ViewState extends ElementState {
   /**  Get the aspect ratio (width/height) of this view */
   public getAspectRatio(): number { const extents = this.getExtents(); return extents.x / extents.y; }
 
-  /** @internal */
-  public static maxSkew = 25;
-
   /** Get the aspect ratio skew (x/y, usually 1.0) that is used to exaggerate the y axis of the view. */
   public getAspectRatioSkew(): number {
-    const skew = JsonUtils.asDouble(this.getDetail("aspectSkew"), 1.0);
-    return Geometry.clamp(skew, 1 / ViewState.maxSkew, ViewState.maxSkew);
+    return this.details.aspectRatioSkew;
   }
 
   /** Set the aspect ratio skew (x/y) for this view. To remove aspect ratio skew, pass 1.0 for val. */
   public setAspectRatioSkew(val: number) {
-    if (!val || val === 1.0) {
-      this.removeDetail("aspectSkew");
-    } else {
-      this.setDetail("aspectSkew", val);
-    }
+    this.details.aspectRatioSkew = val;
   }
 
   /** Get the unit vector that points in the view X (left-to-right) direction.
@@ -785,22 +778,14 @@ export abstract class ViewState extends ElementState {
    * @note The ViewState takes ownership of the supplied ClipVector - it should not be modified after passing it to this function.
    */
   public setViewClip(clip?: ClipVector) {
-    this._clipVector = clip;
-    if (clip && clip.isValid)
-      this.setDetail("clip", clip.toJSON());
-    else
-      this.removeDetail("clip");
+    this.details.clipVector = clip;
   }
 
   /** Get the clipping volume for this view, if defined
    * @note Do *not* modify the returned ClipVector. If you wish to change the ClipVector, clone the returned ClipVector, modify it as desired, and pass the clone to [[setViewClip]].
    */
   public getViewClip(): ClipVector | undefined {
-    if (undefined === this._clipVector) {
-      const clip = this.peekDetail("clip");
-      this._clipVector = (undefined !== clip ? ClipVector.fromJSON(clip) : ClipVector.createEmpty());
-    }
-    return this._clipVector.isValid ? this._clipVector : undefined;
+    return this.details.clipVector;
   }
 
   /** Set the grid settings for this view */
@@ -813,11 +798,9 @@ export abstract class ViewState extends ElementState {
         break;
     }
 
-    const details = this.getDetails();
-    JsonUtils.setOrRemoveNumber(details, "gridOrient", orientation, GridOrientationType.WorldXY);
-    JsonUtils.setOrRemoveNumber(details, "gridPerRef", gridsPerRef, 10);
-    JsonUtils.setOrRemoveNumber(details, "gridSpaceX", spacing.x, 1.0);
-    JsonUtils.setOrRemoveNumber(details, "gridSpaceY", spacing.y, spacing.x);
+    this.details.gridOrientation = orientation;
+    this.details.gridsPerRef = gridsPerRef;
+    this.details.gridSpacing = spacing;
   }
 
   /** Populate the given origin and rotation with information from the grid settings from the grid orientation. */
@@ -861,11 +844,14 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Get the grid settings for this view */
-  public getGridOrientation(): GridOrientationType { return JsonUtils.asInt(this.getDetail("gridOrient"), GridOrientationType.WorldXY); }
-  public getGridsPerRef(): number { return JsonUtils.asInt(this.getDetail("gridPerRef"), 10); }
+  public getGridOrientation(): GridOrientationType {
+    return this.details.gridOrientation;
+  }
+  public getGridsPerRef(): number {
+    return this.details.gridsPerRef;
+  }
   public getGridSpacing(): XAndY {
-    const x = JsonUtils.asDouble(this.getDetail("gridSpaceX"), 1.0);
-    return { x, y: JsonUtils.asDouble(this.getDetail("gridSpaceY"), x) };
+    return this.details.gridSpacing;
   }
 
   /** Change the volume that this view displays, keeping its current rotation.
@@ -1029,6 +1015,7 @@ export abstract class ViewState extends ElementState {
  * @public
  */
 export abstract class ViewState3d extends ViewState {
+  private readonly _details: ViewDetails3d;
   /** @internal */
   public static get className() { return "ViewDefinition3d"; }
   /** True if the camera is valid. */
@@ -1044,7 +1031,23 @@ export abstract class ViewState3d extends ViewState {
   /** Minimum distance for front plane */
   public forceMinFrontDist = 0.0;
   public onRenderFrame(_viewport: Viewport): void { }
-  public allow3dManipulations(): boolean { return true; }
+
+  /** Provides access to optional detail settings for this view.
+   * @beta
+   */
+  public get details(): ViewDetails3d {
+    return this._details;
+  }
+
+  public allow3dManipulations(): boolean {
+    return this.details.allow3dManipulations;
+  }
+
+  /** Set whether [[ViewTool]]s are allowed to operate in 3 dimensions on this view. */
+  public setAllow3dManipulations(allow: boolean) {
+    this.details.allow3dManipulations = allow;
+  }
+
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
     this._cameraOn = JsonUtils.asBool(props.cameraOn);
@@ -1057,6 +1060,8 @@ export abstract class ViewState3d extends ViewState {
     // if the camera is on, make sure the eyepoint is centered.
     if (this.isCameraEnabled())
       this.centerEyePoint();
+
+    this._details = new ViewDetails3d(this.jsonProperties);
   }
 
   /** @internal */
@@ -1765,6 +1770,7 @@ export class OrthographicViewState extends SpatialViewState {
  * @public
  */
 export abstract class ViewState2d extends ViewState {
+  private readonly _details: ViewDetails;
   /** @internal */
   public static get className() { return "ViewDefinition2d"; }
   public readonly origin: Point2d;
@@ -1792,6 +1798,7 @@ export abstract class ViewState2d extends ViewState {
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
     this.baseModelId = Id64.fromJSON(props.baseModelId);
+    this._details = new ViewDetails(this.jsonProperties);
   }
 
   public toJSON(): ViewDefinition2dProps {
@@ -1843,6 +1850,13 @@ export abstract class ViewState2d extends ViewState {
   public async load(): Promise<void> {
     await super.load();
     return this.iModel.models.load(this.baseModelId);
+  }
+
+  /** Provides access to optional detail settings for this view.
+   * @beta
+   */
+  public get details(): ViewDetails {
+    return this._details;
   }
 
   public allow3dManipulations(): boolean { return false; }

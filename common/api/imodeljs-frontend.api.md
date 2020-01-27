@@ -206,6 +206,8 @@ import { ViewAttachmentProps } from '@bentley/imodeljs-common';
 import { ViewDefinition2dProps } from '@bentley/imodeljs-common';
 import { ViewDefinition3dProps } from '@bentley/imodeljs-common';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
+import { ViewDetails } from '@bentley/imodeljs-common';
+import { ViewDetails3d } from '@bentley/imodeljs-common';
 import { ViewFlag } from '@bentley/imodeljs-common';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { ViewQueryParams } from '@bentley/imodeljs-common';
@@ -3750,7 +3752,7 @@ export enum GraphicType {
     WorldOverlay = 3
 }
 
-// @public
+// @public @deprecated
 export enum GridOrientationType {
     AuxCoord = 4,
     View = 0,
@@ -10800,6 +10802,8 @@ export abstract class ViewState extends ElementState {
     abstract get defaultExtentLimits(): ExtentLimits;
     // (undocumented)
     description?: string;
+    // @beta
+    abstract get details(): ViewDetails;
     // @internal
     discloseTileTrees(trees: TileTreeSet): void;
     displayStyle: DisplayStyleState;
@@ -10819,9 +10823,7 @@ export abstract class ViewState extends ElementState {
     getAspectRatioSkew(): number;
     getAuxiliaryCoordinateSystemId(): Id64String;
     getCenter(result?: Point3d): Point3d;
-    // @internal
-    getDetail(name: string): any;
-    // (undocumented)
+    // @deprecated (undocumented)
     getDetails(): any;
     abstract getExtents(): Vector3d;
     getGridOrientation(): GridOrientationType;
@@ -10855,15 +10857,9 @@ export abstract class ViewState extends ElementState {
     load(): Promise<void>;
     lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent): void;
     lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, margin?: MarginPercent): void;
-    // @internal (undocumented)
-    static maxSkew: number;
     get name(): string;
     // @internal
-    peekDetail(name: string): any;
-    // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
-    // @internal
-    removeDetail(name: string): void;
     resetExtentLimits(): void;
     // @internal (undocumented)
     abstract savePose(): ViewPose;
@@ -10873,8 +10869,6 @@ export abstract class ViewState extends ElementState {
     setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState): void;
     setCategorySelector(categories: CategorySelectorState): void;
     setCenter(center: Point3d): void;
-    // @internal
-    setDetail(name: string, value: any): void;
     // (undocumented)
     setDisplayStyle(style: DisplayStyleState): void;
     abstract setExtents(viewDelta: Vector3d): void;
@@ -10915,6 +10909,8 @@ export abstract class ViewState2d extends ViewState {
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     // (undocumented)
     readonly delta: Point2d;
+    // @beta
+    get details(): ViewDetails;
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal (undocumented)
@@ -10976,6 +10972,8 @@ export abstract class ViewState3d extends ViewState {
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
     // (undocumented)
     decorate(context: DecorateContext): void;
+    // @beta
+    get details(): ViewDetails3d;
     // @internal (undocumented)
     protected drawGroundPlane(context: DecorateContext): void;
     // @internal (undocumented)
@@ -11019,6 +11017,7 @@ export abstract class ViewState3d extends ViewState {
     readonly rotation: Matrix3d;
     // @internal (undocumented)
     savePose(): ViewPose;
+    setAllow3dManipulations(allow: boolean): void;
     // (undocumented)
     setExtents(extents: XYAndZ): void;
     setEyePoint(pt: XYAndZ): void;

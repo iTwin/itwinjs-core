@@ -60,6 +60,7 @@ export * from "./TextureProps";
 export * from "./Thumbnail";
 export * from "./TileProps";
 export * from "./Tween";
+export * from "./ViewDetails";
 export * from "./ViewFlags";
 export * from "./ViewProps";
 export * from "./domains/FunctionalElementProps";
