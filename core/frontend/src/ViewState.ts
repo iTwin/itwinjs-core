@@ -1012,7 +1012,7 @@ export abstract class ViewState extends ElementState {
  * @public
  */
 export abstract class ViewState3d extends ViewState {
-  private _details: ViewDetails3d;
+  private readonly _details: ViewDetails3d;
   /** @internal */
   public static get className() { return "ViewDefinition3d"; }
   /** True if the camera is valid. */
@@ -1029,6 +1029,9 @@ export abstract class ViewState3d extends ViewState {
   public forceMinFrontDist = 0.0;
   public onRenderFrame(_viewport: Viewport): void { }
 
+  /** Provides access to optional detail settings for this view.
+   * @beta
+   */
   public get details(): ViewDetails3d {
     return this._details;
   }
@@ -1764,7 +1767,7 @@ export class OrthographicViewState extends SpatialViewState {
  * @public
  */
 export abstract class ViewState2d extends ViewState {
-  private _details: ViewDetails;
+  private readonly _details: ViewDetails;
   /** @internal */
   public static get className() { return "ViewDefinition2d"; }
   public readonly origin: Point2d;
@@ -1846,6 +1849,9 @@ export abstract class ViewState2d extends ViewState {
     return this.iModel.models.load(this.baseModelId);
   }
 
+  /** Provides access to optional detail settings for this view.
+   * @beta
+   */
   public get details(): ViewDetails {
     return this._details;
   }

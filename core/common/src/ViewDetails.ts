@@ -77,7 +77,7 @@ export class ViewDetails {
     return Id64.fromJSON(this._json.acs);
   }
   public set auxiliaryCoordinateSystemId(id: Id64String) {
-    this._json.acs = Id64.isValid(id) ? id : undefined;
+    this._json.acs = Id64.isValidId64(id) ? id : undefined;
   }
 
   /** The aspect ratio skew (x/y, usually 1.0) used to exaggerate the y axis of the view. */
