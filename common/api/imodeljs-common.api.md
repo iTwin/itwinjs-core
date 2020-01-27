@@ -18,6 +18,7 @@ import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
+import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { GeometryQuery } from '@bentley/geometry-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
@@ -32,6 +33,7 @@ import { IModelStatus } from '@bentley/bentleyjs-core';
 import { IndexedPolyfaceVisitor } from '@bentley/geometry-core';
 import { IndexedValue } from '@bentley/bentleyjs-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
+import { LockLevel } from '@bentley/imodeljs-clients';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
@@ -766,12 +768,16 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 export class Code implements CodeProps {
     constructor(val: CodeProps);
     static createEmpty(): Code;
+    // @internal (undocumented)
+    static equalCodes(c1: CodeProps, c2: CodeProps): boolean;
     // (undocumented)
     equals(other: Code): boolean;
     // (undocumented)
     static fromJSON(json?: any): Code;
     // (undocumented)
     getValue(): string;
+    static isEmpty(c: CodeProps): boolean;
+    static isValid(c: CodeProps): boolean;
     scope: string;
     spec: Id64String;
     value?: string;
@@ -1623,6 +1629,29 @@ export class EdgeArgs {
     get isValid(): boolean;
     // (undocumented)
     get numEdges(): number;
+}
+
+// @alpha
+export abstract class Editor3dRpcInterface extends RpcInterface {
+    // (undocumented)
+    applyTransform(_tokenProps: IModelTokenProps, _editorId: GuidString, _tprops: TransformProps): Promise<any>;
+    // (undocumented)
+    createElement(_tokenProps: IModelTokenProps, _editorId: GuidString, _props: GeometricElement3dProps, _origin?: Point3d, _angles?: YawPitchRollAngles, _geometry?: any): Promise<void>;
+    // (undocumented)
+    end(_tokenProps: IModelTokenProps, _editorId: GuidString): Promise<void>;
+    static getClient(): Editor3dRpcInterface;
+    static readonly interfaceName = "Editor3dRpcInterface";
+    static interfaceVersion: string;
+    // (undocumented)
+    popState(_tokenProps: IModelTokenProps, _editorId: GuidString): Promise<void>;
+    // (undocumented)
+    pushState(_tokenProps: IModelTokenProps, _editorId: GuidString): Promise<void>;
+    // (undocumented)
+    start(_tokenProps: IModelTokenProps, _editorId: GuidString): Promise<void>;
+    // (undocumented)
+    startModifyingElements(_tokenProps: IModelTokenProps, _editorId: GuidString, _elementIds: Id64Array): Promise<void>;
+    // (undocumented)
+    writeAllChangesToBriefcase(_tokenProps: IModelTokenProps, _editorId: GuidString): Promise<void>;
 }
 
 // @beta
@@ -3133,15 +3162,39 @@ export class IModelVersion {
 
 // @alpha
 export abstract class IModelWriteRpcInterface extends RpcInterface {
+    // (undocumented)
+    createAndInsertPhysicalModel(_tokenProps: IModelTokenProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String>;
+    // (undocumented)
+    createAndInsertSpatialCategory(_tokenProps: IModelTokenProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String>;
+    // (undocumented)
+    deleteElements(_tokenProps: IModelTokenProps, _ids: Id64Array): Promise<any>;
+    // (undocumented)
+    doConcurrencyControlRequest(_tokenProps: IModelTokenProps): Promise<void>;
     static getClient(): IModelWriteRpcInterface;
+    // (undocumented)
+    getModelsAffectedByWrites(_tokenProps: IModelTokenProps): Promise<Id64String[]>;
+    // (undocumented)
+    getParentChangeset(_iModelToken: IModelTokenProps): Promise<string>;
+    // (undocumented)
+    hasPendingTxns(_iModelToken: IModelTokenProps): Promise<boolean>;
+    // (undocumented)
+    hasUnsavedChanges(_iModelToken: IModelTokenProps): Promise<boolean>;
     static readonly interfaceName = "IModelWriteRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
+    lockModel(_tokenProps: IModelTokenProps, _modelId: Id64String, _level: LockLevel): Promise<void>;
+    // (undocumented)
     openForWrite(_iModelToken: IModelTokenProps): Promise<IModelProps>;
+    // (undocumented)
+    pullMergePush(_tokenProps: IModelTokenProps, _comment: string, _doPush: boolean): Promise<void>;
+    // (undocumented)
+    requestResources(_tokenProps: IModelTokenProps, _elementIds: Id64Array, _modelIds: Id64Array, _opcode: DbOpcode): Promise<void>;
     // (undocumented)
     saveChanges(_iModelToken: IModelTokenProps, _description?: string): Promise<void>;
     // (undocumented)
     saveThumbnail(_iModelToken: IModelTokenProps, _val: Uint8Array): Promise<void>;
+    // (undocumented)
+    synchConcurrencyControlResourcesCache(_tokenProps: IModelTokenProps): Promise<void>;
     // (undocumented)
     updateProjectExtents(_iModelToken: IModelTokenProps, _newExtents: AxisAlignedBox3dProps): Promise<void>;
 }

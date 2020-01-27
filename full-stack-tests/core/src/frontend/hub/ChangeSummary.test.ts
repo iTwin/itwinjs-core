@@ -3,12 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode, Logger, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
+import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { TestUtility } from "./TestUtility";
 import { TestUsers } from "./TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { IModelConnection, MockRender, IModelApp } from "@bentley/imodeljs-frontend";
+import { IModelConnection, MockRender, IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
+
+const testProjectName = "iModelJsIntegrationTest";
+const testIModelName = "ReadWriteTest";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
@@ -24,20 +26,22 @@ describe("ChangeSummary (#integration)", () => {
   let testIModelId: string;
 
   before(async () => {
-    MockRender.App.startup();
-
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
+    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+
+    const options: IModelAppOptions = {
+      authorizationClient: TestUtility.imodelCloudEnv.authorization,
+      imodelClient: TestUtility.imodelCloudEnv.imodelClient,
+    };
+    MockRender.App.startup(options);
 
     assert(IModelApp.authorizationClient);
     assert(IModelApp.authorizationClient);
 
-    testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    testIModelId = await TestUtility.getTestIModelId(testProjectId, "ReadWriteTest");
+    testProjectId = await TestUtility.getTestProjectId(testProjectName);
+    testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
     iModel = await IModelConnection.open(testProjectId, testIModelId);
   });

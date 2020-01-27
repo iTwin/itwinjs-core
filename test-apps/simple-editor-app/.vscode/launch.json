@@ -1,0 +1,107 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "compounds": [
+    {
+      "name": "Web: All",
+      "configurations": [
+        "Make config",
+        "Web: Server (webserver)",
+        "Web: Chrome (frontend)"
+      ]
+    }
+  ],
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Web: Server (webserver)",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/node_modules/env-cmd/bin/env-cmd.js",
+      "cwd": "${workspaceFolder}",
+      "showAsyncStacks": true,
+      "smartStep": true,
+      "restart": true,
+      "args": [
+        "./lib/webresources/config.json",
+        "node",
+        "${workspaceFolder}/node_modules/npm-run-all/bin/run-p/index.js",
+        "start:webserver",
+        "start:backend"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Web: Server (backend)",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/lib/backend/main.js",
+      "cwd": "${workspaceFolder}",
+      "showAsyncStacks": true,
+      "smartStep": true,
+      "restart": true
+    },
+    {
+      "name": "Make config",
+      "type": "node",
+      "request": "launch",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/node_modules/strip-json-comments-cli/cli.js",
+      "cwd": "${workspaceFolder}",
+      "args": [
+        "--no-whitespace",
+        "${workspaceFolder}/src/common/config.json",
+        ">",
+        "${workspaceFolder}/lib/webresources/config.json",
+        "${workspaceFolder}/test/unit/**/*.test.ts*"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Web: Server (backend) for tests",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/lib/backend/main.js",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "imjs_test_project": "Retail Building Sample QA",
+        "imjs_test_imodel": "Retail Building Sample QA",
+        "imjs_buddi_resolve_url_using_region": "102"
+      },
+      "showAsyncStacks": true,
+      "smartStep": true,
+      "restart": true
+    },
+    {
+      "name": "Web: Chrome (frontend)",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/",
+      "webRoot": "${workspaceFolder}/src",
+      "sourceMapPathOverrides": {
+        "webpack:///src/*": "${webRoot}/*"
+      },
+      "smartStep": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Electron: Main (backend)",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron",
+      "windows": {
+        "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
+      },
+      "env": {
+        "BROWSER": "none",
+        "imjs_buddi_resolve_url_using_region": "102"
+      },
+      "args": [
+        "lib/backend/main.js"
+      ]
+    }
+  ]
+}

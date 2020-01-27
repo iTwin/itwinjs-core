@@ -1,0 +1,152 @@
+{
+  "name": "simple-editor-app",
+  "description": "Simple Editor App",
+  "license": "MIT",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "os": [
+    "win32",
+    "linux"
+  ],
+  "engines": {
+    "node": ">=10.11.0 <11.0"
+  },
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "buildIModelJsModule",
+    "start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=3000 --resources=./lib/webresources/",
+    "start:backend": "node lib/backend/main.js",
+    "start:servers": "env-cmd ./lib/webresources/config.json run-p \"start:webserver\" \"start:backend\"",
+    "electron": "electron lib/backend/main.js",
+    "clean": "rimraf lib .rush",
+    "lint": "tslint --project . 1>&2",
+    "docs": "",
+    "cover": "",
+    "test": ""
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "application",
+      "sourceResources": [
+        {
+          "source": "./src/**/*.scss",
+          "dest": "./lib"
+        },
+        {
+          "source": "./src/**/*.css",
+          "dest": "./lib"
+        },
+        {
+          "source": "./public/**/*",
+          "dest": "./lib/webresources"
+        },
+        {
+          "source": "./src/frontend/plugins/public/**/*",
+          "dest": "./lib/webresources"
+        },
+        {
+          "source": "./src/**/*.js",
+          "dest": "./lib"
+        }
+      ],
+      "webpack": {
+        "dest": "./lib/webresources",
+        "entry": "./lib/frontend/index.js",
+        "bundleName": "main",
+        "styleSheets": true,
+        "htmlTemplate": "./src/frontend/index.html"
+      },
+      "makeConfig": {
+        "dest": "./lib/webresources/config.json",
+        "sources": [
+          {
+            "file": "process.env",
+            "filter": "^(i|I)(m|M)(j|J)(s|S)_"
+          },
+          {
+            "file": "./src/common/config.json",
+            "filter": "^(i|I)(m|M)(j|J)(s|S)_"
+          }
+        ]
+      }
+    }
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "1.12.0-dev.6",
+    "@bentley/config-loader": "1.12.0-dev.6",
+    "@bentley/electron-manager": "1.12.0-dev.6",
+    "@bentley/express-server": "1.12.0-dev.6",
+    "@bentley/geometry-core": "1.12.0-dev.6",
+    "@bentley/icons-generic-webfont": "^0.0.43",
+    "@bentley/imodeljs-backend": "1.12.0-dev.6",
+    "@bentley/imodeljs-clients": "1.12.0-dev.6",
+    "@bentley/imodeljs-clients-backend": "1.12.0-dev.6",
+    "@bentley/imodeljs-common": "1.12.0-dev.6",
+    "@bentley/imodeljs-frontend": "1.12.0-dev.6",
+    "@bentley/imodeljs-i18n": "1.12.0-dev.6",
+    "@bentley/imodeljs-quantity": "1.12.0-dev.6",
+    "@bentley/imodeljs-webserver": "1.12.0-dev.6",
+    "@bentley/presentation-backend": "1.12.0-dev.6",
+    "@bentley/presentation-common": "1.12.0-dev.6",
+    "@bentley/presentation-components": "1.12.0-dev.6",
+    "@bentley/presentation-frontend": "1.12.0-dev.6",
+    "@bentley/presentation-testing": "1.12.0-dev.6",
+    "@bentley/ui-abstract": "1.12.0-dev.6",
+    "@bentley/ui-components": "1.12.0-dev.6",
+    "@bentley/ui-core": "1.12.0-dev.6",
+    "body-parser": "^1.18.2",
+    "bunyan": "^1.8.12",
+    "express": "^4.16.3",
+    "inspire-tree": "^5.0.1",
+    "lodash": "^4.17.10",
+    "react": "^16.8.0",
+    "react-dnd": "^5.0.0",
+    "react-dnd-html5-backend": "^5.0.1",
+    "react-dom": "^16.8.0",
+    "react-redux": "^5.0.7",
+    "redux": "^4.0.3"
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "1.12.0-dev.6",
+    "@bentley/webpack-tools": "1.12.0-dev.6",
+    "@testing-library/react": "^8.0.1",
+    "@testing-library/dom": "^5.2.0",
+    "@types/body-parser": "^1.17.0",
+    "@types/bunyan": "^1.8.4",
+    "@types/chai": "^4.1.4",
+    "@types/express": "^4.16.1",
+    "@types/jsdom": "^12.2.0",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "10.14.1",
+    "@types/react": "^16.8.0",
+    "@types/react-dom": "^16.8.0",
+    "@types/webdriverio": "^4.13.0",
+    "chai": "^4.1.2",
+    "electron": "^6.1.5",
+    "env-cmd": "^8.0.2",
+    "file-loader": "^4.2.0",
+    "ignore-styles": "^5.0.1",
+    "immutable": "^3.8.2",
+    "jsdom": "^11.12.0",
+    "jsdom-global": "3.0.2",
+    "mocha": "^5.2.0",
+    "nodemon": "^1.18.3",
+    "npm-run-all": "^4.1.5",
+    "path": "^0.12.7",
+    "rimraf": "^2.6.2",
+    "strip-json-comments-cli": "^1.0.1",
+    "tslint": "^5.11.0",
+    "tslint-react-hooks": "^2.2.1",
+    "ts-node": "^7.0.1",
+    "typemoq": "^2.1.0",
+    "typescript": "~3.7.4",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.0",
+    "xmlhttprequest": "^1.8.0"
+  },
+  "homepage": "http://localhost:3000/",
+  "proxy": "http://localhost:5000"
+}

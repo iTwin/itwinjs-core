@@ -390,6 +390,12 @@
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "simple-editor-app",
+      "projectFolder": "test-apps/simple-editor-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
     }
   ]
 }

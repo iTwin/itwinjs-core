@@ -34,6 +34,7 @@ import { ClipPlane } from '@bentley/geometry-core';
 import { ClipShape } from '@bentley/geometry-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { Code } from '@bentley/imodeljs-common';
+import { CodeProps } from '@bentley/imodeljs-common';
 import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { ColorDefProps } from '@bentley/imodeljs-common';
@@ -67,6 +68,7 @@ import { Frustum } from '@bentley/imodeljs-common';
 import { FrustumPlanes } from '@bentley/imodeljs-common';
 import * as Fuse from 'fuse.js';
 import { GeoCoordinatesResponseProps } from '@bentley/imodeljs-common';
+import { GeometricElement3dProps } from '@bentley/imodeljs-common';
 import { GeometricModel2dProps } from '@bentley/imodeljs-common';
 import { GeometricModel3dProps } from '@bentley/imodeljs-common';
 import { GeometricModelProps } from '@bentley/imodeljs-common';
@@ -107,6 +109,7 @@ import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { LDClient } from 'ldclient-js';
 import { LDFlagValue } from 'ldclient-js';
 import { LinePixels } from '@bentley/imodeljs-common';
+import { LockLevel } from '@bentley/imodeljs-clients';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { Loop } from '@bentley/geometry-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
@@ -214,6 +217,7 @@ import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { XYZ } from '@bentley/geometry-core';
 import { XYZProps } from '@bentley/geometry-core';
+import { YawPitchRollAngles } from '@bentley/geometry-core';
 
 // @internal (undocumented)
 export namespace A3xTile {
@@ -2864,6 +2868,21 @@ export class ElementAgenda {
     setSource(val: ModifyElementSource): void;
 }
 
+// @alpha
+export class ElementEditor3d {
+    applyTransform(tprops: TransformProps): Promise<any>;
+    createElement(props: GeometricElement3dProps, origin?: Point3d, angles?: YawPitchRollAngles, geometry?: any): Promise<void>;
+    end(): Promise<void>;
+    // (undocumented)
+    readonly iModelConnection: IModelConnection;
+    popState(): Promise<void>;
+    pushState(): Promise<void>;
+    restart(): Promise<void>;
+    static start(iModelConnection: IModelConnection): Promise<ElementEditor3d>;
+    startModifyingElements(elementIds: Id64Array): Promise<void>;
+    write(): Promise<void>;
+}
+
 // @public (undocumented)
 export class ElementLocateManager {
     // (undocumented)
@@ -3098,6 +3117,39 @@ export enum EventHandled {
     // (undocumented)
     Yes = 1
 }
+
+// @internal
+export type EventListener = (data: any) => void;
+
+// @internal
+export class EventSource {
+    constructor(iModelToken: IModelToken);
+    clear(): void;
+    // (undocumented)
+    get fetching(): boolean;
+    // (undocumented)
+    readonly iModelToken: IModelToken;
+    off(namespace: string, eventName: string, listener: EventListener): void;
+    on(namespace: string, eventName: string, listener: EventListener): {
+        off: () => void;
+    };
+    }
+
+// @internal
+export abstract class EventSourceManager {
+    // (undocumented)
+    static create(id: string, tokenProps: IModelToken): EventSource;
+    // (undocumented)
+    static delete(id: string): void;
+    // (undocumented)
+    static get(id: string, tokenProps?: IModelToken): EventSource;
+    // (undocumented)
+    static readonly GLOBAL = "__globalEvents__";
+    // (undocumented)
+    static get global(): EventSource;
+    // (undocumented)
+    static has(id: string): boolean;
+    }
 
 // @internal
 export interface EventSourceOptions {
@@ -3355,6 +3407,8 @@ export class FlyViewTool extends ViewManip {
 // @public
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
+    // @alpha
+    EditorConnection = "imodeljs-frontend.EditorConnection",
     EventSource = "imodeljs-frontend.EventSource",
     FeatureToggle = "imodeljs-frontend.FeatureToggles",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
@@ -4238,6 +4292,8 @@ export class IModelConnection extends IModel {
     detachChangeCache(): Promise<void>;
     // @internal
     readonly displayedExtents: AxisAlignedBox3d;
+    // @alpha
+    get editing(): IModelConnection.EditingFunctions;
     readonly elements: IModelConnection.Elements;
     // @internal
     readonly eventSource: EventSource | undefined;
@@ -4297,6 +4353,42 @@ export namespace IModelConnection {
         getById(codeSpecId: Id64String): Promise<CodeSpec>;
         getByName(name: string): Promise<CodeSpec>;
         }
+    // @alpha
+    export class EditingFunctions {
+        constructor(c: IModelConnection);
+        get categories(): IModelConnection.EditingFunctions.CategoryEditor;
+        get codes(): IModelConnection.EditingFunctions.Codes;
+        get concurrencyControl(): IModelConnection.EditingFunctions.ConcurrencyControl;
+        deleteElements(ids: Id64Array): Promise<any>;
+        getParentChangeset(): Promise<string>;
+        hasPendingTxns(): Promise<boolean>;
+        hasUnsavedChanges(): Promise<boolean>;
+        get models(): IModelConnection.EditingFunctions.ModelEditor;
+        saveChanges(description?: string): Promise<void>;
+        updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
+    }
+    // @alpha (undocumented)
+    export namespace EditingFunctions {
+        export class CategoryEditor {
+            constructor(c: IModelConnection);
+            createAndInsertSpatialCategory(scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String>;
+            }
+        export class Codes {
+            constructor(c: IModelConnection);
+            makeCode(specName: string, scope: Id64String, value: string): Promise<CodeProps>;
+            makeModelCode(scope: Id64String, value: string): Promise<CodeProps>;
+        }
+        export class ConcurrencyControl {
+            constructor(c: IModelConnection);
+            lockModel(modelId: Id64String, level?: LockLevel): Promise<void>;
+            pullMergePush(comment: string, doPush?: boolean): Promise<void>;
+            request(): Promise<void>;
+            }
+        export class ModelEditor {
+            constructor(c: IModelConnection);
+            createAndInsertPhysicalModel(newModelCode: CodeProps, privateModel?: boolean): Promise<Id64String>;
+            }
+    }
     export class Elements {
         // @internal
         constructor(_iModel: IModelConnection);
@@ -4310,6 +4402,8 @@ export namespace IModelConnection {
         constructor(_iModel: IModelConnection);
         // @alpha
         filterLoaded(modelIds: Id64Arg): Id64Set | undefined;
+        // @internal (undocumented)
+        getDictionaryModel(): Promise<Id64String>;
         getLoaded(id: string): ModelState | undefined;
         getProps(modelIds: Id64Arg): Promise<ModelProps[]>;
         load(modelIds: Id64Arg): Promise<void>;
@@ -9031,6 +9125,8 @@ export class Tool {
 export class ToolAdmin {
     acsContextLock: boolean;
     acsPlaneSnapLock: boolean;
+    // @alpha
+    readonly activeSettings: ToolAdmin.ActiveSettings;
     get activeTool(): InteractiveTool | undefined;
     readonly activeToolChanged: BeEvent<(tool: Tool, start: StartOrResume) => void>;
     // @internal
@@ -9161,6 +9257,15 @@ export class ToolAdmin {
     // (undocumented)
     get viewTool(): ViewTool | undefined;
     }
+
+// @public (undocumented)
+export namespace ToolAdmin {
+    // @alpha
+    export class ActiveSettings {
+        category?: Id64String;
+        model?: Id64String;
+    }
+}
 
 // @beta
 export class ToolAssistance {

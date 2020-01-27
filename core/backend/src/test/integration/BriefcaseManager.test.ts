@@ -264,6 +264,7 @@ describe("BriefcaseManager (#integration)", () => {
 
     rootEl = iModelPullAndPush.elements.getRootSubject();
     rootEl.userLabel = rootEl.userLabel + "changed";
+    await iModelPullAndPush.concurrencyControl.requestResourcesForUpdate(requestContext, [rootEl]);
     iModelPullAndPush.elements.updateElement(rootEl);
 
     await iModelPullAndPush.concurrencyControl.request(requestContext);

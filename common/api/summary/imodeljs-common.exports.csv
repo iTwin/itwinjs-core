@@ -91,6 +91,7 @@ public;ECJsNames
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
+alpha;class Editor3dRpcInterface 
 beta;class ElectronRpcConfiguration 
 beta;ElectronRpcManager 
 beta;ElectronRpcParams

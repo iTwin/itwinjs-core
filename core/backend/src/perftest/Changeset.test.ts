@@ -6,7 +6,7 @@ import * as path from "path";
 import { assert } from "chai";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { Config, IModelHubClient, ChangeSet, HubIModel, IModelQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Config, IModelHubClient, ChangeSet, HubIModel, IModelQuery, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
 import {
   IModelDb, OpenParams, IModelJsFs, KeepBriefcase, ConcurrencyControl,
   DictionaryModel, SpatialCategory, BriefcaseManager, Element,
@@ -98,8 +98,8 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
   try {
     await rwIModel.concurrencyControl.request(requestContext);
   } catch (err) {
-    if (err instanceof ConcurrencyControl.RequestError) {
-      assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+    if (err instanceof IModelHubError) {
+      assert.fail(JSON.stringify(err));
     }
   }
 

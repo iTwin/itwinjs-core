@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { BeEvent, AbandonedError, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, AbandonedError, Logger, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter, Easing } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
@@ -308,6 +308,12 @@ export class ToolAdmin {
   private _saveLocateCircle = false;
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
+  /**
+   * The active settings that placement tools will use.
+   * @alpha
+   */
+  public readonly activeSettings = new ToolAdmin.ActiveSettings();
+
   /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select".
    * @see [[startDefaultTool]]
    * @internal
@@ -1640,4 +1646,24 @@ export class WheelEventProcessor {
     await IModelApp.accuSnap.reEvaluate();
     return status;
   }
+}
+
+/**
+ * @public
+ */
+export namespace ToolAdmin {
+
+  /**
+   * Active settings that placement tools will use.
+   * @alpha
+   */
+  export class ActiveSettings {
+
+    /** The active category */
+    public category?: Id64String;
+
+    /** The target model */
+    public model?: Id64String;
+  }
+
 }

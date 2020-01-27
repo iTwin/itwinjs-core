@@ -12,11 +12,19 @@ import { IModelAuthorizationClient } from "../IModelCloudEnvironment";
  * @internal
  */
 export class IModelBankDummyAuthorizationClient implements IModelAuthorizationClient {
+  private _token?: AccessToken;
+
   public async authorizeUser(_requestContext: ClientRequestContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
     if (!userInfo)
       userInfo = { id: "", email: { id: userCredentials.email }, profile: { name: "", firstName: "", lastName: "" } };
     const foreignAccessTokenWrapper: any = {};
     foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userInfo };
-    return Promise.resolve(AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper))!);
+    this._token = AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper))!;
+    return Promise.resolve(this._token);
   }
+
+  public isAuthorized = true;
+  public hasExpired = true;
+  public hasSignedIn = true;
+  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> { return Promise.resolve(this._token!); }
 }

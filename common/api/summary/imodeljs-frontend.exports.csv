@@ -118,6 +118,7 @@ public;DynamicsContext
 alpha;EditManipulator
 beta;EditorPosition
 internal;ElementAgenda
+alpha;ElementEditor3d
 public;ElementLocateManager
 public;ElementPicker
 public;ElementState 
@@ -133,6 +134,9 @@ public;Environment
 internal;ErrorNums
 public;EventController
 public;EventHandled
+internal;EventListener = (data: any) => void
+internal;EventSource
+internal;class EventSourceManager
 internal;EventSourceOptions
 public;ExtentLimits
 public;extractImageSourceDimensions(source: ImageSource): Promise
@@ -206,6 +210,8 @@ public;IModelApp
 public;IModelAppOptions
 public;IModelConnection 
 public;IModelConnection
+alpha;EditingFunctions
+alpha;EditingFunctions
 internal;Tiles
 internal;IModelTileLoader 
 public;class InputCollector 
@@ -423,6 +429,8 @@ internal;TileTreeSupplier
 internal;enum TileVisibility
 public;Tool
 public;ToolAdmin
+public;ToolAdmin
+alpha;ActiveSettings
 beta;ToolAssistance
 beta;ToolAssistanceImage
 beta;ToolAssistanceInputMethod
