@@ -414,7 +414,7 @@ describe("ViewState", () => {
     expect(view2.extentLimits.max).not.to.equal(view.extentLimits.max);
   });
 
-  it("should preserve 3d manipulations flag", async () => {
+  it.only("should preserve 3d manipulations flag", async () => {
     const view = await imodel2.views.load("0x46") as SpatialViewState;
     expect(view.allow3dManipulations()).to.be.true;
 
