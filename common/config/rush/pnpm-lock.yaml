@@ -48,7 +48,7 @@ dependencies:
   '@rush-temp/presentation-test-app': 'file:projects/presentation-test-app.tgz'
   '@rush-temp/presentation-testing': 'file:projects/presentation-testing.tgz_jsdom@11.12.0'
   '@rush-temp/rpc-full-stack-tests': 'file:projects/rpc-full-stack-tests.tgz'
-  '@rush-temp/rpcinterface-full-stack-test': 'file:projects/rpcinterface-full-stack-test.tgz'
+  '@rush-temp/rpcinterface-full-stack-tests': 'file:projects/rpcinterface-full-stack-tests.tgz'
   '@rush-temp/test-apps-analysis-importer': 'file:projects/test-apps-analysis-importer.tgz'
   '@rush-temp/test-apps-synchro-schedule-importer': 'file:projects/test-apps-synchro-schedule-importer.tgz'
   '@rush-temp/test-tools': 'file:projects/test-tools.tgz'
@@ -11633,7 +11633,7 @@ packages:
       integrity: sha1-sSTeXE+6/LpUH0j/pzlw9KpFa08=
   /responselike/1.0.2:
     dependencies:
-      lowercase-keys: 1.0.0
+      lowercase-keys: 1.0.1
     dev: false
     resolution:
       integrity: sha1-kYcg7ztjHFZCvgaPFa3lpG9Loec=
@@ -15916,7 +15916,7 @@ packages:
       integrity: sha512-JjiayNO0CZyRTVNDeTdiDRK3kcP5IVZ8E2LN/HgbfomGwTtWAWIhJj7ijYtnjtHRB14IYcXdLgXYeJZ4yRbYGg==
       tarball: 'file:projects/rpc-full-stack-tests.tgz'
     version: 0.0.0
-  'file:projects/rpcinterface-full-stack-test.tgz':
+  'file:projects/rpcinterface-full-stack-tests.tgz':
     dependencies:
       '@types/chai': 4.2.7
       '@types/chai-as-promised': 7.1.2
@@ -15941,10 +15941,10 @@ packages:
       webpack: 4.41.5_webpack@4.41.5
       webpack-cli: 3.3.10_webpack@4.41.5
     dev: false
-    name: '@rush-temp/rpcinterface-full-stack-test'
+    name: '@rush-temp/rpcinterface-full-stack-tests'
     resolution:
-      integrity: sha512-zalJ3bHqP5ILJmP0yzAWAqYdmgkLIxGzAjL6cAEc6uPxj6+Kk7ipnqxbN2WFD+AETICR5hhyAk03vq2t/WJbEg==
-      tarball: 'file:projects/rpcinterface-full-stack-test.tgz'
+      integrity: sha512-4+Uv4QdPO0HBvQWp976EPLUETZ9joN3TEAWH8osmZoMTAamasxFjeeOTpp6Zn7lYp1FKu1nk5I65oKhgiW/2kg==
+      tarball: 'file:projects/rpcinterface-full-stack-tests.tgz'
     version: 0.0.0
   'file:projects/test-apps-analysis-importer.tgz':
     dependencies:
@@ -16499,6 +16499,7 @@ packages:
       integrity: sha512-Q6+hQUEJ4rLgs9mgAGMNP7NPHNccNc0q5I4GCRBYw2Yt0Ifar/NLk4/yPZZReyzVZZ28BJDt9SSV3WO5e5C3lg==
       tarball: 'file:projects/wms-plugin-example.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@bentley/icons-generic': ^0.0.43
@@ -16549,7 +16550,7 @@ specifiers:
   '@rush-temp/presentation-test-app': 'file:./projects/presentation-test-app.tgz'
   '@rush-temp/presentation-testing': 'file:./projects/presentation-testing.tgz'
   '@rush-temp/rpc-full-stack-tests': 'file:./projects/rpc-full-stack-tests.tgz'
-  '@rush-temp/rpcinterface-full-stack-test': 'file:./projects/rpcinterface-full-stack-test.tgz'
+  '@rush-temp/rpcinterface-full-stack-tests': 'file:./projects/rpcinterface-full-stack-tests.tgz'
   '@rush-temp/test-apps-analysis-importer': 'file:./projects/test-apps-analysis-importer.tgz'
   '@rush-temp/test-apps-synchro-schedule-importer': 'file:./projects/test-apps-synchro-schedule-importer.tgz'
   '@rush-temp/test-tools': 'file:./projects/test-tools.tgz'
