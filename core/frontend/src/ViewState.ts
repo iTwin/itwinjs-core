@@ -1044,7 +1044,19 @@ export abstract class ViewState3d extends ViewState {
   /** Minimum distance for front plane */
   public forceMinFrontDist = 0.0;
   public onRenderFrame(_viewport: Viewport): void { }
-  public allow3dManipulations(): boolean { return true; }
+
+  public allow3dManipulations(): boolean {
+    return JsonUtils.asBool(this.getDetail("allow3dManipulations"), true);
+  }
+
+  /** Set whether [[ViewTool]]s are allowed to operate in 3 dimensions on this view. */
+  public setAllow3dManipulations(allow: boolean) {
+    if (allow)
+      this.removeDetail("allow3dManipulations");
+    else
+      this.setDetail("allow3dManipulations", true);
+  }
+
   public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
     super(props, iModel, categories, displayStyle);
     this._cameraOn = JsonUtils.asBool(props.cameraOn);
