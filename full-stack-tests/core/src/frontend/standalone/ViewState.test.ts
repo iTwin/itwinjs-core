@@ -420,8 +420,8 @@ describe("ViewState", () => {
 
     view.setAllow3dManipulations(true);
     expect(view.allow3dManipulations()).to.be.true;
-    expect(typeof view.getDetail("allow3dManipulations")).to.equal("object");
-    expect(Object.keys(view.getDetail("allow3dManipulations")).length).to.equal(0);
+    expect(view.details.allow3dManipulations).to.be.true;
+    expect(view.details.toJSON().allow3dManipulations).to.be.undefined;
 
     view.setAllow3dManipulations(false);
     expect(view.allow3dManipulations()).to.be.false;
@@ -430,6 +430,6 @@ describe("ViewState", () => {
     expect(clone.allow3dManipulations()).to.be.false;
 
     const fromJSON = new SpatialViewState(view.toJSON(), view.iModel, view.categorySelector, view.getDisplayStyle3d(), view.modelSelector);
-    expect(fromJSON.allow3dManipulations()).to.be.true;
+    expect(fromJSON.allow3dManipulations()).to.be.false;
   });
 });
