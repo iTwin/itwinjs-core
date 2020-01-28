@@ -192,7 +192,7 @@ public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
 internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
-internal;getFirstItem: (groupItemDef: GroupItemDef) => import("../shared/ToolItemDef").ToolItemDef | ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | GroupItemDef | undefined
+internal;getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined
 internal;getFirstItemId: (groupItemDef: GroupItemDef) => string
 internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
