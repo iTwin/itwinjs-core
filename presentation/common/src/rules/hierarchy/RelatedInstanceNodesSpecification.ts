@@ -9,6 +9,7 @@
 import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 import { RelationshipDirection } from "../RelationshipDirection";
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
+import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
 
 /**
  * Creates nodes for related instances of specified ECClasses.
@@ -18,7 +19,13 @@ import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
  *
  * @public
  */
-export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
+export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew;
+
+/**
+ * @public
+ * @deprecated Use `RelatedInstanceNodesSpecificationNew`. Will be removed in iModel.js 3.0
+ */
+export interface DEPRECATED_RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer { // tslint:disable-line: naming-convention class-name
   /** Used for serializing to JSON. */
   specType: ChildNodeSpecificationTypes.RelatedInstanceNodes;
 
@@ -63,6 +70,26 @@ export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificatio
 
   /**
    * Condition for filtering instances of defined classes.
+   *
+   * **See:** [ECExpressions Available in InstanceFilter]($docs/learning/presentation/Hierarchies/ECExpressions.md#instance-filter)
+   */
+  instanceFilter?: string;
+}
+
+/**
+ * @beta
+ */
+export interface RelatedInstanceNodesSpecificationNew extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
+  /** Used for serializing to JSON. */
+  specType: ChildNodeSpecificationTypes.RelatedInstanceNodes;
+
+  /**
+   * Relationship paths from parent node instance class to child node instances' class.
+   */
+  relationshipPaths: RepeatableRelationshipPathSpecification[];
+
+  /**
+   * Condition for filtering instances targeted by specified relationship paths.
    *
    * **See:** [ECExpressions Available in InstanceFilter]($docs/learning/presentation/Hierarchies/ECExpressions.md#instance-filter)
    */

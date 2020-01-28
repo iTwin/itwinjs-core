@@ -17,6 +17,7 @@ import { SchemasSpecification } from "../SchemasSpecification";
  * no immediate parent instance node it will go up until it finds one.
  *
  * @public
+ * @deprecated Use `RelatedInstanceNodesSpecification`
  */
 export interface AllRelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
   /** Used for serializing to JSON. */

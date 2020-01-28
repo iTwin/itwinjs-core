@@ -168,6 +168,10 @@ export {
 export { Ruleset, SupplementationInfo } from "./rules/Ruleset";
 export { Rule, RuleTypes, RuleBase, ConditionContainer } from "./rules/Rule";
 export { VariablesGroup, Variable, VariableValueType } from "./rules/Variables";
+export {
+  RelationshipStepSpecification, RelationshipPathSpecification,
+  RepeatableRelationshipStepSpecification, RepeatableRelationshipPathSpecification,
+} from "./rules/RelationshipPathSpecification";
 export { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification";
 export { RelationshipDirection } from "./rules/RelationshipDirection";
 export { SingleSchemaClassSpecification, MultiSchemaClassesSpecification } from "./rules/ClassSpecifications";

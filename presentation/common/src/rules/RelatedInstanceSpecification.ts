@@ -8,6 +8,7 @@
 
 import { RelationshipDirection } from "./RelationshipDirection";
 import { SingleSchemaClassSpecification } from "./ClassSpecifications";
+import { RelationshipPathSpecification } from "./RelationshipPathSpecification";
 
 /**
  * This sub-specification allows joining the primary node instance with any number of related instances and creating
@@ -46,8 +47,10 @@ import { SingleSchemaClassSpecification } from "./ClassSpecifications";
  *       "arePolymorphic": true,
  *       "instanceFilter": "modeledElement.CodeNamespace = 1",
  *       "relatedInstances": [{
- *         "relationship": { "schemaName": "BisCore", "className": "ModelModelsElement" },
- *         "requiredDirection": "Forward",
+ *         "relationshipPath": [{
+ *           "relationship": { "schemaName": "BisCore", "className": "ModelModelsElement" },
+ *           "direction": "Forward",
+ *         }],
  *         "class": { "schemaName": "BisCore", "className": "Element" },
  *         "alias": "modeledElement"
  *       }]
@@ -62,7 +65,14 @@ import { SingleSchemaClassSpecification } from "./ClassSpecifications";
  *
  * @public
  */
-export interface RelatedInstanceSpecification {
+export type RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew;
+
+/**
+ * Deprecated [[RelatedInstanceSpecification]] specification.
+ * @public
+ * @deprecated Use `RelatedInstanceSpecificationNew`. Will be removed in iModel.js 3.0
+ */
+export interface DEPRECATED_RelatedInstanceSpecification { // tslint:disable-line: naming-convention class-name
   /** Specification of the relationship to use for joining the related instance */
   relationship: SingleSchemaClassSpecification;
 
@@ -71,6 +81,36 @@ export interface RelatedInstanceSpecification {
 
   /** Direction of the relationship */
   requiredDirection: RelationshipDirection.Forward | RelationshipDirection.Backward;
+
+  /**
+   * The alias to give for the joined related instance. Used to reference the related instance in
+   * instance filter and customization rules.
+   *
+   * **The value must be unique per-specification!**
+   *
+   * @pattern ^\w[\w\d]*$
+   */
+  alias: string;
+
+  /**
+   * Is the related instance required to exist. If yes, primary instance won't be returned
+   * if the related instance doesn't exist. If not, primary instance will be returned, but related
+   * instance will be null.
+   *
+   * In SQL terms in can be compared to INNER JOIN vs OUTER JOIN.
+   */
+  isRequired?: boolean;
+}
+
+/**
+ * Updated [[RelatedInstanceSpecification]] specification.
+ * @beta
+ */
+export interface RelatedInstanceSpecificationNew {
+  /**
+   * Relationship path to find the related instance.
+   */
+  relationshipPath: RelationshipPathSpecification;
 
   /**
    * The alias to give for the joined related instance. Used to reference the related instance in

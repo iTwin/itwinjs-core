@@ -26,7 +26,7 @@ public;ContentFlags
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentModifier 
 public;ContentModifiersList
-public;ContentRelatedInstancesSpecification 
+public;ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew
 public;ContentRequestOptions
 public;ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit
 public;ContentRule 
@@ -185,13 +185,17 @@ public;RelatedClassInfo
 public;RelatedClassInfo
 internal;fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo
 internal;toJSON(info: RelatedClassInfo): RelatedClassInfoJSON
-public;RelatedInstanceNodesSpecification 
-public;RelatedInstanceSpecification
+public;RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew
+public;RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew
 public;RelatedPropertiesSpecialValues
-public;RelatedPropertiesSpecification
+public;RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew
 public;RelationshipDirection
 public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
+beta;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
+beta;RelationshipStepSpecification
+beta;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[]
+beta;RepeatableRelationshipStepSpecification 
 public;RequestOptions
 public;RequestOptionsWithRuleset
 beta;RequestPriority
