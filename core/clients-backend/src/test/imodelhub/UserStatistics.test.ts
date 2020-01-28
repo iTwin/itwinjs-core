@@ -5,10 +5,10 @@
 import * as chai from "chai";
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
 import { IModelHubClientError, IModelClient, UserStatisticsQuery, UserStatistics, AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 
 chai.should();
 

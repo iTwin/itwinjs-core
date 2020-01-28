@@ -13,14 +13,13 @@ import {
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery, Config, IModelBaseHandler,
   IModelBankClient, IModelBankFileSystemContextClient, AuthorizedClientRequestContext,
-  ImsUserCredentials,
   WsgError,
 } from "@bentley/imodeljs-clients";
+import { TestUsers, TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
@@ -236,10 +235,9 @@ export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function login(userCredentials?: ImsUserCredentials): Promise<AccessToken> {
+export async function login(userCredentials?: TestUserCredentials): Promise<AccessToken> {
   if (TestConfig.enableMocks)
     return new MockAccessToken();
-
   userCredentials = userCredentials || TestUsers.regular;
   return getCloudEnv().authorization.authorizeUser(new ClientRequestContext(), undefined, userCredentials);
 }

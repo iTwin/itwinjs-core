@@ -9,10 +9,10 @@ import {
   AccessToken, IModelClient, HubIModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
   SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
   NamedVersionCreatedEvent, IModelHubGlobalEvent, GetEventOperationType, AuthorizedClientRequestContext,
-  ContextType,
+  ContextType, Config,
 } from "@bentley/imodeljs-clients";
+import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 chai.should();
@@ -122,12 +122,18 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
   const imodelHubClient: IModelClient = utils.getDefaultClient();
   let requestContext: AuthorizedClientRequestContext;
   let serviceAccountRequestContext: AuthorizedClientRequestContext;
+  let serviceAccount1: TestUserCredentials;
 
   before(async () => {
     const accessToken: AccessToken = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
     projectId = await utils.getProjectId(requestContext);
-    const serviceAccountAccessToken = await utils.login(TestUsers.serviceAccount1);
+
+    serviceAccount1 = {
+      email: Config.App.getString("imjs_test_serviceAccount1_user_name"),
+      password: Config.App.getString("imjs_test_serviceAccount1_user_password"),
+    };
+    const serviceAccountAccessToken = await utils.login(serviceAccount1);
     serviceAccountRequestContext = new AuthorizedClientRequestContext(serviceAccountAccessToken);
 
     await utils.deleteIModelByName(requestContext, projectId, imodelName);
@@ -200,7 +206,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
 
     let receivedEventsCount = 0;
     const deleteListener = imodelHubClient.globalEvents.createListener(requestContext, async () => {
-      return utils.login(TestUsers.serviceAccount1);
+      return utils.login(serviceAccount1);
     }, globalEventSubscription.wsgId, (receivedEvent: IModelHubGlobalEvent) => {
       if (receivedEvent instanceof SoftiModelDeleteEvent)
         receivedEventsCount++;

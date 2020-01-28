@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Guid, BentleyStatus } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, AccessToken } from "@bentley/imodeljs-clients";
+import { Config, AuthorizedClientRequestContext, AccessToken } from "@bentley/imodeljs-clients";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
 import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { UlasUtilities } from "../../ulas/UlasUtilities";
+import { getTestOidcToken, TestOidcConfiguration, TestUsers } from "@bentley/oidc-signin-tool";
 
 // Configuration needed
 //    imjs_test_regular_user_name
@@ -24,7 +24,13 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
 
   before(async () => {
-    requestContext = await IModelTestUtils.getUlasTestUserRequestContext();
+    const oidcConfig: TestOidcConfiguration = {
+      clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
+      redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
+      scope: Config.App.getString("imjs_oidc_ulas_test_scopes"),
+    };
+    const accessToken = await getTestOidcToken(oidcConfig, TestUsers.regular);
+    requestContext = new AuthorizedBackendRequestContext(accessToken);
   });
 
   it("Check Entitlements (#integration)", async function (this: Mocha.Context) {

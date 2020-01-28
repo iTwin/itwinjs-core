@@ -5,6 +5,7 @@
 import { DbResult, Guid, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, IModel, IModelVersion } from "@bentley/imodeljs-common";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
 import * as semver from "semver";
@@ -15,7 +16,6 @@ import {
 import { IModelTestUtils } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
 
 describe("IModelTransformerHub (#integration)", () => {
@@ -33,7 +33,7 @@ describe("IModelTransformerHub (#integration)", () => {
   });
 
   it("Transform source iModel to target iModel", async () => {
-    const requestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    const requestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
     const projectId: GuidString = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     const outputDir = KnownTestLocations.outputDir;
     if (!IModelJsFs.existsSync(outputDir)) {
@@ -249,7 +249,7 @@ describe("IModelTransformerHub (#integration)", () => {
   });
 
   it("Clone/upgrade test", async () => {
-    const requestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    const requestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
     const projectId: GuidString = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
     const sourceIModelId: GuidString = await HubUtility.recreateIModel(requestContext, projectId, sourceIModelName);

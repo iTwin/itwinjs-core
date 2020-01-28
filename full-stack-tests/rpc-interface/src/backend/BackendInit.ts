@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OidcConfiguration, getToken } from "@bentley/oidc-signin-tool";
+import { getTestOidcToken, TestOidcConfiguration, TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
 
@@ -21,13 +21,18 @@ module.exports = (async () => {
   console.time("Finished OIDC signin in");
   if (undefined !== settings.oidcClientId) {
     Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
-    const oidcConfig: OidcConfiguration = {
+    const oidcConfig: TestOidcConfiguration = {
       clientId: settings.oidcClientId,
       redirectUri: settings.oidcRedirect,
+      scope: settings.oidcScopes,
     };
 
     for (const [username, password] of settings.users) {
-      const token = await getToken(username, password, settings.oidcScopes, oidcConfig, settings.env);
+      const userCredentials: TestUserCredentials = {
+        email: username,
+        password,
+      };
+      const token = await getTestOidcToken(oidcConfig, userCredentials, settings.env);
       if (undefined === token)
         throw new Error("Failed to get access token");
 

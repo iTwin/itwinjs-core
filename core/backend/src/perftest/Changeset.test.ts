@@ -14,6 +14,7 @@ import {
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 
 async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {
   const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
@@ -294,10 +295,7 @@ describe("ImodelChangesetPerformance", async () => {
     Config.App.merge(myAppConfig);
     client = new IModelHubClient();
 
-    requestContext = await IModelTestUtils.getTestUserRequestContext({
-      email: Config.App.getString("imjs_test_regular_user_name"),
-      password: Config.App.getString("imjs_test_regular_user_password"),
-    });
+    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
   });
 
   after(() => {

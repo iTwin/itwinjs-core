@@ -17,7 +17,6 @@ chai.should();
 describe("JpegTagReader (#integration)", () => {
   const projectShareClient: ProjectShareClient = new ProjectShareClient();
   let projectId: GuidString;
-
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {

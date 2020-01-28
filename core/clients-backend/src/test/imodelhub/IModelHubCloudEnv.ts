@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, UserInfo, ConnectClient, Project, Asset, AuthorizedClientRequestContext, IModelHubClient } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, ConnectClient, Project, Asset, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
-import { TestConfig } from "../TestConfig";
-import { getImodelHubClient, getDefaultClient } from "./TestUtils";
+import { TestUsers } from "@bentley/oidc-signin-tool";
+import { getImodelHubClient } from "./TestUtils";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 class TestConnectClient implements ContextManagerClient {
@@ -32,13 +32,7 @@ class TestIModelHubUserMgr implements IModelAuthorizationClient {
 
   public async authorizeUser(requestContext: ClientRequestContext, _userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
     requestContext.enter();
-    const authToken = await TestConfig.getAccessToken(userCredentials);
-    requestContext.enter();
-
-    const client = getDefaultClient() as IModelHubClient;
-    this._token = await client.getAccessToken(requestContext, authToken);
-    if (this._token === undefined)
-      throw new Error("not logged in");
+    this._token = await TestUsers.getAccessToken(userCredentials);
     return Promise.resolve(this._token);
   }
 

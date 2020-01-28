@@ -10,6 +10,7 @@ package-lock.json
 /out
 **/DevBuild.txt
 coverage
+full_stack_test_results
 integration_test_results
 
 # rush-specific

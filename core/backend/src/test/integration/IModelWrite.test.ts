@@ -5,6 +5,7 @@
 import { DbOpcode, DbResult, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { CodeState, HubCode, HubIModel, IModelQuery, Lock, LockLevel, LockType, MultiCode, IModelHubError } from "@bentley/imodeljs-clients";
 import { CodeScopeSpec, CodeSpec, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import {
@@ -13,7 +14,6 @@ import {
 } from "../../imodeljs-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils, TestIModelInfo, Timer } from "../IModelTestUtils";
-import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
 
 export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: IModelDb) {
@@ -60,8 +60,8 @@ describe("IModelWriteTest (#integration)", () => {
   let readWriteTestIModelName: string;
 
   before(async () => {
-    managerRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
-    superRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.super);
+    managerRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
+    superRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.super);
     testProjectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(managerRequestContext, testProjectId, "ReadOnlyTest");
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
@@ -122,9 +122,9 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
-    const firstUserRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.super);
-    const secondUserRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
-    const neutralObserverUserRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    const firstUserRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.super);
+    const secondUserRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
+    const neutralObserverUserRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
 
     const firstIModel: IModelDb = await IModelDb.open(firstUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
     const secondIModel: IModelDb = await IModelDb.open(secondUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
@@ -291,7 +291,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should push changes with codes (#integration)", async () => {
-    const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
@@ -339,7 +339,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should handle undo/redo (#integration)", async () => {
-    const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
@@ -408,7 +408,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should not push changes with code conflicts (#integration)", async () => {
-    const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesConflictTest";
@@ -473,7 +473,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should write to briefcase with optimistic concurrency (#integration)", async () => {
-    const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
 
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel

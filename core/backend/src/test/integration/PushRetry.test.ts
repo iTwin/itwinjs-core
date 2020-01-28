@@ -6,7 +6,8 @@ import { assert } from "chai";
 import * as path from "path";
 import { Id64String, Id64, DbResult, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
-import { HubIModel, IModelQuery, ChangeSetPostPushEvent, NamedVersionCreatedEvent, RequestGlobalOptions, RequestTimeoutOptions } from "@bentley/imodeljs-clients";
+import { HubIModel, IModelQuery, ChangeSetPostPushEvent, NamedVersionCreatedEvent, RequestGlobalOptions, RequestTimeoutOptions, Config } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import {
   IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, AuthorizedBackendRequestContext,
   ECSqlStatement, ChangeSummary, ConcurrencyControl, IModelJsFs,
@@ -14,11 +15,15 @@ import {
 import * as utils from "./../../../../clients-backend/lib/test/imodelhub/TestUtils";
 import { ResponseBuilder, RequestType, ScopeType } from "./../../../../clients-backend/lib/test/ResponseBuilder";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { TestUsers, TestConfig } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
 import { createNewModelAndCategory } from "./IModelWrite.test";
 import { TestPushUtility } from "./TestPushUtility";
 import { KnownTestLocations } from "../KnownTestLocations";
+
+class TestConfig {
+  public static get projectName(): string { return Config.App.get("imjs_test_project_name"); }
+  public static get iModelName(): string { return Config.App.get("imjs_test_imodel_name"); }
+}
 
 describe("PushRetry", () => {
   let requestContext: AuthorizedBackendRequestContext;
@@ -31,7 +36,7 @@ describe("PushRetry", () => {
   let backupTimeout: RequestTimeoutOptions;
 
   before(async () => {
-    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, TestConfig.projectName);
 
     backupTimeout = RequestGlobalOptions.timeout;

@@ -6,8 +6,8 @@ import { assert } from "chai";
 import { GuidString, BentleyError } from "@bentley/bentleyjs-core";
 import { IModelVersion, RpcPendingResponse } from "@bentley/imodeljs-common";
 import { AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { TestUsers } from "../TestUsers";
 import { IModelDb, OpenParams, AuthorizedBackendRequestContext, BriefcaseManager } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
 import { KeepBriefcase } from "../../BriefcaseManager";
@@ -26,7 +26,7 @@ describe("IModelOpen (#integration)", () => {
     IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
-    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
+    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, testProjectName);
     testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
     testChangeSetId = await HubUtility.queryLatestChangeSetId(requestContext, testIModelId);
