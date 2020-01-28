@@ -17,6 +17,7 @@ import { ByteStream } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
+import { ClipVector } from '@bentley/geometry-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
@@ -58,6 +59,7 @@ import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { Writable } from 'stream';
+import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { XYProps } from '@bentley/geometry-core';
 import { XYZProps } from '@bentley/geometry-core';
@@ -2639,6 +2641,15 @@ export class GraphicParams {
     trueWidthEnd: number;
     // (undocumented)
     trueWidthStart: number;
+}
+
+// @public
+export enum GridOrientationType {
+    AuxCoord = 4,
+    View = 0,
+    WorldXY = 1,
+    WorldXZ = 3,
+    WorldYZ = 2
 }
 
 // @public
@@ -6158,6 +6169,10 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
     camera: CameraProps;
     cameraOn: boolean;
     extents: XYZProps;
+    // @internal (undocumented)
+    jsonProperties?: {
+        viewDetails?: ViewDetails3dProps;
+    };
     origin: XYZProps;
 }
 
@@ -6169,6 +6184,64 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
     description?: string;
     // (undocumented)
     displayStyleId: Id64String;
+    // @internal (undocumented)
+    jsonProperties?: {
+        viewDetails?: ViewDetailsProps;
+    };
+}
+
+// @beta
+export class ViewDetails {
+    // @internal
+    constructor(jsonProperties: {
+        viewDetails?: ViewDetailsProps;
+    });
+    get aspectRatioSkew(): number;
+    set aspectRatioSkew(skew: number);
+    get auxiliaryCoordinateSystemId(): Id64String;
+    set auxiliaryCoordinateSystemId(id: Id64String);
+    get clipVector(): ClipVector | undefined;
+    set clipVector(clip: ClipVector | undefined);
+    // @internal
+    getJSON(): ViewDetailsProps;
+    get gridOrientation(): GridOrientationType;
+    set gridOrientation(orientation: GridOrientationType);
+    get gridSpacing(): XAndY;
+    set gridSpacing(spacing: XAndY);
+    get gridsPerRef(): number;
+    set gridsPerRef(gridsPerRef: number);
+    // @internal (undocumented)
+    protected readonly _json: ViewDetailsProps;
+    // @internal
+    static maxSkew: number;
+}
+
+// @beta
+export class ViewDetails3d extends ViewDetails {
+    // @internal
+    constructor(jsonProperties: {
+        viewDetails?: ViewDetails3dProps;
+    });
+    get allow3dManipulations(): boolean;
+    set allow3dManipulations(allow: boolean);
+    // @internal
+    getJSON(): ViewDetails3dProps;
+    }
+
+// @internal (undocumented)
+export interface ViewDetails3dProps extends ViewDetailsProps {
+    disable3dManipulations?: boolean;
+}
+
+// @internal (undocumented)
+export interface ViewDetailsProps {
+    acs?: Id64String;
+    aspectSkew?: number;
+    clip?: any;
+    gridOrient?: GridOrientationType;
+    gridPerRef?: number;
+    gridSpaceX?: number;
+    gridSpaceY?: number;
 }
 
 // @alpha (undocumented)

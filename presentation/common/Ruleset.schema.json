@@ -53,7 +53,14 @@
         "relatedInstances": {
           "description": "Specifications of related instances that can be used in content creation.",
           "items": {
-            "$ref": "#/definitions/RelatedInstanceSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
@@ -125,7 +132,14 @@
         "relatedInstances": {
           "description": "Specifications of related instances that can be used in content creation.",
           "items": {
-            "$ref": "#/definitions/RelatedInstanceSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
@@ -310,7 +324,10 @@
                 "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
               },
               {
-                "$ref": "#/definitions/RelatedInstanceNodesSpecification"
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceNodesSpecificationNew"
               },
               {
                 "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
@@ -433,14 +450,28 @@
         "relatedInstances": {
           "description": "Specifications for joining related instances",
           "items": {
-            "$ref": "#/definitions/RelatedInstanceSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
         "relatedProperties": {
           "description": "Specifications for including properties of related instances",
           "items": {
-            "$ref": "#/definitions/RelatedPropertiesSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
@@ -516,7 +547,14 @@
         "relatedProperties": {
           "description": "Specifications for including properties of related instances",
           "items": {
-            "$ref": "#/definitions/RelatedPropertiesSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
@@ -533,9 +571,8 @@
       ],
       "type": "object"
     },
-    "ContentRelatedInstancesSpecification": {
+    "ContentRelatedInstancesSpecificationNew": {
       "additionalProperties": false,
-      "description": "Creates content for ECInstance(s) related to current selection.\n\nNote: Use `ContentRule.condition` to apply specification on correct selection.",
       "properties": {
         "calculatedProperties": {
           "description": "Specifications for including calculated properties",
@@ -545,12 +582,8 @@
           "type": "array"
         },
         "instanceFilter": {
-          "description": "Condition for filtering instances of defined related classes.\n\nSee: ECExpressions available in instance filter",
+          "description": "Condition for filtering instances targeted by specified relationship paths.\n\nSee: ECExpressions available in instance filter",
           "type": "string"
-        },
-        "isRecursive": {
-          "description": "Walks the specified relationships recursively to find related instances.\n\nNote: Can't be used together with `skipRelatedLevel`.\n\nWarning: Using this specification has significant negative performance impact.",
-          "type": "boolean"
         },
         "priority": {
           "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
@@ -584,65 +617,54 @@
           },
           "type": "array"
         },
-        "relatedClasses": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/MultiSchemaClassesSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/MultiSchemaClassesSpecification"
-              },
-              "type": "array"
-            }
-          ],
-          "description": "List of related instance ECClass specifications. Optional if `relationships` is specified."
-        },
         "relatedInstances": {
           "description": "Specifications for joining related instances",
           "items": {
-            "$ref": "#/definitions/RelatedInstanceSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
         "relatedProperties": {
           "description": "Specifications for including properties of related instances",
           "items": {
-            "$ref": "#/definitions/RelatedPropertiesSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
-        "relationships": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/MultiSchemaClassesSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+        "relationshipPaths": {
+          "description": "Relationship paths from input (selected) instance class to content class.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/RepeatableRelationshipStepSpecification"
               },
-              "type": "array"
-            }
-          ],
-          "description": "List of ECRelationship specifications to follow when looking for related instances.\nOptional if `relatedClasses` is specified."
-        },
-        "requiredDirection": {
-          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
-          "enum": [
-            "Backward",
-            "Both",
-            "Forward"
-          ],
-          "type": "string"
+              {
+                "items": {
+                  "$ref": "#/definitions/RepeatableRelationshipStepSpecification"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "type": "array"
         },
         "showImages": {
           "description": "Should each content record be assigned an image id",
           "type": "boolean"
-        },
-        "skipRelatedLevel": {
-          "description": "Skips defined level of related items and shows next level related items. Defaults to `0`.\n\nNote: Can't be used together with `isRecursive`.",
-          "minimum": 0,
-          "type": "integer"
         },
         "specType": {
           "description": "Used for serializing to JSON.",
@@ -653,6 +675,7 @@
         }
       },
       "required": [
+        "relationshipPaths",
         "specType"
       ],
       "type": "object"
@@ -685,7 +708,10 @@
           "items": {
             "anyOf": [
               {
-                "$ref": "#/definitions/ContentRelatedInstancesSpecification"
+                "$ref": "#/definitions/DEPRECATED_ContentRelatedInstancesSpecification"
+              },
+              {
+                "$ref": "#/definitions/ContentRelatedInstancesSpecificationNew"
               },
               {
                 "$ref": "#/definitions/SelectedNodeInstancesSpecification"
@@ -759,7 +785,14 @@
         "relatedInstances": {
           "description": "Specifications of related instances that can be used in content creation.",
           "items": {
-            "$ref": "#/definitions/RelatedInstanceSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
@@ -847,7 +880,14 @@
         "relatedInstances": {
           "description": "Specifications of related instances that can be used in content creation.",
           "items": {
-            "$ref": "#/definitions/RelatedInstanceSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
@@ -862,6 +902,427 @@
       "required": [
         "specType"
       ],
+      "type": "object"
+    },
+    "DEPRECATED_ContentRelatedInstancesSpecification": {
+      "additionalProperties": false,
+      "properties": {
+        "calculatedProperties": {
+          "description": "Specifications for including calculated properties",
+          "items": {
+            "$ref": "#/definitions/CalculatedPropertiesSpecification"
+          },
+          "type": "array"
+        },
+        "instanceFilter": {
+          "description": "Condition for filtering instances of defined related classes.\n\nSee: ECExpressions available in instance filter",
+          "type": "string"
+        },
+        "isRecursive": {
+          "description": "Walks the specified relationships recursively to find related instances.\n\nNote: Can't be used together with `skipRelatedLevel`.\n\nWarning: Using this specification has significant negative performance impact.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "propertiesDisplay": {
+          "description": "Specifications for customizing property display by hiding / showing them",
+          "items": {
+            "$ref": "#/definitions/PropertiesDisplaySpecification"
+          },
+          "type": "array"
+        },
+        "propertyCategories": {
+          "description": "Specifications for custom categories. Simply defining the categories does\nnothing - they have to be referenced from `PropertySpecification` defined in\n`propertyOverrides` by `id`.",
+          "items": {
+            "$ref": "#/definitions/PropertyCategorySpecification"
+          },
+          "type": "array"
+        },
+        "propertyEditors": {
+          "description": "Specifications for assigning property editors",
+          "items": {
+            "$ref": "#/definitions/PropertyEditorsSpecification"
+          },
+          "type": "array"
+        },
+        "propertyOverrides": {
+          "description": "Specifications for various property overrides.",
+          "items": {
+            "$ref": "#/definitions/PropertySpecification"
+          },
+          "type": "array"
+        },
+        "relatedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "List of related instance ECClass specifications. Optional if `relationships` is specified."
+        },
+        "relatedInstances": {
+          "description": "Specifications for joining related instances",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "relatedProperties": {
+          "description": "Specifications for including properties of related instances",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "relationships": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "List of ECRelationship specifications to follow when looking for related instances.\nOptional if `relatedClasses` is specified."
+        },
+        "requiredDirection": {
+          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
+          "enum": [
+            "Backward",
+            "Both",
+            "Forward"
+          ],
+          "type": "string"
+        },
+        "showImages": {
+          "description": "Should each content record be assigned an image id",
+          "type": "boolean"
+        },
+        "skipRelatedLevel": {
+          "description": "Skips defined level of related items and shows next level related items. Defaults to `0`.\n\nNote: Can't be used together with `isRecursive`.",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "ContentRelatedInstances"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "DEPRECATED_RelatedInstanceNodesSpecification": {
+      "additionalProperties": false,
+      "properties": {
+        "doNotSort": {
+          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "groupByClass": {
+          "description": "Group instances by ECClass. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "groupByLabel": {
+          "description": "Group instances by label. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "hasChildren": {
+          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "enum": [
+            "Always",
+            "Never",
+            "Unknown"
+          ],
+          "type": "string"
+        },
+        "hideExpression": {
+          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "type": "string"
+        },
+        "hideIfNoChildren": {
+          "description": "Hide nodes if they don't have children.",
+          "type": "boolean"
+        },
+        "hideNodesInHierarchy": {
+          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "type": "boolean"
+        },
+        "instanceFilter": {
+          "description": "Condition for filtering instances of defined classes.\n\nSee: ECExpressions Available in InstanceFilter",
+          "type": "string"
+        },
+        "nestedRules": {
+          "description": "Nested rule specifications.",
+          "items": {
+            "$ref": "#/definitions/ChildNodeRule"
+          },
+          "type": "array"
+        },
+        "priority": {
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "relatedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Related classes whose instances should be returned as content.\nOptional if `relationships` is specified."
+        },
+        "relatedInstances": {
+          "description": "Specifications of related instances that can be used in content creation.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "relationships": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Relationships that should be followed when gathering content.\nOptional if `relatedClasses` is specified."
+        },
+        "requiredDirection": {
+          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
+          "enum": [
+            "Backward",
+            "Both",
+            "Forward"
+          ],
+          "type": "string"
+        },
+        "skipRelatedLevel": {
+          "description": "Skips defined level of related items and shows next level related items.\n\nExample: lets say we have relationship hierarchy A->B->C, but we want\nto show A->C. In this case we need to set this property to 1 - the engine will\nquery all direct relationships and all nested relationships and only nested\nones will be used to create content.\n\nDefaults to `0`.",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "RelatedInstanceNodes"
+          ],
+          "type": "string"
+        },
+        "supportedSchemas": {
+          "description": "Names of ECSchemas used to look up relationships and classes when `relationships`\nor `relatedClasses` are not specified.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "DEPRECATED_RelatedInstanceSpecification": {
+      "additionalProperties": false,
+      "description": "Deprecated `RelatedInstanceSpecification` specification.",
+      "properties": {
+        "alias": {
+          "description": "The alias to give for the joined related instance. Used to reference the related instance in\ninstance filter and customization rules.\n\n**The value must be unique per-specification!**",
+          "pattern": "^\\w[\\w\\d]*$",
+          "type": "string"
+        },
+        "class": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of the related instance class."
+        },
+        "isRequired": {
+          "description": "Is the related instance required to exist. If yes, primary instance won't be returned\nif the related instance doesn't exist. If not, primary instance will be returned, but related\ninstance will be null.\n\nIn SQL terms in can be compared to INNER JOIN vs OUTER JOIN.",
+          "type": "boolean"
+        },
+        "relationship": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of the relationship to use for joining the related instance"
+        },
+        "requiredDirection": {
+          "description": "Direction of the relationship",
+          "enum": [
+            "Backward",
+            "Forward"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "alias",
+        "class",
+        "relationship",
+        "requiredDirection"
+      ],
+      "type": "object"
+    },
+    "DEPRECATED_RelatedPropertiesSpecification": {
+      "additionalProperties": false,
+      "description": "Sub-specification to include additional related instance properties.",
+      "properties": {
+        "autoExpand": {
+          "description": "Should field containing related properties be automatically expanded. This only takes effect when\ncontent class is related to properties source class through a one-to-many or many-to-many relationship.",
+          "type": "boolean"
+        },
+        "handleTargetClassPolymorphically": {
+          "description": "Should the target class specified in `propertiesSource` or by `relatedClasses` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
+          "type": "boolean"
+        },
+        "isPolymorphic": {
+          "description": "Should `relationships` and `relatedClasses` be handled polymorphically.",
+          "type": "boolean"
+        },
+        "nestedRelatedProperties": {
+          "description": "Specifications for nested related properties",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "properties": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/PropertySpecification"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "_none_"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "A list of property names or specifications that should be included in the content. All\nproperties are included if this attribute is not specified."
+        },
+        "propertyNames": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "_none_"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "List of names of related class properties that should be included in the content.\nAll properties are included if not specified."
+        },
+        "relatedClasses": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Specifications of related ECClasses. Optional if `relationships` is specified."
+        },
+        "relationshipMeaning": {
+          "description": "Meaning of the relationship. Defaults to `RelationshipMeaning.RelatedInstance`",
+          "enum": [
+            "RelatedInstance",
+            "SameInstance"
+          ],
+          "type": "string"
+        },
+        "relationships": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Specifications of ECRelationshipClasses. Optional if `relatedClasses` is specified."
+        },
+        "requiredDirection": {
+          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
+          "enum": [
+            "Backward",
+            "Both",
+            "Forward"
+          ],
+          "type": "string"
+        }
+      },
       "type": "object"
     },
     "DisabledSortingRule": {
@@ -1365,7 +1826,14 @@
         "relatedInstances": {
           "description": "Specifications of related instances that can be used in content creation.",
           "items": {
-            "$ref": "#/definitions/RelatedInstanceSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
@@ -1887,9 +2355,8 @@
       ],
       "type": "object"
     },
-    "RelatedInstanceNodesSpecification": {
+    "RelatedInstanceNodesSpecificationNew": {
       "additionalProperties": false,
-      "description": "Creates nodes for related instances of specified ECClasses.\n\nPrecondition: can be used only if parent node is ECInstance\nnode. If there is no immediate parent instance node it will go up until it finds one.",
       "properties": {
         "doNotSort": {
           "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
@@ -1925,7 +2392,7 @@
           "type": "boolean"
         },
         "instanceFilter": {
-          "description": "Condition for filtering instances of defined classes.\n\nSee: ECExpressions Available in InstanceFilter",
+          "description": "Condition for filtering instances targeted by specified relationship paths.\n\nSee: ECExpressions Available in InstanceFilter",
           "type": "string"
         },
         "nestedRules": {
@@ -1939,54 +2406,36 @@
           "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
-        "relatedClasses": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/MultiSchemaClassesSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/MultiSchemaClassesSpecification"
-              },
-              "type": "array"
-            }
-          ],
-          "description": "Related classes whose instances should be returned as content.\nOptional if `relationships` is specified."
-        },
         "relatedInstances": {
           "description": "Specifications of related instances that can be used in content creation.",
           "items": {
-            "$ref": "#/definitions/RelatedInstanceSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
-        "relationships": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/MultiSchemaClassesSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+        "relationshipPaths": {
+          "description": "Relationship paths from parent node instance class to child node instances' class.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/RepeatableRelationshipStepSpecification"
               },
-              "type": "array"
-            }
-          ],
-          "description": "Relationships that should be followed when gathering content.\nOptional if `relatedClasses` is specified."
-        },
-        "requiredDirection": {
-          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
-          "enum": [
-            "Backward",
-            "Both",
-            "Forward"
-          ],
-          "type": "string"
-        },
-        "skipRelatedLevel": {
-          "description": "Skips defined level of related items and shows next level related items.\n\nExample: lets say we have relationship hierarchy A->B->C, but we want\nto show A->C. In this case we need to set this property to 1 - the engine will\nquery all direct relationships and all nested relationships and only nested\nones will be used to create content.\n\nDefaults to `0`.",
-          "minimum": 0,
-          "type": "integer"
+              {
+                "items": {
+                  "$ref": "#/definitions/RepeatableRelationshipStepSpecification"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "type": "array"
         },
         "specType": {
           "description": "Used for serializing to JSON.",
@@ -1994,76 +2443,59 @@
             "RelatedInstanceNodes"
           ],
           "type": "string"
-        },
-        "supportedSchemas": {
-          "description": "Names of ECSchemas used to look up relationships and classes when `relationships`\nor `relatedClasses` are not specified.",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
         }
       },
       "required": [
+        "relationshipPaths",
         "specType"
       ],
       "type": "object"
     },
-    "RelatedInstanceSpecification": {
+    "RelatedInstanceSpecificationNew": {
       "additionalProperties": false,
-      "description": "This sub-specification allows joining the primary node instance with any number of related instances and creating\nhierarchies based on a mix of those related instances.\n\nThe related instance property values can be accessed from multiple different places:\n- Instance filter\n- Customization rule value\n- Grouping rule\n\nExample:\n```JSON\n{\n   \"id\": \"related_instance_example\",\n   \"rules\": [{\n     \"ruleType\": \"LabelOverride\",\n     \"condition\": \"ThisNode.IsInstanceNode ANDALSO this.IsOfClass(\\\"Model\\\", \\\"BisCore\\\")\",\n     \"label\": \"modeledElement.UserLabel\"\n   }, {\n     \"ruleType\": \"Grouping\",\n     \"condition\": \"ParentNode.IsNull\",\n     \"class\": {\n       \"schemaName\": \"BisCore\",\n       \"className\": \"Element\"\n     },\n     \"groups\": [{\n       \"specType\": \"Property\",\n       \"propertyName\": \"CodeValue\",\n       \"createGroupForSingleItem\": true\n     }]\n   }, {\n     \"ruleType\": \"RootNodes\",\n     \"specifications\": [{\n       \"specType\": \"InstanceNodesOfSpecificClasses\",\n       \"classes\": { \"schemaName\": \"BisCore\", \"classNames\": [\"GeometricModel\"] },\n       \"arePolymorphic\": true,\n       \"instanceFilter\": \"modeledElement.CodeNamespace = 1\",\n       \"relatedInstances\": [{\n         \"relationship\": { \"schemaName\": \"BisCore\", \"className\": \"ModelModelsElement\" },\n         \"requiredDirection\": \"Forward\",\n         \"class\": { \"schemaName\": \"BisCore\", \"className\": \"Element\" },\n         \"alias\": \"modeledElement\"\n       }]\n     }]\n   }]\n}\n```\nHere `BisCore:GeometricModel` instances are joined with `BisCore:Element` instances to create the hierarchy. This allows:\n- Related `BisCore:Element` properties to be accessed in `InstanceFilter` using `modeledElement` alias.\n- The `LabelOverride` rule to use `modeledElement` alias to access properties of the joined related instance.\n- The `GroupingRule` to be applied because it's grouping `BisCore:Element` which is now part of the generated nodes.",
+      "description": "Updated `RelatedInstanceSpecification` specification.",
       "properties": {
         "alias": {
           "description": "The alias to give for the joined related instance. Used to reference the related instance in\ninstance filter and customization rules.\n\n**The value must be unique per-specification!**",
           "pattern": "^\\w[\\w\\d]*$",
           "type": "string"
         },
-        "class": {
-          "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of the related instance class."
-        },
         "isRequired": {
           "description": "Is the related instance required to exist. If yes, primary instance won't be returned\nif the related instance doesn't exist. If not, primary instance will be returned, but related\ninstance will be null.\n\nIn SQL terms in can be compared to INNER JOIN vs OUTER JOIN.",
           "type": "boolean"
         },
-        "relationship": {
-          "$ref": "#/definitions/SingleSchemaClassSpecification",
-          "description": "Specification of the relationship to use for joining the related instance"
-        },
-        "requiredDirection": {
-          "description": "Direction of the relationship",
-          "enum": [
-            "Backward",
-            "Forward"
+        "relationshipPath": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RelationshipStepSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/RelationshipStepSpecification"
+              },
+              "type": "array"
+            }
           ],
-          "type": "string"
+          "description": "Relationship path to find the related instance."
         }
       },
       "required": [
         "alias",
-        "class",
-        "relationship",
-        "requiredDirection"
+        "relationshipPath"
       ],
       "type": "object"
     },
-    "RelatedPropertiesSpecification": {
+    "RelatedPropertiesSpecificationNew": {
       "additionalProperties": false,
-      "description": "Sub-specification to include additional related instance properties",
+      "description": "Sub-specification to include additional related instance properties.",
       "properties": {
         "autoExpand": {
-          "description": "Should field containing related properties be automatically expanded.",
+          "description": "Should field containing related properties be automatically expanded. This only takes effect when\ncontent class is related to properties source class through a one-to-many or many-to-many relationship.",
           "type": "boolean"
         },
-        "isPolymorphic": {
-          "description": "Should `relationships` and `relatedClasses` be handled polymorphically.",
+        "handleTargetClassPolymorphically": {
+          "description": "Should the target class specified in `propertiesSource` or by `relatedClasses` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
           "type": "boolean"
-        },
-        "nestedRelatedProperties": {
-          "description": "Specifications for nested related properties",
-          "items": {
-            "$ref": "#/definitions/RelatedPropertiesSpecification"
-          },
-          "type": "array"
         },
         "properties": {
           "anyOf": [
@@ -2089,36 +2521,19 @@
           ],
           "description": "A list of property names or specifications that should be included in the content. All\nproperties are included if this attribute is not specified."
         },
-        "propertyNames": {
+        "propertiesSource": {
           "anyOf": [
             {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            {
-              "enum": [
-                "_none_"
-              ],
-              "type": "string"
-            }
-          ],
-          "description": "List of names of related class properties that should be included in the content.\nAll properties are included if not specified."
-        },
-        "relatedClasses": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/MultiSchemaClassesSpecification"
+              "$ref": "#/definitions/RelationshipStepSpecification"
             },
             {
               "items": {
-                "$ref": "#/definitions/MultiSchemaClassesSpecification"
+                "$ref": "#/definitions/RelationshipStepSpecification"
               },
               "type": "array"
             }
           ],
-          "description": "Specifications of related ECClasses. Optional if `relationships` is specified."
+          "description": "Relationship path from content class to properties' class."
         },
         "relationshipMeaning": {
           "description": "Meaning of the relationship. Defaults to `RelationshipMeaning.RelatedInstance`",
@@ -2127,31 +2542,79 @@
             "SameInstance"
           ],
           "type": "string"
-        },
-        "relationships": {
-          "anyOf": [
-            {
-              "$ref": "#/definitions/MultiSchemaClassesSpecification"
-            },
-            {
-              "items": {
-                "$ref": "#/definitions/MultiSchemaClassesSpecification"
-              },
-              "type": "array"
-            }
-          ],
-          "description": "Specifications of ECRelationshipClasses. Optional if `relatedClasses` is specified."
-        },
-        "requiredDirection": {
-          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
+        }
+      },
+      "required": [
+        "propertiesSource"
+      ],
+      "type": "object"
+    },
+    "RelationshipStepSpecification": {
+      "additionalProperties": false,
+      "description": "Specification of a single relationship path step.",
+      "properties": {
+        "direction": {
+          "description": "Relationship direction that should be followed to find the target class.",
           "enum": [
             "Backward",
-            "Both",
             "Forward"
           ],
           "type": "string"
+        },
+        "relationship": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of the relationship to use for joining the related instance."
+        },
+        "targetClass": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of the target class. Either relationship's source or target class is used (based\non specified direction) if more specific target class is not specified by this attribute."
         }
       },
+      "required": [
+        "direction",
+        "relationship"
+      ],
+      "type": "object"
+    },
+    "RepeatableRelationshipStepSpecification": {
+      "additionalProperties": false,
+      "description": "Specification of a single relationship path step.",
+      "properties": {
+        "count": {
+          "anyOf": [
+            {
+              "enum": [
+                "*"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Number of relationship steps that should be taken. Special `*` value means that\nrelationship is traversed recursively and all matching instances are accumulated.\nDefaults to `1`."
+        },
+        "direction": {
+          "description": "Relationship direction that should be followed to find the target class.",
+          "enum": [
+            "Backward",
+            "Forward"
+          ],
+          "type": "string"
+        },
+        "relationship": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of the relationship to use for joining the related instance."
+        },
+        "targetClass": {
+          "$ref": "#/definitions/SingleSchemaClassSpecification",
+          "description": "Specification of the target class. Either relationship's source or target class is used (based\non specified direction) if more specific target class is not specified by this attribute."
+        }
+      },
+      "required": [
+        "direction",
+        "relationship"
+      ],
       "type": "object"
     },
     "RootNodeRule": {
@@ -2232,7 +2695,10 @@
                 "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
               },
               {
-                "$ref": "#/definitions/RelatedInstanceNodesSpecification"
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceNodesSpecificationNew"
               },
               {
                 "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"
@@ -2370,14 +2836,28 @@
         "relatedInstances": {
           "description": "Specifications for joining related instances",
           "items": {
-            "$ref": "#/definitions/RelatedInstanceSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
         "relatedProperties": {
           "description": "Specifications for including properties of related instances",
           "items": {
-            "$ref": "#/definitions/RelatedPropertiesSpecification"
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedPropertiesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedPropertiesSpecificationNew"
+              }
+            ]
           },
           "type": "array"
         },
@@ -2512,7 +2992,10 @@
                 "$ref": "#/definitions/InstanceNodesOfSpecificClassesSpecification"
               },
               {
-                "$ref": "#/definitions/RelatedInstanceNodesSpecification"
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceNodesSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceNodesSpecificationNew"
               },
               {
                 "$ref": "#/definitions/CustomQueryInstanceNodesSpecification"

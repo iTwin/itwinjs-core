@@ -21,7 +21,7 @@ export interface AllInstanceNodesSpecification extends ChildNodeSpecificationBas
     supportedSchemas?: SchemasSpecification;
 }
 
-// @public
+// @public @deprecated
 export interface AllRelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     requiredDirection?: RelationshipDirection;
     skipRelatedLevel?: number;
@@ -211,15 +211,7 @@ export interface ContentModifiersList {
 }
 
 // @public
-export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
-    instanceFilter?: string;
-    isRecursive?: boolean;
-    relatedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    relationships?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    requiredDirection?: RelationshipDirection;
-    skipRelatedLevel?: number;
-    specType: ContentSpecificationTypes.ContentRelatedInstances;
-}
+export type ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew;
 
 // @public
 export interface ContentRequestOptions<TIModel> extends RequestOptionsWithRuleset<TIModel> {
@@ -1280,24 +1272,10 @@ export namespace RelatedClassInfo {
 }
 
 // @public
-export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
-    instanceFilter?: string;
-    relatedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    relationships?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    requiredDirection?: RelationshipDirection;
-    skipRelatedLevel?: number;
-    specType: ChildNodeSpecificationTypes.RelatedInstanceNodes;
-    supportedSchemas?: string[];
-}
+export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew;
 
 // @public
-export interface RelatedInstanceSpecification {
-    alias: string;
-    class: SingleSchemaClassSpecification;
-    isRequired?: boolean;
-    relationship: SingleSchemaClassSpecification;
-    requiredDirection: RelationshipDirection.Forward | RelationshipDirection.Backward;
-}
+export type RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew;
 
 // @public
 export enum RelatedPropertiesSpecialValues {
@@ -1305,23 +1283,12 @@ export enum RelatedPropertiesSpecialValues {
 }
 
 // @public
-export interface RelatedPropertiesSpecification {
-    autoExpand?: boolean;
-    isPolymorphic?: boolean;
-    nestedRelatedProperties?: RelatedPropertiesSpecification[];
-    // @beta
-    properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
-    // @deprecated
-    propertyNames?: string[] | RelatedPropertiesSpecialValues;
-    relatedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    relationshipMeaning?: RelationshipMeaning;
-    relationships?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
-    requiredDirection?: RelationshipDirection;
-}
+export type RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew;
 
 // @public
 export enum RelationshipDirection {
     Backward = "Backward",
+    // @deprecated
     Both = "Both",
     Forward = "Forward"
 }
@@ -1334,6 +1301,24 @@ export enum RelationshipMeaning {
 
 // @public
 export type RelationshipPath = RelatedClassInfo[];
+
+// @beta
+export type RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[];
+
+// @beta
+export interface RelationshipStepSpecification {
+    direction: RelationshipDirection.Forward | RelationshipDirection.Backward;
+    relationship: SingleSchemaClassSpecification;
+    targetClass?: SingleSchemaClassSpecification;
+}
+
+// @beta
+export type RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[];
+
+// @beta
+export interface RepeatableRelationshipStepSpecification extends RelationshipStepSpecification {
+    count?: number | "*";
+}
 
 // @public
 export interface RequestOptions<TIModel> {
