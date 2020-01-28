@@ -24,23 +24,27 @@ import {
   dispose,
   disposeArray,
 } from "@bentley/bentleyjs-core";
+import { GraphicList } from "../RenderGraphic";
+import { AnimationBranchStates } from "../GraphicBranch";
+import { CanvasDecoration } from "../CanvasDecoration";
+import { Decorations } from "../Decorations";
+import { Pixel } from "../Pixel";
+import { ClippingType } from "../RenderClipVolume";
 import {
-  AnimationBranchStates,
-  CanvasDecoration,
-  ClippingType,
-  Decorations,
-  GraphicList,
-  Pixel,
   PlanarClassifierMap,
-  PrimitiveVisibility,
-  RenderMemory,
-  RenderPlan,
   RenderPlanarClassifier,
+} from "../RenderPlanarClassifier";
+import {
+  PrimitiveVisibility,
   RenderTarget,
   RenderTargetDebugControl,
+} from "../RenderTarget";
+import {
+  RenderMemory,
   RenderTextureDrape,
   TextureDrapeMap,
-} from "../System";
+} from "../RenderSystem";
+import { RenderPlan } from "../RenderPlan";
 import {
   AmbientOcclusion,
   AnalysisStyle,

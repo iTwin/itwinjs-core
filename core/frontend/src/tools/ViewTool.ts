@@ -11,7 +11,7 @@ import { ColorDef, Frustum, Npc, NpcCenter, LinePixels } from "@bentley/imodeljs
 import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
-import { GraphicType } from "../rendering";
+import { GraphicType } from "../render/GraphicBuilder";
 import { DecorateContext } from "../ViewContext";
 import { CoordSystem, ScreenViewport, Viewport, Animator, DepthPointSource } from "../Viewport";
 import { ViewRect } from "../ViewRect";

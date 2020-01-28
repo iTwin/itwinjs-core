@@ -10,17 +10,19 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { CanvasDecoration } from "./render/CanvasDecoration";
+import { Decorations } from "./render/Decorations";
 import {
-  CanvasDecoration,
-  Decorations,
   GraphicBranch,
   GraphicBranchOptions,
+} from "./render/GraphicBranch";
+import {
   GraphicList,
   RenderGraphic,
-  RenderTarget,
-  RenderPlanarClassifier,
-  RenderTextureDrape,
-} from "./render/System";
+} from "./render/RenderGraphic";
+import { RenderTarget } from "./render/RenderTarget";
+import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
+import { RenderTextureDrape } from "./render/RenderSystem";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewingSpace } from "./ViewingSpace";
 import {

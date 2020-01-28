@@ -6,7 +6,7 @@ import { expect, assert } from "chai";
 import { MockRender, IModelConnection, SpatialViewState, StandardViewId } from "@bentley/imodeljs-frontend";
 import { Range3d, Point3d, Point2d } from "@bentley/geometry-core";
 import * as path from "path";
-import { DisplayParams, Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/rendering";
+import { DisplayParams, Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { MeshPolyline, QPoint3d, ColorDef, OctEncodedNormal } from "@bentley/imodeljs-common";
 
 const iModelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/test.bim");

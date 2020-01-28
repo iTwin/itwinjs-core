@@ -20,7 +20,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
 import { dispose } from "@bentley/bentleyjs-core";
-import { RenderMemory } from "../System";
+import { RenderMemory } from "../RenderSystem";
 import { BuffersContainer } from "./Handle";
 
 /** @internal */

@@ -17,6 +17,12 @@ export interface PlanProjectionSettingsProps {
   transparency?: number;
   /** If defined and true, the model is displayed as an overlay in the view (without depth testing) so that it is always visible behind other geometry. */
   overlay?: boolean;
+  /** If defined and true, subcategory display priority is used to specify the draw order of portions of the model. Geometry belonging to a subcategory with a higher priority
+   * value is drawn on top of coincident geometry belonging to a subcategory with a lower priority value. The priorities can be modified at display time using
+   * [FeatureSymbology.Overrides]($frontend). Note that subcategory "layers" cross model boundaries; that is, geometry belonging to the same subcategory in different models
+   * are drawn as part of the same layer.
+   */
+  enforceDisplayPriority?: boolean;
 }
 
 /** An immutable description of how to draw a "plan projection" models.
@@ -30,12 +36,15 @@ export class PlanProjectionSettings {
   public readonly transparency?: number;
   /** @see [[PlanProjectionSettingsProps.overlay]] */
   public readonly overlay: boolean;
+  /** @see [[PlanProjectionSettingsProps.enforceDisplayPriority]] */
+  public readonly enforceDisplayPriority?: boolean;
 
   public toJSON(): PlanProjectionSettingsProps {
     return {
       elevation: this.elevation,
       transparency: this.transparency,
       overlay: true === this.overlay ? true : undefined,
+      enforceDisplayPriority: true === this.enforceDisplayPriority ? true : undefined,
     };
   }
 
@@ -43,7 +52,7 @@ export class PlanProjectionSettings {
     if (undefined === props)
       return undefined;
 
-    if (undefined === props.elevation && undefined === props.transparency && undefined === props.overlay)
+    if (undefined === props.elevation && undefined === props.transparency && undefined === props.overlay && undefined === props.enforceDisplayPriority)
       return undefined;
 
     return new PlanProjectionSettings(props);
@@ -52,6 +61,7 @@ export class PlanProjectionSettings {
   public constructor(props: PlanProjectionSettingsProps) {
     this.elevation = props.elevation;
     this.overlay = true === props.overlay;
+    this.enforceDisplayPriority = true === props.enforceDisplayPriority;
 
     let transparency = props.transparency;
     if (undefined !== transparency)
@@ -77,6 +87,9 @@ export class PlanProjectionSettings {
 
     if (undefined !== changedProps.overlay)
       props.overlay = changedProps.overlay;
+
+    if (undefined !== changedProps.enforceDisplayPriority)
+      props.enforceDisplayPriority = changedProps.enforceDisplayPriority;
 
     return new PlanProjectionSettings(props);
   }

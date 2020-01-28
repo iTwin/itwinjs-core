@@ -36,10 +36,8 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import {
-  RenderGraphic,
-  RenderMemory,
-} from "../render/System";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderMemory } from "../render/RenderSystem";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { TileRequest, TileLoader, TileParams, tileParamsFromJSON, TileContent, TileDrawArgs, TileTree, TileTreeLoadStatus, TraversalSelectionContext, TraversalDetails } from "./internal";

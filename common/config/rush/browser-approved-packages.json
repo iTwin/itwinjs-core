@@ -168,11 +168,11 @@
     },
     {
       "name": "@testing-library/dom",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@testing-library/react",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@testing-library/react-hooks",
@@ -200,7 +200,7 @@
     },
     {
       "name": "bunyan",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "bunyan-seq",
@@ -248,6 +248,10 @@
     },
     {
       "name": "chrome-launcher",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "chromedriver",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -335,6 +339,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "env-cmd",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "enzyme",
       "allowedCategories": [ "frontend", "tools" ]
     },
@@ -384,7 +392,7 @@
     },
     {
       "name": "file-loader",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "file-saver",
@@ -448,7 +456,7 @@
     },
     {
       "name": "immutable",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "imports-loader",
@@ -456,7 +464,7 @@
     },
     {
       "name": "inspire-tree",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -504,7 +512,7 @@
     },
     {
       "name": "lodash",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
       "name": "lolex",
@@ -564,7 +572,7 @@
     },
     {
       "name": "nodemon",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "npm-run-all",
@@ -599,6 +607,10 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
+      "name": "path",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "popper.js",
       "allowedCategories": [ "internal" ]
     },
@@ -620,7 +632,7 @@
     },
     {
       "name": "puppeteer",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "qs",
@@ -668,11 +680,11 @@
     },
     {
       "name": "react-dnd",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-dnd-html5-backend",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "react-dnd-test-backend",
@@ -791,8 +803,20 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "spectron",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "ssri",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "start-server-and-test",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "strip-json-comments-cli",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "style-loader",
@@ -871,6 +895,10 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "tslint-react-hooks",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "tsutils",
       "allowedCategories": [ "frontend", "tools" ]
     },
@@ -945,6 +973,10 @@
     {
       "name": "whatwg-fetch",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "ws",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "xmldom",

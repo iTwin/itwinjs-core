@@ -18,7 +18,7 @@ import { DecorateContext } from "../ViewContext";
 import { EditManipulator } from "./EditManipulator";
 import { AccuDrawHintBuilder, AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
-import { GraphicType, GraphicBuilder } from "../rendering";
+import { GraphicType, GraphicBuilder } from "../render/GraphicBuilder";
 import { HitDetail } from "../HitDetail";
 import { PropertyDescription } from "../properties/Description";
 import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";

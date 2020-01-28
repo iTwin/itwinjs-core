@@ -45,6 +45,7 @@ import {
   DisplayStyleSettings,
   LightLocationProps,
   ModelSelectorProps,
+  PlanProjectionSettingsProps,
   RelatedElement,
   SkyBoxImageProps,
   SpatialViewDefinitionProps,
@@ -211,6 +212,11 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
       if (skyBoxImageProps.textures.right) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.right)); }
       if (skyBoxImageProps.textures.top) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.top)); }
     }
+    if (this.settings.planProjectionSettings) {
+      for (const planProjectionSetting of this.settings.planProjectionSettings) {
+        predecessorIds.add(planProjectionSetting[0]);
+      }
+    }
   }
   /** @alpha */
   protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
@@ -234,6 +240,16 @@ export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps 
         skyBoxImageProps.textures.right = Id64.isValidId64(rightTextureId) ? rightTextureId : undefined;
         const topTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.top));
         skyBoxImageProps.textures.top = Id64.isValidId64(topTextureId) ? topTextureId : undefined;
+      }
+      if (targetElementProps?.jsonProperties?.styles?.planProjections) {
+        const remappedPlanProjections: { [modelId: string]: PlanProjectionSettingsProps } = {};
+        for (const entry of Object.entries(targetElementProps.jsonProperties.styles.planProjections)) {
+          const remappedModelId: Id64String = context.findTargetElementId(entry[0]);
+          if (Id64.isValidId64(remappedModelId)) {
+            remappedPlanProjections[remappedModelId] = entry[1];
+          }
+        }
+        targetElementProps.jsonProperties.styles.planProjections = remappedPlanProjections;
       }
     }
   }

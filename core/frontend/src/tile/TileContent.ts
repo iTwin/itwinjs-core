@@ -7,7 +7,7 @@
  */
 
 import { ElementAlignedBox3d } from "@bentley/imodeljs-common";
-import { RenderGraphic } from "../render/System";
+import { RenderGraphic } from "../render/RenderGraphic";
 
 /**
  * Describes the contents of a [[Tile]].

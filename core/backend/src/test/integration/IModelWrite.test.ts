@@ -19,7 +19,8 @@ import { HubUtility } from "./HubUtility";
 export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: IModelDb) {
   // Create a new physical model.
   let modelId: Id64String;
-  [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+  [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(requestContext, rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+  requestContext.enter();
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
@@ -30,8 +31,8 @@ export async function createNewModelAndCategory(requestContext: AuthorizedBacken
   try {
     await rwIModel.concurrencyControl.request(requestContext);
   } catch (err) {
-    if (err instanceof ConcurrencyControl.RequestError) {
-      assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+    if (err instanceof IModelHubError) {
+      assert.fail(JSON.stringify(err));
     }
   }
 
@@ -279,12 +280,12 @@ describe("IModelWriteTest (#integration)", () => {
 
     const el: Element = iModel.elements.getRootSubject();
     el.buildConcurrencyControlRequest(DbOpcode.Update);    // make a list of the locks, etc. that will be needed to update this element
-    const reqAsAny: any = ConcurrencyControl.convertRequestToAny(iModel.concurrencyControl.pendingRequest);
-    assert.isDefined(reqAsAny);
-    assert.isArray(reqAsAny.Locks);
-    assert.equal(reqAsAny.Locks.length, 3, " we expect to need a lock on the element (exclusive), its model (shared), and the db itself (shared)");
-    assert.isArray(reqAsAny.Codes);
-    assert.equal(reqAsAny.Codes.length, 0, " since we didn't add or change the element's code, we don't expect to need a code reservation");
+    const req = iModel.concurrencyControl.pendingRequest;
+    assert.isDefined(req);
+    assert.isArray(req.locks);
+    assert.equal(req.locks.length, 3, " we expect to need a lock on the element (exclusive), its model (shared), and the db itself (shared)");
+    assert.isArray(req.codes);
+    assert.equal(req.codes.length, 0, " since we didn't add or change the element's code, we don't expect to need a code reservation");
 
     await iModel.close(managerRequestContext);
   });
@@ -313,7 +314,8 @@ describe("IModelWriteTest (#integration)", () => {
 
     timer = new Timer("make local changes");
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(adminRequestContext, rwIModel, code, true);
+    adminRequestContext.enter();
 
     await rwIModel.concurrencyControl.request(adminRequestContext);
     rwIModel.saveChanges("inserted generic objects");
@@ -356,13 +358,12 @@ describe("IModelWriteTest (#integration)", () => {
 
     // create and insert a new model with code1
     const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code1, true);
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(adminRequestContext, rwIModel, code1, true);
+    adminRequestContext.enter();
 
     assert.isTrue(rwIModel.elements.getElement(code1) !== undefined); // throws if element is not found
 
-    //    ... create a local txn with that change
-    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
-    await rwIModel.concurrencyControl.request(adminRequestContext);
+    // create a local txn with that change
     rwIModel.saveChanges("inserted newPhysicalModel");
 
     // Reverse that local txn
@@ -379,10 +380,9 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create and insert a model with code2
     const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel2");
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code2, true);
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(adminRequestContext, rwIModel, code2, true);
+    adminRequestContext.enter();
 
-    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
-    await rwIModel.concurrencyControl.request(adminRequestContext);
     rwIModel.saveChanges("inserted generic objects");
 
     // The iModel should have a model with code1 and not code2
@@ -434,17 +434,18 @@ describe("IModelWriteTest (#integration)", () => {
     hubCode.briefcaseId = otherBriefcase.briefcaseId;
     hubCode.state = CodeState.Reserved;
     await BriefcaseManager.imodelClient.codes.update(adminRequestContext, rwIModelId!, [hubCode]);
+    adminRequestContext.enter();
+    await rwIModel.concurrencyControl.syncCache(adminRequestContext);
+    adminRequestContext.enter();
 
     timer = new Timer("querying codes");
     /* const initialCodes =*/
     await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
     timer.end();
 
-    timer = new Timer("make local changes");
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
-
     try {
-      await rwIModel.concurrencyControl.request(adminRequestContext);
+      timer = new Timer("make local changes");
+      await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(adminRequestContext, rwIModel, code, true);
       assert.fail("I should not get here. The Code that I am trying to use was reserved by the other briefcase.");
     } catch (err) {
       assert.isTrue(err instanceof IModelHubError);
@@ -508,11 +509,13 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new physical model.
     let newModelId: Id64String;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+    [, newModelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(adminRequestContext, rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+    adminRequestContext.enter();
 
     // Find or create a SpatialCategory.
     const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+    assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
     const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
     timer.end();
@@ -530,8 +533,8 @@ describe("IModelWriteTest (#integration)", () => {
     try {
       await rwIModel.concurrencyControl.request(adminRequestContext);
     } catch (err) {
-      if (err instanceof ConcurrencyControl.RequestError) {
-        assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+      if (err instanceof IModelHubError) {
+        assert.fail(JSON.stringify(err));
       }
     }
 

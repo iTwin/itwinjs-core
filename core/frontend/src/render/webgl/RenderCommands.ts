@@ -19,10 +19,10 @@ import {
   ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
-  Decorations,
   GraphicList,
   RenderGraphic,
-} from "../System";
+} from "../RenderGraphic";
+import { Decorations } from "../Decorations";
 import { SurfaceType } from "../primitives/VertexTable";
 import {
   DrawCommand,

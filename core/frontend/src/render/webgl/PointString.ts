@@ -19,7 +19,7 @@ import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
 import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
-import { RenderMemory } from "../System";
+import { RenderMemory } from "../RenderSystem";
 import { AttributeMap } from "./AttributeMap";
 
 /** @internal */

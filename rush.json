@@ -385,11 +385,17 @@
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/rpcinterface-full-stack-test",
+      "packageName": "@bentley/rpcinterface-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc-interface",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "simple-editor-app",
+      "projectFolder": "test-apps/simple-editor-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
     }
   ]
 }

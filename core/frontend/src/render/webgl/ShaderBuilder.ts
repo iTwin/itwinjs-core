@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ClippingType } from "../System";
+import { ClippingType } from "../RenderClipVolume";
 import { ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
 import { ClipDef } from "./TechniqueFlags";

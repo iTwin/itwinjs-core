@@ -10,7 +10,7 @@ import {
   BeTimePoint,
   StopWatch,
 } from "@bentley/bentleyjs-core";
-import { GLTimerResultCallback } from "../System";
+import { GLTimerResultCallback } from "../RenderSystem";
 import { System } from "./System";
 import { FrameBuffer } from "./FrameBuffer";
 

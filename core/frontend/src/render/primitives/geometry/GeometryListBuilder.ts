@@ -11,7 +11,8 @@ import { GraphicParams, PackedFeatureTable, RenderTexture, Gradient, FeatureTabl
 import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
 import { Viewport } from "../../../Viewport";
 import { GeometryOptions } from "../Primitives";
-import { RenderSystem, RenderGraphic } from "../../System";
+import { RenderGraphic } from "../../RenderGraphic";
+import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
 import { GeometryAccumulator } from "./GeometryAccumulator";
 import { Geometry } from "./GeometryPrimitives";

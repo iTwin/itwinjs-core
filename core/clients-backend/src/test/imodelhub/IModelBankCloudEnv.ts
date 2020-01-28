@@ -8,13 +8,12 @@ import * as path from "path";
 import * as child_process from "child_process";
 import * as http from "http";
 import * as https from "https";
-import { IModelClient, IModelBankClient, IModelBankFileSystemContextClient, Config } from "@bentley/imodeljs-clients";
+import { IModelBankClient, IModelBankFileSystemContextClient, Config } from "@bentley/imodeljs-clients";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { BasicAuthorizationClient } from "@bentley/imodeljs-clients/lib/imodelbank/BasicAuthorizationClient";
-
-import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { workDir, createIModelBankFileHandler } from "./TestUtils";
 import { Logger } from "@bentley/bentleyjs-core";
+import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=d:\imjs\imodeljs\core\clients-backend\src\test\assets\local_dev_server.crt
@@ -24,7 +23,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 // set imjs_test_imodel_bank_run_orchestrator=%SrcRoot%\imodel-bank\local-orchestrator\lib\server.js
 // set imjs_test_imodel_bank_logging_config=<somewhere>logging.config.json
 
-export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
+export function getIModelBankCloudEnv(): IModelCloudEnvironment {
   if (Config.App.has("imjs_test_imodel_bank_run_orchestrator"))
     return launchLocalOrchestrator();
 
@@ -40,14 +39,15 @@ export function getIModelBankCloudEnv(): [TestIModelHubCloudEnv, IModelClient] {
     isIModelHub: false,
     authorization,
     contextMgr,
+    imodelClient: bankClient,
     shutdown: () => Promise.resolve(0),
     startup: () => Promise.resolve(),
   };
 
-  return [cloudEnv, bankClient];
+  return cloudEnv;
 }
 
-function launchLocalOrchestrator(): [TestIModelHubCloudEnv, IModelClient] {
+function launchLocalOrchestrator(): IModelCloudEnvironment {
 
   const loggingCategory = "imodeljs-clients-backend.IModelBankCloudEnv";
 
@@ -150,9 +150,10 @@ function launchLocalOrchestrator(): [TestIModelHubCloudEnv, IModelClient] {
     isIModelHub: false,
     authorization,
     contextMgr,
+    imodelClient: bankClient,
     shutdown: doShutdown,
     startup: doStartup,
   };
 
-  return [cloudEnv, bankClient];
+  return cloudEnv;
 }

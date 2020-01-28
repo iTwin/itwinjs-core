@@ -49,6 +49,7 @@ beta;CloudStorageUploadOptions
 public;CodeSpecs
 beta;ConcurrencyControl
 beta;ConcurrencyControl
+internal;StateCache
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 public;class DefinitionElement 

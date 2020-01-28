@@ -8,7 +8,7 @@
 
 import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
-import { ClippingType } from "../System";
+import { ClippingType } from "../RenderClipVolume";
 import { RenderMode } from "@bentley/imodeljs-common";
 
 // tslint:disable:no-const-enum

@@ -44,7 +44,15 @@ export class Code implements CodeProps {
   public static createEmpty(): Code { const id: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
   public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
   public getValue(): string { return this.value ? this.value : ""; }
-  public equals(other: Code): boolean { return this.spec === other.spec && this.scope === other.scope && this.value === other.value; }
+  public equals(other: Code): boolean { return Code.equalCodes(this, other); }
+  /** @internal */
+  public static equalCodes(c1: CodeProps, c2: CodeProps): boolean {
+    return c1.spec === c2.spec && c1.scope === c2.scope && c1.value === c2.value;
+  }
+  /** Determine whether this Code is valid. */
+  public static isValid(c: CodeProps): boolean { return Id64.isValidId64(c.spec); }
+  /** Determine if this code is valid but not otherwise meaningful (and therefore not necessarily unique) */
+  public static isEmpty(c: CodeProps): boolean { return this.isValid(c) && (c.value === undefined || c.value === ""); }
 }
 
 /** Names of the internal BIS CodeSpecs. These names match those specified by the native library.

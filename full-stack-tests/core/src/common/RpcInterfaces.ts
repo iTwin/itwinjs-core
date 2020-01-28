@@ -6,11 +6,21 @@ import { AuthorizedClientRequestContextProps } from "@bentley/imodeljs-clients";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface,
   IModelWriteRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface, WipRpcInterface,
-  DevToolsRpcInterface,
+  DevToolsRpcInterface, Editor3dRpcInterface,
   IModelTokenProps,
   NativeAppRpcInterface,
 } from "@bentley/imodeljs-common";
 import { ClientRequestContextProps, GuidString } from "@bentley/bentleyjs-core";
+
+export interface CloudEnvProps {
+  iModelBank?: {
+    url: string;
+  };
+  iModelHub?: {
+    region: string;
+  };
+}
+
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "TestRpcInterface";
   public static interfaceVersion = "1.1.1";
@@ -42,6 +52,15 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async reportAuthorizedRequestContext(): Promise<AuthorizedClientRequestContextProps> {
     return this.forward(arguments);
   }
+
+  public async getCloudEnv(): Promise<CloudEnvProps> {
+    return this.forward(arguments);
+  }
+
+  public async createIModel(_name: string, _contextId: string, _deleteIfExists: boolean): Promise<string> {
+    return this.forward(arguments);
+  }
+
 }
 export abstract class EventsTestRpcInterface extends RpcInterface {
   public static readonly interfaceName = "EventsTestRpcInterface";
@@ -59,6 +78,7 @@ export const rpcInterfaces = [
   IModelReadRpcInterface,
   IModelTileRpcInterface,
   IModelWriteRpcInterface,
+  Editor3dRpcInterface,
   SnapshotIModelRpcInterface,
   TestRpcInterface,
   WipRpcInterface,

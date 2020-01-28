@@ -35,7 +35,7 @@ export interface TileTreeContentIds {
  * @internal
  */
 export abstract class NativeAppRpcInterface extends RpcInterface {
-  /** Returns the IModelWriteRpcInterface client instance for the frontend. */
+  /** Returns the client instance for the frontend. */
   public static getClient(): NativeAppRpcInterface { return RpcManager.getClientForInterface(NativeAppRpcInterface); }
 
   /** The immutable name of the interface. */

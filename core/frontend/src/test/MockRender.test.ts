@@ -6,7 +6,8 @@
 import { expect } from "chai";
 import { IModelApp } from "../IModelApp";
 import { ViewRect } from "../ViewRect";
-import { RenderGraphic, RenderTarget } from "../render/System";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderTarget } from "../render/RenderTarget";
 import { MockRender } from "../render/MockRender";
 
 class MyTarget extends MockRender.OffScreenTarget { }

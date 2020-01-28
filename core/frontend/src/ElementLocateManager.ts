@@ -10,7 +10,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d } from "@bentley/geometry-core";
 import { HitDetail, HitList, HitPriority, HitSource } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
-import { Pixel } from "./rendering";
+import { Pixel } from "./render/Pixel";
 import { InputSource, InteractiveTool } from "./tools/Tool";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewRect } from "./ViewRect";

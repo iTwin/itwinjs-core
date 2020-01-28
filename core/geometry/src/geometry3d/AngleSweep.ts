@@ -266,7 +266,7 @@ export class AngleSweep implements BeJSONFunctions {
   /** set this AngleSweep from various sources:
    *
    * * if json is undefined, a full-circle sweep is returned.
-   * * If json is an AngleSweep object it is is cloned
+   * * If json is an AngleSweep object it is cloned
    * * If json is an array of 2 numbers, those numbers are start and end angles in degrees.
    * * If `json.degrees` is an array of 2 numbers, those numbers are start and end angles in degrees.
    * * If `json.radians` is an array of 2 numbers, those numbers are start and end angles in radians.

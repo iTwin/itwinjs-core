@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-clients",
+      "comment": "Added support for backward slashes in erroneous URLs of Reality Data in PW Context Share",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Alain.Robert@Bentley.com"
+}

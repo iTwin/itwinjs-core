@@ -125,3 +125,4 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * `transparency=`: transparency in [0..1].
   * `elevation=`: elevation in meters.
   * `overlay=`: 1 to draw as an overlay, 0 to draw normally (with depth).
+  * `priority=`: 1 to enforce subcategory display priority, 0 to ignore.
