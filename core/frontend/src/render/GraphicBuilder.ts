@@ -26,7 +26,7 @@ import {
   Npc,
 } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
-import { RenderGraphic } from "./System";
+import { RenderGraphic } from "./RenderGraphic";
 
 /**
  * Describes the type of a [[GraphicBuilder]], which defines the coordinate system in which the builder's geometry is defined and

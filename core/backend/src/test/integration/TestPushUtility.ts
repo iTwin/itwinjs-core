@@ -17,6 +17,7 @@ import { HubUtility } from "./HubUtility";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { TestUsers } from "../TestUsers";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { ConcurrencyControl } from "../../ConcurrencyControl";
 
 const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -50,6 +51,7 @@ export class TestPushUtility {
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
     this._iModelDb = await IModelDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
 
     const lastLevel = this._currentLevel + count;
     while (this._currentLevel < lastLevel) {

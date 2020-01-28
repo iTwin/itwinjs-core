@@ -17,7 +17,7 @@ import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
 import { SnapRequestProps } from "@bentley/imodeljs-common";
-import { CanvasDecoration } from "./rendering";
+import { CanvasDecoration } from "./render/CanvasDecoration";
 
 // cspell:ignore dont primitivetools
 
@@ -729,7 +729,7 @@ export class AccuSnap implements Decorator {
     if (undefined === thisHit)
       return undefined;
 
-    const filterStatus = (this.isLocateEnabled ? IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out) : LocateFilterStatus.Accept);
+    const filterStatus: LocateFilterStatus = (this.isLocateEnabled ? await IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out) : LocateFilterStatus.Accept);
     if (LocateFilterStatus.Accept !== filterStatus) {
       out.snapStatus = SnapStatus.FilteredByApp;
       return undefined;

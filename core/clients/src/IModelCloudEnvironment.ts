@@ -10,6 +10,8 @@ import { AccessToken } from "./Token";
 import { UserInfo } from "./UserInfo";
 import { Project, Asset } from "./ConnectClients";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
+import { IModelClient } from "./IModelClient";
+import { IAuthorizationClient } from "./imodeljs-clients";
 
 /** How to discover "contexts". A context corresponds roughly to a "project" in Connect.
  * @internal
@@ -22,7 +24,7 @@ export interface ContextManagerClient {
 /** User-authorization service.
  * @internal
  */
-export interface IModelAuthorizationClient {
+export interface IModelAuthorizationClient extends IAuthorizationClient {
   authorizeUser(requestContext: ClientRequestContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken>;
 }
 
@@ -33,6 +35,7 @@ export interface IModelCloudEnvironment {
   readonly isIModelHub: boolean;
   readonly authorization: IModelAuthorizationClient;
   readonly contextMgr: ContextManagerClient;
+  readonly imodelClient: IModelClient;
   startup(): Promise<void>;
   shutdown(): Promise<number>;
 }

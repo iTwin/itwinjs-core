@@ -6,7 +6,8 @@
  * @module Measure
  */
 
-import { CanvasDecoration, GraphicType } from "../rendering";
+import { CanvasDecoration } from "../render/CanvasDecoration";
+import { GraphicType } from "../render/GraphicBuilder";
 import { Point3d, XYAndZ, XAndY, Vector3d, Matrix3d, PointString3d, AxisOrder, Point2d, IModelJson, Plane3dByOriginAndUnitNormal, PolygonOps } from "@bentley/geometry-core";
 import { Viewport } from "../Viewport";
 import { DecorateContext } from "../ViewContext";

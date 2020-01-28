@@ -16,7 +16,7 @@ import { PropertyDescription } from "../properties/Description";
 import { PropertyEditorParamTypes, ButtonGroupEditorParams, SuppressLabelEditorParams } from "../properties/EditorParams";
 import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue } from "../properties/ToolSettingsValue";
 import { PrimitiveValue } from "../properties/Value";
-import { Pixel } from "../rendering";
+import { Pixel } from "../render/Pixel";
 import { DecorateContext } from "../ViewContext";
 import { ViewRect } from "../ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";

@@ -20,10 +20,8 @@ import {
 } from "@bentley/imodeljs-common";
 import { HitDetail } from "../HitDetail";
 import { Viewport } from "../Viewport";
-import {
-  RenderClipVolume,
-  RenderMemory,
-} from "../render/System";
+import { RenderClipVolume } from "../render/RenderClipVolume";
+import { RenderMemory } from "../render/RenderSystem";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import {
   TileDrawArgs,

@@ -6,13 +6,15 @@
  * @module Models
  */
 
-import { DbOpcode, GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { DbOpcode, GuidString, Id64String, JsonUtils, DbResult, assert } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
-import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition } from "./Element";
+import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
+import { ConcurrencyControl } from "./ConcurrencyControl";
+import { LockLevel } from "@bentley/imodeljs-clients";
 
 /** A Model is a container for persisting a collection of related elements within an iModel.
  * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDb.
@@ -47,36 +49,74 @@ export class Model extends Entity implements ModelProps {
     return val;
   }
 
+  /**
+   * Disclose the codes and locks needed to perform the specified operation on this model
+   * @param req The request to be populated
+   * @param props The version of the model that will be written
+   * @param iModel The iModel
+   * @param opcode The operation that will be performed on the model
+   * @beta
+   */
+  public static populateRequest(req: ConcurrencyControl.Request, props: ModelProps, iModel: IModelDb, opcode: DbOpcode) {
+    switch (opcode) {
+      case DbOpcode.Insert: {
+        req.addLocks([ConcurrencyControl.Request.dbLock]);
+        break;
+      }
+      case DbOpcode.Delete: {
+        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockLevel.Exclusive)]);
+        // before we can delete a model, we must delete all of its elements. If that fails, we cannot continue.
+        iModel.withPreparedStatement(`select ecinstanceid from BisCore.Element where model.id=?`, (stmt) => {
+          stmt.bindId(1, props.id!);
+          while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            const elid = stmt.getValue(0).getId();
+            const el = iModel.elements.getElement(elid);
+            iModel.concurrencyControl.buildRequestForElementTo(req, el, DbOpcode.Delete);
+          }
+        });
+        break;
+      }
+      case DbOpcode.Update: {
+        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockLevel.Exclusive)]);
+        break;
+      }
+    }
+  }
+
   /** Called before a new model is inserted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onInsert(_props: ModelProps): void { }
+  protected static onInsert(props: ModelProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert); }
   /** Called after a new model is inserted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onInserted(_id: string): void { }
+  protected static onInserted(id: string, iModel: IModelDb): void {
+    assert(iModel.needsConcurrencyControl !== undefined, "check that caller passed object of the correct type!");
+    if (iModel.needsConcurrencyControl)
+      iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert);
+  }
   /** Called before a model is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onUpdate(_props: ModelProps): void { }
+  protected static onUpdate(props: ModelProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update); }
   /** Called after a model is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onUpdated(_props: ModelProps): void { }
+  protected static onUpdated(props: ModelProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update); }
   /** Called before a model is deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onDelete(_props: ModelProps): void { }
+  protected static onDelete(props: ModelProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete); }
   /** Called after a model is deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
-  protected static onDeleted(_props: ModelProps): void { }
+  protected static onDeleted(_props: ModelProps, _iModel: IModelDb): void { }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 
@@ -129,7 +169,7 @@ export class GeometricModel extends Model implements GeometricModelProps {
 /** A container for persisting 3d geometric elements.
  * @public
  */
-export abstract class GeometricModel3d extends GeometricModel {
+export abstract class GeometricModel3d extends GeometricModel implements GeometricModel3dProps {
   /** If true, then the elements in this GeometricModel3d are expected to be in an XY plane.
    * @note The associated ECProperty was added to the BisCore schema in version 1.0.8
    */
@@ -209,14 +249,15 @@ export abstract class SpatialModel extends GeometricModel3d {
 export class PhysicalModel extends SpatialModel {
   /** @internal */
   public static get className(): string { return "PhysicalModel"; }
-  /** Insert a PhysicalPartition and a PhysicalModel that breaks it down.
+  /** Insert a PhysicalPartition and a PhysicalModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
-   * @param name The name of the PhysicalPartition that the new PhysicalModel will break down.
+   * @param name The name of the PhysicalPartition that the new PhysicalModel will sub-model.
+   * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
    * @returns The Id of the newly inserted PhysicalPartition and PhysicalModel (same value).
    * @throws [[IModelError]] if there is an insert problem.
    */
-  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
@@ -224,10 +265,12 @@ export class PhysicalModel extends SpatialModel {
       code: PhysicalPartition.createCode(iModelDb, parentSubjectId, name),
     };
     const partitionId = iModelDb.elements.insertElement(partitionProps);
-    return iModelDb.models.insertModel({
+    const modelProps: GeometricModel3dProps = {
       classFullName: this.classFullName,
       modeledElement: { id: partitionId },
-    });
+      isPlanProjection,
+    };
+    return iModelDb.models.insertModel(modelProps);
   }
 }
 
@@ -238,6 +281,29 @@ export class PhysicalModel extends SpatialModel {
 export class SpatialLocationModel extends SpatialModel {
   /** @internal */
   public static get className(): string { return "SpatialLocationModel"; }
+  /** Insert a SpatialLocationPartition and a SpatialLocationModel that sub-models it.
+   * @param iModelDb Insert into this iModel
+   * @param parentSubjectId The SpatialLocationPartition will be inserted as a child of this Subject element.
+   * @param name The name of the SpatialLocationPartition that the new SpatialLocationModel will sub-model.
+   * @param isPlanProjection Optional value (default is false) that indicates if the contents of this model are expected to be in an XY plane.
+   * @returns The Id of the newly inserted SpatialLocationPartition and SpatialLocationModel (same value).
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String {
+    const partitionProps: InformationPartitionElementProps = {
+      classFullName: SpatialLocationPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
+      code: SpatialLocationPartition.createCode(iModelDb, parentSubjectId, name),
+    };
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    const modelProps: GeometricModel3dProps = {
+      classFullName: this.classFullName,
+      modeledElement: { id: partitionId },
+      isPlanProjection,
+    };
+    return iModelDb.models.insertModel(modelProps);
+  }
 }
 
 /** A 2d model that holds [[DrawingGraphic]]s. DrawingModels may be dimensional or non-dimensional.
@@ -299,10 +365,10 @@ export class InformationRecordModel extends InformationModel {
   /** @internal */
   public static get className(): string { return "InformationRecordModel"; }
 
-  /** Insert a InformationRecordPartition and a InformationRecordModel that breaks it down.
+  /** Insert a InformationRecordPartition and a InformationRecordModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The InformationRecordPartition will be inserted as a child of this Subject element.
-   * @param name The name of the InformationRecordPartition that the new InformationRecordModel will break down.
+   * @param name The name of the InformationRecordPartition that the new InformationRecordModel will sub-model.
    * @returns The Id of the newly inserted InformationRecordModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
@@ -329,10 +395,10 @@ export class DefinitionModel extends InformationModel {
   /** @internal */
   public static get className(): string { return "DefinitionModel"; }
 
-  /** Insert a DefinitionPartition and a DefinitionModel that breaks it down.
+  /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DefinitionPartition will be inserted as a child of this Subject element.
-   * @param name The name of the DefinitionPartition that the new DefinitionModel will break down.
+   * @param name The name of the DefinitionPartition that the new DefinitionModel will sub-model.
    * @returns The Id of the newly inserted DefinitionModel.
    * @throws [[IModelError]] if there is an insert problem.
    */
@@ -366,10 +432,10 @@ export class RepositoryModel extends DefinitionModel {
 export class DocumentListModel extends InformationModel {
   /** @internal */
   public static get className(): string { return "DocumentListModel"; }
-  /** Insert a DocumentPartition and a DocumentListModel that breaks it down.
+  /** Insert a DocumentPartition and a DocumentListModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
-   * @param name The name of the DocumentPartition that the new DocumentListModel will break down.
+   * @param name The name of the DocumentPartition that the new DocumentListModel will sub-model.
    * @returns The Id of the newly inserted DocumentPartition and DocumentListModel (same value)
    * @throws [[IModelError]] if there is an insert problem.
    */

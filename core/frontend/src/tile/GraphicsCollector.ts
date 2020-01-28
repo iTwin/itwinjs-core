@@ -13,7 +13,7 @@ import {
   TileTreeReference,
 } from "./internal";
 import { SceneContext } from "../ViewContext";
-import { RenderGraphic } from "../render/System";
+import { RenderGraphic } from "../render/RenderGraphic";
 
 /** @internal */
 export interface GraphicsCollector {

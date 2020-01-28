@@ -31,6 +31,8 @@ import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { NativeAppRpcImpl } from "./rpc-impl/NativeAppRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
+import { IElementEditor } from "./ElementEditor";
+import { Editor3dRpcImpl } from "./rpc-impl/EditorRpcImpl";
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
 /** @alpha */
@@ -207,6 +209,13 @@ export class IModelHost {
   /** The version of this backend application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
   public static applicationVersion: string;
 
+  /**
+   * Active element editors. Each editor is identified by a GUID.
+   * @internal
+   */
+  public static elementEditors = new Map<GuidString, IElementEditor>();
+
+  /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for backend applications */
   /** Implementation of [[IAuthorizationClient]] to supply the authorization information for this session - only required for agent applications, or backends that want to override access tokens passed from the frontend */
   public static get authorizationClient(): IAuthorizationClient | undefined { return IModelHost._authorizationClient; }
   public static set authorizationClient(authorizationClient: IAuthorizationClient | undefined) { IModelHost._authorizationClient = authorizationClient; }
@@ -329,6 +338,8 @@ export class IModelHost {
       }
     }
 
+    this._platform!.setNopBriefcaseManager(); // Tell native code that requests for locks and codes are managed in JS.
+
     if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && this._platform && (Platform.isNodeJs && !Platform.electron)) {
       this._platform.setCrashReporting(configuration.crashReportingConfig);
 
@@ -355,6 +366,7 @@ export class IModelHost {
     SnapshotIModelRpcImpl.register();
     WipRpcImpl.register();
     DevToolsRpcImpl.register();
+    Editor3dRpcImpl.register();
     NativeAppRpcImpl.register();
     BisCoreSchema.registerSchema();
     GenericSchema.registerSchema();

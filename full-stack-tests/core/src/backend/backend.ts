@@ -10,22 +10,28 @@ import { IModelJsExpressServer } from "@bentley/express-server";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import "./RpcImpl";
-
-IModelJsConfig.init(true, true, Config.App);
-RpcConfiguration.developmentMode = true;
-
-// Start the backend
-const hostConfig = new IModelHostConfiguration();
-hostConfig.concurrentQuery.concurrent = 2;
-hostConfig.concurrentQuery.pollInterval = 5;
-IModelHost.startup(hostConfig);
-
-Logger.initializeToConsole();
-Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
-Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
-Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
+import { CloudEnv } from "./cloudEnv";
 
 async function init() {
+  IModelJsConfig.init(true, true, Config.App);
+  RpcConfiguration.developmentMode = true;
+
+  // Bootstrap the cloud environment
+  await CloudEnv.initialize();
+
+  // Start the backend
+  const hostConfig = new IModelHostConfiguration();
+  hostConfig.imodelClient = CloudEnv.cloudEnv.imodelClient;
+  hostConfig.concurrentQuery.concurrent = 2;
+  hostConfig.concurrentQuery.pollInterval = 5;
+  IModelHost.startup(hostConfig);
+
+  Logger.initializeToConsole();
+  Logger.setLevel("imodeljs-backend.IModelReadRpcImpl", LogLevel.Error);  // Change to trace to debug
+  Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trace to debug
+  Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
+  Logger.setLevel("imodeljs-backend.ConcurrencyControl", LogLevel.Trace);
+
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeImpl({}, rpcInterfaces);
   } else {
@@ -38,6 +44,7 @@ async function init() {
     // tslint:disable-next-line:no-console
     console.log("Web backend for full-stack-tests listening on port " + port);
   }
+
 }
 
 module.exports = init();

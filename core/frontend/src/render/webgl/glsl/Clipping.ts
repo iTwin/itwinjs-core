@@ -14,7 +14,7 @@ import { TextureUnit } from "../RenderFlags";
 import { System } from "../System";
 import { ClipDef } from "../TechniqueFlags";
 import { addEyeSpace } from "./Common";
-import { ClippingType } from "../../System";
+import { ClippingType } from "../../RenderClipVolume";
 
 const getClipPlaneFloat = `
   vec4 getClipPlane(int index) {

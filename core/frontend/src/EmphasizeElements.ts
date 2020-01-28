@@ -9,7 +9,7 @@
 import { FeatureOverrideProvider, Viewport } from "./Viewport";
 import { ColorDef, ColorDefProps, RgbColor } from "@bentley/imodeljs-common";
 import { Id64Set, Id64Arg, Id64Array, Id64 } from "@bentley/bentleyjs-core";
-import { FeatureSymbology } from "./rendering";
+import { FeatureSymbology } from "./render/FeatureSymbology";
 
 /** Whether override includes both color and alpha, only color, or only alpha.
  * @beta

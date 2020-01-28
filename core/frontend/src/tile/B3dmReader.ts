@@ -31,7 +31,7 @@ import {
   GltfReaderResult,
   ShouldAbortReadGltf,
 } from "./internal";
-import { RenderSystem } from "../render/System";
+import { RenderSystem } from "../render/RenderSystem";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
 

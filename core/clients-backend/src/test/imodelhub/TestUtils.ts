@@ -163,7 +163,7 @@ export class RequestBehaviorOptions {
 const requestBehaviorOptions = new RequestBehaviorOptions();
 
 let _imodelHubClient: IModelHubClient;
-function getImodelHubClient() {
+export function getImodelHubClient() {
   if (_imodelHubClient !== undefined)
     return _imodelHubClient;
   _imodelHubClient = new IModelHubClient(createFileHanlder());
@@ -173,7 +173,7 @@ function getImodelHubClient() {
   return _imodelHubClient;
 }
 
-let _imodelBankClient: IModelBankClient;
+let imodelBankClient: IModelBankClient;
 
 export class IModelHubUrlMock {
   public static getUrl(): string {
@@ -191,7 +191,7 @@ export class IModelHubUrlMock {
 
 export function getDefaultClient() {
   IModelHubUrlMock.mockGetUrl();
-  return getCloudEnv().isIModelHub ? getImodelHubClient() : _imodelBankClient;
+  return getCloudEnv().isIModelHub ? getImodelHubClient() : imodelBankClient;
 }
 
 export function getRequestBehaviorOptionsHandler(): RequestBehaviorOptions {
@@ -859,14 +859,15 @@ let cloudEnv: IModelCloudEnvironment | undefined;
 if (!TestConfig.enableIModelBank || TestConfig.enableMocks) {
   cloudEnv = new TestIModelHubCloudEnv();
 } else {
-  [cloudEnv, _imodelBankClient] = getIModelBankCloudEnv();
+  cloudEnv = getIModelBankCloudEnv();
+  imodelBankClient = cloudEnv.imodelClient as IModelBankClient;
 }
 if (cloudEnv === undefined)
   throw new Error("could not create cloudEnv");
 
 cloudEnv.startup()
-  .catch((_err) => {
-    Logger.logError(loggingCategory, "Error starting cloudEnv");
+  .catch((err: Error) => {
+    Logger.logException(loggingCategory, err);
   });
 
 // TRICKY! All of the "describe" functions are called first. Many of them call getCloudEnv,

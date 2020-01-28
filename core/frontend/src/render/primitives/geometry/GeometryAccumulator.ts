@@ -9,7 +9,9 @@
 import { Transform, Range3d, Loop, Path, IndexedPolyface, Point3d } from "@bentley/geometry-core";
 import { IModelConnection } from "../../../IModelConnection";
 import { GeometryOptions } from "../Primitives";
-import { RenderSystem, RenderGraphic, GraphicBranch } from "../../System";
+import { RenderGraphic } from "../../RenderGraphic";
+import { GraphicBranch } from "../../GraphicBranch";
+import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
 import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";

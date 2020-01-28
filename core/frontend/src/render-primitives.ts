@@ -19,7 +19,3 @@ export * from "./render/primitives/Strokes";
 export * from "./render/primitives/Polyface";
 export * from "./render/primitives/VertexKey";
 export * from "./render/primitives/VertexTable";
-
-export * from "./render/FeatureSymbology";
-export * from "./render/GraphicBuilder";
-export * from "./render/System";

@@ -8,7 +8,9 @@
 import { GL } from "./GL";
 import { dispose } from "@bentley/bentleyjs-core";
 import { FrameBuffer } from "./FrameBuffer";
-import { RenderMemory, RenderGraphic, RenderPlanarClassifier } from "../System";
+import { RenderGraphic } from "../RenderGraphic";
+import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
+import { RenderMemory } from "../RenderSystem";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";

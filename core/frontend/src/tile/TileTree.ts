@@ -37,7 +37,9 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GraphicBranch, RenderClipVolume, RenderMemory } from "../render/System";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { RenderClipVolume } from "../render/RenderClipVolume";
+import { RenderMemory } from "../render/RenderSystem";
 import { CoordSystem } from "../Viewport";
 import { ViewingSpace } from "../ViewingSpace";
 import {

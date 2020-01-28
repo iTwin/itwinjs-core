@@ -7,9 +7,8 @@ import { Angle, Point3d } from "@bentley/geometry-core";
 import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, Cartographic, ColorDef, Feature, FontMap, FontType, SubCategoryOverride, ViewFlags } from "@bentley/imodeljs-common";
 import {
   ChangeFlag, ChangeFlags, CompassMode, FeatureSymbology, IModelApp, IModelConnection, MockRender, PanViewTool,
-  PerModelCategoryVisibility, ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport,
+  PerModelCategoryVisibility, ScreenViewport, SpatialViewState, StandardViewId, TwoWayViewportSync, Viewport, RenderPlan,
 } from "@bentley/imodeljs-frontend";
-import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
 import { assert, expect } from "chai";
 import * as path from "path";
 

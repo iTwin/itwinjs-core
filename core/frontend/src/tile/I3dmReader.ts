@@ -32,10 +32,8 @@ import {
   GltfReaderResult,
   ShouldAbortReadGltf,
 } from "./internal";
-import {
-  InstancedGraphicParams,
-  RenderSystem,
-} from "../render/System";
+import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { RenderSystem } from "../render/RenderSystem";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
 

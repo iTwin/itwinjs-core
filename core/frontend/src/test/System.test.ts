@@ -7,7 +7,7 @@ import { Capabilities, RenderType, DepthType, System } from "../webgl";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
 import { TileAdmin } from "../tile/internal";
-import { RenderSystem } from "../render/System";
+import { RenderSystem } from "../render/RenderSystem";
 import { WebGLRenderCompatibilityStatus, WebGLFeature } from "../RenderCompatibility";
 
 class OverriddenFunctions {

@@ -360,10 +360,16 @@ export class IModelDb extends IModel {
       throw new RpcPendingResponse();
     }
 
+    const alreadyOpen = (briefcaseEntry.iModelDb !== undefined);
+
     const iModelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
     await this.logUsage(requestContext, contextId, iModelDb);
-    iModelDb.setDefaultConcurrentControlAndPolicy();
-    IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
+
+    if (!alreadyOpen) {
+      iModelDb.setDefaultConcurrentControlAndPolicy();
+      await iModelDb.concurrencyControl.onOpened(requestContext);
+      IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
+    }
 
     perfLogger.dispose();
     return iModelDb;
@@ -441,6 +447,11 @@ export class IModelDb extends IModel {
     requestContext.enter();
     if (this.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a snapshot iModel. Use IModelDb.closeSnapshot() instead");
+
+    if (this.needsConcurrencyControl) {
+      await this.concurrencyControl.onClose(requestContext);
+      requestContext.enter();
+    }
 
     try {
       await BriefcaseManager.close(requestContext, this.briefcase, keepBriefcase);
@@ -899,13 +910,15 @@ export class IModelDb extends IModel {
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError, loggerCategory);
 
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
-    this.concurrencyControl.onSaveChanges();
+    if (this.needsConcurrencyControl)
+      this.concurrencyControl.onSaveChanges();
 
     const stat = this.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError, loggerCategory);
 
-    this.concurrencyControl.onSavedChanges();
+    if (this.needsConcurrencyControl)
+      this.concurrencyControl.onSavedChanges();
   }
 
   /** Abandon pending changes in this iModel */
@@ -944,11 +957,16 @@ export class IModelDb extends IModel {
     } else if (!this.briefcase.nativeDb.hasSavedChanges()) {
       return Promise.resolve(); // nothing to push
     }
+
+    await this.concurrencyControl.onPushChanges(requestContext);
+
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
     requestContext.enter();
     this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
+
+    return this.concurrencyControl.onPushedChanges(requestContext);
   }
 
   /** Reverse a previously merged set of changes
@@ -1069,7 +1087,15 @@ export class IModelDb extends IModel {
   /** Get the linkTableRelationships for this IModel */
   public get relationships(): Relationships { return this._relationships || (this._relationships = new Relationships(this)); }
 
+  /** Does this briefcase require concurrency control?
+   * @beta
+   */
+  public get needsConcurrencyControl(): boolean {
+    return !this.isReadonly && !this.isSnapshot;
+  }
+
   /** Get the ConcurrencyControl for this IModel.
+   * See [[needsConcurrencyControl]]
    * @beta
    */
   public get concurrencyControl(): ConcurrencyControl {
@@ -1489,14 +1515,14 @@ export namespace IModelDb {
         props.isPrivate = false;
 
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onInsert(props);
+      jsClass.onInsert(props, this._iModel);
 
       const val = this._iModel.nativeDb.insertModel(JSON.stringify(props));
       if (val.error)
         throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggerCategory);
 
       props.id = Id64.fromJSON(JSON.parse(val.result!).id);
-      jsClass.onInserted(props.id);
+      jsClass.onInserted(props.id, this._iModel);
       return props.id;
     }
 
@@ -1506,13 +1532,13 @@ export namespace IModelDb {
      */
     public updateModel(props: UpdateModelOptions): void {
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onUpdate(props);
+      jsClass.onUpdate(props, this._iModel);
 
       const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
       if (error !== IModelStatus.Success)
         throw new IModelError(error, "updating model id=" + props.id, Logger.logWarning, loggerCategory);
 
-      jsClass.onUpdated(props);
+      jsClass.onUpdated(props, this._iModel);
     }
 
     /** Delete one or more existing models.
@@ -1523,13 +1549,13 @@ export namespace IModelDb {
       Id64.toIdSet(ids).forEach((id) => {
         const props = this.getModelProps(id);
         const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-        jsClass.onDelete(props);
+        jsClass.onDelete(props, this._iModel);
 
         const error = this._iModel.nativeDb.deleteModel(id);
         if (error !== IModelStatus.Success)
           throw new IModelError(error, "deleting model id " + id, Logger.logWarning, loggerCategory);
 
-        jsClass.onDeleted(props);
+        jsClass.onDeleted(props, this._iModel);
       });
     }
   }

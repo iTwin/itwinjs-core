@@ -11,6 +11,13 @@ import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { UlasUtilities } from "../../ulas/UlasUtilities";
 
+// Configuration needed
+//    imjs_test_regular_user_name
+//    imjs_test_regular_user_password
+//    imjs_oidc_ulas_test_client_id
+//    imjs_oidc_ulas_test_redirect_uri
+//    imjs_oidc_ulas_test_scopes
+
 describe("UlasUtilities - OIDC Token (#integration)", () => {
   const imodelJsProductId = 2686;
   const OIDC_TYPE = 2;
@@ -20,8 +27,7 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
     requestContext = await IModelTestUtils.getUlasTestUserRequestContext();
   });
 
-  // NEEDS_WORK: Failing - Filed TFS#265663 to keep track.
-  it.skip("Check Entitlements (#integration)", async function (this: Mocha.Context) {
+  it("Check Entitlements (#integration)", async function (this: Mocha.Context) {
     const status: IModelJsNative.Entitlement = UlasUtilities.checkEntitlement(requestContext, Guid.createValue(), OIDC_TYPE, imodelJsProductId, "localhost");
 
     assert.equal(status.allowed, true);

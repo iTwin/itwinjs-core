@@ -7,7 +7,8 @@
  */
 import { GL } from "./GL";
 import { dispose, assert } from "@bentley/bentleyjs-core";
-import { RenderMemory, RenderGraphic } from "../System";
+import { RenderGraphic } from "../RenderGraphic";
+import { RenderMemory } from "../RenderSystem";
 import { Geometry, Vector3d, Point3d, Map4d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
 import { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";

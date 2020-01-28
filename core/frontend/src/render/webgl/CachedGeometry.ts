@@ -18,7 +18,7 @@ import { RenderPass, RenderOrder, CompositeFlags, FlashMode } from "./RenderFlag
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { System } from "./System";
-import { RenderMemory } from "../System";
+import { RenderMemory } from "../RenderSystem";
 import { ColorInfo } from "./ColorInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";

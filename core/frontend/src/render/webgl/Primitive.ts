@@ -15,8 +15,10 @@ import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { RenderCommands } from "./RenderCommands";
 import { TechniqueId } from "./TechniqueId";
 import { assert, dispose } from "@bentley/bentleyjs-core";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { PrimitiveVisibility } from "../RenderTarget";
+import { RenderMemory } from "../RenderSystem";
 import { System } from "./System";
-import { InstancedGraphicParams, RenderMemory, PrimitiveVisibility } from "../System";
 import { InstancedGeometry, InstanceBuffers } from "./InstancedGeometry";
 
 /** @internal */

@@ -7,8 +7,9 @@ import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewInde
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
-  GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps,
-  Placement3d, RelatedElement, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, SkyBoxImageType, TextureFlags,
+  GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps,
+  ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, Placement3d, PlanProjectionSettings, RelatedElement,
+  SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
@@ -18,7 +19,7 @@ import {
   ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
   InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
-  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SubCategory, Subject, Texture, ViewDefinition,
+  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SpatialLocationModel, SubCategory, Subject, Texture, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -66,6 +67,8 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(groupModelId));
     const physicalModelId = PhysicalModel.insert(sourceDb, subjectId, "Physical");
     assert.isTrue(Id64.isValidId64(physicalModelId));
+    const spatialLocationModelId = SpatialLocationModel.insert(sourceDb, subjectId, "SpatialLocation", true);
+    assert.isTrue(Id64.isValidId64(spatialLocationModelId));
     const functionalModelId = FunctionalModel.insert(sourceDb, subjectId, "Functional");
     assert.isTrue(Id64.isValidId64(functionalModelId));
     const documentListModelId = DocumentListModel.insert(sourceDb, subjectId, "Document");
@@ -73,7 +76,7 @@ export namespace IModelTransformerUtils {
     const drawingId = Drawing.insert(sourceDb, documentListModelId, "Drawing");
     assert.isTrue(Id64.isValidId64(drawingId));
     // Insert DefinitionElements
-    const modelSelectorId = ModelSelector.insert(sourceDb, definitionModelId, "PhysicalModels", [physicalModelId]);
+    const modelSelectorId = ModelSelector.insert(sourceDb, definitionModelId, "SpatialModels", [physicalModelId, spatialLocationModelId]);
     assert.isTrue(Id64.isValidId64(modelSelectorId));
     const spatialCategoryId = insertSpatialCategory(sourceDb, definitionModelId, "SpatialCategory", ColorDef.green);
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
@@ -299,6 +302,7 @@ export namespace IModelTransformerUtils {
     const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3) });
     displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
     displayStyle3d.settings.addExcludedElements(physicalObjectId1);
+    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
     displayStyle3d.settings.environment = {
       sky: {
         image: {
@@ -454,12 +458,18 @@ export namespace IModelTransformerUtils {
     const informationModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Information"))!;
     const groupModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Group"))!;
     const physicalModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Physical"))!;
+    const spatialLocationModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "SpatialLocation"))!;
     const documentListModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Document"))!;
     assertTargetElement(sourceDb, targetDb, definitionModelId);
     assertTargetElement(sourceDb, targetDb, informationModelId);
     assertTargetElement(sourceDb, targetDb, groupModelId);
     assertTargetElement(sourceDb, targetDb, physicalModelId);
+    assertTargetElement(sourceDb, targetDb, spatialLocationModelId);
     assertTargetElement(sourceDb, targetDb, documentListModelId);
+    const physicalModel: PhysicalModel = targetDb.models.getModel<PhysicalModel>(physicalModelId);
+    const spatialLocationModel: SpatialLocationModel = targetDb.models.getModel<SpatialLocationModel>(spatialLocationModelId);
+    assert.isFalse(physicalModel.isPlanProjection);
+    assert.isTrue(spatialLocationModel.isPlanProjection);
     // SpatialCategory
     const spatialCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, definitionModelId, "SpatialCategory"))!;
     assertTargetElement(sourceDb, targetDb, spatialCategoryId);
@@ -490,10 +500,11 @@ export namespace IModelTransformerUtils {
     const drawingCategorySelectorProps = targetDb.elements.getElementProps<CategorySelectorProps>(drawingCategorySelectorId);
     assert.isTrue(drawingCategorySelectorProps.categories.includes(drawingCategoryId));
     // ModelSelector
-    const modelSelectorId = targetDb.elements.queryElementIdByCode(ModelSelector.createCode(targetDb, definitionModelId, "PhysicalModels"))!;
+    const modelSelectorId = targetDb.elements.queryElementIdByCode(ModelSelector.createCode(targetDb, definitionModelId, "SpatialModels"))!;
     assertTargetElement(sourceDb, targetDb, modelSelectorId);
     const modelSelectorProps = targetDb.elements.getElementProps<ModelSelectorProps>(modelSelectorId);
     assert.isTrue(modelSelectorProps.models.includes(physicalModelId));
+    assert.isTrue(modelSelectorProps.models.includes(spatialLocationModelId));
     // Texture
     const textureId = targetDb.elements.queryElementIdByCode(Texture.createCode(targetDb, definitionModelId, "Texture"))!;
     assert.isTrue(Id64.isValidId64(textureId));
@@ -606,6 +617,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(displayStyle3d.settings.excludedElements.has(physicalObjectId1), "Expect excludedElements to be remapped");
     assert.equal(displayStyle3d.settings.environment.sky?.image?.type, SkyBoxImageType.Spherical);
     assert.equal(displayStyle3d.settings.environment.sky?.image?.texture, textureId);
+    assert.equal(displayStyle3d.settings.getPlanProjectionSettings(spatialLocationModelId)?.elevation, 10.0);
     // ViewDefinition
     const viewId = targetDb.elements.queryElementIdByCode(OrthographicViewDefinition.createCode(targetDb, definitionModelId, "Orthographic View"))!;
     assertTargetElement(sourceDb, targetDb, viewId);

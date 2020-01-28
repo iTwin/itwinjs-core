@@ -820,6 +820,8 @@ export interface IAuthorizationClient {
 // @internal
 export class IModelBankClient extends IModelClient {
     constructor(url: string, handler: FileHandler | undefined);
+    // (undocumented)
+    getUrl(rqctx: AuthorizedClientRequestContext): Promise<string>;
 }
 
 // @internal (undocumented)

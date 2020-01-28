@@ -11,7 +11,8 @@ import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, Inde
 import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target } from "./Target";
-import { RenderMemory, RenderClipVolume, ClippingType } from "../System";
+import { RenderClipVolume, ClippingType } from "../RenderClipVolume";
+import { RenderMemory } from "../RenderSystem";
 import { ClipMaskGeometry } from "./CachedGeometry";
 import { ViewRect } from "../../ViewRect";
 import { FrameBuffer } from "./FrameBuffer";

@@ -8,7 +8,8 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Range3d, Point3d, Transform } from "@bentley/geometry-core";
-import { InstancedGraphicParams, RenderMemory } from "../System";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { RenderMemory } from "../RenderSystem";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";

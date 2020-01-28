@@ -36,7 +36,7 @@ A typical app frontend will use more than one remote component. Likewise, a serv
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC2.png)
 
-An app frontend can just as easily work with multiple backends to obtain the services that it needs. One of the configuration parameters for an RpcInterface is the identity of the backend that provides it. For example, suppose that the frontend also needs to use Interface 3, which is is served out by Backend B.
+An app frontend can just as easily work with multiple backends to obtain the services that it needs. One of the configuration parameters for an RpcInterface is the identity of the backend that provides it. For example, suppose that the frontend also needs to use Interface 3, which is served out by Backend B.
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC3.png)
 
