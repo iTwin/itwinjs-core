@@ -362,6 +362,19 @@ export class Transform implements BeJSONFunctions {
       point.z - this._origin.z,
       result);
   }
+  /** Inverse transform the input homogeneous point.
+   * * Return as a new point or in the optional result.
+   * * returns undefined if the matrix part if this Transform is singular.
+   */
+  public multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined {
+    const w = weightedPoint.w;
+    return this._matrix.multiplyInverseXYZW(
+      weightedPoint.x - w * this.origin.x,
+      weightedPoint.y - w * this.origin.y,
+      weightedPoint.z - w * this.origin.z,
+      w, result);
+  }
+
   /** Return product of the transform's inverse times a point (point given as x,y,z) */
   public multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined {
     return this._matrix.multiplyInverseXYZAsPoint3d(

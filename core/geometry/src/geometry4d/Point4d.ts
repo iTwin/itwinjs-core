@@ -188,6 +188,11 @@ export class Point4d implements BeJSONFunctions {
     const wb = other.xyzw[3];
     return Vector3d.create(wb * this.xyzw[0] - wa * other.xyzw[0], wb * this.xyzw[1] - wa * other.xyzw[1], wb * this.xyzw[2] - wa * other.xyzw[2], result);
   }
+  /** Return `((other.w * this) -  (this.w * other))`, with other.w known to be 1 */
+  public crossWeightedMinusPoint3d(other: Point3d, result?: Vector3d): Vector3d {
+    const wa = this.xyzw[3];
+    return Vector3d.create(this.xyzw[0] - wa * other.x, this.xyzw[1] - wa * other.y, this.xyzw[2] - wa * other.z, result);
+  }
   /** Return the sum of this and other, using all 4 components x,y,z,w */
   public plus(other: Point4d, result?: Point4d): Point4d {
     return Point4d.create(this.xyzw[0] + other.xyzw[0], this.xyzw[1] + other.xyzw[1], this.xyzw[2] + other.xyzw[2], this.xyzw[3] + other.xyzw[3], result);
@@ -334,6 +339,18 @@ export class Point4d implements BeJSONFunctions {
     const a = 1.0 / mag; // in zero case everything multiplies right back to true zero.
     return Point3d.create(this.xyzw[0] * a, this.xyzw[1] * a, this.xyzw[2] * a, result);
   }
+
+  /** Convert the homogeneous point to a (strongly typed) point or vector.
+   * * If `this.w` is nonzero, return a Point3d `(x/w,y/w,z/w)`
+   * * If `this.w` is zero, return a Vector3d `(x,y,z)`
+   */
+  public realPointOrVector(): Point3d | Vector3d {
+    const mag = Geometry.correctSmallMetricDistance(this.xyzw[3]);
+    if (mag === 0.0)
+      return Vector3d.create(this.x, this.y, this.z);
+    const a = 1.0 / mag; // in zero case everything multiplies right back to true zero.
+    return Point3d.create(this.x * a, this.y * a, this.z * a);
+  }
   /**
    * * If w is nonzero, return Point3d with x/w,y/w,z/w.
    * * If w is zero, return 000
@@ -446,10 +463,10 @@ export class Point4d implements BeJSONFunctions {
     const aa = this.magnitudeSquaredXYZ();
     const direction = Vector3d.create(this.x, this.y, this.z);
     const w = this.w;
-    const divW = Geometry.conditionalDivideFraction(1.0, w);
-    if (divW !== undefined) {
-      const b = -w / aa;
-      direction.scaleInPlace(1.0 / Math.sqrt(aa));
+    const denominator = Geometry.conditionalDivideFraction(1.0, aa);
+    if (denominator !== undefined) {
+      const b = -w * denominator;
+      direction.scaleInPlace(denominator);
       return Plane3dByOriginAndUnitNormal.create(Point3d.create(this.x * b, this.y * b, this.z * b), direction, result);
     }
     return undefined;

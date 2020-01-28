@@ -131,7 +131,10 @@ describe("Point4d", () => {
     const vectorEH = Point4d.createFromPointAndWeight(vectorE, 0.0);
     ck.testCoordinate(planeABZ.velocity(vectorE), planeABZ.dotProduct(vectorEH));
 
-    ck.testUndefined(Point4d.create(4, 2, 1, 0).toPlane3dByOriginAndUnitNormal());
+    const planeC = Point4d.create(4, 2, 1, 0).toPlane3dByOriginAndUnitNormal();
+    ck.testDefined(planeC, "plane through origin");
+    const planeD = Point4d.create(0, 0, 0, 1).toPlane3dByOriginAndUnitNormal();
+    ck.testUndefined (planeD, "plane with undefined normal");
     expect(ck.getNumErrors()).equals(0);
   });
 

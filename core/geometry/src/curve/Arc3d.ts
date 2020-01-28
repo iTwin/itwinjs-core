@@ -180,19 +180,19 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param sweep sweep limits
    * @param result optional preallocated result.
    */
-  public static createScaledXYColumns(center: Point3d, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d {
+  public static createScaledXYColumns(center: Point3d | undefined, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d {
     const vector0 = matrix.columnX();
     const vector90 = matrix.columnY();
     return Arc3d.create(center, vector0.scale(radius0, vector0), vector90.scale(radius90, vector90), sweep, result);
   }
   /**
    * Create a (full circular) arc from center, normal and radius
-   * @param center center of ellipse
+   * @param center center of ellipse.  If undefined, center at 000
    * @param normal normal vector
    * @param radius radius in x direction.
    * @param result optional preallocated result.
    */
-  public static createCenterNormalRadius(center: Point3d, normal: Vector3d, radius: number, result?: Arc3d): Arc3d {
+  public static createCenterNormalRadius(center: Point3d | undefined, normal: Vector3d, radius: number, result?: Arc3d): Arc3d {
     const frame = Matrix3d.createRigidHeadsUp(normal, AxisOrder.ZYX);
     return Arc3d.createScaledXYColumns(center, frame, radius, radius, undefined, result);
   }
@@ -205,10 +205,10 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param sweep sweep limits
    * @param result optional preallocated result
    */
-  public static create(center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d {
+  public static create(center: Point3d | undefined, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d {
     const normal = vector0.unitCrossProductWithDefault(vector90, 0, 0, 0); // normal will be 000 for degenerate case ! !!
     const matrix = Matrix3d.createColumns(vector0, vector90, normal);
-    return Arc3d.createRefs(center.clone(), matrix, sweep ? sweep.clone() : AngleSweep.create360(), result);
+    return Arc3d.createRefs(center !== undefined ? center.clone() : Point3d.create(0, 0, 0), matrix, sweep ? sweep.clone() : AngleSweep.create360(), result);
   }
   /** Return a clone of this arc, projected to given z value.
    * * If `z` is omitted, the clone is at the z of the center.

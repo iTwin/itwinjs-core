@@ -25,6 +25,8 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { prettyPrint } from "../testFunctions";
 import { Loop } from "../../curve/Loop";
 import { CurveFactory } from "../../curve/CurveFactory";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { Point4d } from "../../geometry4d/Point4d";
 /* tslint:disable:no-console */
 
 describe("Ellipsoid", () => {
@@ -745,6 +747,42 @@ describe("Ellipsoid", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+  it("Silhouette", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    for (const eyePoint of [Point4d.create(4, 0, 0, 1), Point4d.create(1, 2, 3, 0)]) {
+      const realEyePoint = eyePoint.realPointOrVector();
+      if (realEyePoint instanceof Point3d)
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, realEyePoint, x0, y0);
+      for (const ellipsoid of [Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 0, 0), Matrix3d.createIdentity(), 1, 1, 1),
+        /* */ Ellipsoid.createCenterMatrixRadii(Point3d.create(3, 5, 1), Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(32))!, 1, 1.2, 2.0),
+        /* */ Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 5, 0), Matrix3d.createRowValues(1, 0, 0.2, 0.1, 3, 0.2, -0.3, 0.1, 2), 1, 1, 1),
+      ]) {
+        GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0);
+        const arc = ellipsoid.silhouetteArc(eyePoint);
+        if (arc) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y0);
+          for (const arcFraction of [0, 0.25, 0.4, 0.8]) {
+            const q = arc.fractionToPoint(arcFraction);
+            const angles = ellipsoid.projectPointToSurface(q);
+            if (ck.testDefined(angles) && angles) {
+              ck.testCoordinate (0.0, angles.altitude, "silhouette arc points are on ellipsoid");
+              const surfaceNormal = ellipsoid.radiansToUnitNormalRay(angles.longitudeRadians, angles.latitudeRadians)!;
+              const vectorToEye = eyePoint.crossWeightedMinusPoint3d(q);
+              ck.testPerpendicular(surfaceNormal.direction, vectorToEye);
+              GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(q, q.plus(vectorToEye)), x0, y0);
+            }
+          }
+        }
+      }
+      x0 += 20.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "Silhouette");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 function tippedEarthEllipsoidMatrix(): Matrix3d {
@@ -841,4 +879,20 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
       y1 += dy;
     }
   }
+}
+
+function facetEllipsoid(ellipsoid: Ellipsoid, degreeStep: number = 15.0): IndexedPolyface {
+  const patch = EllipsoidPatch.createCapture(
+    ellipsoid.clone(),
+    AngleSweep.create360(),
+    AngleSweep.createFullLatitude());
+
+  const builder = PolyfaceBuilder.create();
+  const numU = Geometry.stepCount(degreeStep, patch.longitudeSweep.sweepDegrees, 1, 16);
+  const numV = Geometry.stepCount(degreeStep, patch.latitudeSweep.sweepDegrees, 1, 16);
+  builder.addUVGridBody(patch,
+    numU,
+    numV);
+  const mesh = builder.claimPolyface();
+  return mesh;
 }

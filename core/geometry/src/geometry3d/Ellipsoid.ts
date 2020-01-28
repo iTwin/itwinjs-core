@@ -29,6 +29,7 @@ import { Arc3d } from "../curve/Arc3d";
 import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { XYAndZ } from "./XYZProps";
+import { Point4d } from "../geometry4d/Point4d";
 /**
  * For one component (x,y, or z) on the sphere
  *    f(theta,phi) = c + (u * cos(theta) + v * sin(theta)) * cos(phi) + w * sin(phi)
@@ -236,6 +237,30 @@ export class Ellipsoid {
     const searcher = new EllipsoidClosestPoint(this);
     return searcher.searchClosestPoint(spacePoint);
   }
+
+  /** Find the silhouette of the ellipsoid as viewed from a homogeneous eyepoint.
+   * * Returns undefined if the eyepoint is inside the ellipsoid
+   */
+  public silhouetteArc(eyePoint: Point4d): Arc3d | undefined {
+    const localEyePoint = this._transform.multiplyInversePoint4d(eyePoint);
+    if (localEyePoint !== undefined) {
+      // localEyePoint is now looking at a unit sphere centered at the origin.
+      // the plane through the silhouette is the eye point with z negated ...
+      const localPlaneA = Point4d.create(localEyePoint.x, localEyePoint.y, localEyePoint.z, -localEyePoint.w);
+      const localPlaneB = localPlaneA.toPlane3dByOriginAndUnitNormal();
+      // if the silhouette plane has origin inside the sphere, there is a silhouette with center at the plane origin.
+      if (localPlaneB) {
+        const rr = 1.0 - localPlaneB.getOriginRef().magnitudeSquared();  // squared distance radius of silhouette arc
+        if (rr <= 1.0) {
+          const arc = Arc3d.createCenterNormalRadius(localPlaneB.getOriginRef(), localPlaneB.getNormalRef(), Math.sqrt(rr));
+          if (arc.tryTransformInPlace(this._transform))
+            return arc;
+        }
+      }
+    }
+    return undefined;
+  }
+
   /** Compute intersections with a ray.
    * * Return the number of intersections
    * * Fill any combinations of arrays of

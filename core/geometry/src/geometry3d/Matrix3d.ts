@@ -1562,6 +1562,26 @@ export class Matrix3d implements BeJSONFunctions {
    *
    * *  multiply matrixInverse * [x,y,z]
    * *  Equivalent to solving matrix * result = [x,y,z]
+   * *  return as a Point4d with the same weight.
+   * *  Called by Transform with x,y,z adjusted by subtraction ((xw) - w * origin.x, etc) where xw is the pre-weighted space point.
+   */
+  public multiplyInverseXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d | undefined {
+    this.computeCachedInverse(true);
+    if (this.inverseCoffs) {
+      return Point4d.create(
+        (this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z),
+        (this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z),
+        (this.inverseCoffs[6] * x + this.inverseCoffs[7] * y + this.inverseCoffs[8] * z),
+        w,
+        result);
+    }
+    return undefined;
+  }
+
+  /**
+   *
+   * *  multiply matrixInverse * [x,y,z]
+   * *  Equivalent to solving matrix * result = [x,y,z]
    * *  return as a Point3d.
    */
   public multiplyInverseXYZAsPoint3d(x: number, y: number, z: number, result?: Point3d): Point3d | undefined {
