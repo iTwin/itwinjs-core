@@ -165,6 +165,7 @@ internal;enum GltfVersions
 beta;Gradient
 internal;ThematicColorScheme
 beta;GraphicParams
+public;GridOrientationType
 public;GroundPlane 
 public;GroundPlaneProps
 beta;HiddenLine
@@ -444,6 +445,10 @@ public;ViewAttachmentProps
 public;ViewDefinition2dProps 
 public;ViewDefinition3dProps 
 public;ViewDefinitionProps 
+beta;ViewDetails
+beta;ViewDetails3d 
+internal;ViewDetails3dProps 
+internal;ViewDetailsProps
 alpha;ViewFlag
 public;ViewFlagProps
 public;ViewFlags

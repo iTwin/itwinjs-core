@@ -94,7 +94,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // tslint:disable-line: naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "1.3.0";
+  public static interfaceVersion = "1.4.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.

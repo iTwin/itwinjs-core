@@ -9,6 +9,7 @@
 import { ContentSpecificationBase, ContentSpecificationTypes } from "./ContentSpecification";
 import { RelationshipDirection } from "../RelationshipDirection";
 import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
+import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpecification";
 
 /**
  * Creates content for ECInstance(s) related to current selection.
@@ -17,7 +18,13 @@ import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
  *
  * @public
  */
-export interface ContentRelatedInstancesSpecification extends ContentSpecificationBase {
+export type ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew;
+
+/**
+ * @public
+ * @deprecated Use `ContentRelatedInstancesSpecificationNew`. Will be removed in iModel.js 3.0
+ */
+export interface DEPRECATED_ContentRelatedInstancesSpecification extends ContentSpecificationBase { // tslint:disable-line: naming-convention class-name
   /** Used for serializing to JSON. */
   specType: ContentSpecificationTypes.ContentRelatedInstances;
 
@@ -59,6 +66,26 @@ export interface ContentRelatedInstancesSpecification extends ContentSpecificati
 
   /**
    * Condition for filtering instances of defined related classes.
+   *
+   * **See:** [ECExpressions available in instance filter]($docs/learning/presentation/Content/ECExpressions.md#instance-filter)
+   */
+  instanceFilter?: string;
+}
+
+/**
+ * @beta
+ */
+export interface ContentRelatedInstancesSpecificationNew extends ContentSpecificationBase {
+  /** Used for serializing to JSON. */
+  specType: ContentSpecificationTypes.ContentRelatedInstances;
+
+  /**
+   * Relationship paths from input (selected) instance class to content class.
+   */
+  relationshipPaths: RepeatableRelationshipPathSpecification[];
+
+  /**
+   * Condition for filtering instances targeted by specified relationship paths.
    *
    * **See:** [ECExpressions available in instance filter]($docs/learning/presentation/Content/ECExpressions.md#instance-filter)
    */

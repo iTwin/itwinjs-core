@@ -6,10 +6,62 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BackgroundMapProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags, DisplayStyle3dProps, SkyBoxImageProps, PlanProjectionSettingsProps } from "@bentley/imodeljs-common";
-import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
+import {
+  Id64,
+  Id64Array,
+  Id64Set,
+  Id64String,
+  JsonUtils,
+} from "@bentley/bentleyjs-core";
+import {
+  Angle,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Range2d,
+  Range3d,
+  StandardViewIndex,
+  Transform,
+  Vector3d,
+  YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AnalysisStyleProps,
+  AuxCoordSystem2dProps,
+  AuxCoordSystem3dProps,
+  AuxCoordSystemProps,
+  BackgroundMapProps,
+  BisCodeSpec,
+  Camera,
+  CategorySelectorProps,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  ColorDef,
+  ContextRealityModelProps,
+  DisplayStyle3dProps,
+  DisplayStyle3dSettings,
+  DisplayStyleProps,
+  DisplayStyleSettings,
+  LightLocationProps,
+  ModelSelectorProps,
+  PlanProjectionSettingsProps,
+  RelatedElement,
+  SkyBoxImageProps,
+  SpatialViewDefinitionProps,
+  ViewAttachmentProps,
+  ViewDefinition2dProps,
+  ViewDefinition3dProps,
+  ViewDefinitionProps,
+  ViewDetails,
+  ViewDetails3d,
+  ViewFlags,
+} from "@bentley/imodeljs-common";
+import {
+  DefinitionElement,
+  GraphicalElement2d,
+  SpatialLocationElement,
+} from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 
@@ -460,35 +512,21 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   /** Load this view's CategorySelector from the IModelDb. */
   public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement<CategorySelector>(this.categorySelectorId); }
 
-  /** Get details that are stored in the JsonProperties of this ViewDefinition element.
-   * @internal
+  /** Provides access to optional detail settings for this view.
+   * @beta
    */
-  public getDetails(): any { if (!this.jsonProperties.viewDetails) { this.jsonProperties.viewDetails = new Object(); } return this.jsonProperties.viewDetails; }
-  /** Get the current value of a view detail. If not present, returns an empty object.
-   * @internal
-   */
-  public getDetail(name: string): any { const v = this.getDetails()[name]; return v ? v : {}; }
-  /** Change the value of a view detail.
-   * @internal
-   */
-  public setDetail(name: string, value: any) { this.getDetails()[name] = value; }
-  /** Remove a view detail.
-   * @internal
-   */
-  public removeDetail(name: string) { delete this.getDetails()[name]; }
-  /** Get the Id of the auxiliary coordinate system for this ViewState
-   * @returns The Id of the AuxiliaryCoordinateSystem or `Id64.invalid` if not set.
-   */
-  public getAuxiliaryCoordinateSystemId(): Id64String { return Id64.fromJSON(this.getDetail("acs")); }
+  public abstract get details(): ViewDetails;
+
+  /** The Id of the AuxiliaryCoordinateSystem for this ViewDefinition, or an invalid Id if no ACS is defined. */
+  public getAuxiliaryCoordinateSystemId(): Id64String {
+    return this.details.auxiliaryCoordinateSystemId;
+  }
+
   /** Set or clear the AuxiliaryCoordinateSystem for this ViewDefinition.
    * @param acsId The Id of the new AuxiliaryCoordinateSystem. If `Id64.invalid` is passed, then no AuxiliaryCoordinateSystem will be used.
    */
   public setAuxiliaryCoordinateSystemId(acsId: Id64String) {
-    if (Id64.isValidId64(acsId)) {
-      this.setDetail("acs", acsId);
-    } else {
-      this.removeDetail("acs");
-    }
+    this.details.auxiliaryCoordinateSystemId = acsId;
   }
 
   /** Create a Code for a ViewDefinition given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -506,6 +544,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
  * @public
  */
 export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
+  private readonly _details: ViewDetails3d;
   /** @internal */
   public static get className(): string { return "ViewDefinition3d"; }
   /** If true, camera is used. Otherwise, use an orthographic projection. */
@@ -527,6 +566,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     this.extents = Vector3d.fromJSON(props.extents);
     this.angles = YawPitchRollAngles.fromJSON(props.angles);
     this.camera = new Camera(props.camera);
+    this._details = new ViewDetails3d(this.jsonProperties);
   }
 
   /** @internal */
@@ -539,6 +579,11 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     val.camera = this.camera;
     return val;
   }
+
+  /** Provides access to optional detail settings for this view.
+   * @beta
+   */
+  public get details(): ViewDetails3d { return this._details; }
 
   /** Load this view's DisplayStyle3d from the IModelDb. */
   public loadDisplayStyle3d(): DisplayStyle3d { return this.iModel.elements.getElement<DisplayStyle3d>(this.displayStyleId); }
@@ -707,6 +752,8 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
  * @public
  */
 export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2dProps {
+  private readonly _details: ViewDetails;
+
   /** @internal */
   public static get className(): string { return "ViewDefinition2d"; }
   /** The Id of the Model displayed by this view. */
@@ -725,7 +772,9 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
+    this._details = new ViewDetails(this.jsonProperties);
   }
+
   /** @internal */
   public toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
@@ -735,11 +784,18 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     val.angle = this.angle;
     return val;
   }
+
   /** @alpha */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.baseModelId);
   }
+
+  /** Provides access to optional detail settings for this view.
+   * @beta
+   */
+  public get details(): ViewDetails { return this._details; }
+
   /** Load this view's DisplayStyle2d from the IModelDb. */
   public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement<DisplayStyle2d>(this.displayStyleId); }
 }
