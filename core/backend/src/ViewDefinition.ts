@@ -45,6 +45,7 @@ import {
   DisplayStyleSettings,
   LightLocationProps,
   ModelSelectorProps,
+  PlanProjectionSettingsProps,
   RelatedElement,
   SkyBoxImageProps,
   SpatialViewDefinitionProps,
