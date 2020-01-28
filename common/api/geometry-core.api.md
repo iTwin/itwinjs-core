@@ -2715,7 +2715,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     clone(): LineString3d;
     clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined;
     cloneTransformed(transform: Transform): CurvePrimitive;
-    closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail;
+    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     computeUVFromXYZTransform(transform: Transform): void;

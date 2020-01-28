@@ -21,7 +21,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
-import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
+import { VariantCurveExtendParameter, CurveExtendOptions, CurveExtendMode } from "./CurveExtendMode";
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
 import { StrokeOptions } from "./StrokeOptions";
@@ -521,7 +521,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail {
     result = CurveLocationDetail.create(this, result);
     const allRadians = this.allPerpendicularAngles(spacePoint, true, true);
-    if (!extend && !this._sweep.isFullCircle) {
+    let extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
+    let extend1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1);
+    // distinct extends for cyclic space are awkward ....
+    if (this._sweep.isFullCircle) {
+      extend0 = CurveExtendMode.None;
+      extend1 = CurveExtendMode.None;
+    }
+    if (extend0 !== CurveExtendMode.None && extend1 !== CurveExtendMode.None) {
       allRadians.push(this._sweep.startRadians);
       allRadians.push(this._sweep.endRadians);
     }
