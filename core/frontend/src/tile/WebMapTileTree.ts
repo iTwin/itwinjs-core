@@ -150,7 +150,7 @@ export class WebMapDrawArgs extends TileDrawArgs {
   private readonly _scratchViewCorner = Point4d.createZero();
 
   public constructor(args: TileDrawArgs) {
-    super(args.context, args.location, args.root, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, false);
+    super(args.context, args.location, args.root, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, false, args.graphics.symbologyOverrides);
 
     const tileToWorld = Matrix4d.createTransform(this.location);
     this._tileToView = tileToWorld.multiplyMatrixMatrix(this.worldToViewMap.transform0);
