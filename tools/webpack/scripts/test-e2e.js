@@ -28,7 +28,7 @@ exports.handler = async (argv) => {
   require("./utils/initialize")("test-e2e");
   const path = require("path");
   const paths = require("../config/paths");
-  const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
+  const { spawn, handleInterrupts } = require("@bentley/build-tools/scripts/utils/simpleSpawn");
 
   console.log("Cleaning " + paths.appTestE2ELib);
   await spawn("rimraf", [paths.appTestE2ELib]);

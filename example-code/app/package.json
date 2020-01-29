@@ -51,7 +51,6 @@
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
-    "@types/webpack": "^4.41.0",
     "jsdom": "^11.12.0",
     "jsdom-global": "3.0.2",
     "chai": "^4.1.2",

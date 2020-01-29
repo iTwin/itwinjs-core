@@ -215,6 +215,20 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/webpack-tools-core",
+      "projectFolder": "tools/webpack-core",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/backend-webpack-tools",
+      "projectFolder": "tools/backend-webpack",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/imodeljs-markup",
       "projectFolder": "core/markup",
       "reviewCategory": "frontend",

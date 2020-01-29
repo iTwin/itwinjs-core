@@ -1,0 +1,26 @@
+# webpack-tools-core
+
+Copyright © Bentley Systems, Incorporated. All rights reserved.
+
+The __webpack-tools-core__ contains a set of webpack [loaders](https://webpack.js.org/concepts/loaders/) and [plugins](https://webpack.js.org/concepts/plugins/) used to build iModel.js backend and frontends.
+
+The main entry point for building an iModel.js backend is the __@bentley/backend-webpack__ package and iModel.js frontends should use __@bentley/webpack-tools__.
+
+This package contains the following Loaders and Plugins:
+
+### __Loaders__
+
+| Name | Description |
+| - | - |
+| strip-assert-loader | Removes all uses of @bentley/bentleyjs-core `assert()` method from the webpack bundle. |
+
+### __Plugins__
+
+| Name | Description |
+| - | - |
+| BackendendDefaultsPlugin | Combines a set of Webpack plugins to use as defaults when building an iModel.js backend.  (Used in @bentley/backend-webpack). |
+| BanImportsPlugin | Bans any import that crosses the frontend/backend boundary |
+| CopyBentleyStaticResourcesPlugin | Copies static resources from '@bentley' scoped packages into the output folder.  Used to copy "assets", "public" and other resource files. |
+| CopyExternalsPlugin | Copies all npm packages containing an [external](https://webpack.js.org/configuration/externals/) module (and their direct dependencies) to a `node_modules` directory next to the webpack output. |
+| PrettyLoggingPlugin | Formats the output messages to print better when running within Azure DevOps Pipelines.  Flags any warnings as errors when running a CI build. |
+| WatchBackendPlugin | Reloads a _frontend_ anytime its corresponding backend changes. |

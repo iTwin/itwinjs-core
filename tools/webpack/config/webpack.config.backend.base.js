@@ -9,7 +9,7 @@ const webpack = require("webpack");
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const CaseSensitivePathsPlugin = require("case-sensitive-paths-webpack-plugin");
 const getClientEnvironment = require("./env");
-const plugins = require("../scripts/utils/webpackPlugins");
+const plugins = require("@bentley/webpack-tools-core");
 const paths = require("./paths");
 const helpers = require("./helpers");
 
@@ -78,7 +78,7 @@ module.exports = (publicPath) => {
         // Make sure your source files are compiled, as they will not be processed in any way.
         // FIXME: new ModuleScopePlugin(paths.appSrc),
         // This is only for BACKEND code - frontend modules should be excluded from the bundle.
-        new plugins.BanFrontendImportsPlugin(),
+        new plugins.BanFrontendImportsPlugin(paths.appSrcFrontend),
       ],
     },
     module: {
@@ -141,9 +141,9 @@ module.exports = (publicPath) => {
         async: false,
         silent: true,
       }),
-      new plugins.CopyAppAssetsPlugin(),
+      new plugins.CopyAppAssetsPlugin(paths.appAssets),
       new plugins.CopyBentleyStaticResourcesPlugin(["assets"]),
-      new plugins.CopyNativeAddonsPlugin(),
+      new plugins.CopyExternalsPlugin(),
       // Makes some environment variables available to the JS code, for example:
       // if (process.env.NODE_ENV === "development") { ... }. See `./env.js`.
       new webpack.DefinePlugin(env.backendStringified),

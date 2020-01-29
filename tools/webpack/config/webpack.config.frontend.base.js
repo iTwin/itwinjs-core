@@ -12,7 +12,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const InterpolateHtmlPlugin = require("react-dev-utils/InterpolateHtmlPlugin");
 const SpriteLoaderPlugin = require("svg-sprite-loader/plugin");
 const getClientEnvironment = require("./env");
-const plugins = require("../scripts/utils/webpackPlugins");
+const plugins = require("@bentley/webpack-tools-core");
 const paths = require("./paths");
 const helpers = require("./helpers");
 
@@ -76,7 +76,7 @@ module.exports = (publicPath) => {
         // Make sure your source files are compiled, as they will not be processed in any way.
         // FIXME: new ModuleScopePlugin(paths.appSrc),
         // This is only for FRONTEND code - backend modules should be excluded from the bundle.
-        new plugins.BanBackendImportsPlugin(),
+        new plugins.BanBackendImportsPlugin(paths.appSrcBackend),
       ],
     },
     module: {

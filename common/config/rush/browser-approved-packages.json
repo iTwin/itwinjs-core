@@ -155,6 +155,10 @@
       "allowedCategories": [ "common", "frontend", "internal", "plugins" ]
     },
     {
+      "name": "@bentley/webpack-tools-core",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
     },

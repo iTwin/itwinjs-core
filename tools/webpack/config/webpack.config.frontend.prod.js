@@ -42,7 +42,7 @@ const config = helpers.mergeWebpackConfigs(baseConfiguration, {
     rules: [
       {
         test: /\.js$/,
-        loader: path.join(__dirname, "strip-assert-loader.js"),
+        loader: require.resolve("@bentley/webpack-tools-core/lib/loaders/strip-assert-loader"),
         enforce: "pre",
       },
       // "postcss" loader applies autoprefixer to our CSS.
