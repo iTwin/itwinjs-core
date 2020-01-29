@@ -90,7 +90,7 @@ describe("IModelConnection Tiles", () => {
     expect(tile).to.not.be.undefined;
     expect(tile.rootTile.contentId).to.not.be.undefined;
 
-    const result = await iModel.tiles.getTileContent(treeId, tile.rootTile.contentId, () => false, undefined);
+    const result = await iModel.tiles.getTileContent(treeId, tile.rootTile.contentId, () => false, undefined, undefined);
     expect(result).to.not.be.undefined;
 
     // for subsequent test cases to actually requests tiles from the backend instead of azure storage, we need to set the checkCache to return undefined
@@ -140,7 +140,7 @@ describe("IModelConnection Tiles", () => {
     expect(tile).to.not.be.undefined;
     expect(tile.rootTile.contentId).to.not.be.undefined;
 
-    const result = await iModel.tiles.getTileContent(treeId, tile.rootTile.contentId, () => false, undefined);
+    const result = await iModel.tiles.getTileContent(treeId, tile.rootTile.contentId, () => false, undefined, undefined);
     expect(result).to.not.be.undefined;
   });
 
@@ -168,7 +168,7 @@ describe("IModelConnection Tiles", () => {
     expect(tile).to.not.be.undefined;
     expect(tile.rootTile.contentId).to.not.be.undefined;
 
-    const result = await iModel.tiles.getTileContent(treeId, tile.rootTile.contentId, () => false, undefined);
+    const result = await iModel.tiles.getTileContent(treeId, tile.rootTile.contentId, () => false, undefined, undefined);
 
     expect(result).to.not.be.undefined;
   });
