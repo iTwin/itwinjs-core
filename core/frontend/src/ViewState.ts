@@ -739,6 +739,7 @@ export abstract class ViewState extends ElementState {
    * @param acs the new AuxiliaryCoordinateSystem for this view. If undefined, no AuxiliaryCoordinateSystem will be used.
    */
   public setAuxiliaryCoordinateSystem(acs?: AuxCoordSystemState) {
+    this._auxCoordSystem = acs;
     this.details.auxiliaryCoordinateSystemId = undefined !== acs ? acs.id : Id64.invalid;
   }
 
