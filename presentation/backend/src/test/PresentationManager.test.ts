@@ -19,7 +19,7 @@ import {
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
 import { using, ClientRequestContext, Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
-import { EntityMetaData, ElementProps, ModelProps } from "@bentley/imodeljs-common";
+import { EntityMetaData, ElementProps, ModelProps, IModelError } from "@bentley/imodeljs-common";
 import { IModelHost, IModelDb, DrawingGraphic, Element, ECSqlStatement, ECSqlValue } from "@bentley/imodeljs-backend";
 import {
   PageOptions, SelectionInfo, KeySet, PresentationError,
@@ -65,6 +65,16 @@ describe("PresentationManager", () => {
       const stmtMock = moq.Mock.ofType<ECSqlStatement>();
       stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ROW);
       stmtMock.setup((x) => x.getValue(0)).returns(() => valueMock.object);
+      cb(stmtMock.object);
+    });
+  };
+
+  const setupIModelForInvalidId = (imodelMock: moq.IMock<IModelDb>) => {
+    // this mock simulates trying to bind an invalid id
+    imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).callback((_q, cb) => {
+      const stmtMock = moq.Mock.ofType<ECSqlStatement>();
+      stmtMock.setup((x) => x.bindId(moq.It.isAnyNumber(), moq.It.isAny())).throws(new IModelError(DbResult.BE_SQLITE_ERROR, "Error binding Id"));
+      stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ERROR);
       cb(stmtMock.object);
     });
   };
@@ -1946,6 +1956,17 @@ describe("PresentationManager", () => {
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, keys.map((k) => k.id), "element");
           expect(result.size).to.eq(1);
           expect(result.has(keys[0])).to.be.true;
+        });
+
+        it("handles invalid id", async () => {
+          const validKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+          setupIModelForElementKey(imodelMock, validKeys[0]);
+          setupIModelForInvalidId(imodelMock);
+          setupIModelForElementKey(imodelMock, validKeys[1]);
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [validKeys[0].id, "not an id", validKeys[1].id], "element");
+          expect(result.size).to.eq(2);
+          validKeys.forEach((key) => expect(result.has(key)));
         });
 
       });

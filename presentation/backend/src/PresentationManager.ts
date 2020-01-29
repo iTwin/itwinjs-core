@@ -593,9 +593,11 @@ export class PresentationManager {
     let key: InstanceKey | undefined;
     const query = `SELECT ECClassId FROM ${Element.classFullName} e WHERE ECInstanceId = ?`;
     imodel.withPreparedStatement(query, (stmt) => {
-      stmt.bindId(1, id);
-      if (stmt.step() === DbResult.BE_SQLITE_ROW)
-        key = { className: stmt.getValue(0).getClassNameForClassId().replace(".", ":"), id };
+      try {
+        stmt.bindId(1, id);
+        if (stmt.step() === DbResult.BE_SQLITE_ROW)
+          key = { className: stmt.getValue(0).getClassNameForClassId().replace(".", ":"), id };
+      } catch { }
     });
     return key;
   }
