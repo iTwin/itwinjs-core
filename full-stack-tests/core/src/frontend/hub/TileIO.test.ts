@@ -11,8 +11,10 @@ import {
   CurrentImdlVersion,
   ImdlFlags,
   ImdlHeader,
+  IModelTileRpcInterface,
   IModelTileTreeId,
   iModelTileTreeIdToString,
+  IModelTokenProps,
   ModelProps,
   RelatedElementProps,
   ServerTimeoutError,
@@ -829,7 +831,7 @@ describe("mirukuru TileTree", () => {
 describe("TileAdmin", () => {
   let theIModel: IModelConnection | undefined;
 
-  after(async () => {
+  const cleanup = async () => {
     if (theIModel) {
       await theIModel.closeSnapshot();
       theIModel = undefined;
@@ -837,10 +839,16 @@ describe("TileAdmin", () => {
 
     if (IModelApp.initialized)
       IModelApp.shutdown();
+  };
+
+  after(async () => {
+    await cleanup();
   });
 
   class TileAdminApp extends MockRender.App {
     public static async start(props: TileAdmin.Props): Promise<IModelConnection> {
+      await cleanup();
+
       super.startup({
         tileAdmin: TileAdmin.create(props),
       });
@@ -1016,5 +1024,48 @@ describe("TileAdmin", () => {
     // Request whatever the current major version is.
     // If the below test fails, we probably bumped current major version in native code and did not do so in typescript.
     await App.testMajorVersion(undefined, CurrentImdlVersion.Major);
+  });
+
+  it("should form expected content request", async () => {
+    class App extends TileAdminApp {
+      public static async test(useProjectExtents: boolean): Promise<void> {
+        const imodel = await App.start({ useProjectExtents });
+
+        const flags = useProjectExtents ? "1" : "0";
+        const treeId = "8_" + flags + "-0x1c";
+
+        const treeProps = await imodel.tiles.getTileTreeProps(treeId);
+        const qualifier = treeProps.contentIdQualifier;
+        expect(qualifier !== undefined).to.equal(useProjectExtents);
+        if (undefined !== qualifier)
+          expect(qualifier.length > 0).to.be.true;
+
+        const loader = new IModelTileLoader(imodel, treeProps.formatVersion, BatchType.Primary, true, true, undefined);
+        const tree = new TileTree(tileTreeParamsFromJSON(treeProps, imodel, true, loader, "0x1c"));
+
+        const intfc = IModelTileRpcInterface.getClient();
+        const requestTileContent = intfc.requestTileContent;
+        intfc.requestTileContent = async (_token: IModelTokenProps, tileTreeId: string, _contentId: string, _isCanceled: () => boolean, guid?: string) => {
+          expect(tileTreeId).to.equal(treeId);
+
+          expect(guid).not.to.be.undefined;
+          if (!useProjectExtents)
+            expect(guid).to.equal("first");
+          else
+            expect(guid).to.equal("first_" + qualifier!);
+
+          return Promise.resolve(new Uint8Array(1));
+        };
+
+        await loader.requestTileContent(tree.rootTile, () => false);
+
+        intfc.requestTileContent = requestTileContent;
+
+        await App.stop();
+      }
+    }
+
+    await App.test(false);
+    await App.test(true);
   });
 });
