@@ -6033,6 +6033,7 @@ export interface TileTreeMetadata {
 
 // @internal (undocumented)
 export interface TileTreeProps {
+    contentIdQualifier?: string;
     contentRange?: Range3dProps;
     formatVersion?: number;
     id: string;

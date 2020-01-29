@@ -995,8 +995,8 @@ export namespace IModelConnection {
       return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
     }
 
-    public async getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array> {
-      return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled, guid);
+    public async getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
+      return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled, guid, qualifier);
     }
 
     public async purgeTileTrees(modelIds: Id64Array | undefined): Promise<void> {

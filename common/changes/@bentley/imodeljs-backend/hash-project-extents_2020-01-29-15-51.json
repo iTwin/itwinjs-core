@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "Prevent reuse of cached tiles after project extents change.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Paul.Connelly@bentley.com"
+}

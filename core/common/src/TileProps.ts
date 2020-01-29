@@ -42,4 +42,6 @@ export interface TileTreeProps {
   formatVersion?: number;
   /** Optional volume within which content of all tiles' contents are guaranteed to be contained - never larger than `rootTile.range` and sometimes much smaller. */
   contentRange?: Range3dProps;
+  /** Optional namespace applied to tile content Ids for tiles belonging to this tree. */
+  contentIdQualifier?: string;
 }

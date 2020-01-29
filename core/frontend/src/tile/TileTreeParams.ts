@@ -36,6 +36,7 @@ export interface TileTreeParams {
   readonly yAxisUp?: boolean;
   readonly clipVector?: ClipVector;
   readonly contentRange?: ElementAlignedBox3d;
+  readonly contentIdQualifier?: string;
 }
 
 /** Create TileTree.Params from JSON and context.
@@ -54,5 +55,6 @@ export function tileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConne
     maxTilesToSkip: props.maxTilesToSkip,
     yAxisUp: props.yAxisUp,
     contentRange,
+    contentIdQualifier: props.contentIdQualifier,
   };
 }
