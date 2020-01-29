@@ -93,7 +93,7 @@ function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
   return scaleSpatialRange(range);
 }
 
-describe.only("tile tree", () => {
+describe("tile tree", () => {
   let db: IModelDb;
   let modelId: string;
 
