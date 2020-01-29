@@ -69,7 +69,7 @@ export class IModelTileLoader extends TileLoader {
       return cancelMe;
     };
 
-    return this._iModel.tiles.getTileContent(tile.root.id, tile.contentId, handleCacheMiss, this._guid);
+    return this._iModel.tiles.getTileContent(tile.root.id, tile.contentId, handleCacheMiss, this._guid, tile.root.contentIdQualifier);
   }
 
   public adjustContentIdSizeMultiplier(contentId: string, sizeMultiplier: number): string {

@@ -146,7 +146,7 @@ export abstract class TileAdmin {
   public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
 
   /** @internal */
-  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array>;
+  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
 
   /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
    * @param props Options for customizing the behavior of the TileAdmin.
@@ -767,10 +767,19 @@ class Admin extends TileAdmin {
     return IModelTileRpcInterface.getClient().purgeTileTrees(iModel.iModelToken.toJSON(), modelIds);
   }
 
-  public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array> {
+  public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
     this.initializeRpc();
+
+    const tokenProps = iModel.iModelToken.toJSON();
+
+    if (!guid)
+      guid = tokenProps.changeSetId || "first";
+
+    if (qualifier)
+      guid = guid + "_" + qualifier;
+
     const intfc = IModelTileRpcInterface.getClient();
-    return intfc.requestTileContent(iModel.iModelToken.toJSON(), treeId, contentId, isCanceled, guid);
+    return intfc.requestTileContent(tokenProps, treeId, contentId, isCanceled, guid);
   }
 
   private initializeRpc(): void {

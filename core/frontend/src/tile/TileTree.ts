@@ -195,6 +195,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   public readonly iModelTransform: Transform;
   public readonly id: string;
   public readonly modelId: Id64String;
+  public readonly contentIdQualifier?: string;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
   public expirationTime: BeDuration;
@@ -206,7 +207,6 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   public static debugSelectedTiles = false;           // tslint:disable-line: prefer-const
   public static debugMissingTiles = false;            // tslint:disable-line: prefer-const
   public static debugSelectedRanges = false;         // tslint:disable-line: prefer-const
-
   // If defined, tight range around the contents of the entire tile tree. This is always no more than the root tile's range, and often much smaller.
   public readonly contentRange?: ElementAlignedBox3d;
 
@@ -215,6 +215,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     this.is3d = props.is3d;
     this.id = props.id;
     this.modelId = Id64.fromJSON(props.modelId);
+    this.contentIdQualifier = props.contentIdQualifier;
     this.iModelTransform = props.location;
 
     if (undefined !== props.clipVector)

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/rpcinterface-full-stack-tests",
+      "comment": "Test prevention of reuse of cached tiles after project extents change.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/rpcinterface-full-stack-tests",
+  "email": "Paul.Connelly@bentley.com"
+}

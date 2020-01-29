@@ -4426,7 +4426,7 @@ export namespace IModelConnection {
         // (undocumented)
         forEachTreeOwner(func: (owner: TileTreeOwner) => void): void;
         // (undocumented)
-        getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array>;
+        getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
         // (undocumented)
         getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner;
         // (undocumented)
@@ -8625,7 +8625,7 @@ export abstract class TileAdmin {
     // @internal (undocumented)
     abstract get realityTileExpirationTime(): BeDuration;
     // @internal (undocumented)
-    abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array>;
+    abstract requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
     // @internal
     abstract requestTiles(vp: Viewport, tiles: Set<Tile>): void;
     // @internal (undocumented)
@@ -8928,6 +8928,8 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     computeTileRangeForFrustum(location: Transform, viewingSpace: ViewingSpace): Range3d | undefined;
     // (undocumented)
+    readonly contentIdQualifier?: string;
+    // (undocumented)
     readonly contentRange?: ElementAlignedBox3d;
     // (undocumented)
     countTiles(): number;
@@ -9016,6 +9018,8 @@ export interface TileTreeOwner {
 export interface TileTreeParams {
     // (undocumented)
     readonly clipVector?: ClipVector;
+    // (undocumented)
+    readonly contentIdQualifier?: string;
     // (undocumented)
     readonly contentRange?: ElementAlignedBox3d;
     // (undocumented)
