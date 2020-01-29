@@ -706,7 +706,7 @@ class AttachmentViewport {
   private _scene?: GraphicList;
 
   public constructor(view: ViewState3d) {
-    this.vp = OffScreenViewport.create(view);
+    this.vp = OffScreenViewport.create(view, undefined, true);
   }
 
   public get texture(): RenderTexture | undefined { return this._texture; }
@@ -779,9 +779,6 @@ class AttachmentViewport {
       this.vp.setRect(new ViewRect(0, 0, dim, dim), true);
     }
   }
-
-  // override
-  public get isAspectRatioLocked(): boolean { return true; }
 }
 
 /** @internal */

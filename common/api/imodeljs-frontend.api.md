@@ -5782,7 +5782,11 @@ export class OffScreenTarget extends Target {
 // @internal
 export class OffScreenViewport extends Viewport {
     // (undocumented)
-    static create(view: ViewState, viewRect?: ViewRect): OffScreenViewport;
+    static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio?: boolean): OffScreenViewport;
+    // (undocumented)
+    get isAspectRatioLocked(): boolean;
+    // (undocumented)
+    protected _isAspectRatioLocked: boolean;
     // (undocumented)
     setRect(rect: ViewRect, temporary?: boolean): void;
     // (undocumented)
