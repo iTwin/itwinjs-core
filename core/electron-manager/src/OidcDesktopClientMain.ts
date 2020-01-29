@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, AuthStatus, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
-import { OidcDesktopClient } from "@bentley/imodeljs-backend";
+import { OidcDesktopClient, IModelHost } from "@bentley/imodeljs-backend";
 import * as electron from "electron";
 import { ElectronManagerLoggerCategory } from "./ElectronManagerLoggerCategory";
 const { ipcMain: ipc } = electron;
@@ -61,6 +61,14 @@ export class OidcDesktopClientMain {
           this.ipcSend(mainWindow, "OidcDesktopClient.onUserStateChanged", token);
         });
         await this._oidcDesktopClient.initialize(requestContext);
+
+        /*
+         * Set up the authorizationClient at the backend so that code at the backend can use it to fetch the access token, or construct the required
+         * RequestContext (AuthorizedBackendRequestContext). Note that this would have the side effect of backend code using this to retrieve tokens, rather than use
+         * the tokens passed in from the frontend, but that should not matter since the clients at the frontend and backend in the electron case is exactly the same.
+         */
+        IModelHost.authorizationClient = this._oidcDesktopClient;
+
         this.ipcReply(event, "OidcDesktopClient.initialize:complete", null);
       } catch (err) {
         this.ipcReply(event, "OidcDesktopClient.initialize:complete", err);

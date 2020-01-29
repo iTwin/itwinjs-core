@@ -2887,17 +2887,21 @@ export class TwoWayViewportSync {
  * @internal
  */
 export class OffScreenViewport extends Viewport {
-  public static create(view: ViewState, viewRect?: ViewRect) {
+  protected _isAspectRatioLocked = false;
+
+  public static create(view: ViewState, viewRect?: ViewRect, lockAspectRatio = false) {
     const rect = new ViewRect(0, 0, 1, 1);
     if (undefined !== viewRect)
       rect.setFrom(viewRect);
 
     const vp = new this(IModelApp.renderSystem.createOffscreenTarget(rect));
+    vp._isAspectRatioLocked = lockAspectRatio;
     vp.changeView(view);
     vp._decorationsValid = true;
     return vp;
   }
 
+  public get isAspectRatioLocked(): boolean { return this._isAspectRatioLocked; }
   public get viewRect(): ViewRect { return this.target.viewRect; }
 
   public setRect(rect: ViewRect, temporary: boolean = false) {

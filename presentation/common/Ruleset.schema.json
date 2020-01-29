@@ -1215,7 +1215,7 @@
           "type": "boolean"
         },
         "handleTargetClassPolymorphically": {
-          "description": "Should the target class specified in `propertiesSource` or by `relatedClasses` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
+          "description": "Should the target class specified in `relatedClasses` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
           "type": "boolean"
         },
         "isPolymorphic": {
@@ -2494,7 +2494,7 @@
           "type": "boolean"
         },
         "handleTargetClassPolymorphically": {
-          "description": "Should the target class specified in `propertiesSource` or by `relatedClasses` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
+          "description": "Should the target class specified in `propertiesSource` be handled\npolymorphically. This means properties of not only the target class, but also all its subclasses\nare loaded.",
           "type": "boolean"
         },
         "properties": {

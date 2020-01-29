@@ -66,7 +66,7 @@ export class TestOidcClient implements IAuthorizationClient {
   }
 
   private async initialize() {
-    this._deploymentRegion = this._deploymentRegion || Config.App.getNumber("imjs_buddi_resolve_url_using_region") || 0; // Defaults to PROD (for 3rd party users)
+    this._deploymentRegion = this._deploymentRegion || Config.App.has("imjs_buddi_resolve_url_using_region") ? Config.App.getNumber("imjs_buddi_resolve_url_using_region") : 0; // Defaults to PROD (for 3rd party users)
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);

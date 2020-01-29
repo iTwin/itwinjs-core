@@ -25,7 +25,11 @@ export class OidcDesktopClientRenderer implements IOidcFrontendClient {
   private _clientConfiguration: OidcDesktopClientConfiguration;
   private _accessToken?: AccessToken;
 
-  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
+  /**
+   * Event called when the user's sign-in state changes
+   * - this may be due to calls to signIn(), signOut(), or if the token was refreshed by a call to [[getAccessToken]].
+   * - see [[getAccessToken]]
+   */
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
   /** Creates a new OidcDesktopClient to be used in the electron render process */
@@ -123,7 +127,12 @@ export class OidcDesktopClientRenderer implements IOidcFrontendClient {
     return !!this._accessToken;
   }
 
-  /** Returns a promise that resolves to the AccessToken if signed in. The token is refreshed if it's possible and necessary. */
+  /** Returns a promise that resolves to the AccessToken if signed in.
+   * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
+   * - The token is refreshed if it's possible and necessary.
+   * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
+   * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
+   */
   public async getAccessToken(requestContext: ClientRequestContext = new FrontendRequestContext()): Promise<AccessToken> {
     requestContext.enter();
 
