@@ -36,10 +36,15 @@ export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */
   hasSignedIn: boolean;
 
-  /** Returns a promise that resolves to the AccessToken if signed in. The token is refreshed if it's possible and necessary. */
+  /** Returns a promise that resolves to the AccessToken if signed in. The token is refreshed if it's possible and necessary.
+   * Note that some implementations may require this method to be called to refresh the token - not all clients
+   * refresh the token by monitoring the expiry.
+   */
   getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
 
-  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
+  /** Event called when the user's sign-in state changes
+   * @see [[getAccessToken]]
+   */
   readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
 }
 
