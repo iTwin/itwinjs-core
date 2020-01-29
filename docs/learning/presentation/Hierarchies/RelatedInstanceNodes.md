@@ -12,11 +12,7 @@ has no effect.
 Name | Required? | Type | Default | Meaning | Performance Notes
 -|-|-|-|-|-
 *Filtering* |
-`relationships` | No | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]` | `[]` | Relationships that should be followed when looking for related instances.
-`relatedClasses` | No | `MultiSchemaClassesSpecification \| MultiSchemaClassesSpecification[]` | `[]` | Related classes whose instances should be used.
-`supportedSchemas` | No | `string[]` | `supportedSchemas` attribute of the ruleset | Schemas used to look up relationships and classes when `relationships` or `relatedClasses` attributes are not specified.
-`requiredDirection` | No | `"Forward" \| "Backward" \| "Both"` | `"Both"` | Relationship directions that's following when walking from the parent instance.
-`skipRelatedLevel` | No | `number` | `0` | Skips defined level of related items and shows next level related items.
+`relationshipPaths` | Yes | `RelationshipPathSpecification[]` | | List of [relationship path specifications](../RelationshipPathSpecification.md) to follow when looking for related class instances.
 `instanceFilter` | No | [ECExpression](./ECExpressions.md#instance-filter) | `""` | Condition for filtering instances
 `hideNodesInHierarchy` | No | `boolean` | `false` | Hide nodes provided by this specification and directly show their children. | Expensive
 `hideIfNoChildren` | No | `boolean` | `false` | Hide nodes if they don't have children. | Expensive
@@ -38,14 +34,10 @@ Name | Required? | Type | Default | Meaning | Performance Notes
   "specType": "RelatedInstanceNodes",
   "groupByClass": false,
   "groupByLabel": false,
-  "relationships": {
-    "schemaName": "BisCore",
-    "classNames": ["ModelContainsElements"]
-  },
-  "requiredDirection": "Forward",
-  "relatedClasses": {
-    "schemaName": "BisCore",
-    "classNames": ["Element"]
-  }
+  "relationshipPaths": [{
+    "relationship": { "schemaName": "BisCore", "className": "ModelContainsElements" },
+    "direction": "Forward",
+    "targetClass": { "schemaName": "BisCore", "className": "PhysicalElement" }
+  }]
 }
 ```

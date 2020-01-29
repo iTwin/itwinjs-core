@@ -78,7 +78,7 @@ export interface DEPRECATED_RelatedPropertiesSpecification { // tslint:disable-l
   isPolymorphic?: boolean;
 
   /**
-   * Should the target class specified in [[propertiesSource]] or by [[relatedClasses]] be handled
+   * Should the target class specified in [[relatedClasses]] be handled
    * polymorphically. This means properties of not only the target class, but also all its subclasses
    * are loaded.
    *
@@ -125,7 +125,7 @@ export interface RelatedPropertiesSpecificationNew {
   propertiesSource: RelationshipPathSpecification;
 
   /**
-   * Should the target class specified in [[propertiesSource]] or by [[relatedClasses]] be handled
+   * Should the target class specified in [[propertiesSource]] be handled
    * polymorphically. This means properties of not only the target class, but also all its subclasses
    * are loaded.
    *
