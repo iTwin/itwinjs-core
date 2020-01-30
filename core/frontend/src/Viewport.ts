@@ -1479,7 +1479,7 @@ export abstract class Viewport implements IDisposable {
    */
   public turnCameraOn(lensAngle?: Angle): ViewStatus {
     const view = this.view;
-    if (!view.is3d())
+    if (!view.is3d() || !view.supportsCamera())
       return ViewStatus.InvalidViewport;
 
     if (!lensAngle)
