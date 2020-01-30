@@ -17,6 +17,7 @@ import {
   compareIModelTileTreeIds,
   iModelTileTreeIdToString,
   PrimaryTileTreeId,
+  ViewFlag,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import {
@@ -124,10 +125,16 @@ class PrimaryTreeReference extends TileTreeReference {
 class PlanProjectionTreeReference extends PrimaryTreeReference {
   private _view3d: ViewState3d;
   private _curTransform?: { transform: Transform, elevation?: number };
+  private readonly _viewFlagOverrides = new ViewFlag.Overrides();
 
   public constructor(view: ViewState3d, model: GeometricModelState) {
     super(view, model);
     this._view3d = view;
+    this._viewFlagOverrides.setForceSurfaceDiscard(true);
+  }
+
+  protected getViewFlagOverrides(_tree: TileTree) {
+    return this._viewFlagOverrides;
   }
 
   protected computeTransform(tree: TileTree): Transform {
