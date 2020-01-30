@@ -62,7 +62,17 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
-import { Branch, Batch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
+import {
+  Batch,
+  Branch,
+  Graphic,
+  GraphicOwner,
+  GraphicsArray,
+} from "./Graphic";
+import {
+  createGraphicLayer,
+  createGraphicLayerContainer,
+} from "./Layer";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Techniques } from "./Technique";
@@ -875,6 +885,13 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public createGraphicOwner(owned: RenderGraphic): RenderGraphicOwner {
     return new GraphicOwner(owned as Graphic);
+  }
+
+  public createGraphicLayer(graphic: RenderGraphic, layerId: string) {
+    return createGraphicLayer(graphic, layerId);
+  }
+  public createGraphicLayerContainer(graphic: RenderGraphic) {
+    return createGraphicLayerContainer(graphic);
   }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {
