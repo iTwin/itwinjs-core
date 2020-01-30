@@ -5,6 +5,7 @@
 
 const chalk = require("chalk");
 const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
+const { PrettyLoggingPlugin } = require("@bentley/webpack-tools-core");
 
 const delims = chalk.inverse(".").split(".");
 const delims2 = chalk.underline.red(".").split(".");
@@ -36,7 +37,7 @@ function printFrontendInstructions(appName, urls) {
 
 function createCompiler(webpack, config, name, description, onSuccess = function () { }) {
   try {
-    config.plugins.push(new BentleyWebpackLoggingPlugin(name, description, onSuccess, formatter));
+    config.plugins.push(new PrettyLoggingPlugin(name, description, onSuccess, formatter));
     compiler = webpack(config);
   } catch (err) {
     console.log(`${chalk.red.inverse(name)} ${chalk.bold.red("Failed to configure webpack.\n")}`);
