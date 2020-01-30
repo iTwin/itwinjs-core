@@ -464,7 +464,7 @@ export abstract class RenderSystem implements IDisposable {
    */
   public createGraphicLayer(graphic: RenderGraphic, _layerId: string): RenderGraphic { return graphic; }
 
-  /** Create a graphic that can contain [[GraphicLayer]]s. 
+  /** Create a graphic that can contain [[GraphicLayer]]s.
    * @internal
    */
   public createGraphicLayerContainer(graphic: RenderGraphic): RenderGraphic { return graphic; }

@@ -676,7 +676,7 @@ export class ImdlReader extends GltfReader {
         if (undefined === primitives)
           continue;
 
-        const layerId = meshValue["layer"] as string | undefined;
+        const layerId = meshValue.layer as string | undefined;
 
         if ("Node_Root" === nodeKey) {
           for (const primitive of primitives) {
