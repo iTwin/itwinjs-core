@@ -20,14 +20,19 @@ describe("Opening IModelConnection (#integration)", () => {
     MockRender.App.startup();
     Logger.initializeToConsole();
 
+    const testProjectName = "iModelJsIntegrationTest";
+    const testIModelName = "Stadium Dataset 1";
+
+    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+
     const requestContext = new ClientRequestContext();
     const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
     await imsTestAuthorizationClient.signIn(requestContext, TestUsers.regular);
     IModelApp.authorizationClient = imsTestAuthorizationClient;
 
     // Setup a model with a large number of change sets
-    testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
-    testIModelId = await TestUtility.getTestIModelId(testProjectId, "Stadium Dataset 1");
+    testProjectId = await TestUtility.getTestProjectId(testProjectName);
+    testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
     // Setup a testChangeSetId somewhere in the middle of the change history
     const authorizedRequestContext = await AuthorizedFrontendRequestContext.create();

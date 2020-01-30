@@ -137,7 +137,7 @@ describe("PushRetry", () => {
     ChangeSummaryManager.detachChangeCache(testIModel);
   };
 
-  it("should be able to listen to posted named versions and change sets, and extract summary information from them (#integration)", async () => {
+  it.skip("should be able to listen to posted named versions and change sets, and extract summary information from them (#integration)", async () => {
     await testPushUtility.initialize(TestConfig.projectName, "PushTest");
     testIModelId = await testPushUtility.pushTestIModel();
 
