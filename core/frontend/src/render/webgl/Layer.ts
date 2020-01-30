@@ -49,9 +49,7 @@ class Layer extends GraphicWrapper {
   }
 
   public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    assert(commands.isDrawingLayers);
-    if (commands.isDrawingLayers)
-      this._graphic.addHiliteCommands(commands, pass);
+    this._graphic.addHiliteCommands(commands, pass);
   }
 }
 
@@ -65,7 +63,7 @@ class LayerContainer extends GraphicWrapper {
   }
 
   public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    commands.addLayerCommands(() => this._graphic.addHiliteCommands(commands, pass));
+    this._graphic.addHiliteCommands(commands, pass);
   }
 }
 
