@@ -223,7 +223,11 @@ export class PrimitiveCommand {
 }
 
 /** @internal */
-export type DrawCommand = PushBranchCommand | PopBranchCommand | PrimitiveCommand | PushBatchCommand | PopBatchCommand;
+export type PushCommand = PushBranchCommand | PushBatchCommand;
+/** @internal */
+export type PopCommand = PopBranchCommand | PopBatchCommand;
+/** @internal */
+export type DrawCommand = PushCommand | PopCommand | PrimitiveCommand;
 
 /** For a single RenderPass, an ordered list of commands to be executed during that pass.
  * @internal

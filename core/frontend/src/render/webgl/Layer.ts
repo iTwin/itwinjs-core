@@ -34,18 +34,19 @@ abstract class GraphicWrapper extends Graphic {
   }
 }
 
-class Layer extends GraphicWrapper {
-  private readonly _layerId: string;
+/** @internal */
+export class Layer extends GraphicWrapper {
+  public readonly layerId: string;
+
+  public get graphic(): Graphic { return this._graphic; }
 
   public constructor(graphic: Graphic, layerId: string) {
     super(graphic);
-    this._layerId = layerId;
+    this.layerId = layerId;
   }
 
   public addCommands(commands: RenderCommands): void {
-    assert(commands.isDrawingLayers);
-    if (commands.isDrawingLayers)
-      this._graphic.addCommands(commands);
+    commands.addLayerCommands(this);
   }
 
   public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
@@ -59,7 +60,7 @@ class LayerContainer extends GraphicWrapper {
   }
 
   public addCommands(commands: RenderCommands): void {
-    commands.addLayerCommands(this._graphic);
+    commands.processLayers(this, this._graphic);
   }
 
   public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {

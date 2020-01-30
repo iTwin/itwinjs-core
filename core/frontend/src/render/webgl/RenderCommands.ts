@@ -8,6 +8,9 @@
 
 import {
   assert,
+  compareNumbers,
+  compareStrings,
+  SortedArray,
 } from "@bentley/bentleyjs-core";
 import {
   Range3d,
@@ -30,9 +33,11 @@ import {
   getAnimationBranchState,
   PopBatchCommand,
   PopBranchCommand,
+  PopCommand,
   PrimitiveCommand,
   PushBatchCommand,
   PushBranchCommand,
+  PushCommand,
 } from "./DrawCommand";
 import {
   BatchState,
@@ -52,6 +57,127 @@ import {
 } from "./Graphic";
 import { Primitive } from "./Primitive";
 import { MeshGraphic } from "./Mesh";
+import { Layer } from "./Layer";
+
+/** DrawCommands associated with one Layer, drawn during the Layers render pass. */
+class LayerCommands {
+  public readonly layerId: string;
+  public readonly priority: number;
+  public readonly commands: DrawCommand[] = [];
+  public currentContainer?: Object;
+
+  public constructor(layerId: string, priority: number, cmds: DrawCommand[], container: Object) {
+    this.layerId = layerId;
+    this.priority = priority;
+    this.currentContainer = container;
+
+    for (const cmd of cmds)
+      this.commands.push(cmd);
+  }
+}
+
+/** Organizes DrawCommands by layer. Once all commands have been added, each LayerCommands list of commands can be concatenated to produce
+ * the full, ordered list of commands for the Layers render pass.
+ * The array is sorted in ascending order by priority so that lower-priority commands execute first, allowing geometry from subsequent commands to
+ * overwrite them in the depth buffer.
+ */
+class LayerCommandMap extends SortedArray<LayerCommands> {
+  // Commands that need to be pushed onto any new LayerCommands before adding primitive commands.
+  private readonly _pushCommands: PushCommand[] = [];
+  private readonly _popCommands: PopCommand[] = [];
+  private _currentContainer?: Object;
+  private _currentLayer?: Layer;
+  private _fakePriority = 0;
+
+  public constructor() {
+    super((lhs: LayerCommands, rhs: LayerCommands) => {
+      const cmp = compareNumbers(lhs.priority, rhs.priority);
+      return 0 !== cmp ? cmp : compareStrings(lhs.layerId, rhs.layerId);
+    });
+  }
+
+  public clear(): void {
+    super.clear();
+    this._fakePriority = 0;
+    assert(0 === this._pushCommands.length);
+    assert(0 === this._popCommands.length);
+    assert(undefined === this._currentContainer);
+    assert(undefined === this._currentLayer);
+  }
+
+  public processLayers(container: Object, func: () => void): void {
+    assert(undefined === this._currentContainer);
+    assert(undefined === this._currentLayer);
+
+    this._currentContainer = container;
+
+    func();
+
+    for (const entry of this._array) {
+      if (entry.currentContainer === this._currentContainer) {
+        for (let i = this._popCommands.length - 1; i >= 0; i--)
+          entry.commands.push(this._popCommands[i]);
+      }
+    }
+
+    this._pushCommands.length = this._popCommands.length = 0;
+
+    assert(undefined === this._currentLayer);
+    this._currentContainer = undefined;
+  }
+
+  public pushAndPop(push: PushCommand, pop: PopCommand, func: () => void): void {
+    assert(undefined !== this._currentContainer);
+    if (undefined !== this._currentLayer) {
+      const cmds = this.getCommands(this._currentLayer);
+      cmds.commands.push(push);
+      func();
+      cmds.commands.push(pop);
+    } else {
+      this._pushCommands.push(push);
+      this._popCommands.push(pop);
+      func();
+    }
+  }
+
+  public set currentLayer(layer: Layer | undefined) {
+    assert(undefined === layer || undefined === this._currentLayer);
+    this._currentLayer = layer;
+  }
+
+  public addCommands(commands: DrawCommand[]): void {
+    assert(undefined !== this._currentContainer);
+    assert(undefined !== this._currentLayer);
+
+    const cmds = this.getCommands(this._currentLayer);
+    for (const command of commands)
+      cmds.commands.push(command);
+  }
+
+  public outputCommands(cmds: DrawCommand[]): void {
+    for (const entry of this._array)
+      for (const cmd of entry.commands)
+        cmds.push(cmd);
+  }
+
+  private getCommands(layer: Layer): LayerCommands {
+    for (const entry of this._array) {
+      if (entry.layerId === layer.layerId) {
+        if (entry.currentContainer !== this._currentContainer) {
+          for (const cmd of this._pushCommands)
+            entry.commands.push(cmd);
+
+          entry.currentContainer = this._currentContainer;
+          return entry;
+        }
+      }
+    }
+
+    const cmds = new LayerCommands(layer.layerId, ++this._fakePriority, this._pushCommands, this._currentContainer!);
+    this.insert(cmds);
+    return cmds;
+  }
+}
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal
@@ -68,6 +194,8 @@ export class RenderCommands {
   private _opaqueOverrides = false;
   private _translucentOverrides = false;
   private _addTranslucentAsOpaque = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
+  private readonly _layers = new LayerCommandMap();
+
   public get target(): Target { return this._target; }
 
   public get isEmpty(): boolean {
@@ -290,16 +418,30 @@ export class RenderCommands {
     });
   }
 
-  public addLayerCommands(graphic: Graphic): void {
+  public processLayers(container: Object, graphic: Graphic): void {
     assert(RenderPass.None === this._forcedRenderPass);
     if (RenderPass.None !== this._forcedRenderPass)
       return;
 
     this._forcedRenderPass = RenderPass.Layers;
-
-    graphic.addCommands(this);
-
+    this._layers.processLayers(container, () => graphic.addCommands(this));
     this._forcedRenderPass = RenderPass.None;
+  }
+
+  public addLayerCommands(layer: Layer): void {
+    assert(RenderPass.Layers === this._forcedRenderPass);
+    if (RenderPass.Layers !== this._forcedRenderPass)
+      return;
+
+    // Let the graphic add its commands to RenderPass.Layers. Afterward, pull them out and add them to the LayerCommands.
+    this._layers.currentLayer = layer;
+    layer.graphic.addCommands(this);
+
+    const cmds = this.getCommands(RenderPass.Layers);
+    this._layers.addCommands(cmds);
+
+    cmds.length = 0;
+    this._layers.currentLayer = undefined;
   }
 
   public addHiliteLayerCommands(graphic: Graphic, pass: RenderPass): void {
@@ -320,6 +462,8 @@ export class RenderCommands {
   }
 
   private pushAndPopBranchForPass(pass: RenderPass, branch: Branch, func: () => void): void {
+    assert(!this.isDrawingLayers);
+
     if (this.shouldOmitBranch(branch))
       return;
 
@@ -342,7 +486,20 @@ export class RenderCommands {
       cmds.push(PopBranchCommand.instance);
   }
 
-  private pushAndPop(push: DrawCommand, pop: DrawCommand, func: () => void): void {
+  private pushAndPop(push: PushCommand, pop: PopCommand, func: () => void): void {
+    if (this.isDrawingLayers){
+      this._commands[RenderPass.Hilite].push(push);
+      this._layers.pushAndPop(push, pop, func);
+
+      const cmds = this._commands[RenderPass.Hilite];
+      if (0 < cmds.length && cmds[cmds.length - 1] === push)
+        cmds.pop();
+      else
+        cmds.push(pop);
+
+      return;
+    }
+
     const emptyRenderPass = RenderPass.None === this._forcedRenderPass,
       start = emptyRenderPass ? 0 : this._forcedRenderPass,
       end = emptyRenderPass ? this._commands.length : start + 1;
@@ -350,22 +507,11 @@ export class RenderCommands {
     for (let i = start; i < end; i++)
       this._commands[i].push(push);
 
-    if (this.isDrawingLayers)
-      this._commands[RenderPass.Hilite].push(push);
-
     func();
 
     for (let i = start; i < end; i++) {
       const cmds = this._commands[i];
       assert(0 < cmds.length);
-      if (0 < cmds.length && cmds[cmds.length - 1] === push)
-        cmds.pop();
-      else
-        cmds.push(pop);
-    }
-
-    if (this.isDrawingLayers) {
-      const cmds = this._commands[RenderPass.Hilite];
       if (0 < cmds.length && cmds[cmds.length - 1] === push)
         cmds.pop();
       else
@@ -390,8 +536,10 @@ export class RenderCommands {
     assert(this._batchState.isEmpty);
     this._clearCommands();
   }
+
   private _clearCommands(): void {
     this._commands.forEach((cmds: DrawCommands) => { cmds.splice(0); });
+    this._layers.clear();
   }
 
   public initForPickOverlays(overlays: GraphicList): void {
@@ -463,6 +611,8 @@ export class RenderCommands {
     }
 
     this.setupClassificationByVolume();
+
+    this._layers.outputCommands(this.getCommands(RenderPass.Layers));
   }
 
   public addPrimitive(prim: Primitive): void {
