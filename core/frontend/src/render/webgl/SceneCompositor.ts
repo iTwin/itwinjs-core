@@ -582,6 +582,7 @@ abstract class Compositor extends SceneCompositor {
   protected _geom: Geometry;
   protected _readPickDataFromPingPong: boolean = true;
   protected _opaqueRenderState = new RenderState();
+  protected _layerRenderState = new RenderState();
   protected _translucentRenderState = new RenderState();
   protected _noDepthMaskRenderState = new RenderState();
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
@@ -601,6 +602,7 @@ abstract class Compositor extends SceneCompositor {
   public abstract set currentRenderTargetIndex(_index: number);
 
   protected abstract clearOpaque(_needComposite: boolean): void;
+  protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean): void;
   protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderForVolumeClassification(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderIndexedClassifierForReadPixels(_commands: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, _needComposite: boolean): void;
@@ -775,6 +777,11 @@ abstract class Compositor extends SceneCompositor {
     this.renderVolumeClassification(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
 
+    // Render layers
+    this.target.beginPerfMetricRecord("Render Layers");
+    this.renderLayers(commands, needComposite);
+    this.target.endPerfMetricRecord();
+
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
@@ -818,12 +825,19 @@ abstract class Compositor extends SceneCompositor {
       this.target.beginPerfMetricRecord("Enable Clipping", true);
       this.target.pushActiveVolume();
       this.target.endPerfMetricRecord(true);
+
       this.target.beginPerfMetricRecord("Render VolumeClassification", true);
       this.renderVolumeClassification(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
+
+      this.target.beginPerfMetricRecord("Render Layers", true);
+      this.renderLayers(commands, false);
+      this.target.endPerfMetricRecord(true);
+
       this.target.beginPerfMetricRecord("Render Opaque", true);
       this.renderOpaque(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
+
       this.target.popActiveVolume();
     }
 
@@ -1452,8 +1466,7 @@ abstract class Compositor extends SceneCompositor {
   protected getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
       case RenderPass.Layers:
-        // ###TODO
-        return this._opaqueRenderState;
+        return this._layerRenderState;
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
@@ -1682,6 +1695,12 @@ class MRTCompositor extends Compositor {
     }
   }
 
+  protected renderLayers(commands: RenderCommands, needComposite: boolean): void {
+    System.instance.frameBufferStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
+      this.drawPass(commands, RenderPass.Layers, false);
+    });
+  }
+
   protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
     const needComposite = CompositeFlags.None !== compositeFlags;
     const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
@@ -1837,6 +1856,8 @@ class MPCompositor extends Compositor {
 
   protected getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
+      case RenderPass.Layers:
+        // ###TODO
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
@@ -1891,6 +1912,16 @@ class MPCompositor extends Compositor {
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
     }
+  }
+
+  protected renderLayers(_commands: RenderCommands, _needComposite: boolean): void {
+    /* ###TODO
+    if (0 === commands.getCommands(RenderPass.Layer).length)
+      return;
+
+    const colorFbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
+    this.drawOpaquePass(colorFbo, commands, RenderPass.
+    */
   }
 
   protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {

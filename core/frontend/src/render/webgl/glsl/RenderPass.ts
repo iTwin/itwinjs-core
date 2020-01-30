@@ -9,6 +9,21 @@
 import { ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { RenderPass } from "../RenderFlags";
 
+// render passes actually used in shader code.
+const renderPasses = [
+  [ RenderPass.Background, "Background" ],
+  [ RenderPass.OpaqueLinear, "OpaqueLinear" ],
+  [ RenderPass.OpaquePlanar, "OpaquePlanar" ],
+  [ RenderPass.OpaqueGeneral, "OpaqueGeneral" ],
+  [ RenderPass.Classification, "Classification" ],
+  [ RenderPass.Translucent, "Translucent" ],
+  [ RenderPass.HiddenEdge, "HiddenEdge" ],
+  [ RenderPass.Hilite, "Hilite" ],
+  [ RenderPass.WorldOverlay, "WorldOverlay" ],
+  [ RenderPass.ViewOverlay, "ViewOverlay" ],
+  [ RenderPass.PlanarClassification, "PlanarClassification" ],
+];
+
 /**
  * Adds a uniform holding the current render pass and a set of kRenderPass_* constants
  * uniform float u_renderPass
@@ -18,23 +33,13 @@ export function addRenderPass(builder: ShaderBuilder) {
   builder.addUniform("u_renderPass", VariableType.Float, (prog) => {
     prog.addProgramUniform("u_renderPass", (uniform, params) => {
       let renderPass = params.renderPass;
-      if (RenderPass.HiddenEdge === renderPass) {
+      if (RenderPass.HiddenEdge === renderPass || RenderPass.Layers === renderPass)
         renderPass = RenderPass.OpaqueGeneral; // no distinction from shader POV...
-      }
 
       uniform.setUniform1f(renderPass);
     });
   });
 
-  builder.addGlobal("kRenderPass_Background", VariableType.Float, "0.0", true);
-  builder.addGlobal("kRenderPass_OpaqueLinear", VariableType.Float, "1.0", true);
-  builder.addGlobal("kRenderPass_OpaquePlanar", VariableType.Float, "2.0", true);
-  builder.addGlobal("kRenderPass_OpaqueGeneral", VariableType.Float, "3.0", true);
-  builder.addGlobal("kRenderPass_Classification", VariableType.Float, "4.0", true);
-  builder.addGlobal("kRenderPass_Translucent", VariableType.Float, "5.0", true);
-  builder.addGlobal("kRenderPass_HiddenEdge", VariableType.Float, "6.0", true);
-  builder.addGlobal("kRenderPass_Hilite", VariableType.Float, "7.0", true);
-  builder.addGlobal("kRenderPass_WorldOverlay", VariableType.Float, "8.0", true);
-  builder.addGlobal("kRenderPass_ViewOverlay", VariableType.Float, "9.0", true);
-  builder.addGlobal("kRenderPass_PlanarClassification", VariableType.Float, "15.0", true);
+  for (const renderPass of renderPasses)
+    builder.addGlobal("kRenderPass_" + renderPass[1], VariableType.Float, renderPass[0].toString() + ".0", true);
 }
