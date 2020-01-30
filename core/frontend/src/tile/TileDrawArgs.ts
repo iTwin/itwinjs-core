@@ -24,6 +24,7 @@ import { Tile, TileTree } from "./internal";
 import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { FeatureSymbology } from "../render/FeatureSymbology";
+import { RenderGraphic } from "../render/RenderGraphic";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
@@ -114,15 +115,19 @@ export class TileDrawArgs {
 
   public get clip(): ClipVector | undefined { return undefined !== this.clipVolume ? this.clipVolume.clipVector : undefined; }
 
-  public drawGraphics(): void {
+  public produceGraphics(): RenderGraphic | undefined {
     if (this.graphics.isEmpty)
-      return;
+      return undefined;
 
     const classifierOrDrape = undefined !== this.planarClassifier ? this.planarClassifier : this.drape;
     const opts = { iModel: this.root.iModel, clipVolume: this.clipVolume, classifierOrDrape };
-    const branch = this.context.createGraphicBranch(this.graphics, this.location, opts);
+    return this.context.createGraphicBranch(this.graphics, this.location, opts);
+  }
 
-    this.context.outputGraphic(branch);
+  public drawGraphics(): void {
+    const graphics = this.produceGraphics();
+    if (undefined !== graphics)
+      this.context.outputGraphic(graphics);
   }
 
   public insertMissing(tile: Tile): void {

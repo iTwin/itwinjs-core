@@ -36,6 +36,7 @@ import {
 } from "../ViewState";
 import { IModelApp } from "../IModelApp";
 import { GeometricModelState } from "../ModelState";
+import { SceneContext } from "../ViewContext";
 
 interface PrimaryTreeId {
   readonly treeId: PrimaryTileTreeId;
@@ -134,6 +135,19 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
   protected getViewFlagOverrides(_tree: TileTree) {
     return this._viewFlagOverrides;
+  }
+
+  public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+    const args = super.createDrawArgs(context);
+    if (undefined !== args) {
+      args.drawGraphics = () => {
+        const graphics = args.produceGraphics();
+        if (undefined !== graphics)
+          context.outputGraphic(context.target.renderSystem.createGraphicLayerContainer(graphics));
+      };
+    }
+
+    return args;
   }
 
   protected computeTransform(tree: TileTree): Transform {

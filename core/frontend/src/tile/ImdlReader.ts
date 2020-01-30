@@ -676,13 +676,15 @@ export class ImdlReader extends GltfReader {
         if (undefined === primitives)
           continue;
 
+        const layerId = meshValue["layer"] as string | undefined;
+
         if ("Node_Root" === nodeKey) {
           for (const primitive of primitives) {
             const graphic = this.readMeshGraphic(primitive);
             if (undefined !== graphic)
               graphics.push(graphic);
           }
-        } else {
+        } else if (undefined === layerId) {
           const branch = new GraphicBranch(true);
           branch.animationId = this._modelId + "_" + nodeKey;
           for (const primitive of primitives) {
@@ -690,8 +692,21 @@ export class ImdlReader extends GltfReader {
             if (undefined !== graphic)
               branch.add(graphic);
           }
+
           if (!branch.isEmpty)
             graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
+        } else {
+          const layerGraphics: RenderGraphic[] = [];
+          for (const primitive of primitives) {
+            const graphic = this.readMeshGraphic(primitive);
+            if (undefined !== graphic)
+              layerGraphics.push(graphic);
+          }
+
+          if (layerGraphics.length > 0) {
+            const layerGraphic = 1 === layerGraphics.length ? layerGraphics[0] : this._system.createGraphicList(layerGraphics);
+            graphics.push(this._system.createGraphicLayer(layerGraphic, layerId));
+          }
         }
       }
     }
