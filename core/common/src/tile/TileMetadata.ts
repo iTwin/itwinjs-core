@@ -86,6 +86,15 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
   return Math.max(Math.floor(majorVersion), 1);
 }
 
+/** Flags controlling the structure of a tile tree. The flags are part of the tile tree's Id.
+ * @internal
+ */
+const enum TreeFlags {
+  None = 0,
+  UseProjectExtents = 1 << 0, // Use project extents as the basis of the tile tree's range.
+  EnforceDisplayPriority = 1 << 1, // For 3d plan projection models, group graphics into layers based on subcategory.
+}
+
 /** Describes a tile tree used to draw the contents of a model, possibly with embedded animation.
  * @internal
  */
@@ -93,6 +102,7 @@ export interface PrimaryTileTreeId {
   type: BatchType.Primary;
   edgesRequired: boolean;
   animationId?: Id64String;
+  enforceDisplayPriority?: boolean;
 }
 
 /** Describes a tile tree that can classify the contents of other tile trees using the model's geometry.
@@ -114,16 +124,13 @@ export type IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId;
  */
 export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string {
   let idStr = "";
-  const version = getMaximumMajorTileFormatVersion(options.maximumMajorTileFormatVersion);
-  if (version >= 4) {
-    const useProjectExtents = options.useProjectExtents || BatchType.VolumeClassifier === treeId.type;
-    const flags = useProjectExtents ? "_1-" : "_0-";
-    idStr = version.toString() + flags;
-  }
+  let flags = options.useProjectExtents ? TreeFlags.UseProjectExtents : TreeFlags.None;
 
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)
       idStr = idStr + "A:" + treeId.animationId + "_";
+    else if (treeId.enforceDisplayPriority) // animation and priority are currently mutually exclusive
+      flags |= TreeFlags.EnforceDisplayPriority;
 
     if (!treeId.edgesRequired) {
       // Tell backend not to bother generating+returning edges - we would just discard them anyway
@@ -133,9 +140,18 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
     const typeStr = BatchType.PlanarClassifier === treeId.type ? "CP" : "C";
     idStr = idStr + typeStr + ":" + treeId.expansion.toFixed(6) + "_";
 
+    if (BatchType.VolumeClassifier === treeId.type)
+      flags |= TreeFlags.UseProjectExtents;
+
     if (undefined !== treeId.animationId) {
       idStr = idStr + "A:" + treeId.animationId + "_";
     }
+  }
+
+  const version = getMaximumMajorTileFormatVersion(options.maximumMajorTileFormatVersion);
+  if (version >= 4) {
+    const prefix = version.toString(16) + "_" + flags.toString(16) + "-";
+    idStr = prefix + idStr;
   }
 
   return idStr + modelId;
@@ -153,6 +169,9 @@ export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileT
     const r = rhs as PrimaryTileTreeId;
     if (lhs.edgesRequired !== r.edgesRequired)
       return lhs.edgesRequired ? -1 : 1;
+
+    if (lhs.enforceDisplayPriority !== r.enforceDisplayPriority)
+      return lhs.enforceDisplayPriority ? -1 : 1;
 
     return compareStringsOrUndefined(lhs.animationId, r.animationId);
   }

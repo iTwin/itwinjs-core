@@ -672,7 +672,7 @@ export class ImdlReader extends GltfReader {
     } else {
       for (const nodeKey of Object.keys(this._nodes)) {
         const meshValue = this._meshes[this._nodes[nodeKey]];
-        const primitives = JsonUtils.asArray(meshValue.primitives);
+        const primitives = JsonUtils.asArray(meshValue?.primitives);
         if (undefined === primitives)
           continue;
 

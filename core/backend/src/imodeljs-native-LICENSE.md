@@ -1,6 +1,6 @@
 ﻿# BENTLEY RIGHT-TO-RUN AUTHORIZATION
 
-## iModel.js NATIVE MODULE
+## iModel.js Native Module
 
 This right-to-run authorization is an agreement between Bentley Systems International Limited, if you are located outside of the geographic boundaries of the United States or Canada, or Bentley Systems, Incorporated if you are located within the geographic boundaries of the United States or Canada (**“Bentley”**), and you. Please read these terms. They apply to the software named above. The terms also apply to any Bentley updates, supplements, Internet-based services, and support services for this software, unless other terms accompany those items. If so, those terms apply.
 
@@ -9,15 +9,15 @@ This right-to-run authorization is an agreement between Bentley Systems Internat
 1. **RIGHT-TO-RUN.** You may use the software if:
     **a.** You are using a [Snapshot iModel](https://www.imodeljs.org/learning/backend/accessingimodels/snapshot-imodels),
     **b.** Or, for **all other iModels**, you and the program you are operating are identified and authorized by the owner of the data you wish to access, and such owner has been duly authorized by either Bentley or a third party authorized by Bentley to grant such permission.
-2. **SCOPE.** The right-to-run granted to you by this agreement only gives you some rights to use the software on a per use basis. Bentley reserves all other rights. You may use the software only as expressly permitted in this agreement. In doing so, you must comply with any technical limitations in the software that only allow you to use it in certain ways. **You may not:**
 
-    * Modify the software in any way;
-    * Reverse engineer, decompile or disassemble the software, except and only to the extent that applicable law expressly permits, despite this limitation;
-    * Rent, lease or lend the software;
-    * Transfer the software or this agreement to any third party; or
-    * Use the software for commercial software hosting services.
+2. **SCOPE.** The right-to-run granted to you by this agreement only gives you some rights to use the software on a per use basis. Bentley reserves all other rights. You may use the software only as expressly permitted in this agreement. In doing so, you must comply with any technical limitations in the software that only allow you to use it in certain ways.
 
-3. **SUPPORT SERVICES.** Because this software is “as is,” we may not provide support services for it.
+**You may not:**
+
+- modify the software in any way; or
+- reverse engineer, decompile or disassemble the software, except and only to the extent that applicable law expressly permits, despite this limitation.
+
+3. **SUPPORT SERVICES.** Because this software is “as is,” we do not provide support services for it.
 
 4. **DISCLAIMER OF WARRANTY. Bentley grants you the right to use the software “as-is.” You bear the risk of using it. Bentley gives no express warranties, guarantees or conditions. You may have additional consumer rights or statutory guarantees under your local laws which this agreement cannot change. To the extent permitted under your local laws, Bentley excludes the implied warranties of merchantability, fitness for a particular purpose and non-infringement.**
 

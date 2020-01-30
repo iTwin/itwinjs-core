@@ -63,7 +63,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     const idStr = iModelTileTreeIdToString(id.modelId, treeId, IModelApp.tileAdmin);
     const props = await iModel.tiles.getTileTreeProps(idStr);
 
-    const allowInstancing = undefined === treeId.animationId;
+    const allowInstancing = undefined === treeId.animationId && !treeId.enforceDisplayPriority;
     const edgesRequired = treeId.edgesRequired;
 
     const loader = new IModelTileLoader(iModel, props.formatVersion, BatchType.Primary, edgesRequired, allowInstancing, id.guid);
@@ -92,14 +92,14 @@ class PrimaryTreeReference extends TileTreeReference {
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
-      treeId: PrimaryTreeReference.createTreeId(view, model.id),
+      treeId: this.createTreeId(view, model.id),
       guid: model.geometryGuid,
     };
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
   }
 
   public get treeOwner(): TileTreeOwner {
-    const newId = PrimaryTreeReference.createTreeId(this._view, this._id.modelId);
+    const newId = this.createTreeId(this._view, this._id.modelId);
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
       this._id = {
         modelId: this._id.modelId,
@@ -114,7 +114,7 @@ class PrimaryTreeReference extends TileTreeReference {
     return this._owner;
   }
 
-  private static createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
+  protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
     const script = view.scheduleScript;
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
     const edgesRequired = view.viewFlags.edgesRequired();
@@ -123,13 +123,12 @@ class PrimaryTreeReference extends TileTreeReference {
 }
 
 class PlanProjectionTreeReference extends PrimaryTreeReference {
-  private _view3d: ViewState3d;
+  private get _view3d() { return this._view as ViewState3d; }
   private _curTransform?: { transform: Transform, elevation?: number };
   private readonly _viewFlagOverrides = new ViewFlag.Overrides();
 
   public constructor(view: ViewState3d, model: GeometricModelState) {
     super(view, model);
-    this._view3d = view;
     this._viewFlagOverrides.setForceSurfaceDiscard(true);
   }
 
@@ -164,6 +163,15 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
   private getSettings() {
     return this._view3d.getDisplayStyle3d().settings.getPlanProjectionSettings(this._model.id);
+  }
+
+  protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
+    const id = super.createTreeId(view, modelId);
+    const settings = this.getSettings();
+    if (undefined !== settings && settings.enforceDisplayPriority)
+      id.enforceDisplayPriority = true;
+
+    return id;
   }
 }
 
