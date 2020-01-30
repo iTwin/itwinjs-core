@@ -85,7 +85,7 @@ describe("Techniques", () => {
   });
 
   // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
-  const compileTimeout = "16000";
+  const compileTimeout = "25000";
   function compileAllShaders(opts?: RenderSystem.Options): void {
     if (undefined !== opts) {
       // Replace current render system with customized one
