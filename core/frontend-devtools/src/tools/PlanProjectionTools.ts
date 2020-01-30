@@ -125,9 +125,8 @@ export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool 
       return undefined !== model && isPlanProjectionModel(model);
     };
     const isPlanProjectionModel = (model: ModelState) => {
-      const haveFixForBug = false; // ###TODO Backend omits these flags...remove when fix is available.
       const model3d = model.asGeometricModel3d;
-      return undefined !== model3d && (!haveFixForBug || model3d.isPlanProjection);
+      return undefined !== model3d && model3d.isPlanProjection;
     };
 
     switch (models[0]) {
