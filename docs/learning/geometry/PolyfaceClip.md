@@ -21,12 +21,12 @@ Unit Test
 
 |  |  |
 |---|---|
-| grey: closed volume mesh <br> green: section plane  | ![>](./figs/PolyfaceClip\SectionCut\MeshVolumeAndPlane.png) |
+| grey: closed volume mesh <br> green: section plane  | ![>](./figs/PolyfaceClip/SectionCut/MeshVolumeAndPlane.png) |
 | extract linework of section cut | `  const section = PolyfaceClip.sectionPolyfaceClipPlane(facets, clipPlane);` |
-| This produces an array of `LineString3d` | ![>](./figs/PolyfaceClip\SectionCut\SectionCutAsLines.png) |
+| This produces an array of `LineString3d` | ![>](./figs/PolyfaceClip/SectionCut/SectionCutAsLines.png) |
 | Clip the facet set and produce facets on the cut plane <br>
  `insideClip` is a boolean controlling which side of the cut is kept. |`  const clippedPolyface = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, insideClip, true);' |
- | Lower and upper parts | ![>](./figs/PolyfaceClip\SectionCut\LowerAndUpperParts.png)
+ | Lower and upper parts | ![>](./figs/PolyfaceClip/SectionCut/LowerAndUpperParts.png)
 
 
 

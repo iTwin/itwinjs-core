@@ -27,7 +27,7 @@ export type ValueType = string | boolean | number;
  *
  * **Expanding variables** is supported using `${}` syntax.  If the variable is of type string and contains a `${}`, the rest of
  * the configuration variables are searched to populate the place of the variable.
- *  i.e. If the variable `appName='TestApp'`, a variable with a value of 'https://${appName}' will be expanded to 'https://TestApp'.
+ *  i.e. If the variable `appName='TestApp'`, a variable with a value of 'https://${appName}' will be expanded to `https://TestApp`.
  * > Does not recursively expand variables such as, `appName=${appName}`.
  *
  * @public

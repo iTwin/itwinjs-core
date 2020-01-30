@@ -36,7 +36,7 @@ This tests whether single points are in, out, or on an xy region.
 
 |  |  |
 |---|---|
-| Parity region with various test points <br> circle is "on" <br> diamond is "in" <br> plus is "out" | ![>](./figs/RegionOps/testPointInOnOutRegionXY\ParityRegionWithSinglePointInOut.png) |
+| Parity region with various test points <br> circle is "on" <br> diamond is "in" <br> plus is "out" | ![>](./figs/RegionOps/testPointInOnOutRegionXY/ParityRegionWithSinglePointInOut.png) |
 
 
 Unit Test

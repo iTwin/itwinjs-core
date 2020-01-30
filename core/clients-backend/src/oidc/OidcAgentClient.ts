@@ -28,7 +28,7 @@ export type OidcAgentClientConfiguration = OidcBackendClientConfiguration;
  * * The client type must be "Agent"
  * * Use the Client Id/Client Secret/Scopes to create the agent configuration that's passed in.
  * * Ensure the application can access the Connect Project/Asset - in production environments, this is done by
- * using the connect project portal to add add the email **{Client Id}@apps.imsoidc.bentley.com** as an authorized user
+ * using the connect project portal to add add the email **`{Client Id}@apps.imsoidc.bentley.com`** as an authorized user
  * with the appropriate role that includes the required access permissions.
  * @beta
  */

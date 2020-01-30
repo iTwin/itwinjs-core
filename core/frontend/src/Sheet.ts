@@ -127,7 +127,7 @@ export class SheetBorder {
   }
 }
 
-/** A view of a [SheetModel](@backend).
+/** A view of a [SheetModel]($backend).
  * @public
  */
 export class SheetViewState extends ViewState2d {
