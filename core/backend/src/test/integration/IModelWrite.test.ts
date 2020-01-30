@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbOpcode, DbResult, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { CodeState, HubCode, HubIModel, IModelQuery, Lock, LockLevel, LockType, MultiCode, IModelHubError } from "@bentley/imodeljs-clients";
-import { CodeScopeSpec, CodeSpec, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, IModel, IModelVersion, SubCategoryAppearance, IModelError } from "@bentley/imodeljs-common";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
@@ -336,6 +336,51 @@ describe("IModelWriteTest (#integration)", () => {
     const codes = await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
     timer.end();
     expect(codes.length > initialCodes.length);
+  });
+
+  it("should defer locks and codes in bulk mode (#integration)", async () => {
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "ConcurrencyControlBulkModeTest";
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(adminRequestContext, writeTestProjectId, new IModelQuery().byName(iModelName));
+    for (const iModelTemp of iModels) {
+      await BriefcaseManager.imodelClient.iModels.delete(adminRequestContext, writeTestProjectId, iModelTemp.id!);
+    }
+
+    // Create a new empty iModel on the Hub & obtain a briefcase
+    const rwIModel: IModelDb = await IModelDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = rwIModel.iModelToken.iModelId;
+    assert.isNotEmpty(rwIModelId);
+
+    const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+    assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
+    const subcat = new SubCategoryAppearance({ color: 0xff0000 });
+    const newModelCode = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
+
+    assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
+
+    assert.throws(() => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, newModelCode, true), IModelError);  // s/ have errorNumber=RepositoryStatus.LockNotHeld
+    assert.throws(() => SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, subcat), IModelError);  // s/ have errorNumber=RepositoryStatus.LockNotHeld
+
+    // assert.isUndefined(rwIModel.models.tryGetModelProps())
+    assert.isUndefined(rwIModel.elements.tryGetElement(newCategoryCode));
+
+    rwIModel.concurrencyControl.startBulkMode();
+    // rwIModel.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
+
+    assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
+
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, newModelCode, true);
+    SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, subcat);
+
+    assert.isTrue(undefined !== rwIModel.elements.getElement(newCategoryCode));
+
+    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
+    await rwIModel.concurrencyControl.request(adminRequestContext);
+    assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
+    rwIModel.saveChanges("inserted generic objects");
+
   });
 
   it("should handle undo/redo (#integration)", async () => {

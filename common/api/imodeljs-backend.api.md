@@ -755,6 +755,8 @@ export class ConcurrencyControl {
     // @internal
     buildRequestForRelationship(_instance: RelationshipProps, _opcode: DbOpcode): void;
     get codes(): ConcurrencyControl.Codes;
+    // @internal (undocumented)
+    endBulkMode(rqctx: AuthorizedClientRequestContext): Promise<void>;
     // (undocumented)
     getHeldElementLock(elementId: Id64String): LockLevel;
     // (undocumented)
@@ -770,6 +772,8 @@ export class ConcurrencyControl {
     get hasSchemaLock(): boolean;
     // @internal (undocumented)
     get iModel(): IModelDb;
+    // @internal (undocumented)
+    get isBulkMode(): boolean;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     // @internal (undocumented)
@@ -820,6 +824,8 @@ export class ConcurrencyControl {
     requestResourcesForUpdate(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
     reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]>;
     setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void;
+    // @internal (undocumented)
+    startBulkMode(): void;
     // (undocumented)
     syncCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
 }

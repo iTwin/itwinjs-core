@@ -28,6 +28,7 @@ export class ConcurrencyControl {
   private _pendingRequest = new ConcurrencyControl.Request();
   private _codes?: ConcurrencyControl.Codes;
   private _policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
+  private _bulkMode: boolean = false;
   private _cache: ConcurrencyControl.StateCache;
   private _modelsAffectedByWrites = new Set<Id64String>(); // TODO: Remove this when we get tile healing
 
@@ -48,6 +49,29 @@ export class ConcurrencyControl {
   /** @internal */
   public get needLocks(): boolean {
     return this._policy === ConcurrencyControl.PessimisticPolicy;
+  }
+
+  /** @internal */
+  public startBulkMode() {
+    if (this._bulkMode)
+      throw new IModelError(IModelStatus.BadRequest, "Already in bulk mode", Logger.logError, loggerCategory);
+    if (this._iModel.txns.hasUnsavedChanges)
+      throw new IModelError(IModelStatus.BadRequest, "has unsaved changes", Logger.logError, loggerCategory);
+    this._bulkMode = true;
+  }
+
+  /** @internal */
+  public get isBulkMode() {
+    return this._bulkMode;
+  }
+
+  /** @internal */
+  public async endBulkMode(rqctx: AuthorizedClientRequestContext) {
+    if (!this._bulkMode)
+      throw new IModelError(IModelStatus.BadRequest, "Not in bulk mode", Logger.logError, loggerCategory);
+    if (this.hasPendingRequests)
+      await this.request(rqctx);
+    this._bulkMode = false;
   }
 
   /** @internal */
@@ -105,7 +129,7 @@ export class ConcurrencyControl {
   }
 
   private applyPolicyBeforeWrite(req: ConcurrencyControl.Request) {
-    if (!this.needLocks)
+    if (!this.needLocks || this.isBulkMode)
       return;
 
     for (const lock of req.locks) {
@@ -304,6 +328,7 @@ export class ConcurrencyControl {
    * ``` ts
    * [[include:ConcurrencyControl.request]]
    * ```
+   * Note that this function will request resources even in bulk mode.
    * @param requestContext The client request context
    * @param req The requests to be sent to iModelHub. If undefined, all pending requests are sent to iModelHub.
    * @throws [[IModelHubError]] if some or all of the request could not be fulfilled by iModelHub.
