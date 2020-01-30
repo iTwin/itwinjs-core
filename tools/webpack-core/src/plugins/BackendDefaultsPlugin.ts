@@ -7,32 +7,20 @@ import { IModelJsOptionsDefaulter } from "../utils/IModelJsOptionsDefaulter";
 import { CopyAppAssetsPlugin, CopyBentleyStaticResourcesPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 
-// tslint:disable:no-var-requires variable-name
-const OptionsDefaulter = require("webpack/lib/OptionsDefaulter");
+// tslint:disable-next-line:no-var-requires variable-name
 const ExternalsPlugin = require("webpack/lib/ExternalsPlugin");
-
-class BackendOptionsDefaulter extends OptionsDefaulter {
-  constructor() {
-    super();
-
-    // By default, webpack will prefer ES Modules over CommonJS modules.
-    // This causes trouble with importing node-fetch, so we need to explicitly prefer CommonJS over ES/Harmony.
-    // https://github.com/bitinn/node-fetch/issues/450#issuecomment-494475397
-    this.set("resolve.mainFields", ["main"]);
-
-    // Don't bother minimizing backends...
-    this.set("optimization.minimize", false);
-  }
-}
 
 export class BackendDefaultsPlugin {
   public apply(compiler: Compiler) {
-    // Applying defaults here will allow us to set some defaults before even webpack has a chance to set them...
-    compiler.options = new BackendOptionsDefaulter().process(compiler.options);
+    // By default, webpack will prefer ES Modules over CommonJS modules.
+    // This causes trouble with importing node-fetch, so we need to explicitly prefer CommonJS over ES/Harmony.
+    // https://github.com/bitinn/node-fetch/issues/450#issuecomment-494475397
+    compiler.options.resolve!.mainFields = ["main"];
 
-    compiler.hooks.beforeRun.tap("BackendDefaultsPlugin", () => {
-      compiler.options = new IModelJsOptionsDefaulter().process(compiler.options);
-    });
+    // Don't bother minimizing backends...
+    compiler.options.optimization!.minimize = false;
+
+    compiler.options = new IModelJsOptionsDefaulter().process(compiler.options);
 
     // Add default plugins
     new CopyAppAssetsPlugin("assets").apply(compiler);

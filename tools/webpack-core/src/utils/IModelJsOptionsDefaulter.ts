@@ -48,7 +48,7 @@ export class IModelJsOptionsDefaulter extends OptionsDefaulter {
     super();
 
     if (enableSourceMaps) {
-      this.set("devtool", "cheap-module-source-map");
+      this.set("devtool", "call", (value: any) => value || "cheap-module-source-map");
       this.set("output.devtoolModuleFilenameTemplate", createDevToolModuleFilename);
       this.set("module.rules", "append", [
         {
