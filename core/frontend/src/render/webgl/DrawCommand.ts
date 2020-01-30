@@ -92,8 +92,6 @@ export enum DrawOpCode {
   PopBranch = "popBranch",
   PushBatch = "pushBatch",
   PopBatch = "popBatch",
-  ActivateLayers = "activateLayers",
-  DeactivateLayers = "deactivateLayers",
 }
 
 /** @internal */
@@ -183,26 +181,6 @@ export class PopBranchCommand {
 }
 
 /** @internal */
-export class ActivateLayersCommand {
-  public readonly opcode = "activateLayers";
-  private constructor() { }
-  public static instance = new ActivateLayersCommand();
-  public execute(_exec: ShaderProgramExecutor): void {
-    // ###TODO
-  }
-}
-
-/** @internal */
-export class DeactivateLayersCommand {
-  public readonly opcode = "deactivateLayers";
-  private constructor() { }
-  public static instance = new DeactivateLayersCommand();
-  public execute(_exec: ShaderProgramExecutor): void {
-    // ###TODO
-  }
-}
-
-/** @internal */
 export class PrimitiveCommand {
   public readonly opcode = "drawPrimitive";
 
@@ -245,7 +223,7 @@ export class PrimitiveCommand {
 }
 
 /** @internal */
-export type DrawCommand = PushBranchCommand | PopBranchCommand | PrimitiveCommand | PushBatchCommand | PopBatchCommand | ActivateLayersCommand | DeactivateLayersCommand;
+export type DrawCommand = PushBranchCommand | PopBranchCommand | PrimitiveCommand | PushBatchCommand | PopBatchCommand;
 
 /** For a single RenderPass, an ordered list of commands to be executed during that pass.
  * @internal

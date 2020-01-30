@@ -25,8 +25,6 @@ import {
 import { Decorations } from "../Decorations";
 import { SurfaceType } from "../primitives/VertexTable";
 import {
-  ActivateLayersCommand,
-  DeactivateLayersCommand,
   DrawCommand,
   DrawCommands,
   getAnimationBranchState,
@@ -292,18 +290,28 @@ export class RenderCommands {
     });
   }
 
-  public addLayerCommands(addCommands: () => void): void {
+  public addLayerCommands(graphic: Graphic): void {
     assert(RenderPass.None === this._forcedRenderPass);
     if (RenderPass.None !== this._forcedRenderPass)
       return;
 
     this._forcedRenderPass = RenderPass.Layers;
-    this._commands[RenderPass.Layers].push(ActivateLayersCommand.instance);
 
-    addCommands();
+    graphic.addCommands(this);
 
-    this._commands[RenderPass.Layers].push(DeactivateLayersCommand.instance);
     this._forcedRenderPass = RenderPass.None;
+  }
+
+  public addHiliteLayerCommands(graphic: Graphic, pass: RenderPass): void {
+    assert(RenderPass.Layers === this._forcedRenderPass);
+    if (RenderPass.Layers !== this._forcedRenderPass)
+      return;
+
+    this._forcedRenderPass = RenderPass.None;
+
+    graphic.addHiliteCommands(this, pass);
+
+    this._forcedRenderPass = RenderPass.Layers;
   }
 
   private shouldOmitBranch(branch: Branch): boolean {
@@ -342,11 +350,22 @@ export class RenderCommands {
     for (let i = start; i < end; i++)
       this._commands[i].push(push);
 
+    if (this.isDrawingLayers)
+      this._commands[RenderPass.Hilite].push(push);
+
     func();
 
     for (let i = start; i < end; i++) {
       const cmds = this._commands[i];
       assert(0 < cmds.length);
+      if (0 < cmds.length && cmds[cmds.length - 1] === push)
+        cmds.pop();
+      else
+        cmds.push(pop);
+    }
+
+    if (this.isDrawingLayers) {
+      const cmds = this._commands[RenderPass.Hilite];
       if (0 < cmds.length && cmds[cmds.length - 1] === push)
         cmds.pop();
       else
