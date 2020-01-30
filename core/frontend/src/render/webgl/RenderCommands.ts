@@ -25,6 +25,8 @@ import {
 import { Decorations } from "../Decorations";
 import { SurfaceType } from "../primitives/VertexTable";
 import {
+  ActivateLayersCommand,
+  DeactivateLayersCommand,
   DrawCommand,
   DrawCommands,
   getAnimationBranchState,
@@ -77,6 +79,8 @@ export class RenderCommands {
 
     return true;
   }
+
+  public get isDrawingLayers() { return RenderPass.Layers === this._forcedRenderPass; }
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get compositeFlags(): CompositeFlags {
@@ -286,6 +290,20 @@ export class RenderCommands {
     this.pushAndPopBranchForPass(pass, branch, () => {
       branch.branch.entries.forEach((entry: RenderGraphic) => (entry as Graphic).addHiliteCommands(this, pass));
     });
+  }
+
+  public addLayerCommands(addCommands: () => void): void {
+    assert(RenderPass.None === this._forcedRenderPass);
+    if (RenderPass.None !== this._forcedRenderPass)
+      return;
+
+    this._forcedRenderPass = RenderPass.Layers;
+    this._commands[RenderPass.Layers].push(ActivateLayersCommand.instance);
+
+    addCommands();
+
+    this._commands[RenderPass.Layers].push(DeactivateLayersCommand.instance);
+    this._forcedRenderPass = RenderPass.None;
   }
 
   private shouldOmitBranch(branch: Branch): boolean {

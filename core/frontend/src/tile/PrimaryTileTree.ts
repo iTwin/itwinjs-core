@@ -83,7 +83,7 @@ const primaryTreeSupplier = new PrimaryTreeSupplier();
 class PrimaryTreeReference extends TileTreeReference {
   protected readonly _view: ViewState;
   protected readonly _model: GeometricModelState;
-  private _id: PrimaryTreeId;
+  protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
 
   public constructor(view: ViewState, model: GeometricModelState) {
@@ -139,7 +139,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
   public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     const args = super.createDrawArgs(context);
-    if (undefined !== args) {
+    if (undefined !== args && this._id.treeId.enforceDisplayPriority) {
       args.drawGraphics = () => {
         const graphics = args.produceGraphics();
         if (undefined !== graphics)

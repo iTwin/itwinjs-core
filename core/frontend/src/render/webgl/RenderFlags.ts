@@ -13,6 +13,7 @@
 export const enum RenderPass {
   None = 0xff,
   Background = 0,
+  Layers,             // XY planar models render without depth-testing in order based on priority
   OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
   OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
   OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers

@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderSystem";
 import { RenderPass } from "./RenderFlags";
@@ -42,11 +43,15 @@ class Layer extends GraphicWrapper {
   }
 
   public addCommands(commands: RenderCommands): void {
-    this._graphic.addCommands(commands);
+    assert(commands.isDrawingLayers);
+    if (commands.isDrawingLayers)
+      this._graphic.addCommands(commands);
   }
 
   public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    this._graphic.addHiliteCommands(commands, pass);
+    assert(commands.isDrawingLayers);
+    if (commands.isDrawingLayers)
+      this._graphic.addHiliteCommands(commands, pass);
   }
 }
 
@@ -56,11 +61,11 @@ class LayerContainer extends GraphicWrapper {
   }
 
   public addCommands(commands: RenderCommands): void {
-    this._graphic.addCommands(commands);
+    commands.addLayerCommands(() => this._graphic.addCommands(commands));
   }
 
   public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    this._graphic.addHiliteCommands(commands, pass);
+    commands.addLayerCommands(() => this._graphic.addHiliteCommands(commands, pass));
   }
 }
 

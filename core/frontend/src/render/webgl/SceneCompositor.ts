@@ -1451,6 +1451,9 @@ abstract class Compositor extends SceneCompositor {
 
   protected getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
+      case RenderPass.Layers:
+        // ###TODO
+        return this._opaqueRenderState;
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
