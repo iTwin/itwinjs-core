@@ -1696,9 +1696,12 @@ class MRTCompositor extends Compositor {
   }
 
   protected renderLayers(commands: RenderCommands, needComposite: boolean): void {
+    this._readPickDataFromPingPong = true;
     System.instance.frameBufferStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
-      this.drawPass(commands, RenderPass.Layers, false);
+      this.drawPass(commands, RenderPass.Layers, true);
     });
+
+    this._readPickDataFromPingPong = false;
   }
 
   protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
