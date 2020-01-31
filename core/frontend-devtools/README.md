@@ -126,3 +126,4 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * `elevation=`: elevation in meters.
   * `overlay=`: 1 to draw as an overlay, 0 to draw normally (with depth).
   * `priority=`: 1 to enforce subcategory display priority, 0 to ignore.
+* `fdt subcat priority` - Override display priority of one or more subcategories. Only has an effect on plan projection models. The first argument is a comma-separated list of subcategory Ids; the second is the integer priority value. Omit the second argument to clear the overrides for the specified subcategories.

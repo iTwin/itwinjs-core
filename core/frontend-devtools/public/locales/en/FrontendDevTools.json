@@ -119,6 +119,9 @@
     },
     "ChangeLayerSettings": {
       "keyin": "fdt layer set"
+    },
+    "OverrideSubCategoryPriority": {
+      "keyin": "fdt subcat priority"
     }
   }
 }

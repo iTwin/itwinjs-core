@@ -8,6 +8,7 @@
 import {
   PlanProjectionSettings,
   PlanProjectionSettingsProps,
+  SubCategoryOverride,
 } from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState,
@@ -58,6 +59,46 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
     IModelApp.notifications.outputMessage(messageDetails);
 
     return false;
+  }
+}
+
+/** Changes subcategory display priority.
+ * @alpha
+ */
+export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
+  public static toolId = "OverrideSubCategoryPriority";
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return 2; }
+
+  private readonly _subcatIds = new Set<string>();
+  private _priority?: number;
+
+  protected execute(vp: Viewport): boolean {
+    const style = vp.displayStyle;
+    for (const id of this._subcatIds) {
+      const ovr = style.getSubCategoryOverride(id);
+      if (undefined === ovr) {
+        if (undefined !== this._priority)
+          style.overrideSubCategory(id, SubCategoryOverride.fromJSON({ priority: this._priority }));
+      } else {
+        const props = ovr.toJSON();
+        props.priority = this._priority;
+        style.overrideSubCategory(id, SubCategoryOverride.fromJSON(props));
+      }
+    }
+
+    return true;
+  }
+
+  protected parse(args: string[]) {
+    for (const id of args[0].split(","))
+      this._subcatIds.add(id);
+
+    const priority = parseInt(args[1], 10);
+    if (!Number.isNaN(priority))
+      this._priority = priority;
+
+    return true;
   }
 }
 
