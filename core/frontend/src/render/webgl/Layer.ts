@@ -46,7 +46,11 @@ abstract class GraphicWrapper extends Graphic {
   }
 }
 
-/** @internal */
+/** Within a single tile, contains graphics belonging to a single layer.
+ * The same layer may appear in multiple tiles, both within the same tile tree and in other tile trees.
+ * Within a single tile tree, all Layers are contained within the same LayerContainer.
+ * @internal
+ */
 export class Layer extends GraphicWrapper {
   public readonly layerId: string;
   private readonly _idLo: number;
@@ -76,7 +80,11 @@ export class Layer extends GraphicWrapper {
   }
 }
 
-class LayerContainer extends GraphicWrapper {
+/** Contains a GraphicBranch that can contain Layers, for a single model / tile-tree.
+ * All geometry within the container has the same Z.
+ * @internal
+ */
+export class LayerContainer extends GraphicWrapper {
   public constructor(graphic: Graphic) {
     super(graphic);
   }
@@ -104,12 +112,14 @@ export function createGraphicLayerContainer(graphic: RenderGraphic): RenderGraph
 class LayerCommands {
   public readonly layerId: string;
   public readonly priority: number;
+  public readonly elevation: number;
   public readonly commands: DrawCommand[] = [];
-  public currentContainer?: object;
+  public currentContainer?: LayerContainer;
 
-  public constructor(layerId: string, priority: number, cmds: DrawCommand[], container: object) {
+  public constructor(layerId: string, priority: number, cmds: DrawCommand[], container: LayerContainer, elevation: number) {
     this.layerId = layerId;
     this.priority = priority;
+    this.elevation = elevation;
     this.currentContainer = container;
 
     for (const cmd of cmds)
@@ -121,19 +131,30 @@ class LayerCommands {
  * the full, ordered list of commands for the Layers render pass.
  * The array is sorted in ascending order by priority so that lower-priority commands execute first, allowing geometry from subsequent commands to
  * overwrite them in the depth buffer.
+  * @internal
  */
 export class LayerCommandMap extends SortedArray<LayerCommands> {
   // Commands that need to be pushed onto any new LayerCommands before adding primitive commands.
   private readonly _pushCommands: PushCommand[] = [];
   private readonly _popCommands: PopCommand[] = [];
   private readonly _target: Target;
-  private _currentContainer?: object;
+  private _currentContainer?: LayerContainer;
+  private _currentContainerElevation?: number;
   private _currentLayer?: Layer;
 
   public constructor(target: Target) {
+    // Layers with different view Z draw in ascending order by Z.
+    // Layers with same elevation draw in ascending order by priority.
+    // Layers with same elevation and priority draw in indeterminate order.
     super((lhs: LayerCommands, rhs: LayerCommands) => {
-      const cmp = compareNumbers(lhs.priority, rhs.priority);
-      return 0 !== cmp ? cmp : compareStrings(lhs.layerId, rhs.layerId);
+      let cmp = compareNumbers(lhs.elevation, rhs.elevation);
+      if (0 === cmp) {
+        cmp = compareNumbers(lhs.priority, rhs.priority);
+        if (0 === cmp)
+          cmp = compareStrings(lhs.layerId, rhs.layerId);
+      }
+
+      return cmp;
     });
 
     this._target = target;
@@ -147,7 +168,7 @@ export class LayerCommandMap extends SortedArray<LayerCommands> {
     assert(undefined === this._currentLayer);
   }
 
-  public processLayers(container: object, func: () => void): void {
+  public processLayers(container: LayerContainer, func: () => void): void {
     assert(undefined === this._currentContainer);
     assert(undefined === this._currentLayer);
 
@@ -166,12 +187,13 @@ export class LayerCommandMap extends SortedArray<LayerCommands> {
 
     assert(undefined === this._currentLayer);
     this._currentContainer = undefined;
+    this._currentContainerElevation = undefined;
   }
 
   public pushAndPop(push: PushCommand, pop: PopCommand, func: () => void): void {
     assert(undefined !== this._currentContainer);
     if (undefined !== this._currentLayer) {
-      const cmds = this.getCommands(this._currentLayer);
+      const cmds = this.getCommands();
       cmds.commands.push(push);
       func();
       cmds.commands.push(pop);
@@ -185,13 +207,21 @@ export class LayerCommandMap extends SortedArray<LayerCommands> {
   public set currentLayer(layer: Layer | undefined) {
     assert(undefined === layer || undefined === this._currentLayer);
     this._currentLayer = layer;
+
+    // Each layer container has a fixed Z. Different containers at different Zs can contain the same layer(s).
+    // The first time we encounter any layer for a given container, compute the Z for that container.
+    if (undefined === this._currentContainerElevation) {
+      // ###TODO: transform to view space
+      this._currentContainerElevation = this._target.currentTransform.origin.z;
+    }
   }
 
   public addCommands(commands: DrawCommand[]): void {
     assert(undefined !== this._currentContainer);
+    assert(undefined !== this._currentContainerElevation);
     assert(undefined !== this._currentLayer);
 
-    const cmds = this.getCommands(this._currentLayer);
+    const cmds = this.getCommands();
     for (const command of commands)
       cmds.commands.push(command);
   }
@@ -202,9 +232,12 @@ export class LayerCommandMap extends SortedArray<LayerCommands> {
         cmds.push(cmd);
   }
 
-  private getCommands(layer: Layer): LayerCommands {
+  private getCommands(): LayerCommands {
+    assert(undefined !== this._currentLayer && undefined !== this._currentContainerElevation);
+    const layer = this._currentLayer;
+    const elevation = this._currentContainerElevation;
     for (const entry of this._array) {
-      if (entry.layerId === layer.layerId) {
+      if (entry.layerId === layer.layerId && entry.elevation === elevation) {
         if (entry.currentContainer !== this._currentContainer) {
           for (const cmd of this._pushCommands)
             entry.commands.push(cmd);
@@ -215,7 +248,7 @@ export class LayerCommandMap extends SortedArray<LayerCommands> {
       }
     }
 
-    const cmds = new LayerCommands(layer.layerId, layer.getPriority(this._target), this._pushCommands, this._currentContainer!);
+    const cmds = new LayerCommands(layer.layerId, layer.getPriority(this._target), this._pushCommands, this._currentContainer!, elevation);
     this.insert(cmds);
     return cmds;
   }

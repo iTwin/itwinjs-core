@@ -55,6 +55,7 @@ import { MeshGraphic } from "./Mesh";
 import {
   Layer,
   LayerCommandMap,
+  LayerContainer,
 } from "./Layer";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
@@ -298,7 +299,7 @@ export class RenderCommands {
     });
   }
 
-  public processLayers(container: object, graphic: Graphic): void {
+  public processLayers(container: LayerContainer, graphic: Graphic): void {
     assert(RenderPass.None === this._forcedRenderPass);
     if (RenderPass.None !== this._forcedRenderPass)
       return;
