@@ -15,6 +15,7 @@ import {
   Range3d,
   Transform,
   XAndY,
+  XYZ,
 } from "@bentley/geometry-core";
 import {
   IDisposable,
@@ -287,6 +288,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get currentPlanarClassifierOrDrape(): PlanarClassifier | TextureDrape | undefined {
     const drape = this.currentTextureDrape;
     return undefined === drape ? this.currentPlanarClassifier : drape;
+  }
+
+  public modelToView(modelPt: XYZ, result?: Point3d): Point3d {
+    return this.uniforms.branch.modelViewMatrix.multiplyPoint3dQuietNormalize(modelPt, result);
   }
 
   public get clipDef(): ClipDef {

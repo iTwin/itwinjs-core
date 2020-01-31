@@ -13,6 +13,7 @@ import {
   Id64,
   SortedArray,
 } from "@bentley/bentleyjs-core";
+import { Point3d } from "@bentley/geometry-core";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderSystem";
 import { RenderPass } from "./RenderFlags";
@@ -127,6 +128,9 @@ class LayerCommands {
   }
 }
 
+const scratchModelPt = new Point3d();
+const scratchViewPt = new Point3d();
+
 /** Organizes DrawCommands by layer. Once all commands have been added, each LayerCommands list of commands can be concatenated to produce
  * the full, ordered list of commands for the Layers render pass.
  * The array is sorted in ascending order by priority so that lower-priority commands execute first, allowing geometry from subsequent commands to
@@ -211,8 +215,9 @@ export class LayerCommandMap extends SortedArray<LayerCommands> {
     // Each layer container has a fixed Z. Different containers at different Zs can contain the same layer(s).
     // The first time we encounter any layer for a given container, compute the Z for that container.
     if (undefined === this._currentContainerElevation) {
-      // ###TODO: transform to view space
-      this._currentContainerElevation = this._target.currentTransform.origin.z;
+      scratchModelPt.set(0, 0, this._target.currentTransform.origin.z);
+      const viewPt = this._target.modelToView(scratchModelPt, scratchViewPt);
+      this._currentContainerElevation = viewPt.z;
     }
   }
 
