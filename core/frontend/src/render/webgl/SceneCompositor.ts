@@ -583,6 +583,7 @@ abstract class Compositor extends SceneCompositor {
   protected _readPickDataFromPingPong: boolean = true;
   protected _opaqueRenderState = new RenderState();
   protected _layerRenderState = new RenderState();
+  protected _pickLayerRenderState = new RenderState();
   protected _translucentRenderState = new RenderState();
   protected _noDepthMaskRenderState = new RenderState();
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
@@ -663,6 +664,7 @@ abstract class Compositor extends SceneCompositor {
 
     this._noDepthMaskRenderState.flags.depthMask = false;
 
+    // ###TODO: Need to blend color - can't blend depth and pick IDs...
     this._layerRenderState.flags.blend = true;
     this._layerRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
   }
@@ -1469,7 +1471,8 @@ abstract class Compositor extends SceneCompositor {
   protected getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
       case RenderPass.Layers:
-        return this._layerRenderState;
+        // ###TODO: This is a temp workaround for blending of pick buffers...
+        return this.target.isReadPixelsInProgress ? this._pickLayerRenderState : this._layerRenderState;
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
