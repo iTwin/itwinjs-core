@@ -355,7 +355,7 @@ const checkForEarlySurfaceDiscard = `
 
 const checkForEarlySurfaceDiscardWithFeatureID = `
   // No normals => unlt => reality model => no edges.
-  if (u_renderPass > kRenderPass_Translucent || !isSurfaceBitSet(kSurfaceBit_HasNormals))
+  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || !isSurfaceBitSet(kSurfaceBit_HasNormals))
     return false;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
@@ -401,7 +401,7 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
     return true;
 
   // In 2d, display priority controls draw order of different elements.
-  if (kFrustumType_Ortho2d == u_frustum.z || kRenderPass_Layers == u_renderPass)
+  if (kFrustumType_Ortho2d == u_frustum.z)
     return false;
 
   // Use a tighter tolerance for two different elements since we're only fighting roundoff error.
