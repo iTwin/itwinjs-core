@@ -453,6 +453,8 @@ export class RenderCommands {
 
       this._addTranslucentAsOpaque = false;
       this.setupClassificationByVolume();
+      this._layers.outputCommands(this.getCommands(RenderPass.Layers));
+
       return;
     }
 
