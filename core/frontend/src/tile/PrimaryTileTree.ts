@@ -158,7 +158,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     } else if (this._curTransform.elevation !== elevation) {
       const transform = tree.iModelTransform.clone();
       if (undefined !== elevation)
-        transform.origin.z += elevation;
+        transform.origin.z = elevation;
 
       this._curTransform.transform = transform;
       this._curTransform.elevation = elevation;
