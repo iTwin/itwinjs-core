@@ -85,7 +85,8 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
   }
 
   protected async requestResource(container: CloudStorageContainerUrl, id: TContentId): Promise<Response> {
-    const url = new URL(container.url, this.supplyUrlBase(container, id));
+    const base = this.supplyUrlBase(container, id);
+    const url = (undefined === base || "" === base) ? new URL(container.url) : new URL(container.url, base);
 
     if (!container.bound) {
       url.pathname += `/${this.formResourceName(id)}`;
