@@ -85,11 +85,16 @@ export class Layer extends GraphicWrapper {
  * @internal
  */
 export class LayerContainer extends GraphicWrapper {
-  public readonly drawAsOverlay: boolean;
+  public readonly renderPass: RenderPass;
 
-  public constructor(graphic: Graphic, drawAsOverlay: boolean) {
+  public constructor(graphic: Graphic, drawAsOverlay: boolean, transparency: number) {
     super(graphic);
-    this.drawAsOverlay = drawAsOverlay;
+    if (drawAsOverlay)
+      this.renderPass = RenderPass.OverlayLayers;
+    else if (transparency > 0)
+      this.renderPass = RenderPass.TranslucentLayers;
+    else
+      this.renderPass = RenderPass.OpaqueLayers; // ###TODO: What about layers containing naturally-transparent geometry?
   }
 
   public addCommands(commands: RenderCommands): void {
@@ -99,16 +104,6 @@ export class LayerContainer extends GraphicWrapper {
   public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     commands.addHiliteLayerCommands(this.graphic, pass);
   }
-}
-
-/** @internal */
-export function createGraphicLayer(graphic: RenderGraphic, layerId: string): RenderGraphic {
-  return new Layer(graphic as Graphic, layerId);
-}
-
-/** @internal */
-export function createGraphicLayerContainer(graphic: RenderGraphic, drawAsOverlay: boolean): RenderGraphic {
-  return new LayerContainer(graphic as Graphic, drawAsOverlay);
 }
 
 /** DrawCommands associated with one Layer, drawn during the Layers render pass. */
@@ -263,25 +258,27 @@ class LayerCommandMap extends SortedArray<LayerCommands> {
 
 /** @internal */
 export class LayerCommandLists {
+  private readonly _maps: LayerCommandMap[] = [];
   private readonly _renderCommands: RenderCommands;
-  private readonly _scene: LayerCommandMap;
-  private readonly _overlay: LayerCommandMap;
   private _activeMap?: LayerCommandMap;
 
   public constructor(cmds: RenderCommands) {
     this._renderCommands = cmds;
-    this._scene = new LayerCommandMap(cmds.target);
-    this._overlay = new LayerCommandMap(cmds.target);
   }
 
   public clear(): void {
-    this._scene.clear();
-    this._overlay.clear();
+    this._maps.length = 0;
   }
 
   public processLayers(container: LayerContainer, func: () => void): void {
     assert(undefined === this._activeMap);
-    this._activeMap = container.drawAsOverlay ? this._overlay : this._scene;
+    const pass = container.renderPass;
+    this._activeMap = this._maps[pass];
+    if (undefined === this._activeMap) {
+      this._activeMap = new LayerCommandMap(this._renderCommands.target);
+      this._maps[pass] = this._activeMap;
+    }
+
     this._activeMap.processLayers(container, func);
     this._activeMap = undefined;
   }
@@ -302,7 +299,14 @@ export class LayerCommandLists {
   }
 
   public outputCommands(): void {
-    this._scene.outputCommands(this._renderCommands.getCommands(RenderPass.Layers));
-    this._overlay.outputCommands(this._renderCommands.getCommands(RenderPass.OverlayLayers));
+    this.outputCommandsForPass(RenderPass.OpaqueLayers);
+    this.outputCommandsForPass(RenderPass.TranslucentLayers);
+    this.outputCommandsForPass(RenderPass.OverlayLayers);
+  }
+
+  private outputCommandsForPass(pass: RenderPass): void {
+    const map = this._maps[pass];
+    if (undefined !== map)
+      map.outputCommands(this._renderCommands.getCommands(pass));
   }
 }

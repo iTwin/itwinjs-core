@@ -602,7 +602,7 @@ abstract class Compositor extends SceneCompositor {
   public abstract set currentRenderTargetIndex(_index: number);
 
   protected abstract clearOpaque(_needComposite: boolean): void;
-  protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean, _asOverlay: boolean): void;
+  protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean, pass: RenderPass): void;
   protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderForVolumeClassification(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderIndexedClassifierForReadPixels(_commands: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, _needComposite: boolean): void;
@@ -783,13 +783,18 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     // Render layers
-    this.target.beginPerfMetricRecord("Render Layers");
-    this.renderLayers(commands, needComposite, false);
+    this.target.beginPerfMetricRecord("Render Opaque Layers");
+    this.renderLayers(commands, needComposite, RenderPass.OpaqueLayers);
     this.target.endPerfMetricRecord();
 
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
+    this.target.endPerfMetricRecord();
+
+    // Render translucent layers
+    this.target.beginPerfMetricRecord("Render Translucent Layers");
+    this.renderLayers(commands, needComposite, RenderPass.TranslucentLayers);
     this.target.endPerfMetricRecord();
 
     if (needComposite) {
@@ -810,7 +815,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Render overlay Layers
     this.target.beginPerfMetricRecord("Render Overlay Layers");
-    this.renderLayers(commands, needComposite, true);
+    this.renderLayers(commands, false, RenderPass.OverlayLayers);
     this.target.endPerfMetricRecord();
 
     this.target.popActiveVolume();
@@ -841,16 +846,20 @@ abstract class Compositor extends SceneCompositor {
       this.renderVolumeClassification(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
 
-      this.target.beginPerfMetricRecord("Render Layers", true);
-      this.renderLayers(commands, false, false);
+      this.target.beginPerfMetricRecord("Render Opaque Layers", true);
+      this.renderLayers(commands, false, RenderPass.OpaqueLayers);
       this.target.endPerfMetricRecord(true);
 
       this.target.beginPerfMetricRecord("Render Opaque", true);
       this.renderOpaque(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
 
+      this.target.beginPerfMetricRecord("Render Translucent Layers", true);
+      this.renderLayers(commands, false, RenderPass.TranslucentLayers);
+      this.target.endPerfMetricRecord();
+
       this.target.beginPerfMetricRecord("Render Overlay Layers", true);
-      this.renderLayers(commands, false, true);
+      this.renderLayers(commands, false, RenderPass.OverlayLayers);
       this.target.endPerfMetricRecord();
 
       this.target.popActiveVolume();
@@ -1480,12 +1489,17 @@ abstract class Compositor extends SceneCompositor {
 
   protected getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
-      case RenderPass.Layers:
+      case RenderPass.OpaqueLayers:
+      case RenderPass.TranslucentLayers:
       case RenderPass.OverlayLayers:
         // NB: During pick, we don't want blending - it will mess up our pick buffer data and we don't care about the color data.
         // During normal draw, we don't use the pick buffers for anything, and we want color blending.
         // (We get away with this because surfaces always draw before their edges, and we're not depth-testing, so edges always draw atop surfaces without pick buffer testing).
         this._layerRenderState.flags.blend = !this.target.isReadPixelsInProgress;
+
+        // Transparent non-overlay Layers are drawn between opaque and translucent passes. Test depth, don't write it, so that they blend with opaque.
+        this._layerRenderState.flags.depthMask = RenderPass.TranslucentLayers !== pass;
+        this._layerRenderState.depthFunc = (RenderPass.TranslucentLayers === pass) ? GL.DepthFunc.Default : GL.DepthFunc.Always;
         return this._layerRenderState;
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
@@ -1715,10 +1729,10 @@ class MRTCompositor extends Compositor {
     }
   }
 
-  protected renderLayers(commands: RenderCommands, needComposite: boolean, asOverlays: boolean): void {
+  protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
     this._readPickDataFromPingPong = true;
     System.instance.frameBufferStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
-      this.drawPass(commands, asOverlays ? RenderPass.OverlayLayers : RenderPass.Layers, true);
+      this.drawPass(commands, pass, true);
     });
 
     this._readPickDataFromPingPong = false;
@@ -1879,7 +1893,9 @@ class MPCompositor extends Compositor {
 
   protected getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
-      case RenderPass.Layers:
+      case RenderPass.OpaqueLayers:
+      case RenderPass.TranslucentLayers:
+      case RenderPass.OverlayLayers:
         // ###TODO
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
@@ -1937,7 +1953,7 @@ class MPCompositor extends Compositor {
     }
   }
 
-  protected renderLayers(_commands: RenderCommands, _needComposite: boolean, _asLayers: boolean): void {
+  protected renderLayers(_commands: RenderCommands, _needComposite: boolean, _pass: RenderPass): void {
     /* ###TODO
     if (0 === commands.getCommands(RenderPass.Layer).length)
       return;

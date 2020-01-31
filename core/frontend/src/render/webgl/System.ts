@@ -70,8 +70,8 @@ import {
   GraphicsArray,
 } from "./Graphic";
 import {
-  createGraphicLayer,
-  createGraphicLayerContainer,
+  Layer,
+  LayerContainer,
 } from "./Layer";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, BentleyStatus, Dictionary, dispose, Id64String } from "@bentley/bentleyjs-core";
@@ -888,10 +888,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   }
 
   public createGraphicLayer(graphic: RenderGraphic, layerId: string) {
-    return createGraphicLayer(graphic, layerId);
+    return new Layer(graphic as Graphic, layerId);
   }
-  public createGraphicLayerContainer(graphic: RenderGraphic, drawAsOverlay: boolean) {
-    return createGraphicLayerContainer(graphic, drawAsOverlay);
+  public createGraphicLayerContainer(graphic: RenderGraphic, drawAsOverlay: boolean, transparency: number) {
+    return new LayerContainer(graphic as Graphic, drawAsOverlay, transparency);
   }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {

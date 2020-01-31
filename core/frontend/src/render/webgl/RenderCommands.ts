@@ -85,7 +85,16 @@ export class RenderCommands {
     return true;
   }
 
-  public get isDrawingLayers() { return RenderPass.Layers === this._forcedRenderPass; }
+  public get isDrawingLayers() {
+    switch (this._forcedRenderPass) {
+      case RenderPass.OpaqueLayers:
+      case RenderPass.TranslucentLayers:
+      case RenderPass.OverlayLayers:
+        return true;
+      default:
+        return false;
+    }
+  }
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
   public get compositeFlags(): CompositeFlags {
@@ -304,21 +313,21 @@ export class RenderCommands {
     if (RenderPass.None !== this._forcedRenderPass)
       return;
 
-    this._forcedRenderPass = RenderPass.Layers;
+    this._forcedRenderPass = container.renderPass;
     this._layers.processLayers(container, () => container.graphic.addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
   public addLayerCommands(layer: Layer): void {
-    assert(RenderPass.Layers === this._forcedRenderPass);
-    if (RenderPass.Layers !== this._forcedRenderPass)
+    assert(this.isDrawingLayers);
+    if (!this.isDrawingLayers)
       return;
 
-    // Let the graphic add its commands to RenderPass.Layers. Afterward, pull them out and add them to the LayerCommands.
+    // Let the graphic add its commands. Afterward, pull them out and add them to the LayerCommands.
     this._layers.currentLayer = layer;
     layer.graphic.addCommands(this);
 
-    const cmds = this.getCommands(RenderPass.Layers);
+    const cmds = this.getCommands(this._forcedRenderPass);
     this._layers.addCommands(cmds);
 
     cmds.length = 0;
@@ -326,15 +335,16 @@ export class RenderCommands {
   }
 
   public addHiliteLayerCommands(graphic: Graphic, pass: RenderPass): void {
-    assert(RenderPass.Layers === this._forcedRenderPass);
-    if (RenderPass.Layers !== this._forcedRenderPass)
+    assert(this.isDrawingLayers);
+    if (!this.isDrawingLayers)
       return;
 
+    const prevPass = this._forcedRenderPass;
     this._forcedRenderPass = RenderPass.None;
 
     graphic.addHiliteCommands(this, pass);
 
-    this._forcedRenderPass = RenderPass.Layers;
+    this._forcedRenderPass = prevPass;
   }
 
   private shouldOmitBranch(branch: Branch): boolean {

@@ -145,7 +145,8 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
         if (undefined !== graphics) {
           const settings = this.getSettings();
           const asOverlay = undefined !== settings && settings.overlay;
-          context.outputGraphic(context.target.renderSystem.createGraphicLayerContainer(graphics, asOverlay));
+          const transparency = settings?.transparency || 0;
+          context.outputGraphic(context.target.renderSystem.createGraphicLayerContainer(graphics, asOverlay, transparency));
         }
       };
     }
