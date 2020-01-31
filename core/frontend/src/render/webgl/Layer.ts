@@ -21,29 +21,30 @@ import { Graphic } from "./Graphic";
 import { RenderCommands } from "./RenderCommands";
 import {
   DrawCommand,
+  DrawCommands,
   PopCommand,
   PushCommand,
 } from "./DrawCommand";
 import { Target } from "./Target";
 
 abstract class GraphicWrapper extends Graphic {
-  protected readonly _graphic: Graphic;
+  public readonly graphic: Graphic;
 
   protected constructor(graphic: Graphic) {
     super();
-    this._graphic = graphic;
+    this.graphic = graphic;
   }
 
   public dispose(): void {
-    this._graphic.dispose();
+    this.graphic.dispose();
   }
 
   public get isDisposed(): boolean {
-    return this._graphic.isDisposed;
+    return this.graphic.isDisposed;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    this._graphic.collectStatistics(stats);
+    this.graphic.collectStatistics(stats);
   }
 }
 
@@ -66,8 +67,6 @@ export class Layer extends GraphicWrapper {
     this._idHi = pair.upper;
   }
 
-  public get graphic(): Graphic { return this._graphic; }
-
   public getPriority(target: Target): number {
     return target.currentFeatureSymbologyOverrides.getSubCategoryPriority(this._idLo, this._idHi);
   }
@@ -77,7 +76,7 @@ export class Layer extends GraphicWrapper {
   }
 
   public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    commands.addHiliteLayerCommands(this._graphic, pass);
+    commands.addHiliteLayerCommands(this.graphic, pass);
   }
 }
 
@@ -86,16 +85,19 @@ export class Layer extends GraphicWrapper {
  * @internal
  */
 export class LayerContainer extends GraphicWrapper {
-  public constructor(graphic: Graphic) {
+  public readonly drawAsOverlay: boolean;
+
+  public constructor(graphic: Graphic, drawAsOverlay: boolean) {
     super(graphic);
+    this.drawAsOverlay = drawAsOverlay;
   }
 
   public addCommands(commands: RenderCommands): void {
-    commands.processLayers(this, this._graphic);
+    commands.processLayers(this);
   }
 
   public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    commands.addHiliteLayerCommands(this._graphic, pass);
+    commands.addHiliteLayerCommands(this.graphic, pass);
   }
 }
 
@@ -105,8 +107,8 @@ export function createGraphicLayer(graphic: RenderGraphic, layerId: string): Ren
 }
 
 /** @internal */
-export function createGraphicLayerContainer(graphic: RenderGraphic): RenderGraphic {
-  return new LayerContainer(graphic as Graphic);
+export function createGraphicLayerContainer(graphic: RenderGraphic, drawAsOverlay: boolean): RenderGraphic {
+  return new LayerContainer(graphic as Graphic, drawAsOverlay);
 }
 
 /** DrawCommands associated with one Layer, drawn during the Layers render pass. */
@@ -137,7 +139,7 @@ const scratchViewPt = new Point3d();
  * overwrite them in the depth buffer.
   * @internal
  */
-export class LayerCommandMap extends SortedArray<LayerCommands> {
+class LayerCommandMap extends SortedArray<LayerCommands> {
   // Commands that need to be pushed onto any new LayerCommands before adding primitive commands.
   private readonly _pushCommands: PushCommand[] = [];
   private readonly _popCommands: PopCommand[] = [];
@@ -256,5 +258,51 @@ export class LayerCommandMap extends SortedArray<LayerCommands> {
     const cmds = new LayerCommands(layer.layerId, layer.getPriority(this._target), this._pushCommands, this._currentContainer!, elevation);
     this.insert(cmds);
     return cmds;
+  }
+}
+
+/** @internal */
+export class LayerCommandLists {
+  private readonly _renderCommands: RenderCommands;
+  private readonly _scene: LayerCommandMap;
+  private readonly _overlay: LayerCommandMap;
+  private _activeMap?: LayerCommandMap;
+
+  public constructor(cmds: RenderCommands) {
+    this._renderCommands = cmds;
+    this._scene = new LayerCommandMap(cmds.target);
+    this._overlay = new LayerCommandMap(cmds.target);
+  }
+
+  public clear(): void {
+    this._scene.clear();
+    this._overlay.clear();
+  }
+
+  public processLayers(container: LayerContainer, func: () => void): void {
+    assert(undefined === this._activeMap);
+    this._activeMap = container.drawAsOverlay ? this._overlay : this._scene;
+    this._activeMap.processLayers(container, func);
+    this._activeMap = undefined;
+  }
+
+  public set currentLayer(layer: Layer | undefined) {
+    assert(undefined !== this._activeMap);
+    this._activeMap.currentLayer = layer;
+  }
+
+  public addCommands(cmds: DrawCommands): void {
+    assert(undefined !== this._activeMap)
+    this._activeMap.addCommands(cmds);
+  }
+
+  public pushAndPop(push: PushCommand, pop: PopCommand, func: () => void): void {
+    assert(undefined !== this._activeMap);
+    this._activeMap.pushAndPop(push, pop, func);
+  }
+
+  public outputCommands(): void {
+    this._scene.outputCommands(this._renderCommands.getCommands(RenderPass.Layers));
+    this._overlay.outputCommands(this._renderCommands.getCommands(RenderPass.OverlayLayers));
   }
 }

@@ -602,7 +602,7 @@ abstract class Compositor extends SceneCompositor {
   public abstract set currentRenderTargetIndex(_index: number);
 
   protected abstract clearOpaque(_needComposite: boolean): void;
-  protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean): void;
+  protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean, _asOverlay: boolean): void;
   protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderForVolumeClassification(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderIndexedClassifierForReadPixels(_commands: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, _needComposite: boolean): void;
@@ -663,6 +663,9 @@ abstract class Compositor extends SceneCompositor {
 
     this._noDepthMaskRenderState.flags.depthMask = false;
 
+    // Can't write depth without enabling depth test - so make depth test always pass
+    this._layerRenderState.flags.depthTest = true;
+    this._layerRenderState.depthFunc = GL.DepthFunc.Always;
     this._layerRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
   }
 
@@ -781,7 +784,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Render layers
     this.target.beginPerfMetricRecord("Render Layers");
-    this.renderLayers(commands, needComposite);
+    this.renderLayers(commands, needComposite, false);
     this.target.endPerfMetricRecord();
 
     // Render opaque geometry
@@ -804,6 +807,12 @@ abstract class Compositor extends SceneCompositor {
       this.composite();
       this.target.endPerfMetricRecord();
     }
+
+    // Render overlay Layers
+    this.target.beginPerfMetricRecord("Render Overlay Layers");
+    this.renderLayers(commands, needComposite, true);
+    this.target.endPerfMetricRecord();
+
     this.target.popActiveVolume();
   }
 
@@ -833,12 +842,16 @@ abstract class Compositor extends SceneCompositor {
       this.target.endPerfMetricRecord(true);
 
       this.target.beginPerfMetricRecord("Render Layers", true);
-      this.renderLayers(commands, false);
+      this.renderLayers(commands, false, false);
       this.target.endPerfMetricRecord(true);
 
       this.target.beginPerfMetricRecord("Render Opaque", true);
       this.renderOpaque(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
+
+      this.target.beginPerfMetricRecord("Render Overlay Layers", true);
+      this.renderLayers(commands, false, true);
+      this.target.endPerfMetricRecord();
 
       this.target.popActiveVolume();
     }
@@ -1468,6 +1481,7 @@ abstract class Compositor extends SceneCompositor {
   protected getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
       case RenderPass.Layers:
+      case RenderPass.OverlayLayers:
         // NB: During pick, we don't want blending - it will mess up our pick buffer data and we don't care about the color data.
         // During normal draw, we don't use the pick buffers for anything, and we want color blending.
         // (We get away with this because surfaces always draw before their edges, and we're not depth-testing, so edges always draw atop surfaces without pick buffer testing).
@@ -1701,10 +1715,10 @@ class MRTCompositor extends Compositor {
     }
   }
 
-  protected renderLayers(commands: RenderCommands, needComposite: boolean): void {
+  protected renderLayers(commands: RenderCommands, needComposite: boolean, asOverlays: boolean): void {
     this._readPickDataFromPingPong = true;
     System.instance.frameBufferStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
-      this.drawPass(commands, RenderPass.Layers, true);
+      this.drawPass(commands, asOverlays ? RenderPass.OverlayLayers : RenderPass.Layers, true);
     });
 
     this._readPickDataFromPingPong = false;
@@ -1923,7 +1937,7 @@ class MPCompositor extends Compositor {
     }
   }
 
-  protected renderLayers(_commands: RenderCommands, _needComposite: boolean): void {
+  protected renderLayers(_commands: RenderCommands, _needComposite: boolean, _asLayers: boolean): void {
     /* ###TODO
     if (0 === commands.getCommands(RenderPass.Layer).length)
       return;

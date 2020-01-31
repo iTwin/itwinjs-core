@@ -54,7 +54,7 @@ import { Primitive } from "./Primitive";
 import { MeshGraphic } from "./Mesh";
 import {
   Layer,
-  LayerCommandMap,
+  LayerCommandLists,
   LayerContainer,
 } from "./Layer";
 
@@ -73,7 +73,7 @@ export class RenderCommands {
   private _opaqueOverrides = false;
   private _translucentOverrides = false;
   private _addTranslucentAsOpaque = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
-  private readonly _layers: LayerCommandMap;
+  private readonly _layers: LayerCommandLists;
 
   public get target(): Target { return this._target; }
 
@@ -111,7 +111,7 @@ export class RenderCommands {
     this._target = target;
     this._stack = stack;
     this._batchState = batchState;
-    this._layers = new LayerCommandMap(target);
+    this._layers = new LayerCommandLists(this);
 
     for (let i = 0; i < RenderPass.COUNT; ++i)
       this._commands[i] = [];
@@ -299,13 +299,13 @@ export class RenderCommands {
     });
   }
 
-  public processLayers(container: LayerContainer, graphic: Graphic): void {
+  public processLayers(container: LayerContainer): void {
     assert(RenderPass.None === this._forcedRenderPass);
     if (RenderPass.None !== this._forcedRenderPass)
       return;
 
     this._forcedRenderPass = RenderPass.Layers;
-    this._layers.processLayers(container, () => graphic.addCommands(this));
+    this._layers.processLayers(container, () => container.graphic.addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -454,7 +454,7 @@ export class RenderCommands {
 
       this._addTranslucentAsOpaque = false;
       this.setupClassificationByVolume();
-      this._layers.outputCommands(this.getCommands(RenderPass.Layers));
+      this._layers.outputCommands();
 
       return;
     }
@@ -495,7 +495,7 @@ export class RenderCommands {
 
     this.setupClassificationByVolume();
 
-    this._layers.outputCommands(this.getCommands(RenderPass.Layers));
+    this._layers.outputCommands();
   }
 
   public addPrimitive(prim: Primitive): void {

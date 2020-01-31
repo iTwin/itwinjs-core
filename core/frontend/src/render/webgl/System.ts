@@ -890,8 +890,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createGraphicLayer(graphic: RenderGraphic, layerId: string) {
     return createGraphicLayer(graphic, layerId);
   }
-  public createGraphicLayerContainer(graphic: RenderGraphic) {
-    return createGraphicLayerContainer(graphic);
+  public createGraphicLayerContainer(graphic: RenderGraphic, drawAsOverlay: boolean) {
+    return createGraphicLayerContainer(graphic, drawAsOverlay);
   }
 
   public createSkyBox(params: SkyBox.CreateParams): RenderGraphic | undefined {

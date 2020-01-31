@@ -142,8 +142,11 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     if (undefined !== args && this._id.treeId.enforceDisplayPriority) {
       args.drawGraphics = () => {
         const graphics = args.produceGraphics();
-        if (undefined !== graphics)
-          context.outputGraphic(context.target.renderSystem.createGraphicLayerContainer(graphics));
+        if (undefined !== graphics) {
+          const settings = this.getSettings();
+          const asOverlay = undefined !== settings && settings.overlay;
+          context.outputGraphic(context.target.renderSystem.createGraphicLayerContainer(graphics, asOverlay));
+        }
       };
     }
 
@@ -169,7 +172,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
   public draw(args: TileDrawArgs): void {
     const settings = this.getSettings();
-    if (undefined === settings || !settings.overlay)
+    if (undefined === settings || settings.enforceDisplayPriority || !settings.overlay)
       super.draw(args);
     else
       args.context.withGraphicTypeAndPlane(TileGraphicType.Overlay, undefined, () => args.root.draw(args));

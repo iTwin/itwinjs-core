@@ -36,6 +36,8 @@ export function addRenderPass(builder: ShaderBuilder) {
       let renderPass = params.renderPass;
       if (RenderPass.HiddenEdge === renderPass)
         renderPass = RenderPass.OpaqueGeneral; // no distinction from shader POV...
+      else if (RenderPass.OverlayLayers === renderPass)
+        renderPass = RenderPass.Layers; // no distinction from shader POV...
 
       uniform.setUniform1f(renderPass);
     });

@@ -259,7 +259,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {
-
       // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
       const vf = new ViewFlags();
       vf.renderMode = RenderMode.SmoothShade;

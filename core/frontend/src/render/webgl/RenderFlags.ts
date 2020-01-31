@@ -21,8 +21,9 @@ export const enum RenderPass {
   Translucent,
   HiddenEdge,
   Hilite,
-  WorldOverlay,
-  ViewOverlay,
+  OverlayLayers, // Like Layers, but drawn atop all other geometry
+  WorldOverlay, // Decorations
+  ViewOverlay, // Decorations
   SkyBox,
   BackgroundMap,
   HiliteClassification,  // Secondary hilite pass for stencil volumes to process hilited classifiers for reality data
