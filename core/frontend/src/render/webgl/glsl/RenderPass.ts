@@ -37,11 +37,11 @@ export function addRenderPass(builder: ShaderBuilder) {
       switch (renderPass) {
         case RenderPass.HiddenEdge:
           renderPass = RenderPass.OpaqueGeneral; // no distinction from shader POV...
-            break;
+          break;
         case RenderPass.OverlayLayers:
         case RenderPass.TranslucentLayers:
           renderPass = RenderPass.OpaqueLayers; // no distinction from shader POV...
-            break;
+          break;
       }
 
       uniform.setUniform1f(renderPass);

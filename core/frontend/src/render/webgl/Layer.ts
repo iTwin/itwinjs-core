@@ -14,7 +14,6 @@ import {
   SortedArray,
 } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderSystem";
 import { RenderPass } from "./RenderFlags";
 import { Graphic } from "./Graphic";
@@ -132,7 +131,7 @@ const scratchViewPt = new Point3d();
  * the full, ordered list of commands for the Layers render pass.
  * The array is sorted in ascending order by priority so that lower-priority commands execute first, allowing geometry from subsequent commands to
  * overwrite them in the depth buffer.
-  * @internal
+ * @internal
  */
 class LayerCommandMap extends SortedArray<LayerCommands> {
   // Commands that need to be pushed onto any new LayerCommands before adding primitive commands.
@@ -289,7 +288,7 @@ export class LayerCommandLists {
   }
 
   public addCommands(cmds: DrawCommands): void {
-    assert(undefined !== this._activeMap)
+    assert(undefined !== this._activeMap);
     this._activeMap.addCommands(cmds);
   }
 
