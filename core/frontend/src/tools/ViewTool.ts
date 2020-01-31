@@ -1302,7 +1302,13 @@ abstract class AnimatedHandle extends ViewingToolHandle {
 
   // called when animation is interrupted
   public interrupt(): void { }
-  public abstract animate(): boolean;
+  public animate(): boolean {
+    // Don't continue animation when mouse is outside view, and don't jump if it returns...
+    if (undefined !== IModelApp.toolAdmin.cursorView)
+      return true;
+    this.getElapsedTime();
+    return false;
+  }
 
   public firstPoint(ev: BeButtonEvent): boolean {
     const vp = ev.viewport;
@@ -1413,6 +1419,9 @@ class ViewScroll extends AnimatedHandle {
   }
 
   public animate(): boolean {
+    if (!super.animate())
+      return false;
+
     const dist = this.getDirection();
     if (undefined === dist)
       return false;
@@ -1757,6 +1766,9 @@ abstract class ViewNavigate extends AnimatedHandle {
 
   // called in animation loop
   public animate(): boolean {
+    if (!super.animate())
+      return false;
+
     const motion = this.getNavigateMotion(this.getElapsedTime());
 
     if (undefined !== motion) {
