@@ -10,6 +10,7 @@ import {
   assert,
   compareNumbers,
   compareStrings,
+  Id64,
   SortedArray,
 } from "@bentley/bentleyjs-core";
 import { RenderGraphic } from "../RenderGraphic";
@@ -22,6 +23,7 @@ import {
   PopCommand,
   PushCommand,
 } from "./DrawCommand";
+import { Target } from "./Target";
 
 abstract class GraphicWrapper extends Graphic {
   protected readonly _graphic: Graphic;
@@ -47,12 +49,22 @@ abstract class GraphicWrapper extends Graphic {
 /** @internal */
 export class Layer extends GraphicWrapper {
   public readonly layerId: string;
-
-  public get graphic(): Graphic { return this._graphic; }
+  private readonly _idLo: number;
+  private readonly _idHi: number;
 
   public constructor(graphic: Graphic, layerId: string) {
     super(graphic);
     this.layerId = layerId;
+
+    const pair = Id64.getUint32Pair(layerId);
+    this._idLo = pair.lower;
+    this._idHi = pair.upper;
+  }
+
+  public get graphic(): Graphic { return this._graphic; }
+
+  public getPriority(target: Target): number {
+    return target.currentFeatureSymbologyOverrides.getSubCategoryPriority(this._idLo, this._idHi);
   }
 
   public addCommands(commands: RenderCommands): void {
@@ -114,20 +126,21 @@ export class LayerCommandMap extends SortedArray<LayerCommands> {
   // Commands that need to be pushed onto any new LayerCommands before adding primitive commands.
   private readonly _pushCommands: PushCommand[] = [];
   private readonly _popCommands: PopCommand[] = [];
+  private readonly _target: Target;
   private _currentContainer?: object;
   private _currentLayer?: Layer;
-  private _fakePriority = 0;
 
-  public constructor() {
+  public constructor(target: Target) {
     super((lhs: LayerCommands, rhs: LayerCommands) => {
       const cmp = compareNumbers(lhs.priority, rhs.priority);
       return 0 !== cmp ? cmp : compareStrings(lhs.layerId, rhs.layerId);
     });
+
+    this._target = target;
   }
 
   public clear(): void {
     super.clear();
-    this._fakePriority = 0;
     assert(0 === this._pushCommands.length);
     assert(0 === this._popCommands.length);
     assert(undefined === this._currentContainer);
@@ -202,7 +215,7 @@ export class LayerCommandMap extends SortedArray<LayerCommands> {
       }
     }
 
-    const cmds = new LayerCommands(layer.layerId, ++this._fakePriority, this._pushCommands, this._currentContainer!);
+    const cmds = new LayerCommands(layer.layerId, layer.getPriority(this._target), this._pushCommands, this._currentContainer!);
     this.insert(cmds);
     return cmds;
   }

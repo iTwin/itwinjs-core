@@ -72,7 +72,7 @@ export class RenderCommands {
   private _opaqueOverrides = false;
   private _translucentOverrides = false;
   private _addTranslucentAsOpaque = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
-  private readonly _layers = new LayerCommandMap();
+  private readonly _layers: LayerCommandMap;
 
   public get target(): Target { return this._target; }
 
@@ -110,6 +110,8 @@ export class RenderCommands {
     this._target = target;
     this._stack = stack;
     this._batchState = batchState;
+    this._layers = new LayerCommandMap(target);
+
     for (let i = 0; i < RenderPass.COUNT; ++i)
       this._commands[i] = [];
   }

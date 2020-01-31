@@ -240,6 +240,8 @@ export namespace FeatureSymbology {
     protected readonly _subCategoryOverrides = new Id64.Uint32Map<Appearance>();
     /** The set of displayed subcategories. Geometry belonging to subcategories not included in this set will not be drawn. @internal */
     protected readonly _visibleSubCategories = new Id64.Uint32Set();
+    /** Display priorities assigned to subcategories, possibly overridden by display style. Only applicable for plan projection models. @internal */
+    protected readonly _subCategoryPriorities = new Id64.Uint32Map<number>();
 
     /** Per-model, a set of subcategories whose visibility should be inverted for elements within that model.
      * Populated by Viewport.
@@ -484,6 +486,13 @@ export namespace FeatureSymbology {
         this._defaultOverrides = appearance;
     }
 
+    /** Get the display priority of a subcategory. This is only relevant when using [PlanProjectionSettings]($common).
+     * @internal
+     */
+    public getSubCategoryPriority(idLo: number, idHi: number): number {
+      return this._subCategoryPriorities.get(idLo, idHi) ?? 0;
+    }
+
     /** Initialize these Overrides based on a specific view.
      * @internal
      */
@@ -544,6 +553,10 @@ export namespace FeatureSymbology {
             const idLo = Id64.getLowerUint32(subCategoryId);
             const idHi = Id64.getUpperUint32(subCategoryId);
             this._visibleSubCategories.add(idLo, idHi);
+
+            const app = view.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
+            if (undefined !== app)
+              this._subCategoryPriorities.set(idLo, idHi, app.priority);
           }
         }
       }
@@ -569,6 +582,9 @@ export namespace FeatureSymbology {
           const app = Appearance.fromSubCategoryOverride(ovr);
           if (app.overridesSymbology)
             this._subCategoryOverrides.set(idLo, idHi, app);
+
+          if (undefined !== ovr.priority)
+            this._subCategoryPriorities.set(idLo, idHi, ovr.priority);
         }
       };
 
