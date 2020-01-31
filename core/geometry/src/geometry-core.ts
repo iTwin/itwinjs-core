@@ -156,6 +156,7 @@ export * from "./geometry3d/YawPitchRollAngles";
 
 export * from "./Geometry";
 export * from "./Constant";
+export * from "./clipping/BooleanClipFactory";
 export * from "./clipping/ClipPlane";
 export * from "./clipping/ConvexClipPlaneSet";
 export * from "./clipping/UnionOfConvexClipPlaneSets";

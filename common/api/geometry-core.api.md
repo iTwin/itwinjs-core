@@ -570,6 +570,14 @@ export class BilinearPolynomial {
 export type BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number;
 
 // @public
+export class BooleanClipFactory {
+    static createCaptureDifference(primaryClipper: Clipper, excludedClip: Clipper, keepInside: boolean): Clipper;
+    static createCaptureIntersection(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;
+    static createCaptureParity(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;
+    static createCaptureUnion(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;
+}
+
+// @public
 export class Box extends SolidPrimitive {
     protected constructor(map: Transform, baseX: number, baseY: number, topX: number, topY: number, capped: boolean);
     clone(): Box;
@@ -1671,7 +1679,7 @@ export class EllipsoidPatch implements UVSurface {
     projectPointToSurface(spacePoint: Point3d): LongitudeLatitudeNumber | undefined;
     range(result?: Range3d): Range3d;
     uvFractionToAngles(longitudeFraction: number, phiFraction: number, h?: number, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber;
-    uvFractionToPoint(longitudeFraction: number, latitudeFraction: number): Point3d;
+    uvFractionToPoint(longitudeFraction: number, latitudeFraction: number, result?: Point3d): Point3d;
     uvFractionToPointAndTangents(longitudeFraction: number, latitudeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
 }
 

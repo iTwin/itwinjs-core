@@ -36,6 +36,7 @@ internal;BezierPolynomialAlgebra
 internal;BilinearPatch 
 internal;BilinearPolynomial
 public;BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number
+public;BooleanClipFactory
 public;Box 
 internal;BoxTopology
 public;BSpline1dNd

@@ -251,7 +251,7 @@ export class Ellipsoid {
       // if the silhouette plane has origin inside the sphere, there is a silhouette with center at the plane origin.
       if (localPlaneB) {
         const rr = 1.0 - localPlaneB.getOriginRef().magnitudeSquared();  // squared distance radius of silhouette arc
-        if (rr <= 1.0) {
+        if (rr > 0.0 && rr <= 1.0) {
           const arc = Arc3d.createCenterNormalRadius(localPlaneB.getOriginRef(), localPlaneB.getNormalRef(), Math.sqrt(rr));
           if (arc.tryTransformInPlace(this._transform))
             return arc;
@@ -700,8 +700,8 @@ export class EllipsoidPatch implements UVSurface {
     return new EllipsoidPatch(ellipsoid, longitudeSweep, latitudeSweep);
   }
   /** Return the point on the ellipsoid at fractional positions in the angular ranges. */
-  public uvFractionToPoint(longitudeFraction: number, latitudeFraction: number): Point3d {
-    return this.ellipsoid.radiansToPoint(this.longitudeSweep.fractionToRadians(longitudeFraction), this.latitudeSweep.fractionToRadians(latitudeFraction));
+  public uvFractionToPoint(longitudeFraction: number, latitudeFraction: number, result?: Point3d): Point3d {
+    return this.ellipsoid.radiansToPoint(this.longitudeSweep.fractionToRadians(longitudeFraction), this.latitudeSweep.fractionToRadians(latitudeFraction), result);
   }
   /** Return the point and derivative vectors on the ellipsoid at fractional positions in the angular ranges.
    * * Derivatives are with respect to fractional position.

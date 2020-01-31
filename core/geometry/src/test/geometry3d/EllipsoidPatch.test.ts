@@ -744,7 +744,6 @@ describe("Ellipsoid", () => {
       x0 += 10;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "PathOptions");
-
     expect(ck.getNumErrors()).equals(0);
   });
   it("Silhouette", () => {
@@ -752,7 +751,7 @@ describe("Ellipsoid", () => {
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const y0 = 0;
-    for (const eyePoint of [Point4d.create(4, 0, 0, 1), Point4d.create(1, 2, 3, 0)]) {
+    for (const eyePoint of [Point4d.create(4, 0, 0, 1), Point4d.create(1, 2, 3, 0), Point4d.create(0, 0, 1, 0)]) {
       const realEyePoint = eyePoint.realPointOrVector();
       if (realEyePoint instanceof Point3d)
         GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, realEyePoint, x0, y0);
@@ -768,7 +767,7 @@ describe("Ellipsoid", () => {
             const q = arc.fractionToPoint(arcFraction);
             const angles = ellipsoid.projectPointToSurface(q);
             if (ck.testDefined(angles) && angles) {
-              ck.testCoordinate (0.0, angles.altitude, "silhouette arc points are on ellipsoid");
+              ck.testCoordinate(0.0, angles.altitude, "silhouette arc points are on ellipsoid");
               const surfaceNormal = ellipsoid.radiansToUnitNormalRay(angles.longitudeRadians, angles.latitudeRadians)!;
               const vectorToEye = eyePoint.crossWeightedMinusPoint3d(q);
               ck.testPerpendicular(surfaceNormal.direction, vectorToEye);
@@ -782,6 +781,28 @@ describe("Ellipsoid", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "Silhouette");
 
     expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("SilhouetteA", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const matrix = Matrix3d.createRowValues(
+      2230955.696607988, 4218074.856581404, 4217984.23465426,
+      -5853438.842941238, 635312.5558238369, 2444173.6696791253,
+      1200293.8548970034, -4741817.943265299, 4079571.948578869);
+    const eye = Point4d.create(0.3901908903099731, 0.2662862131349449, 0.8813868173585089, 0);
+    const ellipsoid = Ellipsoid.create(matrix);
+    const silhouette = ellipsoid.silhouetteArc(eye);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, silhouette, x0, y0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0);
+
+    // expect failure for interior point ..
+    const silhouetteInside = ellipsoid.silhouetteArc(Point4d.create(100, 100, 200, 1));
+    ck.testUndefined(silhouetteInside);
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "SilhouetteA");
   });
 });
 
