@@ -655,5 +655,11 @@ export namespace RenderSystem {
      * @internal
      */
     useWebGL2?: boolean;
+
+    /** If true, plan projection models will be rendered using [PlanProjectionSettings]($common) defined by the [[DisplayStyle3dState]].
+     * Default value: false
+     * @internal
+     */
+    planProjections?: boolean;
   }
 }

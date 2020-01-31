@@ -191,9 +191,11 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
 
 /** @internal */
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference {
-  const model3d = view.is3d() ? model.asGeometricModel3d : undefined;
-  if (undefined !== model3d && model3d.isPlanProjection)
-    return new PlanProjectionTreeReference(view as ViewState3d, model);
+  if (IModelApp.renderSystem.options.planProjections) {
+    const model3d = view.is3d() ? model.asGeometricModel3d : undefined;
+    if (undefined !== model3d && model3d.isPlanProjection)
+      return new PlanProjectionTreeReference(view as ViewState3d, model);
+  }
 
   return new PrimaryTreeReference(view, model);
 }
