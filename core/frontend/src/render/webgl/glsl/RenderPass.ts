@@ -12,6 +12,7 @@ import { RenderPass } from "../RenderFlags";
 // render passes actually used in shader code.
 const renderPasses = [
   [ RenderPass.Background, "Background" ],
+  [ RenderPass.Layers, "Layers" ],
   [ RenderPass.OpaqueLinear, "OpaqueLinear" ],
   [ RenderPass.OpaquePlanar, "OpaquePlanar" ],
   [ RenderPass.OpaqueGeneral, "OpaqueGeneral" ],
@@ -33,7 +34,7 @@ export function addRenderPass(builder: ShaderBuilder) {
   builder.addUniform("u_renderPass", VariableType.Float, (prog) => {
     prog.addProgramUniform("u_renderPass", (uniform, params) => {
       let renderPass = params.renderPass;
-      if (RenderPass.HiddenEdge === renderPass || RenderPass.Layers === renderPass)
+      if (RenderPass.HiddenEdge === renderPass)
         renderPass = RenderPass.OpaqueGeneral; // no distinction from shader POV...
 
       uniform.setUniform1f(renderPass);

@@ -16,7 +16,7 @@ import {
   VariablePrecision,
   FragmentShaderComponent,
 } from "../ShaderBuilder";
-import { RenderPass, TextureUnit } from "../RenderFlags";
+import { TextureUnit } from "../RenderFlags";
 import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
 import { addFeatureAndMaterialLookup, addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
 import { assignFragColor, computeLinearDepth, addWindowToTexCoords } from "./Fragment";
@@ -400,8 +400,8 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
   if (featId_i == feature_id_i)
     return true;
 
-  // In 2d and when drawing plan projection layers, display priority controls draw order of different elements.
-  if (u_discardSameElementOnly)
+  // In 2d, display priority controls draw order of different elements.
+  if (kFrustumType_Ortho2d == u_frustum.z || kRenderPass_Layers == u_renderPass)
     return false;
 
   // Use a tighter tolerance for two different elements since we're only fighting roundoff error.
@@ -513,12 +513,6 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
       frag.addFunction(decodeDepthRgb);
       frag.addFunction(readDepthAndOrder);
 
-      frag.addUniform("u_discardSameElementOnly", VariableType.Boolean, (prog) => {
-        prog.addGraphicUniform("u_discardSameElementOnly", (uniform, params) => {
-          const sameOnly = params.target.is2d || params.renderPass === RenderPass.Layers;
-          uniform.setUniform1i(sameOnly ? 1 : 0);
-        });
-      });
       frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscardWithFeatureID);
 
       addEyeSpace(builder);
