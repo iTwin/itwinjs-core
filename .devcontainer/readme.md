@@ -13,6 +13,7 @@ Ensure both Containers and Hyper-V are enabled in Windows.
 Install [Docker CE](https://hub.docker.com/editions/community/docker-ce-desktop-windows) ([direct](https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe)). Keep all defaults. Tested with version 2.0.0.3 (engine 18.09.2); newer versions should likely work as well.
 
 Customize Docker settings (in task bar notification area, right-click the Docker icon and select 'Settings').
+
 - Shared Drives: You must share the drive(s) that contain your source code **and** your home drive.
 - Advanced: Building is resource-intensive; we recommend at least 4 vCPUs and 4 GB of RAM.
 

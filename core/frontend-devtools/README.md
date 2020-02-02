@@ -26,6 +26,7 @@ Because this is a developer-only package, its functionality is not expected to e
 The package must be initialized before use. This can be done when your application starts up, or deferred until first use of the package. The packages' tools will not be registered until the package is initialized.
 
 Example of initializing at start-up:
+
 ```ts
   IModelApp.startup();
   await FrontendDevTools.initialize();
@@ -101,7 +102,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt tilesize viewport` - Overrides the tile size modifier for the selected viewport (if a floating point number is supplied) or clears the override (if the string "reset" is supplied). The modifier must be greater than zero.
 * `fdt webgl report compatibility` - Opens a modal dialog with information about the client's level of support for various features of the iModel.js display system.
 * `fdt webgl lose context` - Force a webgl context loss.
-* `fdt compile shaders` - Compile all uncompiled registered shader programs and report whether any errors occurred. Useful for testing/debugging platform-specific shader issues.
+* `fdt compile shaders` - Compile all un-compiled registered shader programs and report whether any errors occurred. Useful for testing/debugging platform-specific shader issues.
 * `fdt animation interval` - Changes the `IModelApp.animationInterval` settings. Specify milliseconds in non-negative milliseconds; or anything not parseable as an integer to disable the interval callback entirely.
 * `fdt visibility` - Controls whether instanced, un-instanced (batched), or all geometry is displayed in the active viewport. Accepts at most one argument; defaults to "all" if none is specified:
   * "instanced": Display only instanced geometry.
@@ -121,7 +122,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt attach reality model` - Attach a "context" reality model to the currently selected viewport.
   * the URL for the reality model root JSON file.
 * `fdt layer dump` - Dump to the notification manager a JSON representation of the current plan projection settings for the selected viewport. Optional argument `copy` also copies the JSON to the clipboard.
-* `fdt layer set` - change plan projection settings for the selected viewport. The first argument is required and specifies the plan projection model(s) to be affected, either as `all` or as a comma-separated list of modeld Ids (e.g., `0x1c,0x9a`). Subsequent arguments are optional and are used to build a PlanProjectionSettings. Any arguments omitted will get their default values. Only the first character of each argument is significant; the name of the setting is separated from the value by an `=` sign:
+* `fdt layer set` - change plan projection settings for the selected viewport. The first argument is required and specifies the plan projection model(s) to be affected, either as `all` or as a comma-separated list of model Ids (e.g., `0x1c,0x9a`). Subsequent arguments are optional and are used to build a PlanProjectionSettings. Any arguments omitted will get their default values. Only the first character of each argument is significant; the name of the setting is separated from the value by an `=` sign:
   * `transparency=`: transparency in [0..1].
   * `elevation=`: elevation in meters.
   * `overlay=`: 1 to draw as an overlay, 0 to draw normally (with depth).

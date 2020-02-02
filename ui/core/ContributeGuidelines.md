@@ -20,15 +20,21 @@ In order to maintain consistency in the iModel.js UI source code, please abide b
 * Document __all__ exported classes, interfaces, enums, types, etc.
 * Add release tags (`@public`, `@beta`, `@alpha` or `@internal`) to all exported classes, interfaces, enums, types, etc. For more information on release tags, see [Release Tags](https://github.com/imodeljs/imodeljs/blob/master/docs/learning/guidelines/release-tags-guidelines.md).
 * In addition, it’s preferable that all *Props interface members and component public methods be documented. You can put `@internal` on React lifecycle and render methods.
-* Add a `/** @packageDocumentation
- * @module xyz
- */` comment to the top of the TypeScript file for the documentation module. An existing documentation module will often be appropriate to use. However, if you need to add a documentation module, see additional guidelines below. Example of `@module` comment:
+* Add a,
 
-```typescript
-/** @packageDocumentation
- * @module Button
- */
-```
+  ```ts
+  /** @packageDocumentation
+  * @module xyz
+  */
+  ```
+
+  comment to the top of the TypeScript file for the documentation module. An existing documentation module will often be appropriate to use. However, if you need to add a documentation module, see additional guidelines below. Example of `@module` comment:
+
+  ```ts
+  /** @packageDocumentation
+   * @module Button
+  */
+  ```
 
 * Use the theme colors (e.g. $buic-text-color, $buic-background-control, $buic-background-widget, etc.). These are located in `imodeljs/ui/core/src/ui-core/style/themecolors.scss`. Please do __not__ use $uicore-text-color, $uicore-black, $uicore-white,  $uicore-gray*, etc.)
 * Include an appropriate prefix on CSS class names to prevent class name clashes (e.g. `uifw-` in ui-framework, `core-` in ui-core, `components-` in ui-components, `nz-` in ui-ninezone)
@@ -55,7 +61,6 @@ buttonText = UiCore.i18n.translate("UiCore:dialog.ok");
 ```
 
 * Run `npm run extract-api` to update the `*api.md` file for the package
-* Run `builddocsite ui` to check the API reference and Learning sections
 * Write unit tests for the new component or class. The tests should cover as many code statements, branches, functions and lines as possible (100% is the goal). To run the tests, run `npm run test` or `rush test`. To run coverage, run `npm run cover`. To see the coverage report, open the report from one of the following directories in your browser:
   * imodeljs/ui/framework/lib/test/coverage/lcov-report/index.html
   * imodeljs/ui/core/lib/test/coverage/lcov-report/index.html

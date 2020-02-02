@@ -100,7 +100,6 @@ A basic project should have the following scripts defined in their package.json:
     "electron": "electron lib/main.js",
 ```
 
-
 With these defined, you can run the following from your project directory:
 
 #### `npm start`

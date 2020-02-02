@@ -6,9 +6,10 @@ __Certa__ is a tool for easily running [mocha](https://mochajs.org/) tests in di
 With Certa, you can run the exact same tests in chrome, electron, and node.
 
 The following types of tests are supported:
- - Frontend-only unit tests
- - Integration tests with a local backend
- - Integration tests with a remote (deployed) backend
+
+- Frontend-only unit tests
+- Integration tests with a local backend
+- Integration tests with a remote (deployed) backend
 
 ## Getting Started
 
@@ -18,11 +19,13 @@ There are two steps to running tests with Certa:
 2. **Choose a test runner.** This determines which environment tests will run in.
 
 Assuming your bundled tests are located at `lib/bundled-tests.js`, you can run chrome tests on the command line via:
+
 ```sh
 certa --testBundle lib/bundled-tests.js --runner chrome
 ```
 
 ### Configuration
+
 Certa supports a number of other options that let you configure mocha settings, ports used for debugging, etc.
 The easiest way to configure Certa is by creating a `certa.json` config file. Here's an example configuration:
 
@@ -45,6 +48,7 @@ The easiest way to configure Certa is by creating a `certa.json` config file. He
 > but you can override this via the `--config` command-line option.
 
 #### JSON Schema
+
 Certa also includes a JSON schema to help with editing these configuration files.
 You can configure VS Code to use this schema to provide intellisense (and allow comments) by adding the following to your workspace settings:
 
@@ -70,6 +74,7 @@ In addition to specifying a `testBundle`, you'll also need to choose which envir
 Certa currently includes test runners for electron, chrome, and node, but more may be added in the future.
 
 ### Child Processes
+
 In order to realistically simulate web and desktop environments, Certa test runners may spawn a number of child processes.
 The following diagram shows a simplified process tree for each test runner:
 
@@ -93,6 +98,7 @@ The following diagram shows a simplified process tree for each test runner:
 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┴┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┴┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄
                          🞑 = Frontend    ⧈ = Backend    □ = Other
 ```
+
 > *Chrome technically spawns many child processes of its own, but since we're using Puppeteer to automate chrome,
 > this can be considered an implementation detail.
 
@@ -100,6 +106,7 @@ Note that each test runner designates a single **frontend** and **backend** proc
 there is only one process which serves as _both_ frontend and backend). Tests are ***always*** executed in the **frontend** process.
 
 ### Local Integration Tests
+
 You can use the optional `backendInitModule` setting to specify a CommonJs module that should be `require`d in Certa's **backend**
 process _before_ executing tests. For example, you can define a local express server that will handle API requests made by your tests.
 Alternatively, (with the electron test runner), you can use this to handle IPC messages in the electron main process.
@@ -158,6 +165,7 @@ The following is an example VS Code `launch.json` for debugging Certa tests:
   ]
 }
 ```
+
 > **NB:** This configuration assumes that `${workspaceFolder}/certa.json` exists and defines a valid `testBundle` path.
 
 With this config, you can set breakpoints in both your test backend (if a `backendInitModule` was specified in certa.json) and frontend (tests).
@@ -168,8 +176,8 @@ Note that the frontend debugger will always fail to attach when running tests in
 The frontend debugger may also fail to attach if you break in your test backend's initialization for too long – if this happens you can just
 manually re-attach once a chrome/electron window appears by launching the "Certa Tests (frontend)" configuration.
 
-
 ### Why We Use Predefined Ports
+
 VS Code's Node.js debugger will normally add the `--inspect-brk={auto-determined port}` arg to programs listed in a launch.json configuration.
 This is convenient for debugging most programs, since we usually don't know (or care) which port the debugger should use (and this guarantees
 the port will be free). But this does nothing for us if we really care about debugging some child process of that program (i.e., electron).
@@ -182,6 +190,7 @@ Note that VS Code does have an option to [autoAttachChildProcesses](https://code
 but this only works by examining program arguments, which won't work if Certa _does_ end up deciding that the original process should be debugged.
 
 ## Bundling Tests
+
 Here's an example webpack config that you can use to bundle your tests:
 
 ```JavaScript

@@ -768,7 +768,7 @@
       "smartStep": true,
       "showAsyncStacks": true,
       "webRoot": "${workspaceFolder}"
-    }
+    },
     {
       "type": "node",
       "request": "launch",

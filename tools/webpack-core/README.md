@@ -8,17 +8,17 @@ The main entry point for building an iModel.js backend is the __@bentley/backend
 
 This package contains the following Loaders and Plugins:
 
-### __Loaders__
+## __Loaders__
 
 | Name | Description |
 | - | - |
 | strip-assert-loader | Removes all uses of @bentley/bentleyjs-core `assert()` method from the webpack bundle. |
 
-### __Plugins__
+## __Plugins__
 
 | Name | Description |
 | - | - |
-| BackendendDefaultsPlugin | Combines a set of Webpack plugins to use as defaults when building an iModel.js backend.  (Used in @bentley/backend-webpack). |
+| BackendDefaultsPlugin | Combines a set of Webpack plugins to use as defaults when building an iModel.js backend.  (Used in @bentley/backend-webpack). |
 | BanImportsPlugin | Bans any import that crosses the frontend/backend boundary |
 | CopyBentleyStaticResourcesPlugin | Copies static resources from '@bentley' scoped packages into the output folder.  Used to copy "assets", "public" and other resource files. |
 | CopyExternalsPlugin | Copies all npm packages containing an [external](https://webpack.js.org/configuration/externals/) module (and their direct dependencies) to a `node_modules` directory next to the webpack output. |

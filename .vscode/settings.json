@@ -61,37 +61,21 @@
   "markdownlint.config": {
     "MD024": {
       "allow_different_nesting": true
-    }
+    },
   },
+  "markdownlint.ignore": [
+    "**/CHANGELOG.md"
+  ],
   "eslint.validate": [
-    {
-      "language": "javascript",
-      "autoFix": true
-    },
-    {
-      "language": "javascriptreact",
-      "autoFix": true
-    },
-    {
-      "language": "typescript",
-      "autoFix": true
-    },
-    {
-      "language": "typescriptreact",
-      "autoFix": true
-    }
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
   ],
   "eslint.workingDirectories": [
     "./ui/components",
     "./ui/core",
     "./ui/framework",
     "./ui/ninezone"
-  ],
-  "cSpell.words": [
-    "guids",
-    "intersector",
-    "nand",
-    "node",
-    "tilesets"
   ]
 }

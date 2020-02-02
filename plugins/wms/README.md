@@ -9,11 +9,11 @@ See http://imodeljs.org for comprehensive documentation on the iModel.js API and
 
 ## Development Setup
 
-1. Select and prepare an iModel.js host application. You can use the [Simple Viewer App](https://imodeljs.gitbub.io/simple-viewer-app), for example.
+1. Select and prepare an iModel.js host application. You can use the [Simple Viewer App](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/simple-viewer-app), for example.
 
-2. The dependencies are installed as part of "rush install" in the iModel.js monorepository.
+2. The dependencies are installed as part of "rush install" in the iModel.js repository.
 
-3. Build the plugin as part of the "rush build" in the iModel.js monorepository, or separately build using the npm build command.
+3. Build the plugin as part of the "rush build" in the iModel.js repository, or separately build using the npm build command.
 
   ```sh
   npm run build

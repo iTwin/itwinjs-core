@@ -3,6 +3,7 @@
 ecschema2ts is a command-line tool that takes an EC3.1/EC3.2 BIS ECSchema xml file and outputs a valid Typescript module that uses iModelJs.
 
 ## Quick Overview
+
 ```sh
 $ npm install -g @bentley/ecschema2ts
 
@@ -38,7 +39,6 @@ $ npm update -g @bentley/ecschema2ts
 ## Known Issues
 
 - The ordering of the Typescript classes may be out of order preventing compilation of the typescript file. A workaround is to reorder the classes by hand.
-  - [TFS 793045](https://tfs.bentley.com/tfs/ProductLine/Platform%20Technology/ECTech/_workitems?id=793045&_a=edit&triage=true)
 
 ## Troubleshooting
 
