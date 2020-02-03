@@ -389,19 +389,40 @@ export class RenderCommands {
       return;
     }
 
-    const emptyRenderPass = RenderPass.None === this._forcedRenderPass,
-      start = emptyRenderPass ? 0 : this._forcedRenderPass,
-      end = emptyRenderPass ? this._commands.length : start + 1;
-
-    for (let i = start; i < end; i++)
-      this._commands[i].push(push);
+    if (RenderPass.None === this._forcedRenderPass) {
+      // Need to make sure the push command precedes any subsequent commands added to any render pass.
+      for (let i = 0; i < this._commands.length; i++)
+        this._commands[i].push(push);
+    } else {
+      // May want to add hilite commands as well - add the push command to that pass.
+      this._commands[this._forcedRenderPass].push(push);
+      this._commands[RenderPass.Hilite].push(push);
+    }
 
     func();
 
-    for (let i = start; i < end; i++) {
-      const cmds = this._commands[i];
-      assert(0 < cmds.length);
-      if (0 < cmds.length && cmds[cmds.length - 1] === push)
+    // Remove push command from any passes that didn't receive any commands; add the pop command to any passes that did.
+    if (RenderPass.None === this._forcedRenderPass) {
+      for (let i = 0; i < this._commands.length; i++) {
+        const cmds = this._commands[i];
+        assert(0 < cmds.length);
+        if (0 < cmds.length && cmds[cmds.length - 1] === push)
+          cmds.pop();
+        else
+        cmds.push(pop);
+      }
+    } else {
+      assert(0 < this._commands[this._forcedRenderPass].length);
+      assert(0 < this._commands[RenderPass.Hilite].length);
+
+      let cmds = this._commands[this._forcedRenderPass];
+      if (cmds[cmds.length - 1] === push)
+        cmds.pop();
+      else
+        cmds.push(pop);
+
+      cmds = this._commands[RenderPass.Hilite];
+      if (cmds[cmds.length - 1] === push)
         cmds.pop();
       else
         cmds.push(pop);
