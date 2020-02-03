@@ -133,6 +133,11 @@ export class RequestHost {
     }
 
 // @internal
+export class StorageServiceFileHandler extends UrlFileHandler {
+    constructor();
+}
+
+// @internal
 export class UrlFileHandler implements FileHandler {
     constructor();
     // (undocumented)
@@ -146,6 +151,8 @@ export class UrlFileHandler implements FileHandler {
     join(...paths: string[]): string;
     // (undocumented)
     uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    // (undocumented)
+    protected _uploadMethod: string;
 }
 
 

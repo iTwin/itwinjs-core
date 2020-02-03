@@ -8,6 +8,7 @@ export * from "./RequestHost";
 export * from "./imodelhub/AzureFileHandler";
 export * from "./imodelhub/IOSAzureFileHandler";
 export * from "./UrlFileHandler";
+export * from "./StorageServiceFileHandler";
 
 /** @docs-package-description
  *

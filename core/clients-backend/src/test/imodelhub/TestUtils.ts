@@ -26,6 +26,7 @@ import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { IOSAzureFileHandler } from "../../imodelhub/IOSAzureFileHandler";
 import { UrlFileHandler } from "../../UrlFileHandler";
 import { LocalhostHandler } from "../../imodelhub/LocalhostFileHandler";
+import { StorageServiceFileHandler } from "../../StorageServiceFileHandler";
 
 const loggingCategory = "imodeljs-clients-backend.TestUtils";
 
@@ -61,6 +62,8 @@ export function createIModelBankFileHandler(useDownloadBuffer?: boolean) {
       return new LocalhostHandler();
     case "url":
       return new UrlFileHandler();
+    case "storageservice":
+      return new StorageServiceFileHandler();
     default:
       throw new Error(`File handler '${handler}' is not supported.`);
   }
