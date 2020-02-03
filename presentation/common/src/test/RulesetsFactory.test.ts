@@ -489,9 +489,11 @@ describe("RulesetsFactory", () => {
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass" },
-            requiredDirection: RelationshipDirection.Forward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Forward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass" },
+            }],
             isRequired: true,
             alias: "related_0",
           }],
@@ -514,8 +516,8 @@ describe("RulesetsFactory", () => {
         label: "Related Class",
       };
       const relationshipPath: RelatedClassInfo[] = [{
-        sourceClassInfo: recordClass,
-        targetClassInfo: propertyClass,
+        sourceClassInfo: propertyClass,
+        targetClassInfo: recordClass,
         relationshipInfo: {
           id: createRandomId(),
           name: "MySchema:MyRelationship",
@@ -562,9 +564,11 @@ describe("RulesetsFactory", () => {
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass" },
-            requiredDirection: RelationshipDirection.Backward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass" },
+            }],
             isRequired: true,
             alias: "related_0",
           }],
@@ -575,62 +579,101 @@ describe("RulesetsFactory", () => {
       expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
     });
 
-    it("creates a valid ruleset for one-step forward related property record", () => {
-      const recordClass: ClassInfo = {
+    it("creates a valid ruleset for multi-step related nested content record", () => {
+      const selectClass: ClassInfo = {
         id: createRandomId(),
-        name: "MySchema:PrimaryClass",
-        label: "Primary Class",
+        name: "MySchema:SelectClass",
+        label: "Select Class",
+      };
+      const intermediateClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:SomeClass",
+        label: "Some Class",
       };
       const propertyClass: ClassInfo = {
         id: createRandomId(),
-        name: "MySchema:RelatedClass",
-        label: "Related Class",
+        name: "MySchema:PropertyClass",
+        label: "Property Class",
       };
       const relationshipPath: RelatedClassInfo[] = [{
         sourceClassInfo: propertyClass,
-        targetClassInfo: recordClass,
+        targetClassInfo: intermediateClass,
         relationshipInfo: {
           id: createRandomId(),
-          name: "MySchema:MyRelationship",
-          label: "My Relationship",
+          name: "MySchema:MyRelationship1",
+          label: "My Relationship 1",
         },
         isForwardRelationship: false,
+        isPolymorphicRelationship: true,
+      }, {
+        sourceClassInfo: intermediateClass,
+        targetClassInfo: selectClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship2",
+          label: "My Relationship 2",
+        },
+        isForwardRelationship: true,
         isPolymorphicRelationship: true,
       }];
       const property: Property = {
         property: {
           classInfo: propertyClass,
           type: "string",
-          name: "RelatedProperty",
+          name: "MyProperty",
         },
-        relatedClassPath: relationshipPath,
+        relatedClassPath: [],
       };
-      const field = new PropertiesField(createRandomCategory(), "RelatedProperty",
+      const field = new PropertiesField(createRandomCategory(), faker.random.word(),
         "Related Property", createStringTypeDescription(), true, 1, [property]);
-      const record = new Item([], faker.random.words(), "", recordClass,
-        { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
+      const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), createRandomECClassInfo(), relationshipPath, [field], undefined, faker.random.boolean());
+      field.rebuildParentship(parentField);
+      const values = {
+        [parentField.name]: [{
+          primaryKeys: [],
+          values: {
+            [field.name]: "test value",
+          },
+          displayValues: {
+            [field.name]: "test display value",
+          },
+          mergedFieldNames: [],
+        }] as NestedContentValue[],
+      };
+      const displayValues = {
+        [field.name]: undefined,
+      };
+      const record = new Item([], faker.random.words(), "", selectClass, values, displayValues, []);
       const result = factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [{
         ruleType: RuleTypes.Content,
         specifications: [{
           specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
-          classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
+          classes: { schemaName: "MySchema", classNames: ["SelectClass"] },
           arePolymorphic: true,
           relatedInstances: [{
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass" },
-            requiredDirection: RelationshipDirection.Forward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship2" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "SomeClass" },
+            }, {
+              relationship: { schemaName: "MySchema", className: "MyRelationship1" },
+              direction: RelationshipDirection.Forward,
+              targetClass: { schemaName: "MySchema", className: "PropertyClass" },
+            }],
             isRequired: true,
             alias: "related_0",
           }],
-          instanceFilter: `related_0.RelatedProperty = "test value"`,
+          instanceFilter: `related_0.MyProperty = "test value"`,
         }],
       }];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
-      expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
+      expect(result.description).to.eq(`[Property Class].[Related Property] = test display value`);
     });
 
-    it("creates a valid ruleset for one-step backward related property record", () => {
+    it("creates a valid ruleset for one-step forward related property record", () => {
       const recordClass: ClassInfo = {
         id: createRandomId(),
         name: "MySchema:PrimaryClass",
@@ -672,9 +715,11 @@ describe("RulesetsFactory", () => {
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass" },
-            requiredDirection: RelationshipDirection.Backward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Forward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass" },
+            }],
             isRequired: true,
             alias: "related_0",
           }],
@@ -683,6 +728,139 @@ describe("RulesetsFactory", () => {
       }];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
       expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
+    });
+
+    it("creates a valid ruleset for one-step backward related property record", () => {
+      const recordClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:PrimaryClass",
+        label: "Primary Class",
+      };
+      const propertyClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:RelatedClass",
+        label: "Related Class",
+      };
+      const relationshipPath: RelatedClassInfo[] = [{
+        sourceClassInfo: recordClass,
+        targetClassInfo: propertyClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship",
+          label: "My Relationship",
+        },
+        isForwardRelationship: false,
+        isPolymorphicRelationship: true,
+      }];
+      const property: Property = {
+        property: {
+          classInfo: propertyClass,
+          type: "string",
+          name: "RelatedProperty",
+        },
+        relatedClassPath: relationshipPath,
+      };
+      const field = new PropertiesField(createRandomCategory(), "RelatedProperty",
+        "Related Property", createStringTypeDescription(), true, 1, [property]);
+      const record = new Item([], faker.random.words(), "", recordClass,
+        { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
+      const result = factory.createSimilarInstancesRuleset(field, record);
+      const expectedRules: Rule[] = [{
+        ruleType: RuleTypes.Content,
+        specifications: [{
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+          classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
+          arePolymorphic: true,
+          relatedInstances: [{
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass" },
+            }],
+            isRequired: true,
+            alias: "related_0",
+          }],
+          instanceFilter: `related_0.RelatedProperty = "test value"`,
+        }],
+      }];
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Related Class].[Related Property] = test display value`);
+    });
+
+    it("creates a valid ruleset for multi-step related property record", () => {
+      const selectClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:SelectClass",
+        label: "Select Class",
+      };
+      const intermediateClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:IntermediateClass",
+        label: "Intermediate Class",
+      };
+      const propertyClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:PropertyClass",
+        label: "Property Class",
+      };
+      const relationshipPath: RelatedClassInfo[] = [{
+        sourceClassInfo: selectClass,
+        targetClassInfo: intermediateClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship1",
+          label: "My Relationship 1",
+        },
+        isForwardRelationship: true,
+        isPolymorphicRelationship: true,
+      }, {
+        sourceClassInfo: intermediateClass,
+        targetClassInfo: propertyClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship2",
+          label: "My Relationship 2",
+        },
+        isForwardRelationship: false,
+        isPolymorphicRelationship: true,
+      }];
+      const property: Property = {
+        property: {
+          classInfo: propertyClass,
+          type: "string",
+          name: "RelatedProperty",
+        },
+        relatedClassPath: relationshipPath,
+      };
+      const field = new PropertiesField(createRandomCategory(), "RelatedProperty",
+        "Related Property", createStringTypeDescription(), true, 1, [property]);
+      const record = new Item([], faker.random.words(), "", selectClass,
+        { RelatedProperty: "test value" }, { RelatedProperty: "test display value" }, []);
+      const result = factory.createSimilarInstancesRuleset(field, record);
+      const expectedRules: Rule[] = [{
+        ruleType: RuleTypes.Content,
+        specifications: [{
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+          classes: { schemaName: "MySchema", classNames: ["SelectClass"] },
+          arePolymorphic: true,
+          relatedInstances: [{
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship1" },
+              direction: RelationshipDirection.Forward,
+              targetClass: { schemaName: "MySchema", className: "IntermediateClass" },
+            }, {
+              relationship: { schemaName: "MySchema", className: "MyRelationship2" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "PropertyClass" },
+            }],
+            isRequired: true,
+            alias: "related_0",
+          }],
+          instanceFilter: `related_0.RelatedProperty = "test value"`,
+        }],
+      }];
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Property Class].[Related Property] = test display value`);
     });
 
     it("creates a valid ruleset when related property record is based on multiple properties", () => {
@@ -698,14 +876,14 @@ describe("RulesetsFactory", () => {
         label: "Related Class 1",
       };
       const relationshipPath1: RelatedClassInfo[] = [{
-        sourceClassInfo: propertyClass1,
-        targetClassInfo: recordClass,
+        sourceClassInfo: recordClass,
+        targetClassInfo: propertyClass1,
         relationshipInfo: {
           id: createRandomId(),
           name: "MySchema:MyRelationship",
           label: "My Relationship",
         },
-        isForwardRelationship: false,
+        isForwardRelationship: true,
         isPolymorphicRelationship: true,
       }];
       const property1: Property = {
@@ -722,8 +900,8 @@ describe("RulesetsFactory", () => {
         label: "Related Class 2",
       };
       const relationshipPath2: RelatedClassInfo[] = [{
-        sourceClassInfo: propertyClass2,
-        targetClassInfo: recordClass,
+        sourceClassInfo: recordClass,
+        targetClassInfo: propertyClass2,
         relationshipInfo: {
           id: createRandomId(),
           name: "MySchema:MyRelationship",
@@ -752,15 +930,19 @@ describe("RulesetsFactory", () => {
           classes: { schemaName: "MySchema", classNames: ["PrimaryClass"] },
           arePolymorphic: true,
           relatedInstances: [{
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass1" },
-            requiredDirection: RelationshipDirection.Forward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Forward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass1" },
+            }],
             isRequired: true,
             alias: "related_0",
           }, {
-            relationship: { schemaName: "MySchema", className: "MyRelationship" },
-            class: { schemaName: "MySchema", className: "RelatedClass2" },
-            requiredDirection: RelationshipDirection.Forward,
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "RelatedClass2" },
+            }],
             isRequired: true,
             alias: "related_1",
           }],
@@ -769,6 +951,101 @@ describe("RulesetsFactory", () => {
       }];
       expect(result.ruleset.rules).to.deep.eq(expectedRules);
       expect(result.description).to.eq(`[Related Class 1].[Related Property] = test display value OR [Related Class 2].[Related Property] = test display value`);
+    });
+
+    it("creates a valid ruleset when related property is contained inside nested content record", () => {
+      const recordClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:RecordClass",
+        label: "Record Class",
+      };
+      const nestedContentClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:NestedContentClass",
+        label: "Nested Content Class",
+      };
+      const propertyClass: ClassInfo = {
+        id: createRandomId(),
+        name: "MySchema:PropertyClass",
+        label: "Property Class",
+      };
+      const propertyRelationshipPath: RelatedClassInfo[] = [{
+        sourceClassInfo: nestedContentClass,
+        targetClassInfo: propertyClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship1",
+          label: "My Relationship 1",
+        },
+        isForwardRelationship: false,
+        isPolymorphicRelationship: true,
+      }];
+      const property: Property = {
+        property: {
+          classInfo: propertyClass,
+          type: "string",
+          name: "MyProperty",
+        },
+        relatedClassPath: propertyRelationshipPath,
+      };
+      const field = new PropertiesField(createRandomCategory(), faker.random.word(),
+        property.property.name, createStringTypeDescription(), true, 1, [property]);
+      const nestedContentRelationshipPath: RelatedClassInfo[] = [{
+        sourceClassInfo: nestedContentClass,
+        targetClassInfo: recordClass,
+        relationshipInfo: {
+          id: createRandomId(),
+          name: "MySchema:MyRelationship2",
+          label: "My Relationship 2",
+        },
+        isForwardRelationship: true,
+        isPolymorphicRelationship: true,
+      }];
+      const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), nestedContentClass, nestedContentRelationshipPath, [field], undefined, faker.random.boolean());
+      field.rebuildParentship(parentField);
+      const values = {
+        [parentField.name]: [{
+          primaryKeys: [],
+          values: {
+            [field.name]: "test value",
+          },
+          displayValues: {
+            [field.name]: "test display value",
+          },
+          mergedFieldNames: [],
+        }] as NestedContentValue[],
+      };
+      const displayValues = {
+        [field.name]: undefined,
+      };
+      const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
+      const result = factory.createSimilarInstancesRuleset(field, record);
+      const expectedRules: Rule[] = [{
+        ruleType: RuleTypes.Content,
+        specifications: [{
+          specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+          classes: { schemaName: "MySchema", classNames: ["RecordClass"] },
+          arePolymorphic: true,
+          relatedInstances: [{
+            relationshipPath: [{
+              relationship: { schemaName: "MySchema", className: "MyRelationship2" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "NestedContentClass" },
+            }, {
+              relationship: { schemaName: "MySchema", className: "MyRelationship1" },
+              direction: RelationshipDirection.Backward,
+              targetClass: { schemaName: "MySchema", className: "PropertyClass" },
+            }],
+            isRequired: true,
+            alias: "related_0",
+          }],
+          instanceFilter: `related_0.MyProperty = "test value"`,
+        }],
+      }];
+      expect(result.ruleset.rules).to.deep.eq(expectedRules);
+      expect(result.description).to.eq(`[Property Class].[MyProperty] = test display value`);
     });
 
     describe("invalid conditions", () => {
@@ -791,7 +1068,7 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createBooleanTypeDescription(), true, 1, [property]);
         const record = new Item([], faker.random.word(), "", recordClass,
           { MyProperty: [] }, { MyProperty: "" }, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw("Can only create 'similar instances' ruleset for primitive values");
       });
 
       it("throws when properties field contains no properties", () => {
@@ -804,51 +1081,7 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createBooleanTypeDescription(), true, 1, []);
         const record = new Item([], faker.random.word(), "", recordClass,
           { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when nested content record doesn't have path to primary class", () => {
-        const recordClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:PrimaryClass",
-          label: "Primary Class",
-        };
-        const propertyClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:RelatedClass",
-          label: "Related Class",
-        };
-        const property: Property = {
-          property: {
-            classInfo: propertyClass,
-            type: "string",
-            name: "MyProperty",
-          },
-          relatedClassPath: [],
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.word(), createStringTypeDescription(), true, 1, [property]);
-        const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
-          faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), createRandomECClassInfo(), [], [field], undefined, faker.random.boolean());
-        field.rebuildParentship(parentField);
-        const values = {
-          [parentField.name]: [{
-            primaryKeys: [],
-            values: {
-              [field.name]: "test value",
-            },
-            displayValues: {
-              [field.name]: "test display value",
-            },
-            mergedFieldNames: [],
-          }] as NestedContentValue[],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw("Invalid properties' field with no properties");
       });
 
       it("throws when nested content record contains invalid value", () => {
@@ -894,7 +1127,7 @@ describe("RulesetsFactory", () => {
           [field.name]: undefined,
         };
         const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw("Invalid record value");
       });
 
       it("throws when point2d record has invalid value", () => {
@@ -915,7 +1148,7 @@ describe("RulesetsFactory", () => {
           "My Property", createPoint2dTypeDescription(), true, 1, [property]);
         const record = new Item([], faker.random.word(), "", recordClass,
           { MyProperty: "should be {x,y} object" }, { MyProperty: "1, 2" }, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw("Expecting point values to be supplied as objects");
       });
 
     });
@@ -926,57 +1159,7 @@ describe("RulesetsFactory", () => {
         const field = new Field(createRandomCategory(), faker.random.word(),
           faker.random.word(), createRandomPrimitiveTypeDescription(), true, 1);
         const record = new Item([], faker.random.word(), "", undefined, {}, {}, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when properties field is of point2d type", () => {
-        const property: Property = {
-          property: {
-            classInfo: createRandomECClassInfo(),
-            name: faker.random.word(),
-            type: faker.database.type(),
-          },
-          relatedClassPath: [],
-        };
-        const typeDescription: PrimitiveTypeDescription = {
-          valueFormat: PropertyValueFormat.Primitive,
-          typeName: "point2d",
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.word(), typeDescription, true, 1, [property]);
-        const values = {
-          [field.name]: { x: 1, y: 2 },
-        };
-        const displayValues = {
-          [field.name]: { x: "one", y: "two" },
-        };
-        const record = new Item([], faker.random.word(), "", undefined, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when properties field is of point3d type", () => {
-        const property: Property = {
-          property: {
-            classInfo: createRandomECClassInfo(),
-            name: faker.random.word(),
-            type: faker.database.type(),
-          },
-          relatedClassPath: [],
-        };
-        const typeDescription: PrimitiveTypeDescription = {
-          valueFormat: PropertyValueFormat.Primitive,
-          typeName: "point3d",
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.word(), typeDescription, true, 1, [property]);
-        const values = {
-          [field.name]: { x: 1, y: 2, z: 3 },
-        };
-        const displayValues = {
-          [field.name]: { x: "one", y: "two", z: "three" },
-        };
-        const record = new Item([], faker.random.word(), "", undefined, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw("Can only create 'similar instances' ruleset for properties-based records");
       });
 
       it("throws when properties field is of array type", () => {
@@ -1002,7 +1185,7 @@ describe("RulesetsFactory", () => {
           [field.name]: ["some display value 1", "some display value 2"],
         };
         const record = new Item([], faker.random.word(), "", undefined, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw("Can only create 'similar instances' ruleset for primitive properties");
       });
 
       it("throws when properties field is of struct type", () => {
@@ -1036,7 +1219,7 @@ describe("RulesetsFactory", () => {
           },
         };
         const record = new Item([], faker.random.word(), "", undefined, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw("Can only create 'similar instances' ruleset for primitive properties");
       });
 
       it("throws when record is merged", () => {
@@ -1056,7 +1239,7 @@ describe("RulesetsFactory", () => {
           faker.random.word(), createStringTypeDescription(), true, 1, [property]);
         const record = new Item([], faker.random.word(), "", undefined,
           { MyProperty: "test value" }, { MyProperty: "test value" }, ["MyProperty"]);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw("Can't create 'similar instances' ruleset for merged values");
       });
 
       it("throws when record is based on different classes", () => {
@@ -1077,200 +1260,7 @@ describe("RulesetsFactory", () => {
         const record = new Item([], faker.random.word(), "",
           undefined /* this `undefined` means that record is based on multiple different classes */,
           { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when related property is contained inside nested content record", () => {
-        const recordClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:PrimaryClass",
-          label: "Primary Class",
-        };
-        const nestedContentClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:NestedContentClass",
-          label: "Nested Content Class",
-        };
-        const propertyClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:RelatedClass",
-          label: "Related Class",
-        };
-        const propertyRelationshipPath: RelatedClassInfo[] = [{
-          sourceClassInfo: propertyClass,
-          targetClassInfo: nestedContentClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship1",
-            label: "My Relationship 1",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }];
-        const property: Property = {
-          property: {
-            classInfo: propertyClass,
-            type: "string",
-            name: "MyProperty",
-          },
-          relatedClassPath: propertyRelationshipPath,
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.word(), createStringTypeDescription(), true, 1, [property]);
-        const nestedContentRelationshipPath: RelatedClassInfo[] = [{
-          sourceClassInfo: nestedContentClass,
-          targetClassInfo: recordClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship2",
-            label: "My Relationship 2",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }];
-        const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
-          faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), nestedContentClass, nestedContentRelationshipPath, [field], undefined, faker.random.boolean());
-        field.rebuildParentship(parentField);
-        const values = {
-          [parentField.name]: [{
-            primaryKeys: [],
-            values: {
-              [field.name]: "test value",
-            },
-            displayValues: {
-              [field.name]: "test display value",
-            },
-            mergedFieldNames: [],
-          }] as NestedContentValue[],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when property is related through more than one relationship", () => {
-        const recordClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:PrimaryClass",
-          label: "Primary Class",
-        };
-        const intermediateClass: ClassInfo = {
-          id: createRandomId(),
-          name: faker.random.word(),
-          label: faker.random.word(),
-        };
-        const propertyClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:RelatedClass",
-          label: "Related Class",
-        };
-        const relationshipPath: RelatedClassInfo[] = [{
-          sourceClassInfo: propertyClass,
-          targetClassInfo: intermediateClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship1",
-            label: "My Relationship 1",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }, {
-          sourceClassInfo: intermediateClass,
-          targetClassInfo: recordClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship 2",
-            label: "My Relationship 2",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }];
-        const property: Property = {
-          property: {
-            classInfo: propertyClass,
-            type: "string",
-            name: "MyProperty",
-          },
-          relatedClassPath: relationshipPath,
-        };
-        const field = new PropertiesField(createRandomCategory(), "MyProperty",
-          faker.random.word(), createStringTypeDescription(), true, 1, [property]);
-        const record = new Item([], faker.random.words(), "", recordClass,
-          { MyProperty: "test value" }, { MyProperty: "test display value" }, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
-      });
-
-      it("throws when nested content record's path to primary path is longer than 1 step", () => {
-        const recordClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:PrimaryClass",
-          label: "Primary Class",
-        };
-        const intermediateClass: ClassInfo = {
-          id: createRandomId(),
-          name: faker.random.word(),
-          label: faker.random.word(),
-        };
-        const propertyClass: ClassInfo = {
-          id: createRandomId(),
-          name: "MySchema:RelatedClass",
-          label: "Related Class",
-        };
-        const relationshipPath: RelatedClassInfo[] = [{
-          sourceClassInfo: propertyClass,
-          targetClassInfo: intermediateClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship1",
-            label: "My Relationship 1",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }, {
-          sourceClassInfo: intermediateClass,
-          targetClassInfo: recordClass,
-          relationshipInfo: {
-            id: createRandomId(),
-            name: "MySchema:MyRelationship 2",
-            label: "My Relationship 2",
-          },
-          isForwardRelationship: false,
-          isPolymorphicRelationship: true,
-        }];
-        const property: Property = {
-          property: {
-            classInfo: propertyClass,
-            type: "string",
-            name: "MyProperty",
-          },
-          relatedClassPath: [],
-        };
-        const field = new PropertiesField(createRandomCategory(), faker.random.word(),
-          faker.random.word(), createStringTypeDescription(), true, 1, [property]);
-        const parentField = new NestedContentField(createRandomCategory(), faker.random.word(),
-          faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
-          faker.random.number(), createRandomECClassInfo(), relationshipPath, [field], undefined, faker.random.boolean());
-        field.rebuildParentship(parentField);
-        const values = {
-          [parentField.name]: [{
-            primaryKeys: [],
-            values: {
-              [field.name]: "test value",
-            },
-            displayValues: {
-              [field.name]: "test display value",
-            },
-            mergedFieldNames: [],
-          }] as NestedContentValue[],
-        };
-        const displayValues = {
-          [field.name]: undefined,
-        };
-        const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw("Can't create 'similar instances' for records based on multiple different ECClass instances");
       });
 
       it("throws when nested content record contains more than one nested record", () => {
@@ -1389,7 +1379,7 @@ describe("RulesetsFactory", () => {
           [field.name]: undefined,
         };
         const record = new Item([], faker.random.words(), "", recordClass, values, displayValues, []);
-        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw();
+        expect(() => factory.createSimilarInstancesRuleset(field, record)).to.throw("Can't create 'similar instances' ruleset for merged values");
       });
 
     });
