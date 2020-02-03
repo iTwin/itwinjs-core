@@ -1864,6 +1864,7 @@ export interface FrameworkState {
 export class FrameworkUiAdmin extends UiAdmin {
     get cursorPosition(): XAndY;
     hideCalculator(): boolean;
+    hideHTMLElement(): boolean;
     hideInputEditor(): boolean;
     hideMenuButton(id: string): boolean;
     hideToolbar(): boolean;
@@ -1873,6 +1874,7 @@ export class FrameworkUiAdmin extends UiAdmin {
     showCalculator(initialValue: number, resultIcon: string, location: XAndY, onOk: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showContextMenu(items: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showHeightEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
+    showHTMLElement(displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
     showLengthEditor(initialValue: number, location: XAndY, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc, htmlElement?: HTMLElement): boolean;
     showMenuButton(id: string, menuItemsProps: AbstractMenuItemProps[], location: XAndY, htmlElement?: HTMLElement): boolean;
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
@@ -2404,6 +2406,28 @@ export enum HitBoxZ {
     None = 0,
     // (undocumented)
     Top = 1
+}
+
+// @alpha
+export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
+    // (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: {
+        size: Size;
+    };
+}
+
+// @alpha (undocumented)
+export interface HTMLElementPopupProps extends PopupPropsBase {
+    // (undocumented)
+    element: HTMLElement;
+    // (undocumented)
+    onCancel: OnCancelFunc;
+    // (undocumented)
+    orientation: Orientation;
+    // (undocumented)
+    relativePosition: RelativePosition;
 }
 
 // @public @deprecated
@@ -3440,6 +3464,8 @@ export class PopupManager {
     // (undocumented)
     static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size: SizeProps): Point;
     // (undocumented)
+    static hideHTMLElement(): boolean;
+    // (undocumented)
     static hideInputEditor(): boolean;
     // (undocumented)
     static hideToolbar(): boolean;
@@ -3452,6 +3478,8 @@ export class PopupManager {
     static set popups(popups: ReadonlyArray<PopupInfo>);
     // (undocumented)
     static removePopup(id: string): boolean;
+    // (undocumented)
+    static showHTMLElement(displayElement: HTMLElement, el: HTMLElement, pt: XAndY, offset: XAndY, onCancel: OnCancelFunc, relativePosition: RelativePosition): boolean;
     // (undocumented)
     static showInputEditor(el: HTMLElement, pt: XAndY, value: number, propertyDescription: PropertyDescription, onCommit: OnNumberCommitFunc, onCancel: OnCancelFunc): boolean;
     // (undocumented)

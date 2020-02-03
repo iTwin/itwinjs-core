@@ -208,6 +208,8 @@ public;GroupItemProps
 internal;HitBoxX
 internal;HitBoxY
 internal;HitBoxZ
+alpha;HTMLElementPopup 
+alpha;HTMLElementPopupProps 
 public;Icon: React.FunctionComponent
 public;IconProps 
 public;IconSpec = IconSpec_2

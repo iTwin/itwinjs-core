@@ -118,4 +118,14 @@ describe("FrameworkUiAdmin", () => {
     expect(uiAdmin.hideInputEditor()).to.be.true;
   });
 
+  it("showHTMLElement should return true", () => {
+    const html = "<div style='width: 120px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;'>Hello World!</div>";
+    const display = new DOMParser().parseFromString(html, "text/html");
+    const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+    const spyCancel = sinon.fake();
+
+    expect(uiAdmin.showHTMLElement(display.documentElement, uiAdmin.createXAndY(150, 250), uiAdmin.createXAndY(8, 8), spyCancel, RelativePosition.BottomRight, doc.documentElement)).to.be.true;
+    expect(uiAdmin.hideHTMLElement()).to.be.true;
+  });
+
 });
