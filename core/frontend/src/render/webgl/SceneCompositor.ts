@@ -1887,10 +1887,6 @@ class MPCompositor extends Compositor {
 
   protected getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
-      case RenderPass.OpaqueLayers:
-      case RenderPass.TranslucentLayers:
-      case RenderPass.OverlayLayers:
-        // ###TODO
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
@@ -1947,14 +1943,11 @@ class MPCompositor extends Compositor {
     }
   }
 
-  protected renderLayers(_commands: RenderCommands, _needComposite: boolean, _pass: RenderPass): void {
-    /* ###TODO
-    if (0 === commands.getCommands(RenderPass.Layer).length)
-      return;
-
+  protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
+    this._readPickDataFromPingPong = true;
     const colorFbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
-    this.drawOpaquePass(colorFbo, commands, RenderPass.
-    */
+    this.drawOpaquePass(colorFbo, commands, pass, true);
+    this._readPickDataFromPingPong = false;
   }
 
   protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
