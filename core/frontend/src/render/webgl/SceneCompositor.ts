@@ -858,6 +858,10 @@ abstract class Compositor extends SceneCompositor {
       this.renderLayers(commands, false, RenderPass.TranslucentLayers);
       this.target.endPerfMetricRecord();
 
+      this.target.beginPerfMetricRecord("Render Overlay Layers", true);
+      this.renderLayers(commands, false, RenderPass.OverlayLayers);
+      this.target.endPerfMetricRecord();
+
       this.target.popActiveVolume();
     }
 
