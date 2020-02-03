@@ -19,8 +19,10 @@ import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
 import { Clipper } from "../../clipping/ClipUtils";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
-/* tslint:disable:no-console no-trailing-whitespace */
-/* tslint:disable:no-console deprecation */
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
+import { LineString3d } from "../../curve/LineString3d";
+import { Sample } from "../../serialization/GeometrySamples";
+import { CurvePrimitive } from "../../curve/CurvePrimitive";
 /**
  *
  * @param origin
@@ -143,4 +145,48 @@ describe("ClipNodes", () => {
     expect(ck.getNumErrors()).equals(0);
 
   });
+  it("ClipManyBoxes", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0.0;
+    const y0 = 0.0;
+    let yOut = 10.0;
+    const captureClip = (a0: number, a1: number, cp: CurvePrimitive) => {
+      GeometryCoreTestIO.captureGeometry(allGeometry, cp.clonePartialCurve(a0, a1), x0, yOut);
+    };
+    const unitBoxPoints = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)];
+    const clipperA = createTranslatedClipperUnion(allGeometry, 8, unitBoxPoints, Point3d.create(0, 0, 0), Point3d.create(20, 8, 0), 1.0, 7.0, x0, y0);
+    const ls = LineString3d.create(Sample.createBidirectionalSawtooth(Point3d.create(-1, 0.5, 0), 3, 2, 5, 3, 3, 7, 1, 2, -1, 2));
+    ls.announceClipIntervals(clipperA, captureClip);
+    (clipperA as BooleanClipNode).toggleResult();
+    yOut = 20;
+    ls.announceClipIntervals(clipperA, captureClip);
+    (clipperA as BooleanClipNode).toggleResult();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "ClipNode", "ClipManyBoxes");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
 });
+
+function createTranslatedClipper(origin: Point3d, polygonPoints: Point3d[], scale: number): { clipper: Clipper, points: Point3d[] } {
+  const myPoints: Point3d[] = [];
+  for (const p of polygonPoints)
+    myPoints.push(Point3d.createAdd2Scaled(origin, 1, p, scale));
+  const convexClip = ConvexClipPlaneSet.createSweptPolyline(myPoints, Vector3d.unitZ())!;
+  return { clipper: convexClip, points: myPoints };
+}
+
+function createTranslatedClipperUnion(allGeometry: GeometryQuery[], count: number, points: Point3d[], origin0: Point3d, origin1: Point3d, scale0: number, scale1: number, x0: number, y0: number): Clipper {
+  const clippers = [];
+  for (let i = 0; i < count; i++) {
+    const f = i / (count - 1);
+    const origin = origin0.interpolate(f, origin1);
+    const scale = Geometry.interpolate(scale0, f, scale1);
+    const data = createTranslatedClipper(origin, points, scale);
+    clippers.push(data.clipper);
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(data.points), x0, y0);
+  }
+  return BooleanClipFactory.createCaptureUnion(clippers, true);
+}

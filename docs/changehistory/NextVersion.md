@@ -34,6 +34,7 @@ ignore: true
      * `Arc3d.create(center: Point3d | undefined, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d;`
      * `Arc3d.createCenterNormalRadius(center: Point3d | undefined, normal: Vector3d, radius: number, result?: Arc3d): Arc3d;`
    * `Arc3d.createScaledXYColumns(center: Point3d | undefined, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d;`
+   * in `myArc.extendRange(range, transform)`, compute exact (rather than sampled) range.
 
 ### Matrix3d
   * New instance method: `matrix.multiplyInverseXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d | undefined;`
@@ -44,3 +45,9 @@ ignore: true
 
 ### Transform
    * New instance method:   `multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined;`
+
+### Point3d and Vector3d
+  * New instance method `data.setAt(index, value)` to address x,y,z by index (in `XYZ` base class)
+
+### ConvexClipPlaneSet
+  * allow undefined (zero) tilt in construction `ConvexClipPlaneSet.createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle?: Angle): ConvexClipPlaneSet | undefined`

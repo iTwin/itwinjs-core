@@ -10,10 +10,10 @@
 import { Geometry, AxisOrder, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
-import { TrigPolynomial, SmallSystem } from "../numerics/Polynomials";
+import { TrigPolynomial, SmallSystem, SineCosinePolynomial } from "../numerics/Polynomials";
 import { XYAndZ } from "../geometry3d/XYZProps";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
+import { Range3d, Range1d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -76,6 +76,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   private _sweep: AngleSweep; // sweep limits.
   private static _workPointA = Point3d.create();
   private static _workPointB = Point3d.create();
+  private static _workPointC = Point3d.create();
+  private static _workVectorU = Vector3d.create();
+  private static _workVectorV = Vector3d.create();
   /**
    * read property for (clone of) center
    */
@@ -631,16 +634,27 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param transform optional transform to apply to the arc.
    */
   public extendRange(range: Range3d, transform?: Transform): void {
-    const df = 1.0 / 32;
-    // KLUDGE --- evaluate lots of points ...
-    let point = Point3d.create();
-    for (let fraction = 0; fraction <= 1.001; fraction += df) {
-      point = this.fractionToPoint(fraction, point);
-      if (transform)
-        range.extendTransformedPoint(transform, point);
-      else
-        range.extendPoint(point);
+    const trigForm = new SineCosinePolynomial(0, 0, 0);
+    const center = this._center.clone(Arc3d._workPointA);
+    const vectorU = this._matrix.columnX(Arc3d._workVectorU);
+    const vectorV = this._matrix.columnY(Arc3d._workVectorV);
+    if (transform) {
+      transform.multiplyPoint3d(center, center);
+      transform.multiplyVector(vectorU, vectorU);
+      transform.multiplyVector(vectorV, vectorV);
     }
+    const lowPoint = Arc3d._workPointB;
+    const highPoint = Arc3d._workPointC;
+    const range1 = Range1d.createNull();
+    for (let i = 0; i < 3; i++) {
+      trigForm.set(center.at(i), vectorU.at(i), vectorV.at(i));
+      trigForm.rangeInSweep(this._sweep, range1);
+      lowPoint.setAt(i, range1.low);
+      highPoint.setAt(i, range1.high);
+    }
+    range.extend(lowPoint);
+    range.extend(highPoint);
+
   }
   /**
    * Create a new arc which is a unit circle centered at the origin.

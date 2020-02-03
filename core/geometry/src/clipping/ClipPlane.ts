@@ -206,12 +206,12 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
    * @param tiltAngle angle to tilt the plane around the edge in the direction of the up vector.
    * @param result optional preallocated plane
    */
-  public static createEdgeAndUpVector(point0: Point3d, point1: Point3d, upVector: Vector3d, tiltAngle: Angle, result?: ClipPlane): ClipPlane | undefined {
+  public static createEdgeAndUpVector(point0: Point3d, point1: Point3d, upVector: Vector3d, tiltAngle?: Angle, result?: ClipPlane): ClipPlane | undefined {
     const edgeVector = Vector3d.createFrom(point1.minus(point0));
     let normal = (upVector.crossProduct(edgeVector)).normalize();
 
     if (normal) {
-      if (!tiltAngle.isAlmostZero) {
+      if (tiltAngle !== undefined && !tiltAngle.isAlmostZero) {
         const tiltNormal = Vector3d.createRotateVectorAroundVector(normal, edgeVector, tiltAngle);
         if (tiltNormal) {
           normal = tiltNormal.clone();

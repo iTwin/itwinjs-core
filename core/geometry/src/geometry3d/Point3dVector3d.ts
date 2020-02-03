@@ -220,6 +220,17 @@ export class XYZ implements XYAndZ {
       return this.z;
     return this.y;
   }
+  /**
+   * Return the x,y, z component corresponding to 0,1,2.
+   */
+  public setAt(index: number, value: number): void {
+    if (index < 0.5)
+      this.x = value;
+    if (index > 1.5)
+      this.z = value;
+    else
+      this.y = value;
+  }
   /** Return the index (0,1,2) of the x,y,z component with largest absolute value */
   public indexOfMaxAbs(): number {
     let index = 0;

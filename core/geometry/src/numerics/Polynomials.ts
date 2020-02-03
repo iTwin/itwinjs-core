@@ -1757,7 +1757,7 @@ export class SineCosinePolynomial {
   /** Return the range of function values over the entire angle range. */
   public range(result?: Range1d): Range1d {
     const q = Geometry.hypotenuseXY(this.cosineCoff, this.sineCoff);
-    return Range1d.createXX(this.a + q, this.a - q, result);
+    return Range1d.createXX(this.a - q, this.a + q, result);
   }
   /** Return the min and max values of the function over theta range from radians0 to radians1  inclusive. */
   public rangeInStartEndRadians(radians0: number, radians1: number, result?: Range1d): Range1d {
