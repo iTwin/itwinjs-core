@@ -1302,6 +1302,12 @@ export enum RelationshipMeaning {
 // @public
 export type RelationshipPath = RelatedClassInfo[];
 
+// @public (undocumented)
+export namespace RelationshipPath {
+    // @internal (undocumented)
+    export function reverse(path: RelationshipPath): RelationshipPath;
+}
+
 // @beta
 export type RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[];
 

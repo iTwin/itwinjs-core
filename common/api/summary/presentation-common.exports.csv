@@ -192,6 +192,8 @@ public;RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecificatio
 public;RelationshipDirection
 public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
+public;RelationshipPath
+internal;reverse(path: RelationshipPath): RelationshipPath
 beta;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
 beta;RelationshipStepSpecification
 beta;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[]
