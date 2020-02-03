@@ -30,7 +30,7 @@ The diagram above shows an app frontend requesting operations from some backend.
 
 An `RpcInterface` is defined as a set of operations exposed by a server that a client can call, using configurable protocols, in a platform-independent way.
 
-As shown, client and server work with the *RpcManager* to use an RpcInterface. RpcManager exposes a client "stub" on the client side. This stub forwards the request. On the other end, RpcManager uses a server dispatch mechanism to rely the request to the implementation in the server. In between the two is a transport mechanism that marshalls calls from the client to the server over an appropriate communications channel. The transport mechanism is encapsulated in a *configuration* that is applied at runtime.
+As shown, client and server work with the *RpcManager* to use an RpcInterface. RpcManager exposes a client "stub" on the client side. This stub forwards the request. On the other end, RpcManager uses a server dispatch mechanism to relay the request to the implementation in the server. In between the two is a transport mechanism that marshalls calls from the client to the server over an appropriate communications channel. The transport mechanism is encapsulated in a *configuration* that is applied at runtime.
 
 A typical app frontend will use more than one remote component. Likewise, a server can contain and expose more than one component. For example, the app frontend might need two interfaces, Interface 1 and Interface 2. In this example, both are implemented in Backend A.
 
@@ -126,7 +126,7 @@ Impls must be registered at runtime, as explained next.
 
 ## RPC Configuration
 
-The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, resuable app components. A different *transport mechanism* is used in each configuration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces.
+The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, reusable app components. A different *transport mechanism* is used in each configuration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces.
 
 ## Web RPC configuration
 

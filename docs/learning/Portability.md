@@ -20,8 +20,10 @@ Web UI technology, including HTML and CSS, makes it possible to write a cross-pl
 
 Since an iModel.js app [frontend](../learning/App.md#app-frontend) is written using Web UI technologies, it is inherently portable.
 
-### Using Plaform-specfic Modules in the Frontend
+### Using Platform-specific Modules in the Frontend
+
 In some cases, the Web view environment will provide platform-specific globals and modules. The frontend can use these modules in guarded code. To detect the platform of the frontend:
+
 ```ts
 const isIos: bool = /iphone|ipod|ipad/.test(window.navigator.userAgent.toLowerCase());
 // ... other mobile platforms ...
@@ -46,6 +48,7 @@ App-specific backends do not always run in nodejs, and they do not always run on
 A backend can use platform-specific globals and modules, but only in guarded code. See [Platform](#backend) for methods to detect the platform.
 
 For example, a backend can use node builtins in guarded code, like this:
+
 ```ts
   import { Platform } from "@bentley/imodeljs-backend";
 

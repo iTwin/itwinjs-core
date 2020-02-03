@@ -1,11 +1,13 @@
 # Write an iModel Bridge
 
 As explained in the [overview](../learning/imodel-bridges.md), a "bridge" is a program that:
+
 1. Reads information from a data source,
-2. Aligns the source data with the BIS schema and preferrably a domain schema, and
+2. Aligns the source data with the BIS schema and preferably a domain schema, and
 3. Writes BIS data to an iModel.
 
-Specificaly, a bridge must:
+Specifically, a bridge must:
+
 * [Open a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
 * Import or Update Schema
   * Possibly [import an appropriate BIS schema into the briefcase](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)  or upgrade an existing schema.
@@ -72,8 +74,7 @@ Id mapping is a way of looking up the data in the iModel that corresponds to a g
 
 If the source data has stable, unique IDs, then Id mapping could be straightforward. The bridge just needs to record the source -> BIS Id mappings somewhere. If the source data IDs are GUIDs, then the bridge can assign them to the federationGuid property value of the BIS elements that it creates. That way, the mappings will be directly recorded in the iModel itself.
 
-If the soruce data does not have stable, unique IDs, then the bridge will have to use some other means of identifying pieces of source data in a stable way. A crytographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
-
+If the source data does not have stable, unique IDs, then the bridge will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
 
 ### Change-detection
 
@@ -81,9 +82,10 @@ Change-detection is a way of detecting changes in the source data.
 
 If the source data is timestamped in some way, then the change-detection logic should be easy. The bridge just has to save the highest timestamp at the end of the conversion and then look for source data with later timestamps the next time it runs.
 
-If timestamps are not available, then the bridge will have to use some other means of recording and then comparing the state of the source data from run to run. If conversion is cheap, then the source data can be be converted again and the results compared to the previous results, as stored in the iModel. Or, a crytographic hash of the source data may be used to represent the source data. The hash could be stored along with the mappings and used to detect changes.
+If timestamps are not available, then the bridge will have to use some other means of recording and then comparing the state of the source data from run to run. If conversion is cheap, then the source data can be be converted again and the results compared to the previous results, as stored in the iModel. Or, a cryptographic hash of the source data may be used to represent the source data. The hash could be stored along with the mappings and used to detect changes.
 
 A basic change-detection algorithm is:
+
 * For each source data item:
   * add source item's Id to the *source_items_seen* set
   * Look in the mappings for the corresponding data in the iModel (element, aspect, model)
@@ -97,8 +99,9 @@ A basic change-detection algorithm is:
     * Add the source data item's Id to the mappings
 
 Infer deletions:
+
 * For each source data item Id previously converted
   * if item Id is not in *source_items_seen*
-    * Find the the corresponind data in the iModel
+    * Find the the corresponding data in the iModel
       * Delete the data in the iModel
       * Remove the the source data item's Id from the mappings
