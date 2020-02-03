@@ -66,7 +66,8 @@ export class TestOidcClient implements IAuthorizationClient {
   }
 
   private async initialize() {
-    this._deploymentRegion = this._deploymentRegion || Config.App.has("imjs_buddi_resolve_url_using_region") ? Config.App.getNumber("imjs_buddi_resolve_url_using_region") : 0; // Defaults to PROD (for 3rd party users)
+    if (undefined === this._deploymentRegion)
+      this._deploymentRegion = Config.App.has("imjs_buddi_resolve_url_using_region") ? Config.App.getNumber("imjs_buddi_resolve_url_using_region") : 0; // Defaults to PROD (for 3rd party users)
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);
@@ -233,7 +234,7 @@ export class TestOidcClient implements IAuthorizationClient {
 
     // There are two page loads if it's a federated user because of a second redirect.
     // Note: On a fast internet connection this is not needed but on slower ones it will be.  See comment above for previous 'waitForNavigation' for details.
-    if (-1 !== page.url().indexOf("wsfed"))
+    if (-1 !== page.url().indexOf("wsfed") && -1 === page.url().indexOf("microsoftonline"))
       await page.waitForNavigation({ waitUntil: "networkidle2" });
 
     // Check if there were any errors when performing sign-in
@@ -315,6 +316,7 @@ export class TestOidcClient implements IAuthorizationClient {
  */
 export async function getTestOidcToken(config: TestOidcConfiguration, user: TestUserCredentials, deploymentRegion?: number): Promise<AccessToken> {
   const client = new TestOidcClient(config, user);
-  client.deploymentRegion = deploymentRegion || Config.App.getNumber("imjs_buddi_resolve_url_using_region") || 0;
+  if (undefined !== deploymentRegion)
+    client.deploymentRegion = deploymentRegion;
   return client.getAccessToken();
 }
