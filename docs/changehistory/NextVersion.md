@@ -46,6 +46,13 @@ ignore: true
 ### Transform
    * New instance method:   `multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined;`
 
+### IModelSchemaLoader
+  * New utility class in @bentley/imodeljs-backend to retrieve full Schema information from an iModel.
+  * Requires the @bentley/ecschema-metadata package to be installed.  This package contains the EC Schema metadata classes which are the building blocks of the schema returned from the iModel.
+  * Contains two methods for Schema retrieval.
+    * `getSchema` Gets a Schema by name from the iModel and throws an exception if it cannot be found or loaded.
+    * `tryGetSchema` Attempts to retrieve a Schema by name from the iModel.  Returns `undefined` if it cannot be found.
+
 ### Point3d and Vector3d
   * New instance method `data.setAt(index, value)` to address x,y,z by index (in `XYZ` base class)
 

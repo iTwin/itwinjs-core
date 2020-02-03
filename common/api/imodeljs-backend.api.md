@@ -391,6 +391,8 @@ export enum BackendLoggerCategory {
     IModelHost = "imodeljs-backend.IModelHost",
     // @beta
     IModelImporter = "imodeljs-backend.IModelImporter",
+    // @alpha
+    IModelSchemaLoader = "imodeljs-backend.IModelSchemaLoader",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
     IModelTileUpload = "imodeljs-backend.IModelTileUpload",
     // @beta
