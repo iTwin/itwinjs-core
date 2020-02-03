@@ -32,11 +32,13 @@ import {
   PrimitiveCommand,
   PushBatchCommand,
   PushBranchCommand,
+  PushStateCommand,
   PushCommand,
 } from "./DrawCommand";
 import {
   BatchState,
   BranchStack,
+  BranchState,
 } from "./BranchState";
 import { Target } from "./Target";
 import {
@@ -197,9 +199,7 @@ export class RenderCommands {
     assert(RenderPass.None === this._forcedRenderPass);
 
     this._forcedRenderPass = RenderPass.Background;
-    this._stack.pushState(this.target.decorationState);
-    gf.addCommands(this);
-    this._stack.pop();
+    this.pushAndPopState(this.target.decorationsState, () => gf.addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -210,9 +210,7 @@ export class RenderCommands {
     assert(RenderPass.None === this._forcedRenderPass);
 
     this._forcedRenderPass = RenderPass.SkyBox;
-    this._stack.pushState(this.target.decorationState);
-    (gf as Graphic).addCommands(this);
-    this._stack.pop();
+    this.pushAndPopState(this.target.decorationsState, () => gf.addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -423,6 +421,12 @@ export class RenderCommands {
     this._stack.pop();
   }
 
+  public pushAndPopState(state: BranchState, func: () => void): void {
+    this._stack.pushState(state);
+    this.pushAndPop(new PushStateCommand(state), PopBranchCommand.instance, func);
+    this._stack.pop();
+  }
+
   public clear(): void {
     assert(this._batchState.isEmpty);
     this._clearCommands();
@@ -437,7 +441,7 @@ export class RenderCommands {
     this._clearCommands();
 
     this._addTranslucentAsOpaque = true;
-    this._stack.pushState(this.target.decorationState);
+    this._stack.pushState(this.target.decorationsState);
 
     for (const overlay of overlays) {
       const gf = overlay as Graphic;
@@ -491,16 +495,15 @@ export class RenderCommands {
         this.addWorldDecorations(dec.world);
       }
 
-      this._stack.pushState(this.target.decorationState);
-      if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length) {
-        this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
-      }
+      this.pushAndPopState(this.target.decorationsState, () => {
+        if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length) {
+          this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
+        }
 
-      if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length) {
-        this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
-      }
-
-      this._stack.pop();
+        if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length) {
+          this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
+        }
+      });
     }
 
     this.setupClassificationByVolume();

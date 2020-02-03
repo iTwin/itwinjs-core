@@ -177,7 +177,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   protected _fbo?: FrameBuffer;
   protected _dcAssigned: boolean = false;
   public performanceMetrics?: PerformanceMetrics;
-  public readonly decorationState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
+  public readonly decorationsState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
   public readonly uniforms = new TargetUniforms(this);
   public readonly renderRect = new ViewRect();
   private readonly _visibleEdgeOverrides = new EdgeOverrides();
@@ -807,7 +807,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.compositor.draw(this._renderCommands); // scene compositor gets disposed and then re-initialized... target remains undisposed
 
       this.beginPerfMetricRecord("Overlay Draws");
-      this.uniforms.branch.pushState(this.decorationState);
 
       this.beginPerfMetricRecord("World Overlays");
       this.drawPass(RenderPass.WorldOverlay);
@@ -817,7 +816,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this.drawPass(RenderPass.ViewOverlay);
       this.endPerfMetricRecord();
 
-      this.uniforms.branch.pop();
       this.endPerfMetricRecord(); // End "Overlay Draws"
     }
 

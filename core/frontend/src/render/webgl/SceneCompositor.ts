@@ -888,12 +888,10 @@ abstract class Compositor extends SceneCompositor {
     }
 
     // Render overlays as opaque into the pick buffers. Make sure we use the decoration state (to ignore symbology overrides, esp. the non-locatable flag).
-    this.target.decorationState.isReadPixelsInProgress = true;
-    this.target.pushState(this.target.decorationState);
+    this.target.decorationsState.isReadPixelsInProgress = true;
     this.renderOpaque(commands, CompositeFlags.None, true);
     this.target.endPerfMetricRecord();
-    this.target.popBranch();
-    this.target.decorationState.isReadPixelsInProgress = false;
+    this.target.decorationsState.isReadPixelsInProgress = false;
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
@@ -1001,10 +999,8 @@ abstract class Compositor extends SceneCompositor {
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
-      this.target.pushState(this.target.decorationState);
       System.instance.applyRenderState(this.getRenderState(RenderPass.SkyBox));
       this.target.techniques.execute(this.target, cmds, RenderPass.SkyBox);
-      this.target.popBranch();
     });
   }
 
@@ -1016,10 +1012,8 @@ abstract class Compositor extends SceneCompositor {
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
-      this.target.pushState(this.target.decorationState);
       System.instance.applyRenderState(this.getRenderState(RenderPass.Background));
       this.target.techniques.execute(this.target, cmds, RenderPass.Background);
-      this.target.popBranch();
     });
   }
 
@@ -1220,7 +1214,7 @@ abstract class Compositor extends SceneCompositor {
       volClassBlendReadZTexture = this._depth!.getHandle()!;
       // Copy the current Z into the Alt-Z.  At the same time go ahead and clear the stencil and the blend texture.
       fbStack.execute(volClassBlendFbo!, true, () => {
-        this.target.pushState(this.target.decorationState);
+        this.target.pushState(this.target.decorationsState);
         System.instance.applyRenderState(this._vcCopyZRenderState!);
         if (System.instance.capabilities.supportsFragDepth)
           this.target.techniques.draw(getDrawParams(this.target, this._geom.volClassCopyZ!));  // This method uses the EXT_frag_depth extension
@@ -1284,7 +1278,7 @@ abstract class Compositor extends SceneCompositor {
       fbStack.execute(volClassBlendFbo!, false, () => {
         this._geom.volClassSetBlend!.boundaryType = BoundaryType.Outside;
         this._geom.volClassSetBlend!.texture = volClassBlendReadZTexture;
-        this.target.pushState(this.target.decorationState);
+        this.target.pushState(this.target.decorationsState);
         this._vcColorRenderState!.flags.blend = false;
         this._vcColorRenderState!.stencil.frontFunction.function = GL.StencilFunction.Equal; // temp swap the functions so we get what is not set in the stencil
         this._vcColorRenderState!.stencil.backFunction.function = GL.StencilFunction.Equal;
@@ -1308,7 +1302,7 @@ abstract class Compositor extends SceneCompositor {
         fbStack.execute(volClassBlendFbo!, false, () => {
           this._geom.volClassSetBlend!.boundaryType = BoundaryType.Inside;
           this._geom.volClassSetBlend!.texture = volClassBlendReadZTexture;
-          this.target.pushState(this.target.decorationState);
+          this.target.pushState(this.target.decorationsState);
           this._vcColorRenderState!.flags.blend = false;
           System.instance.applyRenderState(this._vcColorRenderState!);
           const params = getDrawParams(this.target, this._geom.volClassSetBlend!);
@@ -1397,7 +1391,7 @@ abstract class Compositor extends SceneCompositor {
       fbStack.execute(this._frameBuffers.volClassCreateBlend!, false, () => {
         this._geom.volClassSetBlend!.boundaryType = BoundaryType.Selected;
         this._geom.volClassSetBlend!.texture = this._vcAltDepthStencil!.getHandle()!; // need to attach the alt depth instead of the real one since it is bound to the frame buffer
-        this.target.pushState(this.target.decorationState);
+        this.target.pushState(this.target.decorationsState);
         this._vcColorRenderState!.flags.blend = false;
         System.instance.applyRenderState(this._vcColorRenderState!);
         const params = getDrawParams(this.target, this._geom.volClassSetBlend!);
@@ -1410,7 +1404,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Now modify the color of the reality mesh by using the blend texture to blend with it.
     fbStack.execute(fboColorAndZ!, false, () => {
-      this.target.pushState(this.target.decorationState);
+      this.target.pushState(this.target.decorationsState);
       this._vcBlendRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.SrcAlpha, GL.BlendFactor.Zero, GL.BlendFactor.OneMinusSrcAlpha, GL.BlendFactor.One);
       System.instance.applyRenderState(this._vcBlendRenderState!);
       const params = getDrawParams(this.target, this._geom.volClassBlend!);
@@ -1433,7 +1427,7 @@ abstract class Compositor extends SceneCompositor {
 
       // Process the stencil to flash the contents.
       fbStack.execute(fboColorAndZ!, true, () => {
-        this.target.pushState(this.target.decorationState);
+        this.target.pushState(this.target.decorationsState);
         this._vcColorRenderState!.blend.color = [1.0, 1.0, 1.0, this.target.flashIntensity * 0.2];
         this._vcColorRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.One);
         System.instance.applyRenderState(this._vcColorRenderState!);
