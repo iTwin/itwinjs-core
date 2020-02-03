@@ -1483,7 +1483,7 @@
       "description": "Rule that allows overriding default icon and dynamically define an icon\nfor a particular node based on the context.",
       "properties": {
         "condition": {
-          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na [limited set of symbols]($docs/learning/p[resentation/Customization/ECExpressions.md#rule-condition).",
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
           "type": "string"
         },
         "imageIdExpression": {
