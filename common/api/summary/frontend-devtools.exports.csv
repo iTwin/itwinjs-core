@@ -69,6 +69,7 @@ alpha;NestedMenuProps
 alpha;NestMenuHandler = (expanded: boolean) => void
 alpha;NumericInputHandler = (value: number, input: HTMLInputElement) => void
 alpha;NumericInputProps
+alpha;class OverrideSubCategoryPriorityTool 
 beta;parseToggle(arg: string | undefined): string | boolean | undefined
 beta;ProjectExtentsDecoration
 alpha;RadioBox

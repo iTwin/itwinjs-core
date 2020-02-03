@@ -677,6 +677,20 @@ export interface NumericInputProps {
     value: number;
 }
 
+// @alpha
+export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
+    // (undocumented)
+    protected execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected parse(args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export function parseToggle(arg: string | undefined): string | boolean | undefined;
 
