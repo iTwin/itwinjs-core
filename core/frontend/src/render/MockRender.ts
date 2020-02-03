@@ -30,6 +30,7 @@ import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { ElementAlignedBox3d, PackedFeatureTable } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Id64String, dispose } from "@bentley/bentleyjs-core";
+import { Scene } from "./Scene";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
  * Use these for tests instead of the default RenderSystem wherever possible because:
@@ -51,9 +52,7 @@ export namespace MockRender {
     public get wantInvertBlackBackground() { return false; }
     public get animationFraction() { return 0; }
     public set animationFraction(_fraction: number) { }
-    public changeScene(_scene: GraphicList) { }
-    public changeBackgroundMap(_backgroundMap: GraphicList) { }
-    public changeOverlayGraphics(_overlayGraphics: GraphicList) { }
+    public changeScene(_scene: Scene) { }
     public changeDynamics(_dynamics?: GraphicList) { }
     public changeDecorations(_decs: Decorations) { }
     public changeRenderPlan(_plan: RenderPlan) { }

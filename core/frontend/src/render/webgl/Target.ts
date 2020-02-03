@@ -26,6 +26,7 @@ import {
   disposeArray,
 } from "@bentley/bentleyjs-core";
 import { GraphicList } from "../RenderGraphic";
+import { Scene } from "../Scene";
 import { AnimationBranchStates } from "../GraphicBranch";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
@@ -463,14 +464,20 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     dispose(this._decorations);
     this._decorations = decs;
   }
-  public changeScene(scene: GraphicList) {
-    this._scene = scene;
-  }
-  public changeBackgroundMap(backgroundMap: GraphicList) {
-    this._backgroundMap = backgroundMap;
-  }
-  public changeOverlayGraphics(overlayGraphics: GraphicList) {
-    this._overlayGraphics = overlayGraphics;
+
+  public changeScene(scene: Scene) {
+    this._scene = scene.foreground;
+    this._backgroundMap = scene.background; // NB: May contain things other than map...
+    this._overlayGraphics = scene.overlay;
+
+    this.changeTextureDrapes(scene.textureDrapes);
+    this.changePlanarClassifiers(scene.planarClassifiers);
+
+    this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, scene.planarClassifiers);
+    this._planarClassifiers = scene.planarClassifiers;
+
+    this.activeVolumeClassifierProps = scene.volumeClassifier?.classifier;
+    this.activeVolumeClassifierModelId = scene.volumeClassifier?.modelId;
   }
 
   private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<Id64String, T> | undefined, newMap: Map<Id64String, T> | undefined): void {
@@ -496,10 +503,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, planarClassifiers);
     this._planarClassifiers = planarClassifiers;
 
-  }
-  public changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier, modelId?: Id64String): void {
-    this.activeVolumeClassifierProps = props;
-    this.activeVolumeClassifierModelId = modelId;
   }
 
   public changeDynamics(dynamics?: GraphicList) {

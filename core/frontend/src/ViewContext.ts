@@ -32,6 +32,7 @@ import {
   TileTreeReference,
 } from "./tile/internal";
 import { IModelApp } from "./IModelApp";
+import { Scene } from "./render/Scene";
 
 const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
 
@@ -443,18 +444,12 @@ export class DecorateContext extends RenderContext {
  * @internal
  */
 export class SceneContext extends RenderContext {
-  public readonly graphics: RenderGraphic[] = [];
-  public readonly backgroundGraphics: RenderGraphic[] = [];
-  public readonly overlayGraphics: RenderGraphic[] = [];
+  public readonly scene = new Scene();
   public readonly missingTiles = new Set<Tile>();
   public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
   public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
-  public readonly planarClassifiers = new Map<Id64String, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
-  public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
   private _viewingSpace?: ViewingSpace;
   private _graphicType: TileGraphicType = TileGraphicType.Scene;
-  private _activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
-  private _activeVolumeClassifierModelId?: Id64String;
 
   public constructor(vp: Viewport, frustum?: Frustum) {
     super(vp, frustum);
@@ -542,12 +537,6 @@ export class SceneContext extends RenderContext {
     return this.textureDrapes.get(modelId);
   }
 
-  public getActiveVolumeClassifierProps(): SpatialClassificationProps.Classifier | undefined { return this._activeVolumeClassifierProps; }
-  public setActiveVolumeClassifierProps(properties: SpatialClassificationProps.Classifier | undefined) { this._activeVolumeClassifierProps = properties; }
-
-  public getActiveVolumeClassifierModelId(): Id64String | undefined { return this._activeVolumeClassifierModelId; }
-  public setActiveVolumeClassifierModelId(modelId: Id64String | undefined) { this._activeVolumeClassifierModelId = modelId; }
-
   public withGraphicTypeAndPlane(type: TileGraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
     const frust = undefined !== plane ? ViewingSpace.createFromViewportAndPlane(this.viewport, plane) : undefined;
     this.withGraphicTypeAndFrustum(type, frust, func);
@@ -564,5 +553,15 @@ export class SceneContext extends RenderContext {
 
     this._graphicType = prevType;
     this._viewingSpace = prevFrust;
+  }
+
+  public get graphics() { return this.scene.foreground; }
+  public get backgroundGraphics() { return this.scene.background; }
+  public get overlayGraphics() { return this.scene.overlay; }
+  public get planarClassifiers() { return this.scene.planarClassifiers; }
+  public get textureDrapes() { return this.scene.textureDrapes; }
+
+  public setVolumeClassifier(classifier: SpatialClassificationProps.Classifier, modelId: Id64String): void {
+    this.scene.volumeClassifier = { classifier, modelId };
   }
 }
