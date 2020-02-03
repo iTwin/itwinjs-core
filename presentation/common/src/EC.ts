@@ -260,3 +260,16 @@ export type RelationshipPath = RelatedClassInfo[];
  * @internal
  */
 export type RelationshipPathJSON = RelatedClassInfoJSON[];
+
+/** @public */
+export namespace RelationshipPath {
+  /** @internal */
+  export function reverse(path: RelationshipPath): RelationshipPath {
+    return [...path].reverse().map((step) => ({
+      ...step,
+      sourceClassInfo: step.targetClassInfo,
+      targetClassInfo: step.sourceClassInfo,
+      isForwardRelationship: !step.isForwardRelationship,
+    }));
+  }
+}
