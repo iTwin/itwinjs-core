@@ -437,19 +437,26 @@ export class RenderCommands {
     this._layers.clear();
   }
 
-  public initForPickOverlays(overlays: GraphicList): void {
+  public initForPickOverlays(sceneOverlays: GraphicList, overlayDecorations: GraphicList | undefined): void {
     this._clearCommands();
 
     this._addTranslucentAsOpaque = true;
-    this._stack.pushState(this.target.decorationsState);
 
-    for (const overlay of overlays) {
-      const gf = overlay as Graphic;
-      if (gf.isPickable)
-        gf.addCommands(this);
+    for (const sceneGf of sceneOverlays)
+      (sceneGf as Graphic).addCommands(this);
+
+    if (undefined !== overlayDecorations) {
+      this._stack.pushState(this.target.decorationsState);
+
+      for (const overlay of overlayDecorations) {
+        const gf = overlay as Graphic;
+        if (gf.isPickable)
+          gf.addCommands(this);
+      }
+
+      this._stack.pop();
     }
 
-    this._stack.pop();
     this._addTranslucentAsOpaque = false;
   }
 

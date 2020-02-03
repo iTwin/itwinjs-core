@@ -777,7 +777,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._renderCommands.init(this._scene, this._backgroundMap, this._overlayGraphics, this._decorations, this._dynamics, true);
       this.endPerfMetricRecord(this.drawForReadPixels);
 
-      this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
+      this.compositor.drawForReadPixels(this._renderCommands, this._overlayGraphics, this._decorations?.worldOverlay);
       this.uniforms.branch.pop();
 
       this._isReadPixelsInProgress = false;
@@ -962,7 +962,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.endPerfMetricRecord(true); // End "Init Commands"
 
     // Draw the scene
-    this.compositor.drawForReadPixels(this._renderCommands, undefined !== this._decorations ? this._decorations.worldOverlay : undefined);
+    this.compositor.drawForReadPixels(this._renderCommands, this._overlayGraphics, this._decorations?.worldOverlay);
 
     if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) { // Only collect readPixels data if in disp-perf-test-app
       this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
