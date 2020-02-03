@@ -230,7 +230,7 @@ export class ViewAttributes {
     }, parent);
 
     const update = (view: ViewState) => {
-      const visible = view.is3d() && view.allow3dManipulations();
+      const visible = view.is3d() && view.allow3dManipulations() && view.supportsCamera();
       elems.div.style.display = visible ? "block" : "none";
       if (visible)
         elems.checkbox.checked = this._vp.isCameraOn;

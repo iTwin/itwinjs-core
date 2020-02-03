@@ -455,6 +455,20 @@ export abstract class RenderSystem implements IDisposable {
    */
   public createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner { return new GraphicOwner(ownedGraphic); }
 
+  /** Create a "layer" containing the graphics belonging to it. A layer has a unique identifier and all of its geometry lies in an XY plane.
+   * Different layers can be drawn coincident with one another; their draw order can be controlled by a per-layer priority value so that one layer draws
+   * on top of another. Layers cannot nest inside other layers. Multiple GraphicLayers can exist with the same ID; they are treated as belonging to the same layer.
+   * A GraphicLayer must be contained (perhaps indirectly) inside a GraphicLayerContainer.
+   * @see [[createGraphicLayerContainer]]
+   * @internal
+   */
+  public createGraphicLayer(graphic: RenderGraphic, _layerId: string): RenderGraphic { return graphic; }
+
+  /** Create a graphic that can contain [[GraphicLayer]]s.
+   * @internal
+   */
+  public createGraphicLayerContainer(graphic: RenderGraphic, _drawAsOverlay: boolean, _transparency: number): RenderGraphic { return graphic; }
+
   /** Find a previously-created [[RenderTexture]] by its ID.
    * @param _key The unique ID of the texture within the context of the IModelConnection. Typically an element ID.
    * @param _imodel The IModelConnection with which the texture is associated.
@@ -641,5 +655,11 @@ export namespace RenderSystem {
      * @internal
      */
     useWebGL2?: boolean;
+
+    /** If true, plan projection models will be rendered using [PlanProjectionSettings]($common) defined by the [[DisplayStyle3dState]].
+     * Default value: false
+     * @internal
+     */
+    planProjections?: boolean;
   }
 }

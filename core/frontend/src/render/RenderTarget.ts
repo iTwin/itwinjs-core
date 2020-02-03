@@ -29,19 +29,16 @@ import {
   RenderMemory,
   RenderSystem,
   RenderTextureDrape,
-  TextureDrapeMap,
 } from "./RenderSystem";
 import { AnimationBranchStates } from "./GraphicBranch";
-import {
-  PlanarClassifierMap,
-  RenderPlanarClassifier,
-} from "./RenderPlanarClassifier";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { GraphicType } from "./GraphicBuilder";
 import { GraphicList } from "./RenderGraphic";
 import { RenderPlan } from "./RenderPlan";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { Pixel } from "./Pixel";
+import { Scene } from "./Scene";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].
@@ -123,12 +120,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
 
   public dispose(): void { }
   public reset(): void { }
-  public abstract changeScene(scene: GraphicList): void;
-  public abstract changeBackgroundMap(_graphics: GraphicList): void;
-  public abstract changeOverlayGraphics(_scene: GraphicList): void;
-  public changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void { }
-  public changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void { }
-  public changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier, _modelId?: Id64String): void { }
+  public abstract changeScene(scene: Scene): void;
   public abstract changeDynamics(dynamics?: GraphicList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;

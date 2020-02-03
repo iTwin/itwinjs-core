@@ -550,7 +550,7 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract dispose(): void;
   public abstract preDraw(): void;
   public abstract draw(_commands: RenderCommands): void;
-  public abstract drawForReadPixels(_commands: RenderCommands, overlays?: GraphicList): void;
+  public abstract drawForReadPixels(_commands: RenderCommands, sceneOverlays: GraphicList, overlayDecorations: GraphicList | undefined): void;
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
@@ -582,6 +582,7 @@ abstract class Compositor extends SceneCompositor {
   protected _geom: Geometry;
   protected _readPickDataFromPingPong: boolean = true;
   protected _opaqueRenderState = new RenderState();
+  protected _layerRenderState = new RenderState();
   protected _translucentRenderState = new RenderState();
   protected _noDepthMaskRenderState = new RenderState();
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
@@ -601,6 +602,7 @@ abstract class Compositor extends SceneCompositor {
   public abstract set currentRenderTargetIndex(_index: number);
 
   protected abstract clearOpaque(_needComposite: boolean): void;
+  protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean, pass: RenderPass): void;
   protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderForVolumeClassification(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderIndexedClassifierForReadPixels(_commands: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, _needComposite: boolean): void;
@@ -660,6 +662,11 @@ abstract class Compositor extends SceneCompositor {
     this._translucentRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
 
     this._noDepthMaskRenderState.flags.depthMask = false;
+
+    // Can't write depth without enabling depth test - so make depth test always pass
+    this._layerRenderState.flags.depthTest = true;
+    this._layerRenderState.depthFunc = GL.DepthFunc.Always;
+    this._layerRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -775,9 +782,19 @@ abstract class Compositor extends SceneCompositor {
     this.renderVolumeClassification(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
 
+    // Render layers
+    this.target.beginPerfMetricRecord("Render Opaque Layers");
+    this.renderLayers(commands, needComposite, RenderPass.OpaqueLayers);
+    this.target.endPerfMetricRecord();
+
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
+    this.target.endPerfMetricRecord();
+
+    // Render translucent layers
+    this.target.beginPerfMetricRecord("Render Translucent Layers");
+    this.renderLayers(commands, needComposite, RenderPass.TranslucentLayers);
     this.target.endPerfMetricRecord();
 
     if (needComposite) {
@@ -795,12 +812,18 @@ abstract class Compositor extends SceneCompositor {
       this.composite();
       this.target.endPerfMetricRecord();
     }
+
+    // Render overlay Layers
+    this.target.beginPerfMetricRecord("Render Overlay Layers");
+    this.renderLayers(commands, false, RenderPass.OverlayLayers);
+    this.target.endPerfMetricRecord();
+
     this.target.popActiveVolume();
   }
 
   public get fullHeight(): number { return this.target.viewRect.height; }
 
-  public drawForReadPixels(commands: RenderCommands, overlays?: GraphicList) {
+  public drawForReadPixels(commands: RenderCommands, sceneOverlays: GraphicList, overlayDecorations: GraphicList | undefined): void {
     this.target.beginPerfMetricRecord("Render Background", true);
     if (!this.preDraw()) {
       this.target.endPerfMetricRecord(true); // End Render Background record if returning
@@ -818,21 +841,36 @@ abstract class Compositor extends SceneCompositor {
       this.target.beginPerfMetricRecord("Enable Clipping", true);
       this.target.pushActiveVolume();
       this.target.endPerfMetricRecord(true);
+
       this.target.beginPerfMetricRecord("Render VolumeClassification", true);
       this.renderVolumeClassification(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
+
+      this.target.beginPerfMetricRecord("Render Opaque Layers", true);
+      this.renderLayers(commands, false, RenderPass.OpaqueLayers);
+      this.target.endPerfMetricRecord(true);
+
       this.target.beginPerfMetricRecord("Render Opaque", true);
       this.renderOpaque(commands, CompositeFlags.None, true);
       this.target.endPerfMetricRecord(true);
+
+      this.target.beginPerfMetricRecord("Render Translucent Layers", true);
+      this.renderLayers(commands, false, RenderPass.TranslucentLayers);
+      this.target.endPerfMetricRecord();
+
+      this.target.beginPerfMetricRecord("Render Overlay Layers", true);
+      this.renderLayers(commands, false, RenderPass.OverlayLayers);
+      this.target.endPerfMetricRecord();
+
       this.target.popActiveVolume();
     }
 
-    if (undefined === overlays || 0 === overlays.length)
+    if (0 === sceneOverlays.length && (undefined === overlayDecorations || 0 === overlayDecorations.length))
       return;
 
     // Now populate the opaque passes with any pickable world overlays
     this.target.beginPerfMetricRecord("Overlay Draws");
-    commands.initForPickOverlays(overlays);
+    commands.initForPickOverlays(sceneOverlays, overlayDecorations);
     if (commands.isEmpty) {
       this.target.endPerfMetricRecord(); // End Overlay Draws record if returning
       return;
@@ -850,12 +888,10 @@ abstract class Compositor extends SceneCompositor {
     }
 
     // Render overlays as opaque into the pick buffers. Make sure we use the decoration state (to ignore symbology overrides, esp. the non-locatable flag).
-    this.target.decorationState.isReadPixelsInProgress = true;
-    this.target.pushState(this.target.decorationState);
+    this.target.decorationsState.isReadPixelsInProgress = true;
     this.renderOpaque(commands, CompositeFlags.None, true);
     this.target.endPerfMetricRecord();
-    this.target.popBranch();
-    this.target.decorationState.isReadPixelsInProgress = false;
+    this.target.decorationsState.isReadPixelsInProgress = false;
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
@@ -963,10 +999,8 @@ abstract class Compositor extends SceneCompositor {
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
-      this.target.pushState(this.target.decorationState);
       System.instance.applyRenderState(this.getRenderState(RenderPass.SkyBox));
       this.target.techniques.execute(this.target, cmds, RenderPass.SkyBox);
-      this.target.popBranch();
     });
   }
 
@@ -978,10 +1012,8 @@ abstract class Compositor extends SceneCompositor {
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
-      this.target.pushState(this.target.decorationState);
       System.instance.applyRenderState(this.getRenderState(RenderPass.Background));
       this.target.techniques.execute(this.target, cmds, RenderPass.Background);
-      this.target.popBranch();
     });
   }
 
@@ -1182,7 +1214,7 @@ abstract class Compositor extends SceneCompositor {
       volClassBlendReadZTexture = this._depth!.getHandle()!;
       // Copy the current Z into the Alt-Z.  At the same time go ahead and clear the stencil and the blend texture.
       fbStack.execute(volClassBlendFbo!, true, () => {
-        this.target.pushState(this.target.decorationState);
+        this.target.pushState(this.target.decorationsState);
         System.instance.applyRenderState(this._vcCopyZRenderState!);
         if (System.instance.capabilities.supportsFragDepth)
           this.target.techniques.draw(getDrawParams(this.target, this._geom.volClassCopyZ!));  // This method uses the EXT_frag_depth extension
@@ -1246,7 +1278,7 @@ abstract class Compositor extends SceneCompositor {
       fbStack.execute(volClassBlendFbo!, false, () => {
         this._geom.volClassSetBlend!.boundaryType = BoundaryType.Outside;
         this._geom.volClassSetBlend!.texture = volClassBlendReadZTexture;
-        this.target.pushState(this.target.decorationState);
+        this.target.pushState(this.target.decorationsState);
         this._vcColorRenderState!.flags.blend = false;
         this._vcColorRenderState!.stencil.frontFunction.function = GL.StencilFunction.Equal; // temp swap the functions so we get what is not set in the stencil
         this._vcColorRenderState!.stencil.backFunction.function = GL.StencilFunction.Equal;
@@ -1270,7 +1302,7 @@ abstract class Compositor extends SceneCompositor {
         fbStack.execute(volClassBlendFbo!, false, () => {
           this._geom.volClassSetBlend!.boundaryType = BoundaryType.Inside;
           this._geom.volClassSetBlend!.texture = volClassBlendReadZTexture;
-          this.target.pushState(this.target.decorationState);
+          this.target.pushState(this.target.decorationsState);
           this._vcColorRenderState!.flags.blend = false;
           System.instance.applyRenderState(this._vcColorRenderState!);
           const params = getDrawParams(this.target, this._geom.volClassSetBlend!);
@@ -1359,7 +1391,7 @@ abstract class Compositor extends SceneCompositor {
       fbStack.execute(this._frameBuffers.volClassCreateBlend!, false, () => {
         this._geom.volClassSetBlend!.boundaryType = BoundaryType.Selected;
         this._geom.volClassSetBlend!.texture = this._vcAltDepthStencil!.getHandle()!; // need to attach the alt depth instead of the real one since it is bound to the frame buffer
-        this.target.pushState(this.target.decorationState);
+        this.target.pushState(this.target.decorationsState);
         this._vcColorRenderState!.flags.blend = false;
         System.instance.applyRenderState(this._vcColorRenderState!);
         const params = getDrawParams(this.target, this._geom.volClassSetBlend!);
@@ -1372,7 +1404,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Now modify the color of the reality mesh by using the blend texture to blend with it.
     fbStack.execute(fboColorAndZ!, false, () => {
-      this.target.pushState(this.target.decorationState);
+      this.target.pushState(this.target.decorationsState);
       this._vcBlendRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.SrcAlpha, GL.BlendFactor.Zero, GL.BlendFactor.OneMinusSrcAlpha, GL.BlendFactor.One);
       System.instance.applyRenderState(this._vcBlendRenderState!);
       const params = getDrawParams(this.target, this._geom.volClassBlend!);
@@ -1395,7 +1427,7 @@ abstract class Compositor extends SceneCompositor {
 
       // Process the stencil to flash the contents.
       fbStack.execute(fboColorAndZ!, true, () => {
-        this.target.pushState(this.target.decorationState);
+        this.target.pushState(this.target.decorationsState);
         this._vcColorRenderState!.blend.color = [1.0, 1.0, 1.0, this.target.flashIntensity * 0.2];
         this._vcColorRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.One);
         System.instance.applyRenderState(this._vcColorRenderState!);
@@ -1451,6 +1483,18 @@ abstract class Compositor extends SceneCompositor {
 
   protected getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
+      case RenderPass.OpaqueLayers:
+      case RenderPass.TranslucentLayers:
+      case RenderPass.OverlayLayers:
+        // NB: During pick, we don't want blending - it will mess up our pick buffer data and we don't care about the color data.
+        // During normal draw, we don't use the pick buffers for anything, and we want color blending.
+        // (We get away with this because surfaces always draw before their edges, and we're not depth-testing, so edges always draw atop surfaces without pick buffer testing).
+        this._layerRenderState.flags.blend = !this.target.isReadPixelsInProgress;
+
+        // Transparent non-overlay Layers are drawn between opaque and translucent passes. Test depth, don't write it, so that they blend with opaque.
+        this._layerRenderState.flags.depthMask = RenderPass.TranslucentLayers !== pass;
+        this._layerRenderState.depthFunc = (RenderPass.TranslucentLayers === pass) ? GL.DepthFunc.Default : GL.DepthFunc.Always;
+        return this._layerRenderState;
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
@@ -1679,6 +1723,15 @@ class MRTCompositor extends Compositor {
     }
   }
 
+  protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
+    this._readPickDataFromPingPong = true;
+    System.instance.frameBufferStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
+      this.drawPass(commands, pass, true);
+    });
+
+    this._readPickDataFromPingPong = false;
+  }
+
   protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
     const needComposite = CompositeFlags.None !== compositeFlags;
     const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
@@ -1888,6 +1941,13 @@ class MPCompositor extends Compositor {
         this.drawPass(commands, RenderPass.HiddenEdge, false);
       });
     }
+  }
+
+  protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
+    this._readPickDataFromPingPong = true;
+    const colorFbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
+    this.drawOpaquePass(colorFbo, commands, pass, true);
+    this._readPickDataFromPingPong = false;
   }
 
   protected renderForVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {

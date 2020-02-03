@@ -62,6 +62,7 @@ import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import {
   ChangePlanProjectionSettingsTool,
   DumpPlanProjectionSettingsTool,
+  OverrideSubCategoryPriorityTool,
 } from "./tools/PlanProjectionTools";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
@@ -104,6 +105,7 @@ export class FrontendDevTools {
       IsolateSelectedElementsTool,
       LoseWebGLContextTool,
       MeasureTileLoadTimeTool,
+      OverrideSubCategoryPriorityTool,
       RealityTransitionTool,
       ReportWebGLCompatibilityTool,
       SaveViewTool,
