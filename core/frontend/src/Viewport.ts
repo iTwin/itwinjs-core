@@ -1479,7 +1479,7 @@ export abstract class Viewport implements IDisposable {
    */
   public turnCameraOn(lensAngle?: Angle): ViewStatus {
     const view = this.view;
-    if (!view.is3d())
+    if (!view.is3d() || !view.supportsCamera())
       return ViewStatus.InvalidViewport;
 
     if (!lensAngle)
@@ -2086,14 +2086,7 @@ export abstract class Viewport implements IDisposable {
         this.forEachTiledGraphicsProviderTree((ref) => ref.addToScene(context));
 
         context.requestMissingTiles();
-
-        target.changeScene(context.graphics);
-        target.changeBackgroundMap(context.backgroundGraphics);
-        target.changeOverlayGraphics(context.overlayGraphics);
-        target.changePlanarClassifiers(context.planarClassifiers);
-        target.changeActiveVolumeClassifierProps(context.getActiveVolumeClassifierProps(), context.getActiveVolumeClassifierModelId());
-        target.changeTextureDrapes(context.textureDrapes);
-
+        target.changeScene(context.scene);
         isRedrawNeeded = true;
       }
 

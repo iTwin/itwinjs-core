@@ -355,7 +355,7 @@ const checkForEarlySurfaceDiscard = `
 
 const checkForEarlySurfaceDiscardWithFeatureID = `
   // No normals => unlt => reality model => no edges.
-  if (u_renderPass > kRenderPass_Translucent || !isSurfaceBitSet(kSurfaceBit_HasNormals))
+  if (u_renderPass > kRenderPass_Translucent || u_renderPass == kRenderPass_Layers || !isSurfaceBitSet(kSurfaceBit_HasNormals))
     return false;
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
@@ -512,6 +512,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
       frag.addFunction(computeLinearDepth);
       frag.addFunction(decodeDepthRgb);
       frag.addFunction(readDepthAndOrder);
+
       frag.set(FragmentShaderComponent.CheckForEarlyDiscard, checkForEarlySurfaceDiscardWithFeatureID);
 
       addEyeSpace(builder);

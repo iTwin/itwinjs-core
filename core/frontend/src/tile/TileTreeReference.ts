@@ -159,6 +159,7 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
     return tree.viewFlagOverrides;
   }
 
+  /** Return overrides that *replace* any defined for the view. */
   protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined {
     return undefined;
   }

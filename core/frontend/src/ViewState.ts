@@ -1698,6 +1698,15 @@ export class SpatialViewState extends ViewState3d {
     this._treeRefs.markDirty();
   }
 
+  /** Get world-space viewed extents based on the iModel's project extents. */
+  protected getDisplayedExtents(): AxisAlignedBox3d {
+    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.displayedExtents);
+    extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
+    extents.extendRange(this.getGroundExtents());
+    return extents;
+  }
+
+  /** Compute world-space range apprioriate for fitting the view. If that range is null, use the displayed extents. */
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new Range3d();
@@ -1706,7 +1715,7 @@ export class SpatialViewState extends ViewState3d {
     });
 
     if (range.isNull)
-      range.setFrom(this.getViewedExtents());
+      range.setFrom(this.getDisplayedExtents());
 
     range.ensureMinLengths(1.0);
 
@@ -1714,9 +1723,11 @@ export class SpatialViewState extends ViewState3d {
   }
 
   public getViewedExtents(): AxisAlignedBox3d {
-    const extents = Range3d.fromJSON<AxisAlignedBox3d>(this.iModel.displayedExtents);
-    extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
-    extents.extendRange(this.getGroundExtents());
+    const extents = this.getDisplayedExtents();
+
+    // Some displayed tile trees may have a transform applied that takes them outside of the displayed extents.
+    extents.extendRange(this.computeFitRange());
+
     return extents;
   }
 

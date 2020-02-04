@@ -46,10 +46,7 @@ import {
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "../render/FeatureSymbology";
-import {
-  GraphicList,
-  RenderGraphic,
-} from "../render/RenderGraphic";
+import { Scene } from "../render/Scene";
 import { RenderPlan } from "../render/RenderPlan";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderTarget } from "../render/RenderTarget";
@@ -703,7 +700,7 @@ class AttachmentViewport {
   public toParent: Transform = Transform.createIdentity();  // attachment NPC to sheet world
   private _texture?: RenderTexture;
   private _sceneDepth: number = 0xffffffff;
-  private _scene?: GraphicList;
+  private readonly _scene = new Scene();
 
   public constructor(view: ViewState3d) {
     this.vp = OffScreenViewport.create(view, undefined, true);
@@ -727,7 +724,7 @@ class AttachmentViewport {
     if (!this.vp.controllerValid)
       this.vp.setupFromView();
 
-    this._scene = [];
+    this._scene.foreground.length = 0;
     const sceneContext = this.vp.createSceneContext();
     this.vp.view.createScene(sceneContext);
 
@@ -746,7 +743,7 @@ class AttachmentViewport {
       this.vp.setRenderPlanValid();
     }
 
-    this.vp.target.changeScene(this._scene! /* TODO: Pass view state's active volume... */);
+    this.vp.target.changeScene(this._scene);
     this.vp.renderFrame();
 
     this._texture = undefined;
