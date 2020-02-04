@@ -16,6 +16,7 @@ export interface SVTConfiguration {
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
   disableInstancing?: boolean; // default false
   enableImprovedElision?: boolean; // default false
+  ignoreAreaPatterns?: boolean; // default false
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean; // default ON

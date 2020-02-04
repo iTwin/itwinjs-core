@@ -115,6 +115,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, instanced geometry will not be generated for tiles.
 * SVT_IMPROVED_ELISION
   * If defined, enables more accurate empty tile elision on backend.
+* SVT_IGNORE_AREA_PATTERNS
+  * If defined, area pattern geometry will be omitted from tiles.
 * SVT_DISABLE_MAGNIFICATION
   * If defined, tiles will always be subdivided (size multipliers will never be applied).
 * SVT_PRESERVE_SHADER_SOURCE_CODE

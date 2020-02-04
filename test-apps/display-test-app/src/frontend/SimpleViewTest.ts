@@ -160,6 +160,9 @@ async function main() {
   if (configuration.enableImprovedElision)
     tileAdminProps.enableImprovedElision = true;
 
+  if (configuration.ignoreAreaPatterns)
+    tileAdminProps.ignoreAreaPatterns = true;
+
   if (false === configuration.useProjectExtents)
     tileAdminProps.useProjectExtents = false;
 
