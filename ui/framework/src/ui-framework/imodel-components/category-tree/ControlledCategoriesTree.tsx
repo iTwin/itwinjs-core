@@ -15,7 +15,7 @@ import {
   useRulesetRegistration,
 } from "@bentley/presentation-components";
 import {
-  ControlledTree, useModelSource, TreeEventHandler, useVisibleTreeNodes, SelectionMode, TreeNodeRendererProps,
+  ControlledTree, TreeEventHandler, useVisibleTreeNodes, SelectionMode, TreeNodeRendererProps,
   TreeNodeRenderer, TreeRendererProps, TreeRenderer, TreeModelNode, TreeModelSource, CheckBoxInfo, TreeCheckboxStateChangeEvent,
   CheckboxStateChange, TreeSelectionReplacementEvent, ITreeNodeLoaderWithProvider, TreeImageLoader, FilteringInput, TreeNodeItem,
 } from "@bentley/ui-components";
@@ -67,7 +67,7 @@ export const ControlledCategoryTree: React.FC<ControlledCategoryTreeProps> = (pr
     preloadingEnabled: props.enablePreloading,
     dataProvider: props.dataProvider,
   });
-  const modelSource = useModelSource(nodeLoader)!;
+  const modelSource = nodeLoader.modelSource;
 
   const [filter, setFilter] = React.useState("");
   const [activeMatch, setActiveMatch] = React.useState<number>();

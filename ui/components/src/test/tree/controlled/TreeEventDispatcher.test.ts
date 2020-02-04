@@ -9,14 +9,13 @@ import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import { CheckBoxState } from "@bentley/ui-core";
 import { TreeEventDispatcher } from "../../../ui-components/tree/controlled/TreeEventDispatcher";
 import { TreeEvents, TreeSelectionModificationEvent, TreeSelectionReplacementEvent, TreeCheckboxStateChangeEvent } from "../../../ui-components/tree/controlled/TreeEvents";
-import { ITreeNodeLoader, LoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
+import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { SelectionMode } from "../../../ui-components/common/selection/SelectionModes";
 import { VisibleTreeNodes, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, isTreeModelRootNode, isTreeModelNode } from "../../../ui-components/tree/controlled/TreeModel";
 import { TreeSelectionManager, RangeSelection } from "../../../ui-components/tree/controlled/internal/TreeSelectionManager";
 import { from } from "../../../ui-components/tree/controlled/Observable";
 import { extractSequence } from "../ObservableTestHelpers";
 import { createRandomMutableTreeModelNodes, createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
-import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 
 describe("TreeEventDispatcher", () => {
 
@@ -45,17 +44,6 @@ describe("TreeEventDispatcher", () => {
 
     mockVisibleNodes();
   });
-
-  const createNodeHierarchy = (parentId: string | undefined, node: TreeNodeItem, child?: TreeNodeItem): LoadedNodeHierarchy => {
-    return {
-      parentId,
-      hierarchyItems: [{
-        item: node,
-        children: child ? [{ item: child }] : undefined,
-      }],
-      offset: 0,
-    };
-  };
 
   const mockVisibleNodes = (addRootLevelPlaceholderNode = false, addChildPlaceholderNode = false) => {
     modelMock.reset();
@@ -97,9 +85,9 @@ describe("TreeEventDispatcher", () => {
     modelMock.setup((x) => x.getNode(loadedChildNode.id)).returns(() => loadedChildNode);
     modelMock.setup((x) => x.getNode(selectedNodes[3].id)).returns(() => selectedNodes[3]);
 
-    treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => isTreeModelRootNode(parent)), 0)).returns(() => from([createNodeHierarchy(undefined, loadedNode.item)]));
+    treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => isTreeModelRootNode(parent)), 0)).returns(() => from([{ loadedNodes: [loadedNode.item] }]));
     treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => isTreeModelNode(parent) && parent.id === selectedNodes[3].id), 0))
-      .returns(() => from([createNodeHierarchy(selectedNodes[3].id, loadedChildNode.item)]));
+      .returns(() => from([{ loadedNodes: [loadedChildNode.item] }]));
   };
 
   describe("constructor", () => {
@@ -154,7 +142,7 @@ describe("TreeEventDispatcher", () => {
 
         treeNodeLoaderMock.reset();
         treeNodeLoaderMock.setup((x) => x.loadNode(moq.It.is((parent) => isTreeModelRootNode(parent)), 0))
-          .returns(() => from([createNodeHierarchy(undefined, loadedNode.item, loadedChildNode.item)]));
+          .returns(() => from([{ loadedNodes: [loadedNode.item, loadedChildNode.item] }]));
 
         const expectedSelectedNodeItems = [selectedNodes[3].item, deselectedNodes[0].item, loadedNode.item, loadedChildNode.item];
         const spy = sinon.spy();

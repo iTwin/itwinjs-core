@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { ITreeNodeLoaderWithProvider } from "@bentley/ui-components";
+import { AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 import { useNodeHighlightingProps, useFilteredNodeLoader } from "./UseControlledTreeFiltering";
-import { ControlledTreeWithModelSourceProps } from "./WithModelSource";
+import { ControlledTreeWithVisibleNodesProps } from "./WithVisibleNodes";
 import "../WithFilteringSupport.scss";
 
 /**
@@ -19,7 +19,7 @@ import "../WithFilteringSupport.scss";
  */
 export interface ControlledTreeWithFilteringSupportProps {
   /** Node loader used to load nodes for tree. */
-  nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
+  nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
   /** The text to search for */
   filter?: string;
   /** Called when filter is applied. */
@@ -27,7 +27,7 @@ export interface ControlledTreeWithFilteringSupportProps {
   /** Called when FilteredDataProvider counts the number of matches */
   onMatchesCounted?: (count: number) => void;
   /** Called when changing from original node loader to filtered and back. */
-  onNodeLoaderChanged?: (nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => void;
+  onNodeLoaderChanged?: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => void;
   /** Index of the active match */
   activeMatchIndex?: number;
 }
@@ -37,12 +37,12 @@ export interface ControlledTreeWithFilteringSupportProps {
  * controlled tree component.
  *
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]] and
- * wrap supplied tree component in [[controlledTreeWithModelSource]] HOC
+ * wrap supplied tree component in [[controlledTreeWithVisibleNodes]] HOC
  *
  * @beta
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>) {
+export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>) {
 
   type CombinedProps = P & ControlledTreeWithFilteringSupportProps;
   type TreeWithFilteringSupportProps = Omit<CombinedProps, "visibleNodes">;

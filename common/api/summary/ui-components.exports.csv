@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item
+beta;class AbstractTreeNodeLoader 
+beta;class AbstractTreeNodeLoaderWithProvider
 beta;ActionButtonList 
 beta;ActionButtonListProps
 beta;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
@@ -75,8 +77,6 @@ internal;ContextMenuProps
 beta;ControlledTree: React.FC
 beta;ControlledTreeProps 
 public;ConvertedPrimitives
-beta;createDefaultNodeLoadHandler(modelSource: TreeModelSource): (loadedHierarchy: LoadedNodeHierarchy) => void
-beta;createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader):
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
 alpha;CustomNumberEditor 
@@ -129,6 +129,7 @@ public;FloatTypeConverter
 beta;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getLabelString(label: string | PropertyRecord): string
+internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
@@ -332,7 +333,7 @@ public;TreeDataProvider = TreeDataProviderRaw | TreeDataProviderPromise | TreeDa
 public;TreeDataProviderMethod = (node?: TreeNodeItem) => Promise
 public;TreeDataProviderPromise = Promise
 public;TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[]
-internal;TreeDataSource
+internal;TreeDataSource 
 beta;TreeDragDropProps
 beta;TreeDragDropType = {} | TreeNodeItem | TreeDataProvider
 beta;TreeEditingParams
@@ -356,6 +357,7 @@ public;TreeNodeIconProps
 public;TreeNodeItem
 beta;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
 beta;TreeNodeLoader
+beta;TreeNodeLoadResult
 public;TreeNodeProps 
 beta;TreeNodeRenderer: React.MemoExoticComponent
 beta;TreeNodeRendererProps 
@@ -373,7 +375,7 @@ beta;TypeEditor
 public;UiComponents
 alpha;UITooltipRenderer
 beta;Unsubscribable
-beta;useModelSource(nodeLoader: ITreeNodeLoader | undefined): TreeModelSource | undefined
+beta;useModelSource(dataProvider: TreeDataProvider): TreeModelSource
 beta;useNodeLoader
 beta;usePagedNodeLoader
 beta;useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes

@@ -16,7 +16,7 @@ import { Ruleset } from "@bentley/presentation-common";
 import { VisibilityHandler, VisibilityStatus } from "./VisibilityTree";
 import { useEffectSkipFirst, NodeCheckboxRenderProps, ImageCheckBox, CheckBoxState, isPromiseLike } from "@bentley/ui-core";
 import {
-  useModelSource, useVisibleTreeNodes, ControlledTree, SelectionMode, TreeEventHandler,
+  useVisibleTreeNodes, ControlledTree, SelectionMode, TreeEventHandler,
   TreeNodeRendererProps, TreeNodeRenderer, TreeRendererProps, TreeRenderer, CheckBoxInfo, TreeModelSource,
   ITreeNodeLoader, TreeCheckboxStateChangeEvent, CheckboxStateChange, TreeModelNode, TreeImageLoader,
 } from "@bentley/ui-components";
@@ -77,7 +77,7 @@ export const ControlledModelsTree: React.FC<ControlledModelsTreeProps> = (props:
     preloadingEnabled: props.enablePreloading,
     dataProvider: props.dataProvider,
   });
-  const modelSource = useModelSource(nodeLoader)!;
+  const modelSource = nodeLoader.modelSource;
 
   const visibilityHandler = useVisibilityHandler(props, nodeLoader.getDataProvider());
 

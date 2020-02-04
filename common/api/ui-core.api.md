@@ -1981,6 +1981,9 @@ export interface UnderlinedButtonProps {
     title?: string;
 }
 
+// @beta
+export function useDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable): TDisposable;
+
 // @alpha
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 

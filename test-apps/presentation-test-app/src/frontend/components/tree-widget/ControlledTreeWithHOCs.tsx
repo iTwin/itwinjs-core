@@ -6,11 +6,10 @@ import {
   ControlledTree,
   SelectionMode,
   FilteringInput,
-  ITreeNodeLoaderWithProvider,
+  AbstractTreeNodeLoaderWithProvider,
   TreeEventHandler,
   TreeModelSource,
   PagedTreeNodeLoader,
-  createModelSourceForNodeLoader,
 } from "@bentley/ui-components";
 
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
@@ -18,7 +17,7 @@ import {
   IPresentationTreeDataProvider,
   controlledTreeWithFilteringSupport,
   controlledTreeWithUnifiedSelection,
-  controlledTreeWithModelSource,
+  controlledTreeWithVisibleNodes,
 } from "@bentley/presentation-components";
 
 import * as React from "react";
@@ -26,7 +25,7 @@ import "./TreeWidget.css";
 import { SampleDataProvider, PAGING_SIZE } from "./SampleTreeDataProvider";
 
 // tslint:disable-next-line: variable-name
-const PresentationTree = controlledTreeWithUnifiedSelection(controlledTreeWithFilteringSupport(controlledTreeWithModelSource(ControlledTree)));
+const PresentationTree = controlledTreeWithUnifiedSelection(controlledTreeWithFilteringSupport(controlledTreeWithVisibleNodes(ControlledTree)));
 
 export interface Props {
   imodel: IModelConnection;
@@ -36,9 +35,9 @@ export interface Props {
 }
 
 export interface State {
-  nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
+  nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
   modelSource: TreeModelSource;
-  filteredNodeLoader?: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
+  filteredNodeLoader?: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
   filteredModelSource?: TreeModelSource;
   prevProps: Props;
   filter: string;
@@ -51,8 +50,8 @@ export default class ControlledTreeWithHOCs extends React.Component<Props, State
   constructor(props: Props) {
     super(props);
 
-    const nodeLoader = new PagedTreeNodeLoader(new SampleDataProvider(props.imodel, props.rulesetId), PAGING_SIZE);
-    const { modelSource } = createModelSourceForNodeLoader(nodeLoader);
+    const modelSource = new TreeModelSource();
+    const nodeLoader = new PagedTreeNodeLoader(new SampleDataProvider(props.imodel, props.rulesetId), modelSource, PAGING_SIZE);
 
     this.state = {
       nodeLoader,
@@ -68,8 +67,8 @@ export default class ControlledTreeWithHOCs extends React.Component<Props, State
   public static getDerivedStateFromProps(nextProps: Props, state: State) {
     const base = { ...state, prevProps: nextProps };
     if (nextProps.imodel !== state.prevProps.imodel || nextProps.rulesetId !== state.prevProps.rulesetId) {
-      const nodeLoader = new PagedTreeNodeLoader(new SampleDataProvider(nextProps.imodel, nextProps.rulesetId), PAGING_SIZE);
-      const { modelSource } = createModelSourceForNodeLoader(nodeLoader);
+      const modelSource = new TreeModelSource();
+      const nodeLoader = new PagedTreeNodeLoader(new SampleDataProvider(nextProps.imodel, nextProps.rulesetId), modelSource, PAGING_SIZE);
       return { ...base, nodeLoader, modelSource };
     }
     return base;
@@ -83,14 +82,13 @@ export default class ControlledTreeWithHOCs extends React.Component<Props, State
     this.setState((prevState) => ({ ...prevState, matchesCount: count }));
   }
 
-  private _onNodeLoaderChanged = (loader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => {
+  private _onNodeLoaderChanged = (loader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => {
     if (!loader) {
       this.setState((prevState) => ({ ...prevState, filteredNodeLoader: undefined, filteredModelSource: undefined }));
       return;
     }
-    const { modelSource } = createModelSourceForNodeLoader(loader);
 
-    this.setState((prevState) => ({ ...prevState, filteredNodeLoader: loader, filteredModelSource: modelSource }));
+    this.setState((prevState) => ({ ...prevState, filteredNodeLoader: loader, filteredModelSource: loader.modelSource }));
   }
 
   private _onFilterCancel = () => {
@@ -131,7 +129,6 @@ export default class ControlledTreeWithHOCs extends React.Component<Props, State
             }} />
         </div>
         <PresentationTree
-          modelSource={this.state.filteredModelSource || this.state.modelSource}
           treeEvents={eventHandler}
           nodeLoader={this.state.filteredNodeLoader || this.state.nodeLoader}
           selectionMode={SelectionMode.Extended}

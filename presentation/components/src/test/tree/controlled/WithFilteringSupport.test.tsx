@@ -11,7 +11,7 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import {
   ControlledTree, TreeModelSource, TreeEvents, SelectionMode, TreeModel, UiComponents,
-  VisibleTreeNodes, MutableTreeModel, ITreeNodeLoaderWithProvider,
+  VisibleTreeNodes, MutableTreeModel, AbstractTreeNodeLoaderWithProvider,
 } from "@bentley/ui-components";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -19,11 +19,11 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { NodePathElement } from "@bentley/presentation-common";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { controlledTreeWithFilteringSupport } from "../../../tree/controlled/WithFilteringSupport";
-import { controlledTreeWithModelSource } from "../../../tree/controlled/WithModelSource";
+import { controlledTreeWithVisibleNodes } from "../../../tree/controlled/WithVisibleNodes";
 import { IPresentationTreeDataProvider } from "../../../tree/IPresentationTreeDataProvider";
 
 // tslint:disable-next-line:variable-name naming-convention
-const PresentationTree = controlledTreeWithFilteringSupport(controlledTreeWithModelSource(ControlledTree));
+const PresentationTree = controlledTreeWithFilteringSupport(controlledTreeWithVisibleNodes(ControlledTree));
 
 describe("ControlledTree withFilteringSupport", () => {
   before(async () => {
@@ -33,7 +33,7 @@ describe("ControlledTree withFilteringSupport", () => {
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
   const treeEventMock = moq.Mock.ofType<TreeEvents>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-  const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
+  const nodeLoaderMock = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const visibleNodes: VisibleTreeNodes = {
     getAtIndex: () => undefined,
@@ -55,6 +55,7 @@ describe("ControlledTree withFilteringSupport", () => {
     modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<TreeModel>());
     modelSourceMock.setup((x) => x.getVisibleNodes()).returns(() => visibleNodes);
     nodeLoaderMock.setup((x) => x.getDataProvider()).returns(() => dataProviderMock.object);
+    nodeLoaderMock.setup((x) => x.modelSource).returns(() => modelSourceMock.object);
     dataProviderMock.setup((x) => x.imodel).returns(() => imodelMock.object);
     dataProviderMock.setup((x) => x.rulesetId).returns(() => "TestRuleset");
     dataProviderMock.setup((x) => x.getFilteredNodePaths(moq.It.isAny())).returns(async () => filteredPathsPromise);
@@ -62,7 +63,6 @@ describe("ControlledTree withFilteringSupport", () => {
 
   it("mounts without filter", () => {
     mount(<PresentationTree
-      modelSource={modelSourceMock.object}
       nodeLoader={nodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}
@@ -71,7 +71,6 @@ describe("ControlledTree withFilteringSupport", () => {
 
   it("mounts with filter", async () => {
     mount(<PresentationTree
-      modelSource={modelSourceMock.object}
       nodeLoader={nodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}
@@ -84,7 +83,6 @@ describe("ControlledTree withFilteringSupport", () => {
   it("calls onFilterApplied", async () => {
     const spy = sinon.spy();
     const node = mount(<PresentationTree
-      modelSource={modelSourceMock.object}
       nodeLoader={nodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}
@@ -103,7 +101,6 @@ describe("ControlledTree withFilteringSupport", () => {
   it("calls onMatchesCounted", async () => {
     const spy = sinon.spy();
     mount(<PresentationTree
-      modelSource={modelSourceMock.object}
       nodeLoader={nodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}
@@ -117,7 +114,6 @@ describe("ControlledTree withFilteringSupport", () => {
   it("calls onNodeLoaderChanged", async () => {
     const spy = sinon.spy();
     mount(<PresentationTree
-      modelSource={modelSourceMock.object}
       nodeLoader={nodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}

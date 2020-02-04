@@ -60,6 +60,26 @@ import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 
 // @beta
+export abstract class AbstractTreeNodeLoader implements ITreeNodeLoader {
+    protected constructor(modelSource: TreeModelSource);
+    // (undocumented)
+    protected abstract load(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
+    // (undocumented)
+    loadNode(parent: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<TreeNodeLoadResult>;
+    // (undocumented)
+    get modelSource(): TreeModelSource;
+    // (undocumented)
+    protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void;
+}
+
+// @beta
+export abstract class AbstractTreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoader implements ITreeNodeLoaderWithProvider<TDataProvider> {
+    protected constructor(modelSource: TreeModelSource, dataProvider: TDataProvider);
+    // (undocumented)
+    getDataProvider(): TDataProvider;
+}
+
+// @beta
 export class ActionButtonList extends React.PureComponent<ActionButtonListProps> {
     // @internal (undocumented)
     render(): JSX.Element;
@@ -964,15 +984,6 @@ export namespace ConvertedPrimitives {
     export type Value = boolean | number | string | Date | Point | Id64String;
 }
 
-// @beta
-export function createDefaultNodeLoadHandler(modelSource: TreeModelSource): (loadedHierarchy: LoadedNodeHierarchy) => void;
-
-// @beta
-export function createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader): {
-    modelSource: TreeModelSource;
-    disposeModelSource: () => void;
-};
-
 // @public
 export class CubeRotationChangeEvent extends UiEvent<CubeRotationChangeEventArgs> {
 }
@@ -1501,6 +1512,9 @@ export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | und
 // @internal (undocumented)
 export function getLabelString(label: string | PropertyRecord): string;
 
+// @internal (undocumented)
+export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void;
+
 // @public
 export const hasChildren: (node: TreeNodeItem) => boolean;
 
@@ -1773,8 +1787,7 @@ export interface ITreeImageLoader extends IImageLoader {
 
 // @beta
 export interface ITreeNodeLoader {
-    loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
-    onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
+    loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<TreeNodeLoadResult>;
 }
 
 // @beta
@@ -2113,13 +2126,11 @@ export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCol
 }
 
 // @beta
-export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> implements ITreeNodeLoaderWithProvider<TDataProvider> {
-    constructor(dataProvider: TDataProvider, pageSize: number);
-    getDataProvider(): TDataProvider;
+export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
+    constructor(dataProvider: TDataProvider, modelSource: TreeModelSource, pageSize: number);
+    dispose(): void;
     getPageSize(): number;
-    loadNode(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
-    // (undocumented)
-    onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
+    protected load(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
     }
 
 // @public
@@ -3376,8 +3387,10 @@ export type TreeDataProviderPromise = Promise<TreeDataProviderRaw>;
 export type TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[];
 
 // @internal
-export class TreeDataSource {
+export class TreeDataSource implements IDisposable {
     constructor(dataProvider: TreeDataProvider);
+    // (undocumented)
+    dispose(): void;
     // (undocumented)
     readonly onItemsChanged: BeUiEvent<TreeDataChangesListener>;
     // (undocumented)
@@ -3620,13 +3633,17 @@ export interface TreeNodeItem {
 export type TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem;
 
 // @beta
-export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements ITreeNodeLoaderWithProvider<TDataProvider> {
-    constructor(dataProvider: TDataProvider);
-    getDataProvider(): TDataProvider;
-    loadNode(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy>;
-    // (undocumented)
-    onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
+export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
+    constructor(dataProvider: TDataProvider, modelSource: TreeModelSource);
+    dispose(): void;
+    protected load(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy>;
     }
+
+// @beta
+export interface TreeNodeLoadResult {
+    // (undocumented)
+    loadedNodes: TreeNodeItem[];
+}
 
 // @public @deprecated
 export interface TreeNodeProps extends CommonProps {
@@ -3863,13 +3880,13 @@ export interface Unsubscribable {
 }
 
 // @beta
-export function useModelSource(nodeLoader: ITreeNodeLoader | undefined): TreeModelSource | undefined;
+export function useModelSource(dataProvider: TreeDataProvider): TreeModelSource;
 
 // @beta
-export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider): TreeNodeLoader<TDataProvider>;
+export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, modelSource: TreeModelSource): TreeNodeLoader<TDataProvider>;
 
 // @beta
-export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number): PagedTreeNodeLoader<TDataProvider>;
+export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;
 
 // @beta
 export const
