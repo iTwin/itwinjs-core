@@ -58,3 +58,23 @@ ignore: true
 
 ### ConvexClipPlaneSet
   * allow undefined (zero) tilt in construction `ConvexClipPlaneSet.createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle?: Angle): ConvexClipPlaneSet | undefined`
+
+## UI
+
+### ControlledTree
+
+  * New abstract classes: `AbstractTreeNodeLoader` and `AbstractTreeNodeLoaderWitProvider`
+    * Uses `TreeModelSource` to add loaded nodes to the model
+    * `protected abstract load(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>` is called to load nodes
+    * `protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void` is called when nodes are loaded and is responsible for adding them to the model
+  * `onNodeLoaded` event removed from `ITreeNodeLoader`
+    * `AbstractTreeNodeLoader.updateModel(loadedHierarchy: LoadedNodeHierarchy): void` should be overridden instead of listening for `onNodeLoaded` event
+  * `TreeNodeLoader` and `PagedTreeNodeLoader` extends `AbstractTreeNodeLoaderWitProvider` and requires `TreeModelSource` to be passed to constructor
+    * overriding `protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void` allows to control how nodes are added to the model.
+  * `useNodeLoader` and `usePagedNodeLoader` hooks require `TreeModelSource`
+    * `function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, modelSource: TreeModelSource): TreeNodeLoader<TDataProvider>;`
+    * `function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;`
+  * `useModelSource` hook takes `TreeDataProvider` instead of `ITreeNodeLoader`
+    * `function useModelSource(dataProvider: TreeDataProvider): TreeModelSource;`
+  * Removed function: `createDefaultNodeLoadHandler(modelSource: TreeModelSource): (loadedHierarchy: LoadedNodeHierarchy) => void;`
+  * Removed function: `createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader): { modelSource: TreeModelSource; disposeModelSource: () => void; };`

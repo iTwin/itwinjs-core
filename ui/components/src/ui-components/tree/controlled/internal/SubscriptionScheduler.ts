@@ -11,7 +11,6 @@ import { Observable } from "rxjs/internal/Observable";
 import { ConnectableObservable } from "rxjs/internal/observable/ConnectableObservable";
 import { Subject } from "rxjs/internal/Subject";
 import { defer } from "rxjs/internal/observable/defer";
-import { EMPTY } from "rxjs/internal/observable/empty";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { mergeMap } from "rxjs/internal/operators/mergeMap";
 import { observeOn } from "rxjs/internal/operators/observeOn";
@@ -104,8 +103,6 @@ export class SubscriptionScheduler<T> {
           // Invalidate cached scheduled observable
           this._scheduledObservables.delete(source);
 
-          // Disconnect the source observable in case it is connected
-          sourceSubject.next(EMPTY);
           // Allow scheduler to move on to the next observable
           sourceSubject.complete();
         }),

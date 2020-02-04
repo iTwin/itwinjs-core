@@ -404,6 +404,10 @@ export class AppUi {
             key: "t",
             item: AccuDrawPopupTools.showToolbar,
           },
+          {
+            key: "l",
+            item: AccuDrawPopupTools.showHTMLElement,
+          },
         ],
       },
       {

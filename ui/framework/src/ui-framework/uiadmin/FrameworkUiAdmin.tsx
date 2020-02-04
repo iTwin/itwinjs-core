@@ -183,4 +183,29 @@ export class FrameworkUiAdmin extends UiAdmin {
     return PopupManager.hideInputEditor();
   }
 
+  /** Show an HTML element at a particular location.
+   * @param displayElement The HTMLElement to display
+   * @param location Location of the display element, relative to the origin of htmlElement or the window
+   * @param offset Offset of the display element from the location
+   * @param onCancel Function invoked when the Escape key is pressed or a click occurs outside the display element
+   * @param relativePosition Position relative to the given location. Defaults to TopRight.
+   * @param anchorElement The HTMLElement that anchors the display element. If undefined, the location is relative to the overall window.
+   * @return true if the display element was displayed, false if the display element could not be displayed.
+   */
+  public showHTMLElement(
+    displayElement: HTMLElement, location: XAndY, offset: XAndY, onCancel: OnCancelFunc,
+    relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean {
+    const { position, el } = this.resolveHtmlElement(location, htmlElement);
+
+    if (relativePosition === undefined)
+      relativePosition = RelativePosition.TopRight;
+
+    return PopupManager.showHTMLElement(displayElement, el, position, offset, onCancel, relativePosition);
+  }
+
+  /** Hides the HTML Element. */
+  public hideHTMLElement(): boolean {
+    return PopupManager.hideHTMLElement();
+  }
+
 }

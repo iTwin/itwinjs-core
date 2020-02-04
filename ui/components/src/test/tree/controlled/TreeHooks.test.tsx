@@ -10,12 +10,11 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { useVisibleTreeNodes, usePagedNodeLoader, useModelSource, useNodeLoader } from "../../../ui-components/tree/controlled/TreeHooks";
 import { VisibleTreeNodes, TreeModel, MutableTreeModel } from "../../../ui-components/tree/controlled/TreeModel";
 import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
-import { ITreeNodeLoader, LoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 import { TreeDataProviderRaw, TreeDataProvider } from "../../../ui-components/tree/TreeDataProvider";
 
 describe("useVisibleTreeNodes", () => {
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
-  const onModelChangeMock = moq.Mock.ofType<BeUiEvent<TreeModel>>();
+  let onModelChangeEvent: BeUiEvent<TreeModel>;
   const testVisibleNodes: VisibleTreeNodes = {
     getAtIndex: () => undefined,
     getModel: () => new MutableTreeModel(),
@@ -26,101 +25,155 @@ describe("useVisibleTreeNodes", () => {
 
   beforeEach(() => {
     modelSourceMock.reset();
-    onModelChangeMock.reset();
+    onModelChangeEvent = new BeUiEvent<TreeModel>();
 
-    modelSourceMock.setup((x) => x.onModelChanged).returns(() => onModelChangeMock.object);
+    modelSourceMock.setup((x) => x.onModelChanged).returns(() => onModelChangeEvent);
     modelSourceMock.setup((x) => x.getVisibleNodes()).returns(() => testVisibleNodes);
   });
 
   it("subscribes to onModelChange event and returns visible nodes", () => {
+    const spy = sinon.spy(onModelChangeEvent, "addListener");
     const { result } = renderHook(
       (props: { modelSource: TreeModelSource }) => useVisibleTreeNodes(props.modelSource),
       { initialProps: { modelSource: modelSourceMock.object } },
     );
 
     expect(result.current).to.not.be.undefined;
-    onModelChangeMock.verify((x) => x.addListener(moq.It.isAny()), moq.Times.once());
+    expect(spy).to.have.been.calledOnce;
   });
 
   it("resubscribes to onModelChangeEvent when model source changes", () => {
+    const firstModelEventAddSpy = sinon.spy(onModelChangeEvent, "addListener");
+    const firstModelEventRemoveSpy = sinon.spy(onModelChangeEvent, "removeListener");
     const { rerender } = renderHook(
       (props: { modelSource: TreeModelSource }) => useVisibleTreeNodes(props.modelSource),
       { initialProps: { modelSource: modelSourceMock.object } },
     );
-    onModelChangeMock.verify((x) => x.addListener(moq.It.isAny()), moq.Times.once());
+    expect(firstModelEventAddSpy).to.have.been.calledOnce;
 
-    const newOnModelChangeMock = moq.Mock.ofType<BeUiEvent<TreeModel>>();
+    const newOnModelChangeEvent = new BeUiEvent<TreeModel>();
+    const newModelEventAddSpy = sinon.spy(newOnModelChangeEvent, "addListener");
     const newModelSourceMock = moq.Mock.ofType<TreeModelSource>();
-    newModelSourceMock.setup((x) => x.onModelChanged).returns(() => newOnModelChangeMock.object);
+    newModelSourceMock.setup((x) => x.onModelChanged).returns(() => newOnModelChangeEvent);
 
     rerender({ modelSource: newModelSourceMock.object });
 
-    onModelChangeMock.verify((x) => x.removeListener(moq.It.isAny()), moq.Times.once());
-    newOnModelChangeMock.verify((x) => x.addListener(moq.It.isAny()), moq.Times.once());
+    expect(firstModelEventRemoveSpy).to.have.been.calledOnce;
+    expect(newModelEventAddSpy).to.have.been.calledOnce;
   });
 
 });
 
 describe("useNodeLoader", () => {
   const dataProviderMock: TreeDataProviderRaw = [];
+  const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
 
   it("creates NodeLoader", () => {
     const { result } = renderHook(
-      (props: { dataProvider: TreeDataProvider }) => useNodeLoader(props.dataProvider),
-      { initialProps: { dataProvider: dataProviderMock } },
+      (props: { dataProvider: TreeDataProvider, modelSource: TreeModelSource }) => useNodeLoader(props.dataProvider, props.modelSource),
+      { initialProps: { dataProvider: dataProviderMock, modelSource: modelSourceMock.object } },
     );
 
     expect(result.current).to.not.be.undefined;
   });
 
+  it("returns same NodeLoader if data provider does not changes", () => {
+    const { result, rerender } = renderHook(
+      (props: { dataProvider: TreeDataProvider, modelSource: TreeModelSource }) => useNodeLoader(props.dataProvider, props.modelSource),
+      { initialProps: { dataProvider: dataProviderMock, modelSource: modelSourceMock.object } },
+    );
+    const nodeLoader = result.current;
+    rerender();
+
+    expect(result.current).to.be.eq(nodeLoader);
+  });
+
+  it("disposes NodeLoader on unmount", () => {
+    const { result, unmount } = renderHook(
+      (props: { dataProvider: TreeDataProvider, modelSource: TreeModelSource }) => useNodeLoader(props.dataProvider, props.modelSource),
+      { initialProps: { dataProvider: dataProviderMock, modelSource: modelSourceMock.object } },
+    );
+    const spy = sinon.spy(result.current, "dispose");
+    unmount();
+
+    expect(spy).to.be.called;
+  });
+
   it("creates new NodeLoader when data provider changes", () => {
     const { result, rerender } = renderHook(
-      (props: { dataProvider: TreeDataProvider }) => useNodeLoader(props.dataProvider),
-      { initialProps: { dataProvider: dataProviderMock } },
+      (props: { dataProvider: TreeDataProvider, modelSource: TreeModelSource }) => useNodeLoader(props.dataProvider, props.modelSource),
+      { initialProps: { dataProvider: dataProviderMock, modelSource: modelSourceMock.object } },
     );
 
     const firstNodeLoader = result.current;
+    const disposeSpy = sinon.spy(firstNodeLoader, "dispose");
     const newDataProviderMock: TreeDataProviderRaw = [];
-    rerender({ dataProvider: newDataProviderMock });
+    rerender({ dataProvider: newDataProviderMock, modelSource: modelSourceMock.object });
 
     expect(result.current).to.not.be.deep.eq(firstNodeLoader);
+    expect(disposeSpy).to.be.called;
   });
 
 });
 
 describe("usePagedNodeLoader", () => {
   const dataProviderMock: TreeDataProviderRaw = [];
+  const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
 
   it("creates PagedNodeLoader", () => {
     const { result } = renderHook(
-      (props: { dataProvider: TreeDataProvider, pageSize: number }) => usePagedNodeLoader(props.dataProvider, props.pageSize),
-      { initialProps: { dataProvider: dataProviderMock, pageSize: 10 } },
+      (props: { dataProvider: TreeDataProvider, modelSource: TreeModelSource, pageSize: number }) => usePagedNodeLoader(props.dataProvider, props.pageSize, props.modelSource),
+      { initialProps: { dataProvider: dataProviderMock, pageSize: 10, modelSource: modelSourceMock.object } },
     );
 
     expect(result.current).to.not.be.undefined;
   });
 
+  it("returns same PagedNodeLoader if dependencies do not changes", () => {
+    const { result, rerender } = renderHook(
+      (props: { dataProvider: TreeDataProvider, modelSource: TreeModelSource, pageSize: number }) => usePagedNodeLoader(props.dataProvider, props.pageSize, props.modelSource),
+      { initialProps: { dataProvider: dataProviderMock, pageSize: 10, modelSource: modelSourceMock.object } },
+    );
+    const nodeLoader = result.current;
+    rerender();
+
+    expect(result.current).to.be.eq(nodeLoader);
+  });
+
+  it("disposes PagedNodeLoader on unmount", () => {
+    const { result, unmount } = renderHook(
+      (props: { dataProvider: TreeDataProvider, modelSource: TreeModelSource, pageSize: number }) => usePagedNodeLoader(props.dataProvider, props.pageSize, props.modelSource),
+      { initialProps: { dataProvider: dataProviderMock, pageSize: 10, modelSource: modelSourceMock.object } },
+    );
+    const spy = sinon.spy(result.current, "dispose");
+    unmount();
+
+    expect(spy).to.be.called;
+  });
+
   it("creates new PagedNodeLoader when data provider changes", () => {
     const { result, rerender } = renderHook(
-      (props: { dataProvider: TreeDataProvider, pageSize: number }) => usePagedNodeLoader(props.dataProvider, props.pageSize),
-      { initialProps: { dataProvider: dataProviderMock, pageSize: 10 } },
+      (props: { dataProvider: TreeDataProvider, modelSource: TreeModelSource, pageSize: number }) => usePagedNodeLoader(props.dataProvider, props.pageSize, props.modelSource),
+      { initialProps: { dataProvider: dataProviderMock, pageSize: 10, modelSource: modelSourceMock.object } },
     );
 
     const firstNodeLoader = result.current;
+    const disposeSpy = sinon.spy(firstNodeLoader, "dispose");
     const newDataProviderMock: TreeDataProviderRaw = [];
-    rerender({ dataProvider: newDataProviderMock, pageSize: 10 });
+    rerender({ dataProvider: newDataProviderMock, pageSize: 10, modelSource: modelSourceMock.object });
 
     expect(result.current).to.not.be.deep.eq(firstNodeLoader);
+    expect(disposeSpy).to.be.called;
   });
 
   it("creates new PagedNodeLoader when page size changes", () => {
     const { result, rerender } = renderHook(
-      (props: { dataProvider: TreeDataProvider, pageSize: number }) => usePagedNodeLoader(props.dataProvider, props.pageSize),
-      { initialProps: { dataProvider: dataProviderMock, pageSize: 10 } },
+      (props: { dataProvider: TreeDataProvider, modelSource: TreeModelSource, pageSize: number }) => usePagedNodeLoader(props.dataProvider, props.pageSize, props.modelSource),
+      { initialProps: { dataProvider: dataProviderMock, pageSize: 10, modelSource: modelSourceMock.object } },
     );
 
     const firstNodeLoader = result.current;
-    rerender({ dataProvider: dataProviderMock, pageSize: 20 });
+    rerender({ dataProvider: dataProviderMock, pageSize: 20, modelSource: modelSourceMock.object });
 
     expect(result.current).to.not.be.deep.eq(firstNodeLoader!);
   });
@@ -128,67 +181,15 @@ describe("usePagedNodeLoader", () => {
 });
 
 describe("useModelSource", () => {
-  const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();
-  let onNodeLoadedEvent: BeUiEvent<LoadedNodeHierarchy>;
+  const dataProviderMock: TreeDataProviderRaw = [];
 
-  beforeEach(() => {
-    nodeLoaderMock.reset();
-
-    onNodeLoadedEvent = new BeUiEvent<LoadedNodeHierarchy>();
-    nodeLoaderMock.setup((x) => x.onNodeLoaded).returns(() => onNodeLoadedEvent);
-  });
-
-  it("creates model source and subscribes to onNodeLoaded event", () => {
-    const spy = sinon.spy(onNodeLoadedEvent, "addListener");
+  it("creates model source", () => {
     const { result } = renderHook(
-      (props: { nodeLoader: ITreeNodeLoader }) => useModelSource(props.nodeLoader),
-      { initialProps: { nodeLoader: nodeLoaderMock.object } },
+      (props: { dataProvider: TreeDataProvider }) => useModelSource(props.dataProvider),
+      { initialProps: { dataProvider: dataProviderMock } },
     );
 
-    expect(spy).to.be.called;
     expect(result.current).to.not.be.undefined;
-  });
-
-  it("returns undefined if node loader is undefined", () => {
-    const { result } = renderHook(
-      (props: { nodeLoader: ITreeNodeLoader | undefined }) => useModelSource(props.nodeLoader),
-      { initialProps: { nodeLoader: undefined } },
-    );
-
-    expect(result.current).to.be.undefined;
-  });
-
-  it("returns undefined if node loader changed to undefined", () => {
-    const { result, rerender } = renderHook<{ nodeLoader: ITreeNodeLoader | undefined }, TreeModelSource | undefined>(
-      (props: { nodeLoader: ITreeNodeLoader | undefined }) => useModelSource(props.nodeLoader),
-      { initialProps: { nodeLoader: nodeLoaderMock.object } },
-    );
-    expect(result.current).to.not.be.undefined;
-
-    rerender({ nodeLoader: undefined });
-
-    expect(result.current).to.be.undefined;
-  });
-
-  it("creates new model source and subscribes to onNodeLoaded event when node loader changes", () => {
-    const removeListenerSpy = sinon.spy(onNodeLoadedEvent, "removeListener");
-    const { result, rerender } = renderHook(
-      (props: { nodeLoader: ITreeNodeLoader }) => useModelSource(props.nodeLoader),
-      { initialProps: { nodeLoader: nodeLoaderMock.object } },
-    );
-    const firstModelSource = result.current;
-
-    const newNodeLoader = moq.Mock.ofType<ITreeNodeLoader>();
-    const nodeLoadedEvent = new BeUiEvent<LoadedNodeHierarchy>();
-    newNodeLoader.setup((x) => x.onNodeLoaded).returns(() => nodeLoadedEvent);
-    const addListenerSpy = sinon.spy(nodeLoadedEvent, "addListener");
-    rerender({ nodeLoader: newNodeLoader.object });
-
-    expect(removeListenerSpy).to.be.called;
-    expect(addListenerSpy).to.be.called;
-    expect(result.current).to.not.be.undefined;
-    expect(firstModelSource).to.not.be.undefined;
-    expect(result.current).to.not.eq(firstModelSource);
   });
 
 });

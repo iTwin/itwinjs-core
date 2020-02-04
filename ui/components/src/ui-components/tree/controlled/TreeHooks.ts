@@ -6,12 +6,12 @@
  * @module Tree
  */
 
-import { useState, useEffect, useCallback } from "react";
-import { TreeModelSource, createDefaultNodeLoadHandler } from "./TreeModelSource";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useDisposable } from "@bentley/ui-core";
+import { TreeModelSource } from "./TreeModelSource";
 import { VisibleTreeNodes } from "./TreeModel";
 import { TreeDataProvider } from "../TreeDataProvider";
-import { PagedTreeNodeLoader, ITreeNodeLoader, TreeNodeLoader } from "./TreeNodeLoader";
-import { useEffectSkipFirst } from "@bentley/ui-core";
+import { PagedTreeNodeLoader, TreeNodeLoader } from "./TreeNodeLoader";
 
 /** Custom hook which returns visible nodes from model source and subscribes to onModelChanged event.
  * @beta
@@ -25,8 +25,7 @@ export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNo
     };
 
     onModelChanged();
-    modelSource.onModelChanged.addListener(onModelChanged);
-    return () => { modelSource.onModelChanged.removeListener(onModelChanged); };
+    return modelSource.onModelChanged.addListener(onModelChanged);
   }, [modelSource]);
 
   return visibleNodes;
@@ -35,57 +34,23 @@ export function useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNo
 /** Custom hook which creates TreeNodeLoader for supplied dataProvider.
  * @beta
  */
-export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider) {
-  const [nodeLoader, setNodeLoader] = useState(() => new TreeNodeLoader(dataProvider));
-
-  useEffectSkipFirst(() => {
-    setNodeLoader(new TreeNodeLoader(dataProvider));
-  }, [dataProvider]);
-
-  return nodeLoader;
+export function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, modelSource: TreeModelSource) {
+  const createLoader = useCallback(() => new TreeNodeLoader(dataProvider, modelSource), [dataProvider, modelSource]);
+  return useDisposable(createLoader);
 }
 
 /** Custom hook which creates PagedTreeNodeLoader for supplied dataProvider.
  * @beta
  */
-export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number) {
-  const [nodeLoader, setNodeLoader] = useState(() => new PagedTreeNodeLoader(dataProvider, pageSize));
-
-  useEffectSkipFirst(() => {
-    setNodeLoader(new PagedTreeNodeLoader(dataProvider, pageSize));
-  }, [dataProvider, pageSize]);
-
-  return nodeLoader;
+export function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource) {
+  const createLoader = useCallback(() => new PagedTreeNodeLoader(dataProvider, modelSource, pageSize), [dataProvider, modelSource, pageSize]);
+  return useDisposable(createLoader);
 }
 
-/** Custom hook which creates TreeModelSource and modifies model when onNodeLoaded event is emitted.
+/** Custom hook which creates TreeModelSource
  * @beta
  */
-export function useModelSource(nodeLoader: ITreeNodeLoader | undefined) {
-  const [modelSource, setModelSource] = useState(() => nodeLoader ? new TreeModelSource() : undefined);
-  const modifyModel = useCallback(createOnNodeLoadedHandler(modelSource), [modelSource]);
-
-  useEffectSkipFirst(() => {
-    setModelSource(nodeLoader ? new TreeModelSource() : undefined);
-  }, [nodeLoader]);
-
-  useEffect(() => {
-    if (nodeLoader)
-      nodeLoader.onNodeLoaded.addListener(modifyModel);
-    return () => {
-      if (nodeLoader)
-        nodeLoader.onNodeLoaded.removeListener(modifyModel);
-    };
-  }, [nodeLoader, modifyModel]);
-
-  return modelSource;
-}
-
-function createOnNodeLoadedHandler(modelSource: TreeModelSource | undefined) {
-  if (!modelSource) {
-    /* istanbul ignore next */
-    return () => { };
-  }
-
-  return createDefaultNodeLoadHandler(modelSource);
+export function useModelSource(dataProvider: TreeDataProvider) {
+  // need to create new model source every time data provider changes although it does not need data provider to be created.
+  return useMemo(() => new TreeModelSource(), [dataProvider]); // eslint-disable-line react-hooks/exhaustive-deps
 }

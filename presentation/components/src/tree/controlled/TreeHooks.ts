@@ -6,10 +6,9 @@
  * @module Tree
  */
 
-import { useState } from "react";
+import { useMemo } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { useEffectSkipFirst } from "@bentley/ui-core";
-import { usePagedNodeLoader } from "@bentley/ui-components";
+import { usePagedNodeLoader, useModelSource } from "@bentley/ui-components";
 import { PresentationTreeDataProvider } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
@@ -33,14 +32,12 @@ export interface PresentationNodeLoaderProps {
  * @beta
  */
 export function usePresentationNodeLoader(props: PresentationNodeLoaderProps) {
-  const [dataProvider, setDataProvider] = useState(createDataProvider(props));
-  const nodeLoader = usePagedNodeLoader(dataProvider, props.pageSize);
-
-  useEffectSkipFirst(() => {
-    setDataProvider(createDataProvider(props));
-  }, [props.imodel, props.rulesetId, props.pageSize, props.preloadingEnabled, props.dataProvider]);
-
-  return nodeLoader;
+  const dataProvider = useMemo(
+    () => createDataProvider(props),
+    [props.imodel, props.rulesetId, props.pageSize, props.preloadingEnabled, props.dataProvider],
+  );
+  const modelSource = useModelSource(dataProvider);
+  return usePagedNodeLoader(dataProvider, props.pageSize, modelSource);
 }
 
 function createDataProvider(props: PresentationNodeLoaderProps) {

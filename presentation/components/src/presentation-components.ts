@@ -55,7 +55,7 @@ export { useControlledTreeUnifiedSelection, UnifiedSelectionTreeEventHandler } f
 export { controlledTreeWithUnifiedSelection, ControlledTreeWithUnifiedSelectionProps } from "./tree/controlled/WithUnifiedSelection";
 export { useControlledTreeFiltering } from "./tree/controlled/UseControlledTreeFiltering";
 export { controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./tree/controlled/WithFilteringSupport";
-export { controlledTreeWithModelSource, ControlledTreeWithModelSourceProps } from "./tree/controlled/WithModelSource";
+export { controlledTreeWithVisibleNodes, ControlledTreeWithVisibleNodesProps } from "./tree/controlled/WithVisibleNodes";
 export { usePresentationNodeLoader, PresentationNodeLoaderProps } from "./tree/controlled/TreeHooks";
 
 /**

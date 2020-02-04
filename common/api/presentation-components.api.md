@@ -5,6 +5,7 @@
 ```ts
 
 import * as _ from 'lodash';
+import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { ActiveMatchInfo } from '@bentley/ui-components';
 import { CategoryDescription } from '@bentley/presentation-common';
 import { ColumnDescription } from '@bentley/ui-components';
@@ -22,7 +23,6 @@ import { InstanceKey } from '@bentley/presentation-common';
 import { IPropertyDataProvider } from '@bentley/ui-components';
 import { Item } from '@bentley/presentation-common';
 import { ITreeDataProvider } from '@bentley/ui-components';
-import { ITreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
@@ -100,32 +100,32 @@ export class ContentDataProvider implements IContentDataProvider {
 }
 
 // @beta
-export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
+export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
 
 // @beta
 export interface ControlledTreeWithFilteringSupportProps {
     activeMatchIndex?: number;
     filter?: string;
-    nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
+    nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     onFilterApplied?: (filter: string) => void;
     onMatchesCounted?: (count: number) => void;
-    onNodeLoaderChanged?: (nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => void;
+    onNodeLoaderChanged?: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => void;
 }
 
 // @beta
-export function controlledTreeWithModelSource<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithModelSourceProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "modelSource" | Exclude<keyof P, "visibleNodes">>>;
-
-// @beta
-export interface ControlledTreeWithModelSourceProps extends Omit<ControlledTreeProps, "visibleNodes"> {
-    modelSource: TreeModelSource;
-}
-
-// @beta
-export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithUnifiedSelectionProps, "nodeLoader" | Exclude<keyof P, "visibleNodes">>>;
+export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithUnifiedSelectionProps, "nodeLoader" | Exclude<keyof P, "visibleNodes">>>;
 
 // @beta
 export interface ControlledTreeWithUnifiedSelectionProps {
-    nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
+    nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
+}
+
+// @beta
+export function controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithVisibleNodesProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | Exclude<keyof P, "visibleNodes">>>;
+
+// @beta
+export interface ControlledTreeWithVisibleNodesProps extends Omit<ControlledTreeProps, "visibleNodes"> {
+    nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
 
 // @public
@@ -368,9 +368,9 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
     }
 
 // @beta
-export function useControlledTreeFiltering(nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, modelSource: TreeModelSource, filter: string | undefined, activeMatch?: number): {
+export function useControlledTreeFiltering(nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, modelSource: TreeModelSource, filter: string | undefined, activeMatch?: number): {
     nodeHighlightingProps: HighlightableTreeProps | undefined;
-    filteredNodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | ITreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>;
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | AbstractTreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>;
     filteredModelSource: TreeModelSource;
     isFiltering: boolean;
     matchesCount: number | undefined;

@@ -9,19 +9,19 @@ import { mount } from "enzyme";
 import * as moq from "typemoq";
 import {
   ControlledTree, TreeModelSource, TreeEvents, SelectionMode, TreeModel,
-  VisibleTreeNodes, MutableTreeModel, ITreeNodeLoaderWithProvider,
+  VisibleTreeNodes, MutableTreeModel, AbstractTreeNodeLoaderWithProvider,
 } from "@bentley/ui-components";
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent, BeEvent } from "@bentley/bentleyjs-core";
 import { IPresentationTreeDataProvider } from "../../../tree/IPresentationTreeDataProvider";
-import { controlledTreeWithModelSource } from "../../../tree/controlled/WithModelSource";
+import { controlledTreeWithVisibleNodes } from "../../../tree/controlled/WithVisibleNodes";
 
 // tslint:disable-next-line:variable-name naming-convention
-const PresentationTree = controlledTreeWithModelSource(ControlledTree);
+const PresentationTree = controlledTreeWithVisibleNodes(ControlledTree);
 
 describe("Tree withModelSource", () => {
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
   const treeEventMock = moq.Mock.ofType<TreeEvents>();
-  const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
+  const treeNodeLoaderMock = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
   const visibleNodes: VisibleTreeNodes = {
     getAtIndex: () => undefined,
     getNumNodes: () => 0,
@@ -30,20 +30,18 @@ describe("Tree withModelSource", () => {
     [Symbol.iterator]: () => [][Symbol.iterator](),
   };
 
-  modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<TreeModel>());
-  modelSourceMock.setup((x) => x.getVisibleNodes()).returns(() => visibleNodes);
+  beforeEach(() => {
+    modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<TreeModel>());
+    modelSourceMock.setup((x) => x.getVisibleNodes()).returns(() => visibleNodes);
+    treeNodeLoaderMock.setup((x) => x.modelSource).returns(() => modelSourceMock.object);
+  });
 
   it("mounts", () => {
     mount(<PresentationTree
-      modelSource={modelSourceMock.object}
-      nodeLoader={nodeLoaderMock.object}
+      nodeLoader={treeNodeLoaderMock.object}
       treeEvents={treeEventMock.object}
       selectionMode={SelectionMode.Single}
     />);
-
-    // should be called 2 times: first time to initialize state in custom hook,
-    // second time in useEffect
-    modelSourceMock.verify((x) => x.getVisibleNodes(), moq.Times.exactly(2));
   });
 
 });

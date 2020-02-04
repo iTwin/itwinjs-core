@@ -143,6 +143,24 @@ export class AccuDrawPopupTools {
     });
   }
 
+  private static _HTMLElementOnCancel = () => {
+    AccuDrawPopupTools._closeHTMLElement();
+  }
+
+  private static _closeHTMLElement() {
+    IModelApp.uiAdmin.hideHTMLElement();
+  }
+
+  public static get showHTMLElement() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showHTMLElement", execute: () => {
+        const html = "<div style='width: 200px; height: 50px; display: flex; justify-content: center; align-items: center; background-color: aqua;'>Hello World!</div>";
+        const display = new DOMParser().parseFromString(html, "text/html");
+        IModelApp.uiAdmin.showHTMLElement(display.documentElement, IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8), this._HTMLElementOnCancel);
+      },
+    });
+  }
+
   public static get selectElementItemProps(): AbstractToolItemProps {
     return {
       toolId: SelectionTool.toolId,
