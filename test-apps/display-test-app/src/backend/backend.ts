@@ -52,7 +52,7 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_NO_IMPROVED_ELISION)
     configuration.enableImprovedElision = false;
 
-   if (undefined !== process.env.SVT_IGNORE_AREA_PATTERNS)
+  if (undefined !== process.env.SVT_IGNORE_AREA_PATTERNS)
     configuration.ignoreAreaPatterns = true;
 
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
