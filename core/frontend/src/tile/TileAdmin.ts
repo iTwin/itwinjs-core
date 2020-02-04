@@ -246,7 +246,7 @@ export namespace TileAdmin {
     /** If true, during tile generation the backend will perform tighter intersection tests to more accurately identify empty sub-volumes.
      * This can reduce the number of tiles requested and the number of tile requests that return no content.
      *
-     * Default value: false
+     * Default value: true
      */
     enableImprovedElision?: boolean;
 
@@ -548,7 +548,7 @@ class Admin extends TileAdmin {
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = false !== options.enableInstancing;
-    this._enableImprovedElision = true === options.enableImprovedElision;
+    this._enableImprovedElision = false !== options.enableImprovedElision;
     this._ignoreAreaPatterns = true === options.ignoreAreaPatterns;
     this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : CurrentImdlVersion.Major;

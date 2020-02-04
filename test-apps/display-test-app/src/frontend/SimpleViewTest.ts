@@ -157,8 +157,8 @@ async function main() {
   if (configuration.disableInstancing)
     tileAdminProps.enableInstancing = false;
 
-  if (configuration.enableImprovedElision)
-    tileAdminProps.enableImprovedElision = true;
+  if (false === configuration.enableImprovedElision)
+    tileAdminProps.enableImprovedElision = false;
 
   if (configuration.ignoreAreaPatterns)
     tileAdminProps.ignoreAreaPatterns = true;

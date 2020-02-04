@@ -113,8 +113,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
 * SVT_DISABLE_INSTANCING
   * If defined, instanced geometry will not be generated for tiles.
-* SVT_IMPROVED_ELISION
-  * If defined, enables more accurate empty tile elision on backend.
+* SVT_NO_IMPROVED_ELISION
+  * If defined, disables more accurate empty tile elision on backend.
 * SVT_IGNORE_AREA_PATTERNS
   * If defined, area pattern geometry will be omitted from tiles.
 * SVT_DISABLE_MAGNIFICATION
