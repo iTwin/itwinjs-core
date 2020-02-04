@@ -3,17 +3,57 @@ ignore: true
 ---
 # NextVersion
 
+## Plan projection display
+
+Alpha support for controlling the display of "plan projection" models has been added. A plan projection model is a spatial model with geometry all residing in an XY plane, indicated by the [GeometricModel3dProps.isPlanProjection]($common) flag. Multiple such models can be combined within a spatial view in various ways by using the `PlanProjectionSettings` associated with a [DisplayStyle3d]($backend) and [DisplayStyle3dState]($frontend). This allows each model to be displayed with any of the following:
+  * An absolute elevation in meters;
+  * A uniform transparency;
+  * As an overlay, drawn in front of all other geometry in the view;
+  * Deterministic draw order based on display priority.
+
+The latter groups geometry within plan projection models into "layers" based on subcategory Id: each subcategory represents a single layer containing geometry from any number of plan projection models, and each subcategory's [SubCategoryAppearance]($common) defines a display priority. At display time, if 2 (or more) plan projection models are displayed at the same elevation, their geometry is drawn in ascending order by the corresponding subcategory's display priority, such that geometry with a higher priority displays in front of geometry with a lower priority. Subcategory priorities can be overridden using [DisplayStyleSettings.overrideSubCategory]($common).
+
+## Feature flags
+
+Options used to enable or disable certain features when invoking [IModelApp.startup]($frontend) have changed:
+  * [RenderSystem.Options.logarithmicDepthBuffer]($frontend) now defaults to `true`.
+  * `TileAdmin.Props.enableImprovedElision` now defaults to `true`.
+  * `TileAdmin.Props.ignoreAreaPatterns` has been added to temporarily mitigate issues with large amounts of geometry produced for area patterns. It defaults to `false`.
+
+## View details
+
+Access to optional [ViewDefinition]($backend) and [ViewState]($frontend) properties stored as JSON has been consolidated into the [ViewDetails]($common) class. In addition, a new persistent [ViewDetails.allow3dManipulations]($common) flag allows 3d views to control whether viewing tools can operate on the view in three dimensions or should be limited to the XY plane.
+
+## UI
+
+### ControlledTree
+  * New abstract classes: `AbstractTreeNodeLoader` and `AbstractTreeNodeLoaderWitProvider`
+    * Uses `TreeModelSource` to add loaded nodes to the model
+    * `protected abstract load(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>` is called to load nodes
+    * `protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void` is called when nodes are loaded and is responsible for adding them to the model
+  * `onNodeLoaded` event removed from `ITreeNodeLoader`
+    * `AbstractTreeNodeLoader.updateModel(loadedHierarchy: LoadedNodeHierarchy): void` should be overridden instead of listening for `onNodeLoaded` event
+  * `TreeNodeLoader` and `PagedTreeNodeLoader` extends `AbstractTreeNodeLoaderWitProvider` and requires `TreeModelSource` to be passed to constructor
+    * overriding `protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void` allows to control how nodes are added to the model.
+  * `useNodeLoader` and `usePagedNodeLoader` hooks require `TreeModelSource`
+    * `function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, modelSource: TreeModelSource): TreeNodeLoader<TDataProvider>;`
+    * `function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;`
+  * `useModelSource` hook takes `TreeDataProvider` instead of `ITreeNodeLoader`
+    * `function useModelSource(dataProvider: TreeDataProvider): TreeModelSource;`
+  * Removed function: `createDefaultNodeLoadHandler(modelSource: TreeModelSource): (loadedHierarchy: LoadedNodeHierarchy) => void;`
+  * Removed function: `createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader): { modelSource: TreeModelSource; disposeModelSource: () => void; };`
+
 ## Geometry
 
 ### Ellipsoid
  * New instance method:   `ellipsoid.localToWorld(localPoint: XYAndZ, result?: Point3d): Point3d`
  * New instance method:   `worldToLocal(worldPoint: XYAndZ, result?: Point3d): Point3d | undefined`
  * `local` image of a world point is in the coordinate system of a unit sphere.
-   * the point is (inside,on,outside) the ellipsoid if its local point magnitude (distance from local origin) is respectively (less than, equal to, greater than) one.
+   * The point is (inside,on,outside) the ellipsoid if its local point magnitude (distance from local origin) is respectively (less than, equal to, greater than) one.
 * New instance method:  `ellipsoid.silhouette (eyePoint:Point4d): Arc3d | undefined`
 
 ### PolyfaceQuery
-  * (existing) static methods for area booleans of polygons have added (optional) argument to request triangulation of results.
+  * Existing static methods for area booleans of polygons have added (optional) argument to request triangulation of results.
     * `polygonXYAreaUnionLoopsToPolyface`
     * `polygonXYAreaDifferenceLoopsToPolyface`
     * `polygonXYAreaIntersectLoopsToPolyface`
@@ -34,7 +74,7 @@ ignore: true
      * `Arc3d.create(center: Point3d | undefined, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d;`
      * `Arc3d.createCenterNormalRadius(center: Point3d | undefined, normal: Vector3d, radius: number, result?: Arc3d): Arc3d;`
    * `Arc3d.createScaledXYColumns(center: Point3d | undefined, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d;`
-   * in `myArc.extendRange(range, transform)`, compute exact (rather than sampled) range.
+   * In `myArc.extendRange(range, transform)`, compute exact (rather than sampled) range.
 
 ### Matrix3d
   * New instance method: `matrix.multiplyInverseXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d | undefined;`
@@ -57,24 +97,4 @@ ignore: true
   * New instance method `data.setAt(index, value)` to address x,y,z by index (in `XYZ` base class)
 
 ### ConvexClipPlaneSet
-  * allow undefined (zero) tilt in construction `ConvexClipPlaneSet.createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle?: Angle): ConvexClipPlaneSet | undefined`
-
-## UI
-
-### ControlledTree
-
-  * New abstract classes: `AbstractTreeNodeLoader` and `AbstractTreeNodeLoaderWitProvider`
-    * Uses `TreeModelSource` to add loaded nodes to the model
-    * `protected abstract load(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>` is called to load nodes
-    * `protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void` is called when nodes are loaded and is responsible for adding them to the model
-  * `onNodeLoaded` event removed from `ITreeNodeLoader`
-    * `AbstractTreeNodeLoader.updateModel(loadedHierarchy: LoadedNodeHierarchy): void` should be overridden instead of listening for `onNodeLoaded` event
-  * `TreeNodeLoader` and `PagedTreeNodeLoader` extends `AbstractTreeNodeLoaderWitProvider` and requires `TreeModelSource` to be passed to constructor
-    * overriding `protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void` allows to control how nodes are added to the model.
-  * `useNodeLoader` and `usePagedNodeLoader` hooks require `TreeModelSource`
-    * `function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, modelSource: TreeModelSource): TreeNodeLoader<TDataProvider>;`
-    * `function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;`
-  * `useModelSource` hook takes `TreeDataProvider` instead of `ITreeNodeLoader`
-    * `function useModelSource(dataProvider: TreeDataProvider): TreeModelSource;`
-  * Removed function: `createDefaultNodeLoadHandler(modelSource: TreeModelSource): (loadedHierarchy: LoadedNodeHierarchy) => void;`
-  * Removed function: `createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader): { modelSource: TreeModelSource; disposeModelSource: () => void; };`
+  * Allow undefined (zero) tilt in construction `ConvexClipPlaneSet.createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle?: Angle): ConvexClipPlaneSet | undefined`
