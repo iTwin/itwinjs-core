@@ -28,7 +28,7 @@ export class SubCategoryAppearance {
    * The priority is a number in the range [-8388576,8388576].
    * Where two pieces of geometry overlap, the one with the larger priority value draws on top of the one with the smaller priority.
    * If they have equal priorities, the order in which they draw is undefined, and z-fighting may result.
-   * @note This property has no effect in 3D views.
+   * @note This property has no effect in 3D views unless [[PlanProjectionSettings]] are in effect.
    */
   public readonly priority: number;
   /** A value in the range [0, 1] indicating the transparency of the geometry where 0.0 means "fully opaque" and 1.0 means "fully transparent". */

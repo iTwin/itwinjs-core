@@ -3263,6 +3263,8 @@ export namespace FeatureSymbology {
         protected getSubCategoryOverrides(idLo: number, idHi: number): Appearance | undefined;
         getSubCategoryOverridesById(id: Id64String): Appearance | undefined;
         // @internal
+        getSubCategoryPriority(idLo: number, idHi: number): number;
+        // @internal
         initFromView(view: ViewState): void;
         // @internal
         initFromViewport(viewport: Viewport): void;
@@ -3307,6 +3309,8 @@ export namespace FeatureSymbology {
         setVisibleSubCategory(id: Id64String): void;
         // @internal
         protected readonly _subCategoryOverrides: Id64.Uint32Map<Appearance>;
+        // @internal
+        protected readonly _subCategoryPriorities: Id64.Uint32Map<number>;
         // @internal
         protected readonly _visibleSubCategories: Id64.Uint32Set;
         }
@@ -5531,17 +5535,13 @@ export namespace MockRender {
         get animationFraction(): number;
         set animationFraction(_fraction: number);
         // (undocumented)
-        changeBackgroundMap(_backgroundMap: GraphicList): void;
-        // (undocumented)
         changeDecorations(_decs: Decorations): void;
         // (undocumented)
         changeDynamics(_dynamics?: GraphicList): void;
         // (undocumented)
-        changeOverlayGraphics(_overlayGraphics: GraphicList): void;
-        // (undocumented)
         changeRenderPlan(_plan: RenderPlan): void;
         // (undocumented)
-        changeScene(_scene: GraphicList): void;
+        changeScene(_scene: Scene): void;
         // (undocumented)
         drawFrame(_sceneTime?: number): void;
         // (undocumented)
@@ -5715,13 +5715,9 @@ export class NullTarget extends RenderTarget {
     get animationFraction(): number;
     set animationFraction(_fraction: number);
     // (undocumented)
-    changeBackgroundMap(): void;
-    // (undocumented)
     changeDecorations(): void;
     // (undocumented)
     changeDynamics(): void;
-    // (undocumented)
-    changeOverlayGraphics(): void;
     // (undocumented)
     changeRenderPlan(): void;
     // (undocumented)
@@ -6882,6 +6878,10 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
     abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
+    // @internal
+    createGraphicLayer(graphic: RenderGraphic, _layerId: string): RenderGraphic;
+    // @internal
+    createGraphicLayerContainer(graphic: RenderGraphic, _drawAsOverlay: boolean, _transparency: number): RenderGraphic;
     abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
     createGraphicOwner(ownedGraphic: RenderGraphic): RenderGraphicOwner;
     // @internal (undocumented)
@@ -6957,6 +6957,8 @@ export namespace RenderSystem {
         filterMapTextures?: boolean;
         logarithmicDepthBuffer?: boolean;
         // @internal
+        planProjections?: boolean;
+        // @internal
         preserveShaderSourceCode?: boolean;
         // @internal
         useWebGL2?: boolean;
@@ -6984,23 +6986,13 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     abstract get animationFraction(): number;
     abstract set animationFraction(fraction: number);
     // (undocumented)
-    changeActiveVolumeClassifierProps(_props?: SpatialClassificationProps.Classifier, _modelId?: Id64String): void;
-    // (undocumented)
-    abstract changeBackgroundMap(_graphics: GraphicList): void;
-    // (undocumented)
     abstract changeDecorations(decorations: Decorations): void;
     // (undocumented)
     abstract changeDynamics(dynamics?: GraphicList): void;
     // (undocumented)
-    abstract changeOverlayGraphics(_scene: GraphicList): void;
-    // (undocumented)
-    changePlanarClassifiers(_classifiers?: PlanarClassifierMap): void;
-    // (undocumented)
     abstract changeRenderPlan(plan: RenderPlan): void;
     // (undocumented)
-    abstract changeScene(scene: GraphicList): void;
-    // (undocumented)
-    changeTextureDrapes(_drapes: TextureDrapeMap | undefined): void;
+    abstract changeScene(scene: Scene): void;
     // (undocumented)
     collectStatistics(_stats: RenderMemory.Statistics): void;
     // (undocumented)
@@ -7173,6 +7165,22 @@ export class SavedState {
 }
 
 // @internal
+export class Scene {
+    // (undocumented)
+    readonly background: RenderGraphic[];
+    // (undocumented)
+    readonly foreground: RenderGraphic[];
+    // (undocumented)
+    readonly overlay: RenderGraphic[];
+    // (undocumented)
+    readonly planarClassifiers: Map<string, RenderPlanarClassifier>;
+    // (undocumented)
+    readonly textureDrapes: Map<string, RenderTextureDrape>;
+    // (undocumented)
+    volumeClassifier?: SceneVolumeClassifier;
+}
+
+// @internal
 export class SceneContext extends RenderContext {
     constructor(vp: Viewport, frustum?: Frustum);
     // (undocumented)
@@ -7180,17 +7188,13 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTreeReference, classifiedTree: TileTreeReference): RenderPlanarClassifier | undefined;
     // (undocumented)
-    readonly backgroundGraphics: RenderGraphic[];
-    // (undocumented)
-    getActiveVolumeClassifierModelId(): Id64String | undefined;
-    // (undocumented)
-    getActiveVolumeClassifierProps(): SpatialClassificationProps.Classifier | undefined;
+    get backgroundGraphics(): RenderGraphic[];
     // (undocumented)
     getPlanarClassifierForModel(modelId: Id64String): RenderPlanarClassifier | undefined;
     // (undocumented)
     getTextureDrapeForModel(modelId: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
-    readonly graphics: RenderGraphic[];
+    get graphics(): RenderGraphic[];
     // (undocumented)
     hasMissingTiles: boolean;
     // (undocumented)
@@ -7202,23 +7206,31 @@ export class SceneContext extends RenderContext {
     // (undocumented)
     outputGraphic(graphic: RenderGraphic): void;
     // (undocumented)
-    readonly overlayGraphics: RenderGraphic[];
+    get overlayGraphics(): RenderGraphic[];
     // (undocumented)
-    readonly planarClassifiers: Map<string, RenderPlanarClassifier>;
+    get planarClassifiers(): Map<string, RenderPlanarClassifier>;
     // (undocumented)
     requestMissingTiles(): void;
     // (undocumented)
-    setActiveVolumeClassifierModelId(modelId: Id64String | undefined): void;
+    readonly scene: Scene;
     // (undocumented)
-    setActiveVolumeClassifierProps(properties: SpatialClassificationProps.Classifier | undefined): void;
+    setVolumeClassifier(classifier: SpatialClassificationProps.Classifier, modelId: Id64String): void;
     // (undocumented)
-    readonly textureDrapes: Map<string, RenderTextureDrape>;
+    get textureDrapes(): Map<string, RenderTextureDrape>;
     // (undocumented)
     get viewingSpace(): ViewingSpace;
     // (undocumented)
     withGraphicTypeAndFrustum(type: TileGraphicType, frustum: ViewingSpace | undefined, func: () => void): void;
     // (undocumented)
     withGraphicTypeAndPlane(type: TileGraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void;
+}
+
+// @internal
+export interface SceneVolumeClassifier {
+    // (undocumented)
+    classifier: SpatialClassificationProps.Classifier;
+    // (undocumented)
+    modelId: Id64String;
 }
 
 // @public
@@ -7858,7 +7870,6 @@ export class SpatialViewState extends ViewState3d {
     static get className(): string;
     // (undocumented)
     clearViewedModels(): void;
-    // (undocumented)
     computeFitRange(): AxisAlignedBox3d;
     // (undocumented)
     createAuxCoordSystem(acsName: string): AuxCoordSystemState;
@@ -7879,6 +7890,7 @@ export class SpatialViewState extends ViewState3d {
     forEachModel(func: (model: GeometricModelState) => void): void;
     // @internal (undocumented)
     forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
+    protected getDisplayedExtents(): AxisAlignedBox3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
     // (undocumented)
@@ -8117,23 +8129,17 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     beginPerfMetricRecord(operation: string, readPixels?: boolean): void;
     // (undocumented)
-    changeActiveVolumeClassifierProps(props?: SpatialClassificationProps.Classifier, modelId?: Id64String): void;
-    // (undocumented)
-    changeBackgroundMap(backgroundMap: GraphicList): void;
-    // (undocumented)
     changeDecorations(decs: Decorations): void;
     // (undocumented)
     changeDynamics(dynamics?: GraphicList): void;
     // (undocumented)
     changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void;
     // (undocumented)
-    changeOverlayGraphics(overlayGraphics: GraphicList): void;
-    // (undocumented)
     changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap): void;
     // (undocumented)
     changeRenderPlan(plan: RenderPlan): void;
     // (undocumented)
-    changeScene(scene: GraphicList): void;
+    changeScene(scene: Scene): void;
     // (undocumented)
     changeTextureDrapes(textureDrapes: TextureDrapeMap | undefined): void;
     // (undocumented)
@@ -8178,7 +8184,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     protected _decorations?: Decorations;
     // (undocumented)
-    readonly decorationState: BranchState;
+    readonly decorationsState: BranchState;
     // (undocumented)
     displayDrapeFrustum: boolean;
     // (undocumented)
@@ -8257,6 +8263,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     isRangeOutsideActiveVolume(range: Range3d): boolean;
     // (undocumented)
     get isReadPixelsInProgress(): boolean;
+    // (undocumented)
+    modelToView(modelPt: XYZ, result?: Point3d): Point3d;
     // (undocumented)
     onBatchDisposed(batch: Batch): void;
     // (undocumented)
@@ -8759,6 +8767,8 @@ export class TileDrawArgs {
     // (undocumented)
     planarClassifier?: RenderPlanarClassifier;
     // (undocumented)
+    produceGraphics(): RenderGraphic | undefined;
+    // (undocumented)
     readonly purgeOlderThan: BeTimePoint;
     // (undocumented)
     readonly root: TileTree;
@@ -9067,7 +9077,6 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
     // (undocumented)
     protected getClipVolume(tree: TileTree): RenderClipVolume | undefined;
     getLocation(): Transform | undefined;
-    // (undocumented)
     protected getSymbologyOverrides(_tree: TileTree): FeatureSymbology.Overrides | undefined;
     getToolTip(_hit: HitDetail): HTMLElement | string | undefined;
     // (undocumented)

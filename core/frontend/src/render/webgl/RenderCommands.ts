@@ -6,9 +6,7 @@
  * @module WebGL
  */
 
-import {
-  assert,
-} from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import {
   Range3d,
 } from "@bentley/geometry-core";
@@ -30,13 +28,17 @@ import {
   getAnimationBranchState,
   PopBatchCommand,
   PopBranchCommand,
+  PopCommand,
   PrimitiveCommand,
   PushBatchCommand,
   PushBranchCommand,
+  PushStateCommand,
+  PushCommand,
 } from "./DrawCommand";
 import {
   BatchState,
   BranchStack,
+  BranchState,
 } from "./BranchState";
 import { Target } from "./Target";
 import {
@@ -52,6 +54,11 @@ import {
 } from "./Graphic";
 import { Primitive } from "./Primitive";
 import { MeshGraphic } from "./Mesh";
+import {
+  Layer,
+  LayerCommandLists,
+  LayerContainer,
+} from "./Layer";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal
@@ -68,6 +75,8 @@ export class RenderCommands {
   private _opaqueOverrides = false;
   private _translucentOverrides = false;
   private _addTranslucentAsOpaque = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
+  private readonly _layers: LayerCommandLists;
+
   public get target(): Target { return this._target; }
 
   public get isEmpty(): boolean {
@@ -76,6 +85,17 @@ export class RenderCommands {
         return false;
 
     return true;
+  }
+
+  public get isDrawingLayers() {
+    switch (this._forcedRenderPass) {
+      case RenderPass.OpaqueLayers:
+      case RenderPass.TranslucentLayers:
+      case RenderPass.OverlayLayers:
+        return true;
+      default:
+        return false;
+    }
   }
 
   public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
@@ -102,6 +122,8 @@ export class RenderCommands {
     this._target = target;
     this._stack = stack;
     this._batchState = batchState;
+    this._layers = new LayerCommandLists(this);
+
     for (let i = 0; i < RenderPass.COUNT; ++i)
       this._commands[i] = [];
   }
@@ -177,9 +199,7 @@ export class RenderCommands {
     assert(RenderPass.None === this._forcedRenderPass);
 
     this._forcedRenderPass = RenderPass.Background;
-    this._stack.pushState(this.target.decorationState);
-    gf.addCommands(this);
-    this._stack.pop();
+    this.pushAndPopState(this.target.decorationsState, () => gf.addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -190,9 +210,7 @@ export class RenderCommands {
     assert(RenderPass.None === this._forcedRenderPass);
 
     this._forcedRenderPass = RenderPass.SkyBox;
-    this._stack.pushState(this.target.decorationState);
-    (gf as Graphic).addCommands(this);
-    this._stack.pop();
+    this.pushAndPopState(this.target.decorationsState, () => gf.addCommands(this));
     this._forcedRenderPass = RenderPass.None;
   }
 
@@ -288,12 +306,53 @@ export class RenderCommands {
     });
   }
 
+  public processLayers(container: LayerContainer): void {
+    assert(RenderPass.None === this._forcedRenderPass);
+    if (RenderPass.None !== this._forcedRenderPass)
+      return;
+
+    this._forcedRenderPass = container.renderPass;
+    this._layers.processLayers(container, () => container.graphic.addCommands(this));
+    this._forcedRenderPass = RenderPass.None;
+  }
+
+  public addLayerCommands(layer: Layer): void {
+    assert(this.isDrawingLayers);
+    if (!this.isDrawingLayers)
+      return;
+
+    // Let the graphic add its commands. Afterward, pull them out and add them to the LayerCommands.
+    this._layers.currentLayer = layer;
+    layer.graphic.addCommands(this);
+
+    const cmds = this.getCommands(this._forcedRenderPass);
+    this._layers.addCommands(cmds);
+
+    cmds.length = 0;
+    this._layers.currentLayer = undefined;
+  }
+
+  public addHiliteLayerCommands(graphic: Graphic, pass: RenderPass): void {
+    assert(this.isDrawingLayers);
+    if (!this.isDrawingLayers)
+      return;
+
+    const prevPass = this._forcedRenderPass;
+    this._forcedRenderPass = RenderPass.None;
+
+    graphic.addHiliteCommands(this, pass);
+
+    this._forcedRenderPass = prevPass;
+  }
+
   private shouldOmitBranch(branch: Branch): boolean {
     const anim = getAnimationBranchState(branch, this.target);
     return undefined !== anim && true === anim.omit;
   }
 
   private pushAndPopBranchForPass(pass: RenderPass, branch: Branch, func: () => void): void {
+    assert(!this.isDrawingLayers);
+
     if (this.shouldOmitBranch(branch))
       return;
 
@@ -316,20 +375,53 @@ export class RenderCommands {
       cmds.push(PopBranchCommand.instance);
   }
 
-  private pushAndPop(push: DrawCommand, pop: DrawCommand, func: () => void): void {
-    const emptyRenderPass = RenderPass.None === this._forcedRenderPass,
-      start = emptyRenderPass ? 0 : this._forcedRenderPass,
-      end = emptyRenderPass ? this._commands.length : start + 1;
+  private pushAndPop(push: PushCommand, pop: PopCommand, func: () => void): void {
+    if (this.isDrawingLayers) {
+      this._commands[RenderPass.Hilite].push(push);
+      this._layers.pushAndPop(push, pop, func);
 
-    for (let i = start; i < end; i++)
-      this._commands[i].push(push);
+      const cmds = this._commands[RenderPass.Hilite];
+      if (0 < cmds.length && cmds[cmds.length - 1] === push)
+        cmds.pop();
+      else
+        cmds.push(pop);
+
+      return;
+    }
+
+    if (RenderPass.None === this._forcedRenderPass) {
+      // Need to make sure the push command precedes any subsequent commands added to any render pass.
+      for (const cmds of this._commands)
+        cmds.push(push);
+    } else {
+      // May want to add hilite commands as well - add the push command to that pass.
+      this._commands[this._forcedRenderPass].push(push);
+      this._commands[RenderPass.Hilite].push(push);
+    }
 
     func();
 
-    for (let i = start; i < end; i++) {
-      const cmds = this._commands[i];
-      assert(0 < cmds.length);
-      if (0 < cmds.length && cmds[cmds.length - 1] === push)
+    // Remove push command from any passes that didn't receive any commands; add the pop command to any passes that did.
+    if (RenderPass.None === this._forcedRenderPass) {
+      for (const cmds of this._commands) {
+        assert(0 < cmds.length);
+        if (0 < cmds.length && cmds[cmds.length - 1] === push)
+          cmds.pop();
+        else
+        cmds.push(pop);
+      }
+    } else {
+      assert(0 < this._commands[this._forcedRenderPass].length);
+      assert(0 < this._commands[RenderPass.Hilite].length);
+
+      let cmds = this._commands[this._forcedRenderPass];
+      if (cmds[cmds.length - 1] === push)
+        cmds.pop();
+      else
+        cmds.push(pop);
+
+      cmds = this._commands[RenderPass.Hilite];
+      if (cmds[cmds.length - 1] === push)
         cmds.pop();
       else
         cmds.push(pop);
@@ -349,27 +441,42 @@ export class RenderCommands {
     this._stack.pop();
   }
 
+  public pushAndPopState(state: BranchState, func: () => void): void {
+    this._stack.pushState(state);
+    this.pushAndPop(new PushStateCommand(state), PopBranchCommand.instance, func);
+    this._stack.pop();
+  }
+
   public clear(): void {
     assert(this._batchState.isEmpty);
     this._clearCommands();
   }
+
   private _clearCommands(): void {
     this._commands.forEach((cmds: DrawCommands) => { cmds.splice(0); });
+    this._layers.clear();
   }
 
-  public initForPickOverlays(overlays: GraphicList): void {
+  public initForPickOverlays(sceneOverlays: GraphicList, overlayDecorations: GraphicList | undefined): void {
     this._clearCommands();
 
     this._addTranslucentAsOpaque = true;
-    this._stack.pushState(this.target.decorationState);
 
-    for (const overlay of overlays) {
-      const gf = overlay as Graphic;
-      if (gf.isPickable)
-        gf.addCommands(this);
+    for (const sceneGf of sceneOverlays)
+      (sceneGf as Graphic).addCommands(this);
+
+    if (undefined !== overlayDecorations) {
+      this._stack.pushState(this.target.decorationsState);
+
+      for (const overlay of overlayDecorations) {
+        const gf = overlay as Graphic;
+        if (gf.isPickable)
+          gf.addCommands(this);
+      }
+
+      this._stack.pop();
     }
 
-    this._stack.pop();
     this._addTranslucentAsOpaque = false;
   }
 
@@ -388,6 +495,8 @@ export class RenderCommands {
 
       this._addTranslucentAsOpaque = false;
       this.setupClassificationByVolume();
+      this._layers.outputCommands();
+
       return;
     }
 
@@ -413,19 +522,20 @@ export class RenderCommands {
         this.addWorldDecorations(dec.world);
       }
 
-      this._stack.pushState(this.target.decorationState);
-      if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length) {
-        this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
-      }
+      this.pushAndPopState(this.target.decorationsState, () => {
+        if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length) {
+          this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
+        }
 
-      if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length) {
-        this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
-      }
-
-      this._stack.pop();
+        if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length) {
+          this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
+        }
+      });
     }
 
     this.setupClassificationByVolume();
+
+    this._layers.outputCommands();
   }
 
   public addPrimitive(prim: Primitive): void {

@@ -339,7 +339,9 @@ internal;SavedClipCache
 alpha;SavedClipEntry
 internal;SavedClipProps
 internal;SavedState
+internal;Scene
 internal;SceneContext 
+internal;SceneVolumeClassifier
 public;ScreenViewport 
 public;ScrollViewTool 
 public;SectionDrawingModelState 

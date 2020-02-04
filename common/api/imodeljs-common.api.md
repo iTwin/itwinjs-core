@@ -4178,6 +4178,8 @@ export interface PrimaryTileTreeId {
     // (undocumented)
     edgesRequired: boolean;
     // (undocumented)
+    enforceDisplayPriority?: boolean;
+    // (undocumented)
     type: BatchType.Primary;
 }
 
