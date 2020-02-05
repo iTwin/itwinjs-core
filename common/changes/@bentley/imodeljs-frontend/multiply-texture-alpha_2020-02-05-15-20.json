@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Overriding transparency of a textured surface or raster text multiplies the texture alpha by the override rather than replacing it.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
