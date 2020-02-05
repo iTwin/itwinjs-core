@@ -80,7 +80,7 @@
     "@bentley/electron-manager": "1.12.0-dev.20",
     "@bentley/express-server": "1.12.0-dev.20",
     "@bentley/geometry-core": "1.12.0-dev.20",
-    "@bentley/icons-generic-webfont": "^0.0.43",
+    "@bentley/icons-generic-webfont": "^1.0.0",
     "@bentley/imodeljs-backend": "1.12.0-dev.20",
     "@bentley/imodeljs-clients": "1.12.0-dev.20",
     "@bentley/imodeljs-clients-backend": "1.12.0-dev.20",

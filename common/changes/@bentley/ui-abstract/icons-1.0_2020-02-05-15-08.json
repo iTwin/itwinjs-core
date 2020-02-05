@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Upgraded icons-generic-webfont to ^1.0.0",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "dan.east@bentley.com"
+}

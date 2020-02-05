@@ -65,7 +65,7 @@
   ],
   "devDependencies": {
     "@bentley/build-tools": "1.12.0-dev.20",
-    "@bentley/icons-generic-webfont": "^0.0.43",
+    "@bentley/icons-generic-webfont": "^1.0.0",
     "@bentley/ui-core": "1.12.0-dev.20",
     "@bentley/webpack-tools": "1.12.0-dev.20",
     "@testing-library/react": "^8.0.1",
