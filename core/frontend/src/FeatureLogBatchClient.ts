@@ -14,7 +14,7 @@ const loggerCategory: string = ClientsLoggerCategory.UlasClient;
  * Options for FeatureLogBatchClient
  * *See also
  *  - [[FeatureLogBatchClient]]
- * @internal
+ * @alpha
  */
 export interface FeatureLogBatchOptions {
   maxBatchInterval: number; // maximum time between batched submissions
@@ -25,7 +25,7 @@ export interface FeatureLogBatchOptions {
  * Wraps UlasClient for processing batched FeatureLogEntries
  * *See also
  *  - [[FeatureLogEntry]], [[UlasClient]]
- * @internal
+ * @alpha
  */
 export class FeatureLogBatchClient {
   private _queue: FeatureLogEntry[] = [];

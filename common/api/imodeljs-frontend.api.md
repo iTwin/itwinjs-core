@@ -3168,6 +3168,22 @@ export interface ExtentLimits {
 // @public
 export function extractImageSourceDimensions(source: ImageSource): Promise<Point2d>;
 
+// @alpha
+export class FeatureLogBatchClient {
+    constructor(_getRequestContext: () => Promise<AuthorizedClientRequestContext>, options?: Partial<FeatureLogBatchOptions>, _client?: UlasClient);
+    clearAutomaticBatchSubmission(reset?: boolean): void;
+    queueLog(...entries: FeatureLogEntry[]): Promise<void>;
+    setupAutomaticBatchSubmission(): void;
+    }
+
+// @alpha
+export interface FeatureLogBatchOptions {
+    // (undocumented)
+    maxBatchInterval: number;
+    // (undocumented)
+    maxBatchSize: number;
+}
+
 // @public
 export interface FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
@@ -3316,18 +3332,14 @@ export namespace FeatureSymbology {
         }
 }
 
-// @internal
-export class FeatureToggleClient {
-    evaluateFeature(featureKey: string, defaultValue?: LDFlagValue): LDFlagValue;
-    initialize(envKey?: string): Promise<void>;
-    isFeatureEnabled(featureKey: string, defaultValue?: boolean): boolean;
-    get ldClient(): LDClient;
-    protected _ldClient?: LDClient;
-    // (undocumented)
-    protected readonly _loggingCategory = FrontendLoggerCategory.FeatureToggle;
-    // (undocumented)
-    protected _offlineValue: boolean;
-    setUser(accessToken: AccessToken): Promise<void>;
+// @alpha
+export class FeatureTrackingManager {
+    constructor();
+    protected _client: FeatureLogBatchClient;
+    protected _hostFallbackName: string;
+    protected _hostName: string;
+    track(_iModelConnection: IModelConnection, _featureId: string, _featureName?: string): void;
+    protected _usageType: UsageType;
 }
 
 // @alpha
@@ -4179,6 +4191,7 @@ export class IModelApp {
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @internal
     static eventSourceOptions: EventSourceOptions;
+    // @internal
     static get features(): FeatureTrackingManager;
     // @internal
     static get featureToggles(): FeatureToggleClient;
@@ -4251,6 +4264,7 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: IAuthorizationClient;
+    // @internal
     features?: FeatureTrackingManager;
     // @internal
     featureToggles?: FeatureToggleClient;

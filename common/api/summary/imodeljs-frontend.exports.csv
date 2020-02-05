@@ -140,10 +140,12 @@ internal;class EventSourceManager
 internal;EventSourceOptions
 public;ExtentLimits
 public;extractImageSourceDimensions(source: ImageSource): Promise
+alpha;FeatureLogBatchClient
+alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 beta;FeatureOverrideType
 public;FeatureSymbology
-internal;FeatureToggleClient
+alpha;FeatureTrackingManager
 alpha;findAvailableRealityModels(projectid: string, modelCartographicRange?: CartographicRange | undefined): Promise
 alpha;findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
 public;FitViewTool 

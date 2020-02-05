@@ -107,7 +107,9 @@ export interface IModelAppOptions {
   pluginAdmin?: PluginAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
-  /** if present, supplies the [[FeatureTrackingManager]] for this session */
+  /** if present, supplies the [[FeatureTrackingManager]] for this session
+   * @internal
+   */
   features?: FeatureTrackingManager;
   /** if present, supplies the [[FeatureToggleClient]] for this session
    * @internal
@@ -244,7 +246,9 @@ export class IModelApp {
   public static get pluginAdmin() { return this._pluginAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
-  /** The [[FeatureTrackingManager]] for this session */
+  /** The [[FeatureTrackingManager]] for this session
+   * @internal
+   */
   public static get features() { return this._features; }
 
   /** The [[FeatureToggleClient]] for this session
