@@ -34,6 +34,7 @@ export class BackendDefaultsPlugin {
       "@bentley/imodeljs-native/loadNativePlatform.js",
       "dtrace-provider",
       "node-report/api",
+      "applicationinsights-native-metrics",
     ]).apply(compiler);
   }
 }
