@@ -557,7 +557,7 @@ export abstract class RenderSystem implements IDisposable {
   public enableDiagnostics(_enable: RenderDiagnostics): void { }
 
   /** @internal */
-  public get supportsLogZBuffer(): boolean { return true === this.options.logarithmicDepthBuffer; }
+  public get supportsLogZBuffer(): boolean { return false !== this.options.logarithmicDepthBuffer; }
 
   /** Obtain an object that can be used to control various debugging features. Returns `undefined` if debugging features are unavailable for this `RenderSystem`.
    * @beta
@@ -613,7 +613,7 @@ export namespace RenderSystem {
 
     /** If the view frustum is sufficiently large, and the EXT_frag_depth WebGL extension is available, use a logarithmic depth buffer to improve depth buffer resolution. Framerate may degrade to an extent while the logarithmic depth buffer is in use. If this option is disabled, or the extension is not supported, the near and far planes of very large view frustums will instead be moved to reduce the draw distance.
      *
-     * Default value: false
+     * Default value: true
      *
      * @beta
      */

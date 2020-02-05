@@ -1298,9 +1298,9 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export const enum CurrentImdlVersion {
-    Combined = 524288,
+    Combined = 524290,
     Major = 8,
-    Minor = 0
+    Minor = 2
 }
 
 // @beta
@@ -5971,6 +5971,8 @@ export interface TileOptions {
     readonly enableImprovedElision: boolean;
     // (undocumented)
     readonly enableInstancing: boolean;
+    // (undocumented)
+    readonly ignoreAreaPatterns: boolean;
     // (undocumented)
     readonly maximumMajorTileFormatVersion: number;
     // (undocumented)

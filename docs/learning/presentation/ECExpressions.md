@@ -229,7 +229,9 @@ Symbol                    | Type    | Value
 `Label`                   | string  | Node label
 `Description`             | string  | Node description
 `ClassName`               | string  | ECClass name if its an EC-related node
+`ClassLabel`              | string  | ECClass display label if its an EC-related node
 `SchemaName`              | string  | ECSchema name if its an EC-related node
+`SchemaLabel`             | string  | ECSchema display label if its an EC-related node
 `SchemaMajorVersion`      | number  | ECSchema major version if its an EC-related node
 `SchemaMinorVersion`      | number  | ECSchema minor version if its an EC-related node
 `InstanceId`              | number  | ECInstance ID if its an ECInstance node

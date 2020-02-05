@@ -63,6 +63,7 @@ export interface TileOptions {
   readonly maximumMajorTileFormatVersion: number;
   readonly enableInstancing: boolean;
   readonly enableImprovedElision: boolean;
+  readonly ignoreAreaPatterns: boolean;
   readonly useProjectExtents: boolean;
   readonly disableMagnification: boolean;
 }
@@ -186,6 +187,7 @@ const enum ContentFlags {
   None = 0,
   AllowInstancing = 1 << 0,
   ImprovedElision = 1 << 1,
+  IgnoreAreaPatterns = 1 << 2,
 }
 
 /** Describes the components of a tile's content Id.
@@ -311,6 +313,9 @@ class ContentIdV4Provider extends ContentIdProvider {
     let flags = (allowInstancing && options.enableInstancing) ? ContentFlags.AllowInstancing : ContentFlags.None;
     if (options.enableImprovedElision)
       flags = flags | ContentFlags.ImprovedElision;
+
+    if (options.ignoreAreaPatterns)
+      flags = flags | ContentFlags.IgnoreAreaPatterns;
 
     this._prefix = this._separator + flags.toString(16) + this._separator;
   }
