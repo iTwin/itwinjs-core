@@ -249,24 +249,27 @@ class PropertyDataBuilder {
 
     const includeField = (category: CategoryDescription, field: Field) => {
       if (field.type.valueFormat !== PresentationPropertyValueFormat.Primitive && !this._includeWithCompositeValues)
-        return;
+        return false;
 
       if (!categoryFields.hasOwnProperty(category.name)) {
         categories.push(category);
         categoryFields[category.name] = new Array<Field>();
       }
       categoryFields[category.name].push(field);
+      return true;
     };
     const visitField = (category: CategoryDescription, field: Field, isNested: boolean) => {
-      if (field.isNestedContentField()) {
+      if (category !== favoritesCategory && field.isNestedContentField()) {
         // visit all nested fields
-        visitFields(field.nestedFields, true);
+        const includedNestedFieldsCount = visitFields(field.nestedFields, true);
+        if (includedNestedFieldsCount === field.nestedFields.length)
+          return true;
       }
       if (isNested) {
         if (field.category.name === "") {
           // don't include nested fields which have no category - they
           // will be included as part of the nesting field
-          return;
+          return false;
         }
         // if we're including a nested field as a top-level field, we have to exclude
         // it from it's nesting field
@@ -274,9 +277,10 @@ class PropertyDataBuilder {
         hiddenFieldPaths.push(path);
         hiddenAncestorsFieldPaths.push(path);
       }
-      includeField(category, field);
+      return includeField(category, field);
     };
     const visitFields = (fields: Field[], isNested: boolean) => {
+      let includedFieldsCount = 0;
       fields.forEach((field) => {
         if (favoritesCategory.name !== field.category.name && this._callbacks.isFavorite(field)) {
           // if the field is not already in favorites group and we want to make it favorite, visit it
@@ -285,8 +289,10 @@ class PropertyDataBuilder {
           hiddenAncestorsFieldPaths.push(createFieldPath(field));
         }
         // show field as a top-level field even if it's nested if it has a valid category
-        visitField(field.category, field, isNested);
+        if (visitField(field.category, field, isNested))
+          ++includedFieldsCount;
       });
+      return includedFieldsCount;
     };
     visitFields(this._descriptor.fields, false);
 
@@ -344,10 +350,6 @@ class PropertyDataBuilder {
             }
             return;
           }
-        }
-        if (record.value.valueFormat === PropertyValueFormat.Struct && Object.keys(record.value.members).length === 0) {
-          // don't include struct properties with no members
-          return;
         }
         addRecord(field, record);
       };

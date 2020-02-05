@@ -486,8 +486,8 @@
       "type": "node",
       "request": "launch",
       "name": "[Presentation] Tests: Full Stack",
-      "program": "${workspaceFolder}/test-apps/presentation-full-stack-tests/node_modules/mocha/bin/_mocha",
-      "cwd": "${workspaceFolder}/test-apps/presentation-full-stack-tests",
+      "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/full-stack-tests/presentation",
       "args": [
         "--opts",
         "mocha.opts",

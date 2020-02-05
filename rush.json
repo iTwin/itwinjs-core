@@ -370,7 +370,7 @@
     },
     {
       "packageName": "presentation-full-stack-tests",
-      "projectFolder": "test-apps/presentation-full-stack-tests",
+      "projectFolder": "full-stack-tests/presentation",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
