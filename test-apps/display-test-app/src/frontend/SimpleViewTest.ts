@@ -17,6 +17,7 @@ import {
   NativeAppRpcInterface,
   OidcDesktopClientConfiguration,
   RpcConfiguration,
+  RpcInterfaceDefinition,
   RpcOperation,
   SnapshotIModelRpcInterface,
   TileContentIdentifier,
@@ -180,11 +181,13 @@ async function main() {
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
-  const rpcInterfaces = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface, NativeAppRpcInterface];
+  const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
+    rpcInterfaces.push(NativeAppRpcInterface);
     rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
+    rpcInterfaces.push(NativeAppRpcInterface);
     rpcConfiguration = MobileRpcManager.initializeClient(rpcInterfaces);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";

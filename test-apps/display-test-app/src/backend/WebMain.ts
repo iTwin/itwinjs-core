@@ -8,16 +8,11 @@ import * as https from "https";
 import * as bodyParser from "body-parser";
 import * as fs from "fs";
 
-import { BentleyCloudRpcManager, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { Logger } from "@bentley/bentleyjs-core";
-import { initializeBackend } from "./backend";
-import SVTRpcInterface from "../common/SVTRpcInterface";
+import { getRpcInterfaces, initializeBackend } from "./backend";
 
 // tslint:disable:no-console
-
-export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
-}
 
 function setupStandaloneConfiguration() {
   const filename = process.env.SVT_STANDALONE_FILENAME;
@@ -59,7 +54,7 @@ if (serverConfig === undefined) {
 Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 
 // Set up the ability to serve the supported rpcInterfaces via web requests
-const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces());
+const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces("browser"));
 
 const app = express();
 app.use(bodyParser.text());

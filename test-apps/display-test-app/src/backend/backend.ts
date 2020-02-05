@@ -9,6 +9,7 @@ import {
   IModelTileRpcInterface,
   MobileRpcConfiguration,
   NativeAppRpcInterface,
+  RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import * as fs from "fs";
@@ -24,8 +25,12 @@ import { FakeTileCacheService } from "./FakeTileCacheService";
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
-export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface, NativeAppRpcInterface];
+export function getRpcInterfaces(appType: "native" | "browser"): RpcInterfaceDefinition[] {
+  const intfcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
+  if ("native" === appType)
+    intfcs.push(NativeAppRpcInterface);
+
+  return intfcs;
 }
 
 function setupStandaloneConfiguration(): SVTConfiguration {

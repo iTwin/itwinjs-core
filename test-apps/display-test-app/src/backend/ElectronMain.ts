@@ -44,7 +44,7 @@ const maximizeWindow = (undefined === process.env.SVT_NO_MAXIMIZE_WINDOW);
   });
 
   // Initialize application gateway configuration for the backend
-  ElectronRpcManager.initializeImpl({}, getRpcInterfaces());
+  ElectronRpcManager.initializeImpl({}, getRpcInterfaces("native"));
 
   if (manager.mainWindow) {
     if (maximizeWindow) {

@@ -512,7 +512,7 @@ class Admin extends TileAdmin {
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
   private _canceledRequests?: Map<IModelToken, Map<string, Set<string>>>;
-  private readonly _cancelBackendTileRequests: boolean;
+  private _cancelBackendTileRequests: boolean;
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
@@ -807,8 +807,12 @@ class Admin extends TileAdmin {
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
-    if (this._cancelBackendTileRequests && RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface))
-      this._canceledRequests = new Map<IModelToken, Map<string, Set<string>>>();
+    if (this._cancelBackendTileRequests) {
+      if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface))
+        this._cancelBackendTileRequests = false;
+      else
+        this._canceledRequests = new Map<IModelToken, Map<string, Set<string>>>();
+    }
   }
 
   public onTileFailed(_tile: Tile) { ++this._totalFailed; }
