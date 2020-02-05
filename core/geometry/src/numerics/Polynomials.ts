@@ -36,6 +36,7 @@ export class Degree2PowerPolynomial {
 
   /**
    * * Return 2 duplicate roots in double root case.
+   * * The solutions are always in algebraic order.
    * @returns 0, 1, or 2 solutions of the usual quadratic (a*x*x + b * x + c = 0)
    */
   public static solveQuadratic(a: number, b: number, c: number): number[] | undefined {

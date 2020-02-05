@@ -19,14 +19,19 @@ import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 /**
- * A MomentData structure carries data used in calculation of moments of inertia.
- * * origin = local origin used as moments are summed.
- * * sums = array of summed moments.
- *   * The [i,j] entry of the sums is a summed or integrated moment for product of axis i and j.
- *      * axes 0,1,2 are x,y,z
+ * A MomentData structure exists in several levels:
+ * * First level: as a carrier of sums of inertial products that determine moments.
+ *   * origin = local origin used as moments are summed.
+ *   * sums = array of summed moments.
+ *     * The [i,j] entry of the sums is a summed or integrated moment for product of axis i and j.
+ *       * axes 0,1,2 are x,y,z
  *         * e.g. entry [0,1] is summed product xy
- *      * axis 3 is "w", which is 1 in sums.
+ *       * axis 3 is "w", which is 1 in sums.
  *         * e.g. entry 03 is summed x
+ *    * In this level,
+ *        * the `absoluteQuantity` member is undefined.
+ *        * the `localToWorldMap` and `radiiOfGyration` are created by have undefined contents.
+ *  * Second level: after a call to inertiaProductsToPrincipalAxes, the `localToWorldMap`, `absoluteQuantity` and `radiiOfGyration` are filled in.
  * @public
  */
 export class MomentData {
@@ -90,12 +95,19 @@ export class MomentData {
   /** radii of gyration (square roots of principal second moments)
    */
   public radiusOfGyration: Vector3d;
+  /** principal quantity (e.g. length, area, or volume).  This is undefined in raw moments, and becomes defined by
+   *
+   */
+  public absoluteQuantity?: number;
+
   private constructor() {
     this.origin = Point3d.createZero();
     this.sums = Matrix4d.createZero();
     this.localToWorldMap = Transform.createIdentity();
     this.radiusOfGyration = Vector3d.create();
     this.needOrigin = false;
+    this.absoluteQuantity = 0.1;   // so optimizer sees its type
+    this.absoluteQuantity = undefined;
   }
   /** Create moments with optional origin.
    * * origin and needOrigin are quirky.
@@ -172,15 +184,23 @@ export class MomentData {
     if (!moments.shiftOriginAndSumsToCentroidOfSums())
       return undefined;
     const products = moments.sums.matrixPart();
+    const w = moments.sums.weight();
+    if (w < 0.0)
+      products.scaleColumnsInPlace(-1, -1, -1);
     const tensor = MomentData.momentTensorFromInertiaProducts(products);
     const moment2 = Vector3d.create();
     const axisVectors = Matrix3d.createZero();
     tensor.fastSymmetricEigenvalues(axisVectors, moment2);
+    if (moment2.x < 0.0)
+      return undefined;
     MomentData.sortColumnsForIncreasingMoments(axisVectors, moment2);
+    if (w < 0.0)
+      axisVectors.scaleColumnsInPlace(1, -1, -1);
     moments.localToWorldMap = Transform.createOriginAndMatrix(moments.origin, axisVectors);
     moments.radiusOfGyration.set(
-      Math.sqrt(moment2.x), Math.sqrt(moment2.y), Math.sqrt(moment2.z));
-    moments.radiusOfGyration.scaleInPlace(1.0 / Math.sqrt(moments.sums.weight()));
+      Math.sqrt(Math.abs(moment2.x)), Math.sqrt(Math.abs(moment2.y)), Math.sqrt(Math.abs(moment2.z)));
+    moments.radiusOfGyration.scaleInPlace(1.0 / Math.sqrt(Math.abs(w)));
+    moments.absoluteQuantity = Math.abs (w);
     return moments;
   }
   /**
@@ -199,7 +219,7 @@ export class MomentData {
    */
   public static areEquivalentPrincipalAxes(dataA: MomentData | undefined, dataB: MomentData | undefined): boolean {
     if (dataA && dataB
-      && Geometry.isSameCoordinate(dataA.quantitySum, dataB.quantitySum))  {  // um.. need different tolerance for area, volume?)
+      && Geometry.isSameCoordinate(dataA.quantitySum, dataB.quantitySum)) {  // um.. need different tolerance for area, volume?)
       if (dataA.localToWorldMap.getOrigin().isAlmostEqual(dataB.localToWorldMap.getOrigin())
         && dataA.radiusOfGyration.isAlmostEqual(dataB.radiusOfGyration)) {
         if (Geometry.isSameCoordinate(dataA.radiusOfGyration.x, dataA.radiusOfGyration.y)) {

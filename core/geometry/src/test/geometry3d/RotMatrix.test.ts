@@ -12,6 +12,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 // import { prettyPrint } from "./testFunctions";
 import { expect } from "chai";
+import { XYAndZ } from "../../geometry3d/XYZProps";
 /* tslint:disable:no-console */
 // cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen dgnplatform VTAT
 
@@ -735,7 +736,7 @@ describe("Matrix3d.ViewConstructions", () => {
 
       const matrixATT = matrixAT.clone();
       matrixATT.transpose(matrixATT);
-      ck.testMatrix3d(matrixATT, matrixA, "inplace transpose of transpose is original");
+      ck.testMatrix3d(matrixATT, matrixA, "in place transpose of transpose is original");
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -798,7 +799,44 @@ describe("InverseVariants", () => {
     ck.testUndefined(matrixA.multiplyMatrixMatrixInverse(matrixB), "singular matrix trapped at multiplication");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("SnapToCube", () => {
+    const ck = new Checker();
+    const points = Sample.createPoint3dLattice(-1, 1, 1);
+    ck.testExactNumber(points.length, 27, "Expect 27 lattice points");
+    const a = 1.0e-8;
+    const fuzz = [Vector3d.create(a, 0, 0), Vector3d.create(0, a, 0), Vector3d.create(0, 0, a), Vector3d.create(a, a, 0), Vector3d.create(0, a, a), Vector3d.create(a, 0, 0), Vector3d.create(a, a, a)];
+    const bigShift = Vector3d.create(0.1, 0.2, -0.3);
+    const smallTol = 1.0e-14;
+    const bigTol = 1.0e-6;
+    // All lattice points
+    for (const point of points) {
+      const p = Vector3d.create(point.x, point.y, point.z);
+      if (p.magnitude() !== 0.0) {
+        const q = snapVectorToCubeFeatures(p, bigTol);
+        ck.testLE(p.distance(q), smallTol, "minimal snap on lattice points");
+        for (const s of [1, -1]) {
+          for (const shiftVector of fuzz) {
+            const p1 = p.plusScaled(shiftVector, s);
+            const q1 = snapVectorToCubeFeatures(p1);
+            if (!ck.testLE(q1.angleTo(p).radians, smallTol, "snap on lattice fuzz points"))
+              snapVectorToCubeFeatures(p1);
+            else {
+              const matrix3 = Matrix3d.createRigidViewAxesZTowardsEye(q1.x, q1.y, q1.z);
+              const z3 = matrix3.columnZ();
+              ck.testLE(z3.angleTo(p).radians, bigTol, "matrix Z near request");
+            }
+          }
+        }
+        // make sure a big shift (not aligned with any lattice direction) is left alone
+        const p2 = p.plus(bigShift);
+        const q2 = snapVectorToCubeFeatures(p2);
+        if (!ck.testLE(q2.angleTo(p2).radians, smallTol, "non-lattice point is left alone."))
+          snapVectorToCubeFeatures(p2);
 
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
 
 function checkInverseRelationship(ck: Checker, name: string, matrix: Matrix3d | undefined, expectedInverseState: InverseMatrixState | undefined) {
@@ -966,3 +1004,58 @@ describe("MatrixProductAliasing", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
+function correctSmallNumber(value: number, tolerance: number): number {
+  return Math.abs(value) < tolerance ? 0 : value;
+}
+/**
+ * Snap coordinates of a vector to zero and to each other so that the vector prefers to be
+ * * perpendicular to a face of the unit cube.
+ * * or pass through a nearby vertex or edge of the unit cube.
+ * @param zVector existing z vector.
+ * @param zTolerance tolerance to determine if a z vector component is close to zero or 1.
+ */
+function snapVectorToCubeFeatures(zVector: XYAndZ, tolerance: number = 1.0e-6): Vector3d {
+  const x = correctSmallNumber(zVector.x, tolerance);
+  let y = correctSmallNumber(zVector.y, tolerance);
+  let z = correctSmallNumber(zVector.z, tolerance);
+
+  const xx = Math.abs(x);
+  const yy = Math.abs(y);
+  const zz = Math.abs(z);
+
+  // adjust any adjacent pair of near equal values to the first.
+  if (Geometry.isSameCoordinate(xx, yy, tolerance)) {
+    y = Geometry.split3WaySign(y, -xx, xx, xx);
+  }
+  if (Geometry.isSameCoordinate(yy, zz, tolerance)) {
+    z = Geometry.split3WaySign(z, -yy, yy, yy);
+  }
+  if (Geometry.isSameCoordinate(xx, zz, tolerance)) {
+    z = Geometry.split3WaySign(z, -xx, xx, xx);
+  }
+  return Vector3d.create(x, y, z);
+}
+/*
+ * Adjust a worldToView matrix to favor both
+ * * direct view at faces, edges, and corners of a view cube.
+ * * heads up
+ * @param matrix candidate matrix
+ * @param tolerance tolerance for cleaning up fuzz.  The default (1.0e-6) is appropriate if very dirty viewing operations are expected.
+ * @param result optional result.
+ function snapWorldToViewMatrixToCubeFeatures(worldToView: Matrix3d, tolerance: number = 1.0e-6, result?: Matrix3d): Matrix3d {
+  const oldZ = worldToView.rowZ();
+  const newZ = snapVectorToCubeFeatures(oldZ, tolerance);
+  // If newZ is true up or down, it will have true 0 for x and y.
+  // special case this to take x direction from the input.
+  if (newZ.x === 0.0 && newZ.y === 0) {
+    const perpVector = worldToView.rowX();
+    result = Matrix3d.createRigidFromColumns(newZ, perpVector, AxisOrder.ZXY, result)!;
+  } else {
+    result = Matrix3d.createRigidViewAxesZTowardsEye(newZ.x, newZ.y, newZ.z, result);
+  }
+  if (result)
+    result.transposeInPlace();
+  return result;
+}
+*/

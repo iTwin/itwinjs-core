@@ -51,6 +51,10 @@ Access to optional [ViewDefinition]($backend) and [ViewState]($frontend) propert
  * `local` image of a world point is in the coordinate system of a unit sphere.
    * The point is (inside,on,outside) the ellipsoid if its local point magnitude (distance from local origin) is respectively (less than, equal to, greater than) one.
 * New instance method:  `ellipsoid.silhouette (eyePoint:Point4d): Arc3d | undefined`
+* New instance methods to implement the `Clipper` interface:
+   * `ellipsoid.isPointOnOrInside(point: Point3d): boolean`
+   * `ellipsoid.announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean`
+   * `ellipsoid.announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean`
 
 ### PolyfaceQuery
   * Existing static methods for area booleans of polygons have added (optional) argument to request triangulation of results.
@@ -74,7 +78,7 @@ Access to optional [ViewDefinition]($backend) and [ViewState]($frontend) propert
      * `Arc3d.create(center: Point3d | undefined, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d;`
      * `Arc3d.createCenterNormalRadius(center: Point3d | undefined, normal: Vector3d, radius: number, result?: Arc3d): Arc3d;`
    * `Arc3d.createScaledXYColumns(center: Point3d | undefined, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d;`
-   * In `myArc.extendRange(range, transform)`, compute exact (rather than sampled) range.
+   * in `myArc.extendRange(range, transform)`, compute exact (rather than sampled) range.
 
 ### Matrix3d
   * New instance method: `matrix.multiplyInverseXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d | undefined;`
@@ -83,18 +87,28 @@ Access to optional [ViewDefinition]($backend) and [ViewState]($frontend) propert
    * New instance method: `point4d.crossWeightedMinusPoint3d(other: Point3d, result?: Vector3d): Vector3d;`
    * New instance method: `point4d.realPointOrVector (): Point3d | Vector3d;`
 
+### Vector3d
+   * New static method: `Vector3d.dotProductAsXYAndZ(dataA: XYAndZ, dataB: XYAndZ): number`
+     * dot product between x,y,z components of `dataA` and `dataB`, even if strong typing (e.g. as Point3d) says they should not be able to act as vectors.
+
 ### Transform
    * New instance method:   `multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined;`
-
-### IModelSchemaLoader
-  * New utility class in @bentley/imodeljs-backend to retrieve full Schema information from an iModel.
-  * Requires the @bentley/ecschema-metadata package to be installed.  This package contains the EC Schema metadata classes which are the building blocks of the schema returned from the iModel.
-  * Contains two methods for Schema retrieval.
-    * `getSchema` Gets a Schema by name from the iModel and throws an exception if it cannot be found or loaded.
-    * `tryGetSchema` Attempts to retrieve a Schema by name from the iModel.  Returns `undefined` if it cannot be found.
 
 ### Point3d and Vector3d
   * New instance method `data.setAt(index, value)` to address x,y,z by index (in `XYZ` base class)
 
 ### ConvexClipPlaneSet
-  * Allow undefined (zero) tilt in construction `ConvexClipPlaneSet.createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle?: Angle): ConvexClipPlaneSet | undefined`
+  * allow undefined (zero) tilt in construction `ConvexClipPlaneSet.createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle?: Angle): ConvexClipPlaneSet | undefined`
+
+### MomentData
+  * (BUG) in `MomentData.inertiaProductsToPrincipalAxes(rawMomentData.origin, rawMomentData.sums)`, when the computed quantity (e.g. area) is negative, adjust axes directions to have the loop be CCW in the `localToWorldMap` xy plane.
+  * New optional property `absoluteQuantity` is
+     * `undefined` in raw moment data
+     * the (positive) quantity sum in principal moment data (produced by call to `inertiaProductsToPrincipalAxes`)
+
+## IModelSchemaLoader
+  * New utility class in @bentley/imodeljs-backend to retrieve full Schema information from an iModel.
+  * Requires the @bentley/ecschema-metadata package to be installed.  This package contains the EC Schema metadata classes which are the building blocks of the schema returned from the iModel.
+  * Contains two methods for Schema retrieval.
+    * `getSchema` Gets a Schema by name from the iModel and throws an exception if it cannot be found or loaded.
+    * `tryGetSchema` Attempts to retrieve a Schema by name from the iModel.  Returns `undefined` if it cannot be found.

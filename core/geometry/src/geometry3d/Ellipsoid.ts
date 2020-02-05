@@ -11,7 +11,7 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
 
 import { Transform } from "./Transform";
 
-import { SphereImplicit, SineCosinePolynomial } from "../numerics/Polynomials";
+import { SphereImplicit, SineCosinePolynomial, TrigPolynomial } from "../numerics/Polynomials";
 import { Ray3d } from "./Ray3d";
 import { Matrix3d } from "./Matrix3d";
 import { Point2d } from "./Point2dVector2d";
@@ -30,6 +30,9 @@ import { TriDiagonalSystem } from "../numerics/TriDiagonalSystem";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { XYAndZ } from "./XYZProps";
 import { Point4d } from "../geometry4d/Point4d";
+import { Clipper } from "../clipping/ClipUtils";
+import { Order3Bezier } from "../numerics/BezierPolynomials";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 /**
  * For one component (x,y, or z) on the sphere
  *    f(theta,phi) = c + (u * cos(theta) + v * sin(theta)) * cos(phi) + w * sin(phi)
@@ -145,16 +148,18 @@ class EllipsoidComponentExtrema {
  *  * The sphere (u,v,w) multiply the x,y,z columns of the Ellipsoid transform.
  * @public
  */
-export class Ellipsoid {
+export class Ellipsoid implements Clipper {
   private _transform: Transform;
   private _unitVectorA: Vector3d;
   private _unitVectorB: Vector3d;
-
+  private _workPointA: Point3d;
+  private _workPointB: Point3d;
   private constructor(transform: Transform) {
     this._transform = transform;
     this._unitVectorA = Vector3d.create();
     this._unitVectorB = Vector3d.create();
-
+    this._workPointA = Point3d.create();
+    this._workPointB = Point3d.create();
   }
   /** Create with a clone (not capture) with given transform.
    * * If transform is undefined, create a unit sphere.
@@ -175,8 +180,12 @@ export class Ellipsoid {
    * @param radiusY multiplier to be applied to the y direction
    * @param radiusZ  multiplier to be applied to the z direction
    */
-  public static createCenterMatrixRadii(center: Point3d, axes: Matrix3d, radiusX: number, radiusY: number, radiusZ: number): Ellipsoid {
-    const scaledAxes = axes.scaleColumns(radiusX, radiusY, radiusZ);
+  public static createCenterMatrixRadii(center: Point3d, axes: Matrix3d | undefined, radiusX: number, radiusY: number, radiusZ: number): Ellipsoid {
+    let scaledAxes;
+    if (axes === undefined)
+      scaledAxes = Matrix3d.createScale(radiusX, radiusY, radiusZ)!;
+    else
+      scaledAxes = axes.scaleColumns(radiusX, radiusY, radiusZ);
     return new Ellipsoid(Transform.createOriginAndMatrix(center, scaledAxes));
   }
   /** Return a (REFERENCE TO) the transform from world space to the mapped sphere space.
@@ -375,9 +384,12 @@ export class Ellipsoid {
     const sweepAngle = this._unitVectorA.angleTo(this._unitVectorB);
     // the unit vectors (on unit sphere) are never 0, so this cannot fail.
     const matrix = Matrix3d.createRigidFromColumns(this._unitVectorA, this._unitVectorB, AxisOrder.XYZ)!;
-    const matrix1 = this._transform.matrix.multiplyMatrixMatrix(matrix);
-    return Arc3d.create(this._transform.getOrigin(), matrix1.columnX(), matrix1.columnY(),
-      AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+    if (matrix !== undefined) {
+      const matrix1 = this._transform.matrix.multiplyMatrixMatrix(matrix);
+      return Arc3d.create(this._transform.getOrigin(), matrix1.columnX(), matrix1.columnY(),
+        AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+    }
+    return undefined;
   }
   /**
    * See radiansPairToGreatArc, which does this computation with positions from `angleA` and `angleB` directly as radians
@@ -665,6 +677,97 @@ export class Ellipsoid {
     SphereImplicit.radiansToUnitSphereXYZ(thetaRadians, phiRadians, result.origin);
     result.direction.setFromPoint3d(result.origin);
     return result;
+  }
+  /** Implement the `isPointInOnOrOutside` test fom the `interface` */
+  public isPointOnOrInside(point: Point3d): boolean {
+    const localPoint = this._transform.multiplyInversePoint3d(point, this._workPointA);
+    if (localPoint !== undefined)
+      return localPoint.magnitude() <= 1.0;
+    return false;
+  }
+  /** Announce "in" portions of a line segment.  See `Clipper.announceClippedSegmentIntervals` */
+  public announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean {
+    const localA = this._transform.multiplyInversePoint3d(pointA, this._workPointA);
+    const localB = this._transform.multiplyInversePoint3d(pointB, this._workPointB);
+    if (localA && localB) {
+      const dotAA = Vector3d.dotProductAsXYAndZ(this._workPointA, this._workPointA);
+      const dotAB = Vector3d.dotProductAsXYAndZ(this._workPointA, this._workPointB);
+      const dotBB = Vector3d.dotProductAsXYAndZ(this._workPointB, this._workPointB);
+      const bezier = new Order3Bezier(dotAA, dotAB, dotBB);
+      const roots = bezier.roots(1.0, false);
+      if (roots !== undefined && roots.length === 2) {
+        // we know the roots are sorted.  The f0,f1 might not be ..
+        if (f0 < f1) {
+          if (roots[0] < f0)
+            roots[0] = f0;
+          if (f1 < roots[1])
+            roots[1] = f1;
+          if (roots[0] < roots[1]) {
+            if (announce)
+              announce(roots[0], roots[1]);
+            return true;
+          }
+        } else {
+          // f0,f1 are reversed. do the outputs in the same sense
+          if (roots[1] > f0)
+            roots[1] = f0;
+          if (roots[0] < f1)
+            roots[0] = f1;
+          if (roots[1] > roots[0]) {
+            if (announce)
+              announce(roots[1], roots[0]);
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+  /** Announce "in" portions of a line segment.  See `Clipper.announceClippedSegmentIntervals` */
+  public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    const arcData = arc.toVectors();
+    let numAnnounce = 0;
+    if (this._transform.multiplyInversePoint3d(arcData.center, arcData.center)
+      && this._transform.matrix.multiplyInverse(arcData.vector0, arcData.vector0)
+      && this._transform.matrix.multiplyInverse(arcData.vector90, arcData.vector90)) {
+      // in local coordinates the arc parameterization is   X = center + vector0 * cos(theta) + vector90 * sin(theta)
+      //  We want X DOT X === 1, viz
+      //    center DOT center + 2 * cos(theta) * center DOT vector0 + 2 * sin(theta) * center DOT vector90 + cos(theta) ^2 * vector0 DOT vector0 + sin (theta)^2 * vector90 DOT vector90 = 1
+      const cc = Vector3d.dotProductAsXYAndZ(arcData.center, arcData.center);
+      const cu = Vector3d.dotProductAsXYAndZ(arcData.center, arcData.vector0);
+      const cv = Vector3d.dotProductAsXYAndZ(arcData.center, arcData.vector90);
+      const uv = Vector3d.dotProductAsXYAndZ(arcData.vector0, arcData.vector90);
+      const uu = Vector3d.dotProductAsXYAndZ(arcData.vector0, arcData.vector0);
+      const vv = Vector3d.dotProductAsXYAndZ(arcData.vector90, arcData.vector90);
+      const intersectionRadians: number[] = [];
+
+      if (TrigPolynomial.solveUnitCircleImplicitQuadricIntersection(
+        uu, 2.0 * uv, vv,
+        2.0 * cu, 2.0 * cv, cc - 1.0,
+        intersectionRadians)) {
+        const fractions = [0.0, 1.0];
+        for (const radians of intersectionRadians) {
+          const fraction = arc.sweep.radiansToSignedPeriodicFraction(radians);
+          if (Geometry.isIn01(fraction))
+            fractions.push(fraction);
+        }
+        fractions.sort();
+        let f0, f1;
+        for (let i1 = 1; i1 < fractions.length; i1++) {
+          f0 = fractions[i1 - 1];
+          f1 = fractions[i1];
+          if (f1 > f0) {
+            const xyz = arc.fractionToPoint(Geometry.interpolate(fractions[i1 - 1], 0.5, fractions[i1]));
+            if (this.isPointOnOrInside(xyz)) {
+              if (announce)
+                announce(fractions[i1 - 1], fractions[i1], arc);
+              numAnnounce++;
+            }
+          }
+        }
+      }
+    }
+    return numAnnounce > 0;
   }
 }
 /**

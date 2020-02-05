@@ -27,6 +27,9 @@ import { Loop } from "../../curve/Loop";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { Point4d } from "../../geometry4d/Point4d";
+import { AnnounceNumberNumberCurvePrimitive, AnnounceNumberNumber, CurvePrimitive } from "../../curve/CurvePrimitive";
+import { Segment1d } from "../../geometry3d/Segment1d";
+import { Arc3d } from "../../curve/Arc3d";
 /* tslint:disable:no-console */
 
 describe("Ellipsoid", () => {
@@ -690,6 +693,18 @@ describe("Ellipsoid", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+  it("DegenerateGreatArc", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix());
+    // const pointA = ellipsoid.localToWorld({ x: 0.2, y: 0.4, z: 0.5 });
+    const angles = LongitudeLatitudeNumber.createDegrees(10, 20);
+    const section = ellipsoid.anglePairToGreatArc(angles, angles);
+    ck.testUndefined(section, "confirm great arc failure for identical points");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "DegenerateGreatArc");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("PathsOnEllipsoid", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -804,6 +819,117 @@ describe("Ellipsoid", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "SilhouetteA");
   });
+  it("SegmentClip", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const matrix = Matrix3d.createRowValues(
+      2230955.696607988, 4218074.856581404, 4217984.23465426,
+      -5853438.842941238, 635312.5558238369, 2444173.6696791253,
+      1200293.8548970034, -4741817.943265299, 4079571.948578869);
+
+    const ellipsoid = Ellipsoid.create(matrix);
+    const pointA = ellipsoid.localToWorld({ x: 0.2, y: 0.5, z: 0.6 });    // definitely inside !
+    const pointB = ellipsoid.localToWorld({ x: 1.2, y: 0.5, z: 0.6 });    // definitely outside !
+    GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0);
+    expect(ck.getNumErrors()).equals(0);
+    ck.testTrue(ellipsoid.isPointOnOrInside(pointA));
+    ck.testFalse(ellipsoid.isPointOnOrInside(pointB));
+
+    // const scale = pointA.distance(pointB);
+    const intervalStack: Segment1d[] = [];
+    const announceSegment: AnnounceNumberNumber = (f0: number, f1: number) => {
+      intervalStack.push(Segment1d.create(f0, f1));
+    };
+    ellipsoid.announceClippedSegmentIntervals(-4, 4, pointA, pointB, announceSegment);
+    ellipsoid.announceClippedSegmentIntervals(4, -4, pointA, pointB, announceSegment);
+    ellipsoid.announceClippedSegmentIntervals(0, 2, pointA, pointB, announceSegment);
+    ellipsoid.announceClippedSegmentIntervals(-2, 0, pointA, pointB, announceSegment);
+    const a0 = -0.3;
+    const a1 = 0.125;
+    const indexA0 = intervalStack.length;
+    ellipsoid.announceClippedSegmentIntervals(a0, a1, pointA, pointB, announceSegment);
+    ellipsoid.announceClippedSegmentIntervals(a1, a0, pointA, pointB, announceSegment);
+    ck.testTrue(Segment1d.create(a0, a1).isAlmostEqual(intervalStack[indexA0]));
+    ck.testTrue(Segment1d.create(a1, a0).isAlmostEqual(intervalStack[indexA0 + 1]));
+    if (ck.testExactNumber(6, intervalStack.length, "line generates one interval per call")) {
+      ck.testCoordinate(intervalStack[0].x0, intervalStack[1].x1);
+      ck.testCoordinate(intervalStack[1].x0, intervalStack[0].x1);
+    }
+    // and some outside-only cases ...
+    const length0 = intervalStack.length;
+    ellipsoid.announceClippedSegmentIntervals(1, 5, pointA, pointB, announceSegment);
+    ellipsoid.announceClippedSegmentIntervals(5, 1, pointA, pointB, announceSegment);
+    ellipsoid.announceClippedSegmentIntervals(-3, -5, pointA, pointB, announceSegment);
+    ellipsoid.announceClippedSegmentIntervals(-5, -3, pointA, pointB, announceSegment);
+    ck.testExactNumber(length0, intervalStack.length, "no hits on outside segments");
+
+    // GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "SilhouetteA");
+  });
+  it("ArcClip", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const y0 = 0;
+    const z0 = 0.0;
+    for (const ellipsoidRadius of [1.0, 2.0]) {
+      console.log("*** ellipsoid radius " + ellipsoidRadius);
+      for (const ellipsoid of [
+        Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 0, 0), undefined, ellipsoidRadius, ellipsoidRadius, ellipsoidRadius),
+        Ellipsoid.createCenterMatrixRadii(Point3d.create(3, 1, 0), undefined, ellipsoidRadius, ellipsoidRadius, 0.6 * ellipsoidRadius)]) {
+        GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0, z0);
+        const announceArc: AnnounceNumberNumberCurvePrimitive = (f0: number, f1: number, arc: CurvePrimitive) => {
+          GeometryCoreTestIO.captureGeometry(allGeometry, arc.clonePartialCurve(f0, f1), x0, y0, z0);
+          GeometryCoreTestIO.captureGeometry(allGeometry, arc.clonePartialCurve(f0, f1), x0, y0, z0 + 5);
+          ck.testTrue(ellipsoid.isPointOnOrInside(arc.fractionToPoint(Geometry.interpolate(f0, 0.3, f1))));
+        };
+
+        for (const arcA of [
+          Arc3d.createXY(Point3d.create(2, 0, 0), 1.1),
+          Arc3d.createXY(Point3d.create(2, 0, 0), 1.5),
+          Arc3d.createXY(Point3d.create(2, 0, 0), 1.2),
+          Arc3d.createXYZXYZXYZ(2, 3, 1, 3, 0, 0.24, 0.2, 3, 1),
+        ]) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcA, x0, y0);
+          ellipsoid.announceClippedArcIntervals(arcA, announceArc);
+        }
+      }
+      x0 += 10.0;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "ArcClip");
+  });
+  it("EarthClip", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    const y0 = 0;
+    const z0 = 0;
+    const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix())!;
+    GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0, z0);
+    const z1 = ellipsoid.transformRef.multiplyComponentXYZ(2, 0, 0, 1.5);
+
+    const point0 = ellipsoid.transformRef.multiplyXYZ(2, 0, 0);
+    const point1 = ellipsoid.transformRef.multiplyXYZ(0, -0.2, 1);
+    const point2 = ellipsoid.transformRef.multiplyXYZ(-1, -1, 1);
+    const arc012 = Arc3d.createCircularStartMiddleEnd(point0, point1, point2)!;
+    const segment01 = LineSegment3d.create(point0, point1);
+    const segment12 = LineSegment3d.create(point0, point2);
+    for (const curve of [segment01, segment12, arc012]) {
+      const announce: AnnounceNumberNumberCurvePrimitive = (f0: number, f1: number, cp: CurvePrimitive) => {
+        GeometryCoreTestIO.captureGeometry(allGeometry, cp.clonePartialCurve(f0, f1), x0, y0, z0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, cp.clonePartialCurve(f0, f1), x0, y0, z1);
+        ck.testTrue(ellipsoid.isPointOnOrInside(cp.fractionToPoint(Geometry.interpolate(f0, 0.3, f1))));
+      };
+
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0, y0);
+      curve.announceClipIntervals(ellipsoid, announce);
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthClip");
+  });
+
 });
 
 function tippedEarthEllipsoidMatrix(): Matrix3d {

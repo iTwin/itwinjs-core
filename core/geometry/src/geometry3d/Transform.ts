@@ -262,9 +262,12 @@ export class Transform implements BeJSONFunctions {
   /** Create a transform with the specified matrix. Compute an origin (different from the given fixedPoint)
    * so that the fixedPoint maps back to itself.
    */
-  public static createFixedPointAndMatrix(fixedPoint: XYAndZ, matrix: Matrix3d, result?: Transform): Transform {
-    const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
-    return Transform.createRefs(origin, matrix.clone(), result);
+  public static createFixedPointAndMatrix(fixedPoint: XYAndZ | undefined, matrix: Matrix3d, result?: Transform): Transform {
+    if (fixedPoint) {
+      const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
+      return Transform.createRefs(origin, matrix.clone(), result);
+    }
+    return Transform.createRefs(undefined, matrix.clone());
   }
   /** Create a transform with the specified matrix, acting on any `pointX `via
    * `pointY = matrix * (pointX - pointA) + pointB`

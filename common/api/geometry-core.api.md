@@ -1630,18 +1630,21 @@ export enum DuplicateFacetClusterSelector {
 }
 
 // @public
-export class Ellipsoid {
+export class Ellipsoid implements Clipper {
     anglePairToGreatArc(angleA: LongitudeLatitudeNumber, angleB: LongitudeLatitudeNumber, result?: Arc3d): Arc3d | undefined;
+    announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
+    announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     clone(): Ellipsoid;
     cloneTransformed(transform: Transform): Ellipsoid | undefined;
     constantLatitudeArc(longitudeSweep: AngleSweep, latitude: Angle, result?: Arc3d): Arc3d | undefined;
     constantLongitudeArc(longitude: Angle, latitudeSweep: AngleSweep, result?: Arc3d): Arc3d | undefined;
     static create(matrixOrTransform?: Transform | Matrix3d): Ellipsoid;
-    static createCenterMatrixRadii(center: Point3d, axes: Matrix3d, radiusX: number, radiusY: number, radiusZ: number): Ellipsoid;
+    static createCenterMatrixRadii(center: Point3d, axes: Matrix3d | undefined, radiusX: number, radiusY: number, radiusZ: number): Ellipsoid;
     createPlaneSection(plane: Plane3dByOriginAndUnitNormal): Arc3d | undefined;
     createSectionArcPointPointVectorInPlane(pointAnglesA: LongitudeLatitudeNumber, pointAnglesB: LongitudeLatitudeNumber, inPlaneVector: Vector3d, result?: Arc3d): Arc3d | undefined;
     intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number;
     isAlmostEqual(other: Ellipsoid): boolean;
+    isPointOnOrInside(point: Point3d): boolean;
     localToWorld(localPoint: XYAndZ, result?: Point3d): Point3d;
     otherEllipsoidAnglesToThisEllipsoidAngles(otherEllipsoid: Ellipsoid | undefined, otherAngles: LongitudeLatitudeNumber, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber | undefined;
     patchRangeStartEndRadians(theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d;
@@ -3101,6 +3104,7 @@ export type Matrix4dProps = Point4dProps[];
 
 // @public
 export class MomentData {
+    absoluteQuantity?: number;
     accumulateLineMomentsXYZ(pointA: Point3d, pointB: Point3d): void;
     accumulatePointMomentsFromOrigin(points: Point3d[]): void;
     accumulateProducts(other: MomentData, scale: number): void;
@@ -4852,7 +4856,7 @@ export class Transform implements BeJSONFunctions {
     clone(result?: Transform): Transform;
     cloneRigid(axisOrder?: AxisOrder): Transform | undefined;
     computeCachedInverse(useCached?: boolean): boolean;
-    static createFixedPointAndMatrix(fixedPoint: XYAndZ, matrix: Matrix3d, result?: Transform): Transform;
+    static createFixedPointAndMatrix(fixedPoint: XYAndZ | undefined, matrix: Matrix3d, result?: Transform): Transform;
     static createIdentity(result?: Transform): Transform;
     static createMatrixPickupPutdown(matrix: Matrix3d, pointA: Point3d, pointB: Point3d, result?: Transform): Transform;
     static createOriginAndMatrix(origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform): Transform;
@@ -5202,6 +5206,7 @@ export class Vector3d extends XYZ {
     crossProductXY(vectorB: Vector3d): number;
     crossProductXYZ(x: number, y: number, z: number, result?: Vector3d): Vector3d;
     dotProduct(vectorB: XYAndZ): number;
+    static dotProductAsXYAndZ(dataA: XYAndZ, dataB: XYAndZ): number;
     dotProductStart3dEnd4d(pointA: Point3d, pointB: Point4d): number;
     dotProductStartEnd(pointA: XYAndZ, pointB: XYAndZ): number;
     dotProductStartEndXYZ(pointA: Point3d, x: number, y: number, z: number): number;

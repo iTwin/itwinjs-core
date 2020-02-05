@@ -18,6 +18,10 @@ import { StrokeOptions } from "../../curve/StrokeOptions";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { RegionOps } from "../../curve/RegionOps";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { Arc3d } from "../../curve/Arc3d";
+import { Transform } from "../../geometry3d/Transform";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { AnyRegion } from "../../curve/CurveChain";
 
 /* tslint:disable:no-console variable-name */
 /** Add individual segments of  xyz array to parent. */
@@ -61,6 +65,58 @@ describe("MomentData", () => {
       x0 += shift;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "SimpleXYPointLoops");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("OrientedArea", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let y0 = 0;
+    const regions: AnyRegion[] = [];
+    const regionD0 = Loop.create(
+      LineString3d.create([[1, 4], [0, 4], [0, 0], [1, 0]]),
+      Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0), Point3d.create(3, 2), Point3d.create(1, 4))!);
+    const mirrorX = Transform.createFixedPointAndMatrix(undefined, Matrix3d.createScale(-1, 1, 1));
+    const regionD1 = regionD0.cloneTransformed(mirrorX)!;
+    regions.push(regionD0, regionD1 as Loop);
+    const skewFactor = 0.25;
+    const skew = Transform.createFixedPointAndMatrix(undefined, Matrix3d.createRowValues(1, skewFactor, 0, 0, 1, 0, 0, 0, 1));
+    regions.push(regionD0.cloneTransformed(skew)! as AnyRegion);
+    regions.push(regionD1.cloneTransformed(skew)! as AnyRegion);
+    const poles = new Float64Array([
+      1, 0, 0,
+      4, 0, 0,
+      4, 1, 0,
+      1, 1, 0,
+      2, 2, 0,
+      5, 2, 0,
+      6, 3, 0,
+      5, 4, 0,
+      1, 4, 0]);
+    for (const order of [3, 4, 5]) {
+      const regionE0 = Loop.create(
+        LineString3d.create([[1, 4], [0, 4], [0, 0], [1, 0]]),
+        BSplineCurve3d.createUniformKnots(poles, order)!);
+      regions.push(regionE0);
+    }
+    for (const r0 of regions) {
+      const r1 = r0.cloneTransformed(mirrorX)!;
+      const areas: Array<number | undefined> = [];
+      let x0 = 0;
+      for (const r of [r0, r1]) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, r, x0, y0);
+        const rawMomentData = RegionOps.computeXYAreaMoments(r as AnyRegion)!;
+        const principalMomentData = MomentData.inertiaProductsToPrincipalAxes(rawMomentData.origin, rawMomentData.sums)!;
+        ck.testDefined(principalMomentData.absoluteQuantity);
+        GeometryCoreTestIO.showMomentData(allGeometry, principalMomentData, false, x0, y0);
+        areas.push(principalMomentData.absoluteQuantity);
+        x0 += 20.0;
+      }
+      if (areas[0] !== undefined && areas[1] !== undefined)
+        ck.testCoordinate(areas[0], areas[1], "area before and after mirror.");
+      y0 += 10.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "OrientedArea");
     expect(ck.getNumErrors()).equals(0);
   });
 
