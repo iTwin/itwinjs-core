@@ -129,7 +129,7 @@ describe("CubeNavigationAid", () => {
       await waitForSpy(animationEnd);
 
       const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(1, 0, 0, 0, 0, 1, 0, -1, 0))).is.true;
+      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(-1, 0, 0, 0, 0, -1, 0, -1, 0))).is.true;
     });
     it("should change from top to left when arrow clicked", async () => {
       const animationEnd = sinon.fake();
@@ -146,7 +146,7 @@ describe("CubeNavigationAid", () => {
       await waitForSpy(animationEnd);
 
       const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(0, 0, 1, 0, 1, 0, -1, 0, 0))).is.true;
+      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(0, 1, 0, 0, 0, -1, -1, 0, 0))).is.true;
     });
     it("should change from top to right when arrow clicked", async () => {
       const animationEnd = sinon.fake();
@@ -163,7 +163,7 @@ describe("CubeNavigationAid", () => {
       await waitForSpy(animationEnd);
 
       const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
-      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(0, 0, -1, 0, 1, 0, 1, 0, 0))).is.true;
+      expect(mat2.matrix.isAlmostEqual(Matrix3d.createRowValues(0, -1, 0, 0, 0, -1, 1, 0, 0))).is.true;
     });
     it("should highlight hovered cell", async () => {
       const component = render(<CubeNavigationAid iModelConnection={connection.object} />);
