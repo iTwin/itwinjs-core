@@ -750,8 +750,27 @@ export namespace ConcurrencyControl {
       return { type: LockType.Model, objectId, level };
     }
 
+    public getLockByKey(type: LockType, objectId: string): LockProps | undefined {
+      // We don't expect a large number locks in a request. Therefore, simple brute-force search should be fine.
+      // If that proves to be false, we can implement a Map on the side to help with look-ups and de-duping.
+      for (const l of this.locks) {
+        if (l.type === type && l.objectId === objectId)
+          return l;
+      }
+      return undefined;
+    }
+
     public addLocks(locks: LockProps[]): this {
-      locks.forEach((lock) => this.locks.push(lock));
+      locks.forEach((lock) => {
+        const existingLock = this.getLockByKey(lock.type, lock.objectId);
+        if (existingLock === undefined)
+          this.locks.push(lock);
+        else {
+          if (existingLock.level < lock.level)
+            existingLock.level = lock.level;
+          // If the lock is already in the request at a higher level, stick with that. The user must delete and re-add to demote.
+        }
+      });
       return this;
     }
 

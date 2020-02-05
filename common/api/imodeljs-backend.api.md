@@ -906,6 +906,8 @@ export namespace ConcurrencyControl {
         // (undocumented)
         static getHubSchemaLock(concurrencyControl: ConcurrencyControl): Lock;
         // (undocumented)
+        getLockByKey(type: LockType, objectId: string): LockProps | undefined;
+        // (undocumented)
         static getModelLock(objectId: Id64String, level: LockLevel): LockProps;
         // (undocumented)
         get isEmpty(): boolean;

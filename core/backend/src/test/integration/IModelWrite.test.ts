@@ -354,6 +354,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+    const newCategoryCode2 = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory2");
     assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
     const subcat = new SubCategoryAppearance({ color: 0xff0000 });
     const newModelCode = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
@@ -365,16 +366,18 @@ describe("IModelWriteTest (#integration)", () => {
 
     // assert.isUndefined(rwIModel.models.tryGetModelProps())
     assert.isUndefined(rwIModel.elements.tryGetElement(newCategoryCode));
+    assert.isUndefined(rwIModel.elements.tryGetElement(newCategoryCode2));
 
     rwIModel.concurrencyControl.startBulkMode();
-    // rwIModel.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
 
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
 
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, newModelCode, true);
     SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, subcat);
+    SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode2.value!, subcat);
 
     assert.isTrue(undefined !== rwIModel.elements.getElement(newCategoryCode));
+    assert.isTrue(undefined !== rwIModel.elements.getElement(newCategoryCode2));
 
     assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
     await rwIModel.concurrencyControl.request(adminRequestContext);
