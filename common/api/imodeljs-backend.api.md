@@ -14,6 +14,7 @@ import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
 import { CategoryProps } from '@bentley/imodeljs-common';
@@ -3951,6 +3952,16 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // (undocumented)
     recipe?: RelatedElement;
+}
+
+// @internal (undocumented)
+export class UlasUtilities {
+    // (undocumented)
+    static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: string, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
+    // (undocumented)
+    static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: string): BentleyStatus;
+    // (undocumented)
+    static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus;
 }
 
 // @public
