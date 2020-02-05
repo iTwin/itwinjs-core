@@ -44,7 +44,7 @@ export const enum CurrentImdlVersion {
   /** The unsigned 16-bit minor version number. If the major version in the tile header is equal to CurrentVersion.Major, then this package can
    * read the tile content even if the minor version in the tile header is greater than this value, although some data may be skipped.
    */
-  Minor = 0,
+  Minor = 2,
   /** The unsigned 32-bit version number derived from the 16-bit major and minor version numbers. */
   Combined = (Major << 0x10) | Minor,
 }

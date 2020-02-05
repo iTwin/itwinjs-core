@@ -8608,6 +8608,8 @@ export abstract class TileAdmin {
     abstract getRequestsForViewport(vp: Viewport): Set<Tile> | undefined;
     // @internal
     abstract getViewportSet(vp: Viewport, vps?: TileAdmin.ViewportSet): TileAdmin.ViewportSet;
+    // @internal (undocumented)
+    abstract get ignoreAreaPatterns(): boolean;
     abstract get maxActiveRequests(): number;
     abstract set maxActiveRequests(max: number);
     // @internal (undocumented)
@@ -8659,6 +8661,7 @@ export namespace TileAdmin {
         disableMagnification?: boolean;
         enableImprovedElision?: boolean;
         enableInstancing?: boolean;
+        ignoreAreaPatterns?: boolean;
         maxActiveRequests?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;

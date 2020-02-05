@@ -619,34 +619,39 @@ export class PresentationManager {
     return this.getElementKey(imodel, parentRelProps.id);
   }
 
+  private getAssemblyKey(imodel: IModelDb, id: Id64String) {
+    const parentKey = this.getParentInstanceKey(imodel, id);
+    if (parentKey)
+      return parentKey;
+    return this.getElementKey(imodel, id);
+  }
+
   private computeAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const parentKeys = new KeySet();
     ids.forEach(skipTransients((id) => {
-      const parentKey = this.getParentInstanceKey(requestOptions.imodel, id);
-      if (parentKey) {
-        parentKeys.add(parentKey);
-      } else {
-        const elementKey = this.getElementKey(requestOptions.imodel, id);
-        if (elementKey)
-          parentKeys.add(elementKey);
-      }
+      const key = this.getAssemblyKey(requestOptions.imodel, id);
+      if (key)
+        parentKeys.add(key);
     }));
     return parentKeys;
+  }
+
+  private getTopAssemblyKey(imodel: IModelDb, id: Id64String) {
+    let currKey: InstanceKey | undefined;
+    let parentKey = this.getParentInstanceKey(imodel, id);
+    while (parentKey) {
+      currKey = parentKey;
+      parentKey = this.getParentInstanceKey(imodel, currKey.id);
+    }
+    return currKey ?? this.getElementKey(imodel, id);
   }
 
   private computeTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const parentKeys = new KeySet();
     ids.forEach(skipTransients((id) => {
-      let curr: InstanceKey | undefined;
-      let parent = this.getParentInstanceKey(requestOptions.imodel, id);
-      while (parent) {
-        curr = parent;
-        parent = this.getParentInstanceKey(requestOptions.imodel, curr.id);
-      }
-      if (!curr)
-        curr = this.getElementKey(requestOptions.imodel, id);
-      if (curr)
-        parentKeys.add(curr);
+      const key = this.getTopAssemblyKey(requestOptions.imodel, id);
+      if (key)
+        parentKeys.add(key);
     }));
     return parentKeys;
   }
@@ -673,29 +678,81 @@ export class PresentationManager {
     return modelKeys;
   }
 
-  private async computeFunctionalElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
-    const keys = new KeySet();
-    const nonTransientIds = new Array<Id64String>();
-    ids.forEach(skipTransients((id) => {
-      nonTransientIds.push(id);
-    }));
+  private getRelatedFunctionalElementKey(imodel: IModelDb, graphicalElementId: Id64String): InstanceKey | undefined {
     const query = `
-      SELECT e.ECClassId, e.ECInstanceId elId, funcSchemaDef.Name || '.' || funcClassDef.Name funcElClassName, fe.ECInstanceId funcElId
+      SELECT funcSchemaDef.Name || '.' || funcClassDef.Name funcElClassName, fe.ECInstanceId funcElId
         FROM bis.Element e
         LEFT JOIN func.PhysicalElementFulfillsFunction rel1 ON rel1.SourceECInstanceId = e.ECInstanceId
         LEFT JOIN func.DrawingGraphicRepresentsFunctionalElement rel2 ON rel2.SourceECInstanceId = e.ECInstanceId
         LEFT JOIN func.FunctionalElement fe ON fe.ECInstanceId IN (rel1.TargetECInstanceId, rel2.TargetECInstanceId)
-        LEFT JOIN meta.ECClassDef funcClassDef ON funcClassDef.ECInstanceId = fe.ECClassId
-        LEFT JOIN meta.ECSchemaDef funcSchemaDef ON funcSchemaDef.ECInstanceId = funcClassDef.Schema.Id
-       WHERE e.ECInstanceId IN (${nonTransientIds.map(() => "?").join(",")})
+        INNER JOIN meta.ECClassDef funcClassDef ON funcClassDef.ECInstanceId = fe.ECClassId
+        INNER JOIN meta.ECSchemaDef funcSchemaDef ON funcSchemaDef.ECInstanceId = funcClassDef.Schema.Id
+       WHERE e.ECInstanceId = ?
       `;
-    const iter = requestOptions.imodel.query(query, nonTransientIds);
-    for await (const row of iter) {
-      if (row.funcElClassName && row.funcElId)
-        keys.add({ className: row.funcElClassName.replace(".", ":"), id: row.funcElId });
-      else
-        keys.add({ className: row.className.replace(".", ":"), id: row.elId });
+    return imodel.withPreparedStatement(query, (stmt): InstanceKey | undefined => {
+      stmt.bindId(1, graphicalElementId);
+      // istanbul ignore else
+      if (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        const row = stmt.getRow();
+        if (row.funcElClassName && row.funcElId)
+          return { className: row.funcElClassName.replace(".", ":"), id: row.funcElId };
+      }
+      return undefined;
+    });
+  }
+
+  private findFirstRelatedFunctionalElementKey(imodel: IModelDb, graphicalElementId: Id64String): InstanceKey | undefined {
+    let currId: Id64String | undefined = graphicalElementId;
+    while (currId) {
+      const relatedFunctionalKey = this.getRelatedFunctionalElementKey(imodel, currId);
+      if (relatedFunctionalKey)
+        return relatedFunctionalKey;
+      currId = this.getParentInstanceKey(imodel, currId)?.id;
     }
+    return undefined;
+  }
+
+  private computeFunctionalElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
+    const keys = new KeySet();
+    ids.forEach(skipTransients((id): void => {
+      const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
+      if (firstFunctionalKey) {
+        keys.add(firstFunctionalKey);
+      } else {
+        const elementKey = this.getElementKey(requestOptions.imodel, id);
+        elementKey && keys.add(elementKey);
+      }
+    }));
+    return keys;
+  }
+
+  private computeFunctionalAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
+    const keys = new KeySet();
+    ids.forEach(skipTransients((id): void => {
+      const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
+      if (firstFunctionalKey) {
+        const functionalAssemblyKey = this.getAssemblyKey(requestOptions.imodel, firstFunctionalKey.id);
+        functionalAssemblyKey && keys.add(functionalAssemblyKey);
+      } else {
+        const graphicalAssemblyKey = this.getAssemblyKey(requestOptions.imodel, id);
+        graphicalAssemblyKey && keys.add(graphicalAssemblyKey);
+      }
+    }));
+    return keys;
+  }
+
+  private async computeFunctionalTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
+    const keys = new KeySet();
+    ids.forEach(skipTransients((id): void => {
+      const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
+      if (firstFunctionalKey) {
+        const functionalTopAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, firstFunctionalKey.id);
+        functionalTopAssemblyKey && keys.add(functionalTopAssemblyKey);
+      } else {
+        const graphicalTopAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, id);
+        graphicalTopAssemblyKey && keys.add(graphicalTopAssemblyKey);
+      }
+    }));
     return keys;
   }
 
@@ -716,7 +773,11 @@ export class PresentationManager {
       case "top-assembly": return this.computeTopAssemblySelection(requestOptions, ids);
       case "category": return this.computeCategorySelection(requestOptions, ids);
       case "model": return this.computeModelSelection(requestOptions, ids);
-      case "functional": return this.computeFunctionalElementSelection(requestOptions, ids);
+      case "functional":
+      case "functional-element":
+        return this.computeFunctionalElementSelection(requestOptions, ids);
+      case "functional-assembly": return this.computeFunctionalAssemblySelection(requestOptions, ids);
+      case "functional-top-assembly": return this.computeFunctionalTopAssemblySelection(requestOptions, ids);
     }
 
     throw new PresentationError(PresentationStatus.InvalidArgument, "scopeId");
