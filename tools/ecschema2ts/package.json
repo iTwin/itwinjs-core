@@ -2,7 +2,7 @@
   "name": "@bentley/ecschema2ts",
   "description": "Command line tools that takes an ECSchema xml file and outputs a typescript module",
   "license": "MIT",
-  "version": "1.12.0-dev.20",
+  "version": "1.12.0-dev.21",
   "bin": {
     "ecschema2ts": "./bin/index.js"
   },
@@ -35,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/build-tools": "1.12.0-dev.20",
+    "@bentley/build-tools": "1.12.0-dev.21",
     "@types/chai": "^4.1.4",
     "@types/chai-string": "^1.4.1",
     "@types/fs-extra": "^4.0.7",
@@ -54,14 +54,14 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "1.12.0-dev.20",
-    "@bentley/ecschema-metadata": "1.12.0-dev.20",
-    "@bentley/ecschema-locaters": "1.12.0-dev.20",
-    "@bentley/imodeljs-clients": "1.12.0-dev.20",
-    "@bentley/imodeljs-clients-backend": "1.12.0-dev.20",
-    "@bentley/imodeljs-common": "1.12.0-dev.20",
-    "@bentley/imodeljs-backend": "1.12.0-dev.20",
-    "@bentley/geometry-core": "1.12.0-dev.20",
+    "@bentley/bentleyjs-core": "1.12.0-dev.21",
+    "@bentley/ecschema-metadata": "1.12.0-dev.21",
+    "@bentley/ecschema-locaters": "1.12.0-dev.21",
+    "@bentley/imodeljs-clients": "1.12.0-dev.21",
+    "@bentley/imodeljs-clients-backend": "1.12.0-dev.21",
+    "@bentley/imodeljs-common": "1.12.0-dev.21",
+    "@bentley/imodeljs-backend": "1.12.0-dev.21",
+    "@bentley/geometry-core": "1.12.0-dev.21",
     "@types/chai-string": "^1.4.1",
     "@types/xmldom": "^0.1.29",
     "chai-string": "^1.5.0",
