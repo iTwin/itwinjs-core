@@ -1298,9 +1298,9 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export const enum CurrentImdlVersion {
-    Combined = 524290,
-    Major = 8,
-    Minor = 2
+    Combined = 589824,
+    Major = 9,
+    Minor = 0
 }
 
 // @beta
@@ -6042,6 +6042,7 @@ export interface TileTreeProps {
     formatVersion?: number;
     id: string;
     location: TransformProps;
+    maxInitialTilesToSkip?: number;
     maxTilesToSkip?: number;
     rootTile: TileProps;
     yAxisUp?: boolean;
