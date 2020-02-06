@@ -40,11 +40,11 @@ export const enum CurrentImdlVersion {
    * front-end is not capable of reading the tile content. Otherwise, this front-end can read the tile content even if the header specifies a
    * greater minor version than CurrentVersion.Minor, although some data may be skipped.
    */
-  Major = 8,
+  Major = 9,
   /** The unsigned 16-bit minor version number. If the major version in the tile header is equal to CurrentVersion.Major, then this package can
    * read the tile content even if the minor version in the tile header is greater than this value, although some data may be skipped.
    */
-  Minor = 2,
+  Minor = 0,
   /** The unsigned 32-bit version number derived from the 16-bit major and minor version numbers. */
   Combined = (Major << 0x10) | Minor,
 }

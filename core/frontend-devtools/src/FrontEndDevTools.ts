@@ -64,6 +64,7 @@ import {
   DumpPlanProjectionSettingsTool,
   OverrideSubCategoryPriorityTool,
 } from "./tools/PlanProjectionTools";
+import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -124,6 +125,7 @@ export class FrontendDevTools {
       ToggleShadowFrustumTool,
       ToggleSkyboxTool,
       ToggleTileRequestDecorationTool,
+      ToggleTileTreeBoundsDecorationTool,
       ToggleToolTipsTool,
       ToggleWiremeshTool,
       ViewportAddRealityModel,
