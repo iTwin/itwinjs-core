@@ -97,6 +97,8 @@ export abstract class TileAdmin {
   public abstract get contextPreloadParentSkip(): number;
   /** @internal */
   public abstract get maximumMajorTileFormatVersion(): number;
+  /** @internal */
+  public abstract get maximumLevelsToSkip(): number;
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -353,6 +355,16 @@ export namespace TileAdmin {
      * @internal
      */
     cancelBackendTileRequests?: boolean;
+
+    /** For iModel tile trees, the maximum number of levels of the tree to skip loading when selecting tiles.
+     * When selecting tiles, if a given tile is too coarse to display and its graphics have not yet been loaded, we can skip loading its graphics and instead try to select one or more of its children
+     * - *until* we have skipped the specified maximum number of levels of the tree, at which point we will load the coarse tile's graphics before evaluating its children for selection.
+     * Increasing this value can reduce the amount of time before all tiles are ready when opening a zoomed-in view, but can also increase the number of tiles requested.
+     * Default value: 1
+     * Minimum value: 0
+     * @alpha
+     */
+    maximumLevelsToSkip?: number;
   }
 
   /** A set of [[Viewport]]s.
@@ -491,6 +503,7 @@ class Admin extends TileAdmin {
   private readonly _disableMagnification: boolean;
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
+  private readonly _maximumLevelsToSkip: number;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
   private _pendingRequests = new Queue();
@@ -553,6 +566,12 @@ class Admin extends TileAdmin {
     this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
     this._useProjectExtents = false !== options.useProjectExtents;
+
+    if (undefined !== options.maximumLevelsToSkip)
+      this._maximumLevelsToSkip = Math.floor(Math.max(0, options.maximumLevelsToSkip));
+    else
+      this._maximumLevelsToSkip = 1;
+
     this._cancelBackendTileRequests = true === options.cancelBackendTileRequests;
 
     const clamp = (seconds: number | undefined, min: number, max: number): BeDuration | undefined => {
@@ -584,6 +603,7 @@ class Admin extends TileAdmin {
   public get enableImprovedElision() { return this._enableImprovedElision; }
   public get ignoreAreaPatterns() { return this._ignoreAreaPatterns; }
   public get useProjectExtents() { return this._useProjectExtents; }
+  public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
   public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get realityTileExpirationTime() { return this._realityTileExpirationTime; }

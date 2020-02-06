@@ -140,6 +140,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * SVT_USE_WEBGL2
   * If defined, the system will attempt to create a WebGL2 context.
+* SVT_MAX_TILES_TO_SKIP
+  * The number of levels of iModel tile trees to skip before loading graphics.
 
 ## Key-ins
 
