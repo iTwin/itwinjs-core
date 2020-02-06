@@ -18,7 +18,7 @@ import { useEffectSkipFirst, NodeCheckboxRenderProps, ImageCheckBox, CheckBoxSta
 import {
   useVisibleTreeNodes, ControlledTree, SelectionMode, TreeEventHandler,
   TreeNodeRendererProps, TreeNodeRenderer, TreeRendererProps, TreeRenderer, CheckBoxInfo, TreeModelSource,
-  ITreeNodeLoader, TreeCheckboxStateChangeEvent, CheckboxStateChange, TreeModelNode, TreeImageLoader,
+  ITreeNodeLoader, TreeCheckboxStateChangeEvent, CheckboxStateChange, TreeModelNode, TreeImageLoader, TreeModelChanges, TreeModel,
 } from "@bentley/ui-components";
 
 import "./VisibilityTree.scss";
@@ -193,11 +193,11 @@ class EventHandler extends TreeEventHandler {
     this._visibilityHandler = visibilityHandler;
 
     if (this._visibilityHandler) {
-      this._visibilityHandler.onVisibilityChange = () => this.updateCheckboxes(true);
+      this._visibilityHandler.onVisibilityChange = () => this.updateCheckboxes();
     }
 
-    this._dispose = this._modelSource.onModelChanged.addListener(() => this.onModelChanged());
-    this.updateCheckboxes(true); // tslint:disable-line: no-floating-promises
+    this._dispose = this._modelSource.onModelChanged.addListener((args) => this.onModelChanged(args));
+    this.updateCheckboxes(); // tslint:disable-line: no-floating-promises
   }
 
   public dispose() {
@@ -217,33 +217,25 @@ class EventHandler extends TreeEventHandler {
         }
       },
       complete: () => {
-        this.updateCheckboxes(true); // tslint:disable-line: no-floating-promises
+        this.updateCheckboxes(); // tslint:disable-line: no-floating-promises
       },
     });
 
     return undefined;
   }
 
-  private onModelChanged() {
+  private onModelChanged(args: [TreeModel, TreeModelChanges]) {
     if (this._skipModelChange)
       return;
 
-    this.updateCheckboxes(false); // tslint:disable-line: no-floating-promises
+    this.updateCheckboxes(args[1]); // tslint:disable-line: no-floating-promises
   }
 
-  private async updateCheckboxes(updateAllNodes: boolean) {
-    const nodeStates = new Map<string, CheckBoxInfo>();
-    for (const node of this._modelSource.getModel().iterateTreeModelNodes()) {
-      // if all nodes should be updated compute new checkbox status for each node
-      // if we need checkbox statuses for newly loaded nodes compute only for those
-      const info = await this.getNodeCheckBoxInfo(node, updateAllNodes);
-      // istanbul ignore else
-      if (info)
-        nodeStates.set(node.id, info);
-    }
+  private async updateCheckboxes(modelChanges?: TreeModelChanges) {
+    // if handling model change event only need to update newly added nodes
+    const nodeStates = await (modelChanges ? this.collectAddedNodesCheckboxInfos(modelChanges.addedNodeIds) : this.collectAllNodesCheckboxInfos());
 
     this._skipModelChange = true;
-
     this._modelSource.modifyModel((model) => {
       for (const [nodeId, checkboxInfo] of nodeStates.entries()) {
         const node = model.getNode(nodeId);
@@ -252,17 +244,37 @@ class EventHandler extends TreeEventHandler {
           node.checkbox = checkboxInfo;
       }
     });
-
     this._skipModelChange = false;
   }
 
-  private async getNodeCheckBoxInfo(node: TreeModelNode, updateStatus: boolean): Promise<CheckBoxInfo | undefined> {
+  private async collectAddedNodesCheckboxInfos(addedNodeIds: string[]) {
+    const nodeStates = new Map<string, CheckBoxInfo>();
+    for (const nodeId of addedNodeIds) {
+      const node = this._modelSource.getModel().getNode(nodeId);
+      // istanbul ignore if
+      if (!node)
+        continue;
+
+      const info = await this.getNodeCheckBoxInfo(node);
+      if (info)
+        nodeStates.set(nodeId, info);
+    }
+    return nodeStates;
+  }
+
+  private async collectAllNodesCheckboxInfos() {
+    const nodeStates = new Map<string, CheckBoxInfo>();
+    for (const node of this._modelSource.getModel().iterateTreeModelNodes()) {
+      const info = await this.getNodeCheckBoxInfo(node);
+      if (info)
+        nodeStates.set(node.id, info);
+    }
+    return nodeStates;
+  }
+
+  private async getNodeCheckBoxInfo(node: TreeModelNode): Promise<CheckBoxInfo | undefined> {
     if (!this._visibilityHandler)
       return node.checkbox.isVisible ? { ...node.checkbox, isVisible: false } : undefined;
-
-    // does not compute display status if checkbox is already visible and we don't need new status
-    if (!updateStatus && node.checkbox.isVisible)
-      return undefined;
 
     const result = this._visibilityHandler.getDisplayStatus(node.item);
     if (isPromiseLike(result))

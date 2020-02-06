@@ -11,7 +11,7 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import {
   ControlledTree, TreeModelSource, TreeEvents, SelectionMode, TreeModel, UiComponents,
-  VisibleTreeNodes, MutableTreeModel, AbstractTreeNodeLoaderWithProvider,
+  VisibleTreeNodes, MutableTreeModel, AbstractTreeNodeLoaderWithProvider, TreeModelChanges,
 } from "@bentley/ui-components";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -52,7 +52,7 @@ describe("ControlledTree withFilteringSupport", () => {
     imodelMock.reset();
 
     filteredPathsPromise = new ResolvablePromise<NodePathElement[]>();
-    modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<TreeModel>());
+    modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<[TreeModel, TreeModelChanges]>());
     modelSourceMock.setup((x) => x.getVisibleNodes()).returns(() => visibleNodes);
     nodeLoaderMock.setup((x) => x.getDataProvider()).returns(() => dataProviderMock.object);
     nodeLoaderMock.setup((x) => x.modelSource).returns(() => modelSourceMock.object);

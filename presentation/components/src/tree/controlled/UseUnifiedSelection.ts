@@ -15,7 +15,7 @@ import {
 } from "@bentley/presentation-frontend";
 import {
   TreeNodeItem, TreeEvents, TreeNodeEvent, TreeCheckboxStateChangeEvent, TreeModelSource, MutableTreeModel,
-  TreeSelectionModificationEvent, TreeSelectionReplacementEvent, Subscription,
+  TreeSelectionModificationEvent, TreeSelectionReplacementEvent, Subscription, TreeModelChanges, TreeModel, MutableTreeModelNode,
 } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
@@ -46,7 +46,7 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
     this._modelSource = modelSource;
     this._selectionHandler = selectionHandler;
     this._selectionHandler.onSelect = this.onSelect.bind(this);
-    this._dispose = this._modelSource.onModelChanged.addListener(() => this.onModelChanged());
+    this._dispose = this._modelSource.onModelChanged.addListener((args) => this.onModelChanged(args));
   }
 
   public dispose() {
@@ -125,20 +125,15 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
     return subscription;
   }
 
-  public selectNodes() {
+  public selectNodes(modelChange?: TreeModelChanges) {
     const selection = this._selectionHandler.getSelection();
 
     this._skipModelChange = true;
-    this._modelSource.modifyModel((model: MutableTreeModel) => {
-      for (const node of model.iterateTreeModelNodes()) {
-        const shouldBeSelected = this.shouldSelectNode(node.item, selection);
-        if (!node.isSelected && shouldBeSelected) {
-          node.isSelected = true;
-        } else if (node.isSelected && !shouldBeSelected) {
-          node.isSelected = false;
-        }
-      }
-    });
+    // when handling model change event only need to update newly added nodes
+    if (modelChange)
+      this.updateAddedNodes(selection, modelChange.addedNodeIds);
+    else
+      this.updateAllNodes(selection);
     this._skipModelChange = false;
   }
 
@@ -188,11 +183,11 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
     return SelectionHelper.getKeysForSelection(nodeKeys);
   }
 
-  private onModelChanged() {
+  private onModelChanged(args: [TreeModel, TreeModelChanges]) {
     if (this._selecting || this._skipModelChange)
       return;
 
-    this.selectNodes();
+    this.selectNodes(args[1]);
   }
 
   private onSelect(evt: SelectionChangeEventArgs) {
@@ -203,6 +198,36 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
       this.cancelOngoingSubscriptions();
 
     this.selectNodes();
+  }
+
+  private updateAllNodes(selection: Readonly<KeySet>) {
+    this._modelSource.modifyModel((model: MutableTreeModel) => {
+      for (const node of model.iterateTreeModelNodes()) {
+        this.updateNodeSelectionState(node, selection);
+      }
+    });
+  }
+
+  private updateAddedNodes(selection: Readonly<KeySet>, addedNodeIds: string[]) {
+    this._modelSource.modifyModel((model: MutableTreeModel) => {
+      for (const nodeId of addedNodeIds) {
+        const node = model.getNode(nodeId);
+        // istanbul ignore if
+        if (!node)
+          continue;
+
+        this.updateNodeSelectionState(node, selection);
+      }
+    });
+  }
+
+  private updateNodeSelectionState(node: MutableTreeModelNode, selection: Readonly<KeySet>) {
+    const shouldBeSelected = this.shouldSelectNode(node.item, selection);
+    if (!node.isSelected && shouldBeSelected) {
+      node.isSelected = true;
+    } else if (node.isSelected && !shouldBeSelected) {
+      node.isSelected = false;
+    }
   }
 
   private saveOngoingSubscription(subscription: Subscription, innerSubscription?: Subscription) {

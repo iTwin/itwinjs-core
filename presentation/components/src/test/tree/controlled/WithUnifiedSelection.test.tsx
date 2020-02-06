@@ -8,7 +8,7 @@ import * as React from "react";
 import { mount } from "enzyme";
 import * as moq from "typemoq";
 import {
-  ControlledTree, TreeModelSource, TreeEvents, SelectionMode, TreeModel,
+  ControlledTree, TreeModelSource, TreeEvents, SelectionMode, TreeModel, TreeModelChanges,
   UiComponents, VisibleTreeNodes, MutableTreeModel, AbstractTreeNodeLoaderWithProvider,
 } from "@bentley/ui-components";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
@@ -41,7 +41,7 @@ describe("Tree withUnifiedSelection", () => {
     [Symbol.iterator]: () => [][Symbol.iterator](),
   };
 
-  modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<TreeModel>());
+  modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<[TreeModel, TreeModelChanges]>());
   selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
   Presentation.selection = selectionManagerMock.object;
   modelSourceMock.setup((x) => x.getVisibleNodes()).returns(() => visibleNodes);

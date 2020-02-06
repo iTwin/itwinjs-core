@@ -12,7 +12,7 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { CheckBoxState } from "@bentley/ui-core";
 import {
   TreeModelSource, TreeEvents, TreeModel, from, TreeCheckboxStateChangeEvent, CheckboxStateChange, Observable,
-  TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem, TreeSelectionReplacementEvent, MutableTreeModel,
+  TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem, TreeSelectionReplacementEvent, MutableTreeModel, TreeModelChanges,
 } from "@bentley/ui-components";
 import { KeySet, NodeKey, Keys } from "@bentley/presentation-common";
 import {
@@ -50,7 +50,7 @@ describe("useUnifiedSelection", () => {
     imodelMock.reset();
     selectionManagerMock.reset();
 
-    modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<TreeModel>());
+    modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<[TreeModel, TreeModelChanges]>());
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
     Presentation.selection = selectionManagerMock.object;
     dataProviderMock.setup((x) => x.imodel).returns(() => imodelMock.object);
@@ -105,14 +105,14 @@ describe("UnifiedSelectionEventHandler", () => {
   const treeModelMock = moq.Mock.ofType<TreeModel>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
 
-  let onModelChangeEvent: BeUiEvent<TreeModel>;
+  let onModelChangeEvent: BeUiEvent<[TreeModel, TreeModelChanges]>;
 
   beforeEach(() => {
     treeModelSourceMock.reset();
     treeEventsMock.reset();
     selectionHandlerMock.reset();
 
-    onModelChangeEvent = new BeUiEvent<TreeModel>();
+    onModelChangeEvent = new BeUiEvent<[TreeModel, TreeModelChanges]>();
     treeModelSourceMock.setup((x) => x.onModelChanged).returns(() => onModelChangeEvent);
     dataProviderMock.setup((x) => x.getNodeKey(moq.It.isAny())).returns((n: TreeNodeItem) => (n as any)[PRESENTATION_TREE_NODE_KEY]);
     unifiedEventHandler = new UnifiedSelectionTreeEventHandler(treeEventsMock.object, treeModelSourceMock.object, selectionHandlerMock.object, dataProviderMock.object);
@@ -371,17 +371,17 @@ describe("UnifiedSelectionEventHandler", () => {
 
   describe("model change handling", () => {
 
-    it("applies unified selection when model changes", () => {
+    it("applies unified selection for added nodes", () => {
       const node = createNode();
       selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([dataProviderMock.target.getNodeKey(node.item)]));
       treeModelSourceMock.setup((x) => x.modifyModel(moq.It.isAny())).callback((action) => action(treeModelMock.object));
-      treeModelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => [node][Symbol.iterator]());
+      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node);
 
-      onModelChangeEvent.emit(treeModelMock.object);
+      onModelChangeEvent.emit([treeModelMock.object, { addedNodeIds: [node.id], modifiedNodeIds: [], removedNodeIds: [] }]);
       expect(node.isSelected).to.be.true;
     });
 
-    it("deselects node without key", () => {
+    it("deselects added node without key", () => {
       const node = createNode();
       node.isSelected = true;
       const keySet = new KeySet([dataProviderMock.target.getNodeKey(node.item)]);
@@ -389,9 +389,9 @@ describe("UnifiedSelectionEventHandler", () => {
       treeModelSourceMock.setup((x) => x.modifyModel(moq.It.isAny())).callback((action) => action(treeModelMock.object));
       (node.item as any)[PRESENTATION_TREE_NODE_KEY] = undefined;
 
-      treeModelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => [node][Symbol.iterator]());
+      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node);
 
-      onModelChangeEvent.emit(treeModelMock.object);
+      onModelChangeEvent.emit([treeModelMock.object, { addedNodeIds: [node.id], modifiedNodeIds: [], removedNodeIds: [] }]);
       expect(node.isSelected).to.be.false;
     });
 
@@ -401,7 +401,7 @@ describe("UnifiedSelectionEventHandler", () => {
 
       (unifiedEventHandler as any)._selecting = true;
 
-      onModelChangeEvent.emit(treeModelMock.object);
+      onModelChangeEvent.emit([treeModelMock.object, { addedNodeIds: [], modifiedNodeIds: [], removedNodeIds: [] }]);
       treeModelSourceMock.verifyAll();
     });
 

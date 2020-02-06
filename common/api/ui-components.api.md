@@ -3484,6 +3484,16 @@ export interface TreeModel {
 }
 
 // @beta
+export interface TreeModelChanges {
+    // (undocumented)
+    addedNodeIds: string[];
+    // (undocumented)
+    modifiedNodeIds: string[];
+    // (undocumented)
+    removedNodeIds: string[];
+}
+
+// @beta
 export interface TreeModelNode {
     // (undocumented)
     readonly checkbox: CheckBoxInfo;
@@ -3567,7 +3577,7 @@ export class TreeModelSource {
     getModel(): TreeModel;
     getVisibleNodes(): VisibleTreeNodes;
     modifyModel(callback: (model: MutableTreeModel) => void): void;
-    onModelChanged: BeUiEvent<TreeModel>;
+    onModelChanged: BeUiEvent<[TreeModel, TreeModelChanges]>;
     }
 
 // @public @deprecated

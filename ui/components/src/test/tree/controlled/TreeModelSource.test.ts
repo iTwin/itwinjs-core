@@ -35,7 +35,7 @@ describe("TreeModelSource", () => {
       (modelSource as any)._model = mutableTreeModelMock.object;
       mutableTreeModelMock.setup((x) => x.computeVisibleNodes()).returns(() => visibleNodesMock.object).verifiable(moq.Times.exactly(2));
       modelSource.getVisibleNodes();
-      modelSource.onModelChanged.emit(mutableTreeModelMock.object);
+      modelSource.onModelChanged.emit([mutableTreeModelMock.object, { addedNodeIds: [], modifiedNodeIds: [], removedNodeIds: [] }]);
       modelSource.getVisibleNodes();
       mutableTreeModelMock.verifyAll();
     });
@@ -43,6 +43,20 @@ describe("TreeModelSource", () => {
   });
 
   describe("modifyModel", () => {
+    let inputNode: TreeModelNodeInput;
+
+    beforeEach(() => {
+      inputNode = {
+        id: faker.random.uuid(),
+        isExpanded: faker.random.boolean(),
+        item: { id: faker.random.uuid(), label: faker.random.word() },
+        label: faker.random.word(),
+        isLoading: faker.random.boolean(),
+        isSelected: faker.random.boolean(),
+      };
+
+      modelSource.modifyModel((model) => { model.setChildren(undefined, [inputNode], 0); });
+    });
 
     it("does not emit onModelChanged event if model did not change", () => {
       const spy = sinon.spy(modelSource.onModelChanged, "emit");
@@ -50,8 +64,8 @@ describe("TreeModelSource", () => {
       expect(spy).to.not.be.called;
     });
 
-    it("emits onModelChanged event if model has changed", () => {
-      const input: TreeModelNodeInput = {
+    it("emits onModelChanged event with added node id", () => {
+      const newInput: TreeModelNodeInput = {
         id: faker.random.uuid(),
         isExpanded: faker.random.boolean(),
         item: { id: faker.random.uuid(), label: faker.random.word() },
@@ -60,8 +74,32 @@ describe("TreeModelSource", () => {
         isSelected: faker.random.boolean(),
       };
       const spy = sinon.spy(modelSource.onModelChanged, "emit");
-      modelSource.modifyModel((model) => { model.setChildren(undefined, [input], 0); });
+      modelSource.modifyModel((model) => { model.setChildren(undefined, [newInput], 1); });
       expect(spy).to.be.called;
+      const changes = spy.args[0][0][1];
+      expect(changes.addedNodeIds.length).to.be.eq(1);
+      expect(changes.addedNodeIds[0]).to.be.eq(newInput.id);
+    });
+
+    it("emits onModelChanged event with removed node id", () => {
+      const spy = sinon.spy(modelSource.onModelChanged, "emit");
+      modelSource.modifyModel((model) => { model.clearChildren(undefined); });
+      expect(spy).to.be.called;
+      const changes = spy.args[0][0][1];
+      expect(changes.removedNodeIds.length).to.be.eq(1);
+      expect(changes.removedNodeIds[0]).to.be.eq(inputNode.id);
+    });
+
+    it("emits onModelChanged event with modified node id", () => {
+      const spy = sinon.spy(modelSource.onModelChanged, "emit");
+      modelSource.modifyModel((model) => {
+        const node = model.getNode(inputNode.id);
+        node!.isSelected = !node!.isSelected;
+      });
+      expect(spy).to.be.called;
+      const changes = spy.args[0][0][1];
+      expect(changes.modifiedNodeIds.length).to.be.eq(1);
+      expect(changes.modifiedNodeIds[0]).to.be.eq(inputNode.id);
     });
 
   });

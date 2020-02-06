@@ -17,7 +17,7 @@ import {
 import {
   ControlledTree, TreeEventHandler, useVisibleTreeNodes, SelectionMode, TreeNodeRendererProps,
   TreeNodeRenderer, TreeRendererProps, TreeRenderer, TreeModelNode, TreeModelSource, CheckBoxInfo, TreeCheckboxStateChangeEvent,
-  CheckboxStateChange, TreeSelectionReplacementEvent, ITreeNodeLoaderWithProvider, TreeImageLoader, FilteringInput, TreeNodeItem,
+  CheckboxStateChange, TreeSelectionReplacementEvent, ITreeNodeLoaderWithProvider, TreeImageLoader, FilteringInput, TreeNodeItem, TreeModelChanges, TreeModel,
 } from "@bentley/ui-components";
 import { NodeCheckboxRenderProps, ImageCheckBox, CheckBoxState, useEffectSkipFirst } from "@bentley/ui-core";
 
@@ -392,7 +392,7 @@ class EventHandler extends TreeEventHandler {
     this._activeView = activeView;
     this._visibilityHandler = visibilityHandler;
 
-    this._dispose = this._modelSource.onModelChanged.addListener(() => this.onModelChanged());
+    this._dispose = this._modelSource.onModelChanged.addListener((args) => this.onModelChanged(args));
   }
 
   public dispose() {
@@ -433,21 +433,41 @@ class EventHandler extends TreeEventHandler {
     return undefined;
   }
 
-  private onModelChanged() {
+  private onModelChanged(args: [TreeModel, TreeModelChanges]) {
     if (this._skipModelChange)
       return;
 
-    this.updateCheckboxes();
+    this.updateCheckboxes(args[1]);
   }
 
-  private updateCheckboxes() {
+  private updateCheckboxes(modelChanges?: TreeModelChanges) {
     this._skipModelChange = true;
+    // if handling model change event only need to update newly added nodes
+    if (modelChanges) {
+      this.updateNewNodeCheckboxes(modelChanges.addedNodeIds);
+    } else {
+      this.updateAllNodeCheckboxes();
+    }
+    this._skipModelChange = false;
+  }
+
+  private updateAllNodeCheckboxes() {
     this._modelSource.modifyModel((model) => {
       for (const node of model.iterateTreeModelNodes()) {
         node.checkbox = this.getNodeCheckBoxInfo(node);
       }
     });
-    this._skipModelChange = false;
+  }
+  private updateNewNodeCheckboxes(newNodeIds: string[]) {
+    this._modelSource.modifyModel((model) => {
+      for (const nodeId of newNodeIds) {
+        const node = model.getNode(nodeId);
+        // istanbul ignore if
+        if (!node)
+          continue;
+        node.checkbox = this.getNodeCheckBoxInfo(node);
+      }
+    });
   }
 
   private onNodesSelected(nodeItems: TreeNodeItem[]) {

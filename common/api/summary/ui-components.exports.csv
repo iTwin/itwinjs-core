@@ -343,6 +343,7 @@ beta;TreeEventHandlerParams
 beta;TreeEvents
 public;TreeImageLoader 
 beta;TreeModel
+beta;TreeModelChanges
 beta;TreeModelNode
 beta;TreeModelNodeEditingInfo
 beta;TreeModelNodeInput

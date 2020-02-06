@@ -9,12 +9,12 @@ import { renderHook } from "@testing-library/react-hooks";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { useVisibleTreeNodes, usePagedNodeLoader, useModelSource, useNodeLoader } from "../../../ui-components/tree/controlled/TreeHooks";
 import { VisibleTreeNodes, TreeModel, MutableTreeModel } from "../../../ui-components/tree/controlled/TreeModel";
-import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
+import { TreeModelSource, TreeModelChanges } from "../../../ui-components/tree/controlled/TreeModelSource";
 import { TreeDataProviderRaw, TreeDataProvider } from "../../../ui-components/tree/TreeDataProvider";
 
 describe("useVisibleTreeNodes", () => {
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
-  let onModelChangeEvent: BeUiEvent<TreeModel>;
+  let onModelChangeEvent: BeUiEvent<[TreeModel, TreeModelChanges]>;
   const testVisibleNodes: VisibleTreeNodes = {
     getAtIndex: () => undefined,
     getModel: () => new MutableTreeModel(),
@@ -25,7 +25,7 @@ describe("useVisibleTreeNodes", () => {
 
   beforeEach(() => {
     modelSourceMock.reset();
-    onModelChangeEvent = new BeUiEvent<TreeModel>();
+    onModelChangeEvent = new BeUiEvent<[TreeModel, TreeModelChanges]>();
 
     modelSourceMock.setup((x) => x.onModelChanged).returns(() => onModelChangeEvent);
     modelSourceMock.setup((x) => x.getVisibleNodes()).returns(() => testVisibleNodes);
@@ -51,7 +51,7 @@ describe("useVisibleTreeNodes", () => {
     );
     expect(firstModelEventAddSpy).to.have.been.calledOnce;
 
-    const newOnModelChangeEvent = new BeUiEvent<TreeModel>();
+    const newOnModelChangeEvent = new BeUiEvent<[TreeModel, TreeModelChanges]>();
     const newModelEventAddSpy = sinon.spy(newOnModelChangeEvent, "addListener");
     const newModelSourceMock = moq.Mock.ofType<TreeModelSource>();
     newModelSourceMock.setup((x) => x.onModelChanged).returns(() => newOnModelChangeEvent);

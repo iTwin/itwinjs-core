@@ -49,6 +49,8 @@ import { TableDataProvider } from '@bentley/ui-components';
 import { TableProps } from '@bentley/ui-components';
 import { TreeCheckboxStateChangeEvent } from '@bentley/ui-components';
 import { TreeEvents } from '@bentley/ui-components';
+import { TreeModel } from '@bentley/ui-components';
+import { TreeModelChanges } from '@bentley/ui-components';
 import { TreeModelSource } from '@bentley/ui-components';
 import { TreeNodeEvent } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
@@ -347,7 +349,7 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
     // (undocumented)
     protected getKeys(nodes: TreeNodeItem[]): Keys;
     // (undocumented)
-    protected getModel(): import("@bentley/ui-components").TreeModel;
+    protected getModel(): TreeModel;
     // (undocumented)
     protected getNodeKey(node: TreeNodeItem): NodeKey;
     // (undocumented)
@@ -363,7 +365,7 @@ export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable
     // (undocumented)
     onSelectionReplaced(event: TreeSelectionReplacementEvent): Subscription;
     // (undocumented)
-    selectNodes(): void;
+    selectNodes(modelChange?: TreeModelChanges): void;
     protected shouldSelectNode(node: TreeNodeItem, selection: Readonly<KeySet>): boolean;
     }
 

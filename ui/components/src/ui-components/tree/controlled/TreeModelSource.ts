@@ -6,9 +6,18 @@
  * @module Tree
  */
 
-import { produce } from "immer";
+import { produce, Patch } from "immer";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { MutableTreeModel, TreeModel, VisibleTreeNodes } from "./TreeModel";
+
+/** Data structure that describes changes which happened to the tree model
+ * @beta
+ */
+export interface TreeModelChanges {
+  addedNodeIds: string[];
+  modifiedNodeIds: string[];
+  removedNodeIds: string[];
+}
 
 /**
  * Controls tree model and visible tree nodes.
@@ -20,7 +29,7 @@ export class TreeModelSource {
   private _visibleNodes?: VisibleTreeNodes;
 
   /** Event that is emitted every time tree model is changed. */
-  public onModelChanged = new BeUiEvent<TreeModel>();
+  public onModelChanged = new BeUiEvent<[TreeModel, TreeModelChanges]>();
 
   constructor() {
     this.onModelChanged.addListener(() => this._visibleNodes = undefined);
@@ -31,10 +40,12 @@ export class TreeModelSource {
    * If changes to tree model is detected then onModelChanged event is emitted.
    */
   public modifyModel(callback: (model: MutableTreeModel) => void): void {
-    const newModel = produce(this._model, (draft: MutableTreeModel) => callback(draft));
+    let changes: TreeModelChanges = { addedNodeIds: [], modifiedNodeIds: [], removedNodeIds: [] };
+    const newModel = produce(this._model, (draft: MutableTreeModel) => callback(draft), (patches: Patch[]) => { changes = this.collectModelChanges(patches); });
+
     if (newModel !== this._model) {
       this._model = newModel;
-      this.onModelChanged.emit(this._model);
+      this.onModelChanged.emit([this._model, changes]);
     }
   }
 
@@ -48,5 +59,26 @@ export class TreeModelSource {
     }
 
     return this._visibleNodes;
+  }
+
+  private collectModelChanges(modelPatches: Patch[]): TreeModelChanges {
+    const addedNodeIds: string[] = [];
+    const modifiedNodeIds: string[] = [];
+    const removedNodeIds: string[] = [];
+    for (const patch of modelPatches) {
+      if (patch.path[0] === "_tree" && patch.path[1] === "_idToNode") {
+        const nodeId = patch.path[2] as string;
+        switch (patch.op) {
+          case "add": addedNodeIds.push(nodeId); break;
+          case "remove": removedNodeIds.push(nodeId); break;
+          case "replace": {
+            if (modifiedNodeIds.indexOf(nodeId) === -1)
+              modifiedNodeIds.push(nodeId);
+            break;
+          }
+        }
+      }
+    }
+    return { addedNodeIds, modifiedNodeIds, removedNodeIds };
   }
 }
