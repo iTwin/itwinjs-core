@@ -13,7 +13,6 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   DecorateContext,
-  GraphicBuilder,
   GraphicType,
   IModelApp,
   TileTreeReference,
