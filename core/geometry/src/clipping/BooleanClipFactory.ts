@@ -6,12 +6,14 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { Clipper } from "./ClipUtils";
-import { Range1dArray } from "../numerics/Range1dArray";
-import { BooleanClipNode } from "./BooleanClipNode";
+import { Clipper, ClipUtilities } from "./ClipUtils";
+import { BooleanClipNodeUnion, BooleanClipNodeIntersection, BooleanClipNodeParity } from "./BooleanClipNode";
+import { ClipPlane } from "./ClipPlane";
+import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
 
 /** A BooleanClipFactory is a factory to create objects that implement interior nodes of a tree of boolean clip operations.
- * * The static (factory) methods create specific clip actions:
+ * * The static (factory) methods create specific clip operations
  *   * Union
  *   * Intersection
  *   * Parity
@@ -30,7 +32,7 @@ export class BooleanClipFactory {
    * @param keepInside flag to select results inside or outside the clippers.
    */
   public static createCaptureUnion(clippers: Clipper | Clipper[], keepInside: boolean): Clipper {
-    const result = new BooleanClipNode(BooleanClipNode.isPointOnOrInsideOR, Range1dArray.unionSorted, keepInside);
+    const result = new BooleanClipNodeUnion(keepInside);
     result.captureChild(clippers);
     return result;
   }
@@ -42,7 +44,7 @@ export class BooleanClipFactory {
    * @param keepInside flag to select results inside or outside the clippers.
    */
   public static createCaptureIntersection(clippers: Clipper | Clipper[], keepInside: boolean): Clipper {
-    const result = new BooleanClipNode(BooleanClipNode.isPointOnOrInsideAND, Range1dArray.intersectSorted, keepInside);
+    const result = new BooleanClipNodeIntersection(keepInside);
     result.captureChild(clippers);
     return result;
   }
@@ -54,7 +56,7 @@ export class BooleanClipFactory {
    * @param keepInside flag to select results inside or outside the clippers.
    */
   public static createCaptureParity(clippers: Clipper | Clipper[], keepInside: boolean): Clipper {
-    const result = new BooleanClipNode(BooleanClipNode.isPointOnOrInsideXOR, Range1dArray.paritySorted, keepInside);
+    const result = new BooleanClipNodeParity(keepInside);
     result.captureChild(clippers);
     return result;
   }
@@ -62,11 +64,128 @@ export class BooleanClipFactory {
    * Create a boolean clipper which performs a difference operation for points "inside `primaryClipper`" and "outside `excludedClipper`"
    * * if `keepInside === true`, accept the "inside" of the difference
    * * if `keepInside === false`, accept the "outside" of the difference
-   * @param clippers clip objects to capture
+   * @param primaryClipper any clip object whose output is treated as positive
+   * @param excludeClip any clipper whose output is treated as negative.
+   * @param keepInside flag to select results inside or outside the initial `primary minus excludeClipper` clippers.
+   */
+  public static createCaptureDifference(primaryClipper: Clipper, excludedClipper: Clipper, keepInside: boolean): Clipper {
+    const mask = this.createCaptureUnion(excludedClipper, false);
+    return this.createCaptureIntersection([primaryClipper, mask], keepInside);
+  }
+  /**
+   * Create a boolean clipper which performs the reverse of that of `primaryClipper`
+   * @param primaryClipper clip objects to capture
    * @param keepInside flag to select results inside or outside the clippers.
    */
-  public static createCaptureDifference(primaryClipper: Clipper, excludedClip: Clipper, keepInside: boolean): Clipper {
-    const mask = this.createCaptureUnion(excludedClip, false);
-    return this.createCaptureIntersection([primaryClipper, mask], keepInside);
+  public static createCaptureClipOutside(primaryClipper: Clipper): Clipper {
+    return this.createCaptureUnion([primaryClipper], false);
+  }
+
+  /**
+   * convert `source` to an array of clipper objects.
+   * * ANY TYPE OF Clipper is accepted.
+   * * REMARK: This is normally called only from the primary public method `parseToClipper`.
+   * @param source
+   * @param internal
+   */
+  public static parseToClipperArray(source: any): Clipper[] | undefined {
+    if (Array.isArray(source)) {
+      const clippers = [];
+      for (const c of source) {
+        const c1 = this.parseToClipper(c);
+        if (!c1)
+          return undefined;
+        clippers.push(c1);
+      }
+      if (clippers.length === 0)
+        return undefined;
+      return clippers;
+    } else {
+      // accept singleton to singleton array
+      const c = this.parseToClipper(source);
+      if (c)
+        return [c];
+    }
+    return undefined;
+  }
+  /**
+   * look for content that represents a clipper.
+   * * Possible outputs are
+   *   * `ClipPlane`
+   *   * `ConvexClipPlaneSet`
+   *   * `UnionOfConvexClipPlaneSets`
+   *   * One of the `ClipBoolean` derived classes
+   *     * `ClipBooleanXOR`
+   *     * `ClipBooleanOR`
+   *     * `ClipBooleanAND`
+   * @param source json object
+   * @public
+   */
+  public static parseToClipper(source?: object): Clipper | undefined {
+    if (!source)
+      return undefined;
+
+    if (source.hasOwnProperty("normal") && source.hasOwnProperty("dist")) {
+      return ClipPlane.fromJSON(source);
+    } else if (Array.isArray(source)) {
+      const clippers: Clipper[] = [];
+      let numPlanes = 0;
+      let numConvexSets = 0;
+      for (const c of source) {
+        const c1 = this.parseToClipper(c);
+        if (!c1)
+          return undefined;
+        clippers.push(c1);
+        if (c1 instanceof ClipPlane)
+          numPlanes++;
+        else if (c1 instanceof ConvexClipPlaneSet)
+          numConvexSets++;
+        else
+          return undefined;
+      }
+      if (clippers.length === 0)
+        return undefined;
+      if (numPlanes === source.length) {
+        // array of planes is a convex clip plane set.
+        return ConvexClipPlaneSet.createPlanes(clippers as ClipPlane[]);
+      } else if (numConvexSets === source.length) {
+        return UnionOfConvexClipPlaneSets.createConvexSets(clippers as ConvexClipPlaneSet[]);
+      }
+      // array of mixed types should not occur.  fall out to undefined.
+    } else if (source.hasOwnProperty("OR")) {
+      const clippers = this.parseToClipperArray((source as any).OR);
+      if (clippers)
+        return this.createCaptureUnion(clippers, true);
+    } else if (source.hasOwnProperty("NOR")) {
+      const clippers = this.parseToClipperArray((source as any).NOR);
+      if (clippers)
+        return this.createCaptureUnion(clippers, false);
+    } else if (source.hasOwnProperty("AND")) {
+      const clippers = this.parseToClipperArray((source as any).AND);
+      if (clippers)
+        return this.createCaptureIntersection(clippers, true);
+    } else if (source.hasOwnProperty("NAND")) {
+      const clippers = this.parseToClipperArray((source as any).NAND);
+      if (clippers)
+        return this.createCaptureIntersection(clippers, true);
+    } else if (source.hasOwnProperty("XOR")) {
+      const clippers = this.parseToClipperArray((source as any).XOR);
+      if (clippers)
+        return this.createCaptureParity(clippers, true);
+    } else if (source.hasOwnProperty("NXOR")) {
+      const clippers = this.parseToClipperArray((source as any).NXOR);
+      if (clippers)
+        return this.createCaptureParity(clippers, true);
+    }
+    return undefined;
+  }
+  /** Choose a `toJSON` method appropriate to the clipper */
+  public static anyClipperToJSON(clipper: any): any | undefined {
+    if (ClipUtilities.isClipper(clipper)) {
+      if ((clipper as any).toJSON)
+        return (clipper as any).toJSON();
+    }
+    return undefined;
+
   }
 }

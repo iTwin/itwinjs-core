@@ -106,6 +106,19 @@ Access to optional [ViewDefinition]($backend) and [ViewState]($frontend) propert
      * `undefined` in raw moment data
      * the (positive) quantity sum in principal moment data (produced by call to `inertiaProductsToPrincipalAxes`)
 
+### `Clipper` support
+  * new static method `ClipUtilities.isClipper(candidate: any)` to test if candidate supports all the methods of the Clipper interface.
+  * new (static) methods in `BooleanClipFactory`.  The static list (including some older methods) is
+    * JSON serialization:
+      * BooleanClipFactory.anyClipperToJSON(clipper: any): any | undefined;
+      * BooleanClipFactory.parseToClipper(source?: object): Clipper | undefined;
+    * `create` methods for various boolean trees:
+      * `BooleanClipFactory.createCaptureClipOutside(primaryClipper: Clipper): Clipper;`
+      * `BooleanClipFactory.createCaptureDifference(primaryClipper: Clipper, excludedClipper: Clipper, keepInside: boolean): Clipper;`
+      * `BooleanClipFactory.createCaptureIntersection(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;`
+      * `BooleanClipFactory.createCaptureParity(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;`
+      * `BooleanClipFactory.createCaptureUnion(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;`
+
 ## IModelSchemaLoader
   * New utility class in @bentley/imodeljs-backend to retrieve full Schema information from an iModel.
   * Requires the @bentley/ecschema-metadata package to be installed.  This package contains the EC Schema metadata classes which are the building blocks of the schema returned from the iModel.

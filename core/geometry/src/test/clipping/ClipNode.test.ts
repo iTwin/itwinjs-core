@@ -16,13 +16,14 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Loop } from "../../curve/Loop";
 import { BooleanClipNode } from "../../clipping/BooleanClipNode";
 import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
-import { Clipper } from "../../clipping/ClipUtils";
+import { Clipper, ClipUtilities } from "../../clipping/ClipUtils";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { LineString3d } from "../../curve/LineString3d";
 import { Sample } from "../../serialization/GeometrySamples";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+/* tslint:disable:no-console variable-name */
 /**
  *
  * @param origin
@@ -48,15 +49,17 @@ describe("ClipNodes", () => {
     const clipperAOrB = BooleanClipFactory.createCaptureUnion([clipX, clipY], true);
     const clipperAAndB = BooleanClipFactory.createCaptureIntersection([clipY, clipX], true);
     const clipperAMinusB = BooleanClipFactory.createCaptureDifference(clipX, clipY, false);
-    const clipperParity = BooleanClipFactory.createCaptureParity([clipX, clipY], true);
-    const allClippers: Clipper[] = [clipperAAndB, clipX, clipY, clipperAOrB, clipperAAndB, clipperAMinusB, clipperParity];
+    const clipperXOR = BooleanClipFactory.createCaptureParity([clipX, clipY], true);
+    const clipperNXOR = BooleanClipFactory.createCaptureParity([clipX, clipY], false);
+    const allClippers: Clipper[] = [clipperAAndB, clipX, clipY, clipperAOrB, clipperAAndB, clipperAMinusB, clipperXOR, clipperNXOR];
     const clipperName = new Map<Clipper, string>();
     clipperName.set(clipY, "ClipY");
     clipperName.set(clipX, "ClipX");
     clipperName.set(clipperAOrB, "clipperAOrB");
     clipperName.set(clipperAAndB, "clipperAAndB");
     clipperName.set(clipperAMinusB, "clipperAMinusB");
-    clipperName.set(clipperParity, "clipperParity");
+    clipperName.set(clipperXOR, "clipperXOR");
+    clipperName.set(clipperXOR, "NXOR");
     const x0 = 0;
     const y0 = 0;
     let z0 = 0;
@@ -67,7 +70,16 @@ describe("ClipNodes", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, segment, x0, y0, z0);
       segments.push(segment);
     }
-
+    for (const clipper of allClippers) {
+      const clipper1 = clipper as any;
+      if (clipper1.toJSON) {
+        const jsonA = clipper1.toJSON();
+        const clipper2 = BooleanClipFactory.parseToClipper(jsonA);
+        ck.testTrue(ClipUtilities.isClipper(clipper2), clipper2);
+      } else {
+        ck.announceError(" Clipper does not have toJSON" + clipperName.get(clipper));
+      }
+    }
     const arcs = [];
     let radius = 0.3;
     const radiusStep = 0.04;
@@ -100,8 +112,11 @@ describe("ClipNodes", () => {
 
     for (const clipper of allClippers) {
       if (clipper instanceof BooleanClipNode) {
+        const clipper1 = BooleanClipFactory.createCaptureClipOutside(clipper);
         for (const p of points) {
           const q = clipper.isPointOnOrInside(p);
+          const q1 = clipper1.isPointOnOrInside(p);
+          ck.testBoolean(q, !q1, "clip versus clip outside");
           clipper.toggleResult();
           const r = clipper.isPointOnOrInside(p);
           ck.testBoolean(q, !r, "toggled test" + clipperName.get(clipper), p, q, r);
@@ -143,7 +158,6 @@ describe("ClipNodes", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipNode", "ClipManyBooleans");
     expect(ck.getNumErrors()).equals(0);
-
   });
   it("ClipManyBoxes", () => {
     const ck = new Checker();
@@ -165,7 +179,6 @@ describe("ClipNodes", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipNode", "ClipManyBoxes");
     expect(ck.getNumErrors()).equals(0);
-
   });
 
 });

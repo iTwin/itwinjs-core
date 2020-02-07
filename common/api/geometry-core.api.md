@@ -571,10 +571,14 @@ export type BlockComparisonFunction = (data: Float64Array, blockSize: number, in
 
 // @public
 export class BooleanClipFactory {
-    static createCaptureDifference(primaryClipper: Clipper, excludedClip: Clipper, keepInside: boolean): Clipper;
+    static anyClipperToJSON(clipper: any): any | undefined;
+    static createCaptureClipOutside(primaryClipper: Clipper): Clipper;
+    static createCaptureDifference(primaryClipper: Clipper, excludedClipper: Clipper, keepInside: boolean): Clipper;
     static createCaptureIntersection(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;
     static createCaptureParity(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;
     static createCaptureUnion(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;
+    static parseToClipper(source?: object): Clipper | undefined;
+    static parseToClipperArray(source: any): Clipper[] | undefined;
 }
 
 // @public
@@ -1025,6 +1029,7 @@ export class ClipUtilities {
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
     static doesClipperIntersectRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): boolean;
     static doesConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): boolean;
+    static isClipper(obj: any): boolean;
     static loopsOfConvexClipPlaneIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[];
     static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus;
     static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): Range3d;

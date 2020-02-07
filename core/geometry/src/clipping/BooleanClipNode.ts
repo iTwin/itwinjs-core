@@ -14,24 +14,14 @@ import { Clipper } from "./ClipUtils";
 import { AnnounceNumberNumberCurvePrimitive, AnnounceNumberNumber, CurvePrimitive } from "../curve/CurvePrimitive";
 import { Range1dArray } from "../numerics/Range1dArray";
 
-type ClipNodeSortedRange1dBoolean = (operandA: Range1d[], operandB: Range1d[]) => Range1d[];
-type ClipNodePointBoolean = (point: Point3d, clippers: Clipper[]) => boolean;
-
-/** BooleanClipNode carries an array of `Clipper` objects and function pointers to implement `Clipper` methods
- * * This is class is the implementor for the (static) methods in `BooleanClipFactory`
- * * These function pointers are usually (always?) chosen from the statics in offered by this class:
- * * The pointer to implement `isPointOnOrInside` is one of
- *   * isPointOnOrInsideOR implements union over children
- *   * isPointOnOrInsideAND implements intersection over children
- *   * isPointOnOrInsideXOR implements exclusive OR (i.e. parity)
- * * The pointer to a `combiner` function is usually (always) one of the corresponding Range1dArray static functions
- *    * Range1dArray.unionSorted
- *    * Range1dArray.intersectSorted
- *    * Range1dArray.paritySorted
+/** BooleanClipNode is an abstract base class for boolean actions by an array of clippers.
+ * * Derived class must implement
+ *   * The single point test `isPointOnOrInsideChildren`
+ *   * Boolean operation on 1d intervals `combineIntervals`
  * * The `keepInside` flag controls an additional optional flip of the boolean result.
  *   * if `keepInside === true`, accept the "inside" of the clip clippers
  *   * if `keepInside === false`, accept the "outside" of the child clippers.
- * * Hence the combinations of (OR, AND, XOR) and keepInside are
+ * * Hence the combinations of derived classes for (OR, AND, XOR) and keepInside are
  *   * (OR, true) = simple union (OR), i.e. "in" one or more clips
  *   * (OR, false) = complement of union (NOR), i.e. "outside" all clips
  *   * (AND, true) = simple intersection (AND), i.e. "in" all clips
@@ -40,20 +30,34 @@ type ClipNodePointBoolean = (point: Point3d, clippers: Clipper[]) => boolean;
  *   * (XOR,false) = complement of parity ), i.e. "in" an even number of clips
  * @internal
  */
-export class BooleanClipNode implements Clipper {
+export abstract class BooleanClipNode implements Clipper {
   protected _clippers: Clipper[];
   protected _intervalsA: Range1d[];
   protected _intervalsB: Range1d[];
-  private _keepInside: boolean;
-  private _combiner: ClipNodeSortedRange1dBoolean;
-  private _isPointOnOrInside: ClipNodePointBoolean;
-  public constructor(isPointOnOrInside: ClipNodePointBoolean, combiner: ClipNodeSortedRange1dBoolean, keepInside: boolean) {
+  protected _keepInside: boolean;
+
+  public constructor(keepInside: boolean) {
     this._keepInside = keepInside;
-    this._combiner = combiner;
-    this._isPointOnOrInside = isPointOnOrInside;
     this._clippers = [];
     this._intervalsA = [];
     this._intervalsB = [];
+  }
+  protected abstract isPointOnOrInsideChildren(point: Point3d): boolean;
+  protected abstract combineIntervals(operandA: Range1d[], operandB: Range1d[]): Range1d[];
+  public abstract get operationName(): string;
+  public toJSON(): any {
+    const data = [];
+    for (const c of this._clippers) {
+      const c1 = c as any;
+      if (c1.toJSON)
+        data.push(c1.toJSON());
+    }
+    // return this.formatJSON(data);
+    const s = this.operationName;
+    const json: { [opType: string]: any[] } = {};
+    json[s] = data;
+    return json;
+
   }
   /** Capture a (reference to a) child node or nodes */
   public captureChild(child: Clipper | Clipper[]) {
@@ -147,34 +151,9 @@ export class BooleanClipNode implements Clipper {
     return numAnnounce > 0;
 
   }
-  /** Function pointer for "OR" (union) */
-  public static isPointOnOrInsideOR(point: Point3d, clippers: Clipper[]): boolean {
-    for (const clipper of clippers) {
-      if (clipper.isPointOnOrInside(point))
-        return true;
-    }
-    return false;
-  }
-  /** Function pointer for "AND" (intersection) */
-  public static isPointOnOrInsideAND(point: Point3d, clippers: Clipper[]): boolean {
-    for (const clipper of clippers) {
-      if (!clipper.isPointOnOrInside(point))
-        return false;
-    }
-    return true;
-  }
-  /** Function pointer for "XOR" (parity) */
-  public static isPointOnOrInsideXOR(point: Point3d, clippers: Clipper[]): boolean {
-    let q = false;
-    for (const clipper of clippers) {
-      if (clipper.isPointOnOrInside(point))
-        q = !q;
-    }
-    return q;
-  }
-  /** test if a point is "in" this clipper, i.e. outside all of its children. */
+  /** Invoke callback to test if a point is "in" this clipper */
   public isPointOnOrInside(point: Point3d): boolean {
-    const q = this._isPointOnOrInside(point, this._clippers);
+    const q = this.isPointOnOrInsideChildren(point);
     return this._keepInside ? q : !q;
 
   }
@@ -199,7 +178,7 @@ export class BooleanClipNode implements Clipper {
       if (i === 0) {
         this.swapAB();
       } else {
-        this._intervalsA = this._combiner(this._intervalsA, this._intervalsB);
+        this._intervalsA = this.combineIntervals(this._intervalsA, this._intervalsB);
       }
       i++;
     }
@@ -219,11 +198,76 @@ export class BooleanClipNode implements Clipper {
       if (i === 0) {
         this.swapAB();
       } else {
-        this._intervalsA = this._combiner(this._intervalsA, this._intervalsB);
+        this._intervalsA = this.combineIntervals(this._intervalsA, this._intervalsB);
       }
       i++;
     }
     return this.announcePartsNNC(this._keepInside, this._intervalsA, 0, 1, arc, announce);
   }
 
+}
+/**
+ * Implement BooleanClipNode virtual methods for intersection (boolean OR) among children
+ * @internal
+ */
+export class BooleanClipNodeUnion extends BooleanClipNode {
+  public get operationName(): string { return this._keepInside ? "OR" : "NOR"; }
+  public constructor(keepInside: boolean) {
+    super(keepInside);
+  }
+  /** return true if inside any child clipper */
+  public isPointOnOrInsideChildren(point: Point3d): boolean {
+    for (const clipper of this._clippers) {
+      if (clipper.isPointOnOrInside(point))
+        return true;
+    }
+    return false;
+  }
+  public combineIntervals(operandA: Range1d[], operandB: Range1d[]): Range1d[] {
+    return Range1dArray.unionSorted(operandA, operandB);
+  }
+}
+
+/**
+ * Implement BooleanClipNode virtual methods for intersection (boolean OR) among children
+ * @internal
+ */
+export class BooleanClipNodeParity extends BooleanClipNode {
+  public get operationName(): string { return this._keepInside ? "XOR" : "NXOR"; }
+  public constructor(keepInside: boolean) {
+    super(keepInside);
+  }
+  /** return true if inside an odd number of clippers child clipper */
+  public isPointOnOrInsideChildren(point: Point3d): boolean {
+    let q = false;
+    for (const clipper of this._clippers) {
+      if (clipper.isPointOnOrInside(point))
+        q = !q;
+    }
+    return q;
+  }
+  public combineIntervals(operandA: Range1d[], operandB: Range1d[]): Range1d[] {
+    return Range1dArray.paritySorted(operandA, operandB);
+  }
+}
+/**
+ * Implement BooleanClipNode virtual methods for intersection (boolean OR) among children
+ * @internal
+ */
+export class BooleanClipNodeIntersection extends BooleanClipNode {
+  public get operationName(): string { return this._keepInside ? "AND" : "NAND"; }
+  public constructor(keepInside: boolean) {
+    super(keepInside);
+  }
+  /** return false if outside of any child clipper */
+  public isPointOnOrInsideChildren(point: Point3d): boolean {
+    for (const clipper of this._clippers) {
+      if (!clipper.isPointOnOrInside(point))
+        return false;
+    }
+    return true;
+  }
+  public combineIntervals(operandA: Range1d[], operandB: Range1d[]): Range1d[] {
+    return Range1dArray.intersectSorted(operandA, operandB);
+  }
 }
