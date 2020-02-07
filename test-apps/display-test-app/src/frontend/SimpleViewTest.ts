@@ -171,6 +171,7 @@ async function main() {
 
   tileAdminProps.cancelBackendTileRequests = (configuration.cancelBackendTileRequests !== false);
   tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
+  tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
 
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();

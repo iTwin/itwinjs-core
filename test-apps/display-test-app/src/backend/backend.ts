@@ -67,6 +67,13 @@ function setupStandaloneConfiguration(): SVTConfiguration {
       //
     }
 
+  const maxToSkipVar = process.env.SVT_MAX_TILES_TO_SKIP;
+  if (undefined !== maxToSkipVar) {
+    const maxToSkip = Number.parseInt(maxToSkipVar, 10);
+    if (!Number.isNaN(maxToSkip))
+      configuration.maxTilesToSkip = maxToSkip;
+  }
+
   if (undefined !== process.env.SVT_DISABLE_LOG_Z)
     configuration.logarithmicZBuffer = false;
 

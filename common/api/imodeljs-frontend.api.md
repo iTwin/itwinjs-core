@@ -8613,6 +8613,8 @@ export abstract class TileAdmin {
     abstract get maxActiveRequests(): number;
     abstract set maxActiveRequests(max: number);
     // @internal (undocumented)
+    abstract get maximumLevelsToSkip(): number;
+    // @internal (undocumented)
     abstract get maximumMajorTileFormatVersion(): number;
     // @internal (undocumented)
     abstract onActiveRequestCanceled(tile: Tile): void;
@@ -8663,6 +8665,7 @@ export namespace TileAdmin {
         enableInstancing?: boolean;
         ignoreAreaPatterns?: boolean;
         maxActiveRequests?: number;
+        maximumLevelsToSkip?: number;
         // @internal
         maximumMajorTileFormatVersion?: number;
         // @internal
@@ -8977,6 +8980,8 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     // (undocumented)
     readonly loader: TileLoader;
     // (undocumented)
+    readonly maxInitialTilesToSkip: number;
+    // (undocumented)
     readonly maxTilesToSkip: number;
     // (undocumented)
     readonly modelId: Id64String;
@@ -9045,6 +9050,8 @@ export interface TileTreeParams {
     readonly loader: TileLoader;
     // (undocumented)
     readonly location: Transform;
+    // (undocumented)
+    readonly maxInitialTilesToSkip?: number;
     // (undocumented)
     readonly maxTilesToSkip?: number;
     // (undocumented)

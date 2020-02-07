@@ -57,6 +57,9 @@
     "ShowTileVolumes": {
       "keyin": "fdt tile bounds"
     },
+    "ToggleTileTreeBoundsDecoration": {
+      "keyin": "fdt tiletree bounds"
+    },
     "TogglePrimitiveVisibility": {
       "keyin": "fdt visibility"
     },
