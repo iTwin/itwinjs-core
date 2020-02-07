@@ -69,6 +69,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 
     const loader = new IModelTileLoader(iModel, props.formatVersion, BatchType.Primary, edgesRequired, allowInstancing, id.guid);
     props.rootTile.contentId = loader.rootContentId;
+    props.maxTilesToSkip = IModelApp.tileAdmin.maximumLevelsToSkip;
     const params = tileTreeParamsFromJSON(props, iModel, id.is3d, loader, id.modelId);
     return new TileTree(params);
   }

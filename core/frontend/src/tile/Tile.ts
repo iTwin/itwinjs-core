@@ -435,11 +435,11 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       this.unloadChildren(args.purgeOlderThan);
       return SelectParent.No;
     }
+
     if (TileVisibility.Visible === vis) {
       // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
-      if (!this.isReady) {
+      if (!this.isReady)
         args.insertMissing(this);
-      }
 
       if (this.hasGraphics) {
         // It can be drawn - select it
@@ -447,13 +447,26 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
         selected.push(this);
         this.unloadChildren(args.purgeOlderThan);
       } else if (!this.isReady) {
-        // It can't be drawn. If direct children are drawable, draw them in this tile's place; otherwise draw the parent.
+        // It can't be drawn. Try to draw children in its place; otherwise draw the parent.
         // Do not load/request the children for this purpose.
         const initialSize = selected.length;
         const kids = this.children;
         if (undefined === kids)
           return SelectParent.Yes;
 
+        // Find any descendant to draw, until we exceed max initial tiles to skip.
+        if (this.depth < this.root.maxInitialTilesToSkip) {
+          for (const kid of kids) {
+            if (SelectParent.Yes === kid.selectTiles(selected, args, numSkipped)) {
+              selected.length = initialSize;
+              return SelectParent.Yes;
+            }
+
+            return SelectParent.No;
+          }
+        }
+
+        // If all visible direct children can be drawn, draw them.
         for (const kid of kids) {
           if (TileVisibility.OutsideFrustum !== kid.computeVisibility(args)) {
             if (!kid.hasGraphics) {
@@ -474,15 +487,20 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
     // This tile is too coarse to draw. Try to draw something more appropriate.
     // If it is not ready to draw, we may want to skip loading in favor of loading its descendants.
-    let canSkipThisTile = this.isReady || this.isParentDisplayable;
-    if (canSkipThisTile && this.isDisplayable) { // skipping an undisplayable tile doesn't count toward the maximum
-      // Some tiles do not sub-divide - they only facet the same geometry to a higher resolution. We can skip directly to the correct resolution.
-      const isNotReady = !this.isReady && !this.hasGraphics && !this.hasSizeMultiplier;
-      if (isNotReady) {
-        if (numSkipped >= this.root.maxTilesToSkip)
-          canSkipThisTile = false;
-        else
-          numSkipped += 1;
+    let canSkipThisTile = this.depth < this.root.maxInitialTilesToSkip;
+    if (canSkipThisTile) {
+      numSkipped = 1;
+    } else {
+      canSkipThisTile = this.isReady || this.isParentDisplayable || this.depth < this.root.maxInitialTilesToSkip;
+      if (canSkipThisTile && this.isDisplayable) { // skipping an undisplayable tile doesn't count toward the maximum
+        // Some tiles do not sub-divide - they only facet the same geometry to a higher resolution. We can skip directly to the correct resolution.
+        const isNotReady = !this.isReady && !this.hasGraphics && !this.hasSizeMultiplier;
+        if (isNotReady) {
+          if (numSkipped >= this.root.maxTilesToSkip)
+            canSkipThisTile = false;
+          else
+            numSkipped += 1;
+        }
       }
     }
 

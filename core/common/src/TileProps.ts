@@ -36,6 +36,8 @@ export interface TileTreeProps {
   location: TransformProps;
   /** If defined, limits the number of child tiles which can be skipped in selecting tiles of appropriate LOD */
   maxTilesToSkip?: number;
+  /** If defined, specifies the number of levels of the tile tree that can be skipped when selecting tiles. */
+  maxInitialTilesToSkip?: number;
   /** Optional - set to True for Y Axis up. By default Z Axis is up. */
   yAxisUp?: boolean;
   /** Optionally specifies the maximum tile format version supported. */

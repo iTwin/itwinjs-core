@@ -175,6 +175,9 @@ export class BriefcaseQuery extends WsgQuery {
 export class ChangeSet extends WsgInstance {
     applicationId?: string;
     applicationName?: string;
+    bridgeChangedFiles?: string[];
+    bridgeJobId?: string;
+    bridgeUsers?: string[];
     briefcaseId?: number;
     changesType?: ChangesType;
     description?: string;
@@ -241,6 +244,7 @@ export class ChangeSetQuery extends StringIdQuery {
     getVersionChangeSets(versionId: GuidString): this;
     latest(): this;
     selectApplicationData(): this;
+    selectBridgeProperties(): this;
     selectDownloadUrl(): this;
 }
 
