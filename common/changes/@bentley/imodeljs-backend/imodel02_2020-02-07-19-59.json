@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "Adding a new method setFirstSchemaLocater to ECSchemaXMLContext to allow control over the first locater used to locate schemas.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Chris.Lawson@bentley.com"
+}
