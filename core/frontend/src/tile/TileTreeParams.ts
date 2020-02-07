@@ -33,6 +33,7 @@ export interface TileTreeParams {
   readonly location: Transform;
   readonly modelId: Id64String;
   readonly maxTilesToSkip?: number;
+  readonly maxInitialTilesToSkip?: number;
   readonly yAxisUp?: boolean;
   readonly clipVector?: ClipVector;
   readonly contentRange?: ElementAlignedBox3d;
@@ -53,6 +54,7 @@ export function tileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConne
     location: Transform.fromJSON(props.location),
     modelId,
     maxTilesToSkip: props.maxTilesToSkip,
+    maxInitialTilesToSkip: props.maxInitialTilesToSkip,
     yAxisUp: props.yAxisUp,
     contentRange,
     contentIdQualifier: props.contentIdQualifier,

@@ -106,6 +106,7 @@ beta;ToggleSelectedViewFrustumTool
 beta;ToggleShadowFrustumTool 
 beta;ToggleSkyboxTool 
 beta;ToggleTileRequestDecorationTool 
+beta;ToggleTileTreeBoundsDecorationTool 
 beta;ToggleWiremeshTool 
 alpha;ToolSettingsTracker
 alpha;ViewportAddRealityModel 
