@@ -23,6 +23,7 @@ export * from "./tools/ReportWebGLCompatibilityTool";
 export * from "./tools/SavedViews";
 export * from "./tools/SelectionTools";
 export * from "./tools/TileRequestDecoration";
+export * from "./tools/TileTreeBoundsDecoration";
 export * from "./tools/ViewportTools";
 
 export * from "./ui/Button";

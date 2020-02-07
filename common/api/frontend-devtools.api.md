@@ -1056,6 +1056,20 @@ export class ToggleTileRequestDecorationTool extends Tool {
 }
 
 // @beta
+export class ToggleTileTreeBoundsDecorationTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ToggleWiremeshTool extends RenderSystemDebugControlTool {
     // (undocumented)
     execute(control: RenderSystemDebugControl): void;

@@ -20,6 +20,7 @@ export interface SVTConfiguration {
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean; // default ON
+  maxTilesToSkip?: number;
   tileTreeExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
   filterMapTextures?: boolean;  // default OFF

@@ -198,6 +198,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
   public readonly contentIdQualifier?: string;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
+  public readonly maxInitialTilesToSkip: number;
   public expirationTime: BeDuration;
   public clipVolume?: RenderClipVolume;
   protected _rootTile: Tile;
@@ -222,6 +223,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
       this.clipVolume = IModelApp.renderSystem.createClipVolume(props.clipVector);
 
     this.maxTilesToSkip = JsonUtils.asInt(props.maxTilesToSkip, 100);
+    this.maxInitialTilesToSkip = JsonUtils.asInt(props.maxInitialTilesToSkip, 0);
     this.loader = props.loader;
     this._rootTile = new Tile(tileParamsFromJSON(props.rootTile, this)); // causes TileTree to no longer be disposed (assuming the Tile loaded a graphic and/or its children)
     this.viewFlagOverrides = this.loader.viewFlagOverrides;
