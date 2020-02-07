@@ -1032,10 +1032,10 @@ class IModelJsModuleBuilder {
           return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, `cannot find the build directory of the plugin: ${destWebResources}`));
         }
 
-        const outDir = path.resolve (pluginDirectory, this._moduleDescription.webpack.bundleName);
+        const outDir = path.resolve(pluginDirectory, this._moduleDescription.webpack.bundleName);
         if (fs.existsSync(outDir)) {
           if (this._detail > 3) {
-            console.log (`  Plugin ${this._moduleDescription.webpack.bundleName} is already installed to ${pluginDirectory}`);
+            console.log(`  Plugin ${this._moduleDescription.webpack.bundleName} is already installed to ${pluginDirectory}`);
           }
           continue;
         }
@@ -1104,7 +1104,7 @@ class IModelJsModuleBuilder {
     }
 
     return new Promise((resolve, _reject) => {
-      child_process.execFile(webpackFullPath, args, { cwd: process.cwd() }, (error: Error | null, stdout: string, stderr: string) => {
+      child_process.execFile(webpackFullPath, args, { cwd: process.cwd(), maxBuffer: 1024 * 500 }, (error: Error | null, stdout: string, stderr: string) => {
         if (this._detail > 0)
           console.log("Finished", operation);
         if ((null == error) || (!stderr || (0 === stderr.length))) {

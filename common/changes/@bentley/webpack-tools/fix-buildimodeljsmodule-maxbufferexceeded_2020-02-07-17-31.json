@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webpack-tools",
+      "comment": "increased maxBuffer of child process running webpack from buildIModelJsModule",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "jason.crow@bentley.com"
+}
