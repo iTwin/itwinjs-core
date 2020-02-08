@@ -15,6 +15,7 @@ import { PropertyDescription, PropertyEditorInfo } from "./Description";
 /**
  * Base Quantity Property Description
  * @beta
+ * @deprecated Move BaseQuantityDescription to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export abstract class BaseQuantityDescription implements PropertyDescription {
   private _formatterSpec?: FormatterSpec;

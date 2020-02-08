@@ -196,7 +196,7 @@ public;HitPriority
 public;HitSource
 internal;I3dmReader 
 beta;IconDefinition
-alpha;IconEditorParams 
+beta;IconEditorParams 
 beta;IconListEditorParams 
 public;IconSprites
 public;IdleTool 

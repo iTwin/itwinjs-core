@@ -10,6 +10,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 
 /** Primitive Property Value Types.
  * @beta
+ * @deprecated Move Primitives to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export namespace Primitives {
   export type Text = string;

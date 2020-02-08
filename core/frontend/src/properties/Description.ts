@@ -12,6 +12,7 @@ import { QuantityType } from "../QuantityFormatter";
 /**
  * Information about an enumeration choice
  * @beta
+ * @deprecated Move EnumerationChoice  to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface EnumerationChoice {
   label: string;
@@ -21,6 +22,7 @@ export interface EnumerationChoice {
 /**
  * Information about a set of enumeration choices
  * @beta
+ * @deprecated Move EnumerationChoicesInfo to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface EnumerationChoicesInfo {
   choices: EnumerationChoice[];
@@ -31,6 +33,7 @@ export interface EnumerationChoicesInfo {
 /**
  * Information about a Property Editor
  * @beta
+ * @deprecated Move PropertyEditorInfo  to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface PropertyEditorInfo {
   name?: string;
@@ -40,6 +43,7 @@ export interface PropertyEditorInfo {
 /**
  * PropertyDescription contains metadata about a Property
  * @beta
+ * @deprecated Move PropertyDescription to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface PropertyDescription {
   name: string;

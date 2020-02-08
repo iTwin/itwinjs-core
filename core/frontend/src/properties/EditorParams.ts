@@ -10,6 +10,7 @@ import { QuantityType } from "../QuantityFormatter";
 /**
  * Enum for Property Editor Param Types
  * @beta
+ * @deprecated Move PropertyEditorParamTypes to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export enum PropertyEditorParamTypes {
   ButtonGroupData = "ButtonGroupData",
@@ -30,6 +31,7 @@ export enum PropertyEditorParamTypes {
 /**
  * Base interface for Property Editor Params
  * @beta
+ * @deprecated Move BasePropertyEditorParams to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface BasePropertyEditorParams {
   type: string;
@@ -38,6 +40,7 @@ export interface BasePropertyEditorParams {
 /**
  * Parameters used by PropertyEditors that use HTML <input> element.
  * @beta
+ * @deprecated Move InputEditorSizeParams to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface InputEditorSizeParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.InputEditorSize;
@@ -51,6 +54,7 @@ export interface InputEditorSizeParams extends BasePropertyEditorParams {
  * Parameters used to populate color type editor with a specific set of colors. If not specified the Color
  * Editor will show a default palette of 16 colors.
  * @beta
+ * @deprecated Move ColorEditorParams to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface ColorEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.ColorData;
@@ -63,6 +67,7 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
 /**
  * Parameters used to populate icon type editor with a specific set of icons.
  * @beta
+ * @deprecated Move IconListEditorParams to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface IconListEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.IconListData;
@@ -77,6 +82,7 @@ export interface IconListEditorParams extends BasePropertyEditorParams {
 /**
  * Information about an icon displayed next to a property editor.
  * @beta
+ * @deprecated Move IconDefinition to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface IconDefinition {
   /** Icon specification. The value is the name of an icon WebFont entry, or if specifying an SVG symbol, use `svg:` prefix. */
@@ -88,6 +94,7 @@ export interface IconDefinition {
 /**
  * Parameters used by EnumButtonGroupEditor to define icons in button group.
  * @beta
+ * @deprecated Move ButtonGroupEditorParams to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.ButtonGroupData;
@@ -97,6 +104,7 @@ export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
 /**
  * Parameters used to suppress the label for a type editor in the ToolSettings widget.
  * @beta
+ * @deprecated Move SuppressLabelEditorParams to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.SuppressEditorLabel;
@@ -107,6 +115,7 @@ export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
 /**
  * Parameters used by PropertyEditors that support JSON.
  * @alpha
+ * @deprecated
  */
 export interface JsonEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.JSON;
@@ -116,6 +125,7 @@ export interface JsonEditorParams extends BasePropertyEditorParams {
 /**
  * Parameters used by PropertyEditors that support defining a minimum and maximum value.
  * @alpha
+ * @deprecated
  */
 export interface RangeEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.Range;
@@ -129,6 +139,7 @@ export interface RangeEditorParams extends BasePropertyEditorParams {
  * Parameters used to indicate that a Slider should be presented for the property
  * and to specify the values needed by the slider.
  * @alpha
+ * @deprecated
  */
 export interface SliderEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.Slider;
@@ -150,6 +161,7 @@ export interface SliderEditorParams extends BasePropertyEditorParams {
  * Parameter that is used to indicate that a multiline text editor should be created.
  * The number of rows specified will determine the height of the editor control.
  * @alpha
+ * @deprecated
  */
 export interface MultilineTextEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.MultilineText;
@@ -158,7 +170,8 @@ export interface MultilineTextEditorParams extends BasePropertyEditorParams {
 
 /**
  * Parameters used to display an icon next to property editor.
- * @alpha
+ * @beta
+ * @deprecated Move IconEditorParams to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface IconEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.Icon;
@@ -168,6 +181,7 @@ export interface IconEditorParams extends BasePropertyEditorParams {
 /**
  * Parameters used with boolean properties to indicate icon overrides.
  * @alpha
+ * @deprecated
  */
 export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.CheckBoxIcons;
@@ -178,6 +192,7 @@ export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
 /**
  * Parameter used to suppress Unit labels
  * @alpha
+ * @deprecated
  */
 export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.SuppressUnitLabel;
@@ -186,6 +201,7 @@ export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams 
 /**
  * defines Results of parsing a string input by a user into its desired value type
  * @beta
+ * @deprecated Move ParseResults to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface ParseResults {
   value?: string | number | boolean | {} | string[] | Date | [] | undefined;
@@ -195,6 +211,7 @@ export interface ParseResults {
 /**
  * Parameters used with properties that want to control parsing and formatting.
  * @beta
+ * @deprecated Move CustomFormattedNumberParams to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.CustomFormattedNumber;
@@ -205,5 +222,6 @@ export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
 /**
  * Type definition for Property Editor params
  * @beta
+ * @deprecated Move PropertyEditorParams to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export type PropertyEditorParams = BasePropertyEditorParams;

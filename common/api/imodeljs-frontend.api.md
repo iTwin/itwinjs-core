@@ -1606,7 +1606,7 @@ export interface AppearanceOverrideProps {
     overrideType?: FeatureOverrideType;
 }
 
-// @beta
+// @beta @deprecated
 export interface ArrayValue extends BasePropertyValue {
     // (undocumented)
     items: PropertyRecord[];
@@ -1818,19 +1818,19 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     unionFitRange(_range: Range3d): void;
 }
 
-// @beta
+// @beta @deprecated
 export interface BasePropertyEditorParams {
     // (undocumented)
     type: string;
 }
 
-// @beta
+// @beta @deprecated
 export interface BasePropertyValue {
     // (undocumented)
     valueFormat: PropertyValueFormat;
 }
 
-// @beta
+// @beta @deprecated
 export abstract class BaseQuantityDescription implements PropertyDescription {
     constructor(name: string, displayLabel: string, iconSpec?: string);
     // (undocumented)
@@ -2033,7 +2033,7 @@ export interface BlankConnectionProps {
     name: string;
 }
 
-// @beta
+// @beta @deprecated
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     buttons: IconDefinition[];
@@ -2170,7 +2170,7 @@ export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     offIconDefinition?: IconDefinition;
@@ -2233,7 +2233,7 @@ export class Cluster<T extends Marker> {
     readonly rect: ViewRect;
 }
 
-// @beta
+// @beta @deprecated
 export interface ColorEditorParams extends BasePropertyEditorParams {
     colorValues: number[];
     numColumns?: number;
@@ -2449,7 +2449,7 @@ export enum CurrentState {
     NotEnabled = 0
 }
 
-// @beta
+// @beta @deprecated
 export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
     // (undocumented)
     formatFunction: (numberValue: number, quantityType?: QuantityType | string) => string;
@@ -2831,7 +2831,7 @@ export namespace EditManipulator {
     }
 }
 
-// @beta
+// @beta @deprecated
 export interface EditorPosition {
     columnIndex: number;
     columnSpan?: number;
@@ -3065,7 +3065,7 @@ export class EntityState implements EntityProps {
     toJSON(): EntityProps;
 }
 
-// @beta
+// @beta @deprecated
 export interface EnumerationChoice {
     // (undocumented)
     label: string;
@@ -3073,7 +3073,7 @@ export interface EnumerationChoice {
     value: string | number;
 }
 
-// @beta
+// @beta @deprecated
 export interface EnumerationChoicesInfo {
     // (undocumented)
     choices: EnumerationChoice[];
@@ -4049,13 +4049,13 @@ export class I3dmReader extends GltfReader {
     protected readFeatures(_features: Mesh.Features, _json: any): boolean;
     }
 
-// @beta
+// @beta @deprecated
 export interface IconDefinition {
     iconSpec: string;
     isEnabledFunction?: () => boolean;
 }
 
-// @alpha
+// @beta @deprecated
 export interface IconEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     definition: IconDefinition;
@@ -4063,7 +4063,7 @@ export interface IconEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.Icon;
 }
 
-// @beta
+// @beta @deprecated
 export interface IconListEditorParams extends BasePropertyEditorParams {
     iconValue: string;
     iconValues: string[];
@@ -4512,7 +4512,7 @@ export abstract class InputCollector extends InteractiveTool {
     run(..._args: any[]): boolean;
 }
 
-// @beta
+// @beta @deprecated
 export interface InputEditorSizeParams extends BasePropertyEditorParams {
     maxLength?: number;
     size?: number;
@@ -4617,7 +4617,7 @@ export enum ItemField {
     Z_Item = 4
 }
 
-// @alpha
+// @alpha @deprecated
 export interface JsonEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     json: any;
@@ -4647,7 +4647,7 @@ export class LengthDescription extends BaseQuantityDescription {
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
-// @beta
+// @beta @deprecated
 export interface LinkElementsInfo {
     matcher?: (displayValue: string) => Array<{
         start: number;
@@ -5635,7 +5635,7 @@ export enum ModifyElementSource {
     Unknown = 0
 }
 
-// @alpha
+// @alpha @deprecated
 export interface MultilineTextEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     heightInRows: number;
@@ -5940,7 +5940,7 @@ export class PanViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @beta
+// @beta @deprecated
 export interface ParseResults {
     // (undocumented)
     parseError?: string;
@@ -6114,7 +6114,7 @@ export class PluginAdmin {
 // @beta
 export type PluginLoadResults = Plugin | undefined | string | string[];
 
-// @beta
+// @beta @deprecated
 export namespace Primitives {
     // (undocumented)
     export type Boolean = boolean | string | {} | [];
@@ -6196,7 +6196,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     undoPreviousStep(): Promise<boolean>;
 }
 
-// @beta
+// @beta @deprecated
 export interface PrimitiveValue extends BasePropertyValue {
     // (undocumented)
     displayValue?: string;
@@ -6213,7 +6213,7 @@ export const enum PrimitiveVisibility {
     Uninstanced = 2
 }
 
-// @beta
+// @beta @deprecated
 export interface PropertyDescription {
     dataController?: string;
     // (undocumented)
@@ -6230,7 +6230,7 @@ export interface PropertyDescription {
     typename: string;
 }
 
-// @beta
+// @beta @deprecated
 export interface PropertyEditorInfo {
     // (undocumented)
     name?: string;
@@ -6238,10 +6238,10 @@ export interface PropertyEditorInfo {
     params?: PropertyEditorParams[];
 }
 
-// @beta
+// @beta @deprecated
 export type PropertyEditorParams = BasePropertyEditorParams;
 
-// @beta
+// @beta @deprecated
 export enum PropertyEditorParamTypes {
     // (undocumented)
     ButtonGroupData = "ButtonGroupData",
@@ -6271,7 +6271,7 @@ export enum PropertyEditorParamTypes {
     SuppressUnitLabel = "SuppressUnitLabel"
 }
 
-// @beta
+// @beta @deprecated
 export class PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
     // (undocumented)
@@ -6296,10 +6296,10 @@ export class PropertyRecord {
     readonly value: PropertyValue;
 }
 
-// @beta
+// @beta @deprecated
 export type PropertyValue = PrimitiveValue | StructValue | ArrayValue;
 
-// @beta
+// @beta @deprecated
 export enum PropertyValueFormat {
     // (undocumented)
     Array = 1,
@@ -6398,7 +6398,7 @@ export enum QuantityType {
     Volume = 4
 }
 
-// @alpha
+// @alpha @deprecated
 export interface RangeEditorParams extends BasePropertyEditorParams {
     maximum?: number;
     minimum?: number;
@@ -7729,7 +7729,7 @@ export class SkySphere extends SkyBox {
     toJSON(): SkyBoxProps;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface SliderEditorParams extends BasePropertyEditorParams {
     intervals?: boolean;
     maximum: number;
@@ -8004,7 +8004,7 @@ export enum StartOrResume {
     Start = 1
 }
 
-// @beta
+// @beta @deprecated
 export interface StructValue extends BasePropertyValue {
     // (undocumented)
     members: {
@@ -8082,14 +8082,14 @@ export interface SubCategoriesRequest {
     readonly promise: Promise<boolean>;
 }
 
-// @beta
+// @beta @deprecated
 export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
     suppressLabelPlaceholder?: boolean;
     // (undocumented)
     type: PropertyEditorParamTypes.SuppressEditorLabel;
 }
 
-// @alpha
+// @alpha @deprecated
 export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     type: PropertyEditorParamTypes.SuppressUnitLabel;
@@ -9447,7 +9447,7 @@ export class ToolSettings {
     static zoomSpeed: number;
 }
 
-// @beta
+// @beta @deprecated
 export class ToolSettingsPropertyItem {
     constructor(value: ToolSettingsValue, propertyName: string);
     // (undocumented)
@@ -9456,7 +9456,7 @@ export class ToolSettingsPropertyItem {
     value: ToolSettingsValue;
 }
 
-// @beta
+// @beta @deprecated
 export class ToolSettingsPropertyRecord extends PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly?: boolean, lockProperty?: PropertyRecord);
     // (undocumented)
@@ -9467,7 +9467,7 @@ export class ToolSettingsPropertyRecord extends PropertyRecord {
     lockProperty?: PropertyRecord;
 }
 
-// @beta
+// @beta @deprecated
 export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
     constructor(value: ToolSettingsValue, propertyName: string, isDisabled?: boolean);
     isDisabled?: boolean;
@@ -9481,7 +9481,7 @@ export class ToolSettingsState {
     saveToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void;
 }
 
-// @beta
+// @beta @deprecated
 export class ToolSettingsValue implements PrimitiveValue {
     constructor(value?: number | string | boolean | Date, displayValue?: string);
     // (undocumented)
