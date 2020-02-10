@@ -20,7 +20,7 @@ describe("ECSchemaXmlContext", () => {
     expect(schema).to.eql(expectedTestSchemaJson);
   });
 
-  it("should call schema locater callback for missing schema references", () => {
+  it("setSchemaLocater, should call schema locater callback for missing schema references", () => {
     const testDomainXmlPath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     const expectedBisCoreKey = {
       name: "BisCore",
@@ -31,6 +31,25 @@ describe("ECSchemaXmlContext", () => {
     const context = new ECSchemaXmlContext();
     const missingReferences: SchemaKey[] = [];
     context.setSchemaLocater((key: SchemaKey) => {
+      missingReferences.push(key);
+    });
+
+    expect(() => context.readSchemaFromXmlFile(testDomainXmlPath)).to.throw("ReferencedSchemaNotFound");
+    expect(missingReferences).to.have.lengthOf(1);
+    expect(missingReferences[0]).to.eql(expectedBisCoreKey);
+  });
+
+  it("setFirstSchemaLocater, should call schema locater callback for missing schema references", () => {
+    const testDomainXmlPath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
+    const expectedBisCoreKey = {
+      name: "BisCore",
+      readVersion: 1,
+      writeVersion: 0,
+      minorVersion: 0,
+    };
+    const context = new ECSchemaXmlContext();
+    const missingReferences: SchemaKey[] = [];
+    context.setFirstSchemaLocater((key: SchemaKey) => {
       missingReferences.push(key);
     });
 

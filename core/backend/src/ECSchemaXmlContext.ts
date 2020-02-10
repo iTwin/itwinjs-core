@@ -32,6 +32,10 @@ export class ECSchemaXmlContext {
     this._nativeContext!.setSchemaLocater(locater);
   }
 
+  public setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
+    this._nativeContext!.setFirstSchemaLocater(locater);
+  }
+
   public readSchemaFromXmlFile(filePath: string): any {
     const response = this._nativeContext!.readSchemaFromXmlFile(filePath);
     if (response.error) {
