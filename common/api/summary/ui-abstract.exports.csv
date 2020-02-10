@@ -1,66 +1,67 @@
 sep=;
 Release Tag;API Item
-beta;AbstractCommandItemProps 
-beta;AbstractConditionalItemProps 
-beta;AbstractGroupItemProps 
-beta;AbstractIconProps
-beta;AbstractItemProps 
+beta;AbstractActionItemProps 
 beta;AbstractMenuItemProps 
 beta;AbstractStatusBarActionItem 
 beta;AbstractStatusBarCustomItem 
-beta;AbstractStatusBarItem
+beta;AbstractStatusBarItem 
 beta;AbstractStatusBarItemUtilities
 beta;AbstractStatusBarLabelItem 
-beta;AbstractToolbarProps 
-beta;AbstractToolItemProps 
-alpha;ActionItemInsertSpec 
-beta;AnyItemProps = AbstractCommandItemProps | AbstractToolItemProps | AbstractGroupItemProps
-beta;AnyToolbarItemProps = AnyItemProps | AbstractConditionalItemProps
+beta;AbstractToolbarProps
+alpha;AbstractWidgetProps 
+beta;ActionButton 
 beta;BackstageActionItem 
 beta;BackstageItem = BackstageActionItem | BackstageStageLauncher
 internal;BackstageItemsChangedArgs
-beta;BackstageItemsManager
+internal;BackstageItemsManager
 beta;BackstageItemType
 beta;BackstageItemUtilities
 beta;BackstageStageLauncher 
 beta;BadgeType
-beta;BaseItemState
 beta;CommandHandler
-beta;CommonBackstageItem
+beta;CommonBackstageItem 
+beta;CommonItemProps
 beta;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
-alpha;ConditionalDisplaySpecification
-beta;ConditionalDisplayType
-beta;DescriptionProps
+beta;CommonToolbarItem = ActionButton | GroupButton | CustomDefinition
+beta;ConditionalBooleanValue
+beta;ConditionalStringValue
+beta;CustomDefinition 
 internal;getClassName: (obj: any) => string
-beta;GroupButtonDirection
-alpha;GroupItemInsertSpec 
+beta;GroupButton 
 beta;IconSpecUtilities
-alpha;InsertSpec
 beta;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
 beta;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
 beta;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
 beta;isActionItem: (item: BackstageItem) => item is BackstageActionItem
 beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
-beta;LabelProps
 beta;OnCancelFunc = () => void
 beta;OnItemExecutedFunc = (item: any) => void
 beta;OnNumberCommitFunc = (value: number) => void
-alpha;PluginUiManager
-alpha;PluginUiProvider
+beta;ProvidedItem
 public;RelativePosition
+alpha;StagePanelLocation
+alpha;StagePanelSection
 alpha;StageUsage
 beta;StatusBarItemId = CommonStatusBarItem["id"]
 internal;StatusBarItemsChangedArgs
-beta;StatusBarItemsManager
-beta;StatusBarItemType
-beta;StatusbarLabelSide
+internal;StatusBarItemsManager
+beta;StatusBarLabelSide
 beta;StatusBarSection
 beta;StringGetter = () => string
-beta;SyncUiProps
-alpha;ToolbarItemInsertSpec 
-alpha;ToolbarItemType
-beta;TooltipProps
+beta;ToolbarItem 
+beta;ToolbarItemId = CommonToolbarItem["id"]
+internal;ToolbarItemsChangedArgs
+internal;ToolbarItemsManager
+beta;ToolbarItemUtilities
+beta;ToolbarOrientation
+beta;ToolbarUsage
 public;UiAbstract
 beta;UiAdmin
 public;UiError 
-alpha;UiProviderRegisteredEventArgs
+alpha;UiItemProviderRegisteredEventArgs
+alpha;UiItemsApplication
+alpha;UiItemsApplicationAction
+alpha;UiItemsArbiter
+alpha;UiItemsManager
+alpha;UiItemsProvider
+alpha;WidgetState

@@ -41,7 +41,7 @@ describe("PopupManager", () => {
     it("showMenuButton should add menuButton", () => {
       const menuItemProps: MenuItemProps[] = [
         {
-          id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
+          id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } },
         },
       ];
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
@@ -66,7 +66,7 @@ describe("PopupManager", () => {
     it("hideMenuButton should hide menuButton", () => {
       const menuItemProps: MenuItemProps[] = [
         {
-          id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
+          id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } },
         },
       ];
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
@@ -188,9 +188,7 @@ describe("PopupManager", () => {
       const wrapper = mount(<PopupRenderer />);
 
       const menuItemProps: MenuItemProps[] = [
-        {
-          id: "test", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } },
-        },
+        { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
       ];
       const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
@@ -243,9 +241,8 @@ describe("PopupManager", () => {
 
       const toolbarProps: AbstractToolbarProps = {
         items: [
-          { label: "Mode 1", iconSpec: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
-          { label: "Mode 2", iconSpec: "icon-placeholder", isVisible: false, execute: () => { } },
-          { conditionalId: "c1", items: [{ label: "Test 1", iconSpec: "icon-placeholder", execute: () => { } }] },
+          { id: "Mode-1", itemPriority: 10, label: "Mode 1", icon: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
+          { id: "Mode-2", itemPriority: 20, label: "Mode 2", icon: "icon-placeholder", execute: () => { } },
         ],
       };
 

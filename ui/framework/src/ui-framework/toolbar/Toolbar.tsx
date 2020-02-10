@@ -19,7 +19,6 @@ import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { ItemDefBase } from "../shared/ItemDefBase";
 import { GroupItemDef } from "./GroupItem";
-import { ConditionalItemDef } from "../shared/ConditionalItemDef";
 import { CustomItemDef } from "../shared/CustomItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";
 
@@ -75,6 +74,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     let width = (ActionButtonItemDef.defaultButtonSize + 2) * 3;
     let height = width;
 
+    // istanbul ignore next
     if (props.initialSize) {
       width = props.initialSize.width;
       height = props.initialSize.height;
@@ -137,9 +137,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     for (const item of itemList) {
       if (item.stateFunc && item.stateSyncIds && item.stateSyncIds.length > 0 &&
         item.stateSyncIds.some((value: string): boolean => args.eventIds.has(value))) {
-        if (item instanceof ConditionalItemDef) {
-          item.handleSyncUiEvent(args);
-        } else if (item instanceof GroupItemDef) {
+        if (item instanceof GroupItemDef) {
           this.setCurrentStateValues(item);
           this._processSyncUiEvent(item.items, args);
         } else {
@@ -178,17 +176,11 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
 
     // Filter on ActionButtonItemDef
     itemList.forEach((item: ItemDefBase) => {
+      // istanbul ignore else
       if (item.isVisible) {
+        // istanbul ignore else
         if (item instanceof ActionButtonItemDef) {
           actionItems.push(item);
-        } else {
-          // istanbul ignore else
-          if (item instanceof ConditionalItemDef) {
-            const visibleItems = item.getVisibleItems();
-            visibleItems.forEach((childItem: ActionButtonItemDef) => {
-              actionItems.push(childItem);
-            });
-          }
         }
       }
     });
@@ -276,6 +268,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
 
   private hasVisibleItems(items: ItemList) {
     for (const item of items) {
+      // istanbul ignore else
       if (item && item.isVisible)
         return true;
     }

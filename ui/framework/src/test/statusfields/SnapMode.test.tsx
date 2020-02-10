@@ -8,15 +8,15 @@ import { expect } from "chai";
 import { Provider } from "react-redux";
 import * as sinon from "sinon";
 
-import TestUtils from "../TestUtils";
 import { SnapMode } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
 import { FooterPopup } from "@bentley/ui-ninezone";
 
+import TestUtils from "../TestUtils";
 import {
   SnapModeField,
   StatusBarWidgetControl,
   StatusBar,
-  WidgetState,
   ConfigurableCreateInfo,
   WidgetDef,
   ConfigurableUiControlType,
@@ -59,8 +59,10 @@ describe("SnapModeField", () => {
   });
 
   it("Status Bar with SnapModes Field should mount", () => {
-    const modes = [SnapMode.NearestKeypoint as number, SnapMode.Intersection as number, SnapMode.Center as number,
-      SnapMode.Nearest as number, SnapMode.Origin as number, SnapMode.MidPoint as number, SnapMode.Bisector as number];
+    const modes = [
+      SnapMode.NearestKeypoint as number, SnapMode.Intersection as number, SnapMode.Center as number,
+      SnapMode.Nearest as number, SnapMode.Origin as number, SnapMode.MidPoint as number, SnapMode.Bisector as number,
+    ];
 
     const icons = ["icon-snaps", "icon-snaps-intersection", "icon-snaps-center", "icon-snaps-nearest",
       "icon-snaps-origin", "icon-snaps-midpoint", "icon-snaps-bisector"];

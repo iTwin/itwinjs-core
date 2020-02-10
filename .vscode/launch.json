@@ -347,6 +347,24 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "[UI] Tests: Abstract",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/abstract/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/abstract",
+      "args": [
+        "--opts",
+        "./mocha.opts",
+        "--no-timeouts",
+        "lib/test/**/*.test.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**/*.js",
+        "node_modules/rxjs/**/*"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "[UI] Tests: Components",
       "protocol": "inspector",
       "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",

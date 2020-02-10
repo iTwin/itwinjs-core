@@ -9,14 +9,15 @@ import { expect } from "chai";
 import { Provider } from "react-redux";
 
 import { MockRender } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
+import { Checkbox } from "@bentley/ui-core";
 
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
 import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../../ui-framework/configurableui/ConfigurableUiControl";
 import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-framework/statusbar/StatusBarWidgetControl";
 import { ViewAttributesStatusField } from "../../ui-framework/statusfields/ViewAttributes";
 import { StatusBar } from "../../ui-framework/statusbar/StatusBar";
-import { Checkbox } from "@bentley/ui-core";
 
 describe("ViewAttributes", () => {
   class AppStatusBarWidgetControl extends StatusBarWidgetControl {

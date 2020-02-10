@@ -9,9 +9,10 @@ import { expect } from "chai";
 import { Provider } from "react-redux";
 
 import { MockRender } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
 
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
 import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../../ui-framework/configurableui/ConfigurableUiControl";
 import { StatusBarWidgetControl, StatusBarWidgetControlArgs } from "../../ui-framework/statusbar/StatusBarWidgetControl";
 import { SectionsStatusField } from "../../ui-framework/statusfields/SectionsField";

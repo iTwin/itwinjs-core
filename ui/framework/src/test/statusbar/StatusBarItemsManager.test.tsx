@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import { StatusBarSection } from "@bentley/ui-abstract";
 
 import { StatusBarItem, StatusBarItemUtilities, StatusBarItemsManager } from "../../ui-framework";
@@ -80,44 +79,6 @@ describe("StatusBarItemsManager", () => {
       const itemIds = items.map((item) => item.id);
       sut.remove(itemIds);
       expect(sut.items.length).to.eq(0);
-    });
-  });
-
-  describe("setIsVisible", () => {
-    it("should set is visible", () => {
-      const sut = new StatusBarItemsManager();
-      sut.items = [
-        StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />),
-      ];
-
-      const spy = sinon.spy();
-      sut.onItemsChanged.addListener(spy);
-      sut.setIsVisible("test1", false);
-
-      spy.calledOnce.should.true;
-      sut.items[0].isVisible.should.false;
-    });
-
-    it("should not update if item is not found", () => {
-      const sut = new StatusBarItemsManager();
-      const spy = sinon.spy();
-      sut.onItemsChanged.addListener(spy);
-      sut.setIsVisible("test1", false);
-
-      spy.calledOnce.should.false;
-    });
-
-    it("should not update if item visibility equals new visibility", () => {
-      const sut = new StatusBarItemsManager();
-      sut.items = [
-        StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />),
-      ];
-
-      const spy = sinon.spy();
-      sut.onItemsChanged.addListener(spy);
-      sut.setIsVisible("test1", true);
-
-      spy.calledOnce.should.false;
     });
   });
 

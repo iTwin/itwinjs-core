@@ -104,6 +104,10 @@ describe("NestedFrontstage", () => {
     FrontstageManager.clearFrontstageDefs();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("activeNestedFrontstage should return undefined if none active", () => {
     expect(FrontstageManager.activeNestedFrontstage).to.be.undefined;
     expect(FrontstageManager.nestedFrontstageCount).to.eq(0);

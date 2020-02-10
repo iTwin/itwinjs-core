@@ -15,6 +15,8 @@ import {
   BackstageStageLauncher,
   isStageLauncher,
   BackstageItem,
+  ConditionalStringValue,
+  ConditionalBooleanValue,
 } from "@bentley/ui-abstract";
 import { useActiveFrontstageId } from "../frontstage/Frontstage";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -34,11 +36,12 @@ export function BackstageComposerActionItem({ item }: BackstageComposerActionIte
   }, [manager, item]);
   return (
     <NZ_BackstageItem
-      icon={<Icon iconSpec={item.icon} />}
-      isDisabled={!item.isEnabled}
+      icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
+      isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
+      subtitle={ConditionalStringValue.getValue(item.subtitle)}
     >
-      {item.label}
+      {ConditionalStringValue.getValue(item.label)}
     </NZ_BackstageItem>
   );
 }
@@ -61,13 +64,13 @@ export function BackstageComposerStageLauncher({ item }: BackstageComposerStageL
   const activeFrontstageId = useActiveFrontstageId();
   return (
     <NZ_BackstageItem
-      icon={<Icon iconSpec={item.icon} />}
+      icon={<Icon iconSpec={ConditionalStringValue.getValue(item.icon)} />}
       isActive={item.stageId === activeFrontstageId}
-      isDisabled={!item.isEnabled}
+      isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
       onClick={handleClick}
-      subtitle={item.subtitle}
+      subtitle={ConditionalStringValue.getValue(item.subtitle)}
     >
-      {item.label}
+      {ConditionalStringValue.getValue(item.label)}
     </NZ_BackstageItem>
   );
 }

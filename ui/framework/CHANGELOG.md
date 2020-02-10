@@ -29,7 +29,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 - Add useActiveIModelConnection hook.
 - Allow setting App Iconspec.
-- Setup OidcDesktopClient for Electron use cases. 
+- Setup OidcDesktopClient for Electron use cases.
 - Fix styling of footer Indicator to work with Themes.
 - Disallow plugins from adding tools anywhere but the end of a toolbar.
 - [ModelsTree] Merge same-label Subject nodes to avoid duplication
@@ -48,7 +48,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 - Use exhaustive-deps linter rule.
 - Ability to opt-in to toolbar drag interaction.
 - Prevent unnecessary resubscribe in useActiveViewport hook.
-- Visibility Widget: Treat dictionary model as never private in Categories tree. 
+- Visibility Widget: Treat dictionary model as never private in Categories tree.
 - Ability to specify initialWidth for Zone component.
 - Removed unused React state variables. Removed unsupported setState calls from render() methods.
 - Code cleanup based on code analysis report from lgtm. Updated status field fade-in/out animation.
@@ -273,7 +273,7 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Release tag cleanup and ui-framework unit tests
 - Updated UI package release tags for 1.0 release.
 - Fixed release tag warnings in UI packages
-- Removed use of OidcClientWrapper. 
+- Removed use of OidcClientWrapper.
 - Remove console log message output by SyncUiEventDispatcher. Add Logging.
 - Changed some release tags from @hidden to @internal
 - Add alpha level support for solar timeline
@@ -316,13 +316,13 @@ Mon, 13 May 2019 15:52:05 GMT
 - Add unmount component test.
 - Move AnalysisAnimation Tool to ui-test-app. To be replaced by new timeline animation component.
 - Fixed navigation aid bugs
-- Fixes to OidcBrowserClient. 
+- Fixes to OidcBrowserClient.
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
 - remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
-- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s. 
+- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s.
 - Rename AppState to SessionState to avoid collision with acutal App's state. Add AvailableSectionScopes to SessionState.
 - Move SelectionScope status field from test app to ui-framework. Update icons-generic-webfont version to latest available.
 - Remove need to sync SelectionMethod since it is not changed within tool code.
@@ -538,7 +538,7 @@ Mon, 03 Dec 2018 18:52:58 GMT
 
 ### Updates
 
-- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application. 
+- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application.
 - Unit tests
 - Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components
 
@@ -547,7 +547,7 @@ Mon, 26 Nov 2018 19:38:42 GMT
 
 ### Updates
 
-- Fix to OIDC browser client. 
+- Fix to OIDC browser client.
 
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT
@@ -591,7 +591,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- OIDC related enhancments (WIP). 
+- OIDC related enhancments (WIP).
 - Updated to TypeScript 3.1
 - ui-core unit tests. Fixed backstage open issue.
 - Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files.

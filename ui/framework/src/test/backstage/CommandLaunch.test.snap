@@ -8,7 +8,7 @@ exports[`Backstage <CommandLaunchBackstageItem /> CommandLaunchBackstageItem ren
     />
   }
   isActive={false}
-  isDisabled={false}
+  isDisabled={true}
   key="my-command-id"
   onClick={[Function]}
 >

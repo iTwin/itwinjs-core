@@ -8,12 +8,12 @@
 
 import * as React from "react";
 
-import { UiError, BadgeType, StringGetter } from "@bentley/ui-abstract";
+import { UiError, BadgeType, StringGetter, WidgetState, AbstractWidgetProps, ConditionalStringValue } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Direction } from "@bentley/ui-ninezone";
 
 import { UiFramework } from "../UiFramework";
-import { WidgetProps } from "./Widget";
+import { WidgetProps } from "./WidgetProps";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -21,22 +21,7 @@ import { ConfigurableUiControlType, ConfigurableUiControlConstructor, Configurab
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 import { ItemList } from "../shared/ItemMap";
-
-/** Widget state enum.
- * @public
- */
-export enum WidgetState {
-  /** Widget tab is visible and active and its contents are visible */
-  Open,
-  /** Widget tab is visible but its contents are not visible */
-  Closed,
-  /** Widget tab nor its contents are visible */
-  Hidden,
-  /** Widget tab is in a 'floating' state and is not docked in zone's tab stack */
-  Floating,
-  /** Widget tab is visible but its contents are not loaded */
-  Unloaded,
-}
+import { PropsHelper } from "../utils/PropsHelper";
 
 /** Widget State Changed Event Args interface.
  * @public
@@ -93,6 +78,11 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps {
  */
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
+/** Prototype for WidgetDef StateFunc
+ * @public
+ */
+export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
+
 // -----------------------------------------------------------------------------
 
 /** A Widget Definition in the 9-Zone Layout system.
@@ -100,49 +90,61 @@ export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetPro
  */
 export class WidgetDef {
   private static _sId = 0;
-  private _label: string | StringGetter = "";
-  private _tooltip: string | StringGetter = "";
+  private _label: string | ConditionalStringValue | StringGetter = "";
+  private _tooltip: string | ConditionalStringValue | StringGetter = "";
   private _widgetReactNode: React.ReactNode;
   private _widgetControl!: WidgetControl;
+  private _state: WidgetState = WidgetState.Unloaded;
+  private _id: string;
+  private _classId: string | ConfigurableUiControlConstructor | undefined = undefined;
+  private _priority: number = 0;
+  private _isFreeform: boolean = false;
+  private _isFloatingStateSupported: boolean = false;
+  private _isFloatingStateWindowResizable: boolean = true;
+  private _isToolSettings: boolean = false;
+  private _isStatusBar: boolean = false;
+  private _stateChanged: boolean = false;
+  private _fillZone: boolean = false;
+  private _syncEventIds: string[] = [];
+  private _stateFunc?: WidgetStateFunc;
+  private _widgetType: WidgetType = WidgetType.Rectangular;
+  private _applicationData?: any;
+  private _iconSpec?: string | ConditionalStringValue | React.ReactNode;
+  private _badgeType?: BadgeType;
+  private _onWidgetStateChanged?: () => void;
+  private _saveTransientState?: () => void;
+  private _restoreTransientState?: () => boolean;
 
-  public state: WidgetState = WidgetState.Unloaded;
-  public id: string;
-  public classId: string | ConfigurableUiControlConstructor | undefined = undefined;
-  public priority: number = 0;
-  public isFreeform: boolean = false;
-  public isFloatingStateSupported: boolean = false;
-  public isFloatingStateWindowResizable: boolean = true;
-  public isToolSettings: boolean = false;
-  public isStatusBar: boolean = false;
-  public stateChanged: boolean = false;
-  public fillZone: boolean = false;
-  public syncEventIds: string[] = [];
-  public stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
-  public widgetType: WidgetType = WidgetType.Rectangular;
-  public applicationData?: any;
-  public isFloating = false;
-  public iconSpec?: string | React.ReactNode;
+  public get state(): WidgetState { return this._state; }
+  public get id(): string { return this._id; }
+  public get classId(): string | ConfigurableUiControlConstructor | undefined { return this._classId; }
+  public get priority(): number { return this._priority; }
+  public get isFreeform(): boolean { return this._isFreeform; }
+  public get isFloatingStateSupported(): boolean { return this._isFloatingStateSupported; }
+  public get isFloatingStateWindowResizable(): boolean { return this._isFloatingStateWindowResizable; }
+  public get isToolSettings(): boolean { return this._isToolSettings; }
+  public get isStatusBar(): boolean { return this._isStatusBar; }
+  public get stateChanged(): boolean { return this._stateChanged; }
+  public get fillZone(): boolean { return this._fillZone; }
+  public get syncEventIds(): string[] { return this._syncEventIds; }
+  public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; }
+  public get applicationData(): any | undefined { return this._applicationData; }
+  public get isFloating(): boolean { return this._state === WidgetState.Floating; }
+  public get iconSpec(): string | ConditionalStringValue | React.ReactNode { return this._iconSpec; }
+  public get badgeType(): BadgeType | undefined { return this._badgeType; }
+
+  public get widgetType(): WidgetType { return this._widgetType; }
+  public set widgetType(type: WidgetType) { this._widgetType = type; }
+
   /** @deprecated - use badgeType instead */
-  public betaBadge?: boolean;
-  public badgeType?: BadgeType;
-
-  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value))) {
-      // istanbul ignore else
-      if (this.stateFunc) {
-        let newState = this.state;
-        newState = this.stateFunc(newState);
-        this.setWidgetState(newState);
-      }
-    }
-  }
+  public get betaBadge(): boolean { return this._badgeType === BadgeType.TechnicalPreview; }
 
   constructor(widgetProps: WidgetProps) {
     if (widgetProps.id !== undefined)
-      this.id = widgetProps.id;
+      this._id = widgetProps.id;
     else {
       WidgetDef._sId++;
-      this.id = "Widget-" + WidgetDef._sId;
+      this._id = "Widget-" + WidgetDef._sId;
     }
 
     WidgetDef.initializeFromWidgetProps(widgetProps, this);
@@ -155,7 +157,7 @@ export class WidgetDef {
       me._label = UiFramework.i18n.translate(widgetProps.labelKey);
 
     if (widgetProps.priority !== undefined)
-      me.priority = widgetProps.priority;
+      me._priority = widgetProps.priority;
 
     if (widgetProps.tooltip)
       me.setTooltip(widgetProps.tooltip);
@@ -163,85 +165,98 @@ export class WidgetDef {
       me._tooltip = UiFramework.i18n.translate(widgetProps.tooltipKey);
 
     if (widgetProps.control !== undefined)
-      me.classId = widgetProps.control;
+      me._classId = widgetProps.control;
     else if (widgetProps.classId !== undefined)
-      me.classId = widgetProps.classId;
+      me._classId = widgetProps.classId;
 
     if (widgetProps.defaultState !== undefined)
-      me.state = widgetProps.defaultState;
+      me._state = widgetProps.defaultState;
 
     if (widgetProps.isFreeform !== undefined) {
-      me.isFreeform = widgetProps.isFreeform;
-      me.widgetType = me.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
+      me._isFreeform = widgetProps.isFreeform;
+      me._widgetType = me.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
     }
 
     if (widgetProps.isFloatingStateSupported !== undefined)
-      me.isFloatingStateSupported = widgetProps.isFloatingStateSupported;
+      me._isFloatingStateSupported = widgetProps.isFloatingStateSupported;
     if (widgetProps.isFloatingStateWindowResizable !== undefined)
-      me.isFloatingStateWindowResizable = widgetProps.isFloatingStateWindowResizable;
+      me._isFloatingStateWindowResizable = widgetProps.isFloatingStateWindowResizable;
     if (widgetProps.isToolSettings !== undefined)
-      me.isToolSettings = widgetProps.isToolSettings;
+      me._isToolSettings = widgetProps.isToolSettings;
     if (widgetProps.isStatusBar !== undefined)
-      me.isStatusBar = widgetProps.isStatusBar;
+      me._isStatusBar = widgetProps.isStatusBar;
     if (widgetProps.fillZone !== undefined)
-      me.fillZone = widgetProps.fillZone;
+      me._fillZone = widgetProps.fillZone;
 
     if (widgetProps.applicationData !== undefined)
-      me.applicationData = widgetProps.applicationData;
+      me._applicationData = widgetProps.applicationData;
 
     if (widgetProps.element !== undefined)
       me._widgetReactNode = widgetProps.element;
 
     if (widgetProps.iconSpec !== undefined)
-      me.iconSpec = widgetProps.iconSpec;
+      me._iconSpec = widgetProps.iconSpec;
+    if (widgetProps.icon !== undefined)
+      me._iconSpec = widgetProps.icon;
 
     if (widgetProps.betaBadge !== undefined)    // tslint:disable-line: deprecation
-      me.betaBadge = widgetProps.betaBadge;     // tslint:disable-line: deprecation
+      me._badgeType = widgetProps.betaBadge ? BadgeType.TechnicalPreview : BadgeType.None;     // tslint:disable-line: deprecation
     if (widgetProps.badgeType !== undefined)
-      me.badgeType = widgetProps.badgeType;
+      me._badgeType = widgetProps.badgeType;
+
+    me._onWidgetStateChanged = widgetProps.onWidgetStateChanged;
+    me._saveTransientState = widgetProps.saveTransientState;
+    me._restoreTransientState = widgetProps.restoreTransientState;
 
     me.setUpSyncSupport(widgetProps);
   }
 
+  public static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps {
+    const widgetProps: WidgetProps = abstractWidgetProps;
+    widgetProps.element = abstractWidgetProps.getWidgetContent();
+    return widgetProps;
+  }
+
   public setUpSyncSupport(props: WidgetProps) {
     if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) {
-      this.syncEventIds = props.syncEventIds;
-      this.stateFunc = props.stateFunc;
+      this._syncEventIds = props.syncEventIds;
+      this._stateFunc = props.stateFunc;
       SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+    }
+  }
+
+  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value))) {
+      // istanbul ignore else
+      if (this.stateFunc) {
+        let newState = this.state;
+        newState = this.stateFunc(newState);
+        this.setWidgetState(newState);
+      }
     }
   }
 
   /** Get the label string */
   public get label(): string {
-    let label = "";
-    if (typeof this._label === "string")
-      label = this._label;
-    else
-      label = this._label();
-    return label;
+    return PropsHelper.getStringFromSpec(this._label);
   }
 
   /** Set the label.
    * @param v A string or a function to get the string.
    */
-  public setLabel(v: string | StringGetter) {
+  public setLabel(v: string | ConditionalStringValue | StringGetter) {
     this._label = v;
   }
 
   /** Get the tooltip string */
   public get tooltip(): string {
-    let tooltip = "";
-    if (typeof this._tooltip === "string")
-      tooltip = this._tooltip;
-    else
-      tooltip = this._tooltip();
-    return tooltip;
+    return PropsHelper.getStringFromSpec(this._tooltip);
   }
 
   /** Set the tooltip.
    * @param v A string or a function to get the string.
    */
-  public setTooltip(v: string | StringGetter) {
+  public setTooltip(v: string | ConditionalStringValue | StringGetter) {
     this._tooltip = v;
   }
 
@@ -297,9 +312,10 @@ export class WidgetDef {
   public setWidgetState(newState: WidgetState): void {
     if (this.state === newState)
       return;
-    this.state = newState;
+    this._state = newState;
+    this._stateChanged = true;
     FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: newState });
-    this.widgetControl && this.widgetControl.onWidgetStateChanged();
+    this.onWidgetStateChanged();
   }
 
   public canOpen(): boolean {
@@ -318,4 +334,30 @@ export class WidgetDef {
     return WidgetState.Open === this.activeState;
   }
 
+  public onWidgetStateChanged(): void {
+    this.widgetControl && this.widgetControl.onWidgetStateChanged();
+    this._onWidgetStateChanged && this._onWidgetStateChanged();
+  }
+
+  /** Overwrite to save transient DOM state (i.e. scroll offset). */
+  public saveTransientState(): void {
+    this.widgetControl && this.widgetControl.saveTransientState();
+    this._saveTransientState && this._saveTransientState();
+  }
+
+  /** Overwrite to restore transient DOM state.
+   * @note Return true if the state is restored or the Widget will remount.
+   */
+  public restoreTransientState(): boolean {
+    let result = true;
+    if (this.widgetControl || this._restoreTransientState) {
+      let result1 = false, result2 = false;
+      if (this.widgetControl)
+        result1 = this.widgetControl.restoreTransientState();
+      if (this._restoreTransientState)
+        result2 = this._restoreTransientState();
+      result = !(result1 || result2);
+    }
+    return result;
+  }
 }

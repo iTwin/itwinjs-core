@@ -1,0 +1,94 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.nz-widget-tab {
+  user-select: none;
+
+  &.nz-overflown {
+    cursor: pointer;
+    display: flex;
+    position: relative;
+
+    span {
+      margin-right: 3em;
+    }
+
+    &.nz-active {
+      > .nz-icon {
+        position: absolute;
+        right: 0;
+        border-style: solid;
+        border-color: $buic-foreground-primary;
+        border-width: 0 0.15em 0.15em 0;
+        width: 0.5em;
+        height: 1em;
+        transform: rotate(45deg);
+        margin-left: auto;
+      }
+    }
+
+    &:not(:last-child) {
+      margin-bottom: 0.5em;
+    }
+  }
+
+  &:not(.nz-overflown) {
+    cursor: pointer;
+    padding: 0 1em;
+    display: flex;
+    align-items: center;
+    position: relative;
+    border: 0 solid $buic-background-5;
+
+    &.nz-active {
+      background: $buic-background-3;
+      color: $buic-foreground-primary;
+      padding-bottom: 1px;
+
+      &:after {
+        $padding: 0.25em;
+        content: '';
+        position: absolute;
+        background: currentColor;
+        left: $padding;
+        top: 0.25em;
+        border-radius: 0.2em;
+        width: calc(100% - #{2 * $padding});
+        height: 0.15em;
+      }
+
+      &:last-child {
+        border-right-width: 1px;
+      }
+
+      & + .nz-widget-tab,
+      & + .nz-widget-overflow {
+        border-left-width: 1px;
+      }
+    }
+
+    &:not(.nz-active) {
+      color: $buic-foreground-accessory;
+      border-right-width: 1px;
+
+      &.nz-minimized {
+        padding-bottom: 1px;
+      }
+
+      &:not(.nz-minimized) {
+        border-bottom-width: 1px;
+      }
+    }
+
+    &:first-child {
+      border-top-left-radius: 2px;
+    }
+
+    &:hover {
+      background: $buic-background-3;
+    }
+  }
+}

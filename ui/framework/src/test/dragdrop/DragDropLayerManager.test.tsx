@@ -15,6 +15,10 @@ describe("DragDropLayerManager", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("getType returns undefined when no type set", () => {
     expect(DragDropLayerManager.getType()).to.be.undefined;
   });

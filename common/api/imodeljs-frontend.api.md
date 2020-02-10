@@ -9204,6 +9204,10 @@ export class ToolAdmin {
     // @internal
     get defaultToolId(): string;
     set defaultToolId(toolId: string);
+    // @beta
+    dispatchImmediateUiSyncEvent(specificSyncEventId?: string, toolId?: string): void;
+    // @beta
+    dispatchUiSyncEvent(specificSyncEventId?: string, toolId?: string): void;
     doRedoOperation(): Promise<boolean>;
     doUndoOperation(): Promise<boolean>;
     // @internal (undocumented)
@@ -9295,6 +9299,9 @@ export class ToolAdmin {
     readonly toolSettingsState: ToolSettingsState;
     // @internal (undocumented)
     readonly toolState: ToolState;
+    // @internal
+    get toolSyncUiEventDispatcher(): ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined;
+    set toolSyncUiEventDispatcher(handler: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined);
     // @internal (undocumented)
     updateDynamics(ev?: BeButtonEvent, useLastData?: boolean, adjustPoint?: boolean): void;
     // (undocumented)

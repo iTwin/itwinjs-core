@@ -1,0 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+.nz-widgetPanels-pane {
+  flex-shrink: 0;
+  flex-basis: 0px;
+  transition: flex-grow 0.25s ease-out;
+
+  &:not(.nz-minimized) {
+    min-width: 0;
+  }
+}

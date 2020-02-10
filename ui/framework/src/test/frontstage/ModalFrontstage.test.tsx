@@ -56,6 +56,10 @@ describe("ModalFrontstage", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("openModalFrontstage, updateModalFrontstage & closeModalFrontstage", () => {
     const modalFrontstage = new TestModalFrontstage();
 

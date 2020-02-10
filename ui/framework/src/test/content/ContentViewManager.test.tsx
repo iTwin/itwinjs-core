@@ -17,6 +17,10 @@ describe("ContentViewManager", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   const viewportMock = moq.Mock.ofType<ScreenViewport>();
   const contentControlMock = moq.Mock.ofType<ViewportContentControl>();
   contentControlMock.setup((control) => control.viewport).returns(() => viewportMock.object);

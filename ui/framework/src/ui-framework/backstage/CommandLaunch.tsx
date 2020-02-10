@@ -73,8 +73,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
       /* istanbul ignore else */
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);
-        /* istanbul ignore else */
-
+        /* istanbul ignore next */
         if (!PropsHelper.isShallowEqual(newState, this.state))
           this.setState((_prevState) => newState);
       }
@@ -93,6 +92,8 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
       Logger.logError(UiFramework.loggerCategory(this), `'${this.props.commandId}' has no execute() function`);
   }
 
+  // deprecated class
+  // istanbul ignore next
   public componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) {
     const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
     if (!PropsHelper.isShallowEqual(updatedState, this.state))

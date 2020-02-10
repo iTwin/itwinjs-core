@@ -24,7 +24,6 @@ import { offsetAndContainInContainer } from "@bentley/ui-ninezone";
 
 import { UiFramework } from "../UiFramework";
 import { InputEditorPopup, InputEditorCommitHandler } from "./InputEditorPopup";
-import { ItemDefFactory } from "../shared/ItemDefFactory";
 import { ToolbarPopup } from "./ToolbarPopup";
 import { HTMLElementPopup } from "./HTMLElementPopup";
 
@@ -162,11 +161,10 @@ export class PopupManager {
     onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition: RelativePosition,
   ): boolean {
 
-    const toolbarItems = ItemDefFactory.createItemListForToolbar(toolbarProps.items, onItemExecuted);
     const id = PopupManager._toolbarId;
     const component = (
       <ToolbarPopup id={id} el={el} pt={pt} offset={offset}
-        items={toolbarItems} relativePosition={relativePosition} orientation={Orientation.Horizontal} onCancel={onCancel} />
+        items={toolbarProps.items} relativePosition={relativePosition} orientation={Orientation.Horizontal} onCancel={onCancel} onItemExecuted={onItemExecuted} />
     );
 
     const popupInfo: PopupInfo = {

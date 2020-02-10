@@ -9,7 +9,8 @@ import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
 import { Zone } from "../../ui-framework";
 import { ZoneRuntimeProps } from "../../ui-framework/zones/Zone";
-import { WidgetState, WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
+import { WidgetState } from "@bentley/ui-abstract";
 
 describe("Zone", () => {
 

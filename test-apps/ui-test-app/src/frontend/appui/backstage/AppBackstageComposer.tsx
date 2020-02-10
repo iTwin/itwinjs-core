@@ -7,6 +7,7 @@ import { connect } from "react-redux";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { UserProfileBackstageItem, BackstageComposer } from "@bentley/ui-framework";
 import { RootState } from "../..";
+import { BackstageItem } from "@bentley/ui-abstract";
 
 function mapStateToProps(state: RootState) {
   const frameworkState = state.frameworkState;
@@ -20,12 +21,13 @@ function mapStateToProps(state: RootState) {
 interface AppBackstageComposerProps {
   /** AccessToken from sign-in */
   accessToken: AccessToken | undefined;
+  readonly items: BackstageItem[];
 }
 
 export class AppBackstageComposerComponent extends React.PureComponent<AppBackstageComposerProps> {
   public render() {
     return (
-      <BackstageComposer
+      <BackstageComposer items={this.props.items}
         header={this.props.accessToken && <UserProfileBackstageItem accessToken={this.props.accessToken} />}
       />
     );

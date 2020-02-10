@@ -7,16 +7,19 @@
  */
 
 import * as React from "react";
+
+import { WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
   ZoneTargetType, ZoneManagerProps, WidgetZoneId, DraggedWidgetManagerProps, WidgetManagerProps, ToolSettingsWidgetManagerProps,
   ToolSettingsWidgetMode, DisabledResizeHandles,
 } from "@bentley/ui-ninezone";
+
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { WidgetProps } from "../widgets/Widget";
-import { WidgetDef, WidgetStateChangedEventArgs, WidgetState, WidgetType } from "../widgets/WidgetDef";
+import { WidgetProps } from "../widgets/WidgetProps";
+import { WidgetDef, WidgetStateChangedEventArgs, WidgetType } from "../widgets/WidgetDef";
 import { WidgetTabs } from "../widgets/WidgetStack";
 import { FrameworkZone } from "./FrameworkZone";
 import { StatusBarZone } from "./StatusBarZone";
@@ -92,15 +95,7 @@ export class Zone extends React.Component<ZoneProps> {
   }
 
   public static initializeZoneDef(zoneDef: ZoneDef, props: ZoneProps): void {
-    if (props.defaultState)
-      zoneDef.zoneState = props.defaultState;
-    if (props.allowsMerging !== undefined)
-      zoneDef.allowsMerging = props.allowsMerging;
-    if (props.applicationData !== undefined)
-      zoneDef.applicationData = props.applicationData;
-    if (props.mergeWithZone !== undefined)
-      zoneDef.mergeWithZone = props.mergeWithZone;
-    zoneDef.setInitialWidth(props.initialWidth);
+    zoneDef.initializeFromProps(props);
 
     // istanbul ignore else
     if (props.widgets) {

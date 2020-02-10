@@ -47,7 +47,7 @@ interface RealityDataPickerState {
 
 /**
  * Model Selector [[RealityDataPickerControl]]
- * @alpha
+ * @alpha @deprecated use control from imodeljs-ui-snippet repo
  */
 // istanbul ignore next
 export class RealityDataPickerControl extends WidgetControl {

@@ -8,6 +8,8 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { CommonStatusBarItem, StatusBarItemId } from "./StatusBarItem";
+import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
+import { ConditionalStringValue } from "../items/ConditionalStringValue";
 
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 
@@ -24,21 +26,43 @@ export interface StatusBarItemsChangedArgs {
 
 /**
  * Controls status bar items.
- * @beta
+ * @internal
  */
 export class StatusBarItemsManager {
   private _items: ReadonlyArray<CommonStatusBarItem> = [];
+
+  constructor(items?: ReadonlyArray<CommonStatusBarItem>) {
+    if (items)
+      this.loadItemsInternal(items, true, false);
+  }
 
   /** Event raised when StatusBar items are changed.
    * @internal
    */
   public readonly onItemsChanged = new BeEvent<(args: StatusBarItemsChangedArgs) => void>();
 
+  private loadItemsInternal(items: ReadonlyArray<CommonStatusBarItem>, processConditions: boolean, sendItemChanged: boolean) {
+    if (processConditions && items) {
+      const eventIds = StatusBarItemsManager.getSyncIdsOfInterest(items);
+      if (0 !== eventIds.length) {
+        const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(items, new Set(eventIds));
+
+        // istanbul ignore else
+        if (itemsUpdated)
+          items = updatedItems;
+      }
+    }
+
+    this._items = items;
+    if (sendItemChanged)
+      this.onItemsChanged.raiseEvent({ items });
+  }
+
   /** load items but do not fire onItemsChanged
    * @internal
    */
   public loadItems(items: ReadonlyArray<CommonStatusBarItem>) {
-    this._items = items;
+    this.loadItemsInternal(items, true, false);
   }
 
   /** Get an array of the StatusBar items  */
@@ -47,10 +71,9 @@ export class StatusBarItemsManager {
   }
 
   public set items(items: ReadonlyArray<CommonStatusBarItem>) {
-    if (this._items === items)
-      return;
-    this._items = items;
-    this.onItemsChanged.raiseEvent({ items });
+    // istanbul ignore else
+    if (items !== this._items)
+      this.loadItemsInternal(items, true, true);
   }
 
   public add(itemOrItems: CommonStatusBarItem | ReadonlyArray<CommonStatusBarItem>) {
@@ -84,69 +107,58 @@ export class StatusBarItemsManager {
     this._items = [];
   }
 
-  /** Set the visibility of a StatusBar item */
-  public setIsVisible(id: StatusBarItemId, isVisible: boolean) {
-    const itemIndex = this._items.findIndex((i) => i.id === id);
-    if (itemIndex < 0)
-      return;
-
-    const prevItem = this._items[itemIndex];
-    if (prevItem.isVisible === isVisible)
-      return;
-
-    const item = {
-      ...prevItem,
-      isVisible,
-    };
-    this.items = [
-      ...this._items.slice(0, itemIndex),
-      item,
-      ...this._items.slice(itemIndex + 1),
-    ];
+  public static getSyncIdsOfInterest(items: readonly CommonStatusBarItem[]): string[] {
+    const eventIds = new Set<string>();
+    items.forEach((item) => {
+      for (const [, entry] of Object.entries(item)) {
+        if (entry instanceof ConditionalBooleanValue) {
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId));
+        } else /* istanbul ignore else */ if (entry instanceof ConditionalStringValue) {
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId));
+        }
+      }
+    });
+    return [...eventIds.values()];
   }
 
-  /** Set Label on statusbar items that support labels */
-  public setLabel(id: StatusBarItemId, label: string) {
-    const itemIndex = this._items.findIndex((i) => i.id === id);
-    if (itemIndex < 0)
-      return;
+  private internalRefreshAffectedItems(items: readonly CommonStatusBarItem[], eventIds: Set<string>): { itemsUpdated: boolean, updatedItems: CommonStatusBarItem[] } {
+    // istanbul ignore next
+    if (0 === eventIds.size)
+      return { itemsUpdated: false, updatedItems: [] };
 
-    const prevItem = this._items[itemIndex];
+    let updateRequired = false;
 
-    if (!("label" in prevItem) || (prevItem.label === label))
-      return;
+    const newItems: CommonStatusBarItem[] = [];
+    for (const item of items) {
+      const updatedItem = { ...item };
 
-    const item = {
-      ...prevItem,
-      label,
-    };
-    this.items = [
-      ...this._items.slice(0, itemIndex),
-      item,
-      ...this._items.slice(itemIndex + 1),
-    ];
+      for (const [, entry] of Object.entries(updatedItem)) {
+        if (entry instanceof ConditionalBooleanValue) {
+          // istanbul ignore else
+          if (ConditionalBooleanValue.refreshValue(entry, eventIds))
+            updateRequired = true;
+        } else /* istanbul ignore else */ if (entry instanceof ConditionalStringValue) {
+          // istanbul ignore else
+          if (ConditionalStringValue.refreshValue(entry, eventIds))
+            updateRequired = true;
+        }
+      }
+
+      newItems.push(updatedItem);
+    }
+
+    return { itemsUpdated: updateRequired, updatedItems: newItems };
   }
 
-  /** Set Tooltip on statusbar items that support tooltip string. */
-  public setTooltip(id: StatusBarItemId, tooltip: string) {
-    const itemIndex = this._items.findIndex((i) => i.id === id);
-    if (itemIndex < 0)
+  public refreshAffectedItems(eventIds: Set<string>) {
+    // istanbul ignore next
+    if (0 === eventIds.size)
       return;
 
-    const prevItem = this._items[itemIndex];
+    const { itemsUpdated, updatedItems } = this.internalRefreshAffectedItems(this.items, eventIds);
 
-    if (!("tooltip" in prevItem) || (prevItem.tooltip === tooltip))
-      return;
-
-    const item = {
-      ...prevItem,
-      tooltip,
-    };
-    this.items = [
-      ...this._items.slice(0, itemIndex),
-      item,
-      ...this._items.slice(itemIndex + 1),
-    ];
+    // istanbul ignore else
+    if (itemsUpdated)
+      this.loadItemsInternal(updatedItems, false, true);
   }
-
 }

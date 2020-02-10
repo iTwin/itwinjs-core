@@ -293,7 +293,7 @@ export class ZonesManager {
                 },
                 stackId: this._lastStackId++,
               },
-            } : {},
+            } : undefined,
             bounds: mergedZone.bounds,
             widgets: [id],
           },

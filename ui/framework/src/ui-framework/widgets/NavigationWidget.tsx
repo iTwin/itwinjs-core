@@ -9,7 +9,7 @@
 import * as React from "react";
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { UiError, PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/ui-abstract";
+import { UiError } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
 import { Tools as NZ_ToolsWidget, Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
@@ -26,7 +26,7 @@ import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { UiFramework } from "../UiFramework";
 
 /** Definition of a Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
- * @public
+ *  @public @deprecated use NavigationWidgetComposer instead
  */
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   private _navigationAidId: string;
@@ -94,7 +94,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 }
 
 /** Properties for the [[NavigationWidget]] React component.
- * @public
+ *  @public @deprecated use NavigationWidgetComposer instead
  */
 export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
   iModelConnection?: IModelConnection;
@@ -110,7 +110,7 @@ interface NavigationWidgetState {
 }
 
 /** Navigation Widget React component.
- * @public
+ *  @public @deprecated use NavigationWidgetComposer instead
  */
 export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
 
@@ -194,10 +194,6 @@ class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWit
   constructor(props: Props) {
     super(props);
 
-    if (PluginUiManager.hasRegisteredProviders) {
-      this.props.navigationWidgetDef.generateMergedItemLists();
-    }
-
     const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
     const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
     this.state = { horizontalToolbar, verticalToolbar, cornerItem: null };
@@ -215,20 +211,12 @@ class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWit
     this.setState({ cornerItem: navigationAid });
   }
 
-  private _handleUiProviderRegisteredEvent = (_args: UiProviderRegisteredEventArgs): void => {
-    // create, merge, and cache ItemList from plugins
-    this.props.navigationWidgetDef.generateMergedItemLists();
-    this.reloadToolbars();
-  }
-
   public componentDidMount() {
     FrontstageManager.onNavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);
-    PluginUiManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
   }
 
   public componentWillUnmount() {
     FrontstageManager.onNavigationAidActivatedEvent.removeListener(this._handleNavigationAidActivatedEvent);
-    PluginUiManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   public componentDidUpdate(prevProps: Props) {

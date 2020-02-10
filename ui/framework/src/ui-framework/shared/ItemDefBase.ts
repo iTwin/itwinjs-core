@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { BadgeType, StringGetter } from "@bentley/ui-abstract";
+import { BadgeType, ConditionalStringValue, StringGetter, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ItemProps } from "./ItemProps";
 
@@ -25,30 +25,39 @@ export interface BaseItemState {
  * @public
  */
 export abstract class ItemDefBase {
-  private _label: string | StringGetter = "";
-  private _tooltip: string | StringGetter = "";
-  private _description: string | StringGetter = "";
+  private _label: string | StringGetter | ConditionalStringValue = "";
+  private _tooltip: string | StringGetter | ConditionalStringValue = "";
+  private _description: string | StringGetter | ConditionalStringValue = "";
 
+  /** @deprecated */
   public isVisible: boolean = true;
+  /** @deprecated */
   public isEnabled: boolean = true;
   public isPressed: boolean = false;
   public isActive: boolean = false;
   public applicationData?: any;
 
+  public isHidden?: boolean | ConditionalBooleanValue;
+  public isDisabled?: boolean | ConditionalBooleanValue;
+
   /** @deprecated - use badgeType instead */
   public betaBadge: boolean = false;
   public badgeType?: BadgeType;
 
+  /** @deprecated - use condition instead */
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
+  /** @deprecated - use condition instead */
   public stateSyncIds: string[] = [];
 
-  public iconSpec?: string | React.ReactNode;
+  public iconSpec?: string | ConditionalStringValue | React.ReactNode;
   public iconElement?: React.ReactNode;
 
   public static initializeDef(me: ItemDefBase, itemProps: ItemProps): void {
+    me.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true;  // deprecated
+    me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;  // deprecated
+    me.isHidden = (itemProps.isHidden === undefined && itemProps.isVisible !== undefined) ? !itemProps.isVisible : itemProps.isHidden;
+    me.isDisabled = (itemProps.isDisabled === undefined && itemProps.isEnabled !== undefined) ? !itemProps.isEnabled : itemProps.isDisabled;
 
-    me.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true;
-    me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;
     me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
     me.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
 
@@ -59,16 +68,20 @@ export abstract class ItemDefBase {
       me.applicationData = itemProps.applicationData;
     if (itemProps.iconSpec)
       me.iconSpec = itemProps.iconSpec;
+    if (itemProps.icon)
+      me.iconSpec = itemProps.icon;
 
     me._label = PropsHelper.getStringSpec(itemProps.label, itemProps.labelKey);
     me._tooltip = PropsHelper.getStringSpec(itemProps.tooltip, itemProps.tooltipKey);
     me._description = PropsHelper.getStringSpec(itemProps.description, itemProps.descriptionKey);
 
+    // deprecated
     if (itemProps.stateFunc)
       me.stateFunc = itemProps.stateFunc;
 
+    // deprecated
     if (itemProps.stateSyncIds)
-      me.stateSyncIds = itemProps.stateSyncIds.map((value) => value.toLowerCase());
+      me.stateSyncIds = itemProps.stateSyncIds.map((value: string) => value.toLowerCase());
   }
 
   constructor(itemProps: ItemProps) {
@@ -79,6 +92,11 @@ export abstract class ItemDefBase {
   public abstract get id(): string;
 
   /** Get the label string */
+  public get rawLabel(): string | StringGetter | ConditionalStringValue {
+    return this._label;
+  }
+
+  /** Get the label string */
   public get label(): string {
     return PropsHelper.getStringFromSpec(this._label);
   }
@@ -86,7 +104,7 @@ export abstract class ItemDefBase {
   /** Set the label.
    * @param v A string or a function to get the string.
    */
-  public setLabel(v: string | StringGetter) {
+  public setLabel(v: string | StringGetter | ConditionalStringValue) {
     this._label = v;
   }
 
@@ -98,7 +116,7 @@ export abstract class ItemDefBase {
   /** Set the tooltip.
    * @param v A string or a function to get the string.
    */
-  public setTooltip(v: string | StringGetter) {
+  public setTooltip(v: string | StringGetter | ConditionalStringValue) {
     this._tooltip = v;
   }
 
@@ -110,7 +128,7 @@ export abstract class ItemDefBase {
   /** Set the description.
    * @param v A string or a function to get the string.
    */
-  public setDescription(v: string | StringGetter) {
+  public setDescription(v: string | StringGetter | ConditionalStringValue) {
     this._description = v;
   }
 }

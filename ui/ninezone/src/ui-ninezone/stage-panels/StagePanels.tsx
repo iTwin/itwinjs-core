@@ -57,7 +57,7 @@ export class StagePanels extends React.PureComponent<StagePanelsProps> {
         <div className="nz-panel">
           {this.props.rightPanel}
         </div>
-      </div >
+      </div>
     );
   }
 }

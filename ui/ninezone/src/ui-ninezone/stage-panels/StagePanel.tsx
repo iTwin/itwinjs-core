@@ -87,7 +87,7 @@ export class StagePanel extends React.PureComponent<StagePanelProps> {
       this.props.className);
     const isVertical = StagePanelTypeHelpers.isVertical(this.props.type);
     const style = {
-      ...this.props.size === undefined ? {} :
+      ...this.props.size === undefined ? undefined :
         isVertical ? { width: `${this.props.size}px` } : { height: `${this.props.size}px` },
       ...this.props.style,
     };
@@ -107,7 +107,7 @@ export class StagePanel extends React.PureComponent<StagePanelProps> {
           onResizeEnd={this._handleResizeEnd}
           onResizeStart={this._handleResizeStart}
         />}
-      </div >
+      </div>
     );
   }
 

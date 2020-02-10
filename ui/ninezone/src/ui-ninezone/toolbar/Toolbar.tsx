@@ -217,7 +217,7 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
         >
           {items}
         </Items>
-      </div >
+      </div>
     );
   }
 

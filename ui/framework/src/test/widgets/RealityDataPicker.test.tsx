@@ -20,6 +20,10 @@ describe.skip("RealityDataPicker", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render correctly ", () => {
     enzyme.shallow(
       <RealityDataPicker iModelConnection={imodelMock.object} />,

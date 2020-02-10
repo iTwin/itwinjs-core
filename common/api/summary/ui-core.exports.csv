@@ -49,6 +49,7 @@ public;DialogButtonDef
 public;DialogButtonStyle
 public;DialogButtonType
 public;DialogProps 
+public;DisabledText: React.FunctionComponent
 internal;Div 
 internal;DivProps 
 beta;DivWithOutsideClick:
@@ -89,7 +90,7 @@ public;Icon: React.FunctionComponent
 alpha;IconInput 
 alpha;IconInputProps 
 public;IconProps
-public;IconSpec = string | React.ReactNode
+public;IconSpec = string | ConditionalStringValue | React.ReactNode
 beta;ImageCheckBox 
 beta;ImageCheckBoxProps 
 public;Input 
@@ -166,6 +167,8 @@ beta;SessionUiSettings
 internal;shallowDiffers: (a:
 internal;Size 
 beta;SizeProps
+alpha;Slider: React.FC
+alpha;SliderProps 
 public;SmallText: React.FunctionComponent
 public;SortDirection
 public;Spinner 

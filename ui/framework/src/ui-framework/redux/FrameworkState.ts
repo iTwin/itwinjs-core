@@ -8,7 +8,7 @@
 
 import { ConfigurableUiState, ConfigurableUiReducer } from "../configurableui/state";
 import { SessionState, SessionStateReducer } from "./SessionState";
-import { combineReducers } from "../utils/redux-ts";
+import { combineReducers } from "./redux-ts";
 
 /** Interface combining all the Framework state interfaces.
  * @beta

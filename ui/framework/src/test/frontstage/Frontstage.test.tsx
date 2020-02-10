@@ -8,19 +8,23 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
+import { WidgetState, StagePanelLocation, StagePanelSection } from "@bentley/ui-abstract";
 import {
   Frontstage,
   FrontstageManager,
-  WidgetState,
   FrontstageComposer,
   CoreTools,
   getExtendedZone,
   ZoneDefProvider,
   WidgetDef,
+  UiFramework,
+  WidgetProvider,
 } from "../../ui-framework";
-import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
 import { getDefaultZonesManagerProps } from "@bentley/ui-ninezone";
+
+import { TestFrontstage, TestWidgetElement } from "./FrontstageTestUtils";
 import { ZoneDef } from "../../ui-framework/zones/ZoneDef";
+import { ZoneLocation } from "../../ui-framework/zones/Zone";
 
 describe("Frontstage", () => {
   const sandbox = sinon.createSandbox();
@@ -28,6 +32,10 @@ describe("Frontstage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageDefs();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   beforeEach(() => {
@@ -238,8 +246,81 @@ describe("Frontstage", () => {
 
     expect(forceUpdateSpy.calledOnce).true;
 
+    widgetDef.setWidgetState(WidgetState.Closed);
+    expect(forceUpdateSpy.calledTwice).true;
+    expect(widgetDef.activeState).to.eq(WidgetState.Closed);
+    expect(widgetDef.stateChanged).true;
+
     wrapper.unmount();
   });
+
+  it("WidgetManager should add dynamic WidgetDef to Frontstage on activation", async () => {
+    const widgetId = "DynamicTest";
+    const widgetDef = new WidgetDef({ id: widgetId });
+    UiFramework.widgetManager.addWidgetDef(widgetDef, "TestFrontstage", undefined, ZoneLocation.CenterLeft);
+
+    const wrapper = mount(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    if (frontstageProvider.frontstageDef) {
+      const foundWidgetDef = frontstageProvider.frontstageDef.findWidgetDef(widgetId);
+      expect(foundWidgetDef).to.not.be.undefined;
+    }
+
+    wrapper.unmount();
+  });
+
+  it("WidgetManager should add dynamic WidgetDef to Frontstage after activation", async () => {
+    const wrapper = mount(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const widgetId = "DynamicTest";
+    const widgetDef = new WidgetDef({ id: widgetId });
+    UiFramework.widgetManager.addWidgetDef(widgetDef, "TestFrontstage", undefined, ZoneLocation.CenterLeft);
+
+    if (frontstageProvider.frontstageDef) {
+      const foundWidgetDef = frontstageProvider.frontstageDef.findWidgetDef(widgetId);
+      expect(foundWidgetDef).to.not.be.undefined;
+    }
+
+    wrapper.unmount();
+  });
+
+  it("WidgetManager should add dynamic WidgetDef to Frontstage from provider", async () => {
+    const wrapper = mount(<FrontstageComposer />);
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    await FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef);
+    wrapper.update();
+
+    const widgetId = "ProviderTest";
+    const provider: WidgetProvider = {
+      id: "test",
+      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection | undefined): readonly WidgetDef[] | undefined => {
+        if (stageId === "TestFrontstage" && location === ZoneLocation.BottomRight) {
+          const widgetDef = new WidgetDef({ id: widgetId });
+          return [widgetDef];
+        }
+        return undefined;
+      },
+    };
+    UiFramework.widgetManager.addWidgetProvider(provider);
+    expect(UiFramework.widgetManager.providers.length).to.eq(1);
+
+    if (frontstageProvider.frontstageDef) {
+      const foundWidgetDef = frontstageProvider.frontstageDef.findWidgetDef(widgetId);
+      expect(foundWidgetDef).to.not.be.undefined;
+    }
+
+    wrapper.unmount();
+  });
+
 });
 
 describe("getExtendedZone", () => {
@@ -250,7 +331,7 @@ describe("getExtendedZone", () => {
     const getZoneDef = sinon.stub() as sinon.SinonStub<Parameters<ZoneDefProvider["getZoneDef"]>, ReturnType<ZoneDefProvider["getZoneDef"]>>;
     getZoneDef.withArgs(4).returns(undefined);
     const zoneDef7 = new ZoneDef();
-    zoneDef7.widgetDefs.push(new WidgetDef({}));
+    zoneDef7.addWidgetDef(new WidgetDef({}));
     getZoneDef.withArgs(7).returns(zoneDef7);
     const defProvider: ZoneDefProvider = {
       getZoneDef,

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin
+// cSpell:ignore safearea cursormenu clientservices oidc Textbox Modeless configurableui stagepanels dragdrop uiadmin itemsarbiter
 
 export * from "./ui-framework/UiFramework";  // Please ensure that this line comes before all other exports.
 
@@ -77,8 +77,8 @@ export * from "./ui-framework/frontstage/ModalFrontstage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveViewport";
-export * from "./ui-framework/hooks/useAvailablePluginUiProviders";
-export * from "./ui-framework/backstage/useBackstageItems";
+export * from "./ui-framework/hooks/useAvailableUiItemsProviders";
+export * from "./ui-framework/backstage/useDefaultBackstageItems";
 
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
@@ -115,8 +115,11 @@ export * from "./ui-framework/popup/PositionPopup";
 export * from "./ui-framework/popup/ToolbarPopup";
 
 export * from "./ui-framework/redux/SessionState";
+export * from "./ui-framework/redux/StateManager";
 export * from "./ui-framework/redux/FrameworkState";
 export * from "./ui-framework/redux/connectIModel";
+export * from "./ui-framework/redux/ReducerRegistry";
+export * from "./ui-framework/redux/redux-ts";
 
 export * from "./ui-framework/safearea/SafeAreaContext";
 
@@ -127,12 +130,11 @@ export * from "./ui-framework/selection/ClearEmphasisStatusField";
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/AnyItemDef";
 export * from "./ui-framework/shared/CommandItemDef";
-export * from "./ui-framework/shared/ConditionalItemDef";
-export * from "./ui-framework/shared/ConditionalItemProps";
 export * from "./ui-framework/shared/CustomItemDef";
 export * from "./ui-framework/shared/CustomItemProps";
 export * from "./ui-framework/shared/GroupItemProps";
 export * from "./ui-framework/shared/IconComponent";
+export * from "./ui-framework/shared/IconHelper";
 export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
@@ -143,6 +145,7 @@ export * from "./ui-framework/stagepanels/FrameworkStagePanel";
 export * from "./ui-framework/stagepanels/StagePanel";
 export * from "./ui-framework/stagepanels/StagePanelDef";
 export * from "./ui-framework/stagepanels/StagePanelHeader";
+export * from "./ui-framework/stagepanels/StagePanelEnums";
 
 export * from "./ui-framework/statusbar/StatusBar";
 export * from "./ui-framework/statusbar/StatusBarWidgetControl";
@@ -151,10 +154,9 @@ export * from "./ui-framework/statusbar/StatusBarItem";
 export * from "./ui-framework/statusbar/StatusBarItemsManager";
 export * from "./ui-framework/statusbar/StatusBarItemUtilities";
 export * from "./ui-framework/statusbar/StatusBarComposer";
-export * from "./ui-framework/statusbar/StatusBarManager";
 export * from "./ui-framework/statusbar/withMessageCenterFieldProps";
-export * from "./ui-framework/statusbar/usePluginStatusBarItems";
-export * from "./ui-framework/statusbar/useStageStatusBarItems";
+export * from "./ui-framework/statusbar/useUiItemsProviderStatusBarItems";
+export * from "./ui-framework/statusbar/useDefaultStatusBarItems";
 export * from "./ui-framework/statusbar/withStatusFieldProps";
 
 export * from "./ui-framework/statusfields/tileloading/TileLoadingIndicator";
@@ -181,17 +183,22 @@ export * from "./ui-framework/timeline/ScheduleAnimationProvider";
 export * from "./ui-framework/timeline/AnalysisAnimationProvider";
 export * from "./ui-framework/timeline/SolarTimelineDataProvider";
 
+export * from "./ui-framework/toolbar/ActionButtonItem";
 export * from "./ui-framework/toolbar/ActionItemButton";
 export * from "./ui-framework/toolbar/DragInteraction";
+export * from "./ui-framework/toolbar/ToolbarComposer";
+export * from "./ui-framework/toolbar/GroupButtonItem";
 export * from "./ui-framework/toolbar/GroupItem";
 export * from "./ui-framework/toolbar/PopupButton";
 export * from "./ui-framework/toolbar/Toolbar";
+export * from "./ui-framework/toolbar/ToolbarHelper";
 export * from "./ui-framework/toolbar/ToolButton";
+export * from "./ui-framework/toolbar/useUiItemsProviderToolbarItems";
+export * from "./ui-framework/toolbar/useDefaultToolbarItems";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 
 export * from "./ui-framework/utils/ViewUtilities";
-export * from "./ui-framework/utils/redux-ts";
 export * from "./ui-framework/utils/PropsHelper";
 export * from "./ui-framework/utils/UiShowHideManager";
 export * from "./ui-framework/utils/ToolbarButtonHelper";
@@ -203,11 +210,17 @@ export * from "./ui-framework/widgets/Widget";
 export * from "./ui-framework/widgets/WidgetControl";
 export * from "./ui-framework/widgets/WidgetDef";
 export * from "./ui-framework/widgets/WidgetHost";
+export * from "./ui-framework/widgets/WidgetManager";
+export * from "./ui-framework/widgets/WidgetProps";
 export * from "./ui-framework/widgets/WidgetStack";
+export * from "./ui-framework/widgets/WidgetState";
 export * from "./ui-framework/widgets/realitydata/RealityDataPicker";
 export * from "./ui-framework/widgets/VisibilityWidget";
 export * from "./ui-framework/widgets/DefaultNavigationWidget";
 export * from "./ui-framework/widgets/ReviewToolWidget";
+export * from "./ui-framework/widgets/NavigationWidgetComposer";
+export * from "./ui-framework/widgets/BasicToolWidget";
+export * from "./ui-framework/widgets/BasicNavigationWidget";
 
 export * from "./ui-framework/workflow/Task";
 export * from "./ui-framework/workflow/Workflow";
@@ -312,10 +325,13 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * @docs-group-description SyncUi
  * Classes for informing UI components to sync/refresh their display
  */
-
 /**
  * @docs-group-description WorkflowTask
  * Classes for working a Workflow or Task
+ */
+/**
+ * @docs-group-description Toolbar
+ * Classes used to construct a Toolbar
  */
 /**
  * @docs-group-description Tools

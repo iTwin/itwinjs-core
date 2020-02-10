@@ -15,7 +15,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { Gradient, ColorDef } from "@bentley/imodeljs-common";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { PluginUiManager } from "@bentley/ui-abstract";
+import { UiItemsManager } from "@bentley/ui-abstract";
 import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 
@@ -491,8 +491,8 @@ export class IoTDemoPlugin extends Plugin {
       IModelApp.viewManager.addToolTipProvider(new IotToolTipProvider(this));
       this.iotUiProvider = new IotUiProvider(this);
       // When a new UiProvider is registered the UI is typically refreshed so any plugin provided items are displayed.
-      // A call to PluginUiManager.unregister will allow any UI provided by the provider to be removed.
-      PluginUiManager.register(this.iotUiProvider);
+      // A call to UiItemsManager.unregister will allow any UI provided by the provider to be removed.
+      UiItemsManager.register(this.iotUiProvider);
       // if we have a simulationUrl, we'll use it, otherwise we generate the simulated data in the front end.
       if (args.length > 1) {
         this.simulationUrl = args[1];

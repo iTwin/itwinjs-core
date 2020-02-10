@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
-import { PluginUiProvider, ActionItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType } from "@bentley/ui-abstract";
+import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, ToolbarItemUtilities, CommonToolbarItem } from "@bentley/ui-abstract";
 import { ModelessDialogManager, UiDataProvider, PropertyChangeStatus, PropertyChangeResult } from "@bentley/ui-framework";
 
 import { IotSettingsDialog } from "./IotSettingsDialog";
@@ -13,7 +13,7 @@ import iotButtonSvg from "./iot-button.svg";
 import { AnimationType, AnimationTypeName } from "../IoTDefinitions";
 import { IoTDemoPlugin } from "../iotDemo";
 
-export class IotUiProvider extends UiDataProvider implements PluginUiProvider {
+export class IotUiProvider extends UiDataProvider implements UiItemsProvider {
   public monitorMode = false;
   public readonly monitorModePropertyName = "monitorMode";
 
@@ -48,19 +48,12 @@ export class IotUiProvider extends UiDataProvider implements PluginUiProvider {
     if (!ModelessDialogManager.getDialogInfo(IotSettingsDialog.id))
       ModelessDialogManager.openDialog(<IotSettingsDialog dataProvider={this} />, IotSettingsDialog.id);
   }
-  /** Method called by applications that support plugins provided tool buttons. All nine-zone based apps will supports PluginUiProviders */
-  public provideToolbarItems(toolBarId: string): ToolbarItemInsertSpec[] {
-    // For 9-zone apps the toolbarId will be in form -[stageName]ToolWidget|NavigationWidget-horizontal|vertical
-    // examples:"[ViewsFrontstage]ToolWidget-horizontal" "[ViewsFrontstage]NavigationWidget-vertical"
-    if (toolBarId.includes("ToolWidget-horizontal")) {
-      const lastActionSpec: ActionItemInsertSpec = {
-        itemType: ToolbarItemType.ActionButton,
-        itemId: "iotPlugin:openDialog",
-        execute: this.showIotDialog,
-        icon: `svg:${iotButtonSvg}`,
-        label: "Show IoT Dialog",
-      };
-      return [lastActionSpec];
+
+  /** Method called by applications that support plugins provided tool buttons */
+  public provideToolbarButtonItems(_stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+    if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
+      const simpleActionSpec = ToolbarItemUtilities.createActionButton("iotPlugin:openDialog", 1000, `svg:${iotButtonSvg}`, "Show IoT Dialog", this.showIotDialog);
+      return [simpleActionSpec];
     }
     return [];
   }

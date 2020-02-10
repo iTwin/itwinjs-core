@@ -10,15 +10,15 @@ import * as React from "react";
 import { UiEvent, CommonProps, IconSpec } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { CommandItemDef } from "../shared/CommandItemDef";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UserProfileBackstageItem } from "./UserProfile";
 import { UiFramework } from "../UiFramework";
+import { BackstageManager } from "./BackstageManager";
 
 // cSpell:ignore safearea
 
 /** [[BackstageEvent]] arguments.
- * @public
+ * @public @deprecated use BackstageComposer.
  */
 export interface BackstageEventArgs {
   isVisible: boolean;
@@ -30,7 +30,7 @@ export interface BackstageEventArgs {
 export class BackstageEvent extends UiEvent<BackstageEventArgs> { }
 
 /** Properties for the [[Backstage]] React component.
- * @public
+ * @public @deprecated use BackstageComposer.
  */
 export interface BackstageProps extends CommonProps {
   accessToken?: AccessToken;
@@ -48,7 +48,7 @@ interface BackstageState {
 }
 
 /** Backstage React component.
- * @public
+ * @public @deprecated use BackstageComposer.
  */
 export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
@@ -67,14 +67,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 
   /** Get CommandItemDef that will toggle display of Backstage and allow iconSpec to be overridden */
   public static getBackstageToggleCommand(overrideIconSpec?: IconSpec) {
-    return new CommandItemDef({
-      commandId: "UiFramework.openBackstage",
-      iconSpec: overrideIconSpec ? overrideIconSpec : "icon-home",
-      labelKey: "UiFramework:commands.openBackstage",
-      execute: () => {
-        UiFramework.backstageManager.toggle();
-      },
-    });
+    return BackstageManager.getBackstageToggleCommand(overrideIconSpec);
   }
 
   /** Command that toggles the Backstage */

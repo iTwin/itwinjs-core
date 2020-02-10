@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/icons-generic",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/icons-generic-webfont",

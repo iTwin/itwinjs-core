@@ -6,7 +6,10 @@
  * @module Backstage
  */
 
-import { BadgeType } from "../../ui-abstract";
+import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
+import { BadgeType } from "../items/BadgeType";
+import { ProvidedItem } from "../items/ProvidedItem";
+import { ConditionalStringValue } from "../items/ConditionalStringValue";
 
 /** Used to specify the item type added to the backstage menu.
  * @beta
@@ -21,38 +24,39 @@ export enum BackstageItemType {
 /** Describes the data needed to insert a button into the backstage menu.
  * @beta
  */
-export interface CommonBackstageItem {
+export interface CommonBackstageItem extends ProvidedItem {
+  /** can be used by application to store miscellaneous data. */
+  applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
-  readonly badge?: BadgeType;
+  readonly badgeType?: BadgeType;
   /** GroupPriority specifies the group an item is in (recommend using values 1 through 100). Items are sorted by group and then item priority. When
    * group priority changes a separator is inserted.
    */
   readonly groupPriority: number;
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
-  readonly icon?: string;
+  readonly icon?: string | ConditionalStringValue;
   /** Required unique id of the item. To ensure uniqueness it is suggested that a namespace prefix of the plugin name be used. */
   readonly id: string;
-  /** Describes if the item is enabled. */
-  readonly isEnabled: boolean;
-  /** Describes if the item is visible. */
-  readonly isVisible: boolean;
+  /** optional data to used by item implementor. */
+  readonly internalData?: Map<string, any>;
+  /** Describes if the item is visible or hidden. The default is for the item to be visible. */
+  readonly isHidden?: boolean | ConditionalBooleanValue;
+  /** Describes if the item is enabled or disabled. The default is for the item to be enabled. */
+  readonly isDisabled?: boolean | ConditionalBooleanValue;
   /** Priority within a group (recommend using values 1 through 100). */
   readonly itemPriority: number;
   /** Label. */
-  readonly label: string;
+  readonly label: string | ConditionalStringValue;
   /** Subtitle. */
-  readonly subtitle?: string;
+  readonly subtitle?: string | ConditionalStringValue;
   /** Tooltip. */
-  readonly tooltip?: string;
-  /** Type of item to be inserted. ('itemType' used to avoid conflict with 'type' in ui-framework) */
-  readonly itemType: BackstageItemType;
+  readonly tooltip?: string | ConditionalStringValue;
 }
 
 /** Describes the data needed to insert an action button into the backstage menu.
  * @beta
  */
 export interface BackstageActionItem extends CommonBackstageItem {
-  readonly itemType: BackstageItemType.ActionItem;
   readonly execute: () => void;
 }
 
@@ -60,7 +64,6 @@ export interface BackstageActionItem extends CommonBackstageItem {
  * @beta
  */
 export interface BackstageStageLauncher extends CommonBackstageItem {
-  readonly itemType: BackstageItemType.StageLauncher;
   readonly stageId: string;
 }
 
@@ -73,14 +76,14 @@ export type BackstageItem = BackstageActionItem | BackstageStageLauncher;
  * @beta
  */
 export const isActionItem = (item: BackstageItem): item is BackstageActionItem => {
-  return item.itemType === BackstageItemType.ActionItem;
+  return (item as BackstageActionItem).execute !== undefined;
 };
 
 /** BackstageStageLauncher type guard.
  * @beta
  */
 export const isStageLauncher = (item: BackstageItem): item is BackstageStageLauncher => {
-  return item.itemType === BackstageItemType.StageLauncher;
+  return (item as BackstageStageLauncher).stageId !== undefined;
 };
 
 /** Utilities for creating and maintaining backstage items
@@ -88,30 +91,28 @@ export const isStageLauncher = (item: BackstageItem): item is BackstageStageLaun
  */
 export class BackstageItemUtilities {
   /** Creates a stage launcher backstage item */
-  public static createStageLauncher = (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, iconSpec?: string): BackstageStageLauncher => ({
-    groupPriority,
-    icon: iconSpec,
-    isEnabled: true,
-    isVisible: true,
-    id: frontstageId,
-    itemPriority,
-    itemType: BackstageItemType.StageLauncher,
-    label,
-    stageId: frontstageId,
-    subtitle,
-  })
+  public static createStageLauncher = (frontstageId: string, groupPriority: number, itemPriority: number, label: string | ConditionalStringValue,
+    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({
+      groupPriority,
+      icon,
+      id: frontstageId,
+      itemPriority,
+      label,
+      stageId: frontstageId,
+      subtitle,
+      ...overrides,
+    })
 
   /** Creates an action backstage item */
-  public static createActionItem = (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, iconSpec?: string): BackstageActionItem => ({
-    execute,
-    groupPriority,
-    icon: iconSpec,
-    isEnabled: true,
-    isVisible: true,
-    id: itemId,
-    itemPriority,
-    itemType: BackstageItemType.ActionItem,
-    label,
-    subtitle,
-  })
+  public static createActionItem = (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string | ConditionalStringValue,
+    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageActionItem>): BackstageActionItem => ({
+      execute,
+      groupPriority,
+      icon,
+      id: itemId,
+      itemPriority,
+      label,
+      subtitle,
+      ...overrides,
+    })
 }

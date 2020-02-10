@@ -43,6 +43,10 @@ describe("MarkupToolDefinitions", () => {
       />;
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("ToolWidget should render with Markup Tool Definitions", () => {
     const wrapper = mount(
       <ToolWidget

@@ -7,13 +7,14 @@ import { mount } from "enzyme";
 import { expect } from "chai";
 import * as sinon from "sinon";
 
+import { WidgetState } from "@bentley/ui-abstract";
+
 import TestUtils from "../TestUtils";
 import {
   MessageCenterField,
   StatusBarWidgetControl,
   StatusBar,
   ConfigurableUiManager,
-  WidgetState,
   ConfigurableCreateInfo,
   MessageManager,
   ConfigurableUiControlType,

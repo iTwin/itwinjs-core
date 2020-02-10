@@ -71,7 +71,7 @@ describe("usePointerCaptor", () => {
     pointerDown.initEvent("pointerdown");
     captured.dispatchEvent(pointerDown);
 
-    spy.calledOnceWithExactly().should.true;
+    spy.calledOnceWithExactly(pointerDown as PointerEvent).should.true;
   });
 
   it("should remove pointerdown event listener", () => {
@@ -104,7 +104,7 @@ describe("usePointerCaptor", () => {
     pointerMove.initEvent("pointermove");
     document.dispatchEvent(pointerMove);
 
-    spy.calledOnceWithExactly().should.true;
+    spy.calledOnceWithExactly(pointerMove as PointerEvent).should.true;
   });
 
   it("should call onPointerUp", () => {
@@ -123,6 +123,6 @@ describe("usePointerCaptor", () => {
     pointerUp.initEvent("pointerup");
     document.dispatchEvent(pointerUp);
 
-    spy.calledOnceWithExactly().should.true;
+    spy.calledOnceWithExactly(pointerUp as PointerEvent).should.true;
   });
 });

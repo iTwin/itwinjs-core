@@ -128,6 +128,7 @@
     "react": "^16.8.0",
     "react-autosuggest": "^9.4.3",
     "react-dom": "^16.8.0",
+    "react-compound-slider": "^1.2.0",
     "svg-sprite-loader": "^3.8.0"
   },
   "nyc": {

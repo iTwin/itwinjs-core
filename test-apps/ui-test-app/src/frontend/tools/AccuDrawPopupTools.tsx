@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, FitViewTool, WindowAreaTool, ZoomViewTool, PanViewTool, RotateViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
-import { BadgeType, AbstractToolItemProps, AbstractMenuItemProps, AbstractToolbarProps } from "@bentley/ui-abstract";
+import { BadgeType, AbstractMenuItemProps, AbstractToolbarProps } from "@bentley/ui-abstract";
 import { CommandItemDef, ActionButtonItemDef } from "@bentley/ui-framework";
 
 export class AccuDrawPopupTools {
@@ -11,33 +11,33 @@ export class AccuDrawPopupTools {
   private static _menuButtonAdded = false;
   private static _accudrawMenuItems: AbstractMenuItemProps[] = [
     {
-      id: "Mode", label: "~Mode", iconSpec: "icon-placeholder", badgeType: BadgeType.New,
+      id: "Mode", label: "~Mode", icon: "icon-placeholder", badgeType: BadgeType.New,
       submenu: [
-        { id: "0", item: { label: "Mode 1", iconSpec: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } } },
-        { id: "1", item: { label: "Mode 2", iconSpec: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } } },
+        { id: "0", item: { label: "Mode 1", icon: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } } },
+        { id: "1", item: { label: "Mode 2", icon: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } } },
       ],
     },
     {
-      id: "Rotate", label: "~Rotate", iconSpec: "icon-placeholder",
+      id: "Rotate", label: "~Rotate", icon: "icon-placeholder",
       submenu: [
-        { id: "0", item: { label: "Rotate 1", iconSpec: "icon-placeholder", execute: () => { } } },
-        { id: "1", item: { label: "Rotate 2", iconSpec: "icon-placeholder", execute: () => { } } },
+        { id: "0", item: { label: "Rotate 1", icon: "icon-placeholder", execute: () => { } } },
+        { id: "1", item: { label: "Rotate 2", icon: "icon-placeholder", execute: () => { } } },
       ],
     },
     {
-      id: "LockToAxis", item: { label: "~Lock to Axis", iconSpec: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } },
+      id: "LockToAxis", item: { label: "~Lock to Axis", icon: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } },
     },
     {
-      id: "MoveOrigin", item: { label: "Move ~Origin", iconSpec: "icon-placeholder", execute: () => { } },
+      id: "MoveOrigin", item: { label: "Move ~Origin", icon: "icon-placeholder", execute: () => { } },
     },
     {
-      id: "Hide", item: { label: "~Hide", iconSpec: "icon-placeholder", execute: () => { } },
+      id: "Hide", item: { label: "~Hide", icon: "icon-placeholder", execute: () => { } },
     },
     {
-      id: "Settings", label: "~Settings", iconSpec: "icon-placeholder",
+      id: "Settings", label: "~Settings", icon: "icon-placeholder",
       submenu: [
-        { id: "0", item: { label: "Settings 1", iconSpec: "icon-placeholder", execute: () => { } } },
-        { id: "1", item: { label: "Settings 2", iconSpec: "icon-placeholder", execute: () => { } } },
+        { id: "0", item: { label: "Settings 1", icon: "icon-placeholder", execute: () => { } } },
+        { id: "1", item: { label: "Settings 2", icon: "icon-placeholder", execute: () => { } } },
       ],
     },
   ];
@@ -161,80 +161,62 @@ export class AccuDrawPopupTools {
     });
   }
 
-  public static get selectElementItemProps(): AbstractToolItemProps {
+  private static _markerToolbar = (): AbstractToolbarProps => {
     return {
-      toolId: SelectionTool.toolId,
-      iconSpec: SelectionTool.iconSpec,
-      label: () => SelectionTool.flyover,
-      description: () => SelectionTool.description,
-      execute: () => {
-        IModelApp.tools.run(SelectionTool.toolId);
-      },
+      toolbarId: "accudraw-popup",
+      items: [
+        {
+          id: SelectionTool.toolId,
+          itemPriority: 10,
+          icon: SelectionTool.iconSpec,
+          label: SelectionTool.flyover,
+          description: SelectionTool.description,
+          execute: () => IModelApp.tools.run(SelectionTool.toolId),
+        },
+        {
+          id: FitViewTool.toolId, itemPriority: 20,
+          icon: FitViewTool.iconSpec,
+          label: FitViewTool.flyover,
+          description: FitViewTool.description,
+          execute: () => IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true),
+        },
+        {
+          id: WindowAreaTool.toolId,
+          itemPriority: 30,
+          icon: WindowAreaTool.iconSpec,
+          label: WindowAreaTool.flyover,
+          description: WindowAreaTool.description,
+          execute: () => IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView),
+        },
+        {
+          id: ZoomViewTool.toolId,
+          itemPriority: 40,
+          icon: ZoomViewTool.iconSpec,
+          label: ZoomViewTool.flyover,
+          description: ZoomViewTool.description,
+          execute: () => IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView),
+        },
+        {
+          id: PanViewTool.toolId,
+          itemPriority: 50,
+          icon: PanViewTool.iconSpec,
+          label: PanViewTool.flyover,
+          description: PanViewTool.description,
+          execute: () => IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView),
+        },
+        {
+          id: RotateViewTool.toolId,
+          itemPriority: 60,
+          icon: RotateViewTool.iconSpec,
+          label: RotateViewTool.flyover,
+          description: RotateViewTool.description,
+          execute: () => IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView),
+        },
+        { id: "accuDraw-mode-1", itemPriority: 70, label: "Mode 1", icon: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
+        { id: "accuDraw-mode-2", itemPriority: 80, label: "Mode 2", icon: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } },
+      ],
     };
   }
-
-  public static get fitViewItemProps(): AbstractToolItemProps {
-    return {
-      toolId: FitViewTool.toolId,
-      iconSpec: FitViewTool.iconSpec,
-      label: () => FitViewTool.flyover,
-      description: () => FitViewTool.description,
-      execute: () => { IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true); },
-    };
-  }
-
-  public static get windowAreaItemProps(): AbstractToolItemProps {
-    return {
-      toolId: WindowAreaTool.toolId,
-      iconSpec: WindowAreaTool.iconSpec,
-      label: () => WindowAreaTool.flyover,
-      description: () => WindowAreaTool.description,
-      execute: () => { IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView); },
-    };
-  }
-
-  public static get zoomViewItemProps(): AbstractToolItemProps {
-    return {
-      toolId: ZoomViewTool.toolId,
-      iconSpec: ZoomViewTool.iconSpec,
-      label: () => ZoomViewTool.flyover,
-      description: () => ZoomViewTool.description,
-      execute: () => { IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView); },
-    };
-  }
-
-  public static get panViewItemProps(): AbstractToolItemProps {
-    return {
-      toolId: PanViewTool.toolId,
-      iconSpec: PanViewTool.iconSpec,
-      label: () => PanViewTool.flyover,
-      description: () => PanViewTool.description,
-      execute: () => { IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView); },
-    };
-  }
-
-  public static get rotateViewItemProps(): AbstractToolItemProps {
-    return {
-      toolId: RotateViewTool.toolId,
-      iconSpec: RotateViewTool.iconSpec,
-      label: () => RotateViewTool.flyover,
-      description: () => RotateViewTool.description,
-      execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },
-    };
-  }
-
-  private static _markerToolbar: AbstractToolbarProps = {
-    items: [
-      AccuDrawPopupTools.selectElementItemProps,
-      AccuDrawPopupTools.fitViewItemProps,
-      AccuDrawPopupTools.windowAreaItemProps,
-      AccuDrawPopupTools.zoomViewItemProps,
-      AccuDrawPopupTools.panViewItemProps,
-      AccuDrawPopupTools.rotateViewItemProps,
-      { label: "Mode 1", iconSpec: "icon-placeholder", badgeType: BadgeType.New, execute: () => { } },
-      { label: "Mode 2", iconSpec: "icon-placeholder", badgeType: BadgeType.TechnicalPreview, execute: () => { } },
-    ],
-  };
 
   private static _toolbarItemExecuted = (_item: ActionButtonItemDef) => {
     AccuDrawPopupTools._closeToolbar();
@@ -252,10 +234,9 @@ export class AccuDrawPopupTools {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showToolbar", execute: () => {
         IModelApp.uiAdmin.showToolbar(
-          this._markerToolbar, IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
+          this._markerToolbar(), IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
           this._toolbarItemExecuted, this._toolbarCancel);
       },
     });
   }
-
 }

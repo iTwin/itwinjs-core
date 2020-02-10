@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ToolWidgetComposer ToolWidgetComposer should render correctly 1`] = `
+<Tools
+  isNavigation={false}
+  onMouseEnter={[Function]}
+  preserveSpace={true}
+/>
+`;
+
+exports[`ToolWidgetComposer ToolWidgetComposer with should render 1`] = `
+<Tools
+  button={
+    <Unknown
+      icon="icon-test"
+    />
+  }
+  isNavigation={false}
+  onMouseEnter={[Function]}
+  preserveSpace={true}
+/>
+`;

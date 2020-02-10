@@ -8,10 +8,10 @@ import * as moq from "typemoq";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { MockRender, SpatialViewState, ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
 
 import {
   FrontstageManager,
-  WidgetState,
   CoreTools,
 } from "../../ui-framework";
 import { TestFrontstage } from "./FrontstageTestUtils";
@@ -38,6 +38,7 @@ describe("FrontstageManager", () => {
 
   after(() => {
     MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
 
     // restore the overriden property getter
     Object.defineProperty(window, "sessionStorage", propertyDescriptorToRestore);

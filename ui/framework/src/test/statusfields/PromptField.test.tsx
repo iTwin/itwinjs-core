@@ -7,12 +7,12 @@ import { Provider } from "react-redux";
 import { mount } from "enzyme";
 import { expect } from "chai";
 
+import { WidgetState } from "@bentley/ui-abstract";
 import TestUtils from "../TestUtils";
 import {
   StatusBar,
   PromptField,
   StatusBarWidgetControl,
-  WidgetState,
   ConfigurableCreateInfo,
   MessageManager,
   ConfigurableUiControlType,

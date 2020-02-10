@@ -8,7 +8,6 @@
 
 import * as React from "react";
 
-import { PluginUiManager, UiProviderRegisteredEventArgs } from "@bentley/ui-abstract";
 import { CommonProps, Icon } from "@bentley/ui-core";
 import { AppButton, Tools as NZ_ToolsWidget, Direction } from "@bentley/ui-ninezone";
 
@@ -19,7 +18,7 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 
 /** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
- * @public
+ *  @public @deprecated use ToolWidgetComposer instead
  */
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
   private _appButton: CommandItemDef | undefined;
@@ -62,7 +61,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
 }
 
 /** Properties for the [[ToolWidget]] React component.
- * @public
+ *  @public @deprecated use ToolWidgetComposer instead
  */
 export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
   button?: React.ReactNode;
@@ -78,7 +77,7 @@ interface ToolWidgetState {
 }
 
 /** ToolWidget React component.
- * @public
+ *  @public @deprecated use ToolWidgetComposer instead
  */
 export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> {
 
@@ -132,10 +131,6 @@ class ToolWidgetWithDef extends React.Component<Props, ToolWidgetWithDefState> {
   constructor(props: Props) {
     super(props);
 
-    if (PluginUiManager.hasRegisteredProviders) {
-      this.props.toolWidgetDef.generateMergedItemLists();
-    }
-
     const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar();
     const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();
     const cornerItem = (this.props.button !== undefined) ? this.props.button : this.props.toolWidgetDef.renderCornerItem();
@@ -146,20 +141,6 @@ class ToolWidgetWithDef extends React.Component<Props, ToolWidgetWithDefState> {
     const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar();
     const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();
     this.setState({ horizontalToolbar, verticalToolbar });
-  }
-
-  private _handleUiProviderRegisteredEvent = (_args: UiProviderRegisteredEventArgs): void => {
-    // create, merge, and cache ItemList from plugins
-    this.props.toolWidgetDef.generateMergedItemLists();
-    this.reloadToolbars();
-  }
-
-  public componentDidMount() {
-    PluginUiManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
-  }
-
-  public componentWillUnmount() {
-    PluginUiManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   public componentDidUpdate(prevProps: Props) {

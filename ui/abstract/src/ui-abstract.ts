@@ -5,32 +5,40 @@
 
 export * from "./ui-abstract/UiAbstract";
 export * from "./ui-abstract/UiAdmin";
+export * from "./ui-abstract/UiItemsManager";
+export * from "./ui-abstract/UiItemsArbiter";
 
 export * from "./ui-abstract/backstage/BackstageItem";
 export * from "./ui-abstract/backstage/BackstageItemsManager";
 
-export * from "./ui-abstract/items/AbstractConditionalItemProps";
-export * from "./ui-abstract/items/AbstractGroupItemProps";
 export * from "./ui-abstract/items/AbstractItemProps";
 export * from "./ui-abstract/items/AbstractMenuItemProps";
 export * from "./ui-abstract/items/AbstractToolbarProps";
-export * from "./ui-abstract/items/AnyItemProps";
 export * from "./ui-abstract/items/BadgeType";
-export * from "./ui-abstract/items/BaseItemState";
-export * from "./ui-abstract/items/ConditionalDisplayType";
+export * from "./ui-abstract/items/ConditionalBooleanValue";
+export * from "./ui-abstract/items/ConditionalStringValue";
+export * from "./ui-abstract/items/ProvidedItem";
 export * from "./ui-abstract/items/RelativePosition";
-export * from "./ui-abstract/statusbar/StatusBarItem";
 
+export * from "./ui-abstract/statusbar/StatusBarItem";
 export * from "./ui-abstract/statusbar/StatusBarItemsManager";
-export * from "./ui-abstract/plugins/PluginUi";
-export * from "./ui-abstract/plugins/PluginUiManager";
+
+export * from "./ui-abstract/toolbars/ToolbarItem";
+export * from "./ui-abstract/toolbars/ToolbarItemsManager";
 
 export * from "./ui-abstract/stage/Stage";
+
+export * from "./ui-abstract/statusbar/StatusBarItem";
+export * from "./ui-abstract/statusbar/StatusBarItemsManager";
 
 export * from "./ui-abstract/utils/getClassName";
 export * from "./ui-abstract/utils/IconSpecUtilities";
 export * from "./ui-abstract/utils/callbacks";
 export * from "./ui-abstract/utils/UiError";
+
+export * from "./ui-abstract/widget/AbstractWidgetProps";
+export * from "./ui-abstract/widget/StagePanel";
+export * from "./ui-abstract/widget/WidgetState";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
@@ -57,12 +65,16 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for working with an Item in a Toolbar, Widget, Backstage or Context Menu
  */
 /**
- * @docs-group-description Plugins
- * Classes for creating and managing runtime [Plugins]($docs/learning/frontend/Plugins.md)
+ * @docs-group-description UiItemsProvider
+ * Interface for specifying UI items to be inserted at runtime.
  */
 /**
  * @docs-group-description StatusBar
  * Classes for creating and managing items in the status bar.
+ */
+/**
+ * @docs-group-description Toolbar
+ * Classes for creating and managing items in a toolbar.
  */
 /**
  * @docs-group-description Utilities

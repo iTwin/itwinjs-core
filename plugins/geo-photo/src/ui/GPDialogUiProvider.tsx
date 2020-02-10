@@ -6,7 +6,7 @@ import * as React from "react";
 
 import { StopWatch } from "@bentley/bentleyjs-core";
 import { ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
-import { PluginUiProvider, ActionItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType } from "@bentley/ui-abstract";
+import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { ModelessDialogManager, UiDataProvider } from "@bentley/ui-framework";
 import { ITreeDataProvider } from "@bentley/ui-components";
@@ -30,7 +30,7 @@ export class SyncTitleEvent extends UiEvent<SyncTitleEventArgs> { }
 export class SyncShowMarkersEvent extends UiEvent<boolean> { }
 export class SyncSettingsEvent extends UiEvent<GeoPhotoSettings> { }
 
-export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvider, GPLoadTracker {
+export class GPDialogUiProvider extends UiDataProvider implements UiItemsProvider, GPLoadTracker {
   // either 0 while finding the folder and file counts, or 1 if processing the folders/files.
   public loadPhase: number = 0;
   public readonly loadPhasePropertyName = "loadPhase";
@@ -213,19 +213,11 @@ export class GPDialogUiProvider extends UiDataProvider implements PluginUiProvid
       ModelessDialogManager.closeDialog(GeoPhotoDialog.id);
   }
 
-  /** Method called by applications that support plugins provided tool buttons. All nine-zone based apps will supports PluginUiProviders */
-  public provideToolbarItems(toolBarId: string): ToolbarItemInsertSpec[] {
-    // For 9-zone apps the toolbarId will be in form -[stageName]ToolWidget|NavigationWidget-horizontal|vertical
-    // examples:"[ViewsFrontstage]ToolWidget-horizontal" "[ViewsFrontstage]NavigationWidget-vertical"
-    if (toolBarId.includes("ToolWidget-horizontal")) {
-      const lastActionSpec: ActionItemInsertSpec = {
-        itemType: ToolbarItemType.ActionButton,
-        itemId: "geoPhotoPlugin:openDialog",
-        execute: this.showGeoPhotoDialog,
-        icon: `svg:${geoPhotoButtonSvg}`,
-        label: "Show GeoPhoto Markers",
-      };
-      return [lastActionSpec];
+  /** Method called by applications that support plugin provided tool buttons.  */
+  public provideToolbarButtonItems(_stageId: string, stageUsage: StageUsage, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+    if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
+      const simpleActionSpec = ToolbarItemUtilities.createActionButton("geoPhotoPlugin:openDialog", 1000, `svg:${geoPhotoButtonSvg}`, "Show GeoPhoto Markers", this.showGeoPhotoDialog);
+      return [simpleActionSpec];
     }
     return [];
   }

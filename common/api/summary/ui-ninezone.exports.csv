@@ -18,6 +18,7 @@ alpha;Cell
 alpha;CellProps
 alpha;Columns 
 alpha;ColumnsProps 
+internal;CommonWidgetPanelProps 
 alpha;contain: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
 alpha;containHorizontally: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
 alpha;containVertically: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
@@ -57,6 +58,7 @@ beta;FooterPopupProps
 beta;FooterProps 
 beta;FooterSeparator 
 beta;FooterSeparatorProps 
+internal;getChildKey(child: React.ReactNode, index: number): string
 internal;getClosedWidgetTabIndex: (tabIndex: number) => number
 internal;getColumnZones: (id: WidgetZoneId) => WidgetZoneId[]
 internal;getDefaultAllowsMerging: (id: WidgetZoneId) => boolean
@@ -101,6 +103,10 @@ alpha;HistoryTray
 alpha;HistoryTrayProps 
 beta;HorizontalAnchor
 internal;HorizontalAnchorHelpers
+internal;HorizontalWidgetPanel 
+internal;HorizontalWidgetPanelApi 
+internal;HorizontalWidgetPanelProps 
+internal;isHorizontalWidgetPanelSide: (side: "bottom" | "left" | "right" | "top") => side is "bottom" | "top"
 beta;Item 
 beta;ItemProps 
 alpha;Items 
@@ -152,10 +158,17 @@ beta;Outline
 beta;OutlineProps 
 beta;Overflow 
 beta;OverflowProps 
+internal;Pane(props: PaneProps): JSX.Element
+internal;PaneContext: React.Context
+internal;PaneContextArgs
+internal;paneContextDefaultValue: PaneContextArgs
 alpha;Panel 
 alpha;PanelProps 
 alpha;PanelsProvider 
 alpha;PanelsProviderProps
+internal;PaneProps 
+internal;Panes(props: PanesProps): JSX.Element
+internal;PanesProps 
 internal;PointerCaptor 
 internal;PointerCaptorProps 
 beta;ProgressProps 
@@ -252,21 +265,57 @@ alpha;ToolsProps
 beta;Tooltip 
 beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
+internal;useFlattenRootFragment(node: React.ReactNode): React.ReactNode
+internal;useHorizontalPanelApi: () => [HorizontalWidgetPanel, HorizontalWidgetPanelApi]
 internal;useOverflow(children: React.ReactNode): [ReadonlyArray
-internal;usePointerCaptor
+internal;usePane: () => PaneContextArgs
+internal;usePanes: (children: React.ReactNode) => [Panes_2, PanesApi]
+internal;usePointerCaptor: 
 internal;useRefEffect
 internal;useRefs
+internal;useResizeGrip: 
 internal;useResizeObserver
 beta;UserProfile 
 beta;UserProfileProps 
+internal;useSingleDoubleClick
 internal;useTargeted: (elementRef: React.RefObject
 internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs
+internal;useWidgetPanelApi: () => [WidgetPanel, WidgetPanelApi]
+internal;useWidgetPanelsApi: () => [WidgetPanels, WidgetPanelsApi]
+internal;useWidgetTab(): WidgetTabContextArgs
 beta;VerticalAnchor
 internal;VerticalAnchorHelpers
+internal;VerticalWidgetPanelProps 
+internal;Widget(props: WidgetProps): JSX.Element
 alpha;WidgetContent 
 alpha;WidgetContentProps 
 beta;WidgetManagerProps
+internal;WidgetMenu: React.ForwardRefExoticComponent
+internal;WidgetMenuProps 
+internal;WidgetOverflow(props: WidgetOverflowProps): JSX.Element
+internal;WidgetOverflowProps 
+internal;WidgetPanel(props: WidgetPanelProps): JSX.Element
+internal;WidgetPanel
+internal;WidgetPanelApi
+internal;WidgetPanelContent(props: WidgetPanelContentProps): JSX.Element
+internal;WidgetPanelContentProps 
+internal;WidgetPanelGrip(props: WidgetPanelGripProps): JSX.Element
+internal;WidgetPanelGripProps 
+internal;WidgetPanelProps = VerticalWidgetPanelProps | HorizontalWidgetPanelProps
+internal;WidgetPanels(props: WidgetPanelsProps): JSX.Element
+internal;WidgetPanels
+internal;WidgetPanelsApi
+internal;WidgetPanelsGripOverlay(props: WidgetPanelsGripOverlayProps): JSX.Element
+internal;WidgetPanelsGripOverlayProps 
+internal;WidgetPanelSide = "left" | "top" | "right" | "bottom"
+internal;WidgetPanelsProps 
+internal;WidgetProps 
+internal;WidgetTab(props: WidgetTabProps): JSX.Element
+internal;WidgetTabContext: React.Context
 alpha;WidgetTabDragStartArguments
+internal;WidgetTabProps 
+internal;WidgetTabs(props: WidgetTabsProps): JSX.Element
+internal;WidgetTabsProps 
 internal;widgetZoneColumnIds: ReadonlyArray
 beta;WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9
 beta;widgetZoneIds: ReadonlyArray

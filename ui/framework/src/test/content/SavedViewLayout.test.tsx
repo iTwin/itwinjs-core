@@ -130,6 +130,7 @@ describe("SavedViewLayout", () => {
 
   after(() => {
     MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
   });
 
   class TestViewportContentControl extends ViewportContentControl {

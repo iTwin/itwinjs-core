@@ -146,8 +146,10 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
   );
 }
 
-/** Returns key of a child. Must be used along with React.Children.toArray to preserve the semanticts of children. */
-function getChildKey(child: React.ReactNode, index: number) {
+/** Returns key of a child. Must be used along with React.Children.toArray to preserve the semanticts of children.
+ * @internal
+ */
+export function getChildKey(child: React.ReactNode, index: number) {
   if (React.isValidElement(child) && child.key !== null) {
     return child.key.toString();
   }

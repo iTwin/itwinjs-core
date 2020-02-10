@@ -15,7 +15,7 @@ import { useRefs } from "./useRefs";
  */
 export function useResizeObserver<T extends Element>(onResize?: (width: number) => void) {
   const resizeObserverRef = React.useRef(new ResizeObserver((entries) => {
-    entries.length === 1 && onResize && onResize(entries[0].contentRect.width);
+    entries.length === 1 && onResize && onResize(entries[0].target.getBoundingClientRect().width);
   }));
   const observerRef = useRefEffect((instance: T | null) => {
     const resizeObserver = resizeObserverRef.current;

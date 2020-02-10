@@ -35,7 +35,7 @@ describe("ActionItemButton", () => {
       new CommandItemDef({
         commandId: "command",
         iconSpec: "icon-placeholder",
-        labelKey: "UiFramework:tests.label",
+        label: () => "tests.label",
         isEnabled: false,
         execute: () => { },
       });

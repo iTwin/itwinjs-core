@@ -21,18 +21,21 @@ import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
 import { Logger } from "@bentley/bentleyjs-core";
+import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    NoRenderApp.startup();
 
     await FrontstageManager.setActiveFrontstageDef(undefined);
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
+    IModelApp.shutdown();
   });
 
   describe("<FrontstageLaunchBackstageItem />", () => {

@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 
-import { StatusBarSection } from "@bentley/ui-abstract";
+import { StatusBarSection, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { StatusBarItemUtilities } from "../../ui-framework";
 
 describe("StatusBarItemUtilities", () => {
@@ -20,10 +20,9 @@ describe("StatusBarItemUtilities", () => {
 
     it("should support isVisible", () => {
       const item1 = StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />);
-      expect(item1.isVisible).to.be.true;
-
-      const item2 = StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />, { isVisible: false });
-      expect(item2.isVisible).to.be.false;
+      expect(ConditionalBooleanValue.getValue(item1.isHidden)).to.be.false;
+      const item2 = StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />, { isHidden: true });
+      expect(ConditionalBooleanValue.getValue(item2.isHidden)).to.be.true;
     });
 
   });

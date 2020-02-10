@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Pane should render 1`] = `
+<div
+  class="nz-widgetPanels-pane"
+  style="flex-grow: 20;"
+/>
+`;

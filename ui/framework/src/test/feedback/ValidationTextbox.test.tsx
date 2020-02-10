@@ -14,6 +14,10 @@ describe("ValidationTextbox", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   const onValueChanged = sinon.spy();
   const onEnterPressed = sinon.spy();
   const onEscPressed = sinon.spy();

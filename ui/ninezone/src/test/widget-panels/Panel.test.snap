@@ -1,0 +1,75 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetPanel should render 1`] = `
+<div
+  class="nz-widgetPanels-panel nz-left"
+  style="width: 50px;"
+>
+  <div>
+    <div
+      class="nz-content"
+    />
+  </div>
+</div>
+`;
+
+exports[`WidgetPanel should render spanned 1`] = `
+<div
+  class="nz-widgetPanels-panel nz-top nz-span"
+>
+  <div>
+    <div
+      class="nz-content"
+    />
+  </div>
+</div>
+`;
+
+exports[`WidgetPanel should render vertical 1`] = `
+<div
+  class="nz-widgetPanels-panel nz-top"
+  style="height: 50px;"
+>
+  <div>
+    <div
+      class="nz-content"
+    />
+  </div>
+</div>
+`;
+
+exports[`WidgetPanel should render w/o size 1`] = `
+<div
+  class="nz-widgetPanels-panel nz-left"
+>
+  <div>
+    <div
+      class="nz-content"
+    />
+  </div>
+</div>
+`;
+
+exports[`WidgetPanel should render with spanned bottom 1`] = `
+<div
+  class="nz-widgetPanels-panel nz-left nz-span-bottom"
+>
+  <div>
+    <div
+      class="nz-content"
+    />
+  </div>
+</div>
+`;
+
+exports[`WidgetPanel should render with spanned top 1`] = `
+<div
+  class="nz-widgetPanels-panel nz-left nz-span-top"
+>
+  <div>
+    <div
+      class="nz-content"
+    />
+  </div>
+</div>
+`;

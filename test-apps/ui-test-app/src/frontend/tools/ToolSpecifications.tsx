@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
+import { FooterSeparator } from "@bentley/ui-ninezone";
 import {
   IModelApp, NotifyMessageDetails, OutputMessagePriority, MessageBoxValue, SelectionTool,
   OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType, OutputMessageAlert,
 } from "@bentley/imodeljs-frontend";
-import { MessageSeverity } from "@bentley/ui-core";
-import { BackstageItem, StatusBarSection } from "@bentley/ui-abstract";
+import { MessageSeverity, SvgSprite, SvgPath } from "@bentley/ui-core";
+import { BackstageItem, StatusBarSection, UiItemsManager, CommonStatusBarItem, StageUsage, UiItemsProvider, ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
 import {
   CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager,
-  SyncUiEventId, UiFramework, Backstage, BackstageItemUtilities, StatusBarItemUtilities, withStatusFieldProps,
+  SyncUiEventId, Backstage, BackstageItemUtilities, StatusBarItemUtilities, withStatusFieldProps, SyncUiEventDispatcher,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";
@@ -25,17 +25,52 @@ import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 import { AppUi } from "../appui/AppUi";
 import { SampleStatusField } from "../appui/statusfields/SampleStatusField";
 
+// import metricIconSvg from "@bentley/icons-generic/icons/app-1.svg";
+import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg";
+
 // tslint:disable-next-line: variable-name
 const SampleStatus = withStatusFieldProps(SampleStatusField);
 
-export class AppTools {
-  public static getBackstageItems(): BackstageItem[] {
+// Sample UI items provider that dynamically adds ui items
+class AppItemsProvider implements UiItemsProvider {
+  public readonly id = "AnotherStatusBarItemProvider";
+  public static readonly sampleStatusFieldId = "appuiprovider:statusField1";
+  public static readonly sampleStatusSeparatorId = "appuiprovider:statusSeparator1";
+  public static readonly sampleBackstageItem = "appuiprovider:backstage1";
+  public static readonly syncEventId = "appuiprovider:dynamic-item-visibility-changed";
+  private static _sampleStatusVisible = false;  // initial set to false
+  private static _sampleBackstageItemVisible = false;  // initial set to false
+
+  public static toggleStatusBarItem() {
+    AppItemsProvider._sampleStatusVisible = !AppItemsProvider._sampleStatusVisible;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
+  }
+
+  public static toggleBackstageItem() {
+    AppItemsProvider._sampleBackstageItemVisible = !AppItemsProvider._sampleBackstageItemVisible;
+    SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(AppItemsProvider.syncEventId);
+  }
+
+  public provideStatusBarItems(_stageId: string, _stageUsage: StageUsage): CommonStatusBarItem[] {
+    const statusBarItems: CommonStatusBarItem[] = [];
+    const isHiddenCondition = new ConditionalBooleanValue(() => !AppItemsProvider._sampleBackstageItemVisible, [AppItemsProvider.syncEventId]);
+    statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusSeparatorId, StatusBarSection.Left, 11, <FooterSeparator />, { isHidden: isHiddenCondition }));
+    statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusFieldId, StatusBarSection.Left, 12, <SampleStatus />, { isHidden: isHiddenCondition }));
+    return statusBarItems;
+  }
+
+  public provideBackstageItems(): BackstageItem[] {
+    const backstageItemHidden = new ConditionalBooleanValue(() => !AppItemsProvider._sampleStatusVisible, [AppItemsProvider.syncEventId]);
+
     return [
-      BackstageItemUtilities.createActionItem("tool1:item1", 50, 50, () => { }, "Tool1 - Item1"),
+      BackstageItemUtilities.createActionItem(AppItemsProvider.sampleBackstageItem, 500, 50, () => { }, "Dynamic Action", undefined, undefined, { isHidden: backstageItemHidden }),
     ];
   }
-  private static _sampleStatusFieldId = "tool1:statusField1";
+}
 
+UiItemsManager.register(new AppItemsProvider());
+
+export class AppTools {
   public static get tool1() {
     return new ToolItemDef({
       toolId: Tool1.toolId,
@@ -44,16 +79,8 @@ export class AppTools {
       description: () => Tool1.description,
       execute: () => {
         IModelApp.tools.run(Tool1.toolId);
-
-        const backstageItems = AppTools.getBackstageItems();
-        UiFramework.backstageManager.itemsManager.add(backstageItems);
-
-        const statusBarItem = StatusBarItemUtilities.createStatusBarItem(this._sampleStatusFieldId, StatusBarSection.Left, 10, <SampleStatus />);
-        const itemsManager = UiFramework.statusBarManager.getItemsManager("main");
-        if (itemsManager) {
-          itemsManager.add(statusBarItem);
-          itemsManager.setIsVisible("ViewAttributes", false);
-        }
+        AppItemsProvider.toggleStatusBarItem();
+        AppItemsProvider.toggleBackstageItem();
       },
     });
   }
@@ -66,15 +93,6 @@ export class AppTools {
       tooltipKey: "SampleApp:tools.Tool2.description",
       execute: () => {
         IModelApp.tools.run(Tool2.toolId);
-
-        const backstageItems = AppTools.getBackstageItems().map((item) => item.id);
-        UiFramework.backstageManager.itemsManager.remove(backstageItems);
-
-        const itemsManager = UiFramework.statusBarManager.getItemsManager("main");
-        if (itemsManager) {
-          itemsManager.remove(this._sampleStatusFieldId);
-          itemsManager.setIsVisible("ViewAttributes", true);
-        }
       },
     });
   }
@@ -203,9 +221,13 @@ export class AppTools {
   }
 
   public static get setLengthFormatMetricCommand() {
+    // data from app-1.svg
+    const pathIconSpec = <SvgPath viewBoxWidth={16} viewBoxHeight={16}
+      paths={["M13,1a2.0023,2.0023,0,0,1,2,2V13a2.0023,2.0023,0,0,1-2,2H3a2.0023,2.0023,0,0,1-2-2V3A2.0023,2.0023,0,0,1,3,1H13m0-1H3A3,3,0,0,0,0,3V13a3,3,0,0,0,3,3H13a3,3,0,0,0,3-3V3a3,3,0,0,0-3-3Z",
+        "m8.695 12.223h-.87v-5.597q0-.698.043-1.321-.113.113-.252.236t-1.278 1.047l-.473-.612 2.078-1.606h.752"]} />;
     return new CommandItemDef({
       commandId: "setLengthFormatMetric",
-      iconSpec: "icon-info",
+      iconSpec: pathIconSpec,
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
       execute: () => {
         IModelApp.quantityFormatter.useImperialFormats = false;
@@ -215,9 +237,10 @@ export class AppTools {
   }
 
   public static get setLengthFormatImperialCommand() {
+    const spriteIconSpec = <SvgSprite src={imperialIconSvg} />;  // equivalent to `svg:${imperialIconSvg}`
     return new CommandItemDef({
       commandId: "setLengthFormatImperial",
-      iconSpec: "icon-info",
+      iconSpec: spriteIconSpec,
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
       execute: () => {
         IModelApp.quantityFormatter.useImperialFormats = true;
@@ -245,12 +268,20 @@ export class AppTools {
   }
 
   public static get toggleHideShowItemsCommand() {
+    const commandId = "testHideShowItems";
+    const toolSyncUiEventId = `test-app-sync-${commandId}`.toLowerCase();
     return new CommandItemDef({
-      commandId: "testHideShowItems",
-      iconSpec: "icon-info",
-      labelKey: "SampleApp:buttons.toggleItemDisplay",
+      commandId,
+      // Even though the following will work because calling SampleAppIModelApp.getTestProperty will update redux and trigger event - exercise the tool's call to dispatchUiSyncEvent instead.
+      // iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-visibility-hide-2" : "icon-visibility", [SampleAppUiActionId.setTestProperty]),
+      // label: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "Hide items" : "Show items", [SampleAppUiActionId.setTestProperty]),
+      iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-visibility-hide-2" : "icon-visibility", [toolSyncUiEventId]),
+      label: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "Hide items" : "Show items", [toolSyncUiEventId]),
+
       execute: () => {
         SampleAppIModelApp.setTestProperty(SampleAppIModelApp.getTestProperty() === "HIDE" ? "" : "HIDE");
+        // demonstrate how tool could dispatch its own event.
+        IModelApp.toolAdmin.dispatchUiSyncEvent(toolSyncUiEventId);
       },
     });
   }

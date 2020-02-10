@@ -7,7 +7,7 @@
  */
 
 import { PropsHelper } from "../utils/PropsHelper";
-import { BackstageItemType as UIA_BackstageItemType, BackstageActionItem as UIA_BackstageActionItem, BackstageStageLauncher as UIA_BackstageStageLauncher } from "@bentley/ui-abstract";
+import { BackstageActionItem as UIA_BackstageActionItem, BackstageStageLauncher as UIA_BackstageStageLauncher } from "@bentley/ui-abstract";
 import { BackstageItemProps, BackstageItemState } from "./BackstageItemProps";
 
 /** Used to specify the item type added to the backstage menu.
@@ -44,37 +44,31 @@ export class BackstageItemUtilities {
   /** Creates a stage launcher backstage item
    * @beta @deprecated Use BackstageItemUtilities.createStageLauncher in bentley/ui-abstract instead
    */
-  public static createStageLauncher = (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, iconSpec?: string, itemProps?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({
+  public static createStageLauncher = (frontstageId: string, groupPriority: number, itemPriority: number, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({
     groupPriority,
     icon: iconSpec,
-    isEnabled: true,
-    isVisible: true,
     id: frontstageId,
     itemPriority,
     type: BackstageItemType.StageLauncher,
-    itemType: UIA_BackstageItemType.StageLauncher,
     label,
     stageId: frontstageId,
     subtitle,
-    ...itemProps ? itemProps : {},
+    ...overrides,
   })
 
   /** Creates an action backstage item
    * @beta @deprecated Use BackstageItemUtilities.createActionItem in bentley/ui-abstract instead
    */
-  public static createActionItem = (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, iconSpec?: string, itemProps?: Partial<BackstageActionItem>): BackstageActionItem => ({
+  public static createActionItem = (itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string, subtitle?: string, iconSpec?: string, overrides?: Partial<BackstageActionItem>): BackstageActionItem => ({
     execute,
     groupPriority,
     icon: iconSpec,
-    isEnabled: true,
-    isVisible: true,
     id: itemId,
     itemPriority,
     type: BackstageItemType.ActionItem,
-    itemType: UIA_BackstageItemType.ActionItem,
     label,
     subtitle,
-    ...itemProps ? itemProps : {},
+    ...overrides,
   })
 
   /** Helper method to set backstage item state from props */
@@ -84,7 +78,7 @@ export class BackstageItemUtilities {
     const tooltipSpec = PropsHelper.getStringSpec(props.tooltip, props.tooltipKey);
 
     return {
-      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true,
+      isEnabled: undefined !== !props.isEnabled ? !!props.isEnabled : false,
       label: PropsHelper.getStringFromSpec(labelSpec),
       subtitle: PropsHelper.getStringFromSpec(subtitleSpec),
       tooltip: PropsHelper.getStringFromSpec(tooltipSpec),

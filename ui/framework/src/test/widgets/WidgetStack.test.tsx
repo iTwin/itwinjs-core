@@ -8,7 +8,8 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 import * as moq from "typemoq";
 import TestUtils from "../TestUtils";
-import { BadgeType } from "@bentley/ui-abstract";
+
+import { BadgeType, WidgetState } from "@bentley/ui-abstract";
 import {
   HorizontalAnchor,
   TabMode,
@@ -17,9 +18,9 @@ import {
   Stacked as NZ_WidgetStack,
   ResizeHandle,
 } from "@bentley/ui-ninezone";
+
 import {
   ZoneState,
-  WidgetState,
   ConfigurableUiManager,
   WidgetControl,
   ConfigurableCreateInfo,

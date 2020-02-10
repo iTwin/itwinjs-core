@@ -8,12 +8,13 @@ import * as React from "react";
 import { Provider } from "react-redux";
 import { render, cleanup } from "@testing-library/react";
 
+import { WidgetState } from "@bentley/ui-abstract";
+
 import TestUtils from "../TestUtils";
 import {
   StatusBar,
   SelectionInfoField,
   StatusBarWidgetControl,
-  WidgetState,
   ConfigurableCreateInfo,
   ConfigurableUiControlType,
   WidgetDef,

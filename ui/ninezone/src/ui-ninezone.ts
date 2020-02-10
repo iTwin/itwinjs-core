@@ -14,6 +14,7 @@ export * from "./ui-ninezone/base/useOnOutsideClick";
 export * from "./ui-ninezone/base/useRefEffect";
 export * from "./ui-ninezone/base/useRefs";
 export * from "./ui-ninezone/base/useResizeObserver";
+export * from "./ui-ninezone/base/useSingleDoubleClick";
 export * from "./ui-ninezone/base/useTargeted";
 export * from "./ui-ninezone/base/WithContainIn";
 
@@ -100,9 +101,14 @@ export * from "./ui-ninezone/utilities/Direction";
 export * from "./ui-ninezone/utilities/DisabledResizeHandles";
 export * from "./ui-ninezone/utilities/SafeAreaInsets";
 
+export * from "./ui-ninezone/widget/Menu";
+export * from "./ui-ninezone/widget/Overflow";
 export * from "./ui-ninezone/widget/Stacked";
+export * from "./ui-ninezone/widget/Tab";
+export * from "./ui-ninezone/widget/Tabs";
 export * from "./ui-ninezone/widget/Tools";
 export * from "./ui-ninezone/widget/ToolSettings";
+export * from "./ui-ninezone/widget/Widget";
 
 export * from "./ui-ninezone/widget/tools/button/App";
 export * from "./ui-ninezone/widget/tools/button/Back";
@@ -121,6 +127,14 @@ export * from "./ui-ninezone/widget/tool-settings/Nested";
 export * from "./ui-ninezone/widget/tool-settings/Popup";
 export * from "./ui-ninezone/widget/tool-settings/Scrollable";
 export * from "./ui-ninezone/widget/tool-settings/Tab";
+
+export * from "./ui-ninezone/widget-panels/Content";
+export * from "./ui-ninezone/widget-panels/Grip";
+export * from "./ui-ninezone/widget-panels/GripOverlay";
+export * from "./ui-ninezone/widget-panels/Pane";
+export * from "./ui-ninezone/widget-panels/Panel";
+export * from "./ui-ninezone/widget-panels/Panels";
+export * from "./ui-ninezone/widget-panels/Panes";
 
 export * from "./ui-ninezone/zones/Outline";
 export * from "./ui-ninezone/zones/Zone";
@@ -196,6 +210,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Widget
  * Classes for working a Widget
+ */
+/**
+ * @docs-group-description WidgetPanels
+ * Classes for working with widget panels
  */
 /**
  * @docs-group-description Zone

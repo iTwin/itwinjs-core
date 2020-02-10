@@ -6,10 +6,14 @@ import * as React from "react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as moq from "typemoq";
+
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
+import { Toolbar, Direction } from "@bentley/ui-ninezone";
+
 import TestUtils from "../TestUtils";
 import {
   AnyWidgetProps,
-  WidgetState,
   NavigationWidgetDef,
   ToolButton,
   NavigationWidget,
@@ -18,10 +22,8 @@ import {
   FrontstageManager,
   ItemList,
 } from "../../ui-framework";
-import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { ConfigurableUiManager } from "../../ui-framework/configurableui/ConfigurableUiManager";
 import { NavigationAidControl } from "../../ui-framework/navigationaids/NavigationAidControl";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 
 describe("NavigationWidget", () => {

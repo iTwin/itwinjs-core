@@ -2,6 +2,7 @@ sep=;
 Release Tag;API Item
 alpha;AccuDrawPopupManager
 public;Action
+internal;ActionButtonItem: React.FC
 public;class ActionButtonItemDef 
 public;ActionCreatorsObject =
 public;ActionItemButton 
@@ -40,6 +41,10 @@ public;BackstageProps
 beta;BackstageStageLauncher 
 beta;BackstageToggledArgs
 public;BaseItemState
+beta;BasicNavigationWidget: React.FC
+beta;BasicNavigationWidgetProps
+beta;BasicToolWidget: React.FC
+beta;BasicToolWidgetProps
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
 alpha;Calculator 
@@ -71,8 +76,6 @@ public;CommandLaunchBackstageItem
 public;CommandLaunchBackstageItemProps 
 public;ConditionalField 
 public;ConditionalFieldProps 
-beta;ConditionalItemDef 
-beta;ConditionalItemProps 
 public;ConfigurableBase 
 public;ConfigurableCreateInfo
 public;ConfigurableUiActionId
@@ -133,6 +136,7 @@ beta;CursorUpdatedEvent
 beta;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
+beta;CustomToolbarButton 
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
@@ -163,10 +167,12 @@ public;ElementTooltipChangedEvent
 public;ElementTooltipChangedEventArgs
 beta;ExpandableSection 
 beta;ExpandableSectionProps 
+beta;ExtensibleToolbarProps
 internal;FaceCell 
 internal;FaceCellProps 
 alpha;FilterInfo
 public;FooterModeField 
+beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
 beta;FrameworkState
@@ -196,10 +202,12 @@ internal;getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | imp
 internal;getFirstItemId: (groupItemDef: GroupItemDef) => string
 internal;getFloatingZoneBounds: (props: ZoneManagerProps) => RectangleProps
 internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
-internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
+beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
+internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
 beta;getSelectionContextSyncEventIds(): string[]
-internal;getStagePanelType: (location: StagePanelLocation) => StagePanelType
+internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
 public;GroupButton: React.FunctionComponent
+internal;GroupButtonItem: React.FunctionComponent
 public;GroupButtonProps 
 internal;GroupedItems = ReadonlyArray
 internal;GroupItem 
@@ -211,6 +219,7 @@ internal;HitBoxZ
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
 public;Icon: React.FunctionComponent
+beta;IconHelper
 public;IconProps 
 public;IconSpec = IconSpec_2
 beta;IModelConnectedCategoryTree: any
@@ -238,6 +247,7 @@ public;InputFieldMessageEventArgs
 public;InputFieldMessageRemovedEvent 
 alpha;InputStatus
 internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open
+beta;isNoSelectionActive(): boolean
 alpha;isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem
 internal;isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps
 public;class ItemDefBase
@@ -301,12 +311,17 @@ alpha;ModelsTreeProps
 alpha;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
+beta;NameToReducerMap
 internal;NavCubeFace 
 internal;NavCubeFaceProps 
 public;NavigationAidActivatedEvent 
 public;NavigationAidActivatedEventArgs
 public;NavigationAidControl 
+beta;NavigationAidHost: React.FC
+beta;NavigationAidHostProps
 public;NavigationWidget 
+beta;NavigationWidgetComposer: React.FC
+beta;NavigationWidgetComposerProps
 public;NavigationWidgetDef 
 public;NavigationWidgetProps 
 public;NavigationWidgetPropsEx 
@@ -346,6 +361,8 @@ alpha;RealityDataPickerControl
 public;Reducer
 public;ReducerActions
 public;ReducerMapActions
+beta;ReducerRegistry
+beta;ReducerRegistryInstance: ReducerRegistry
 beta;ReviewToolWidget 
 beta;ReviewToolWidgetProps
 internal;RotationData
@@ -395,14 +412,17 @@ alpha;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 alpha;StagePanelHeaderProps 
 alpha;StagePanelLocation
-internal;stagePanelLocations: ReadonlyArray
 alpha;StagePanelProps
 internal;StagePanelRuntimeProps
+alpha;StagePanelSection
 alpha;StagePanelState
+alpha;StagePanelZoneProps
+alpha;StagePanelZonesProps
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
 alpha;StandardRotationNavigationAid 
 alpha;StandardRotationNavigationAidControl 
+beta;StateManager
 public;StateType
 public;StatusBar 
 beta;StatusBarCenterSection: React.FunctionComponent
@@ -414,7 +434,6 @@ beta;StatusBarItem
 beta;StatusBarItemsManager 
 beta;StatusBarItemUtilities
 beta;StatusBarLeftSection: React.FunctionComponent
-beta;StatusBarManager
 public;StatusBarProps 
 beta;StatusBarRightSection: React.FunctionComponent
 beta;StatusBarSpaceBetween: React.FunctionComponent
@@ -452,7 +471,10 @@ internal;ToolAssistanceFieldDefaultProps = Pick
 beta;ToolAssistanceFieldProps 
 internal;Toolbar 
 beta;ToolbarButtonHelper
+beta;ToolbarComposer: React.FC
 beta;ToolbarDragInteractionContext: React.Context
+internal;ToolbarGroupItem 
+beta;ToolbarHelper
 alpha;ToolbarPopup 
 alpha;ToolbarPopupProps 
 internal;ToolbarProps 
@@ -482,15 +504,17 @@ beta;UiVisibilityEventArgs
 beta;useActiveFrontstageId: () => string
 beta;useActiveIModelConnection(): IModelConnection | undefined
 beta;useActiveViewport(): ScreenViewport | undefined
-internal;useAvailablePluginUiProviders(): readonly string[]
-internal;useBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
+internal;useAvailableUiItemsProviders(): readonly string[]
 beta;useBackstageManager: () => BackstageManager
-internal;useGroupedItems: (manager: BackstageItemsManager) => GroupedItems
+internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
+beta;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
+beta;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
+internal;useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
-beta;usePluginStatusBarItems: (manager: StatusBarItemsManager_2 | undefined) => readonly CommonStatusBarItem[]
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
-beta;useStageStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
+beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
+beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
 alpha;ValidationTextbox 
 internal;VersionInfo
 beta;ViewAttributesStatusField 
@@ -518,7 +542,14 @@ public;WidgetChangeHandler
 public;WidgetControl 
 public;WidgetDef
 public;WidgetHost
+internal;WidgetInfo
+alpha;WidgetManager
 public;WidgetProps 
+alpha;WidgetProvider
+internal;WidgetProvidersChangedEvent 
+internal;WidgetProvidersChangedEventArgs
+internal;WidgetsChangedEvent 
+internal;WidgetsChangedEventArgs
 internal;WidgetStack 
 internal;WidgetStackProps 
 internal;WidgetStackTab 
@@ -530,6 +561,7 @@ internal;WidgetStackTabsProps
 public;WidgetState
 public;WidgetStateChangedEvent 
 public;WidgetStateChangedEventArgs
+public;WidgetStateFunc = (state: Readonly
 internal;WidgetTab
 internal;WidgetTabs =
 public;WidgetType

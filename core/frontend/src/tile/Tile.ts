@@ -435,7 +435,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       this.unloadChildren(args.purgeOlderThan);
       return SelectParent.No;
     }
-
     if (TileVisibility.Visible === vis) {
       // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
       if (!this.isReady)

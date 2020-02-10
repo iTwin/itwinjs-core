@@ -50,6 +50,10 @@ describe("KeyboardShortcut", () => {
     });
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   beforeEach(() => {
     testSpyMethod.resetHistory();
     KeyboardShortcutManager.shortcutContainer.emptyData();

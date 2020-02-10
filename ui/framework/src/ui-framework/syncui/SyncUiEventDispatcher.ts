@@ -148,6 +148,7 @@ export class SyncUiEventDispatcher {
 
   /** Save multiple eventIds in Set for processing. */
   public static dispatchSyncUiEvents(eventIds: string[]): void {
+    // istanbul ignore else
     if (0 === SyncUiEventDispatcher._timeoutPeriod) {
       Logger.logInfo(UiFramework.loggerCategory(this), `[dispatchSyncUiEvents] not processed because _timeoutPeriod=0`);
       return;
@@ -172,6 +173,7 @@ export class SyncUiEventDispatcher {
         Logger.logError(UiFramework.loggerCategory(this), "SyncUiEventDispatcher.checkForAdditionalIds - expected _syncEventTimerId to be defined");
       }
       SyncUiEventDispatcher._eventIdAdded = false;
+      // istanbul ignore else
       if (SyncUiEventDispatcher.syncEventIds.size > 0) {
         const eventIds = new Set<string>();
         SyncUiEventDispatcher.syncEventIds.forEach((value) => eventIds.add(value));

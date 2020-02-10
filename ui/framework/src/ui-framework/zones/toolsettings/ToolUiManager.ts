@@ -10,6 +10,7 @@ import { UiEvent } from "@bentley/ui-core";
 import { IModelApp, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, InteractiveTool } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../../UiFramework";
+import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 
 // -----------------------------------------------------------------------------
 // Events
@@ -51,11 +52,19 @@ export class ToolUiManager {
     ToolUiManager.onSyncToolSettingsProperties.emit({ toolId, syncProperties });
   }
 
+  private static dispatchSyncUiEvent(syncEventId: string, useImmediateDispatch?: boolean): void {
+    if (useImmediateDispatch)
+      SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(syncEventId);
+    else
+      SyncUiEventDispatcher.dispatchSyncUiEvent(syncEventId);
+  }
+
   /** Initializes the ToolUiManager */
   public static initialize() {
     // istanbul ignore else
     if (IModelApp && IModelApp.toolAdmin) {
       IModelApp.toolAdmin.toolSettingsChangeHandler = ToolUiManager.syncToolSettingsProperties;
+      IModelApp.toolAdmin.toolSyncUiEventDispatcher = ToolUiManager.dispatchSyncUiEvent;
     }
   }
 

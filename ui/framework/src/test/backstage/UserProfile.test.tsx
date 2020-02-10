@@ -63,6 +63,10 @@ describe("UserProfileBackstageItem", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render", () => {
     const wrapper = mount(<UserProfileBackstageItem accessToken={new MockAccessToken()} />);
     wrapper.unmount();

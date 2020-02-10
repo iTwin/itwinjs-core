@@ -1,0 +1,460 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetPanels should not render overlay when not resizing 1`] = `
+<div
+  class="nz-widgetPanels-panels"
+>
+  <div
+    class="nz-widgetPanels-content"
+  />
+  <div
+    class="nz-widgetPanels-panel nz-left"
+    style="width: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-left"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-right"
+    style="width: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-right"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-top"
+    style="height: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-top"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-bottom"
+    style="height: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-bottom"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WidgetPanels should render 1`] = `
+<div
+  class="nz-widgetPanels-panels"
+>
+  <div
+    class="nz-widgetPanels-content"
+  />
+  <div
+    class="nz-widgetPanels-panel nz-left"
+    style="width: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-left"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-right"
+    style="width: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-right"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-top"
+    style="height: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-top"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-bottom"
+    style="height: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-bottom"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WidgetPanels should render collapsed panels 1`] = `
+<div
+  class="nz-widgetPanels-panels"
+>
+  <div
+    class="nz-widgetPanels-content"
+  />
+  <div
+    class="nz-widgetPanels-panel nz-left nz-collapsed"
+  >
+    <div>
+      <div
+        class="nz-content"
+        style="width: 100px;"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-left nz-collapsed"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-right nz-collapsed"
+  >
+    <div>
+      <div
+        class="nz-content"
+        style="width: 100px;"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-right nz-collapsed"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-top nz-collapsed"
+  >
+    <div>
+      <div
+        class="nz-content"
+        style="height: 100px;"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-top nz-collapsed"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-bottom nz-collapsed"
+  >
+    <div>
+      <div
+        class="nz-content"
+        style="height: 100px;"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-bottom nz-collapsed"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WidgetPanels should render overlay 1`] = `
+<div
+  class="nz-widgetPanels-panels"
+>
+  <div
+    class="nz-widgetPanels-content"
+  />
+  <div
+    class="nz-widgetPanels-panel nz-left nz-captured"
+    style="width: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-left nz-resizing"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-right"
+    style="width: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-right"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-top"
+    style="height: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-top"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panel nz-bottom"
+    style="height: 100px;"
+  >
+    <div>
+      <div
+        class="nz-content"
+      />
+      <div
+        class="nz-widgetPanels-grip nz-bottom"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-gripOverlay nz-left"
+  />
+</div>
+`;

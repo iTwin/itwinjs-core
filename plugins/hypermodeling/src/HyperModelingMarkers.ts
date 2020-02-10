@@ -173,9 +173,9 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
 
   public toolbarProps: AbstractToolbarProps = {
     items: [
-      { label: HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.ToggleSection"), iconSpec: "icon-section-tool", badgeType: BadgeType.None, applicationData: "toggle_section", execute: () => { } },
-      { label: HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.AlignSection"), iconSpec: "icon-image", badgeType: BadgeType.None, applicationData: "align_view", execute: () => { } },
-      { label: HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.OpenSection"), iconSpec: "icon-import", badgeType: BadgeType.None, applicationData: "open_section", execute: () => { } },
+      { id: "toggle_section", itemPriority: 10, label: HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.ToggleSection"), icon: "icon-section-tool", badgeType: BadgeType.None, execute: () => { } },
+      { id: "align_view", itemPriority: 20, label: HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.AlignSection"), icon: "icon-image", badgeType: BadgeType.None, execute: () => { } },
+      { id: "open_section", itemPriority: 30, label: HyperModelingPlugin.plugin!.i18n.translate("HyperModeling:Message.OpenSection"), icon: "icon-import", badgeType: BadgeType.None, execute: () => { } },
     ],
   };
 
@@ -187,7 +187,7 @@ class SectionLocation extends Marker implements PopupToolbarProvider {
     if (undefined === vp)
       return;
 
-    switch (item.applicationData) {
+    switch (item.id) {
       case "toggle_section": {
         this.toggleSection(vp); // tslint:disable-line:no-floating-promises
         break;

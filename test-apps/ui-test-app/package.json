@@ -77,6 +77,7 @@
     "@bentley/imodeljs-markup": "2.0.0-dev.1",
     "@bentley/imodeljs-webserver": "2.0.0-dev.1",
     "@bentley/icons-generic-webfont": "^1.0.0",
+    "@bentley/icons-generic": "^1.0.0",
     "@types/classnames": "^2.2.3",
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "10.14.1",

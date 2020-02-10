@@ -6,10 +6,14 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 
+import { BadgeType, WidgetState } from "@bentley/ui-abstract";
+
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventId } from "../../ui-framework";
+import {
+  WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl,
+  ConfigurableCreateInfo, ConfigurableUiControlType, SyncUiEventId,
+} from "../../ui-framework";
 import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-import { BadgeType } from "@bentley/ui-abstract";
 
 // cSpell:ignore widgetstate
 
@@ -38,8 +42,8 @@ describe("WidgetDef", () => {
       priority: 100,
       isFreeform: true,
       iconSpec: "icon-home",
-      label: () => "label",
-      tooltip: () => "tooltip",
+      label: "label",
+      tooltip: "tooltip",
       isToolSettings: true,
       isStatusBar: true,
       fillZone: true,
@@ -49,7 +53,6 @@ describe("WidgetDef", () => {
       element: <div />,
       syncEventIds: [SyncUiEventId.FrontstageReady],
       stateFunc: sinon.spy(),
-      betaBadge: true,
       badgeType: BadgeType.TechnicalPreview,
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
@@ -122,10 +125,12 @@ describe("WidgetDef", () => {
   it("setWidgetState", () => {
     const widgetProps: WidgetProps = {
       classId: "WidgetDefTest",
+      badgeType: BadgeType.None,
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
     widgetDef.setWidgetState(WidgetState.Open);
 
+    expect(widgetDef.stateChanged).to.eq(true);
     expect(widgetDef.isVisible).to.eq(true);
     expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.canOpen()).to.be.true;

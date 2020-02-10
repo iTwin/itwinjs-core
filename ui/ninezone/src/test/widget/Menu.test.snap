@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetPanelWidgetMenu  should render 1`] = `
+<div
+  class="nz-widget-menu nz-left"
+>
+  <div>
+    A
+  </div>
+  <div>
+    B
+  </div>
+</div>
+`;
+
+exports[`WidgetPanelWidgetMenu  should render to right 1`] = `
+<div
+  class="nz-widget-menu nz-right"
+>
+  <div>
+    A
+  </div>
+  <div>
+    B
+  </div>
+</div>
+`;

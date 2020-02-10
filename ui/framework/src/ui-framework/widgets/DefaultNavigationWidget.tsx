@@ -14,7 +14,7 @@ import { ItemList } from "../shared/ItemMap";
 import { connectIModelConnection } from "../redux/connectIModel";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[DefaultNavigationWidget]].
- * @beta
+ * @beta @deprecated use BasicNavigationWidget instead
  */
 export interface DefaultNavigationProps {
   /** Item to add before the default items in the horizontal toolbar */
@@ -29,7 +29,7 @@ export interface DefaultNavigationProps {
 
 /** Default Navigation Widget for zone 3. Provides standard view manipulation tools and displays registered Navigation Aids as corner item.
  * This definition will also show a overflow button if there is not enough room to display all the toolbar buttons.
- * @beta
+ * @beta @deprecated use BasicNavigationWidget instead
  */
 export class DefaultNavigationWidget extends React.Component<DefaultNavigationProps> {
 
@@ -70,6 +70,6 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
 }
 
 /** DefaultNavigationWidget that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
- * @beta
+ * @beta @deprecated use BasicNavigationWidget instead
  */
 export const IModelConnectedNavigationWidget = connectIModelConnection(null, null)(DefaultNavigationWidget); // tslint:disable-line:variable-name

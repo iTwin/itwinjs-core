@@ -68,6 +68,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     return key;
   }
 
+  /** @internal */
   public toolbarReactNode(index?: number): React.ReactNode {
     if (!this.isVisible)
       return null;

@@ -10,7 +10,7 @@ import * as React from "react";
 import classnames = require("classnames");
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { BadgeType, StringGetter, AbstractGroupItemProps, OnItemExecutedFunc } from "@bentley/ui-abstract";
+import { BadgeType, StringGetter, OnItemExecutedFunc, ConditionalStringValue } from "@bentley/ui-abstract";
 import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon, BadgeUtilities } from "@bentley/ui-core";
 import {
   Item, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Group as ToolGroupComponent,
@@ -26,7 +26,6 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../UiFramework";
 import { AnyItemDef } from "../shared/AnyItemDef";
 import { GroupItemProps } from "../shared/GroupItemProps";
-import { ItemDefFactory } from "../shared/ItemDefFactory";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
@@ -61,7 +60,7 @@ export class GroupItemDef extends ActionButtonItemDef {
 
   private _itemList!: ItemList;
   private _itemMap!: ItemMap;
-  private _panelLabel: string | StringGetter = "";
+  private _panelLabel: string | StringGetter | ConditionalStringValue = "";
 
   constructor(groupItemProps: GroupItemProps, onItemExecuted?: OnItemExecutedFunc) {
     super(groupItemProps, onItemExecuted);
@@ -77,23 +76,9 @@ export class GroupItemDef extends ActionButtonItemDef {
     this.directionExplicit = (groupItemProps.direction !== undefined);
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
-    this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.paneLabelKey); // tslint:disable-line: deprecation
+    this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.panelLabelKey); // tslint:disable-line: deprecation
     this.items = groupItemProps.items;
     this.defaultActiveItemId = groupItemProps.defaultActiveItemId;
-  }
-
-  /** @internal */
-  public static constructFromAbstractItemProps(itemProps: AbstractGroupItemProps, onItemExecuted?: OnItemExecutedFunc): GroupItemDef {
-    const groupItemDef: GroupItemProps = {
-      groupId: itemProps.groupId,
-      items: ItemDefFactory.createItemListForGroupItem(itemProps.items, onItemExecuted),
-      direction: itemProps.direction as number,
-      itemsInColumn: itemProps.itemsInColumn,
-      panelLabel: itemProps.panelLabel,
-      paneLabelKey: itemProps.paneLabelKey,
-    };
-
-    return new GroupItemDef(groupItemDef);
   }
 
   public get id(): string {
@@ -108,7 +93,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   /** Set the panelLabel.
    * @param v A string or a function to get the string.
    */
-  public setPanelLabel(v: string | StringGetter) {
+  public setPanelLabel(v: string | StringGetter | ConditionalStringValue) {
     this._panelLabel = v;
   }
 
@@ -338,6 +323,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
   public componentDidUpdate(prevProps: GroupItemComponentProps, _prevState: GroupItemState) {
     if (this.props !== prevProps) {
+      // istanbul ignore next
       if (this.props.groupItemDef !== prevProps.groupItemDef)
         Logger.logTrace(UiFramework.loggerCategory(this), `Different GroupItemDef for same groupId of ${this.state.groupItemDef.groupId}`);
       this.setState((_, props) => this.getGroupItemState(props));

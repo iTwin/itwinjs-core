@@ -49,7 +49,7 @@ export class Zone extends React.PureComponent<ZoneProps> {
       this.props.className);
 
     const style: React.CSSProperties = {
-      ...!this.props.bounds ? {} : {
+      ...!this.props.bounds ? undefined : {
         ...CssProperties.fromBounds(this.props.bounds),
         position: "absolute",
       },

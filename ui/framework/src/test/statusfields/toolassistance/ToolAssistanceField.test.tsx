@@ -9,6 +9,7 @@ import * as sinon from "sinon";
 
 import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
+import { WidgetState } from "@bentley/ui-abstract";
 import { FooterPopup, TitleBarButton } from "@bentley/ui-ninezone";
 import { Toggle, LocalUiSettings } from "@bentley/ui-core";
 
@@ -17,7 +18,6 @@ import {
   StatusBar,
   ToolAssistanceField,
   StatusBarWidgetControl,
-  WidgetState,
   ConfigurableCreateInfo,
   ConfigurableUiControlType,
   WidgetDef,

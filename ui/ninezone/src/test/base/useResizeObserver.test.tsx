@@ -48,6 +48,7 @@ describe("useResizeObserver", () => {
     });
 
     spy.resetHistory();
+    sinon.stub(element, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
     // Call the ResizeObserver callback.
     resizeObserverSpy.firstCall.args[0]([{
       contentRect: createDOMRect({ width: 100 }),

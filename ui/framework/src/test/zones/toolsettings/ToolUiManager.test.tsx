@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 
 import TestUtils from "../../TestUtils";
-import { ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../../../ui-framework";
+import { ToolUiManager, SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher } from "../../../ui-framework";
 import {
   ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes,
-  SuppressLabelEditorParams, ToolSettingsPropertySyncItem,
+  SuppressLabelEditorParams, ToolSettingsPropertySyncItem, IModelApp, NoRenderApp,
 } from "@bentley/imodeljs-frontend";
 
 // cSpell:Ignore USELENGTH
@@ -51,10 +52,12 @@ describe("ToolUiManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    NoRenderApp.startup();
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
+    IModelApp.shutdown();
   });
 
   it("check initial values", () => {
@@ -130,4 +133,15 @@ describe("ToolUiManager", () => {
     expect(eventCalled).to.be.false;
   });
 
+  it("handleDispatchSyncUiEvent", () => {
+    ToolUiManager.initialize();
+    const immediateStub = sinon.stub(SyncUiEventDispatcher, "dispatchImmediateSyncUiEvent");
+    const timerStub = sinon.stub(SyncUiEventDispatcher, "dispatchSyncUiEvent");
+    IModelApp.toolAdmin.dispatchUiSyncEvent("test1");
+    timerStub.calledOnce.should.be.true;
+
+    IModelApp.toolAdmin.dispatchImmediateUiSyncEvent("test2");
+    immediateStub.calledOnce.should.be.true;
+    sinon.restore();
+  });
 });
