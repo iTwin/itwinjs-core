@@ -54,6 +54,26 @@ describe("PolyfaceClip", () => {
 
   });
 
+  it("EdgeInClipPlane", () => {
+    const ck = new Checker();
+    const polyface = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), 3, 2);
+    const clipper = ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 1, 0, 0)!;
+
+    const leftClip = PolyfaceClip.clipPolyface(polyface, clipper)!;
+    const rightClip = PolyfaceClip.clipPolyfaceClipPlane(polyface, clipper, false)!;
+    const area = PolyfaceQuery.sumFacetAreas(polyface);
+    const areaLeft = PolyfaceQuery.sumFacetAreas(leftClip);
+    const areaRight = PolyfaceQuery.sumFacetAreas(rightClip);
+    const allGeometry: GeometryQuery[] = [];
+    GeometryCoreTestIO.captureGeometry(allGeometry, polyface, 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, leftClip, 0, 10, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, rightClip, 0, 10, 0);
+    ck.testCoordinate(area, areaLeft + areaRight);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "EdgeInClipPlane");
+    expect(ck.getNumErrors()).equals(0);
+
+  });
+
   it("ConvexClipPlaneSet", () => {
     const ck = new Checker();
     const vectorU = Vector3d.create(1, -1, 0);
@@ -561,9 +581,9 @@ describe("PolyfaceClip", () => {
       for (const transform of Sample.createRigidTransforms(1.0)) {
         y0 = 0.0;
         for (const clipPlane of [ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -0.8221099398657934)!,
-          ClipPlane.createNormalAndDistance(Vector3d.create(0, -1, 0), -0.4221099398657934)!,
-          ClipPlane.createNormalAndDistance(Vector3d.create(-1, 0, 0), -0.8221099398657934)!,
-          ClipPlane.createNormalAndDistance(vectorA, -0.8221099398657934)!]) {
+          /* */ ClipPlane.createNormalAndDistance(Vector3d.create(0, -1, 0), -0.4221099398657934)!,
+          /* */ ClipPlane.createNormalAndDistance(Vector3d.create(-1, 0, 0), -0.8221099398657934)!,
+          /* */ ClipPlane.createNormalAndDistance(vectorA, -0.8221099398657934)!]) {
           const clipPlaneA = clipPlane.clone();
           clipPlaneA.transformInPlace(transform);
           const polyfaceA = polyface.cloneTransformed(transform) as Polyface;
@@ -593,7 +613,7 @@ describe("PolyfaceClip", () => {
     if (ck.testTrue(meshA instanceof IndexedPolyface, "Expected one indexed polyface in meshA") && meshA instanceof IndexedPolyface) {
       ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(meshA), " expect this input to have boundary issue");
       const boundaries = PolyfaceQuery.boundaryEdges(meshA, true, true, true);
-      const range = meshA.range ();
+      const range = meshA.range();
       const rv = raggedVolume(meshA);
       console.log("Volume estimate", rv);
 

@@ -106,7 +106,7 @@ export class ChainCollectorContext {
    * * primitiveB.isCutAtStart
    * * physical gap between primitives.
    */
-  private static needBreakBetweenPrimitives(primitiveA: CurvePrimitive, primitiveB: CurvePrimitive, isXYOnly: boolean = false): boolean {
+  public static needBreakBetweenPrimitives(primitiveA: CurvePrimitive | undefined, primitiveB: CurvePrimitive | undefined, isXYOnly: boolean = false): boolean {
     if (primitiveA === undefined)
       return true;
     if (primitiveB === undefined)
@@ -116,9 +116,9 @@ export class ChainCollectorContext {
     if (primitiveB.startCut !== undefined)
       return true;
     ChainCollectorContext._workPointA = primitiveA.endPoint(ChainCollectorContext._workPointA);
-    ChainCollectorContext._workPointB = primitiveA.startPoint(ChainCollectorContext._workPointB);
+    ChainCollectorContext._workPointB = primitiveB.startPoint(ChainCollectorContext._workPointB);
     return isXYOnly
-      ? ChainCollectorContext._workPointA.isAlmostEqualXY(ChainCollectorContext._workPointB)
-      : ChainCollectorContext._workPointA.isAlmostEqual(ChainCollectorContext._workPointB);
+      ? !ChainCollectorContext._workPointA.isAlmostEqualXY(ChainCollectorContext._workPointB)
+      : !ChainCollectorContext._workPointA.isAlmostEqual(ChainCollectorContext._workPointB);
   }
 }

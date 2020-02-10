@@ -89,11 +89,11 @@ function testConvexClipXY(x0: number, y0: number, ux: number, uy: number, xyz: P
 }
 
 describe("ClipPlane", () => {
-  const ck = new Checker();
 
   // ---------------------------------------------------------------------------------------------------
 
   it("BoundedSegmentIntersection", () => {
+    const ck = new Checker();
     // XY plane with upward (+z) facing normal
     const clip = ClipPlane.createNormalAndPoint(Vector3d.create(0, 0, 1),
       Point3d.create(0, 0, 0), false, false);
@@ -126,6 +126,7 @@ describe("ClipPlane", () => {
   // ---------------------------------------------------------------------------------------------------
 
   it("Offset", () => {
+    const ck = new Checker();
     // XY plane with upward (+z) facing normal
     const clip = ClipPlane.createNormalAndPoint(Vector3d.create(0, 0, 1),
       Point3d.create(0, 0, 0), false, false)!;
@@ -145,6 +146,7 @@ describe("ClipPlane", () => {
   // ---------------------------------------------------------------------------------------------------
 
   it("LineClip", () => {
+    const ck = new Checker();
     const origin = Point3d.create(1, 2, 3);
     const inwardNormal = Vector3d.create(1, 2, 12); // "mostly" z direction
     inwardNormal.normalizeInPlace();
@@ -172,20 +174,39 @@ describe("ClipPlane", () => {
   // ---------------------------------------------------------------------------------------------------
 
   it("toFromJSON", () => {
+    const ck = new Checker();
     const point0 = Point3d.create(1, 2, 3);
     const inwardNormal = Vector3d.create(1, 2, 12); // "mostly" z direction
     inwardNormal.normalizeInPlace();
     const plane = Plane3dByOriginAndUnitNormal.create(point0, inwardNormal)!;
     const clipPlane = ClipPlane.createPlane(plane);
-    const json = clipPlane.toJSON();
-    const clipPlane1 = ClipPlane.fromJSON(json);
+    const json1 = clipPlane.toJSON();
+    const clipPlane1 = ClipPlane.fromJSON(json1);
     ck.testTrue(clipPlane1 !== undefined && clipPlane.isAlmostEqual(clipPlane1));
-    ck.checkpoint("Offset");
+    clipPlane.setInvisible(true);
+    const json2 = clipPlane.toJSON();
+    const clipPlane2 = ClipPlane.fromJSON(json2);
+    ck.testTrue(clipPlane2 !== undefined && clipPlane.isAlmostEqual(clipPlane2));
+    const clipPlane3 = ClipPlane.fromJSON({});
+    ck.testDefined(clipPlane3);
+    ck.testUndefined(ClipPlane.createEdgeXY(point0, point0));
+    const tiltPlane = ClipPlane.createEdgeAndUpVector(
+      Point3d.create(0, 0, 0),
+      Point3d.create(0, 1, 0),
+      Vector3d.create(0, 0, 1),
+      Angle.createDegrees(45))!;
+    ck.testTrue(tiltPlane.isPointInside(Point3d.create(1, 0, 0)));
+    ck.testFalse(tiltPlane.isPointInside(Point3d.create(1, 0, 10)));
+    const planeA = ClipPlane.createNormalAndPointXYZXYZ(2, 3, 1, 5, 6, 3)!;
+    const vectorB = Vector3d.create(3, 2, 7);
+    ck.testExactNumber(planeA.dotProductVector(vectorB), planeA.velocityXYZ(vectorB.x, vectorB.y, vectorB.z),
+      " dot product variants.  maybe need tolerance?");
     expect(ck.getNumErrors()).equals(0);
   });
   // ---------------------------------------------------------------------------------------------------
 
   it("PolygonInOutCross", () => {
+    const ck = new Checker();
     let numExpectedCrossings = 0;
     let lastSign = -1;
     const array: Point3d[] = [
@@ -379,6 +400,9 @@ describe("ClipPlaneSet", () => {
 
     const sweepDirection = Vector3d.create(0, 0, 1);
     convexSetA.reloadSweptPolygon(triangle, sweepDirection, 1);
+    const triangleWithDuplicate = [triangle[0], triangle[1], triangle[1], triangle[2]];
+    const convexSetA1 = convexSetA.clone();
+    convexSetA1.reloadSweptPolygon(triangleWithDuplicate, sweepDirection, 1);
     convexSetB.reloadSweptPolygon(triangle, sweepDirection, -1);
     convexSet0.reloadSweptPolygon(triangle, sweepDirection, 0);
     convexSetA.clipUnboundedSegment(linePointA, linePointB,
@@ -414,7 +438,7 @@ describe("ClipPlaneSet", () => {
         ck.testBoolean(inside, convexSet0.isPointOnOrInside(planePoint, tolerance));
       }
     }
-
+    convexSetA.reloadSweptPolygon([], sweepDirection, 1);
     ck.checkpoint("SweptPolygon");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -538,6 +562,38 @@ describe("ClipPlaneSet", () => {
     ck.testExactNumber(set.classifyPointContainment(array, true), ClipPlaneContainment.StronglyOutside, "All points outside except for one on border (not counting)");
 
     ck.checkpoint("ClassifyPointContainment");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("AnnounceClippedIntervals", () => {
+    const ck = new Checker();
+    const emptySet = ConvexClipPlaneSet.createEmpty();
+    // line outside and parallel for coverage
+    const pointA = Point3d.create(-1, 1, 0);
+    const pointB = Point3d.create(-1, 2, 0);
+    // ?? empty set accepts all. (product of many initializes to 1 and stays?)
+    ck.testTrue(emptySet.announceClippedSegmentIntervals(0, 1, pointA, pointB));
+    const convexSet = ConvexClipPlaneSet.createXYBox(0, 0, 4, 4);
+    ck.testFalse(convexSet.announceClippedSegmentIntervals(0, 4, pointA, pointB));
+    ck.testFalse(convexSet.announceClippedSegmentIntervals(1, 0, pointA, pointB));
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("SweptPolyline", () => {
+    const ck = new Checker();
+    const pointA = Point3d.create(1, 0, 0);
+    const pointB = Point3d.create(1, 1, 0);
+    const pointC = Point3d.create(0, 2, 0);
+    const triangleCCW = [pointA, pointB, pointC, pointA];
+    const triangleCW = [pointA, pointC, pointB, pointA];
+    const unitZ = Vector3d.create(0, 0, 1);
+    const setA = ConvexClipPlaneSet.createSweptPolyline(triangleCCW, unitZ);
+    const setB = ConvexClipPlaneSet.createSweptPolyline(triangleCW, unitZ);
+    ck.testDefined(setA);
+    ck.testDefined(setB);
+    // This function quits early on duplicate point ...
+    const failCCW = ConvexClipPlaneSet.createSweptPolyline([pointA, pointB, pointC, pointC, pointA], unitZ);
+    const failCC = ConvexClipPlaneSet.createSweptPolyline([pointA, pointC, pointB, pointB, pointA], unitZ);
+    ck.testUndefined(failCCW);
+    ck.testUndefined(failCC);
     expect(ck.getNumErrors()).equals(0);
   });
 });
@@ -832,6 +888,7 @@ describe("CurveClips", () => {
 
   it("createPlaneVariants", () => {
     const ck = new Checker();
+    ck.testUndefined(ClipPlane.createNormalAndPointXYZXYZ(0, 0, 0, 0, 0, 0), "null normal should fail clip plane");
     const clipPlaneA = ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 0, 0, 0);
     const unitB = Vector3d.create(1, 5, 2);
     unitB.normalizeInPlace();

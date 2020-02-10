@@ -16,11 +16,14 @@ import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlan
 import { BooleanClipNode } from "../../clipping/BooleanClipNode";
 import { BooleanClipFactory } from "../../clipping/BooleanClipFactory";
 import { Clipper } from "../../clipping/ClipUtils";
+import { Range3d } from "../../geometry3d/Range";
 /* tslint:disable:no-console */
 
 describe("ConvexClipPlaneSet", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
+    const errorSet1 = ConvexClipPlaneSet.fromJSON(1);
+    ck.testExactNumber(0, errorSet1.planes.length);
     const ax = -1;
     const ay = -2;
     const bx = 1;
@@ -32,6 +35,10 @@ describe("ConvexClipPlaneSet", () => {
       Point3d.create(ax, by, 0),
       Point3d.create(ax, ay, 0)],
       [true, true, true, true, true], true);
+    const boxA1 = boxA.clone();
+    ck.testFalse(errorSet1.isAlmostEqual(boxA));
+    ConvexClipPlaneSet.createEmpty(boxA1);
+    ck.testExactNumber(0, boxA1.planes.length);
     const boxB = ConvexClipPlaneSet.createXYBox(ax, ay, bx, by);
     const boxC = boxB.clone();
     const segmentM = LineSegment3d.createXYXY(
@@ -63,6 +70,27 @@ describe("ConvexClipPlaneSet", () => {
       }
     }
     ck.checkpoint("ConvexClipPlaneSet.HelloWorld");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("UnionOfConvexSets", () => {
+    const ck = new Checker();
+    const setA = UnionOfConvexClipPlaneSets.fromJSON(1);
+    const setB = UnionOfConvexClipPlaneSets.createEmpty(setA);
+    const box01 = ConvexClipPlaneSet.createRange3dPlanes(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1));
+    const box12 = ConvexClipPlaneSet.createRange3dPlanes(Range3d.createXYZXYZ(1, 0, 0, 2, 1, 1));
+    const box23 = ConvexClipPlaneSet.createRange3dPlanes(Range3d.createXYZXYZ(2, 0, 0, 3, 1, 1));
+    const setC = UnionOfConvexClipPlaneSets.createConvexSets([box01, box12]);
+    const setD = UnionOfConvexClipPlaneSets.createConvexSets([box01, box12, box23]);
+    const setCReversed = UnionOfConvexClipPlaneSets.createConvexSets([box12, box01]);
+    ck.testTrue(setC.isAlmostEqual(setC), "almostEqual to self");
+    ck.testFalse(setC.isAlmostEqual(setD), "almostEqual different count");
+    ck.testFalse(setC.isAlmostEqual(setCReversed), "almostEqual different order");
+    ck.testDefined(setB);
+    const points: Point3d[] = [];
+    const range = Range3d.createNull();
+    setC.computePlanePlanePlaneIntersectionsInAllConvexSets(points, range, undefined, false);
+    ck.testExactNumber(16, points.length, "intersection points in 2 boxes");
+    setC.setInvisible(true);
     expect(ck.getNumErrors()).equals(0);
   });
   it("parser", () => {
