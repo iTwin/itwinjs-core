@@ -1705,8 +1705,6 @@ export interface EventSinkOptions {
 
 // @public
 export namespace ExportGraphics {
-    // @beta @deprecated
-    export function areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean;
     export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean;
 }
 
@@ -1750,9 +1748,6 @@ export interface ExportGraphicsOptions {
     partInstanceArray?: ExportPartInstanceInfo[];
 }
 
-// @beta @deprecated (undocumented)
-export type ExportGraphicsProps = ExportGraphicsOptions;
-
 // @public
 export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 
@@ -1778,9 +1773,6 @@ export interface ExportPartDisplayInfo {
     subCategoryId: Id64String;
 }
 
-// @beta @deprecated (undocumented)
-export type ExportPartDisplayProps = ExportPartDisplayInfo;
-
 // @public
 export type ExportPartFunction = (info: ExportPartInfo) => void;
 
@@ -1795,9 +1787,6 @@ export interface ExportPartGraphicsOptions {
     onPartGraphics: ExportPartFunction;
     onPartLineGraphics?: ExportPartLinesFunction;
 }
-
-// @beta @deprecated (undocumented)
-export type ExportPartGraphicsProps = ExportPartGraphicsOptions;
 
 // @public
 export interface ExportPartInfo {
@@ -1814,9 +1803,6 @@ export interface ExportPartInstanceInfo {
     partInstanceId: Id64String;
     transform?: Float64Array;
 }
-
-// @beta @deprecated (undocumented)
-export type ExportPartInstanceProps = ExportPartInstanceInfo;
 
 // @public
 export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
