@@ -111,7 +111,6 @@
     "@bentley/ui-abstract": "2.0.0-dev.2",
     "fuse.js": "^3.3.0",
     "js-base64": "^2.4.5",
-    "js-untar": "^2.0.0",
     "ldclient-js": "^2.6.0",
     "oidc-client": "^1.9.1",
     "semver": "^5.5.0"

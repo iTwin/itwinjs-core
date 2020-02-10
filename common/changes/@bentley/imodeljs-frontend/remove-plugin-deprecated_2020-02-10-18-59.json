@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Remove deprecated static PluginAdmin.loadPlugin and PluginAdmin.register methods.  Use the new IModelApp.pluginAdmin versions of the methods.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

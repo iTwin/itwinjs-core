@@ -6097,8 +6097,6 @@ export class PluginAdmin {
     // @internal (undocumented)
     getTarFileName(pluginRootName: string): string;
     loadPlugin(pluginRoot: string, args?: string[]): Promise<PluginLoadResults>;
-    // @deprecated
-    static loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults>;
     // @internal
     loadSavedPlugins(requestContext: AuthorizedClientRequestContext, settingName: string, userSettings?: boolean, appSettings?: boolean, configuration?: boolean): Promise<LoadSavedPluginsResult>;
     // @internal (undocumented)
@@ -6106,8 +6104,6 @@ export class PluginAdmin {
     // (undocumented)
     onInitialized(): void;
     register(plugin: Plugin): string[] | undefined;
-    // @deprecated
-    static register(plugin: Plugin): void;
     removeSavedPlugins(requestContext: AuthorizedClientRequestContext, pluginName: string, allUsers: boolean, settingName: string): Promise<void>;
     }
 

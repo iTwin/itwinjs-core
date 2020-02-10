@@ -12,7 +12,7 @@
  * ------------------------ */
 // tslint:disable:no-console
 
-import { Plugin, PluginAdmin } from "@bentley/imodeljs-frontend";
+import { Plugin, IModelApp } from "@bentley/imodeljs-frontend";
 
 type resolveFunc = ((arg: any) => void);
 type rejectFunc = ((arg: Error) => void);
@@ -225,4 +225,4 @@ class StartWebWorker extends Plugin {
 // boilerplate plugin code that is executed when the module is loaded.
 declare var PLUGIN_NAME: string;
 export const startWebWorker = new StartWebWorker(PLUGIN_NAME);
-PluginAdmin.register(startWebWorker);
+IModelApp.pluginAdmin.register(startWebWorker);
