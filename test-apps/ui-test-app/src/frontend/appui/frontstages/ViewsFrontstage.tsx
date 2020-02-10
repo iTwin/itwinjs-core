@@ -20,6 +20,8 @@ import {
 import { BadgeType, RelativePosition } from "@bentley/ui-abstract";
 import { ScrollView, Point } from "@bentley/ui-core";
 
+import { NodeKey } from "@bentley/presentation-common";
+
 import {
   FrontstageProvider,
   ZoneState,
@@ -65,6 +67,7 @@ import {
   IModelConnectedNavigationWidget,
   StagePanelState,
   ReviewToolWidget,
+  ModelsTreeNodeType,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -96,6 +99,7 @@ import { ExampleForm } from "../forms/ExampleForm";
 // import rotateIcon from "../icons/rotate.svg";
 
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
+import { SelectionMode } from "@bentley/ui-components";
 
 export class ViewsFrontstage extends FrontstageProvider {
   private _additionalTools = new AdditionalTools();
@@ -221,7 +225,11 @@ export class ViewsFrontstage extends FrontstageProvider {
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
-                applicationData={{ iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories], useControlledTree: true }} fillZone={true} />,
+                applicationData={{
+                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories], useControlledTree: true,
+                  config: { modelsTreeConfig: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
+                }}
+                fillZone={true} />,
               <Widget iconSpec={RealityDataPickerControl.iconSpec} label={RealityDataPickerControl.label} control={RealityDataPickerControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
             ]}

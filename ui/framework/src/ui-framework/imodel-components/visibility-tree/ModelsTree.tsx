@@ -9,10 +9,29 @@
 import * as React from "react";
 import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { NodeKey } from "@bentley/presentation-common";
 import { VisibilityHandler, VisibilityTree } from "./VisibilityTree";
 import { ControlledModelsTree } from "./ControlledModelsTree";
 import { SelectionMode } from "@bentley/ui-components";
 import { connectIModelConnection } from "../../redux/connectIModel";
+
+/**
+ * Types of nodes in Models tree
+ * @alpha
+ */
+export enum ModelsTreeNodeType {
+  Unknown,
+  Subject,
+  Model,
+  Category,
+  Element,
+}
+
+/**
+ * Type definition of predicate used to decide if node can be selected
+ * @alpha
+ */
+export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
 /** Props for [[ModelsTree]] component
  * @alpha
@@ -24,6 +43,8 @@ export interface ModelsTreeProps {
   activeView?: Viewport;
   /** Selection mode in the tree */
   selectionMode?: SelectionMode;
+  /** Predicate which indicates whether node can be selected or no */
+  selectionPredicate?: ModelsTreeSelectionPredicate;
   /**
    * Custom data provider to use for testing
    * @internal

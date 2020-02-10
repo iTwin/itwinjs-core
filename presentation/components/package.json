@@ -69,7 +69,8 @@
   "dependencies": {
     "lodash": "^4.17.10",
     "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "react-dom": "^16.8.0",
+    "rxjs": "^6.5.2"
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "^2.0.0-dev.1",

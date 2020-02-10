@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { usePresentationNodeLoader, useControlledTreeUnifiedSelection } from "@bentley/presentation-components";
+import { usePresentationNodeLoader, useUnifiedSelectionEventHandler } from "@bentley/presentation-components";
 import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
-import { ControlledTree, SelectionMode, TreeEventHandler, useVisibleTreeNodes } from "@bentley/ui-components";
+import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
 
 export class NavigationTreeWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -101,8 +101,8 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProp
     pageSize: 20,
   });
   const modelSource = nodeLoader.modelSource;
-  const eventHandler = React.useMemo(() => new TreeEventHandler({ modelSource, nodeLoader, collapsedChildrenDisposalEnabled: true }), [modelSource, nodeLoader]);
-  const unifiedSelectionEventHandler = useControlledTreeUnifiedSelection(modelSource, eventHandler, nodeLoader.getDataProvider());
+  const eventHandler = useUnifiedSelectionEventHandler(modelSource, nodeLoader, true);
+
   const visibleNodes = useVisibleTreeNodes(modelSource);
 
   return (
@@ -110,7 +110,7 @@ const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProp
       visibleNodes={visibleNodes}
       nodeLoader={nodeLoader}
       selectionMode={SelectionMode.Single}
-      treeEvents={unifiedSelectionEventHandler}
+      treeEvents={eventHandler}
     />
   );
 };

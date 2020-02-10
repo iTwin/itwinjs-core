@@ -9,8 +9,9 @@
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
-import { usePresentationNodeLoader, useControlledTreeUnifiedSelection, useRulesetRegistration, IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { ControlledTree, TreeEventHandler, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
+import { usePresentationNodeLoader, useRulesetRegistration, IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
+import { ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
+import { useDisposable } from "@bentley/ui-core";
 
 const PAGING_SIZE = 20;
 /** Presentation rules used by ControlledSpatialContainmentTree
@@ -50,8 +51,13 @@ export const ControlledSpatialContainmentTree: React.FC<ControlledSpatialContain
   });
   const modelSource = nodeLoader.modelSource;
 
-  const eventHandler = React.useMemo(() => new TreeEventHandler({ modelSource, nodeLoader, collapsedChildrenDisposalEnabled: true }), [modelSource, nodeLoader]);
-  const unifiedSelectionHandler = useControlledTreeUnifiedSelection(modelSource, eventHandler, nodeLoader.getDataProvider());
+  const createEventHandler = React.useCallback(() => new UnifiedSelectionTreeEventHandler({
+    modelSource,
+    nodeLoader,
+    dataProvider: nodeLoader.getDataProvider(),
+    collapsedChildrenDisposalEnabled: true,
+  }), [modelSource, nodeLoader]);
+  const eventHandler = useDisposable(createEventHandler);
 
   const visibleNodes = useVisibleTreeNodes(modelSource);
 
@@ -60,7 +66,7 @@ export const ControlledSpatialContainmentTree: React.FC<ControlledSpatialContain
       <ControlledTree
         visibleNodes={visibleNodes}
         nodeLoader={nodeLoader}
-        treeEvents={unifiedSelectionHandler}
+        treeEvents={eventHandler}
         selectionMode={SelectionMode.None}
       />
     </div>

@@ -8,15 +8,16 @@ import * as sinon from "sinon";
 import { render, waitForElement, cleanup, fireEvent } from "@testing-library/react";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks"; // tslint:disable-line: no-direct-imports
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
+import { TreeNodeItem, TreeDataChangesListener, SelectionMode } from "@bentley/ui-components";
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { SelectionManager, SelectionChangeEvent, Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
-import { KeySet, ECInstanceNodeKey, StandardNodeTypes, InstanceKey, BaseNodeKey } from "@bentley/presentation-common";
+import { NodeKey, KeySet, ECInstanceNodeKey, StandardNodeTypes, InstanceKey, BaseNodeKey } from "@bentley/presentation-common";
 import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting, HierarchyBuilder } from "@bentley/presentation-testing";
 import { VisibilityHandler } from "../../../ui-framework/imodel-components/visibility-tree/VisibilityTree";
 import TestUtils from "../../TestUtils";
 import { ControlledModelsTree, RULESET as ControlledModelsTreeRuleset } from "../../../ui-framework/imodel-components/visibility-tree/ControlledModelsTree";
+import { ModelsTreeNodeType } from "../../../ui-framework/imodel-components/visibility-tree/ModelsTree";
 
 describe("ControlledModelsTree", () => {
 
@@ -300,6 +301,105 @@ describe("ControlledModelsTree", () => {
         await waitForElement(() => result.getByText("model"));
 
         visibilityHandlerMock.verify((x) => x.dispose(), moq.Times.once());
+      });
+
+      describe("selection", () => {
+
+        it("adds node to unified selection", async () => {
+          const element = createElementNode();
+          setupDataProvider([element]);
+          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+
+          const result = render(<ControlledModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} />);
+          await waitForElement(() => result.getByText("element"));
+
+          const renderedNode = result.getByTestId("tree-node");
+          fireEvent.click(renderedNode);
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+        });
+
+        it("adds element node to unified selection according selectionPredicate", async () => {
+          const element = createElementNode();
+          setupDataProvider([element]);
+          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+
+          const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element;
+
+          const result = render(<ControlledModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          await waitForElement(() => result.getByText("element"));
+
+          const renderedNode = result.getByTestId("tree-node");
+          fireEvent.click(renderedNode);
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+        });
+
+        it("adds multiple model nodes to unified selection according selectionPredicate", async () => {
+          const node1 = createModelNode();
+          const node2 = createModelNode();
+          node2.id = "model2";
+          setupDataProvider([node1, node2]);
+          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+
+          const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Model;
+
+          const result = render(<ControlledModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          await waitForElement(() => result.getAllByText("model"));
+
+          const renderedNodes = result.queryAllByTestId("tree-node");
+          expect(renderedNodes.length).to.be.eq(2);
+          fireEvent.click(renderedNodes[0]);
+          fireEvent.click(renderedNodes[1], { ctrlKey: true });
+
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+          selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+        });
+
+        it("adds subject node to unified selection according selectionPredicate", async () => {
+          const subject = createSubjectNode();
+          setupDataProvider([subject]);
+          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+
+          const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Subject;
+
+          const result = render(<ControlledModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          await waitForElement(() => result.getByText("subject"));
+
+          const renderedNode = result.getByTestId("tree-node");
+          fireEvent.click(renderedNode);
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+        });
+
+        it("adds node without extendedData to unified selection according selectionPredicate", async () => {
+          const node = createElementNode();
+          (node as any).extendedData = undefined;
+          setupDataProvider([node]);
+          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+
+          const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Unknown;
+
+          const result = render(<ControlledModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          await waitForElement(() => result.getByText("element"));
+
+          const renderedNode = result.getByTestId("tree-node");
+          fireEvent.click(renderedNode);
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.once());
+        });
+
+        it("does not add category node to unified selection according selectionPredicate", async () => {
+          const node = createCategoryNode();
+          setupDataProvider([node]);
+          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+
+          const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Model;
+
+          const result = render(<ControlledModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          await waitForElement(() => result.getByText("category"));
+
+          const renderedNode = result.getByTestId("tree-node");
+          fireEvent.click(renderedNode);
+          selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        });
+
       });
 
     });
