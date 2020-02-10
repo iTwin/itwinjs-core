@@ -9,7 +9,7 @@
 import * as path from "path";
 import * as hash from "object-hash";
 import { ClientRequestContext, Id64String, Id64, DbResult, Logger } from "@bentley/bentleyjs-core";
-import { IModelDb, Element, GeometricElement } from "@bentley/imodeljs-backend";
+import { IModelDb, Element, GeometricElement, GeometricElement3d } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
@@ -712,16 +712,34 @@ export class PresentationManager {
     return undefined;
   }
 
+  private elementClassDerivesFrom(imodel: IModelDb, elementId: Id64String, baseClassFullName: string): boolean {
+    const query = `
+      SELECT 1
+        FROM bis.Element e
+        INNER JOIN meta.ClassHasAllBaseClasses baseClassRels ON baseClassRels.ClassId = e.ECClassId
+        INNER JOIN meta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.BaseClassId
+        INNER JOIN meta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
+       WHERE e.ECInstanceId = ? AND (baseSchema.Name || ':' || baseClass.Name) = ?
+      `;
+    return imodel.withPreparedStatement(query, (stmt): boolean => {
+      stmt.bindId(1, elementId);
+      stmt.bindString(2, baseClassFullName);
+      return (DbResult.BE_SQLITE_ROW === stmt.step());
+    });
+  }
+
   private computeFunctionalElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const keys = new KeySet();
     ids.forEach(skipTransients((id): void => {
-      const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
-      if (firstFunctionalKey) {
-        keys.add(firstFunctionalKey);
-      } else {
-        const elementKey = this.getElementKey(requestOptions.imodel, id);
-        elementKey && keys.add(elementKey);
+      if (!this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName)) {
+        const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
+        if (firstFunctionalKey) {
+          keys.add(firstFunctionalKey);
+          return;
+        }
       }
+      const elementKey = this.getElementKey(requestOptions.imodel, id);
+      elementKey && keys.add(elementKey);
     }));
     return keys;
   }
@@ -729,14 +747,19 @@ export class PresentationManager {
   private computeFunctionalAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const keys = new KeySet();
     ids.forEach(skipTransients((id): void => {
-      const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
-      if (firstFunctionalKey) {
-        const functionalAssemblyKey = this.getAssemblyKey(requestOptions.imodel, firstFunctionalKey.id);
-        functionalAssemblyKey && keys.add(functionalAssemblyKey);
-      } else {
-        const graphicalAssemblyKey = this.getAssemblyKey(requestOptions.imodel, id);
-        graphicalAssemblyKey && keys.add(graphicalAssemblyKey);
+      if (!this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName)) {
+        const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
+        if (firstFunctionalKey) {
+          const functionalAssemblyKey = this.getAssemblyKey(requestOptions.imodel, firstFunctionalKey.id);
+          // istanbul ignore else
+          if (functionalAssemblyKey) {
+            keys.add(functionalAssemblyKey);
+            return;
+          }
+        }
       }
+      const graphicalAssemblyKey = this.getAssemblyKey(requestOptions.imodel, id);
+      graphicalAssemblyKey && keys.add(graphicalAssemblyKey);
     }));
     return keys;
   }
@@ -744,14 +767,19 @@ export class PresentationManager {
   private async computeFunctionalTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const keys = new KeySet();
     ids.forEach(skipTransients((id): void => {
-      const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
-      if (firstFunctionalKey) {
-        const functionalTopAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, firstFunctionalKey.id);
-        functionalTopAssemblyKey && keys.add(functionalTopAssemblyKey);
-      } else {
-        const graphicalTopAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, id);
-        graphicalTopAssemblyKey && keys.add(graphicalTopAssemblyKey);
+      if (!this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName)) {
+        const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
+        if (firstFunctionalKey) {
+          const functionalTopAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, firstFunctionalKey.id);
+          // istanbul ignore else
+          if (functionalTopAssemblyKey) {
+            keys.add(functionalTopAssemblyKey);
+            return;
+          }
+        }
       }
+      const graphicalTopAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, id);
+      graphicalTopAssemblyKey && keys.add(graphicalTopAssemblyKey);
     }));
     return keys;
   }
