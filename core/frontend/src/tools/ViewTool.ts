@@ -2898,6 +2898,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   private _duration!: BeDuration;
   private _end!: BeTimePoint;
   private _hasZoom = false;
+  private _rotate2dDisabled = false;
+  private _rotate2dThreshold?: Angle;
 
   /** Move this handle during the inertia duration */
   public animate(): boolean {
@@ -2942,6 +2944,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
       this._startPtView.z = vp.worldToView(ViewManip.getDefaultTargetPointWorld(vp)).z;
       vp.viewToWorld(this._startPtView, this._startPtWorld);
     }
+    this._rotate2dDisabled = false;
+    this._rotate2dThreshold = undefined;
     this._lastPtView.setFrom(this._startPtView);
     this._startTouchCount = ev.touchCount;
     this._startDirection = (2 <= ev.touchCount ? Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp)) : Vector2d.createZero());
@@ -2966,26 +2970,31 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   }
 
   private computeRotation(ev?: BeTouchEvent): Angle {
-    if (undefined === ev || ev.touchCount < 2)
+    if (undefined === ev || ev.touchCount < 2 || this._rotate2dDisabled)
       return Angle.createDegrees(0.0);
 
     const vp = this.viewport!;
     const direction = Vector2d.createStartEnd(BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[0], vp), BeTouchEvent.getTouchPosition(ev.touchEvent.targetTouches[1], vp));
     const rotation = this._startDirection.angleTo(direction);
-    const threshold = Angle.createDegrees(5.0);
 
-    if (Math.abs(rotation.radians) < threshold.radians)
-      return Angle.createDegrees(0.0);
+    if (undefined === this._rotate2dThreshold) {
+      if (Math.abs(rotation.radians) < Angle.createDegrees(5.0).radians)
+        return Angle.createDegrees(0.0); // Check against threshold until sufficient rotation is detected...
 
-    const angularDistance = Math.abs(direction.magnitude() / 2.0 * Math.sin(Math.abs(rotation.radians)));
-    const zoomDistance = Math.abs(direction.magnitude() - this._startDirection.magnitude());
-    const panDistance = this._startPtView.distanceXY(this._lastPtView);
+      const angularDistance = Math.abs(direction.magnitude() / 2.0 * Math.sin(Math.abs(rotation.radians)));
+      const zoomDistance = Math.abs(direction.magnitude() - this._startDirection.magnitude());
+      const panDistance = this._startPtView.distanceXY(this._lastPtView);
 
-    // NOTE: The * 0.75 below is because it's easy to confuse an attempted rotate for an attempted pan, and this tries to balance that without having a false positive in the opposite direction.
-    if (angularDistance > zoomDistance && angularDistance > (panDistance * 0.75))
-      return Angle.createRadians(rotation.radians > 0 ? rotation.radians - threshold.radians : rotation.radians + threshold.radians); // Avoid jump when starting rotation...
+      // NOTE: The * 0.75 below is because it's easy to confuse an attempted rotate for an attempted pan or zoom, and this tries to balance that without having a false positive in the opposite direction.
+      if (angularDistance < (zoomDistance * 0.75) || angularDistance < (panDistance * 0.75)) {
+        this._rotate2dDisabled = true; // Restrict subsequent view changes to pan and zoom only...
+        return Angle.createDegrees(0.0);
+      }
 
-    return Angle.createDegrees(0.0);
+      this._rotate2dThreshold = Angle.createRadians(-rotation.radians);
+    }
+
+    return Angle.createRadians(rotation.radians + this._rotate2dThreshold.radians); // Avoid jump when starting rotation...
   }
 
   private handle2dPan() {
