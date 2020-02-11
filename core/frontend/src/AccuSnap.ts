@@ -896,11 +896,9 @@ export class AccuSnap implements Decorator {
     if (hit || this.currHit)
       this.setCurrHit(hit);
 
-    if (hit)
-      this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
-
-    // indicate errors
+    // set up active error before calling displayToolTip to indicate error or show locate message...
     this.showSnapError(out, ev);
+    this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
 
     if (undefined !== this.touchCursor && InputSource.Mouse === ev.inputSource) {
       this.touchCursor = undefined;
