@@ -6,7 +6,7 @@
  * @module Base
  */
 import * as React from "react";
-import ResizeObserver from "resize-observer-polyfill";
+import { ResizeObserver } from "./ResizeObserverPolyfill";
 import { useRefEffect } from "./useRefEffect";
 import { useRefs } from "./useRefs";
 

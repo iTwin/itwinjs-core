@@ -28,6 +28,8 @@ import { UiFramework } from "../../UiFramework";
 
 import "./DefaultToolSettingsProvider.scss";
 import { ToolSettingsContentContext } from "../../widgets/ToolSettingsContent";
+import { FrameworkVersionSwitch } from "../../hooks/useFrameworkVersion";
+import { WidgetPanelsDefaultToolSettings } from "../../widget-panels/DefaultToolSettings";
 
 /** Responsive Layout Mode */
 enum LayoutMode {
@@ -307,7 +309,12 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 
     // istanbul ignore else
     if (this.layoutToolSettingRows())
-      this.toolSettingsNode = <DefaultToolSettings dataProvider={this} key={Date.now()} toolId={FrontstageManager.activeToolId} />;
+      this.toolSettingsNode = (
+        <FrameworkVersionSwitch
+          v1={<DefaultToolSettings dataProvider={this} key={Date.now()} toolId={FrontstageManager.activeToolId} />}
+          v2={<WidgetPanelsDefaultToolSettings dataProvider={this} />}
+        />
+      );
     else
       this.toolSettingsNode = null;
   }
@@ -345,7 +352,12 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     // istanbul ignore else
     if (this.layoutToolSettingRows())
       // the date is used as a key to ensure that React sees the node as "new" and in need of rendering every time it's updated
-      this.toolSettingsNode = <DefaultToolSettings key={Date.now()} dataProvider={this} toolId={FrontstageManager.activeToolId} />;
+      this.toolSettingsNode = (
+        <FrameworkVersionSwitch
+          v1={<DefaultToolSettings dataProvider={this} key={Date.now()} toolId={FrontstageManager.activeToolId} />}
+          v2={<WidgetPanelsDefaultToolSettings dataProvider={this} />}
+        />
+      );
     else
       this.toolSettingsNode = null;
   }

@@ -4,16 +4,35 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
-import { renderHook, act } from "@testing-library/react-hooks";
-import { WidgetPanelGrip, useResizeGrip } from "../../ui-ninezone";
+import { fireEvent, render } from "@testing-library/react";
+import { act, renderHook } from "@testing-library/react-hooks";
+import {
+  WidgetPanelGrip, useResizeGrip, WidgetPanelContext, createNineZoneState, addPanelWidget, NineZoneContext,
+  NineZoneDispatch, NineZoneDispatchContext, TOGGLE_PANEL_COLLAPSED,
+} from "../../ui-ninezone";
 
 describe("WidgetPanelGrip", () => {
-  it("should render", () => {
-    const { container } = render(
-      <WidgetPanelGrip side="left" />,
+  it("should dispatch TOGGLE_PANEL_COLLAPSED", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    render(
+      <NineZoneDispatchContext.Provider value={dispatch}>
+        <NineZoneContext.Provider value={nineZone}>
+          <WidgetPanelContext.Provider value="left">
+            <WidgetPanelGrip />
+          </WidgetPanelContext.Provider>
+        </NineZoneContext.Provider>
+      </NineZoneDispatchContext.Provider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    act(() => {
+      const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
+      fireEvent.doubleClick(grip);
+    });
+    dispatch.calledOnceWithExactly(sinon.match({
+      type: TOGGLE_PANEL_COLLAPSED,
+      side: "left",
+    })).should.true;
   });
 });
 

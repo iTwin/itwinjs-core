@@ -1,15 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`WidgetTab should render 1`] = `
-<div
-  class="nz-widget-tab"
->
-  <span>
-    abc
-  </span>
-</div>
-`;
-
 exports[`WidgetTab should render active 1`] = `
 <div
   class="nz-widget-tab nz-active"
@@ -18,9 +8,17 @@ exports[`WidgetTab should render active 1`] = `
 </div>
 `;
 
+exports[`WidgetTab should render minimized 1`] = `
+<div
+  class="nz-widget-tab nz-minimized"
+>
+  <span />
+</div>
+`;
+
 exports[`WidgetTab should render overflown 1`] = `
 <div
-  class="nz-widget-tab nz-active nz-overflown"
+  class="nz-widget-tab nz-overflown"
 >
   <span />
   <div

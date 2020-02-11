@@ -5,10 +5,12 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, render } from "@testing-library/react";
-import { WidgetTab, WidgetTabContext, PaneContextArgs } from "../../ui-ninezone";
-import { PaneContextProvider } from "../Providers";
-import { fireClick, fireDoubleClick } from "../base/useSingleDoubleClick.test";
-import { WidgetTabProps } from "../../ui-ninezone/widget/Tab";
+import {
+  WidgetTab, createNineZoneState, addPanelWidget, addTab, NineZoneContext, WidgetPanelContext,
+  WidgetIdContext, WidgetTabContext,
+} from "../../ui-ninezone";
+import { NineZoneDispatchContext, NineZoneDispatch, WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK } from "../../ui-ninezone/base/NineZone";
+import { fireDoubleClick, fireClick } from "../base/useSingleDoubleClick.test";
 
 describe("WidgetTab", () => {
   const sandbox = sinon.createSandbox();
@@ -17,138 +19,127 @@ describe("WidgetTab", () => {
     sandbox.restore();
   });
 
-  it("should render", () => {
-    const { container } = render(<WidgetTab children="abc" />);
-    container.firstChild!.should.matchSnapshot();
-  });
-
   it("should render active", () => {
-    const { container } = render(<WidgetTab active />);
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
+    nineZone = addTab(nineZone, "w1", "t1");
+    const { container } = render(
+      <NineZoneContext.Provider value={nineZone}>
+        <WidgetPanelContext.Provider value="left">
+          <WidgetIdContext.Provider value="w1">
+            <WidgetTabContext.Provider value={{
+              isOverflown: false,
+            }}>
+              <WidgetTab id="t1" />
+            </WidgetTabContext.Provider>
+          </WidgetIdContext.Provider>
+        </WidgetPanelContext.Provider>
+      </NineZoneContext.Provider>,
+    );
     container.firstChild!.should.matchSnapshot();
   });
 
   it("should render overflown", () => {
-    const { container } = render(<WidgetTabContext.Provider
-      value={{
-        isOverflown: true,
-      }}
-    >
-      <WidgetTab active />
-    </WidgetTabContext.Provider>);
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
+    const { container } = render(
+      <NineZoneContext.Provider value={nineZone}>
+        <WidgetPanelContext.Provider value="left">
+          <WidgetIdContext.Provider value="w1">
+            <WidgetTabContext.Provider value={{
+              isOverflown: true,
+            }}>
+              <WidgetTab id="t1" />
+            </WidgetTabContext.Provider>
+          </WidgetIdContext.Provider>
+        </WidgetPanelContext.Provider>
+      </NineZoneContext.Provider>,
+    );
     container.firstChild!.should.matchSnapshot();
   });
 
-  it("should restore minimized pane on click", () => {
-    const spy = sinon.stub<PaneContextArgs["onRestore"]>();
-    render(<PaneContextProvider
-      minimized
-      onRestore={spy}
-    >
-      <WidgetTab className="nztest-tab" />
-    </PaneContextProvider>);
-
-    act(() => {
-      fireClick(document.getElementsByClassName("nztest-tab")[0], sandbox.useFakeTimers());
-    });
-
-    spy.calledOnceWithExactly().should.true;
+  it("should render minimized", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", { minimized: true });
+    nineZone = addTab(nineZone, "w1", "t1");
+    const { container } = render(
+      <NineZoneContext.Provider value={nineZone}>
+        <WidgetPanelContext.Provider value="left">
+          <WidgetIdContext.Provider value="w1">
+            <WidgetTabContext.Provider value={{
+              isOverflown: false,
+            }}>
+              <WidgetTab id="t1" />
+            </WidgetTabContext.Provider>
+          </WidgetIdContext.Provider>
+        </WidgetPanelContext.Provider>
+      </NineZoneContext.Provider>,
+    );
+    container.firstChild!.should.matchSnapshot();
   });
 
-  it("should expand minimized pane on double click", () => {
-    const spy = sinon.stub<PaneContextArgs["onExpand"]>();
-    render(<PaneContextProvider
-      minimized
-      onExpand={spy}
-    >
-      <WidgetTab className="nztest-tab" />
-    </PaneContextProvider>);
-
+  it("should dispatch WIDGET_TAB_CLICK", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
+    render(
+      <NineZoneDispatchContext.Provider value={dispatch}>
+        <NineZoneContext.Provider value={nineZone}>
+          <WidgetPanelContext.Provider value="left">
+            <WidgetIdContext.Provider value="w1">
+              <WidgetTabContext.Provider value={{
+                isOverflown: false,
+              }}>
+                <WidgetTab id="t1" />
+              </WidgetTabContext.Provider>
+            </WidgetIdContext.Provider>
+          </WidgetPanelContext.Provider>
+        </NineZoneContext.Provider>
+      </NineZoneDispatchContext.Provider>,
+    );
+    const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
-      fireDoubleClick(document.getElementsByClassName("nztest-tab")[0], sandbox.useFakeTimers());
+      fireClick(tab, sandbox.useFakeTimers());
     });
-
-    spy.calledOnceWithExactly().should.true;
+    dispatch.calledOnceWithExactly(sinon.match({
+      type: WIDGET_TAB_CLICK,
+      side: "left",
+      widgetId: "w1",
+      id: "t1",
+    })).should.true;
   });
 
-  it("should expand opened pane on active tab click", () => {
-    const spy = sinon.stub<PaneContextArgs["onExpand"]>();
-    render(<PaneContextProvider
-      onExpand={spy}
-    >
-      <WidgetTab
-        active
-        className="nztest-tab"
-      />
-    </PaneContextProvider>);
-
+  it("should dispatch WIDGET_TAB_DOUBLE_CLICK", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
+    render(
+      <NineZoneDispatchContext.Provider value={dispatch}>
+        <NineZoneContext.Provider value={nineZone}>
+          <WidgetPanelContext.Provider value="left">
+            <WidgetIdContext.Provider value="w1">
+              <WidgetTabContext.Provider value={{
+                isOverflown: false,
+              }}>
+                <WidgetTab id="t1" />
+              </WidgetTabContext.Provider>
+            </WidgetIdContext.Provider>
+          </WidgetPanelContext.Provider>
+        </NineZoneContext.Provider>
+      </NineZoneDispatchContext.Provider>,
+    );
+    const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
-      fireClick(document.getElementsByClassName("nztest-tab")[0], sandbox.useFakeTimers());
+      fireDoubleClick(tab, sandbox.useFakeTimers());
     });
-
-    spy.calledOnceWithExactly().should.true;
-  });
-
-  it("should minimize opened pane on active tab double click", () => {
-    const spy = sinon.stub<PaneContextArgs["onMinimize"]>();
-    render(<PaneContextProvider
-      onMinimize={spy}
-    >
-      <WidgetTab
-        active
-        className="nztest-tab"
-      />
-    </PaneContextProvider>);
-
-    act(() => {
-      fireDoubleClick(document.getElementsByClassName("nztest-tab")[0], sandbox.useFakeTimers());
-    });
-
-    spy.calledOnceWithExactly().should.true;
-  });
-
-  it("should invoke click handler", () => {
-    const spy = sinon.stub<NonNullable<WidgetTabProps["onClick"]>>();
-    render(<WidgetTab
-      className="nztest-tab"
-      onClick={spy}
-    />);
-
-    act(() => {
-      fireClick(document.getElementsByClassName("nztest-tab")[0], sandbox.useFakeTimers());
-    });
-
-    spy.calledOnceWithExactly().should.true;
-  });
-
-  it("should invoke click handler when double clicking tab in minimized pane", () => {
-    const spy = sinon.stub<NonNullable<WidgetTabProps["onClick"]>>();
-    render(<PaneContextProvider
-      minimized
-    >
-      <WidgetTab
-        className="nztest-tab"
-        onClick={spy}
-      />
-    </PaneContextProvider>);
-
-    act(() => {
-      fireDoubleClick(document.getElementsByClassName("nztest-tab")[0], sandbox.useFakeTimers());
-    });
-
-    spy.calledOnceWithExactly().should.true;
-  });
-
-  it("should invoke click handler when double clicking inactive tab in opened pane", () => {
-    const spy = sinon.stub<NonNullable<WidgetTabProps["onClick"]>>();
-    render(<WidgetTab
-      className="nztest-tab"
-      onClick={spy}
-    />);
-
-    act(() => {
-      fireDoubleClick(document.getElementsByClassName("nztest-tab")[0], sandbox.useFakeTimers());
-    });
-
-    spy.calledOnceWithExactly().should.true;
+    dispatch.calledOnceWithExactly(sinon.match({
+      type: WIDGET_TAB_DOUBLE_CLICK,
+      side: "left",
+      widgetId: "w1",
+      id: "t1",
+    })).should.true;
   });
 });

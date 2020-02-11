@@ -6,11 +6,8 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import ToolSettings from "./ToolSettings";
 import { ToolSettingProps } from "./ToolSetting";
-import { WidgetPanels, useWidgetPanelsApi } from "@src/widget-panels/Panels";
-import { Panes } from "@src/widget-panels/Panes";
-import { WidgetPanelSide, isHorizontalWidgetPanelSide } from "@src/widget-panels/Panel";
-import { Widget } from "@src/widget/Widget";
-import { WidgetTab } from "@src/widget/Tab";
+import { WidgetPanels } from "@src/widget-panels/Panels";
+import { NineZoneProvider, createNineZoneState, NineZoneStateReducer, addPanelWidget, addTab, useNineZoneDispatch, TOGGLE_PANEL_PINNED, TOGGLE_PANEL_SPAN, TOGGLE_PANEL_COLLAPSED, isHorizontalPanelState, usePanel, useWidget } from "@src/base/NineZone";
 import "./Zones.scss";
 
 let id = 0;
@@ -96,146 +93,91 @@ export default function Zones() {
     };
   }, []);
   const { settings, remove, removeFromStart, add, addToStart, update } = useSettings();
-  const [panels, panelsApi] = useWidgetPanelsApi();
-
+  const [state, dispatch] = React.useReducer(NineZoneStateReducer, {}, () => {
+    let initialState = createNineZoneState();
+    initialState = addPanelWidget(initialState, "left", "topLeft");
+    initialState = addPanelWidget(initialState, "left", "centerLeft");
+    initialState = addPanelWidget(initialState, "left", "bottomLeft");
+    initialState = addPanelWidget(initialState, "right", "topRight");
+    initialState = addPanelWidget(initialState, "top", "topPanel");
+    initialState = addPanelWidget(initialState, "bottom", "bottomPanel1");
+    initialState = addPanelWidget(initialState, "bottom", "bottomPanel2");
+    initialState = addPanelWidget(initialState, "bottom", "bottomPanel3");
+    initialState = addTab(initialState, "topLeft", "topLeft_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "topLeft", "topLeft_2", { label: "Tab 2" });
+    initialState = addTab(initialState, "topLeft", "topLeft_3", { label: "Tab 3" });
+    initialState = addTab(initialState, "bottomLeft", "bottomLeft_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "centerLeft", "centerLeft_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "topRight", "topRight_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "topPanel", "topPanel_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "bottomPanel1", "bottomPanel1_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "bottomPanel2", "bottomPanel2_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "bottomPanel3", "bottomPanel3_1", { label: "Tab 1" });
+    return initialState;
+  });
   return (
     <React.StrictMode>
-      <div
-        className="nzdemo-zones-zones"
+      <NineZoneProvider
+        state={state}
+        dispatch={dispatch}
       >
-        <WidgetPanels
-          className="nzdemo-widgetPanels"
-          panels={panels}
-          leftContent={<WidgetPanelContent
-            onCollapse={() => panels.left.toggleCollapse()}
-            onPin={() => panelsApi.left.setPinned(!panels.left.pinned)}
-            pinned={panels.left.pinned}
-            side="left"
-          />}
-          rightContent={<WidgetPanelContent
-            onCollapse={() => panels.right.toggleCollapse()}
-            onPin={() => panelsApi.right.setPinned(!panels.right.pinned)}
-            pinned={panels.right.pinned}
-            side="right"
-          />}
-          topContent={<WidgetPanelContent
-            onCollapse={() => panels.top.toggleCollapse()}
-            onPin={() => panelsApi.top.setPinned(!panels.top.pinned)}
-            onSpan={() => panelsApi.top.setSpan(!panels.top.span)}
-            pinned={panels.top.pinned}
-            side="top"
-            span={panels.top.span}
-          />}
-          bottomContent={<WidgetPanelContent
-            onCollapse={() => panels.bottom.toggleCollapse()}
-            onPin={() => panelsApi.bottom.setPinned(!panels.bottom.pinned)}
-            onSpan={() => panelsApi.bottom.setSpan(!panels.bottom.span)}
-            pinned={panels.bottom.pinned}
-            side="bottom"
-            span={panels.bottom.span}
-          />}
+        <div
+          className="nzdemo-zones-zones"
         >
-          <button onClick={add}>Add</button>
-          <button onClick={addToStart}>Add To Start</button>
-          <button onClick={remove}>Remove</button>
-          <button onClick={removeFromStart}>Remove From Start</button>
-          <button onClick={update}>Update</button>
-        </WidgetPanels>
-        <ToolSettings
-          settings={settings}
-        />
-      </div>
-    </React.StrictMode>
+          <WidgetPanels
+            className="nzdemo-widgetPanels"
+            widgetContent={<WidgetContent />}
+            centerContent={<div className="nzdemo-toolbars"><div /><div /></div>}
+          >
+            <button onClick={add}>Add</button>
+            <button onClick={addToStart}>Add To Start</button>
+            <button onClick={remove}>Remove</button>
+            <button onClick={removeFromStart}>Remove From Start</button>
+            <button onClick={update}>Update</button>
+          </WidgetPanels>
+          <ToolSettings
+            settings={settings}
+          />
+        </div>
+      </NineZoneProvider>
+    </React.StrictMode >
   );
 }
 
-interface WidgetPanelContentProps {
-  side: WidgetPanelSide;
-  pinned: boolean;
-  span?: boolean;
-  onCollapse: () => void;
-  onPin: () => void;
-  onSpan?: () => void;
-}
-
-function WidgetPanelContent(props: WidgetPanelContentProps) {
-  const [activeTab1, setActiveTab1] = React.useState<1 | 2 | 3>(1);
-  const [activeTab2, setActiveTab2] = React.useState<1 | 2>(1);
-  const isHorizontal = isHorizontalWidgetPanelSide(props.side);
+export function WidgetContent() {
+  const panel = usePanel();
+  const widget = useWidget();
+  const dispatch = useNineZoneDispatch();
+  const horizontalPanel = isHorizontalPanelState(panel) ? panel : undefined;
   return (
-    <Panes
-      horizontal={isHorizontal}
-    >
-      <Widget
-        tabs={
-          <>
-            <WidgetTab
-              active={activeTab1 === 1}
-              onClick={() => {
-                setActiveTab1(1);
-              }}
-            >
-              Comments
-            </WidgetTab>
-            <WidgetTab
-              active={activeTab1 === 2}
-              onClick={() => setActiveTab1(2)}
-            >
-              Participants
-            </WidgetTab>
-            <WidgetTab
-              active={activeTab1 === 3}
-              onClick={() => setActiveTab1(3)}
-            >
-              Active
-            </WidgetTab>
-          </>
-        }
+    <>
+      {widget.activeTabId === undefined ? "No active tab" : `Active tab=${widget.activeTabId}`}
+      <br />
+      {panel.side}
+      <button
+        onClick={() => dispatch({
+          type: TOGGLE_PANEL_PINNED,
+          side: panel.side,
+        })}
       >
-        {props.side}
-        <button
-          onClick={props.onPin}
-        >
-          pinned={String(props.pinned)}
-        </button>
-        {props.onSpan && <button
-          onClick={props.onSpan}
-        >
-          span={String(!!props.span)}
-        </button>}
-        <button
-          onClick={props.onCollapse}
-        >
-          collapse
+        pinned={String(panel.pinned)}
       </button>
-      </Widget>
-      <Widget
-        tabs={
-          <>
-            <WidgetTab
-              active={activeTab2 === 1}
-              onClick={() => setActiveTab2(1)}
-            >
-              Mid
-            </WidgetTab>
-            <WidgetTab
-              active={activeTab2 === 2}
-              onClick={() => setActiveTab2(2)}
-            >
-              Mid1
-            </WidgetTab>
-          </>
-        }
-      />
-      <Widget
-        tabs={
-          <WidgetTab
-            active
-          >
-            Last
-          </WidgetTab>
-        }
-      />
-    </Panes>
+      <button
+        onClick={() => dispatch({
+          type: TOGGLE_PANEL_COLLAPSED,
+          side: panel.side,
+        })}
+      >
+        collapse
+      </button>
+      {horizontalPanel && <button
+        onClick={() => dispatch({
+          type: TOGGLE_PANEL_SPAN,
+          side: horizontalPanel.side,
+        })}
+      >
+        span={String(!!horizontalPanel.span)}
+      </button>}
+    </>
   );
 }

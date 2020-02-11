@@ -7,9 +7,12 @@ export * from "./ui-ninezone/backstage/Item";
 export * from "./ui-ninezone/backstage/Separator";
 export * from "./ui-ninezone/backstage/UserProfile";
 
+export * from "./ui-ninezone/base/assert";
 export * from "./ui-ninezone/base/DragHandle";
 export * from "./ui-ninezone/base/Ellipsis";
+export * from "./ui-ninezone/base/NineZone";
 export * from "./ui-ninezone/base/PointerCaptor";
+export * from "./ui-ninezone/base/ResizeObserverPolyfill";
 export * from "./ui-ninezone/base/useOnOutsideClick";
 export * from "./ui-ninezone/base/useRefEffect";
 export * from "./ui-ninezone/base/useRefs";
@@ -131,10 +134,8 @@ export * from "./ui-ninezone/widget/tool-settings/Tab";
 export * from "./ui-ninezone/widget-panels/Content";
 export * from "./ui-ninezone/widget-panels/Grip";
 export * from "./ui-ninezone/widget-panels/GripOverlay";
-export * from "./ui-ninezone/widget-panels/Pane";
 export * from "./ui-ninezone/widget-panels/Panel";
 export * from "./ui-ninezone/widget-panels/Panels";
-export * from "./ui-ninezone/widget-panels/Panes";
 
 export * from "./ui-ninezone/zones/Outline";
 export * from "./ui-ninezone/zones/Zone";

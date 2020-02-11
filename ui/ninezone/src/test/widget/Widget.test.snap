@@ -1,71 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Widget should flatten tabs 1`] = `
-<div
-  class="nz-widget-widget"
->
-  <div
-    class="nz-tabs"
-  >
-    <div
-      class="nz-widget-tabs"
-    >
-      <div />
-      <span />
-      <div
-        class="nz-widget-overflow"
-      >
-        <div
-          class="nz-button"
-        >
-          <div
-            class="nz-icon"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-  <div
-    class="nz-content"
-  />
-</div>
-`;
-
-exports[`Widget should render 1`] = `
-<div
-  class="nz-widget-widget"
->
-  <div
-    class="nz-tabs"
-  >
-    <div
-      class="nz-widget-tabs"
-    />
-  </div>
-  <div
-    class="nz-content"
-  />
-</div>
-`;
-
-exports[`Widget should render horizontal 1`] = `
-<div
-  class="nz-widget-widget nz-horizontal"
->
-  <div
-    class="nz-tabs"
-  >
-    <div
-      class="nz-widget-tabs"
-    />
-  </div>
-  <div
-    class="nz-content"
-  />
-</div>
-`;
-
-exports[`Widget should render minimized 1`] = `
+exports[`WidgetComponent should render minimized 1`] = `
 <div
   class="nz-widget-widget nz-minimized"
 >
@@ -75,37 +10,6 @@ exports[`Widget should render minimized 1`] = `
     <div
       class="nz-widget-tabs"
     />
-  </div>
-  <div
-    class="nz-content"
-  />
-</div>
-`;
-
-exports[`Widget should render tabs 1`] = `
-<div
-  class="nz-widget-widget"
->
-  <div
-    class="nz-tabs"
-  >
-    <div
-      class="nz-widget-tabs"
-    >
-      <div />
-      <span />
-      <div
-        class="nz-widget-overflow"
-      >
-        <div
-          class="nz-button"
-        >
-          <div
-            class="nz-icon"
-          />
-        </div>
-      </div>
-    </div>
   </div>
   <div
     class="nz-content"

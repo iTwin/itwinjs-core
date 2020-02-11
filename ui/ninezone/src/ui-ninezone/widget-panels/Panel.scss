@@ -170,4 +170,21 @@
       }
     }
   }
+
+  > div >.nz-content {
+    display: flex;
+  }
+
+
+  &.nz-horizontal {
+    > div >.nz-content {
+      flex-direction: row;
+    }
+  }
+
+  &:not(.nz-horizontal) {
+    > div >.nz-content {
+      flex-direction: column;
+    }
+  }
 }

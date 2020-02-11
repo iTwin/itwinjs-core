@@ -252,10 +252,7 @@ interface DockedToolSettingsEntryContextArgs {
 }
 
 // tslint:disable-next-line: variable-name
-const DockedToolSettingsEntryContext = React.createContext<DockedToolSettingsEntryContextArgs>({
-  isOverflown: false,
-  onResize: () => { },
-});
+const DockedToolSettingsEntryContext = React.createContext<DockedToolSettingsEntryContextArgs>(null!);
 
 /** @internal */
 export function useToolSettingsEntry() {

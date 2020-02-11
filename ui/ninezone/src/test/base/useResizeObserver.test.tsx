@@ -5,7 +5,7 @@
 import * as sinon from "sinon";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { useResizeObserver } from "../../ui-ninezone";
-import * as ResizeObserverModule from "resize-observer-polyfill";
+import * as ResizeObserverModule from "../../ui-ninezone/base/ResizeObserverPolyfill";
 import { createDOMRect } from "../Utils";
 
 describe("useResizeObserver", () => {
@@ -16,7 +16,7 @@ describe("useResizeObserver", () => {
   });
 
   it("should observe instance", () => {
-    const spy = sandbox.spy(ResizeObserverModule.default.prototype, "observe");
+    const spy = sandbox.spy(ResizeObserverModule.ResizeObserver.prototype, "observe");
     const { result } = renderHook(() => useResizeObserver());
     const element = document.createElement("div");
     act(() => {
@@ -26,7 +26,7 @@ describe("useResizeObserver", () => {
   });
 
   it("should unobserve instance", () => {
-    const spy = sandbox.spy(ResizeObserverModule.default.prototype, "unobserve");
+    const spy = sandbox.spy(ResizeObserverModule.ResizeObserver.prototype, "unobserve");
     const { result } = renderHook(() => useResizeObserver());
     const element = document.createElement("div");
     act(() => {
@@ -39,7 +39,7 @@ describe("useResizeObserver", () => {
   });
 
   it("should call onResize", () => {
-    const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "default");
+    const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
     const spy = sandbox.spy();
     const { result } = renderHook(() => useResizeObserver(spy));
     const element = document.createElement("div");

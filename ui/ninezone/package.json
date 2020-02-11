@@ -143,6 +143,7 @@
   ],
   "dependencies": {
     "classnames": "^2.2.5",
+    "immer": "^5.3.4",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },

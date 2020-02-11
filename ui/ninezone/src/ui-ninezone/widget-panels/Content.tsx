@@ -20,7 +20,7 @@ export interface WidgetPanelContentProps extends CommonProps {
   pinnedBottom?: boolean;
 }
 
-/** Component that displays side panel content.
+/** Component that displays widget panel content.
  * @internal
  */
 export function WidgetPanelContent(props: WidgetPanelContentProps) {

@@ -6,6 +6,7 @@
 
 .nz-widget-tab {
   user-select: none;
+  white-space: nowrap;
 
   &.nz-overflown {
     cursor: pointer;

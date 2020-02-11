@@ -1,75 +1,224 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`WidgetPanel should render 1`] = `
+exports[`WidgetPanel should dispatch INITIALIZE_PANEL 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left"
-  style="width: 50px;"
+  class="nz-widgetPanels-panel nz-left nz-collapsed nz-span-top nz-span-bottom"
 >
   <div>
     <div
       class="nz-content"
-    />
+    >
+      <div
+        class="nz-widget-widget"
+        style="flex-grow: 1;"
+      >
+        <div
+          class="nz-tabs"
+        >
+          <div
+            class="nz-widget-tabs"
+          />
+        </div>
+        <div
+          class="nz-content"
+        />
+      </div>
+    </div>
+    <div
+      class="nz-widgetPanels-grip nz-left nz-collapsed"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
   </div>
 </div>
 `;
 
-exports[`WidgetPanel should render spanned 1`] = `
+exports[`WidgetPanel should render collapsed 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-top nz-span"
+  class="nz-widgetPanels-panel nz-left nz-collapsed nz-span-top nz-span-bottom"
 >
   <div>
     <div
       class="nz-content"
-    />
+    >
+      <div
+        class="nz-widget-widget"
+        style="flex-grow: 1;"
+      >
+        <div
+          class="nz-tabs"
+        >
+          <div
+            class="nz-widget-tabs"
+          />
+        </div>
+        <div
+          class="nz-content"
+        />
+      </div>
+    </div>
+    <div
+      class="nz-widgetPanels-grip nz-left nz-collapsed"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WidgetPanel should render horizontal 1`] = `
+<div
+  class="nz-widgetPanels-panel nz-top nz-horizontal nz-span"
+  style="height: 200px;"
+>
+  <div>
+    <div
+      class="nz-content"
+    >
+      <div
+        class="nz-widget-widget nz-horizontal"
+        style="flex-grow: 1;"
+      >
+        <div
+          class="nz-tabs"
+        >
+          <div
+            class="nz-widget-tabs"
+          />
+        </div>
+        <div
+          class="nz-content"
+        />
+      </div>
+    </div>
+    <div
+      class="nz-widgetPanels-grip nz-top"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
   </div>
 </div>
 `;
 
 exports[`WidgetPanel should render vertical 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-top"
-  style="height: 50px;"
+  class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  style="width: 200px;"
 >
   <div>
     <div
       class="nz-content"
-    />
+    >
+      <div
+        class="nz-widget-widget"
+        style="flex-grow: 1;"
+      >
+        <div
+          class="nz-tabs"
+        >
+          <div
+            class="nz-widget-tabs"
+          />
+        </div>
+        <div
+          class="nz-content"
+        />
+      </div>
+    </div>
+    <div
+      class="nz-widgetPanels-grip nz-left"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
   </div>
 </div>
 `;
 
-exports[`WidgetPanel should render w/o size 1`] = `
+exports[`WidgetPanel should render vertical size 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left"
+  class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  style="width: 200px;"
 >
   <div>
     <div
       class="nz-content"
-    />
-  </div>
-</div>
-`;
-
-exports[`WidgetPanel should render with spanned bottom 1`] = `
-<div
-  class="nz-widgetPanels-panel nz-left nz-span-bottom"
->
-  <div>
+    >
+      <div
+        class="nz-widget-widget"
+        style="flex-grow: 1;"
+      >
+        <div
+          class="nz-tabs"
+        >
+          <div
+            class="nz-widget-tabs"
+          />
+        </div>
+        <div
+          class="nz-content"
+        />
+      </div>
+    </div>
     <div
-      class="nz-content"
-    />
-  </div>
-</div>
-`;
-
-exports[`WidgetPanel should render with spanned top 1`] = `
-<div
-  class="nz-widgetPanels-panel nz-left nz-span-top"
->
-  <div>
-    <div
-      class="nz-content"
-    />
+      class="nz-widgetPanels-grip nz-left"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
   </div>
 </div>
 `;

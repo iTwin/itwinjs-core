@@ -192,41 +192,27 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   }
 
   private static getZoneElement(zoneId: WidgetZoneId, props: FrontstageProps): React.ReactElement<ZoneProps> | undefined {
-    let zoneElement: React.ReactElement<ZoneProps> | undefined;
-
     switch (zoneId) {
       case ZoneLocation.TopLeft:
-        zoneElement = props.topLeft;
-        break;
+        return props.topLeft;
       case ZoneLocation.TopCenter:
-        zoneElement = props.topCenter;
-        break;
+        return props.topCenter;
       case ZoneLocation.TopRight:
-        zoneElement = props.topRight;
-        break;
+        return props.topRight;
       case ZoneLocation.CenterLeft:
-        zoneElement = props.centerLeft;
-        break;
+        return props.centerLeft;
       case ZoneLocation.CenterRight:
-        zoneElement = props.centerRight;
-        break;
+        return props.centerRight;
       case ZoneLocation.BottomLeft:
-        zoneElement = props.bottomLeft;
-        break;
+        return props.bottomLeft;
       case ZoneLocation.BottomCenter:
-        zoneElement = props.bottomCenter;
-        break;
+        return props.bottomCenter;
       case ZoneLocation.BottomRight:
-        zoneElement = props.bottomRight;
-        break;
-      // istanbul ignore next
-      default:
-        throw new RangeError();
+        return props.bottomRight;
     }
 
     // Zones can be undefined in a Frontstage
-
-    return zoneElement;
+    return undefined;
   }
 
   /** @internal */
@@ -355,7 +341,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 
   private cloneZoneElements(zoneIds: ReadonlyArray<WidgetZoneId>, runtimeProps: FrontstageRuntimeProps): React.ReactNode[] {
     return zoneIds.map((zoneId: WidgetZoneId) => {
-      const zoneElement = Frontstage.getZoneElement(zoneId, this.props) as React.ReactElement<ZoneProps>;
+      const zoneElement = Frontstage.getZoneElement(zoneId, this.props);
       if (!zoneElement || !React.isValidElement(zoneElement))
         return null;
 
@@ -623,15 +609,22 @@ export const getExtendedZone = (zoneId: WidgetZoneId, zones: ZonesManagerProps, 
  * @beta
  */
 export const useActiveFrontstageId = () => {
-  const [id, setId] = React.useState(FrontstageManager.activeFrontstageId);
+  const def = useActiveFrontstageDef();
+  const id = React.useMemo(() => def ? def.id : "", [def]);
+  return id;
+};
+
+/** @internal */
+export function useActiveFrontstageDef() {
+  const [def, setDef] = React.useState(FrontstageManager.activeFrontstageDef);
   React.useEffect(() => {
     const handleActivated = (args: FrontstageActivatedEventArgs) => {
-      setId(args.activatedFrontstageDef.id);
+      setDef(args.activatedFrontstageDef);
     };
     FrontstageManager.onFrontstageActivatedEvent.addListener(handleActivated);
     return () => {
       FrontstageManager.onFrontstageActivatedEvent.removeListener(handleActivated);
     };
   }, []);
-  return id;
-};
+  return def;
+}

@@ -68,9 +68,11 @@ import { MessageSeverity } from '@bentley/ui-core';
 import { ModelSelectorProps } from '@bentley/imodeljs-common';
 import { NestedStagePanelKey } from '@bentley/ui-ninezone';
 import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
+import { NineZoneActionTypes } from '@bentley/ui-ninezone';
 import { NineZoneManager } from '@bentley/ui-ninezone';
 import { NineZoneManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneStagePanelManagerProps } from '@bentley/ui-ninezone';
+import { NineZoneState } from '@bentley/ui-ninezone';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
@@ -147,6 +149,7 @@ import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
+import { WidgetPanelSide } from '@bentley/ui-ninezone';
 import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
 import { WidgetZoneId } from '@bentley/ui-ninezone';
 import { XAndY } from '@bentley/geometry-core';
@@ -291,6 +294,9 @@ export interface ActivityMessageEventArgs {
 // @public
 export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArgs> {
 }
+
+// @internal (undocumented)
+export function addWidget(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: WidgetPanelSide, widgetId: string): NineZoneState;
 
 // @alpha
 export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
@@ -861,14 +867,12 @@ export const ConfigurableUiActions: {
 export type ConfigurableUiActionsUnion = ActionsUnion<typeof ConfigurableUiActions>;
 
 // @public
-export const ConfigurableUiContent: any;
+export function ConfigurableUiContent(props: ConfigurableUiContentProps): JSX.Element;
 
 // @public
 export interface ConfigurableUiContentProps extends CommonProps {
     // (undocumented)
     appBackstage?: React.ReactNode;
-    // (undocumented)
-    placeholder: string;
 }
 
 // @public
@@ -1903,6 +1907,34 @@ export class FrameworkUiAdmin extends UiAdmin {
     showToolbar(toolbarProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, onCancel: OnCancelFunc, relativePosition?: RelativePosition, htmlElement?: HTMLElement): boolean;
 }
 
+// @alpha (undocumented)
+export function FrameworkVersion(props: FrameworkVersionProps): JSX.Element;
+
+// @alpha (undocumented)
+export type FrameworkVersion = "1" | "2";
+
+// @internal (undocumented)
+export const FrameworkVersionContext: React.Context<FrameworkVersion>;
+
+// @alpha (undocumented)
+export interface FrameworkVersionProps {
+    // (undocumented)
+    children?: React.ReactNode;
+    // (undocumented)
+    version: FrameworkVersion;
+}
+
+// @internal (undocumented)
+export function FrameworkVersionSwitch(props: FrameworkVersionSwitchProps): JSX.Element;
+
+// @internal (undocumented)
+export interface FrameworkVersionSwitchProps {
+    // (undocumented)
+    v1?: React.ReactNode;
+    // (undocumented)
+    v2?: React.ReactNode;
+}
+
 // @internal
 export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
     // (undocumented)
@@ -2123,6 +2155,9 @@ export class FrontstageDef {
     waitUntilReady(): Promise<void>;
     get zoneDefs(): ZoneDef[];
 }
+
+// @internal
+export type FrontstageDefNineZoneActionTypes = NineZoneActionTypes | InitializeNineZoneAction;
 
 // @public
 export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> {
@@ -2599,6 +2634,17 @@ export class Indicator extends React.Component<IndicatorProps, any> {
     render(): JSX.Element;
 }
 
+// @internal
+export interface InitializeNineZoneAction {
+    // (undocumented)
+    readonly frontstage: FrontstageDef | undefined;
+    // (undocumented)
+    readonly type: typeof NINE_ZONE_INITIALIZE;
+}
+
+// @internal (undocumented)
+export function initializeNineZoneState(frontstage: FrontstageDef | undefined): NineZoneState;
+
 // @alpha (undocumented)
 export class InputEditorCommitHandler {
     constructor(onCommit: OnNumberCommitFunc);
@@ -2673,6 +2719,9 @@ export const isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.
 
 // @beta
 export function isNoSelectionActive(): boolean;
+
+// @internal (undocumented)
+export function isPanelCollapsed(zoneStates: ReadonlyArray<ZoneState | undefined>, panelStates: ReadonlyArray<StagePanelState | undefined>): boolean;
 
 // @alpha
 export const isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem;
@@ -3456,6 +3505,9 @@ export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonPr
 export class NestedFrontstage {
     static get backToPreviousFrontstageCommand(): CommandItemDef;
 }
+
+// @internal
+export const NINE_ZONE_INITIALIZE = "NINE_ZONE_INITIALIZE";
 
 // @public
 export interface NineZoneChangeHandler {
@@ -5171,6 +5223,9 @@ export interface UiVisibilityEventArgs {
     visible: boolean;
 }
 
+// @internal (undocumented)
+export function useActiveFrontstageDef(): FrontstageDef | undefined;
+
 // @beta
 export const useActiveFrontstageId: () => string;
 
@@ -5195,6 +5250,12 @@ export const useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => rea
 // @beta
 export const useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[];
 
+// @internal
+export function useFrameworkVersion(): FrameworkVersion;
+
+// @internal (undocumented)
+export function useFrontstageDefNineZone(frontstage?: FrontstageDef): [NineZoneState, React.Dispatch<FrontstageDefNineZoneActionTypes>];
+
 // @internal (undocumented)
 export const useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems;
 
@@ -5215,11 +5276,17 @@ export interface UserProfileBackstageItemProps extends CommonProps {
     onOpenSignOut?: () => void;
 }
 
+// @internal (undocumented)
+export function useToolSettings(): React.ReactNode;
+
 // @beta
 export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
 
 // @beta
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
+
+// @internal (undocumented)
+export function useWidgetDef(): WidgetDef | undefined;
 
 // @alpha
 export class ValidationTextbox extends React.PureComponent<ValidationTextboxProps, ValidationTextboxState> {
@@ -5489,6 +5556,9 @@ export interface WidgetChangeHandler {
     handleWidgetStateChange(widgetId: WidgetZoneId, tabIndex: number, isOpening: boolean): void;
 }
 
+// @internal (undocumented)
+export function WidgetContent(): JSX.Element;
+
 // @public
 export class WidgetControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
@@ -5624,6 +5694,30 @@ export class WidgetManager {
     get widgets(): ReadonlyArray<WidgetInfo>;
     set widgets(w: ReadonlyArray<WidgetInfo>);
     }
+
+// @internal (undocumented)
+export function WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSettingsProps): JSX.Element;
+
+// @internal (undocumented)
+export interface WidgetPanelsDefaultToolSettingsProps {
+    // (undocumented)
+    dataProvider: DefaultToolSettingsProvider;
+}
+
+// @internal (undocumented)
+export function WidgetPanelsFrontstage(): JSX.Element | null;
+
+// @internal (undocumented)
+export function WidgetPanelsFrontstageContent(): JSX.Element | null;
+
+// @internal (undocumented)
+export function WidgetPanelsStatusBar(): JSX.Element | null;
+
+// @internal (undocumented)
+export function WidgetPanelsToolbars(): JSX.Element;
+
+// @internal (undocumented)
+export function WidgetPanelsToolSettings(): JSX.Element | null;
 
 // @public
 export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps_2 {

@@ -17,7 +17,7 @@ export interface WidgetPanelsGripOverlayProps extends CommonProps {
   side: WidgetPanelSide;
 }
 
-/** Resize grip of used in side panel component.
+/** Resize grip overlay used [[WidgetPanels]] component.
  * @internal
  */
 export function WidgetPanelsGripOverlay(props: WidgetPanelsGripOverlayProps) {

@@ -10,35 +10,38 @@ import { CommonProps, Point, Rectangle } from "@bentley/ui-core";
 import { usePointerCaptor } from "../base/PointerCaptor";
 import { WidgetPanelSide, isHorizontalWidgetPanelSide } from "./Panel";
 import { useRefs } from "../base/useRefs";
+import { useNineZoneDispatch, TOGGLE_PANEL_COLLAPSED, usePanel } from "../base/NineZone";
 import "./Grip.scss";
 
 /** Properties of [[WidgetPanelGrip]] component.
  * @internal
  */
 export interface WidgetPanelGripProps extends CommonProps {
-  collapsed?: boolean;
-  onDoubleClick?: (side: WidgetPanelSide) => void;
   onResize?: (side: WidgetPanelSide, resizeBy: number) => void;
   onResizeEnd?: () => void;
-  side: WidgetPanelSide;
 }
 
-/** Resize grip of used in side panel component.
+/** Resize grip of [[WidgetPanel]] component.
  * @internal
  */
 export function WidgetPanelGrip(props: WidgetPanelGripProps) {
-  const { onDoubleClick, onResize, side } = props;
+  const panel = usePanel();
+  const dispatch = useNineZoneDispatch();
+  const { onResize } = props;
   const handleResize = React.useCallback((resizeBy: number) => {
-    onResize && onResize(side, resizeBy);
-  }, [onResize, side]);
+    onResize && onResize(panel.side, resizeBy);
+  }, [onResize, panel]);
   const handleDoubleClick = React.useCallback(() => {
-    onDoubleClick && onDoubleClick(side);
-  }, [onDoubleClick, side]);
-  const [ref, resizing] = useResizeGrip<HTMLDivElement>(props.side, handleResize, props.onResizeEnd);
+    dispatch({
+      type: TOGGLE_PANEL_COLLAPSED,
+      side: panel.side,
+    });
+  }, [dispatch, panel]);
+  const [ref, resizing] = useResizeGrip<HTMLDivElement>(panel.side, handleResize, props.onResizeEnd);
   const className = classnames(
     "nz-widgetPanels-grip",
-    `nz-${props.side}`,
-    props.collapsed && "nz-collapsed",
+    `nz-${panel.side}`,
+    panel.collapsed && "nz-collapsed",
     resizing && "nz-resizing",
     props.className,
   );

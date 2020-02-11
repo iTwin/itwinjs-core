@@ -7,50 +7,52 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { usePane } from "../widget-panels/Panes";
 import { WidgetTabs } from "./Tabs";
+import { WidgetState, useWidgetById } from "../base/NineZone";
+import { useWidgetPanelSide, isHorizontalWidgetPanelSide } from "../widget-panels/Panel";
 import "./Widget.scss";
 
 /** @internal */
-export interface WidgetProps extends CommonProps {
+export interface WidgetComponentProps extends CommonProps {
   children?: React.ReactNode;
-  tabs?: React.ReactNode;
+  id: WidgetState["id"];
 }
 
-/** Component that displays a side panel widget.
- * @internal future
- */
-export function Widget(props: WidgetProps) {
-  const tabs = useFlattenRootFragment(props.tabs);
-  const pane = usePane();
+/** @internal */
+export function WidgetComponent(props: WidgetComponentProps) {
+  const side = useWidgetPanelSide();
+  const widget = useWidgetById(props.id);
+  const style: React.CSSProperties = {
+    ...widget.minimized ? undefined : { flexGrow: 1 },
+    ...props.style,
+  };
   const className = classnames(
     "nz-widget-widget",
-    pane.minimized && "nz-minimized",
-    pane.horizontal && "nz-horizontal",
+    widget.minimized && "nz-minimized",
+    isHorizontalWidgetPanelSide(side) && "nz-horizontal",
     props.className,
   );
   return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div className="nz-tabs">
-        <WidgetTabs
-          children={tabs}
-        />
+    <WidgetIdContext.Provider value={props.id}>
+      <div
+        className={className}
+        style={style}
+      >
+        <div className="nz-tabs">
+          <WidgetTabs />
+        </div>
+        <div className="nz-content">
+          {props.children}
+        </div>
       </div>
-      <div className="nz-content">
-        {props.children}
-      </div>
-    </div>
+    </WidgetIdContext.Provider>
   );
 }
 
 /** @internal */
-export function useFlattenRootFragment(node: React.ReactNode) {
-  return React.useMemo(() => {
-    if (React.isValidElement<{ children?: React.ReactNode }>(node) && node.type === React.Fragment)
-      return node.props.children;
-    return node;
-  }, [node]);
+export const WidgetIdContext = React.createContext<WidgetState["id"]>(null!); // tslint:disable-line: variable-name
+
+/** @internal */
+export function useWidgetId() {
+  return React.useContext(WidgetIdContext);
 }

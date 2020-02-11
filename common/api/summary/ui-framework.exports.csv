@@ -16,6 +16,7 @@ public;ActivityCenterField
 public;ActivityMessageCancelledEvent 
 public;ActivityMessageEventArgs
 public;ActivityMessageUpdatedEvent 
+internal;addWidget(state: NineZoneState, widgets: ReadonlyArray
 alpha;AnalysisAnimationTimelineDataProvider 
 public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
@@ -81,7 +82,7 @@ public;ConfigurableCreateInfo
 public;ConfigurableUiActionId
 public;ConfigurableUiActions:
 public;ConfigurableUiActionsUnion = ActionsUnion
-public;ConfigurableUiContent: any
+public;ConfigurableUiContent(props: ConfigurableUiContentProps): JSX.Element
 public;ConfigurableUiContentProps 
 public;class ConfigurableUiControl 
 public;ConfigurableUiControlConstructor = new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement
@@ -177,6 +178,12 @@ internal;FrameworkStagePanel
 internal;FrameworkStagePanelProps
 beta;FrameworkState
 beta;FrameworkUiAdmin 
+alpha;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
+alpha;FrameworkVersion = "1" | "2"
+internal;FrameworkVersionContext: React.Context
+alpha;FrameworkVersionProps
+internal;FrameworkVersionSwitch(props: FrameworkVersionSwitchProps): JSX.Element
+internal;FrameworkVersionSwitchProps
 internal;FrameworkZone 
 internal;FrameworkZoneProps 
 public;Frontstage 
@@ -186,6 +193,7 @@ public;FrontstageComposer
 public;FrontstageDeactivatedEvent 
 public;FrontstageDeactivatedEventArgs
 public;FrontstageDef
+internal;FrontstageDefNineZoneActionTypes = NineZoneActionTypes | InitializeNineZoneAction
 public;FrontstageLaunchBackstageItem 
 public;FrontstageLaunchBackstageItemProps 
 public;FrontstageManager
@@ -238,6 +246,8 @@ beta;IModelViewportControl
 beta;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator 
+internal;InitializeNineZoneAction
+internal;initializeNineZoneState(frontstage: FrontstageDef | undefined): NineZoneState
 alpha;InputEditorCommitHandler
 alpha;InputEditorPopup 
 alpha;InputEditorPopupProps 
@@ -248,6 +258,7 @@ public;InputFieldMessageRemovedEvent
 alpha;InputStatus
 internal;isCollapsedToPanelState: (isCollapsed: boolean) => StagePanelState.Minimized | StagePanelState.Open
 beta;isNoSelectionActive(): boolean
+internal;isPanelCollapsed(zoneStates: ReadonlyArray
 alpha;isStatusBarItem: (item: CommonStatusBarItem) => item is StatusBarItem
 internal;isToolSettingsWidgetManagerProps: (props: WidgetManagerProps | undefined) => props is ToolSettingsWidgetManagerProps
 public;class ItemDefBase
@@ -326,6 +337,7 @@ public;NavigationWidgetDef
 public;NavigationWidgetProps 
 public;NavigationWidgetPropsEx 
 public;NestedFrontstage
+internal;NINE_ZONE_INITIALIZE = "NINE_ZONE_INITIALIZE"
 public;NineZoneChangeHandler
 alpha;PanelStateChangedEvent 
 alpha;PanelStateChangedEventArgs
@@ -501,6 +513,7 @@ public;UiFramework
 alpha;UiShowHideManager
 beta;UiVisibilityChangedEvent 
 beta;UiVisibilityEventArgs
+internal;useActiveFrontstageDef(): FrontstageDef | undefined
 beta;useActiveFrontstageId: () => string
 beta;useActiveIModelConnection(): IModelConnection | undefined
 beta;useActiveViewport(): ScreenViewport | undefined
@@ -509,12 +522,16 @@ beta;useBackstageManager: () => BackstageManager
 internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 beta;useDefaultStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useDefaultToolbarItems: (manager: ToolbarItemsManager) => readonly CommonToolbarItem[]
+internal;useFrameworkVersion(): FrameworkVersion
+internal;useFrontstageDefNineZone(frontstage?: FrontstageDef): [NineZoneState, React.Dispatch
 internal;useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
+internal;useToolSettings(): React.ReactNode
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
+internal;useWidgetDef(): WidgetDef | undefined
 alpha;ValidationTextbox 
 internal;VersionInfo
 beta;ViewAttributesStatusField 
@@ -539,11 +556,19 @@ alpha;VisibilityWidget
 public;Widget 
 beta;WIDGET_OPACITY_DEFAULT = 0.9
 public;WidgetChangeHandler
+internal;WidgetContent(): JSX.Element
 public;WidgetControl 
 public;WidgetDef
 public;WidgetHost
 internal;WidgetInfo
 alpha;WidgetManager
+internal;WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSettingsProps): JSX.Element
+internal;WidgetPanelsDefaultToolSettingsProps
+internal;WidgetPanelsFrontstage(): JSX.Element | null
+internal;WidgetPanelsFrontstageContent(): JSX.Element | null
+internal;WidgetPanelsStatusBar(): JSX.Element | null
+internal;WidgetPanelsToolbars(): JSX.Element
+internal;WidgetPanelsToolSettings(): JSX.Element | null
 public;WidgetProps 
 alpha;WidgetProvider
 internal;WidgetProvidersChangedEvent 

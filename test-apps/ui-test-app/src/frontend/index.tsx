@@ -31,6 +31,7 @@ import {
   ToolbarDragInteractionContext,
   StateManager,
   FrameworkRootState,
+  FrameworkVersion,
 } from "@bentley/ui-framework";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
@@ -526,9 +527,11 @@ export class SampleAppViewer extends React.Component<any> {
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
-                <ConfigurableUiContent
-                  appBackstage={<AppBackstageComposer />}
-                />
+                <FrameworkVersion version="1">
+                  <ConfigurableUiContent
+                    appBackstage={<AppBackstageComposer />}
+                  />
+                </FrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>
             <DragDropLayerRenderer />

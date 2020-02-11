@@ -52,8 +52,18 @@ export const createDOMRect = (args?: { width?: number }): DOMRect => {
 };
 
 // tslint:disable-next-line: variable-name
-export interface ResizeObserverMock extends ResizeObserver {
-  readonly callback: ResizeObserverCallback;
+export class ResizeObserverMock implements ResizeObserver {
+  public constructor(public readonly callback: ResizeObserverCallback) {
+  }
+
+  public observe(_: Element): void {
+  }
+
+  public unobserve(_: Element): void {
+  }
+
+  public disconnect(): void {
+  }
 }
 
 declare module "sinon" {

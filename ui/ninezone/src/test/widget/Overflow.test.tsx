@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { WidgetOverflow } from "../../ui-ninezone";
+import { WidgetOverflow, WidgetTabContext } from "../../ui-ninezone";
 
 describe("WidgetOverflow", () => {
   const sandbox = sinon.createSandbox();
@@ -16,20 +16,30 @@ describe("WidgetOverflow", () => {
 
   it("should render", () => {
     const { container } = render(
-      <WidgetOverflow>
-        <div>A</div>
-        <div>B</div>
-      </WidgetOverflow>,
+      <WidgetTabContext.Provider value={{
+        isOverflown: false,
+        onResize: () => { },
+      }}>
+        <WidgetOverflow>
+          <div>A</div>
+          <div>B</div>
+        </WidgetOverflow>
+      </WidgetTabContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
 
   it("should open panel", () => {
     const { container } = render(
-      <WidgetOverflow className="nzdemo-overflow">
-        <div>A</div>
-        <div>B</div>
-      </WidgetOverflow>,
+      <WidgetTabContext.Provider value={{
+        isOverflown: false,
+        onResize: () => { },
+      }}>
+        <WidgetOverflow>
+          <div>A</div>
+          <div>B</div>
+        </WidgetOverflow>
+      </WidgetTabContext.Provider>,
     );
     const button = container.getElementsByClassName("nz-button")[0];
     act(() => {
@@ -40,10 +50,15 @@ describe("WidgetOverflow", () => {
 
   it("should close panel on outside click", () => {
     const { container } = render(
-      <WidgetOverflow className="nzdemo-overflow">
-        <div>A</div>
-        <div>B</div>
-      </WidgetOverflow>,
+      <WidgetTabContext.Provider value={{
+        isOverflown: false,
+        onResize: () => { },
+      }}>
+        <WidgetOverflow>
+          <div>A</div>
+          <div>B</div>
+        </WidgetOverflow>
+      </WidgetTabContext.Provider>,
     );
     const button = container.getElementsByClassName("nz-button")[0];
     act(() => {

@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetPanelsDefaultToolSettings should render 1`] = `
+<Fragment>
+  <DockedToolSetting
+    key=""
+  >
+    <EditorContainer
+      onCancel={[Function]}
+      onCommit={[Function]}
+      propertyRecord={null}
+      setFocus={false}
+    />
+  </DockedToolSetting>
+</Fragment>
+`;

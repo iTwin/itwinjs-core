@@ -5,8 +5,6 @@
 @import "@bentley/ui-core/lib/ui-core/index";
 
 .nz-widgetPanels-content {
-  background: linear-gradient(45deg, black, transparent, red);
-
   &:not(.nz-pinned-left) {
     grid-column-start: 1;
   }

@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`WidgetTabs should overflow all tabs in minimized horizontal pane 1`] = `
+exports[`WidgetTabs should overflow all tabs in horizontal minimized widget 1`] = `
 <div
   class="nz-widget-tabs"
 >
@@ -22,19 +22,10 @@ exports[`WidgetTabs should render 1`] = `
 <div
   class="nz-widget-tabs"
 >
-  a
-  b
-  c
   <div
-    class="nz-widget-overflow"
+    class="nz-widget-tab"
   >
-    <div
-      class="nz-button"
-    >
-      <div
-        class="nz-icon"
-      />
-    </div>
+    <span />
   </div>
 </div>
 `;

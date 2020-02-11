@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
+import produce from "immer";
 import { render } from "@testing-library/react";
-import { act, renderHook } from "@testing-library/react-hooks";
-import { WidgetPanel, WidgetPanelProps, useWidgetPanelApi } from "../../ui-ninezone";
+import { addPanelWidget, createNineZoneState, WidgetPanel, NineZoneContext } from "../../ui-ninezone";
+import { NineZoneDispatchContext, NineZoneDispatch, INITIALIZE_PANEL } from "../../ui-ninezone/base/NineZone";
 import { createDOMRect } from "../Utils";
 
 describe("WidgetPanel", () => {
@@ -16,147 +17,75 @@ describe("WidgetPanel", () => {
     sandbox.restore();
   });
 
-  it("should render w/o size", () => {
-    const { container } = render(
-      <WidgetPanel
-        side="left"
-      />,
-    );
-    container.firstChild!.should.matchSnapshot();
-  });
-
-  it("should render", () => {
-    const { container } = render(
-      <WidgetPanel
-        side="left"
-        size={50}
-      />,
-    );
-    container.firstChild!.should.matchSnapshot();
-  });
-
   it("should render vertical", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = produce(nineZone, (stateDraft) => {
+      stateDraft.panels.left.size = 200;
+    });
     const { container } = render(
-      <WidgetPanel
-        side="top"
-        size={50}
-      />,
+      <NineZoneContext.Provider value={nineZone}>
+        <WidgetPanel
+          side="left"
+        />
+      </NineZoneContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
 
-  it("should render spanned", () => {
+  it("should render horizontal", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "top", "w1", {});
+    nineZone = produce(nineZone, (stateDraft) => {
+      stateDraft.panels.top.size = 200;
+    });
     const { container } = render(
-      <WidgetPanel
-        side="top"
-        span
-      />,
+      <NineZoneContext.Provider value={nineZone}>
+        <WidgetPanel
+          side="top"
+        />
+      </NineZoneContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
 
-  it("should render with spanned top", () => {
+  it("should render collapsed", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = produce(nineZone, (stateDraft) => {
+      stateDraft.panels.left.collapsed = true;
+    });
     const { container } = render(
-      <WidgetPanel
-        side="left"
-        spanTop
-      />,
+      <NineZoneContext.Provider value={nineZone}>
+        <WidgetPanel
+          side="left"
+        />
+      </NineZoneContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
 
-  it("should render with spanned bottom", () => {
-    const { container } = render(
-      <WidgetPanel
-        side="left"
-        spanBottom
-      />,
-    );
-    container.firstChild!.should.matchSnapshot();
-  });
-
-  it("should invoke onInitialize", () => {
-    sandbox.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
-    const spy = sinon.stub<NonNullable<WidgetPanelProps["onInitialize"]>>();
+  it("should dispatch INITIALIZE_PANEL", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    nineZone = produce(nineZone, (stateDraft) => {
+      stateDraft.panels.left.collapsed = true;
+    });
+    sandbox.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 300 }));
     render(
-      <WidgetPanel
-        side="left"
-        onInitialize={spy}
-      />,
+      <NineZoneDispatchContext.Provider value={dispatch}>
+        <NineZoneContext.Provider value={nineZone}>
+          <WidgetPanel
+            side="left"
+          />
+        </NineZoneContext.Provider>
+      </NineZoneDispatchContext.Provider>,
     );
-    spy.calledOnceWithExactly(100).should.true;
-  });
-});
-
-describe("useWidgetPanelApi", () => {
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("should initialize", () => {
-    const { result } = renderHook(() => useWidgetPanelApi());
-    act(() => {
-      result.current[0].initialize(450);
-    });
-    result.current[0].size!.should.eq(450);
-  });
-
-  it("should toggle collapse", () => {
-    const { result } = renderHook(() => useWidgetPanelApi());
-    act(() => {
-      result.current[0].toggleCollapse();
-    });
-    result.current[0].collapsed.should.true;
-  });
-
-  describe("resize", () => {
-    it("should resize", () => {
-      const { result } = renderHook(() => useWidgetPanelApi());
-      act(() => {
-        result.current[0].initialize(450);
-        result.current[0].resize(10);
-      });
-      result.current[0].size!.should.eq(460);
-    });
-
-    it("should collapse", () => {
-      const { result } = renderHook(() => useWidgetPanelApi());
-      act(() => {
-        result.current[0].initialize(250);
-        result.current[0].resize(-150);
-      });
-      result.current[0].collapsed!.should.true;
-      result.current[0].size!.should.eq(200);
-    });
-
-    it("should not resize if size is not initialized", () => {
-      const { result } = renderHook(() => useWidgetPanelApi());
-      act(() => {
-        result.current[0].resize(10);
-      });
-      (result.current[0].size === undefined).should.true;
-    });
-
-    it("should expand", () => {
-      const { result } = renderHook(() => useWidgetPanelApi());
-      act(() => {
-        result.current[0].initialize(200);
-        result.current[0].toggleCollapse();
-        result.current[0].resize(100);
-      });
-      result.current[0].collapsed.should.false;
-    });
-
-    it("should not expand", () => {
-      const { result } = renderHook(() => useWidgetPanelApi());
-      act(() => {
-        result.current[0].initialize(200);
-        result.current[0].toggleCollapse();
-        result.current[0].resize(10);
-      });
-      result.current[0].collapsed.should.true;
-    });
+    dispatch.calledOnceWithExactly(sinon.match({
+      type: INITIALIZE_PANEL,
+      side: "left",
+      size: 300,
+    })).should.true;
   });
 });

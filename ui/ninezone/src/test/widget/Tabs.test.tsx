@@ -5,20 +5,9 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { WidgetTabs, useWidgetTab } from "../../ui-ninezone";
+import { WidgetTabs, WidgetPanelContext, WidgetIdContext, createNineZoneState, addPanelWidget, NineZoneContext } from "../../ui-ninezone";
+import { addTab } from "../../ui-ninezone/base/NineZone";
 import { createDOMRect } from "../Utils";
-import { PaneContextProvider } from "../Providers";
-
-function Tab(props: {
-  width: number,
-}) {
-  const latestProps = React.useRef(props);
-  const tab = useWidgetTab();
-  const handleRef = React.useCallback(() => {
-    tab.onResize && tab.onResize(latestProps.current.width);
-  }, [tab]);
-  return <div ref={handleRef}></div>;
-}
 
 describe("WidgetTabs", () => {
   const sandbox = sinon.createSandbox();
@@ -28,41 +17,52 @@ describe("WidgetTabs", () => {
   });
 
   it("should render", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
     const { container } = render(
-      <WidgetTabs>
-        <>a</>
-        b
-        <>c</>
-      </WidgetTabs>,
+      <NineZoneContext.Provider value={nineZone}>
+        <WidgetPanelContext.Provider value="left">
+          <WidgetIdContext.Provider value="w1">
+            <WidgetTabs />
+          </WidgetIdContext.Provider>
+        </WidgetPanelContext.Provider>
+      </NineZoneContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
 
   it("should render overflow panel", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = addTab(nineZone, "w1", "t2");
+    nineZone = addTab(nineZone, "w1", "t3");
     sandbox.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
     const { container } = render(
-      <WidgetTabs>
-        <Tab width={50} />
-        <Tab width={50} />
-        <Tab width={50} />
-      </WidgetTabs>,
+      <NineZoneContext.Provider value={nineZone}>
+        <WidgetPanelContext.Provider value="left">
+          <WidgetIdContext.Provider value="w1">
+            <WidgetTabs />
+          </WidgetIdContext.Provider>
+        </WidgetPanelContext.Provider>
+      </NineZoneContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
 
-  it("should overflow all tabs in minimized horizontal pane", () => {
-    sandbox.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
+  it("should overflow all tabs in horizontal minimized widget", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "top", "w1", { minimized: true });
+    nineZone = addTab(nineZone, "w1", "t1");
     const { container } = render(
-      <PaneContextProvider
-        horizontal
-        minimized
-      >
-        <WidgetTabs>
-          <Tab width={50} />
-          <Tab width={50} />
-          <Tab width={50} />
-        </WidgetTabs>
-      </PaneContextProvider>,
+      <NineZoneContext.Provider value={nineZone}>
+        <WidgetPanelContext.Provider value="top">
+          <WidgetIdContext.Provider value="w1">
+            <WidgetTabs />
+          </WidgetIdContext.Provider>
+        </WidgetPanelContext.Provider>
+      </NineZoneContext.Provider>,
     );
     container.firstChild!.should.matchSnapshot();
   });

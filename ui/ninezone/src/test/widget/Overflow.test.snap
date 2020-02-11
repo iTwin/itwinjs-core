@@ -2,7 +2,7 @@
 
 exports[`WidgetOverflow should open panel 1`] = `
 <div
-  class="nz-widget-overflow nzdemo-overflow"
+  class="nz-widget-overflow"
 >
   <div
     class="nz-button"

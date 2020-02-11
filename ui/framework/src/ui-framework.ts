@@ -26,6 +26,7 @@ export * from "./ui-framework/backstage/BackstageManager";
 export * from "./ui-framework/backstage/CommandLaunch";
 export * from "./ui-framework/backstage/FrontstageLaunch";
 export * from "./ui-framework/backstage/Separator";
+export * from "./ui-framework/backstage/useDefaultBackstageItems";
 export * from "./ui-framework/backstage/TaskLaunch";
 export * from "./ui-framework/backstage/UserProfile";
 
@@ -78,7 +79,7 @@ export * from "./ui-framework/frontstage/ModalFrontstage";
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveViewport";
 export * from "./ui-framework/hooks/useAvailableUiItemsProviders";
-export * from "./ui-framework/backstage/useDefaultBackstageItems";
+export * from "./ui-framework/hooks/useFrameworkVersion";
 
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
@@ -202,6 +203,14 @@ export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/PropsHelper";
 export * from "./ui-framework/utils/UiShowHideManager";
 export * from "./ui-framework/utils/ToolbarButtonHelper";
+
+export * from "./ui-framework/widget-panels/Content";
+export * from "./ui-framework/widget-panels/DefaultToolSettings";
+export * from "./ui-framework/widget-panels/Frontstage";
+export * from "./ui-framework/widget-panels/FrontstageContent";
+export * from "./ui-framework/widget-panels/StatusBar";
+export * from "./ui-framework/widget-panels/Toolbars";
+export * from "./ui-framework/widget-panels/ToolSettings";
 
 export * from "./ui-framework/widgets/NavigationWidget";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";

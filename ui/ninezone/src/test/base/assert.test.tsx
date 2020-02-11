@@ -2,13 +2,14 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import * as React from "react";
-import { render } from "@testing-library/react";
-import { DockedToolSettingsOverflow } from "../../ui-ninezone";
+import { assert } from "../../ui-ninezone";
 
-describe("DockedToolSettingsOverflow", () => {
-  it("should render", () => {
-    const { container } = render(<DockedToolSettingsOverflow />);
-    container.firstChild!.should.matchSnapshot();
+describe("assert", () => {
+  it("should not throw for truthy object", () => {
+    (() => assert({})).should.not.throw();
+  });
+
+  it("should throw for falsy object", () => {
+    (() => assert(undefined)).should.throw();
   });
 });
