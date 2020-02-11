@@ -716,8 +716,8 @@ export class PresentationManager {
     const query = `
       SELECT 1
         FROM bis.Element e
-        INNER JOIN meta.ClassHasAllBaseClasses baseClassRels ON baseClassRels.ClassId = e.ECClassId
-        INNER JOIN meta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.BaseClassId
+        INNER JOIN meta.ClassHasAllBaseClasses baseClassRels ON baseClassRels.SourceECInstanceId = e.ECClassId
+        INNER JOIN meta.ECClassDef baseClass ON baseClass.ECInstanceId = baseClassRels.TargetECInstanceId
         INNER JOIN meta.ECSchemaDef baseSchema ON baseSchema.ECInstanceId = baseClass.Schema.Id
        WHERE e.ECInstanceId = ? AND (baseSchema.Name || ':' || baseClass.Name) = ?
       `;
