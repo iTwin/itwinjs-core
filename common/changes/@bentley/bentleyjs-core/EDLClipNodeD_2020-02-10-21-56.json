@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/bentleyjs-core",
+      "comment": "BUG273249",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Earlin.Lutz@bentley.com"
+}
