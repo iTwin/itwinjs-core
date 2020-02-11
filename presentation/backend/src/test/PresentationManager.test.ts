@@ -2206,12 +2206,23 @@ describe("PresentationManager", () => {
         it("returns GeometricElement3d key if it doesn't have an associated functional element or parent", async () => {
           const graphicalElementKey = createRandomECInstanceKey();
           setupIModelDerivesFromClassQuery(true);
-          setupIModelForElementProps({ key: graphicalElementKey });
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementKey(imodelMock, graphicalElementKey);
 
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional");
           expect(result.size).to.eq(1);
           expect(result.has(graphicalElementKey)).to.be.true;
+        });
+
+        it("returns functional element key if GeometricElement3d has an associated functional element", async () => {
+          const functionalElementKey = createRandomECInstanceKey();
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey, functionalElementKey });
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-element");
+          expect(result.size).to.eq(1);
+          expect(result.has(functionalElementKey)).to.be.true;
         });
 
         it("returns GeometricElement2d key if it doesn't have an associated functional element or parent", async () => {
@@ -2299,16 +2310,30 @@ describe("PresentationManager", () => {
           expect(result.has(graphicalElementKey)).to.be.true;
         });
 
-        it("returns GeometricElement3d parent key", async () => {
+        it("returns GeometricElement3d parent key if it doesn't have a related functional element", async () => {
           const graphicalParentElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
           setupIModelDerivesFromClassQuery(true);
           setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
-          setupIModelForElementKey(imodelMock, graphicalParentElementKey);
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
 
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
           expect(result.size).to.eq(1);
           expect(result.has(graphicalParentElementKey)).to.be.true;
+        });
+
+        it("returns functional element key of GeometricElement3d parent", async () => {
+          const functionalElementKey = createRandomECInstanceKey();
+          const graphicalGrandParentElementKey = createRandomECInstanceKey();
+          const graphicalParentElementKey = createRandomECInstanceKey();
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has(functionalElementKey)).to.be.true;
         });
 
         it("returns GeometricElement2d key if it doesn't have an associated functional element or parent", async () => {
@@ -2392,7 +2417,7 @@ describe("PresentationManager", () => {
           expect(result.has(graphicalElementKey)).to.be.true;
         });
 
-        it("returns topmost GeometricElement3d parent key", async () => {
+        it("returns topmost GeometricElement3d parent key if it doesn't have a related functional element", async () => {
           const graphicalGrandParentElementKey = createRandomECInstanceKey();
           const graphicalParentElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
@@ -2400,11 +2425,27 @@ describe("PresentationManager", () => {
           setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
           setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
           setupIModelForElementProps({ key: graphicalGrandParentElementKey });
-          setupIModelForElementKey(imodelMock, graphicalGrandParentElementKey);
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
 
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
           expect(result.size).to.eq(1);
           expect(result.has(graphicalGrandParentElementKey)).to.be.true;
+        });
+
+        it("returns functional element key of the topmost GeometricElement3d parent", async () => {
+          const functionalElementKey = createRandomECInstanceKey();
+          const graphicalGrandParentElementKey = createRandomECInstanceKey();
+          const graphicalParentElementKey = createRandomECInstanceKey();
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
+          setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
+          setupIModelForElementProps({ key: graphicalGrandParentElementKey });
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has(functionalElementKey)).to.be.true;
         });
 
         it("returns GeometricElement2d key if it doesn't have an associated functional element or parent", async () => {

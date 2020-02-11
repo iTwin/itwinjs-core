@@ -731,15 +731,23 @@ export class PresentationManager {
   private computeFunctionalElementSelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const keys = new KeySet();
     ids.forEach(skipTransients((id): void => {
-      if (!this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName)) {
+      const is3d = this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName);
+      if (!is3d) {
+        // if the input is not a 3d element, we try to find the first related functional element
         const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
         if (firstFunctionalKey) {
           keys.add(firstFunctionalKey);
           return;
         }
       }
-      const elementKey = this.getElementKey(requestOptions.imodel, id);
-      elementKey && keys.add(elementKey);
+      let keyToAdd: InstanceKey | undefined;
+      if (is3d) {
+        // if we're computing scope for a 3d element, try to switch to its related functional element
+        keyToAdd = this.getRelatedFunctionalElementKey(requestOptions.imodel, id);
+      }
+      if (!keyToAdd)
+        keyToAdd = this.getElementKey(requestOptions.imodel, id);
+      keyToAdd && keys.add(keyToAdd);
     }));
     return keys;
   }
@@ -747,19 +755,24 @@ export class PresentationManager {
   private computeFunctionalAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const keys = new KeySet();
     ids.forEach(skipTransients((id): void => {
-      if (!this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName)) {
+      let idToGetAssemblyFor = id;
+      const is3d = this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName);
+      if (!is3d) {
+        // if the input is not a 3d element, we try to find the first related functional element
         const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
-        if (firstFunctionalKey) {
-          const functionalAssemblyKey = this.getAssemblyKey(requestOptions.imodel, firstFunctionalKey.id);
-          // istanbul ignore else
-          if (functionalAssemblyKey) {
-            keys.add(functionalAssemblyKey);
-            return;
-          }
-        }
+        if (firstFunctionalKey)
+          idToGetAssemblyFor = firstFunctionalKey.id;
       }
-      const graphicalAssemblyKey = this.getAssemblyKey(requestOptions.imodel, id);
-      graphicalAssemblyKey && keys.add(graphicalAssemblyKey);
+      // find the assembly of either the given element or the functional element
+      const assemblyKey = this.getAssemblyKey(requestOptions.imodel, idToGetAssemblyFor);
+      let keyToAdd = assemblyKey;
+      if (is3d && keyToAdd) {
+        // if we're computing scope for a 3d element, try to switch to its related functional element
+        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, id);
+        if (relatedFunctionalKey)
+          keyToAdd = relatedFunctionalKey;
+      }
+      keyToAdd && keys.add(keyToAdd);
     }));
     return keys;
   }
@@ -767,19 +780,24 @@ export class PresentationManager {
   private async computeFunctionalTopAssemblySelection(requestOptions: SelectionScopeRequestOptions<IModelDb>, ids: Id64String[]) {
     const keys = new KeySet();
     ids.forEach(skipTransients((id): void => {
-      if (!this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName)) {
+      let idToGetAssemblyFor = id;
+      const is3d = this.elementClassDerivesFrom(requestOptions.imodel, id, GeometricElement3d.classFullName);
+      if (!is3d) {
+        // if the input is not a 3d element, we try to find the first related functional element
         const firstFunctionalKey = this.findFirstRelatedFunctionalElementKey(requestOptions.imodel, id);
-        if (firstFunctionalKey) {
-          const functionalTopAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, firstFunctionalKey.id);
-          // istanbul ignore else
-          if (functionalTopAssemblyKey) {
-            keys.add(functionalTopAssemblyKey);
-            return;
-          }
-        }
+        if (firstFunctionalKey)
+          idToGetAssemblyFor = firstFunctionalKey.id;
       }
-      const graphicalTopAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, id);
-      graphicalTopAssemblyKey && keys.add(graphicalTopAssemblyKey);
+      // find the top assembly of either the given element or the functional element
+      const topAssemblyKey = this.getTopAssemblyKey(requestOptions.imodel, idToGetAssemblyFor);
+      let keyToAdd = topAssemblyKey;
+      if (is3d && keyToAdd) {
+        // if we're computing scope for a 3d element, try to switch to its related functional element
+        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, id);
+        if (relatedFunctionalKey)
+          keyToAdd = relatedFunctionalKey;
+      }
+      keyToAdd && keys.add(keyToAdd);
     }));
     return keys;
   }
