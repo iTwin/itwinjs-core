@@ -49,7 +49,6 @@ import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
-import { AppBackstageItemProvider } from "./appui/backstage/AppBackstageItemProvider";
 import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 
 // Initialize my application gateway configuration for the frontend
@@ -494,7 +493,6 @@ function mapStateToProps(state: RootState) {
 const AppDragInteraction = connect(mapStateToProps)(AppDragInteractionComponent);
 
 export class SampleAppViewer extends React.Component<any> {
-  private _backstageItemProvider = new AppBackstageItemProvider();
 
   constructor(props: any) {
     super(props);
@@ -512,13 +510,11 @@ export class SampleAppViewer extends React.Component<any> {
   }
 
   public componentDidMount() {
-    // SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
     if (UiFramework.oidcClient)
       UiFramework.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   public componentWillUnmount() {
-    // SyncUiEventDispatcher.onSyncUiEvent.removeListener(this.handleSyncUiEvent);
     if (UiFramework.oidcClient)
       UiFramework.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
@@ -531,7 +527,7 @@ export class SampleAppViewer extends React.Component<any> {
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
                 <ConfigurableUiContent
-                  appBackstage={<AppBackstageComposer items={this._backstageItemProvider.backstageItems} />}
+                  appBackstage={<AppBackstageComposer />}
                 />
               </AppDragInteraction>
             </SafeAreaContext.Provider>
