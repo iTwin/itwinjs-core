@@ -2907,6 +2907,10 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     addSchema(schema: Schema): Promise<void>;
     addSchemaItem(schemaItem: SchemaItem): Promise<void>;
     addSchemaSync(schema: Schema): void;
+    // @internal
+    getCachedSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
+    // @internal
+    getCachedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
     // (undocumented)
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     // (undocumented)
