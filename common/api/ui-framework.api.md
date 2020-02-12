@@ -296,7 +296,10 @@ export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArg
 }
 
 // @internal (undocumented)
-export function addWidget(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: WidgetPanelSide, widgetId: string): NineZoneState;
+export function addPanelWidgets(state: NineZoneState, frontstage: FrontstageDef | undefined, side: WidgetPanelSide): NineZoneState;
+
+// @internal (undocumented)
+export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: WidgetPanelSide, widgetId: WidgetIdTypes): NineZoneState;
 
 // @alpha
 export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
@@ -2369,6 +2372,9 @@ export function getSelectionContextSyncEventIds(): string[];
 // @internal (undocumented)
 export const getStagePanelType: (location: StagePanelLocation_2) => StagePanelType;
 
+// @internal (undocumented)
+export function getWidgetId(side: WidgetPanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
+
 // @public
 export const GroupButton: React.FunctionComponent<GroupButtonProps>;
 
@@ -4297,6 +4303,7 @@ export interface StagePanelChangeHandler {
 export class StagePanelDef extends WidgetHost {
     constructor();
     get applicationData(): any | undefined;
+    findWidgetDef(id: string): WidgetDef | undefined;
     // @internal (undocumented)
     initializeFromProps(props: StagePanelProps, panelLocation?: StagePanelLocation_2): void;
     // @internal (undocumented)
@@ -4304,6 +4311,8 @@ export class StagePanelDef extends WidgetHost {
     get location(): StagePanelLocation_2;
     get panelState(): StagePanelState;
     set panelState(panelState: StagePanelState);
+    // @internal
+    get panelZones(): StagePanelZonesDef | undefined;
     get resizable(): boolean;
     get size(): number | undefined;
     }
@@ -4405,12 +4414,32 @@ export enum StagePanelState {
     Popup = 3
 }
 
+// @internal (undocumented)
+export class StagePanelZoneDef extends WidgetHost {
+    constructor(props: StagePanelZoneProps);
+}
+
+// @internal (undocumented)
+export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "middle" | "end">;
+
 // @alpha
 export interface StagePanelZoneProps {
     applicationData?: any;
-    initialWidth?: number;
     widgets: Array<React.ReactElement<WidgetProps>>;
 }
+
+// @internal (undocumented)
+export class StagePanelZonesDef {
+    // (undocumented)
+    [Symbol.iterator](): Iterator<[StagePanelZoneDefKeys, StagePanelZoneDef]>;
+    constructor(props: StagePanelZonesProps);
+    // (undocumented)
+    get end(): StagePanelZoneDef | undefined;
+    // (undocumented)
+    get middle(): StagePanelZoneDef | undefined;
+    // (undocumented)
+    get start(): StagePanelZoneDef | undefined;
+    }
 
 // @alpha
 export interface StagePanelZonesProps {

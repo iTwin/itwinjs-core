@@ -59,7 +59,7 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
   <div
     className="uifw-widgetPanels-frontstage"
   >
-    <WidgetPanelsStatusBar />
+    <WidgetPanelsToolSettings />
     <WidgetPanels
       centerContent={<WidgetPanelsToolbars />}
       className="uifw-widgetPanels"
@@ -67,7 +67,7 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
     >
       <WidgetPanelsFrontstageContent />
     </WidgetPanels>
-    <WidgetPanelsToolSettings />
+    <WidgetPanelsStatusBar />
   </div>
 </NineZoneProvider>
 `;
@@ -129,7 +129,7 @@ exports[`WidgetPanelsFrontstage should render content 1`] = `
   <div
     className="uifw-widgetPanels-frontstage"
   >
-    <WidgetPanelsStatusBar />
+    <WidgetPanelsToolSettings />
     <WidgetPanels
       centerContent={<WidgetPanelsToolbars />}
       className="uifw-widgetPanels"
@@ -137,7 +137,7 @@ exports[`WidgetPanelsFrontstage should render content 1`] = `
     >
       <WidgetPanelsFrontstageContent />
     </WidgetPanels>
-    <WidgetPanelsToolSettings />
+    <WidgetPanelsStatusBar />
   </div>
 </NineZoneProvider>
 `;

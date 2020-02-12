@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Use panel zones with fallback to frontstage zones to define 2.0 UI.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Gerardas.Butkevicius@bentley.com"
+}

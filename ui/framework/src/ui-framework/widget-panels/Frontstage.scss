@@ -7,7 +7,7 @@
 .uifw-widgetPanels-frontstage {
   height: 100%;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
 
   > .uifw-widgetPanels {
     flex: 1 1 auto;

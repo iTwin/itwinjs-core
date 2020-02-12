@@ -46,8 +46,6 @@ export interface StagePanelZoneProps {
   widgets: Array<React.ReactElement<WidgetProps>>;
   /** Any application data to attach to this Zone. */
   applicationData?: any;
-  /** Describes preferred initial width of the zone. */
-  initialWidth?: number;
 }
 
 /** Properties of the Stage Panel Zones

@@ -16,7 +16,8 @@ public;ActivityCenterField
 public;ActivityMessageCancelledEvent 
 public;ActivityMessageEventArgs
 public;ActivityMessageUpdatedEvent 
-internal;addWidget(state: NineZoneState, widgets: ReadonlyArray
+internal;addPanelWidgets(state: NineZoneState, frontstage: FrontstageDef | undefined, side: WidgetPanelSide): NineZoneState
+internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray
 alpha;AnalysisAnimationTimelineDataProvider 
 public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
@@ -214,6 +215,7 @@ beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
+internal;getWidgetId(side: WidgetPanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes
 public;GroupButton: React.FunctionComponent
 internal;GroupButtonItem: React.FunctionComponent
 public;GroupButtonProps 
@@ -428,7 +430,10 @@ alpha;StagePanelProps
 internal;StagePanelRuntimeProps
 alpha;StagePanelSection
 alpha;StagePanelState
+internal;StagePanelZoneDef 
+internal;StagePanelZoneDefKeys = keyof Pick
 alpha;StagePanelZoneProps
+internal;StagePanelZonesDef
 alpha;StagePanelZonesProps
 public;StandardMessageBox 
 public;StandardMessageBoxProps 

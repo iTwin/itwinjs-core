@@ -9,9 +9,9 @@ import { shallow } from "enzyme";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { INITIALIZE_PANEL, createNineZoneState } from "@bentley/ui-ninezone";
 import {
-  FrontstageManager, FrontstageDef, FrontstageProvider, WidgetPanelsFrontstage, ZoneDef, useFrontstageDefNineZone, initializeNineZoneState, StagePanelDef, WidgetDef, WidgetState,
+  addWidgets, FrontstageManager, FrontstageDef, FrontstageProvider, WidgetPanelsFrontstage, ZoneDef,
+  useFrontstageDefNineZone, initializeNineZoneState, StagePanelDef, WidgetDef, WidgetState, addPanelWidgets, StagePanelZonesDef, StagePanelZoneDef, getWidgetId,
 } from "../../ui-framework";
-import { addWidget } from "../../ui-framework/widget-panels/Frontstage";
 
 describe("WidgetPanelsFrontstage", () => {
   const sandbox = sinon.createSandbox();
@@ -107,14 +107,33 @@ describe("initializeNineZoneState", () => {
   });
 });
 
-describe("addWidget", () => {
+describe("addPanelWidgets", () => {
+  it("should add widgets from panel zones", () => {
+    let state = createNineZoneState();
+    const frontstage = new FrontstageDef();
+    const leftPanel = new StagePanelDef();
+    const panelZones = new StagePanelZonesDef({});
+    const panelZone = new StagePanelZoneDef({ widgets: [] });
+    const widgetDef = new WidgetDef({
+      id: "w1",
+    });
+    sinon.stub(frontstage, "leftPanel").get(() => leftPanel);
+    sinon.stub(leftPanel, "panelZones").get(() => panelZones);
+    sinon.stub(panelZones, "start").get(() => panelZone);
+    sinon.stub(panelZone, "widgetDefs").get(() => [widgetDef]);
+    state = addPanelWidgets(state, frontstage, "left");
+    state.panels.left.widgets[0].should.eq("leftStart");
+  });
+});
+
+describe("addWidgets", () => {
   it("should use widget label", () => {
     let state = createNineZoneState();
     const widget = new WidgetDef({
       id: "w1",
       label: "Widget 1",
     });
-    state = addWidget(state, [widget], "left", "leftStart");
+    state = addWidgets(state, [widget], "left", "leftStart");
     state.tabs.w1.label.should.eq("Widget 1");
   });
 
@@ -124,7 +143,41 @@ describe("addWidget", () => {
       id: "w1",
       defaultState: WidgetState.Open,
     });
-    state = addWidget(state, [widget], "left", "leftStart");
+    state = addWidgets(state, [widget], "left", "leftStart");
     state.widgets.leftStart.activeTabId!.should.eq("w1");
+  });
+});
+
+describe("getWidgetId", () => {
+  it("should return 'leftStart'", () => {
+    getWidgetId("left", "start").should.eq("leftStart");
+  });
+
+  it("should return 'leftMiddle'", () => {
+    getWidgetId("left", "middle").should.eq("leftMiddle");
+  });
+
+  it("should return 'leftEnd'", () => {
+    getWidgetId("left", "end").should.eq("leftEnd");
+  });
+
+  it("should return 'rightStart'", () => {
+    getWidgetId("right", "start").should.eq("rightStart");
+  });
+
+  it("should return 'rightMiddle'", () => {
+    getWidgetId("right", "middle").should.eq("rightMiddle");
+  });
+
+  it("should return 'rightEnd'", () => {
+    getWidgetId("right", "end").should.eq("rightEnd");
+  });
+
+  it("should return 'top'", () => {
+    getWidgetId("top", "start").should.eq("top");
+  });
+
+  it("should return 'bottom'", () => {
+    getWidgetId("bottom", "start").should.eq("bottom");
   });
 });

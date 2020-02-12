@@ -17,7 +17,7 @@ import { WidgetPanelsFrontstageContent } from "./FrontstageContent";
 import { WidgetContent } from "./Content";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
-import { StagePanelState } from "../stagepanels/StagePanelDef";
+import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
 import "./Frontstage.scss";
 
 /** @internal */
@@ -35,21 +35,21 @@ export function WidgetPanelsFrontstage() {
       <div
         className="uifw-widgetPanels-frontstage"
       >
-        <WidgetPanelsStatusBar />
+        <WidgetPanelsToolSettings />
         <WidgetPanels className="uifw-widgetPanels"
           centerContent={<WidgetPanelsToolbars />}
           widgetContent={<WidgetContent />}
         >
           <WidgetPanelsFrontstageContent />
         </WidgetPanels>
-        <WidgetPanelsToolSettings />
+        <WidgetPanelsStatusBar />
       </div>
     </NineZoneProvider>
   );
 }
 
 /** @internal */
-export function addWidget(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: WidgetPanelSide, widgetId: string): NineZoneState {
+export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: WidgetPanelSide, widgetId: WidgetIdTypes): NineZoneState {
   if (widgets.length > 0) {
     const activeWidget = widgets.find((widget) => widget.isActive);
     const minimized = !activeWidget;
@@ -68,19 +68,117 @@ export function addWidget(state: NineZoneState, widgets: ReadonlyArray<WidgetDef
   return state;
 }
 
+type FrontstagePanelDefs = Pick<FrontstageDef, "leftPanel" | "rightPanel" | "topPanel" | "bottomPanel">;
+type FrontstagePanelDefKeys = keyof FrontstagePanelDefs;
+
+type WidgetIdTypes = "leftStart" |
+  "leftMiddle" |
+  "leftEnd" |
+  "rightStart" |
+  "rightMiddle" |
+  "rightEnd" |
+  "top" |
+  "bottom";
+
+function getPanelDefKey(side: WidgetPanelSide): FrontstagePanelDefKeys {
+  switch (side) {
+    case "bottom":
+      return "bottomPanel";
+    case "left":
+      return "leftPanel";
+    case "right":
+      return "rightPanel";
+    case "top":
+      return "topPanel";
+  }
+}
+
+/** @internal */
+export function getWidgetId(side: WidgetPanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes {
+  switch (side) {
+    case "left": {
+      if (key === "start") {
+        return "leftStart";
+      } else if (key === "middle") {
+        return "leftMiddle";
+      }
+      return "leftEnd";
+    }
+    case "right": {
+      if (key === "start") {
+        return "rightStart";
+      } else if (key === "middle") {
+        return "rightMiddle";
+      }
+      return "rightEnd";
+    }
+    case "top": {
+      return "top";
+    }
+    case "bottom": {
+      return "bottom";
+    }
+  }
+}
+
+/** @internal */
+export function addPanelWidgets(
+  state: NineZoneState,
+  frontstage: FrontstageDef | undefined,
+  side: WidgetPanelSide,
+): NineZoneState {
+  const panelDefKey = getPanelDefKey(side);
+  const panelDef = frontstage?.[panelDefKey];
+  const panelZones = panelDef?.panelZones;
+  if (!panelZones) {
+    switch (side) {
+      case "left": {
+        state = addWidgets(state, frontstage?.centerLeft?.widgetDefs || [], side, "leftStart");
+        state = addWidgets(state, frontstage?.bottomLeft?.widgetDefs || [], side, "leftMiddle");
+        state = addWidgets(state, frontstage?.leftPanel?.widgetDefs || [], side, "leftEnd");
+        break;
+      }
+      case "right": {
+        state = addWidgets(state, frontstage?.centerRight?.widgetDefs || [], side, "rightStart");
+        state = addWidgets(state, frontstage?.bottomRight?.widgetDefs || [], side, "rightMiddle");
+        state = addWidgets(state, frontstage?.rightPanel?.widgetDefs || [], side, "rightEnd");
+        break;
+      }
+      case "top": {
+        const widgets = [
+          ...(frontstage?.topPanel?.widgetDefs || []),
+          ...(frontstage?.topMostPanel?.widgetDefs || []),
+        ];
+        state = addWidgets(state, widgets, side, "top");
+        break;
+      }
+      case "bottom": {
+        const widgets = [
+          ...(frontstage?.bottomPanel?.widgetDefs || []),
+          ...(frontstage?.bottomMostPanel?.widgetDefs || []),
+        ];
+        state = addWidgets(state, widgets, side, "bottom");
+        break;
+      }
+    }
+    return state;
+  }
+
+  for (const [key, panelZone] of panelZones) {
+    const widgetId = getWidgetId(side, key);
+    panelZone.widgetDefs;
+    state = addWidgets(state, panelZone.widgetDefs, side, widgetId);
+  }
+  return state;
+}
+
 /** @internal */
 export function initializeNineZoneState(frontstage: FrontstageDef | undefined): NineZoneState {
   let state = createNineZoneState();
-  state = addWidget(state, frontstage?.centerLeft?.widgetDefs || [], "left", "leftStart");
-  state = addWidget(state, frontstage?.bottomLeft?.widgetDefs || [], "left", "leftMiddle");
-  state = addWidget(state, frontstage?.leftPanel?.widgetDefs || [], "left", "leftEnd");
-  state = addWidget(state, frontstage?.centerRight?.widgetDefs || [], "right", "rightStart");
-  state = addWidget(state, frontstage?.bottomRight?.widgetDefs || [], "right", "rightMiddle");
-  state = addWidget(state, frontstage?.rightPanel?.widgetDefs || [], "right", "rightEnd");
-  state = addWidget(state, frontstage?.topPanel?.widgetDefs || [], "top", "topLeft");
-  state = addWidget(state, frontstage?.topMostPanel?.widgetDefs || [], "top", "topRight");
-  state = addWidget(state, frontstage?.bottomPanel?.widgetDefs || [], "bottom", "bottomLeft");
-  state = addWidget(state, frontstage?.bottomMostPanel?.widgetDefs || [], "bottom", "bottomRight");
+  state = addPanelWidgets(state, frontstage, "left");
+  state = addPanelWidgets(state, frontstage, "right");
+  state = addPanelWidgets(state, frontstage, "top");
+  state = addPanelWidgets(state, frontstage, "bottom");
   state = produce(state, (stateDraft) => {
     for (const [, panel] of Object.entries(stateDraft.panels)) {
       const widgetWithActiveTab = panel.widgets.find((widgetId) => stateDraft.widgets[widgetId].activeTabId !== undefined);
