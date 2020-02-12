@@ -15,17 +15,17 @@ import {
   createRandomRuleset,
   createRandomLabelDefinition,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   KeySet, Content, HierarchyRequestOptions, Node, Ruleset, VariableValueTypes, RulesetVariable,
   Paged, ContentRequestOptions, RpcRequestsHandler, LabelRequestOptions, NodeKey, NodePathElement, InstanceKey, Descriptor, RequestPriority,
 } from "@bentley/presentation-common";
-import { PresentationManager } from "../PresentationManager";
-import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
-import { RulesetManagerImpl } from "../RulesetManager";
-import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Presentation } from "../Presentation";
+import { PresentationManager } from "../presentation-frontend/PresentationManager";
+import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
+import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
+import { Presentation } from "../presentation-frontend/Presentation";
 
 describe("PresentationManager", () => {
 
@@ -59,7 +59,7 @@ describe("PresentationManager", () => {
     const resolvedPromise = new Promise<void>((resolve) => resolve());
     i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns((name: string) => new I18NNamespace(name, resolvedPromise));
     i18nMock.setup((x) => x.translate(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
-  }
+  };
 
   const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, locale?: string }>(options: TOptions) => {
     // 1. put default `locale`
@@ -81,7 +81,7 @@ describe("PresentationManager", () => {
     }
 
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: [] };
-  }
+  };
 
   const prepareOptions = <TOptions extends { imodel: IModelConnection, locale?: string, rulesetId?: string, rulesetOrId?: Ruleset | string }>(options: TOptions) => {
     return toIModelTokenOptions(addRulesetAndVariablesToOptions(options));
@@ -127,7 +127,7 @@ describe("PresentationManager", () => {
       (manager as any).onConnection(imodelConnectionMock.object).then(() => {
         (manager as any).onConnection(imodelConnectionMock.object).then(() => {
           expect(managerStub.calledOnceWith(imodelConnectionMock.object)).to.be.true;
-        })
+        });
       });
     });
 

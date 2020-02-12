@@ -6,6 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import {
   createRandomECInstanceKey,
   createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandomNodePathElement,
@@ -22,13 +23,12 @@ import {
   Paged, Omit, PresentationStatus, DescriptorOverrides, NodePathElement, PresentationError,
   SelectionScope, Content, Descriptor,
 } from "@bentley/presentation-common";
-import { RulesetVariablesManager } from "../RulesetVariablesManager";
-import { PresentationManager } from "../PresentationManager";
-import { PresentationRpcImplStateless } from "../PresentationRpcImplStateless";
-import { Presentation } from "../Presentation";
-import { RulesetManager } from "../RulesetManager";
+import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+import { PresentationManager } from "../presentation-backend/PresentationManager";
+import { PresentationRpcImplStateless } from "../presentation-backend/PresentationRpcImplStateless";
+import { Presentation } from "../presentation-backend/Presentation";
+import { RulesetManager } from "../presentation-backend/RulesetManager";
 import "./IModelHostSetup";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 
 describe("PresentationRpcImplStateless", () => {
 

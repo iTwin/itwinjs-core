@@ -15,8 +15,8 @@ import { IModelConnection, PropertyRecord, PropertyValueFormat } from "@bentley/
 import { PropertyData } from "@bentley/ui-components";
 import { KeySet } from "@bentley/presentation-common";
 import { FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager } from "@bentley/presentation-frontend";
-import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../favorite-properties/DataProvider";
-import { PresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
+import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
+import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 
 describe("FavoritePropertiesDataProvider", () => {
 
@@ -121,7 +121,7 @@ describe("FavoritePropertiesDataProvider", () => {
           [favoritesCategory.name]: [
             new PropertyRecord(
               { valueFormat: PropertyValueFormat.Primitive, displayValue: faker.random.word() },
-              { typename: faker.database.type(), name: favoritePropertyName, displayLabel: faker.random.word() })
+              { typename: faker.database.type(), name: favoritePropertyName, displayLabel: faker.random.word() }),
           ],
           test: [
             new PropertyRecord(

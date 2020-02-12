@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { LabelDefinition, LabelDefinitionJSON, LabelCompositeValue, LabelCompositeValueJSON } from "../../../LabelDefinition";
+import { LabelDefinition, LabelDefinitionJSON, LabelCompositeValue, LabelCompositeValueJSON } from "../../../presentation-common/LabelDefinition";
 
 export const createRandomLabelDefinitionJSON = (): LabelDefinitionJSON => {
   return {

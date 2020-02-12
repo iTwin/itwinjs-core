@@ -13,7 +13,6 @@ import { HierarchyRequestOptions } from '@bentley/presentation-common';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelDb } from '@bentley/imodeljs-backend';
-import { IModelDb as IModelDb_2 } from '@bentley/imodeljs-backend/lib/IModelDb';
 import { InstanceKey } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { LabelDefinition } from '@bentley/presentation-common';
@@ -24,13 +23,12 @@ import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
-import { Ruleset as Ruleset_2 } from '@bentley/presentation-common/lib/rules/Ruleset';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
-import { VariableValue } from '@bentley/presentation-common/lib/RulesetVariables';
-import { VariableValueJSON } from '@bentley/presentation-common/lib/RulesetVariables';
-import { VariableValueTypes } from '@bentley/presentation-common/lib/RulesetVariables';
+import { VariableValue } from '@bentley/presentation-common';
+import { VariableValueJSON } from '@bentley/presentation-common/lib/presentation-common/RulesetVariables';
+import { VariableValueTypes } from '@bentley/presentation-common';
 
 // @beta
 export enum DuplicateRulesetHandlingStrategy {
@@ -122,9 +120,9 @@ export interface PresentationProps extends PresentationManagerProps {
 
 // @beta
 export class RulesetEmbedder {
-    constructor(iModelDb: IModelDb_2);
-    getRulesets(): Promise<Ruleset_2[]>;
-    insertRuleset(ruleset: Ruleset_2, duplicateHandlingStrategy?: DuplicateRulesetHandlingStrategy): Promise<Id64String>;
+    constructor(iModelDb: IModelDb);
+    getRulesets(): Promise<Ruleset[]>;
+    insertRuleset(ruleset: Ruleset, duplicateHandlingStrategy?: DuplicateRulesetHandlingStrategy): Promise<Id64String>;
     }
 
 // @public

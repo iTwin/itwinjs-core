@@ -22,8 +22,8 @@ import {
   Content, DescriptorOverrides, NestedContentField,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
-import { ContentDataProvider, CacheInvalidationProps } from "../../common/ContentDataProvider";
-import { FIELD_NAMES_SEPARATOR } from "../../common/ContentBuilder";
+import { ContentDataProvider, CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
+import { FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
 
 /**
  * The Provider class is used to make protected ContentDataProvider
@@ -529,7 +529,7 @@ describe("ContentDataProvider", () => {
         provider.getContent({ start: 0, size: 1 }),
         provider.getContent({ start: 1, size: 0 }),
       ];
-      const results: { content: Content, size: number }[] = [{
+      const results: Array<{ content: Content, size: number }> = [{
         content: new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]),
         size: 1,
       }, {

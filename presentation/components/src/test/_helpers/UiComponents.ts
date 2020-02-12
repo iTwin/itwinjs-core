@@ -9,7 +9,7 @@ import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib
 import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import { PropertyRecord, PrimitiveValue, PropertyDescription, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
-import { PRESENTATION_TREE_NODE_KEY } from "../../tree/Utils";
+import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
 
 export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {
   const node = {

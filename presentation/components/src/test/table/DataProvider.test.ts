@@ -19,9 +19,9 @@ import {
   SortDirection as ContentSortDirection, KeySet,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { PresentationTableDataProvider } from "../../table/DataProvider";
-import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 import { RowItem } from "@bentley/ui-components";
+import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
+import { PresentationTableDataProvider } from "../../presentation-components/table/DataProvider";
 
 /**
  * This is just a helper class to provide public access to

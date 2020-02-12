@@ -8,8 +8,8 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { VariableValueTypes } from "@bentley/presentation-common";
-import { NativePlatformDefinition } from "../NativePlatform";
-import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 
 describe("RulesetVariablesManager", () => {
 

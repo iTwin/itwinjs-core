@@ -12,25 +12,25 @@ export {
   ClassId, InstanceId, InstanceKey, InstanceKeyJSON,
   ClassInfo, EnumerationChoice, EnumerationInfo, KindOfQuantityInfo,
   PropertyInfo, RelatedClassInfo, RelationshipPath,
-} from "./EC";
-export { PresentationError, PresentationStatus } from "./Error";
-export { KeySet, KeySetJSON, Keys, Key, DEFAULT_KEYS_BATCH_SIZE } from "./KeySet";
-export { PersistentKeysContainer } from "./PersistentKeysContainer";
-export { RulesetVariablesState, RulesetVariable, VariableValueTypes, VariableValue } from "./RulesetVariables";
-export { RegisteredRuleset, RulesetManagerState } from "./RegisteredRuleset";
-export { RulesetsFactory } from "./RulesetsFactory";
-export { LoggingNamespaces } from "./Logging";
+} from "./presentation-common/EC";
+export { PresentationError, PresentationStatus } from "./presentation-common/Error";
+export { KeySet, KeySetJSON, Keys, Key, DEFAULT_KEYS_BATCH_SIZE } from "./presentation-common/KeySet";
+export { PersistentKeysContainer } from "./presentation-common/PersistentKeysContainer";
+export { RulesetVariablesState, RulesetVariable, VariableValueTypes, VariableValue } from "./presentation-common/RulesetVariables";
+export { RegisteredRuleset, RulesetManagerState } from "./presentation-common/RegisteredRuleset";
+export { RulesetsFactory } from "./presentation-common/RulesetsFactory";
+export { LoggingNamespaces } from "./presentation-common/Logging";
 export {
   Omit, Subtract, ValuesDictionary,
   getInstancesCount, LOCALES_DIRECTORY,
-} from "./Utils";
-export { AsyncTasksTracker } from "./AsyncTasks";
+} from "./presentation-common/Utils";
+export { AsyncTasksTracker } from "./presentation-common/AsyncTasks";
 export {
   RequestOptions, HierarchyRequestOptions, ContentRequestOptions,
   LabelRequestOptions, SelectionScopeRequestOptions,
   PageOptions, Paged, RequestOptionsWithRuleset, RequestPriority,
-} from "./PresentationManagerOptions";
-export { LabelDefinition, LabelRawValue, LabelCompositeValue } from "./LabelDefinition";
+} from "./presentation-common/PresentationManagerOptions";
+export { LabelDefinition, LabelRawValue, LabelCompositeValue } from "./presentation-common/LabelDefinition";
 
 /**
  * @module RPC
@@ -44,8 +44,8 @@ export {
   LabelRpcRequestOptions, ClientStateSyncRequestOptions, ContentRpcRequestOptions,
   HierarchyRpcRequestOptions, SelectionScopeRpcRequestOptions,
   PresentationRpcResponse,
-} from "./PresentationRpcInterface";
-export { RpcRequestsHandler, RpcRequestsHandlerProps } from "./RpcRequestsHandler";
+} from "./presentation-common/PresentationRpcInterface";
+export { RpcRequestsHandler, RpcRequestsHandlerProps } from "./presentation-common/RpcRequestsHandler";
 
 /**
  * @module UnifiedSelection
@@ -53,7 +53,7 @@ export { RpcRequestsHandler, RpcRequestsHandlerProps } from "./RpcRequestsHandle
  * @docs-group-description UnifiedSelection
  * Types related to [unified selection]($docs/learning/presentation/Unified-Selection/index.md).
  */
-export { SelectionScope } from "./selection/SelectionScope";
+export { SelectionScope } from "./presentation-common/selection/SelectionScope";
 
 /**
  * @module Content
@@ -61,27 +61,27 @@ export { SelectionScope } from "./selection/SelectionScope";
  * @docs-group-description Content
  * Types related to presentation [content]($docs/learning/presentation/Content/index.md).
  */
-export { CategoryDescription } from "./content/Category";
-export { Content } from "./content/Content";
+export { CategoryDescription } from "./presentation-common/content/Category";
+export { Content } from "./presentation-common/content/Content";
 export {
   Descriptor, DescriptorSource, DescriptorOverrides,
   SelectClassInfo, SelectionInfo, SortDirection, ContentFlags,
-} from "./content/Descriptor";
-export { DefaultContentDisplayTypes } from "./content/DisplayTypes";
-export { EditorDescription } from "./content/Editor";
-export { Field, PropertiesField, NestedContentField } from "./content/Fields";
-export { Item } from "./content/Item";
-export { Property } from "./content/Property";
+} from "./presentation-common/content/Descriptor";
+export { DefaultContentDisplayTypes } from "./presentation-common/content/DisplayTypes";
+export { EditorDescription } from "./presentation-common/content/Editor";
+export { Field, PropertiesField, NestedContentField } from "./presentation-common/content/Fields";
+export { Item } from "./presentation-common/content/Item";
+export { Property } from "./presentation-common/content/Property";
 export {
   PropertyValueFormat, TypeDescription, PrimitiveTypeDescription,
   ArrayTypeDescription, StructTypeDescription, StructFieldMemberDescription,
   BaseTypeDescription,
-} from "./content/TypeDescription";
+} from "./presentation-common/content/TypeDescription";
 export {
   Value, ValuesArray, ValuesMap,
   DisplayValue, DisplayValuesArray, DisplayValuesMap,
   NestedContentValue,
-} from "./content/Value";
+} from "./presentation-common/content/Value";
 
 /**
  * @module Hierarchies
@@ -89,14 +89,14 @@ export {
  * @docs-group-description Hierarchies
  * Types related to presentation [hierarchies]($docs/learning/presentation/Hierarchies/index.md).
  */
-export { NodeKey, NodeKeyPath, StandardNodeTypes } from "./hierarchy/Key";
 export {
+  NodeKey, NodeKeyPath, StandardNodeTypes,
   BaseNodeKey, ECInstanceNodeKey, ECInstancesNodeKey, GroupingNodeKey,
   ECClassGroupingNodeKey, ECPropertyGroupingNodeKey, LabelGroupingNodeKey,
   ECInstanceNodeKeyJSON, ECInstancesNodeKeyJSON, NodeKeyJSON,
-} from "./hierarchy/Key";
-export { Node } from "./hierarchy/Node";
-export { NodePathElement, NodePathFilteringData } from "./hierarchy/NodePathElement";
+} from "./presentation-common/hierarchy/Key";
+export { Node } from "./presentation-common/hierarchy/Node";
+export { NodePathElement, NodePathFilteringData } from "./presentation-common/hierarchy/NodePathElement";
 
 /**
  * @module PresentationRules
@@ -104,78 +104,48 @@ export { NodePathElement, NodePathFilteringData } from "./hierarchy/NodePathElem
  * @docs-group-description PresentationRules
  * Types for defining the presentation ruleset.
  */
-export { NavigationRule, NavigationRuleBase } from "./rules/hierarchy/NavigationRule";
-export { RootNodeRule } from "./rules/hierarchy/RootNodeRule";
-export { ChildNodeRule } from "./rules/hierarchy/ChildNodeRule";
+export * from "./presentation-common/rules/hierarchy/NavigationRule";
+export * from "./presentation-common/rules/hierarchy/RootNodeRule";
+export * from "./presentation-common/rules/hierarchy/ChildNodeRule";
+export * from "./presentation-common/rules/hierarchy/ChildNodeSpecification";
+export * from "./presentation-common/rules/hierarchy/AllInstanceNodesSpecification";
+export * from "./presentation-common/rules/hierarchy/AllRelatedInstanceNodesSpecification";
+export { RelatedInstanceNodesSpecification } from "./presentation-common/rules/hierarchy/RelatedInstanceNodesSpecification";
+export * from "./presentation-common/rules/hierarchy/InstanceNodesOfSpecificClassesSpecification";
+export * from "./presentation-common/rules/hierarchy/CustomQueryInstanceNodesSpecification";
+export * from "./presentation-common/rules/hierarchy/CustomNodeSpecification";
+export * from "./presentation-common/rules/hierarchy/SubCondition";
+export * from "./presentation-common/rules/hierarchy/NodeArtifactsRule";
+export * from "./presentation-common/rules/customization/CustomizationRule";
+export * from "./presentation-common/rules/customization/CheckBoxRule";
+export * from "./presentation-common/rules/customization/ImageIdOverride";
+export * from "./presentation-common/rules/customization/InstanceLabelOverride";
+export * from "./presentation-common/rules/customization/LabelOverride";
+export * from "./presentation-common/rules/customization/SortingRule";
+export * from "./presentation-common/rules/customization/StyleOverride";
+export * from "./presentation-common/rules/customization/GroupingRule";
+export * from "./presentation-common/rules/customization/ExtendedDataRule";
+export * from "./presentation-common/rules/content/ContentRule";
+export * from "./presentation-common/rules/content/ContentSpecification";
+export * from "./presentation-common/rules/content/ContentInstancesOfSpecificClassesSpecification";
+export { ContentRelatedInstancesSpecification } from "./presentation-common/rules/content/ContentRelatedInstancesSpecification";
+export * from "./presentation-common/rules/content/SelectedNodeInstancesSpecification";
+export * from "./presentation-common/rules/content/PropertySpecification";
+export * from "./presentation-common/rules/content/modifiers/ContentModifier";
 export {
-  ChildNodeSpecification, ChildNodeSpecificationTypes,
-  ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer,
-} from "./rules/hierarchy/ChildNodeSpecification";
-export { AllInstanceNodesSpecification } from "./rules/hierarchy/AllInstanceNodesSpecification";
-export { AllRelatedInstanceNodesSpecification } from "./rules/hierarchy/AllRelatedInstanceNodesSpecification";
-export { RelatedInstanceNodesSpecification } from "./rules/hierarchy/RelatedInstanceNodesSpecification";
-export { InstanceNodesOfSpecificClassesSpecification } from "./rules/hierarchy/InstanceNodesOfSpecificClassesSpecification";
-export {
-  CustomQueryInstanceNodesSpecification, QuerySpecification, QuerySpecificationBase,
-  QuerySpecificationTypes, StringQuerySpecification, ECPropertyValueQuerySpecification,
-} from "./rules/hierarchy/CustomQueryInstanceNodesSpecification";
-export { CustomNodeSpecification } from "./rules/hierarchy/CustomNodeSpecification";
-export { SubCondition } from "./rules/hierarchy/SubCondition";
-
-export { CustomizationRule } from "./rules/customization/CustomizationRule";
-export { CheckBoxRule } from "./rules/customization/CheckBoxRule";
-export { ImageIdOverride } from "./rules/customization/ImageIdOverride";
-export {
-  InstanceLabelOverride, InstanceLabelOverrideValueSpecificationType, InstanceLabelOverrideValueSpecificationBase,
-  InstanceLabelOverrideValueSpecification, InstanceLabelOverridePropertyValueSpecification,
-  InstanceLabelOverrideBriefcaseIdSpecification, InstanceLabelOverrideClassLabelSpecification,
-  InstanceLabelOverrideClassNameSpecification, InstanceLabelOverrideLocalIdSpecification,
-  InstanceLabelOverrideCompositeValueSpecification,
-} from "./rules/customization/InstanceLabelOverride";
-export { LabelOverride } from "./rules/customization/LabelOverride";
-export { SortingRule, PropertySortingRule, DisabledSortingRule, SortingRuleBase } from "./rules/customization/SortingRule";
-export { StyleOverride } from "./rules/customization/StyleOverride";
-export {
-  GroupingRule, GroupingSpecification, GroupingSpecificationTypes,
-  SameLabelInstanceGroup, SameLabelInstanceGroupApplicationStage, ClassGroup,
-  PropertyGroup, PropertyGroupingValue, PropertyRangeGroupSpecification,
-  GroupingSpecificationBase,
-} from "./rules/customization/GroupingRule";
-export { ExtendedDataRule } from "./rules/customization/ExtendedDataRule";
-export { NodeArtifactsRule } from "./rules/hierarchy/NodeArtifactsRule";
-
-export { ContentRule } from "./rules/content/ContentRule";
-export { ContentSpecification, ContentSpecificationTypes, ContentSpecificationBase } from "./rules/content/ContentSpecification";
-export { ContentInstancesOfSpecificClassesSpecification } from "./rules/content/ContentInstancesOfSpecificClassesSpecification";
-export { ContentRelatedInstancesSpecification } from "./rules/content/ContentRelatedInstancesSpecification";
-export { SelectedNodeInstancesSpecification } from "./rules/content/SelectedNodeInstancesSpecification";
-
-export { ContentModifier, ContentModifiersList } from "./rules/content/modifiers/ContentModifier";
-export { PropertyOverrides, PropertySpecification } from "./rules/content/PropertySpecification";
-export {
-  RelatedPropertiesSpecification, RelationshipMeaning,
-  RelatedPropertiesSpecialValues,
-} from "./rules/content/modifiers/RelatedPropertiesSpecification";
-export { CalculatedPropertiesSpecification } from "./rules/content/modifiers/CalculatedPropertiesSpecification";
-export { PropertiesDisplaySpecification } from "./rules/content/modifiers/PropertiesDisplaySpecification";
-export {
-  PropertyEditorParameters, PropertyEditorParametersBase,
-  PropertyEditorsSpecification, PropertyEditorParameterTypes,
-  PropertyEditorJsonParameters, PropertyEditorMultilineParameters,
-  PropertyEditorRangeParameters, PropertyEditorSliderParameters,
-} from "./rules/content/modifiers/PropertyEditorsSpecification";
-
-export { Ruleset, SupplementationInfo } from "./rules/Ruleset";
-export { Rule, RuleTypes, RuleBase, ConditionContainer } from "./rules/Rule";
-export { VariablesGroup, Variable, VariableValueType } from "./rules/Variables";
-export {
-  RelationshipStepSpecification, RelationshipPathSpecification,
-  RepeatableRelationshipStepSpecification, RepeatableRelationshipPathSpecification,
-} from "./rules/RelationshipPathSpecification";
-export { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification";
-export { RelationshipDirection } from "./rules/RelationshipDirection";
-export { SingleSchemaClassSpecification, MultiSchemaClassesSpecification } from "./rules/ClassSpecifications";
-export { SchemasSpecification } from "./rules/SchemasSpecification";
+  RelatedPropertiesSpecification, RelatedPropertiesSpecialValues, RelationshipMeaning,
+} from "./presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
+export * from "./presentation-common/rules/content/modifiers/CalculatedPropertiesSpecification";
+export * from "./presentation-common/rules/content/modifiers/PropertiesDisplaySpecification";
+export * from "./presentation-common/rules/content/modifiers/PropertyEditorsSpecification";
+export * from "./presentation-common/rules/Ruleset";
+export * from "./presentation-common/rules/Rule";
+export * from "./presentation-common/rules/Variables";
+export * from "./presentation-common/rules/RelationshipPathSpecification";
+export { RelatedInstanceSpecification } from "./presentation-common/rules/RelatedInstanceSpecification";
+export * from "./presentation-common/rules/RelationshipDirection";
+export * from "./presentation-common/rules/ClassSpecifications";
+export * from "./presentation-common/rules/SchemasSpecification";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

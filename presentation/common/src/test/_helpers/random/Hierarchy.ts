@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { ECInstanceNodeKey, ECInstancesNodeKey, StandardNodeTypes, Node, NodePathElement } from "../../../presentation-common";
 import {
-  ECInstanceNodeKeyJSON, ECInstancesNodeKeyJSON, ECClassGroupingNodeKey, ECPropertyGroupingNodeKey,
+  ECInstanceNodeKey, ECInstancesNodeKey, StandardNodeTypes, Node, NodePathElement,
+  ECClassGroupingNodeKey, ECPropertyGroupingNodeKey,
   LabelGroupingNodeKey, GroupingNodeKey, BaseNodeKey,
-} from "../../../hierarchy/Key";
-import { NodeJSON } from "../../../hierarchy/Node";
-import { NodePathElementJSON } from "../../../hierarchy/NodePathElement";
+} from "../../../presentation-common";
+import { ECInstanceNodeKeyJSON, ECInstancesNodeKeyJSON } from "../../../presentation-common/hierarchy/Key";
+import { NodeJSON } from "../../../presentation-common/hierarchy/Node";
+import { NodePathElementJSON } from "../../../presentation-common/hierarchy/NodePathElement";
 import { nullable, createRandomHexColor, createRandomRgbColor } from "./Misc";
 import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "./EC";
 import { createRandomLabelDefinitionJSON, createRandomLabelDefinition } from "./LabelDefinition";
@@ -145,7 +146,7 @@ export const createRandomNodePathElement = (depth: number = 1): NodePathElement 
     el.filteringData = {
       matchesCount: faker.random.number(),
       childMatchesCount: faker.random.number(),
-    }
+    };
   }
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });
@@ -168,7 +169,7 @@ export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElem
     el.filteringData = {
       occurances: faker.random.number(),
       childrenOccurances: faker.random.number(),
-    }
+    };
   }
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });

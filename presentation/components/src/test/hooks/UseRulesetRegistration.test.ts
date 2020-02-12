@@ -7,7 +7,7 @@ import * as moq from "typemoq";
 import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
 import { Ruleset, RegisteredRuleset } from "@bentley/presentation-common";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises"; // tslint:disable-line: no-direct-imports
-import { useRulesetRegistration } from "../../hooks/UseRulesetRegistration";
+import { useRulesetRegistration } from "../../presentation-components/hooks/UseRulesetRegistration";
 
 describe("useRulesetRegistration", () => {
   interface HookProps {

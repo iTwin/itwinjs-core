@@ -594,6 +594,13 @@ export interface InstanceLabelOverridePropertyValueSpecification extends Instanc
 }
 
 // @public
+export interface InstanceLabelOverrideStringValueSpecification extends InstanceLabelOverrideValueSpecificationBase {
+    // (undocumented)
+    specType: InstanceLabelOverrideValueSpecificationType.String;
+    value: string;
+}
+
+// @public
 export type InstanceLabelOverrideValueSpecification = InstanceLabelOverrideCompositeValueSpecification | InstanceLabelOverridePropertyValueSpecification | InstanceLabelOverrideStringValueSpecification | InstanceLabelOverrideClassNameSpecification | InstanceLabelOverrideClassLabelSpecification | InstanceLabelOverrideBriefcaseIdSpecification | InstanceLabelOverrideLocalIdSpecification;
 
 // @public
@@ -1138,6 +1145,12 @@ export interface PropertyEditorSliderParameters extends PropertyEditorParameters
     max: number;
     min: number;
     paramsType: PropertyEditorParameterTypes.Slider;
+}
+
+// @public
+export interface PropertyEditorSpecification {
+    editorName: string;
+    parameters?: PropertyEditorParameters[];
 }
 
 // @public @deprecated

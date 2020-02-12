@@ -9,12 +9,11 @@ import * as moq from "typemoq";
 import {
   createRandomSelectionScope, createRandomId, createRandomECInstanceKey,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { RpcRequestsHandler, KeySet } from "@bentley/presentation-common";
-import { SelectionScopesManager, SelectionScopesManagerProps } from "../../selection/SelectionScopesManager";
-import { Id64String } from "@bentley/bentleyjs-core";
-import { DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common/lib/KeySet";
+import { RpcRequestsHandler, KeySet, DEFAULT_KEYS_BATCH_SIZE } from "@bentley/presentation-common";
+import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager";
 
 describe("SelectionScopesManager", () => {
 

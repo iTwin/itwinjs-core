@@ -6,13 +6,11 @@ import * as faker from "faker";
 import {
   CategoryDescription, TypeDescription, EditorDescription, Field,
   PrimitiveTypeDescription, Descriptor, Content, PropertyValueFormat, StructTypeDescription,
-} from "../../../presentation-common";
-import { PropertyJSON } from "../../../content/Property";
-import {
-  NestedContentFieldJSON, BaseFieldJSON, PropertiesFieldJSON,
   NestedContentField, PropertiesField,
-} from "../../../content/Fields";
-import { SelectClassInfoJSON } from "../../../content/Descriptor";
+} from "../../../presentation-common";
+import { PropertyJSON } from "../../../presentation-common/content/Property";
+import { NestedContentFieldJSON, BaseFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
+import { SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
 import { createRandomRelationshipPathJSON, createRandomECClassInfoJSON, createRandomRelatedClassInfoJSON, createRandomPropertyInfoJSON } from "./EC";
 import { nullable } from "./Misc";
 

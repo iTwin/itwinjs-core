@@ -11,7 +11,7 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { LabelsProvider } from "../../labels/LabelsProvider";
+import { LabelsProvider } from "../../presentation-components/labels/LabelsProvider";
 
 describe("LabelsProvider", () => {
 

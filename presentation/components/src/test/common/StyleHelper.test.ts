@@ -8,7 +8,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import { Node } from "@bentley/presentation-common";
 import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { StyleHelper } from "../../common/StyleHelper";
+import { StyleHelper } from "../../presentation-components/common/StyleHelper";
 
 describe("StyleHelper", () => {
 

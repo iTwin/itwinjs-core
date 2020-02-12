@@ -9,8 +9,12 @@ import ChaiAsPromised from "chai-as-promised";
 import { Id64String, Guid } from "@bentley/bentleyjs-core";
 import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Content, Descriptor, DefaultContentDisplayTypes, KeySet, Ruleset, ValuesDictionary, Item, RegisteredRuleset, Field, CategoryDescription, PrimitiveTypeDescription, PropertyValueFormat, Value, DisplayValue } from "@bentley/presentation-common";
-import { ContentBuilder, IContentBuilderDataProvider } from "../ContentBuilder";
+import {
+  Content, Descriptor, DefaultContentDisplayTypes, KeySet, Ruleset, ValuesDictionary,
+  Item, RegisteredRuleset, Field, CategoryDescription, PrimitiveTypeDescription,
+  PropertyValueFormat, Value, DisplayValue,
+} from "@bentley/presentation-common";
+import { ContentBuilder, IContentBuilderDataProvider } from "../presentation-testing/ContentBuilder";
 
 use(ChaiAsPromised);
 

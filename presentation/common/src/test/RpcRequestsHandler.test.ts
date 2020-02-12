@@ -18,8 +18,8 @@ import {
   RpcRequestsHandler, PresentationRpcInterface,
   KeySet, Paged, SelectionInfo, PresentationStatus,
   HierarchyRequestOptions, ContentRequestOptions, SelectionScopeRequestOptions, PresentationError, LabelRequestOptions,
+  PresentationRpcRequestOptions, PresentationRpcResponse,
 } from "../presentation-common";
-import { PresentationRpcRequestOptions, PresentationRpcResponse } from "../PresentationRpcInterface";
 
 interface IModelTokenPropsForTest extends IModelTokenProps {
   toJSON: () => any;

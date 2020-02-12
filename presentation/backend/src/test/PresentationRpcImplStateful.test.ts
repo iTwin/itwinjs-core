@@ -20,11 +20,11 @@ import {
   Node, PageOptions, KeySet, InstanceKey, NodeKey,
   Paged, RulesetManagerState, VariableValueTypes, Omit, PresentationStatus, DescriptorOverrides, NodePathElement,
 } from "@bentley/presentation-common";
-import { RulesetVariablesManager } from "../RulesetVariablesManager";
-import { PresentationManager } from "../PresentationManager";
-import { PresentationRpcImplStateful } from "../PresentationRpcImplStateful";
-import { Presentation } from "../Presentation";
-import { RulesetManager } from "../RulesetManager";
+import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+import { PresentationManager } from "../presentation-backend/PresentationManager";
+import { PresentationRpcImplStateful } from "../presentation-backend/PresentationRpcImplStateful";
+import { Presentation } from "../presentation-backend/Presentation";
+import { RulesetManager } from "../presentation-backend/RulesetManager";
 import "./IModelHostSetup";
 
 describe("PresentationRpcImplStateful", () => {

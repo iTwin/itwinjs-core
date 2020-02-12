@@ -21,27 +21,26 @@
   "typings": "lib/presentation-common",
   "scripts": {
     "build": "npm run ruleset-json-schema && npm run build:assets && npm run extract && buildIModelJsModule",
-    "build:assets": "cpx \"./assets/**/*\" ./lib/assets && npm run pseudolocalize",
-    "build:watch": "npm run ruleset-json-schema && npm run build:assets && tsc -b ./src/test -w",
+    "build:assets": "cpx \"./assets/**/*\" ./lib/presentation-common/assets && npm run pseudolocalize",
+    "build:watch": "npm run ruleset-json-schema && npm run build:assets && tsc -w",
     "clean": "rimraf lib .rush package-deps.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-common",
     "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-common/file.json --tsIndexFile=presentation-common.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-common --isPresentation",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-common",
     "ruleset-json-schema": "npm run ruleset-json-schema:generate && npm run ruleset-json-schema:post-process",
-    "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks --include ./src/rules/**/*.ts --include ./src/rules/*.ts -- ./src/tsconfig.json Ruleset > ./Ruleset.schema.json",
+    "ruleset-json-schema:generate": "typescript-json-schema --noExtraProps --required --strictNullChecks --include ./src/presentation-common/rules/**/*.ts --include ./src/presentation-common/rules/*.ts -- ./tsconfig.json Ruleset > ./Ruleset.schema.json",
     "ruleset-json-schema:post-process": "node ./scripts/post-process-json-schema.js --path ./Ruleset.schema.json",
-    "lint": "tslint -p ./src/tsconfig.json 1>&2",
-    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-PSEUDO",
+    "lint": "tslint -p ./tsconfig.json 1>&2",
+    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/presentation-common/assets/locales/en-PSEUDO",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "iModelJs": {
     "buildModule": {
       "type": "system",
-      "tscOptions": "-b ./src/test",
       "webpack": {
         "dest": "./lib/module",
         "entry": "./lib/presentation-common.js",

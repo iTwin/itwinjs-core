@@ -11,7 +11,7 @@ import { TreeModelSource, AbstractTreeNodeLoaderWithProvider } from "@bentley/ui
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodePathElement } from "@bentley/presentation-common";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { FilteredPresentationTreeDataProvider } from "../../../tree/FilteredDataProvider";
+import { FilteredPresentationTreeDataProvider } from "../../../presentation-components/tree/FilteredDataProvider";
 import { useControlledTreeFiltering, IPresentationTreeDataProvider } from "../../../presentation-components";
 
 describe("useControlledTreeFiltering", () => {

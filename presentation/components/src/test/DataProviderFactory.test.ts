@@ -10,11 +10,13 @@ import * as sinon from "sinon";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomContent, createRandomRuleset, createRandomDescriptor, createRandomPrimitiveField } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { createRandomPropertyRecord } from "./_helpers/UiComponents";
-import { IPresentationPropertyDataProvider, PresentationTableDataProvider } from "../presentation-components";
-import { DataProvidersFactory, DataProvidersFactoryProps } from "../DataProvidersFactory";
 import { RulesetsFactory, Content, Item } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { TypeConverterManager, TypeConverter } from "@bentley/ui-components";
+import {
+  IPresentationPropertyDataProvider, PresentationTableDataProvider,
+  DataProvidersFactory, DataProvidersFactoryProps,
+} from "../presentation-components";
 
 describe("DataProvidersFactory", () => {
 

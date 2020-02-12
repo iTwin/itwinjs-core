@@ -11,9 +11,7 @@ import {
   createRandomId,
 } from "./_helpers/random";
 import { Guid } from "@bentley/bentleyjs-core";
-import { KeySet, Key } from "../KeySet";
-import { InstanceKey } from "../EC";
-import { PresentationError } from "../Error";
+import { KeySet, Key, InstanceKey, PresentationError } from "../presentation-common";
 
 describe("KeySet", () => {
 

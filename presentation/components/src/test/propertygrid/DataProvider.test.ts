@@ -12,7 +12,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomDescriptor, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
-  createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath, createRandomPropertiesField, createRandomNestedContentField, createRandomLabelDefinition,
+  createRandomECInstanceKey, createRandomECClassInfo, createRandomRelationshipPath, createRandomPropertiesField, createRandomNestedContentField,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
@@ -27,9 +27,9 @@ import {
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager, FavoritePropertiesManager, RulesetManager } from "@bentley/presentation-frontend";
 import { IModelToken } from "@bentley/imodeljs-common";
-import { PresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
-import { CacheInvalidationProps } from "../../common/ContentDataProvider";
-import { applyOptionalPrefix } from "../../common/ContentBuilder";
+import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
+import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
+import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 
 const favoritesCategoryName = "Favorite";
 /**

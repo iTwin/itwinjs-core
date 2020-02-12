@@ -17,8 +17,8 @@ import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PageOptions } from "@bentley/ui-components";
-import { PresentationTreeDataProvider } from "../../tree/DataProvider";
-import { pageOptionsUiToPresentation } from "../../tree/Utils";
+import { PresentationTreeDataProvider } from "../../presentation-components/tree/DataProvider";
+import { pageOptionsUiToPresentation } from "../../presentation-components/tree/Utils";
 
 describe("TreeDataProvider", () => {
 

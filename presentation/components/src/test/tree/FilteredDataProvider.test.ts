@@ -12,9 +12,9 @@ import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@ben
 import { NodePathElement } from "@bentley/presentation-common";
 import { PageOptions } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { FilteredPresentationTreeDataProvider } from "../../tree/FilteredDataProvider";
-import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
-import { createTreeNodeItem } from "../../tree/Utils";
+import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
+import { createTreeNodeItem } from "../../presentation-components/tree/Utils";
 
 describe("FilteredTreeDataProvider", () => {
 

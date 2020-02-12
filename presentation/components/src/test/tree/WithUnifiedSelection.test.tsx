@@ -22,10 +22,10 @@ import {
   ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType, SelectionHelper,
 } from "@bentley/presentation-frontend";
 import { Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
-import { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "../../tree/WithUnifiedSelection";
-import { PRESENTATION_TREE_NODE_KEY } from "../../tree/Utils";
+import { IUnifiedSelectionComponent } from "../../presentation-components/common/IUnifiedSelectionComponent";
+import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
+import { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "../../presentation-components/tree/WithUnifiedSelection";
+import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTree = treeWithUnifiedSelection(Tree);

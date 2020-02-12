@@ -18,9 +18,9 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { NodePathElement } from "@bentley/presentation-common";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { controlledTreeWithFilteringSupport } from "../../../tree/controlled/WithFilteringSupport";
-import { controlledTreeWithVisibleNodes } from "../../../tree/controlled/WithVisibleNodes";
-import { IPresentationTreeDataProvider } from "../../../tree/IPresentationTreeDataProvider";
+import { controlledTreeWithFilteringSupport } from "../../../presentation-components/tree/controlled/WithFilteringSupport";
+import { controlledTreeWithVisibleNodes } from "../../../presentation-components/tree/controlled/WithVisibleNodes";
+import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTree = controlledTreeWithFilteringSupport(controlledTreeWithVisibleNodes(ControlledTree));

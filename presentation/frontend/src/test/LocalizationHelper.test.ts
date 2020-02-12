@@ -6,15 +6,11 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { createRandomECInstanceNodeKey, createRandomId, createRandomECInstanceNode, createRandomContent, createRandomLabelDefinition, createRandomDescriptor, createRandomLabelCompositeValue } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { Id64 } from "@bentley/bentleyjs-core";
-import { RelatedElementProps, ModelProps, ElementProps, Code } from "@bentley/imodeljs-common";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PersistentKeysContainer, InstanceKey, KeySet, Item, Content, LabelDefinition } from "@bentley/presentation-common";
-import { PersistenceHelper } from "../presentation-frontend";
+import { createRandomECInstanceNode, createRandomLabelDefinition, createRandomDescriptor, createRandomLabelCompositeValue } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { Presentation } from "../Presentation";
-import { LocalizationHelper } from "../LocalizationHelper";
+import { Item, Content, LabelDefinition } from "@bentley/presentation-common";
+import { Presentation } from "../presentation-frontend/Presentation";
+import { LocalizationHelper } from "../presentation-frontend/LocalizationHelper";
 
 describe("LocalizationHelper", () => {
   const i18nMock = moq.Mock.ofType<I18N>();

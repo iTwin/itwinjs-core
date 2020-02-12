@@ -7,9 +7,9 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey, createRandomDescriptor } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { PresentationRpcRequestOptions, KeySet } from "@bentley/presentation-common";
-import { PresentationRpcImpl } from "../PresentationRpcImpl";
-import { PresentationRpcImplStateless } from "../PresentationRpcImplStateless";
-import { PresentationRpcImplStateful } from "../PresentationRpcImplStateful";
+import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
+import { PresentationRpcImplStateless } from "../presentation-backend/PresentationRpcImplStateless";
+import { PresentationRpcImplStateful } from "../presentation-backend/PresentationRpcImplStateful";
 import "./IModelHostSetup";
 
 describe("PresentationRpcImpl", () => {

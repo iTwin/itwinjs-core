@@ -6,10 +6,10 @@ import { expect } from "chai";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { PresentationError } from "@bentley/presentation-common";
-import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
 import { initialize, terminate } from "../IntegrationTests";
 import { IModelError } from "@bentley/imodeljs-common";
 import { PresentationManagerMode } from "@bentley/presentation-backend";
+import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
 
 describe("NativePlatform", () => {
 

@@ -14,7 +14,8 @@ import {
   createRandomECInstanceNodeKeyJSON,
   createRandomECClassInfoJSON, createRandomRelationshipPathJSON,
   createRandomECInstanceKeyJSON, createRandomECInstanceKey,
-  createRandomDescriptor, createRandomCategory, createRandomId, createRandomDescriptorJSON, createRandomRelatedClassInfoJSON, createRandomRuleset, createRandomLabelDefinition, createRandomLabelDefinitionJSON, createRandomECInstanceId,
+  createRandomDescriptor, createRandomCategory, createRandomId, createRandomDescriptorJSON,
+  createRandomRelatedClassInfoJSON, createRandomRuleset, createRandomLabelDefinitionJSON,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
@@ -28,18 +29,18 @@ import {
   KindOfQuantityInfo, DefaultContentDisplayTypes, LabelRequestOptions, InstanceKey,
   Ruleset, VariableValueTypes, RequestPriority, LOCALES_DIRECTORY, LabelDefinition,
 } from "@bentley/presentation-common";
-import { PropertyInfoJSON } from "@bentley/presentation-common/lib/EC";
-import { NodeKeyJSON, ECInstanceNodeKeyJSON, NodeKey } from "@bentley/presentation-common/lib/hierarchy/Key";
-import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
-import { PropertyJSON } from "@bentley/presentation-common/lib/content/Property";
-import { ContentJSON } from "@bentley/presentation-common/lib/content/Content";
-import { ItemJSON } from "@bentley/presentation-common/lib/content/Item";
-import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/content/Fields";
-import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/content/Descriptor";
-import { NativePlatformDefinition, NativePlatformRequestTypes } from "../NativePlatform";
-import { PresentationManager, PresentationManagerMode } from "../PresentationManager";
-import { RulesetManagerImpl } from "../RulesetManager";
-import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
+import { PropertyInfoJSON } from "@bentley/presentation-common/lib/presentation-common/EC";
+import { NodeKeyJSON, ECInstanceNodeKeyJSON, NodeKey } from "@bentley/presentation-common/lib/presentation-common/hierarchy/Key";
+import { NodeJSON } from "@bentley/presentation-common/lib/presentation-common/hierarchy/Node";
+import { PropertyJSON } from "@bentley/presentation-common/lib/presentation-common/content/Property";
+import { ContentJSON } from "@bentley/presentation-common/lib/presentation-common/content/Content";
+import { ItemJSON } from "@bentley/presentation-common/lib/presentation-common/content/Item";
+import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/presentation-common/content/Fields";
+import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/presentation-common/content/Descriptor";
+import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
+import { PresentationManager, PresentationManagerMode } from "../presentation-backend/PresentationManager";
+import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
+import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 
 describe("PresentationManager", () => {
 
@@ -242,9 +243,9 @@ describe("PresentationManager", () => {
   describe("vars", () => {
 
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
-    const manager: PresentationManager = new PresentationManager({ addon: addon.object });
 
     it("returns variables manager", () => {
+      const manager = new PresentationManager({ addon: addon.object });
       const vars = manager.vars(faker.random.word());
       expect(vars).to.be.instanceOf(RulesetVariablesManagerImpl);
     });
@@ -254,9 +255,9 @@ describe("PresentationManager", () => {
   describe("rulesets", () => {
 
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
-    const manager: PresentationManager = new PresentationManager({ addon: addon.object });
 
     it("returns rulesets manager", () => {
+      const manager = new PresentationManager({ addon: addon.object });
       expect(manager.rulesets()).to.be.instanceOf(RulesetManagerImpl);
     });
 

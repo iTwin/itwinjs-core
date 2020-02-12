@@ -11,10 +11,10 @@ import {
   createRandomDescriptor, createRandomPropertiesField, createRandomNestedContentField,
   createRandomLabelDefinition, createRandomLabelCompositeValue,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { applyOptionalPrefix } from "../../common/ContentBuilder";
-import * as utils from "../../common/Utils";
 import { PrimitiveValue, Primitives } from "@bentley/imodeljs-frontend";
 import { LabelCompositeValue } from "@bentley/presentation-common";
+import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
+import * as utils from "../../presentation-components/common/Utils";
 
 class TestComponent extends React.Component {
 }

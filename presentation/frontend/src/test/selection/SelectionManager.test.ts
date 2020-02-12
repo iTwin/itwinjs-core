@@ -14,10 +14,8 @@ import { waitForPendingAsyncs } from "@bentley/presentation-common/lib/test/_hel
 import { Id64String, Id64, Id64Arg, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectionSet, IModelApp, SelectionSetEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";
-import { SelectionManager } from "../../presentation-frontend";
-import { SelectionScopesManager } from "../../selection/SelectionScopesManager";
-import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../selection/SelectionManager";
-import { HiliteSetProvider } from "../../../lib/selection/HiliteSetProvider";
+import { SelectionManager, SelectionScopesManager, HiliteSetProvider } from "../../presentation-frontend";
+import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 const generateSelection = (): InstanceKey[] => {
   return [

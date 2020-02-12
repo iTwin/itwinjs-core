@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as moq from "typemoq";
 import { expect } from "chai";
-import { HierarchyBuilder, NodeMappingFunc } from "../HierarchyBuilder";
+import { Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Node, NodeKey, Ruleset, RegisteredRuleset } from "@bentley/presentation-common";
 import { PresentationManager, Presentation, RulesetManager } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
-import { Guid } from "@bentley/bentleyjs-core";
+import { HierarchyBuilder, NodeMappingFunc } from "../presentation-testing/HierarchyBuilder";
 
 async function getRootNodes() {
   const root: Node = {

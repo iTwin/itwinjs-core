@@ -21,9 +21,10 @@ import {
 } from "@bentley/presentation-frontend";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid, PropertyGridProps, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { propertyGridWithUnifiedSelection } from "../../presentation-components";
-import { IPresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
+import {
+  IPresentationPropertyDataProvider, IUnifiedSelectionComponent,
+  propertyGridWithUnifiedSelection,
+} from "../../presentation-components";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationPropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);

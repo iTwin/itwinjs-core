@@ -22,10 +22,10 @@ import {
   Presentation, SelectionManager, SelectionChangeEvent,
   SelectionChangeEventArgs, SelectionChangeType, HiliteSet, SelectionScopesManager,
 } from "@bentley/presentation-frontend";
-import { HILITE_RULESET } from "@bentley/presentation-frontend/lib/selection/HiliteSetProvider";
+import { HILITE_RULESET } from "@bentley/presentation-frontend/lib/presentation-frontend/selection/HiliteSetProvider";
 import { ViewportComponent } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
+import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";
+import { ViewportSelectionHandler } from "../../presentation-components/viewport/WithUnifiedSelection";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -226,7 +226,7 @@ describe("ViewportSelectionHandler", () => {
       emptyAll: sinon.SinonSpy<[], void>;
       replace: sinon.SinonSpy<[Id64Arg], void>;
       onChanged: sinon.SinonSpy<any[], any>;
-    };
+    }
 
     let hiliteSpies: HiliteSpies;
     let selectionSetSpies: SelectionSetSpies;

@@ -11,7 +11,7 @@ import { PresentationManager, Presentation } from "@bentley/presentation-fronten
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
-import { usePresentationNodeLoader, PresentationNodeLoaderProps } from "../../../tree/controlled/TreeHooks";
+import { usePresentationNodeLoader, PresentationNodeLoaderProps } from "../../../presentation-components/tree/controlled/TreeHooks";
 
 describe("usePresentationNodeLoader", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();

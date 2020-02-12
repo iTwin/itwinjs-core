@@ -11,6 +11,8 @@ import { ObservableInput } from "rxjs/internal/types";
 import { from } from "rxjs/internal/observable/from";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { createRandomGroupingNodeKey, createRandomECInstancesNodeKey, createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
+import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { CheckBoxState } from "@bentley/ui-core";
 import {
@@ -22,11 +24,8 @@ import {
   SelectionHandler, SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider, SelectionHelper,
 } from "@bentley/presentation-frontend";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { UnifiedSelectionTreeEventHandler, useUnifiedSelectionEventHandler } from "../../../tree/controlled/UseUnifiedSelection";
-import { IPresentationTreeDataProvider } from "../../../presentation-components";
-import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
-import { PRESENTATION_TREE_NODE_KEY } from "../../../tree/Utils";
-import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
+import { IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionEventHandler } from "../../../presentation-components";
+import { PRESENTATION_TREE_NODE_KEY } from "../../../presentation-components/tree/Utils";
 
 const awaitableObservable = <T extends unknown>(input: ObservableInput<T>) => {
   const promise = new ResolvablePromise<void>();

@@ -24,22 +24,21 @@
   "typings": "lib/presentation-components",
   "scripts": {
     "build": "npm run extract && buildIModelJsModule",
-    "build:watch": "tsc -b ./src/test -w",
+    "build:watch": "tsc -w",
     "clean": "rimraf lib .rush package-deps.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-components",
     "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-components/file.json --tsIndexFile=presentation-components.ts --onlyJson %TYPEDOC_THEME%  --excludeGlob=**/presentation-components.ts",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
-    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-components --isPresentation",
-    "lint": "tslint -p ./src 1>&2",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=presentation-components",
+    "lint": "tslint -p ./tsconfig.json 1>&2",
     "test": "mocha --opts ../mocha.opts -r ignore-styles -r jsdom-global/register --file ./lib/test/index.test.js \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "iModelJs": {
     "buildModule": {
       "type": "system",
-      "tscOptions": "-b ./src/test",
       "sourceResources": [
         {
           "source": "./src/**/*.json",

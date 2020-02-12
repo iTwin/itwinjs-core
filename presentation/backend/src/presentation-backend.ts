@@ -8,8 +8,8 @@
  * @docs-group-description Core
  * Common types used for retrieving presentation data from iModels.
  */
-export { Presentation, PresentationProps } from "./Presentation";
-export { PresentationManager, PresentationManagerProps, PresentationManagerMode } from "./PresentationManager";
-export { RulesetManager } from "./RulesetManager";
-export { RulesetVariablesManager } from "./RulesetVariablesManager";
-export { RulesetEmbedder, DuplicateRulesetHandlingStrategy } from "./RulesetEmbedder";
+export { Presentation, PresentationProps } from "./presentation-backend/Presentation";
+export { PresentationManager, PresentationManagerProps, PresentationManagerMode } from "./presentation-backend/PresentationManager";
+export { RulesetManager } from "./presentation-backend/RulesetManager";
+export { RulesetVariablesManager } from "./presentation-backend/RulesetVariablesManager";
+export { RulesetEmbedder, DuplicateRulesetHandlingStrategy } from "./presentation-backend/RulesetEmbedder";

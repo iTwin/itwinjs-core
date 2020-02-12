@@ -12,9 +12,9 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { PresentationError } from "@bentley/presentation-common";
 import { Presentation, SelectionManager } from "../presentation-frontend";
-import { SelectionScopesManager } from "../selection/SelectionScopesManager";
-import { PresentationManager } from "../PresentationManager";
-import { FavoritePropertiesManager } from "../favorite-properties/FavoritePropertiesManager";
+import { SelectionScopesManager } from "../presentation-frontend/selection/SelectionScopesManager";
+import { PresentationManager } from "../presentation-frontend/PresentationManager";
+import { FavoritePropertiesManager } from "../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 
 describe("Presentation", () => {
 

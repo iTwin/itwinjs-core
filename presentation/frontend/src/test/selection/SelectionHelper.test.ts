@@ -5,8 +5,8 @@
 /* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
-import { SelectionHelper } from "../../presentation-frontend";
 import { createRandomECInstanceNodeKey, createRandomECInstancesNodeKey, createRandomBaseNodeKey, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { SelectionHelper } from "../../presentation-frontend";
 
 describe("SelectionHelper", () => {
 

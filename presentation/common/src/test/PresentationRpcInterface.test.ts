@@ -11,12 +11,10 @@ import { RpcRegistry, RpcOperation, RpcRequest, RpcSerializedValue, IModelTokenP
 import {
   PresentationRpcInterface,
   KeySet, Paged,
-} from "../presentation-common";
-import {
   PresentationRpcRequestOptions, LabelRpcRequestOptions,
   HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   ClientStateSyncRequestOptions, SelectionScopeRpcRequestOptions,
-} from "../PresentationRpcInterface";
+} from "../presentation-common";
 
 describe("PresentationRpcInterface", () => {
   class TestRpcRequest extends RpcRequest {

@@ -10,8 +10,8 @@ import * as moq from "typemoq";
 import { configureForPromiseResult } from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { SettingsStatus, SettingsAdmin } from "@bentley/imodeljs-clients";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { IModelAppFavoritePropertiesStorage } from "../../favorite-properties/FavoritePropertiesStorage";
-import { FavoriteProperties } from "../../favorite-properties/FavoritePropertiesManager";
+import { IModelAppFavoritePropertiesStorage } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+import { FavoriteProperties } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
 

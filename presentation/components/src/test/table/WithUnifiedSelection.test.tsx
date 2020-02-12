@@ -19,8 +19,7 @@ import {
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, SelectionChangeEventArgs,
 } from "@bentley/presentation-frontend";
 import { Table, TableProps, ColumnDescription, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
+import { IUnifiedSelectionComponent, PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTable = tableWithUnifiedSelection(Table);

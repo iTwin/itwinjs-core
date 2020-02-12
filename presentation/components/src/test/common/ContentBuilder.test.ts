@@ -15,8 +15,8 @@ import {
   PropertyValueFormat, PrimitiveTypeDescription, PropertiesField, Property, Item,
   ArrayTypeDescription, StructTypeDescription, NestedContentField, NestedContentValue,
 } from "@bentley/presentation-common";
-import { ContentBuilder, getLinks, FIELD_NAMES_SEPARATOR } from "../../common/ContentBuilder";
 import { PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { ContentBuilder, getLinks, FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
 
 describe("ContentBuilder", () => {
 
