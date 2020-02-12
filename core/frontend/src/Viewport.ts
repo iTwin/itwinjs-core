@@ -2512,7 +2512,21 @@ export class ScreenViewport extends Viewport {
    */
   public pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable = true, out?: Point3d): Point3d | undefined {
     const depthResult = this.pickDepthPoint(pickPoint, radius, { excludeNonLocatable: !allowNonLocatable });
-    if (DepthPointSource.TargetPoint === depthResult.source)
+    let isValidDepth = false;
+    switch (depthResult.source) {
+      case DepthPointSource.Geometry:
+      case DepthPointSource.Model:
+        isValidDepth = true;
+        break;
+      case DepthPointSource.BackgroundMap:
+      case DepthPointSource.GroundPlane:
+      case DepthPointSource.Grid:
+      case DepthPointSource.ACS:
+        const npcPt = this.worldToNpc(depthResult.plane.getOriginRef());
+        isValidDepth = !(npcPt.z < 0.0 || npcPt.z > 1.0);
+        break;
+    }
+    if (!isValidDepth)
       return undefined;
     const result = undefined !== out ? out : new Point3d();
     result.setFrom(depthResult.plane.getOriginRef());
