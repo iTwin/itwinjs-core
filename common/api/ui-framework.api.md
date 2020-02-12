@@ -1958,6 +1958,8 @@ export interface FrameworkZoneProps extends CommonProps {
     // (undocumented)
     isHidden: boolean;
     // (undocumented)
+    isInFooterMode: boolean;
+    // (undocumented)
     openWidgetId: WidgetZoneId | undefined;
     // (undocumented)
     targetChangeHandler: TargetChangeHandler;

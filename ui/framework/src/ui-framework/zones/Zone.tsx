@@ -204,6 +204,7 @@ export class Zone extends React.Component<ZoneProps> {
         fillZone={zoneDef.shouldFillZone}
         getWidgetContentRef={runtimeProps.getWidgetContentRef}
         isHidden={runtimeProps.isHidden}
+        isInFooterMode={runtimeProps.isInFooterMode}
         openWidgetId={runtimeProps.openWidgetId}
         style={this.props.style}
         targetedBounds={runtimeProps.ghostOutline}
