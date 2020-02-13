@@ -6,8 +6,21 @@
  * @module Rendering
  */
 
-import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, IndexedPolyface, Point2d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import {
+  base64StringToUint8Array,
+  Id64String,
+  IDisposable,
+} from "@bentley/bentleyjs-core";
+import {
+  ClipVector,
+  IndexedPolyface,
+  Point2d,
+  Point3d,
+  Range2d,
+  Range3d,
+  Transform,
+  Vector2d,
+} from "@bentley/geometry-core";
 import {
   ColorDef,
   ElementAlignedBox3d,
@@ -34,9 +47,11 @@ import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
+import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { BackgroundMapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
 import { RenderTarget } from "./RenderTarget";
+import { RenderMemory } from "./RenderMemory";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import {
   GraphicList,
@@ -52,155 +67,6 @@ import {
 // tslint:disable:no-const-enum
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
-/** Contains metadata about memory consumed by the render system or aspect thereof.
- * @internal
- */
-export namespace RenderMemory {
-  /** Describes memory consumed by a particular type of resource.
-   * @internal
-   */
-  export class Consumers {
-    public totalBytes = 0; // total number of bytes consumed by all consumers
-    public maxBytes = 0; // largest number of bytes consumed by a single consumer
-    public count = 0; // total number of consumers of this type
-
-    public addConsumer(numBytes: number): void {
-      this.totalBytes += numBytes;
-      this.maxBytes = Math.max(this.maxBytes, numBytes);
-      ++this.count;
-    }
-
-    public clear(): void {
-      this.totalBytes = this.maxBytes = this.count = 0;
-    }
-  }
-
-  /** @internal */
-  export const enum BufferType {
-    Surfaces = 0,
-    VisibleEdges,
-    SilhouetteEdges,
-    PolylineEdges,
-    Polylines,
-    PointStrings,
-    PointClouds,
-    Instances,
-
-    COUNT,
-  }
-
-  /** Describes memory consumed by GPU-allocated buffers.
-   * @internal
-   */
-  export class Buffers extends Consumers {
-    public readonly consumers: Consumers[];
-
-    public constructor() {
-      super();
-      this.consumers = [];
-      for (let i = 0; i < BufferType.COUNT; i++)
-        this.consumers[i] = new Consumers();
-    }
-
-    public get surfaces() { return this.consumers[BufferType.Surfaces]; }
-    public get visibleEdges() { return this.consumers[BufferType.VisibleEdges]; }
-    public get silhouetteEdges() { return this.consumers[BufferType.SilhouetteEdges]; }
-    public get polylineEdges() { return this.consumers[BufferType.PolylineEdges]; }
-    public get polylines() { return this.consumers[BufferType.Polylines]; }
-    public get pointStrings() { return this.consumers[BufferType.PointStrings]; }
-    public get pointClouds() { return this.consumers[BufferType.PointClouds]; }
-    public get instances() { return this.consumers[BufferType.Instances]; }
-
-    public clear(): void {
-      for (const consumer of this.consumers)
-        consumer.clear();
-
-      super.clear();
-    }
-
-    public addBuffer(type: BufferType, numBytes: number): void {
-      this.addConsumer(numBytes);
-      this.consumers[type].addConsumer(numBytes);
-    }
-  }
-
-  /** @internal */
-  export const enum ConsumerType {
-    Textures = 0,
-    VertexTables,
-    FeatureTables,
-    FeatureOverrides,
-    ClipVolumes,
-    PlanarClassifiers,
-    ShadowMaps,
-    TextureAttachments,
-    COUNT,
-  }
-
-  /** @internal */
-  export class Statistics {
-    private _totalBytes = 0;
-    public readonly consumers: Consumers[];
-    public readonly buffers = new Buffers();
-
-    public constructor() {
-      this.consumers = [];
-      for (let i = 0; i < ConsumerType.COUNT; i++)
-        this.consumers[i] = new Consumers();
-    }
-
-    public get totalBytes(): number { return this._totalBytes; }
-    public get textures() { return this.consumers[ConsumerType.Textures]; }
-    public get vertexTables() { return this.consumers[ConsumerType.VertexTables]; }
-    public get featureTables() { return this.consumers[ConsumerType.FeatureTables]; }
-    public get featureOverrides() { return this.consumers[ConsumerType.FeatureOverrides]; }
-    public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
-    public get planarClassifiers() { return this.consumers[ConsumerType.PlanarClassifiers]; }
-    public get shadowMaps() { return this.consumers[ConsumerType.ShadowMaps]; }
-    public get textureAttachments() { return this.consumers[ConsumerType.TextureAttachments]; }
-
-    public addBuffer(type: BufferType, numBytes: number): void {
-      this._totalBytes += numBytes;
-      this.buffers.addBuffer(type, numBytes);
-    }
-
-    public addConsumer(type: ConsumerType, numBytes: number): void {
-      this._totalBytes += numBytes;
-      this.consumers[type].addConsumer(numBytes);
-    }
-
-    public clear(): void {
-      this._totalBytes = 0;
-      this.buffers.clear();
-      for (const consumer of this.consumers)
-        consumer.clear();
-    }
-
-    public addTexture(numBytes: number) { this.addConsumer(ConsumerType.Textures, numBytes); }
-    public addVertexTable(numBytes: number) { this.addConsumer(ConsumerType.VertexTables, numBytes); }
-    public addFeatureTable(numBytes: number) { this.addConsumer(ConsumerType.FeatureTables, numBytes); }
-    public addFeatureOverrides(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
-    public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
-    public addPlanarClassifier(numBytes: number) { this.addConsumer(ConsumerType.PlanarClassifiers, numBytes); }
-    public addShadowMap(numBytes: number) { this.addConsumer(ConsumerType.ShadowMaps, numBytes); }
-    public addTextureAttachment(numBytes: number) { this.addConsumer(ConsumerType.TextureAttachments, numBytes); }
-
-    public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
-    public addVisibleEdges(numBytes: number) { this.addBuffer(BufferType.VisibleEdges, numBytes); }
-    public addSilhouetteEdges(numBytes: number) { this.addBuffer(BufferType.SilhouetteEdges, numBytes); }
-    public addPolylineEdges(numBytes: number) { this.addBuffer(BufferType.PolylineEdges, numBytes); }
-    public addPolyline(numBytes: number) { this.addBuffer(BufferType.Polylines, numBytes); }
-    public addPointString(numBytes: number) { this.addBuffer(BufferType.PointStrings, numBytes); }
-    public addPointCloud(numBytes: number) { this.addBuffer(BufferType.PointClouds, numBytes); }
-    public addInstances(numBytes: number) { this.addBuffer(BufferType.Instances, numBytes); }
-  }
-
-  /** @internal */
-  export interface Consumer {
-    collectStatistics(stats: Statistics): void;
-  }
-}
-
 /** An opaque representation of a texture draped on geometry within a [[Viewport]].
  * @internal
  */
@@ -211,6 +77,7 @@ export abstract class RenderTextureDrape implements IDisposable {
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
   public abstract collectGraphics(context: SceneContext): void;
 }
+
 /** @internal */
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
 
@@ -280,6 +147,18 @@ export interface RenderSystemDebugControl {
    * @internal
    */
   compileAllShaders(): boolean;
+}
+
+/** @internal */
+export abstract class RenderTerrainMeshGeometry implements IDisposable, RenderMemory.Consumer {
+  public abstract dispose(): void;
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+}
+
+/** @internal */
+export class TerrainTexture {
+  public constructor(public readonly texture: RenderTexture, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly clipRectangle?: Range2d) {
+  }
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
@@ -372,6 +251,10 @@ export abstract class RenderSystem implements IDisposable {
   public createMesh(_params: MeshParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
+  /** @internal */
+  public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform: Transform): RenderTerrainMeshGeometry | undefined { return undefined; }
+  /** @internal */
+  public createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */

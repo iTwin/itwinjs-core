@@ -62,6 +62,8 @@ export enum TextureUnit {
   FeatureSymbology = One,
   SurfaceTexture = Two,
   LineCode = Two,
+  TerrainMesh0 = Two,
+  TerrainMesh1 = Five,     // Terrain meshes do not use VertexLUT.
 
   PickFeatureId = Three,
   PickDepthAndOrder = Four,

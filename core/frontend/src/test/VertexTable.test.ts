@@ -44,6 +44,7 @@ function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: n
 class FakeTexture extends RenderTexture {
   public constructor() { super(RenderTexture.Params.defaults); }
   public dispose() { }
+  public get bytesUsed(): number { return 0; }
 }
 
 describe("VertexLUT", () => {

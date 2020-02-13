@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapTilingScheme, MapTileRectangle } from "./internal";
+import { MapTilingScheme, MapCartoRectangle } from "./internal";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { SortedArray } from "@bentley/bentleyjs-core";
 
@@ -13,7 +13,7 @@ import { SortedArray } from "@bentley/bentleyjs-core";
  */
 
 /** @internal */
-class RectangleWithLevel extends MapTileRectangle {
+class RectangleWithLevel extends MapCartoRectangle {
   constructor(public level: number, west: number, south: number, east: number, north: number) {
     super(west, south, east, north);
   }
@@ -21,38 +21,38 @@ class RectangleWithLevel extends MapTileRectangle {
 
 /** @internal */
 class QuadTreeNode {
-  private _sw?: QuadTreeNode;
-  private _se?: QuadTreeNode;
-  private _nw?: QuadTreeNode;
-  private _ne?: QuadTreeNode;
-  public extent: MapTileRectangle;
+  public swNode?: QuadTreeNode;
+  public seNode?: QuadTreeNode;
+  public nwNode?: QuadTreeNode;
+  public neNode?: QuadTreeNode;
+  public extent: MapCartoRectangle;
   public rectangles = new SortedArray<RectangleWithLevel>((lhs: RectangleWithLevel, rhs: RectangleWithLevel) => lhs.level - rhs.level, true);
   constructor(public tilingScheme: MapTilingScheme, public parent: QuadTreeNode | undefined, public level: number, public x: number, public y: number) {
     this.extent = tilingScheme.tileXYToRectangle(x, y, level + 1);
   }
   public get nw(): QuadTreeNode {
-    if (!this._nw)
-      this._nw = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2, this.y * 2);
+    if (!this.nwNode)
+      this.nwNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2, this.y * 2);
 
-    return this._nw;
+    return this.nwNode;
   }
   public get ne(): QuadTreeNode {
-    if (!this._ne)
-      this._ne = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2 + 1, this.y * 2);
+    if (!this.neNode)
+      this.neNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2 + 1, this.y * 2);
 
-    return this._ne;
+    return this.neNode;
   }
   public get sw(): QuadTreeNode {
-    if (!this._sw)
-      this._sw = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2, this.y * 2 + 1);
+    if (!this.swNode)
+      this.swNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2, this.y * 2 + 1);
 
-    return this._sw;
+    return this.swNode;
   }
   public get se(): QuadTreeNode {
-    if (!this._se)
-      this._se = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2 + 1, this.y * 2 + 1);
+    if (!this.seNode)
+      this.seNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2 + 1, this.y * 2 + 1);
 
-    return this._se;
+    return this.seNode;
   }
 }
 
@@ -80,7 +80,7 @@ export class TileAvailability {
   private _rootNodes = new Array<QuadTreeNode>();
   constructor(private _tilingScheme: MapTilingScheme, private _maximumLevel: number) { }
 
-  public static rectangleScratch = MapTileRectangle.create();
+  public static rectangleScratch = MapCartoRectangle.create();
 
   public findNode(level: number, x: number, y: number, nodes: QuadTreeNode[]) {
     for (const node of nodes) {
@@ -173,37 +173,37 @@ export class TileAvailability {
 
     // Find the deepest quadtree node containing this point.
     let found = false;
-    while (!found) {
-      const nw = node!.nw && node!.nw.extent.containsCartographic(position);
-      const ne = node!.ne && node!.ne.extent.containsCartographic(position);
-      const sw = node!.sw && node!.sw.extent.containsCartographic(position);
-      const se = node!.se && node!.se.extent.containsCartographic(position);
+    while (!found && node !== undefined) {
+      const nw = node.nwNode && node.nwNode.extent.containsCartographic(position);
+      const ne = node.neNode && node.neNode.extent.containsCartographic(position);
+      const sw = node.swNode && node.swNode.extent.containsCartographic(position);
+      const se = node.seNode && node.seNode.extent.containsCartographic(position);
 
       // The common scenario is that the point is in only one quadrant and we can simply
       // iterate down the tree.  But if the point is on a boundary between tiles, it is
       // in multiple tiles and we need to check all of them, so use recursion.
       if ((nw ? 1 : 0) + (ne ? 1 : 0) + (sw ? 1 : 0) + (se ? 1 : 0) > 1) {
         if (nw) {
-          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node!.nw, position));
+          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node.nwNode, position));
         }
         if (ne) {
-          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node!.ne, position));
+          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node.neNode, position));
         }
         if (sw) {
-          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node!.sw, position));
+          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node.swNode, position));
         }
         if (se) {
-          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node!.se, position));
+          maxLevel = Math.max(maxLevel, this.findMaxLevelFromNode(node, node.seNode, position));
         }
         break;
       } else if (nw) {
-        node = node!.nw;
+        node = node.nwNode;
       } else if (ne) {
-        node = node!.ne;
+        node = node.neNode;
       } else if (sw) {
-        node = node!.sw;
+        node = node.swNode;
       } else if (se) {
-        node = node!.se;
+        node = node.seNode;
       } else {
         found = true;
       }

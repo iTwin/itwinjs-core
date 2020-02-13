@@ -271,6 +271,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/geonames-plugin",
+      "projectFolder": "plugins/geonames",
+      "reviewCategory": "plugins",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/geo-photo-plugin",
       "projectFolder": "plugins/geo-photo",
       "reviewCategory": "plugins",

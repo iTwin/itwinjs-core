@@ -41,8 +41,8 @@ import {
   RenderTarget,
   RenderTargetDebugControl,
 } from "../RenderTarget";
+import { RenderMemory } from "../RenderMemory";
 import {
-  RenderMemory,
   RenderTextureDrape,
   TextureDrapeMap,
 } from "../RenderSystem";
@@ -198,6 +198,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
   public activeVolumeClassifierModelId?: Id64String;
+  public terrainTransparency: number = 0.0;
 
   // RenderTargetDebugControl
   public useLogZ = true;
@@ -549,6 +550,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       assert(false);
       return;
     }
+
+    this.terrainTransparency = plan.terrainTransparency;
 
     this.uniforms.style.update(plan);
     this.uniforms.hilite.update(plan.hiliteSettings, plan.emphasisSettings);

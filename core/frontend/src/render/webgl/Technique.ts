@@ -27,9 +27,10 @@ import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
+import createTerrainMeshBuilder from "./glsl/TerrainMesh";
 import { addFeatureId, addFeatureSymbology, addUniformFeatureSymbology, addRenderOrder, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { addFragColorWithPreMultipliedAlpha, addPickBufferOutputs } from "./glsl/Fragment";
-import { addFrustum, addEyeSpace } from "./glsl/Common";
+import { addFrustum, addEyeSpace, addShaderFlags } from "./glsl/Common";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createEdgeBuilder } from "./glsl/Edge";
@@ -520,6 +521,52 @@ class PointCloudTechnique extends VariedTechnique {
   }
 }
 
+class TerrainMeshTechnique extends VariedTechnique {
+  private static readonly _numVariants = 16;
+
+  public constructor(gl: WebGLRenderingContext) {
+    super(TerrainMeshTechnique._numVariants);
+    for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
+      for (let iTranslucent = 0; iTranslucent <= 1; iTranslucent++) {
+        for (let shadowable = IsShadowable.No; shadowable <= IsShadowable.Yes; shadowable++) {
+          const flags = scratchTechniqueFlags;
+          const terrainMeshFeatureModes = [FeatureMode.None, FeatureMode.Pick];
+          for (const featureMode of terrainMeshFeatureModes) {
+            flags.reset(featureMode, IsInstanced.No, shadowable);
+            flags.isClassified = iClassified;
+            flags.isTranslucent = 1 === iTranslucent;
+            const builder = createTerrainMeshBuilder(flags.isClassified, featureMode, flags.isShadowable);
+            if (FeatureMode.Pick === featureMode)
+              addUniformFeatureSymbology(builder);
+            if (flags.isTranslucent) {
+              addShaderFlags(builder);
+              addTranslucency(builder);
+            } else
+              this.addFeatureId(builder, featureMode);
+            this.addShader(builder, flags, gl);
+          }
+        }
+      }
+    }
+    this.verifyShadersContiguous();
+  }
+
+  protected get _debugDescription() { return "TerrainMesh"; }
+
+  public computeShaderIndex(flags: TechniqueFlags): number {
+    let ndx = 0;
+    if (flags.isClassified)
+      ndx++;
+    if (flags.isShadowable)
+      ndx += 2;
+    if (flags.isTranslucent)
+      ndx += 4;
+    if (flags.featureMode !== FeatureMode.None)
+      ndx += 8;
+    return ndx;
+  }
+}
+
 /** A collection of rendering techniques accessed by ID.
  * @internal
  */
@@ -621,6 +668,7 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
+    this._list[TechniqueId.TerrainMesh] = new TerrainMeshTechnique(gl);
     if (System.instance.capabilities.supportsFragDepth)
       this._list[TechniqueId.VolClassCopyZ] = new SingularTechnique(createVolClassCopyZProgram(gl));
     else

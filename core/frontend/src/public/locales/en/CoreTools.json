@@ -1,6 +1,31 @@
 {
   "tools": {
     "View": {
+      "GlobeSatellite": {
+        "keyin": "view globe satellite",
+        "description": "View a location on the globe from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the globe",
+        "flyover": "View Globe Satellite"
+      },
+      "GlobeBird": {
+        "keyin": "view globe bird",
+        "description": "View a location on the globe from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the globe",
+        "flyover": "View Globe Bird"
+      },
+      "GlobeLocation": {
+        "keyin": "view globe location",
+        "description": "View a location on the globe corresponding to a specified string; this will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed",
+        "flyover": "View Globe Location"
+      },
+      "GlobeIModel": {
+        "keyin": "view globe imodel",
+        "description": "View the project iModel on the globe so that the extent of the project is visible",
+        "flyover": "View Globe IModel"
+      },
+      "LocalEntities": {
+        "keyin": "view local entities",
+        "description": "View markers representing local entities",
+        "flyover": "View Local Entities"
+      },
       "Pan": {
         "keyin": "pan view",
         "description": "Moves origin of view",

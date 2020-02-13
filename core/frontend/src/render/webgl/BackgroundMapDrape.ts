@@ -14,7 +14,7 @@ import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";
 import { BackgroundMapTileTreeReference, GraphicsCollectorDrawArgs, TileTreeReference } from "../../tile/internal";
 import { Frustum, FrustumPlanes, RenderTexture, ColorDef } from "@bentley/imodeljs-common";
-import { Matrix4d } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Matrix4d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { System } from "./System";
 import { BatchState, BranchStack } from "./BranchState";
 import { RenderCommands } from "./RenderCommands";
@@ -42,6 +42,7 @@ export class BackgroundMapDrape extends TextureDrape {
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private readonly _symbologyOverrides = new FeatureSymbology.Overrides();
   private readonly _bgColor = ColorDef.from(0, 0, 0, 255);
+  private readonly _plane = Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.create(0, 0, 1))!;
 
   private constructor(drapedTree: TileTreeReference, mapTree: BackgroundMapTileTreeReference) {
     super();
@@ -86,8 +87,7 @@ export class BackgroundMapDrape extends TextureDrape {
     this._width = requiredWidth;
     this._height = requiredHeight;
 
-    const plane = this._mapTree.plane;
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(plane!, context.viewingSpace, this._drapedTree, this._mapTree, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context.viewingSpace, this._drapedTree, this._mapTree, viewState, this._width, this._height);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 

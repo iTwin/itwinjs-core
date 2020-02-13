@@ -9,8 +9,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 
-// NEEDS_WORK: Fix failing tests - VSTS#265657
-describe.skip("TreeDataProvider", async () => {
+describe("TreeDataProvider", async () => {
 
   let imodel: IModelConnection;
   let provider: PresentationTreeDataProvider;

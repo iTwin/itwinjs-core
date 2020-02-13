@@ -135,7 +135,7 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
     if (this._isMounted)
       this.setState({
         isMapEnabled: view.viewFlags.backgroundMap,
-        bingMapType: view.getDisplayStyle3d().backgroundMap.settings.mapType,
+        bingMapType: view.getDisplayStyle3d().settings.backgroundMap.mapType,
       });
   }
 
@@ -634,7 +634,7 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
     event.preventDefault();
     event.stopPropagation();
     const view = this._vp!.view as SpatialViewState;
-    const mapType = view.getDisplayStyle3d().backgroundMap.settings.mapType;
+    const mapType = view.getDisplayStyle3d().settings.backgroundMap.mapType;
     this.setState({ showMapTypes: true, bingMapType: mapType });
   }
 

@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-backend",
+      "comment": "Add new hidden 'functional' selection scopes: 'functional-element', 'functional-assembly', 'functional-top-assembly'",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/presentation-backend",
+      "comment": "Update 'functional' hilite rules up to the latest requirements, including recursive lookup both at functional and graphical part of the relationship path",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "grigas.petraitis@bentley.com"
+}

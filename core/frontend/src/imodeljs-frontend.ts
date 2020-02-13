@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
@@ -71,6 +70,7 @@ export * from "./render/MockRender";
 export * from "./render/Pixel";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
+export * from "./render/RenderMemory";
 export * from "./render/RenderPlan";
 export * from "./render/RenderPlanarClassifier";
 export * from "./render/RenderTarget";
@@ -93,6 +93,7 @@ export * from "./tools/ToolSettings";
 export * from "./tools/ToolAdmin";
 export * from "./tools/ToolAssistance";
 export * from "./tools/ViewTool";
+export * from "./BackgroundMapGeometry";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

@@ -486,7 +486,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
     if (undefined === this._planProjections) {
       this._planProjections = new Map<string, PlanProjectionSettings>();
-      this._json3d.planProjections = { };
+      this._json3d.planProjections = {};
     }
 
     this._planProjections.set(modelId, settings);

@@ -28,12 +28,34 @@ import { TileRequest, TileContent, TileDrawArgs, TileParams, BatchedTileIdMap, r
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
 
-const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
-  renderMode: RenderMode.SmoothShade,
-  noCameraLights: true,
-  noSourceLights: true,
-  noSolarLight: true,
-}));
+/** Create ViewFlag.Overrides suitable for most non-iModel tile trees (reality/map tiles).
+ * @param options Customize the overrides. Any properties left unspecified use the current view settings.
+ * @internal
+ */
+export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean }): ViewFlag.Overrides {
+  const noLights = undefined !== options.lighting ? !options.lighting : undefined;
+  const ovrs = new ViewFlag.Overrides(ViewFlags.fromJSON({
+    renderMode: RenderMode.SmoothShade,
+    noCameraLights: noLights,
+    noSourceLights: noLights,
+    noSolarLight: noLights,
+    clipVol: options.clipVolume,
+    shadows: options.shadows,
+  }));
+
+  if (undefined === options.clipVolume)
+    ovrs.clearPresent(ViewFlag.PresenceFlag.ClipVolume);
+
+  if (undefined === options.shadows)
+    ovrs.clearPresent(ViewFlag.PresenceFlag.Shadows);
+
+  if (undefined === options.lighting)
+    ovrs.clearPresent(ViewFlag.PresenceFlag.Lighting);
+
+  return ovrs;
+}
+
+const defaultViewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false, lighting: false });
 
 const scratchTileCenterWorld = new Point3d();
 const scratchTileCenterView = new Point3d();
@@ -56,7 +78,6 @@ export abstract class TileLoader {
   public get containsPointClouds(): boolean { return this._containsPointClouds; }
   public get preloadRealityParentDepth(): number { return 0; }
   public get preloadRealityParentSkip(): number { return 0; }
-  public get drawAsRealityTiles(): boolean { return false; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
   public forceTileLoad(_tile: Tile): boolean { return false; }
   public onActiveRequestCanceled(_tile: Tile): void { }

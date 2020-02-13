@@ -153,6 +153,7 @@ alpha;GeometrySummaryOptions
 alpha;GeometrySummaryRequestProps
 alpha;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+public;GlobeMode
 internal;GltfBufferData
 internal;GltfBufferView
 internal;enum GltfConstants

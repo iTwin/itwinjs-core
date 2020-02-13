@@ -47,13 +47,15 @@ import {
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderTarget } from "../RenderTarget";
+import { RenderMemory } from "../RenderMemory";
 import {
   GLTimerResultCallback,
   RenderDiagnostics,
-  RenderMemory,
   RenderSystem,
   RenderSystemDebugControl,
   WebGLExtensionName,
+  RenderTerrainMeshGeometry,
+  TerrainTexture,
 } from "../RenderSystem";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -62,6 +64,7 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
+import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import {
   Batch,
   Branch,
@@ -90,6 +93,7 @@ import { PolylineGeometry } from "./Polyline";
 import { PointStringGeometry } from "./PointString";
 import { MeshGraphic } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
+import { TerrainMeshGeometry } from "./TerrainMesh";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
@@ -868,6 +872,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
 
   public createMesh(params: MeshParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return MeshGraphic.create(params, instances); }
+  public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform): RenderTerrainMeshGeometry | undefined {
+    return TerrainMeshGeometry.createGeometry(terrainMesh, transform);
+  }
+  public createTerrainMeshGraphic(terrainGeometry: RenderTerrainMeshGeometry, featureTable: PackedFeatureTable, textures?: TerrainTexture[]): RenderGraphic | undefined {
+    return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, textures);
+  }
   public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
     return createPrimitive((viOrigin) => PolylineGeometry.create(params, viOrigin), instances);
   }

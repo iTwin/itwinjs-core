@@ -315,6 +315,8 @@ export enum BackgroundFill {
 // @public
 export interface BackgroundMapProps {
     applyTerrain?: boolean;
+    // @beta
+    globeMode?: GlobeMode;
     groundBias?: number;
     providerData?: {
         mapType?: BackgroundMapType;
@@ -337,6 +339,7 @@ export class BackgroundMapSettings {
     equals(other: BackgroundMapSettings): boolean;
     equalsJSON(json?: BackgroundMapProps): boolean;
     static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings;
+    readonly globeMode: GlobeMode;
     readonly groundBias: number;
     readonly mapType: BackgroundMapType;
     readonly providerName: BackgroundMapProviderName;
@@ -577,12 +580,15 @@ export class Cartographic implements LatLongAndHeight {
     static fromDegrees(longitude: number, latitude: number, height: number, result?: Cartographic): Cartographic;
     static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined;
     static fromRadians(longitude: number, latitude: number, height?: number, result?: Cartographic): Cartographic;
+    static geocentricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     // (undocumented)
     height: number;
     // (undocumented)
     latitude: number;
     // (undocumented)
     longitude: number;
+    static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
+    static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined;
     toEcef(result?: Point3d): Point3d;
     toString(): string;
     }
@@ -1540,6 +1546,7 @@ export type EasingFunction = (k: number) => number;
 export class EcefLocation implements EcefLocationProps {
     constructor(props: EcefLocationProps);
     static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle): EcefLocation;
+    get earthCenter(): Point3d;
     getTransform(): Transform;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
@@ -1983,8 +1990,10 @@ export class Frustum {
     static fromRange(range: LowAndHighXYZ | LowAndHighXY, out?: Frustum): Frustum;
     getCenter(): Point3d;
     getCorner(i: number): Point3d;
+    getEyePoint(result?: Point3d): Point3d | undefined;
     getFraction(): number;
     getRangePlanes(clipFront: boolean, clipBack: boolean, expandPlaneDistance: number): ConvexClipPlaneSet;
+    getRotation(result?: Matrix3d): Matrix3d | undefined;
     get hasMirror(): boolean;
     initFromRange(range: LowAndHighXYZ | LowAndHighXY): void;
     initNpc(): this;
@@ -2350,6 +2359,12 @@ export enum GeometrySummaryVerbosity {
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
 export { GetMetaDataFunction }
+
+// @public
+export enum GlobeMode {
+    Columbus = 1,
+    ThreeD = 0
+}
 
 // @internal
 export class GltfBufferData {
@@ -4355,6 +4370,8 @@ export class QPoint2dList {
     static fromPoints(points: Point2d[], out?: QPoint2dList): QPoint2dList;
     get length(): number;
     // (undocumented)
+    get list(): QPoint2d[];
+    // (undocumented)
     readonly params: QParams2d;
     push(qpt: QPoint2d): void;
     requantize(params: QParams2d): void;
@@ -4413,6 +4430,8 @@ export class QPoint3dList {
 
 // @internal
 export namespace Quantization {
+    const // (undocumented)
+    rangeScale = 65535;
     // (undocumented)
     export function computeScale(extent: number): number;
     // (undocumented)
@@ -4683,6 +4702,8 @@ export namespace RenderSchedule {
 // @beta
 export abstract class RenderTexture implements IDisposable {
     protected constructor(params: RenderTexture.Params);
+    // (undocumented)
+    abstract get bytesUsed(): number;
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;
@@ -6321,51 +6342,51 @@ export namespace ViewFlag {
     // (undocumented)
     export const enum PresenceFlag {
         // (undocumented)
-        kBackgroundMap = 21,
+        BackgroundMap = 21,
         // (undocumented)
-        kClipVolume = 15,
+        ClipVolume = 15,
         // (undocumented)
-        kConstructions = 16,
+        Constructions = 16,
         // (undocumented)
-        kDimensions = 2,
+        Dimensions = 2,
         // (undocumented)
-        kEdgeMask = 20,
+        EdgeMask = 20,
         // (undocumented)
-        kFill = 8,
+        Fill = 8,
         // (undocumented)
-        kForceSurfaceDiscard = 22,
+        ForceSurfaceDiscard = 22,
         // (undocumented)
-        kGeometryMap = 18,
+        GeometryMap = 18,
         // (undocumented)
-        kHiddenEdges = 12,
+        HiddenEdges = 12,
         // (undocumented)
-        kHlineMaterialColors = 19,
+        HlineMaterialColors = 19,
         // (undocumented)
-        kLighting = 13,
+        Lighting = 13,
         // (undocumented)
-        kMaterials = 10,
+        Materials = 10,
         // (undocumented)
-        kMonochrome = 17,
+        Monochrome = 17,
         // (undocumented)
-        kPatterns = 3,
+        Patterns = 3,
         // (undocumented)
-        kRenderMode = 0,
+        RenderMode = 0,
         // (undocumented)
-        kShadows = 14,
+        Shadows = 14,
         // (undocumented)
-        kStyles = 5,
+        Styles = 5,
         // (undocumented)
-        kText = 1,
+        Text = 1,
         // (undocumented)
-        kTextures = 9,
+        Textures = 9,
         // (undocumented)
-        kTransparency = 6,
+        Transparency = 6,
         // (undocumented)
-        kUnused = 7,
+        Unused = 7,
         // (undocumented)
-        kVisibleEdges = 11,
+        VisibleEdges = 11,
         // (undocumented)
-        kWeights = 4
+        Weights = 4
     }
 }
 

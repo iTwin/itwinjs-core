@@ -415,6 +415,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isUndefined(rwIModel.elements.tryGetElement(newCategoryCode2));
 
     rwIModel.concurrencyControl.startBulkMode();
+    // rwIModel.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
 
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
 

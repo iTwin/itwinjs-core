@@ -44,7 +44,9 @@ public;AuxCoordSystem3dState
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
 internal;B3dmReader 
+internal;BackgroundMapGeometry
 internal;BackgroundMapTileTreeReference 
+internal;BackgroundMapTreeId
 internal;BackgroundTerrainTileTreeReference 
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
@@ -63,6 +65,7 @@ internal;BingElevationProvider
 beta;BlankConnectionProps
 beta;ButtonGroupEditorParams 
 internal;CachedIModelCoordinatesResponseProps
+internal;calculateEcefToDb(iModel: IModelConnection, bimElevationBias: number): Promise
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
@@ -92,9 +95,10 @@ public;CoordSystem
 internal;CoreTools
 internal;createAttachment(props: ViewAttachmentProps, view: ViewState): Attachment
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
+internal;createDefaultViewFlagOverrides(options:
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
-internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise
+internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, iModel: IModelConnection, forDrape?: boolean): Promise
 internal;CurrentInputState
 internal;CurrentState
 beta;CustomFormattedNumberParams 
@@ -164,7 +168,7 @@ public;class GeometricModelState
 internal;GeoServices
 internal;getBackgroundMapTreeSupplier(): TileTreeSupplier
 beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
-internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise
+internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, wantSkirts: boolean, exaggeration: number): Promise
 beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
@@ -238,11 +242,12 @@ internal;LockedStates
 beta;LookAndMoveTool 
 public;LookViewTool 
 alpha;ManipulatorToolEvent
+internal;MapCartoRectangle 
 internal;MapImageryTileTreeReference 
-internal;MapTile 
+internal;class MapTile 
 internal;MapTileGeometryAttributionProvider
 internal;class MapTileLoaderBase 
-internal;MapTileRectangle 
+internal;class MapTileProjection
 internal;MapTileTree 
 internal;class MapTileTreeReference 
 internal;class MapTilingScheme
@@ -294,6 +299,7 @@ public;PhysicalModelState
 internal;PingTestResult
 beta;Pixel
 internal;PlanarClassifierMap = Map
+internal;PlanarMapTile 
 beta;class Plugin
 beta;PluginAdmin
 beta;PluginLoadResults = Plugin | undefined | string | string[]
@@ -317,6 +323,8 @@ internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
+internal;RealityTile 
+internal;RealityTileTree 
 public;RelativePosition
 beta;class RenderClipVolume 
 public;RenderContext
@@ -333,6 +341,7 @@ beta;Options
 beta;RenderSystemDebugControl
 internal;class RenderTarget 
 beta;RenderTargetDebugControl
+internal;class RenderTerrainMeshGeometry 
 internal;class RenderTextureDrape 
 public;RotateViewTool 
 alpha;RotationMode
@@ -399,7 +408,9 @@ internal;SuspendedToolState
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
+internal;TerrainMapTile 
 internal;class TerrainProvider 
+internal;TerrainTexture
 internal;class TerrainTileLoaderBase 
 internal;TextureDrapeMap = Map
 internal;TextureImage
@@ -478,6 +489,10 @@ alpha;ViewClipPlanesModifyTool
 alpha;ViewClipSettingsProvider
 alpha;ViewClipShapeModifyTool 
 alpha;ViewClipTool 
+alpha;ViewGlobeBirdTool 
+alpha;ViewGlobeIModelTool 
+alpha;ViewGlobeLocationTool 
+alpha;ViewGlobeSatelliteTool 
 internal;ViewHandleArray
 internal;enum ViewHandleType
 internal;ViewingSpace
@@ -505,8 +520,8 @@ beta;WebGLRenderCompatibilityInfo
 beta;WebGLRenderCompatibilityStatus
 internal;WebMapDrawArgs 
 internal;WebMapTileLoader 
-internal;WebMapTileProps 
 internal;WebMapTileTreeProps 
+internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
 internal;WheelEventProcessor
 public;WindowAreaTool 

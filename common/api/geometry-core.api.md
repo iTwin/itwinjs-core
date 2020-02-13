@@ -4144,6 +4144,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     toFloat64Array(): Float64Array;
     toJSON(): Range2dProps;
     union(other: LowAndHighXY, result?: Range2d): Range2d;
+    worldToLocal(point: Point2d, result?: Point2d): Point2d | undefined;
     get xHigh(): number;
     xLength(): number;
     get xLow(): number;

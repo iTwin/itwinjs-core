@@ -7,7 +7,7 @@
  */
 
 import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry, Constant, Arc3d, AngleSweep, Plane3dByOriginAndUnitNormal, XAndY } from "@bentley/geometry-core";
-import { ColorDef, Frustum, Npc, NpcCenter, LinePixels } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum, Npc, NpcCenter, LinePixels, Cartographic } from "@bentley/imodeljs-common";
 import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
@@ -28,8 +28,8 @@ import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySync
 import { LengthDescription } from "../properties/LengthDescription";
 import { PrimitiveValue } from "../properties/Value";
 import { ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "./ToolAssistance";
-
-// cSpell:ignore wasd arrowright arrowleft pagedown pageup arrowup arrowdown
+import { BingLocationProvider } from "../BingLocation";
+import { viewGlobalLocation, GlobalLocation, ViewGlobalLocationConstants, rangeToCartographicArea, queryTerrainElevationOffset, eyeToCartographicOnGlobe } from "../ViewGlobalLocation";
 
 /** @internal */
 const enum ViewHandleWeight {
@@ -314,7 +314,7 @@ export abstract class ViewManip extends ViewTool {
       return;
 
     let origin = this._depthPreview.plane.getOriginRef();
-    let normal = (DepthPointSource.Model === this._depthPreview.source ? Vector3d.unitZ() : this._depthPreview.plane.getNormalRef());
+    let normal = this._depthPreview.plane.getNormalRef();
 
     if (this._depthPreview.isDefaultDepth) {
       origin = cursorVp.worldToView(origin); origin.z = 0.0; cursorVp.viewToWorld(origin, origin); // Avoid getting clipped out in z...
@@ -755,17 +755,42 @@ export abstract class ViewManip extends ViewTool {
     return (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
   }
 
-  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent) {
+  /** @internal */
+  public static computeFitRange(viewport: ScreenViewport): Range3d {
     const range = viewport.computeViewRange();
-    const aspect = viewport.viewRect.aspect;
-
     const clip = (viewport.viewFlags.clipVolume ? viewport.view.getViewClip() : undefined);
     if (undefined !== clip) {
       const clipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(clip, range);
       if (!clipRange.isNull)
         range.setFrom(clipRange);
     }
+    return range;
+  }
 
+  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent) {
+    const range = this.computeFitRange(viewport);
+    const aspect = viewport.viewRect.aspect;
+    viewport.view.lookAtVolume(range, aspect, marginPercent);
+    viewport.synchWithView({ animateFrustumChange });
+    viewport.viewCmdTargetCenter = undefined;
+  }
+
+  /** @internal */
+  public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, marginPercent?: MarginPercent) {
+    const range = this.computeFitRange(viewport);
+
+    if (animateFrustumChange && viewport.isCameraOn && viewport.viewingGlobe) {
+      const view3d = viewport.view as ViewState3d;
+      const cartographicCenter = view3d.rootToCartographic(range.center);
+      if (undefined !== cartographicCenter) {
+        const cartographicArea = rangeToCartographicArea(view3d, range);
+        viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea }); // NOTE: Turns on camera...which is why we checked that it was already on...
+        viewport.viewCmdTargetCenter = undefined;
+        return;
+      }
+    }
+
+    const aspect = viewport.viewRect.aspect;
     viewport.view.lookAtVolume(range, aspect, marginPercent);
     viewport.synchWithView({ animateFrustumChange });
     viewport.viewCmdTargetCenter = undefined;
@@ -1095,7 +1120,7 @@ class ViewRotate extends HandleWithInertia {
     vp.worldToNpc(ev.rawPoint, this._anchorPtNpc);
     this._lastPtNpc.setFrom(this._anchorPtNpc);
 
-    vp.getWorldFrustum(this._activeFrustum);
+    vp.getFrustum(CoordSystem.World, false, this._activeFrustum);
     this._frustum.setFrom(this._activeFrustum);
 
     tool.beginDynamicUpdate();
@@ -1110,7 +1135,8 @@ class ViewRotate extends HandleWithInertia {
     if (this._anchorPtNpc.isAlmostEqual(ptNpc, 1.0e-2)) // too close to anchor pt
       ptNpc.setFrom(this._anchorPtNpc);
 
-    const currentFrustum = vp.getWorldFrustum();
+    const currentFrustum = vp.getFrustum(CoordSystem.World, false);
+    vp.getFrustum(CoordSystem.World, false, this._activeFrustum);
     const frustumChange = !currentFrustum.equals(this._activeFrustum);
     if (frustumChange)
       this._frustum.setFrom(currentFrustum);
@@ -1144,7 +1170,7 @@ class ViewRotate extends HandleWithInertia {
       const yDelta = (currPt.y - firstPt.y);
 
       // Movement in screen x == rotation about drawing Z (preserve up) or rotation about screen  Y...
-      const xAxis = ToolSettings.preserveWorldUp ? Vector3d.unitZ() : vp.rotation.getRow(1);
+      const xAxis = ToolSettings.preserveWorldUp && !vp.viewingGlobe ? (undefined !== this._depthPoint ? vp.view.getUpVector(this._depthPoint) : Vector3d.unitZ()) : vp.rotation.getRow(1);
 
       // Movement in screen y == rotation about screen X...
       const yAxis = vp.rotation.getRow(0);
@@ -1188,6 +1214,11 @@ class ViewRotate extends HandleWithInertia {
 
   /** @internal */
   public adjustDepthPoint(isValid: boolean, vp: Viewport, plane: Plane3dByOriginAndUnitNormal, source: DepthPointSource): boolean {
+    if (vp.viewingGlobe && this.viewTool.isPointVisible(vp.iModel.ecefLocation!.earthCenter)) {
+      plane.getOriginRef().setFrom(vp.iModel.ecefLocation!.earthCenter);
+      plane.getNormalRef().setFrom(vp.view.getZVector());
+      return true;
+    }
     if (super.adjustDepthPoint(isValid, vp, plane, source))
       return true;
     plane.getOriginRef().setFrom(this.viewTool.targetCenterWorld);
@@ -2609,10 +2640,230 @@ export class FitViewTool extends ViewTool {
 
   public async doFit(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, isolatedOnly = true): Promise<boolean> {
     if (!isolatedOnly || !await ViewManip.zoomToAlwaysDrawnExclusive(viewport, doAnimate))
-      ViewManip.fitView(viewport, doAnimate);
+      ViewManip.fitViewWithGlobeAnimation(viewport, doAnimate);
     if (oneShot)
       this.exitTool();
     return oneShot;
+  }
+}
+
+/** A tool that views a location on the background map from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
+ * @alpha
+ */
+export class ViewGlobeSatelliteTool extends ViewTool {
+  public static toolId = "View.GlobeSatellite";
+  // public static iconSpec = "icon-view-globe-satellite"; // ###TODO: need icon for this
+  public oneShot: boolean;
+  public doAnimate: boolean;
+  constructor(viewport: ScreenViewport, oneShot = true, doAnimate = true) {
+    super(viewport);
+    this.viewport = viewport;
+    this.oneShot = oneShot;
+    this.doAnimate = doAnimate;
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (ev.viewport)
+      return this._beginSatelliteView(ev.viewport, this.oneShot, this.doAnimate) ? EventHandled.Yes : EventHandled.No;
+
+    return EventHandled.No;
+  }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
+    if (viewport)
+      this._beginSatelliteView(viewport, this.oneShot, this.doAnimate);
+  }
+
+  private _beginSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
+    const carto = eyeToCartographicOnGlobe(viewport);
+    if (carto !== undefined) {
+      (async () => {
+        let elevationOffset = 0;
+        const elevation = await queryTerrainElevationOffset(viewport, carto);
+        if (elevation !== undefined)
+          elevationOffset = elevation;
+        return this._doSatelliteView(viewport, oneShot, doAnimate, elevationOffset);
+      })().catch();
+    }
+    return true;
+  }
+
+  private _doSatelliteView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, elevationOffset = 0): boolean {
+    viewGlobalLocation(viewport, doAnimate, ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters + elevationOffset);
+    if (oneShot)
+      this.exitTool();
+    return oneShot;
+  }
+}
+
+/** A tool that views a location on the background map from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
+ * @alpha
+ */
+export class ViewGlobeBirdTool extends ViewTool {
+  public static toolId = "View.GlobeBird";
+  // public static iconSpec = "icon-view-globe-bird"; // ###TODO: need icon for this
+  public oneShot: boolean;
+  public doAnimate: boolean;
+  constructor(viewport: ScreenViewport, oneShot = true, doAnimate = true) {
+    super(viewport);
+    this.viewport = viewport;
+    this.oneShot = oneShot;
+    this.doAnimate = doAnimate;
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (ev.viewport)
+      return this._beginDoBirdView(ev.viewport, this.oneShot, this.doAnimate) ? EventHandled.Yes : EventHandled.No;
+
+    return EventHandled.No;
+  }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
+    if (viewport)
+      this._beginDoBirdView(viewport, this.oneShot, this.doAnimate);
+  }
+
+  private _beginDoBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true): boolean {
+    const carto = eyeToCartographicOnGlobe(viewport);
+    if (carto !== undefined) {
+      (async () => {
+        let elevationOffset = 0;
+        const elevation = await queryTerrainElevationOffset(viewport, carto);
+        if (elevation !== undefined)
+          elevationOffset = elevation;
+        return this._doBirdView(viewport, oneShot, doAnimate, elevationOffset);
+      })().catch();
+    }
+    return true;
+  }
+
+  private _doBirdView(viewport: ScreenViewport, oneShot: boolean, doAnimate = true, elevationOffset = 0): boolean {
+    viewGlobalLocation(viewport, doAnimate, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters + elevationOffset, ViewGlobalLocationConstants.birdPitchAngleRadians);
+    if (oneShot)
+      this.exitTool();
+    return oneShot;
+  }
+}
+
+/** A tool that views a location on the background map corresponding to a specified string.
+ * This will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed.
+ * Operates on the selected view.
+ * @alpha
+ */
+export class ViewGlobeLocationTool extends ViewTool {
+  private _globalLocation?: GlobalLocation;
+
+  public static toolId = "View.GlobeLocation";
+  // public static iconSpec = "icon-view-globe-location"; // ###TODO: need icon for this
+  public oneShot: boolean;
+  public doAnimate: boolean;
+  constructor(viewport: ScreenViewport, oneShot = true, doAnimate = true) {
+    super(viewport);
+    this.viewport = viewport;
+    this.oneShot = oneShot;
+    this.doAnimate = doAnimate;
+  }
+
+  public static get minArgs() { return 1; }
+  public static get maxArgs() { return undefined; }
+
+  // arguments: latitude longitude | string
+  // the latitude and longitude arguments are specified in degrees
+  public parseAndRun(...args: string[]): boolean {
+    if (2 === args.length) { // try to parse latitude and longitude
+      const latitude = parseFloat(args[0]);
+      const longitude = parseFloat(args[1]);
+      if (!Number.isNaN(latitude) || !Number.isNaN(longitude)) {
+        const center = Cartographic.fromRadians(Angle.degreesToRadians(longitude), Angle.degreesToRadians(latitude));
+        this._globalLocation = { center };
+      }
+    }
+
+    if (this._globalLocation === undefined) {
+      const locationString = args.join(" ");
+      const bingLocationProvider = new BingLocationProvider();
+      (async () => {
+        this._globalLocation = await bingLocationProvider.getLocation(locationString);
+        if (this._globalLocation !== undefined) {
+          const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
+          if (viewport !== undefined) {
+            const elevationOffset = await queryTerrainElevationOffset(viewport, this._globalLocation.center);
+            if (elevationOffset !== undefined)
+              this._globalLocation.center.height = elevationOffset;
+          }
+          this._doLocationView();
+        }
+      })().catch();
+    }
+
+    if (this._globalLocation !== undefined)
+      return this.run();
+    return true;
+  }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    this._doLocationView();
+  }
+
+  private _doLocationView(): boolean {
+    const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
+    if (viewport) {
+      if (undefined !== this._globalLocation)
+        viewport.animateFlyoverToGlobalLocation(this._globalLocation);
+    }
+    if (this.oneShot)
+      this.exitTool();
+    return this.oneShot;
+  }
+}
+
+/** A tool that views the current iModel on the background map so that the extent of the project is visible. Operates on the selected view.
+ * @alpha
+ */
+export class ViewGlobeIModelTool extends ViewTool {
+  public static toolId = "View.GlobeIModel";
+  // public static iconSpec = "icon-view-globe-imodel"; // ###TODO: need icon for this
+  public oneShot: boolean;
+  public doAnimate: boolean;
+  constructor(viewport: ScreenViewport, oneShot = true, doAnimate = true) {
+    super(viewport);
+    this.viewport = viewport;
+    this.oneShot = oneShot;
+    this.doAnimate = doAnimate;
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (ev.viewport)
+      return this._doIModelView() ? EventHandled.Yes : EventHandled.No;
+
+    return EventHandled.No;
+  }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    this._doIModelView();
+  }
+
+  private _doIModelView(): boolean {
+    const viewport = undefined === this.viewport ? IModelApp.viewManager.selectedView : this.viewport;
+    if (viewport && (viewport.view instanceof ViewState3d)) {
+      const extents = viewport.view.iModel.projectExtents;
+      const center = viewport.view.iModel.projectExtents.center;
+      const view3d = viewport.view as ViewState3d;
+      const cartographicCenter = view3d.rootToCartographic(center);
+      if (cartographicCenter !== undefined) {
+        const cartographicArea = rangeToCartographicArea(view3d, extents);
+        viewport.animateFlyoverToGlobalLocation({ center: cartographicCenter, area: cartographicArea });
+      }
+    }
+    if (this.oneShot)
+      this.exitTool();
+    return this.oneShot;
   }
 }
 

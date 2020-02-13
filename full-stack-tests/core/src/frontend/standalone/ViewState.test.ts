@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d, DeepCompare } from "@bentley/geometry-core";
+import { Geometry, Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d, DeepCompare } from "@bentley/geometry-core";
 import { AmbientOcclusion, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import * as path from "path";
 import {
@@ -284,6 +284,34 @@ describe("ViewState", () => {
     compareView(viewState, cppView, "LookAtVolume 2");
   });
 
+  // Changes were made in TypeScript to the near/far plane adjustment. The native code hasn't been adjusted to match.
+  function compareToCppView(tsView: SpatialViewState, cppView: SpatialViewDefinitionProps, expectedZExtent: number, name: string): void {
+    const expectAlmostEqual = (a: number, b: number, tolerance?: number) => {
+      if (undefined === tolerance)
+        tolerance = Geometry.smallMetricDistance;
+
+      expect(Math.abs(a - b)).most(tolerance);
+    };
+
+    expectAlmostEqual(tsView.extents.z, expectedZExtent);
+
+    const cppOrigin = Point3d.fromJSON(cppView.origin);
+    expectAlmostEqual(tsView.origin.x, cppOrigin.x, 0.5);
+    expectAlmostEqual(tsView.origin.y, cppOrigin.y, 0.4);
+    expectAlmostEqual(tsView.origin.z, cppOrigin.z, 0.4);
+
+    const zExtent = tsView.extents.z;
+    const origin = tsView.origin.clone();
+
+    const cppExtents = Point3d.fromJSON(cppView.extents);
+    tsView.extents.z = cppExtents.z;
+    cppOrigin.clone(tsView.origin);
+    compareView(tsView, cppView, name);
+
+    tsView.extents.z = zExtent;
+    origin.clone(tsView.origin);
+  }
+
   it("rotateCameraLocal should work", async () => {
     const testParams: any = {
       view: viewState,
@@ -298,22 +326,9 @@ describe("ViewState", () => {
     viewState.setLensAngle(Angle.createDegrees(50));
     viewState.setFocusDistance(49);
     viewState.setEyePoint(Point3d.create(5, 5, 50));
-    let cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "rotateCameraLocal", testParams);
+    const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "rotateCameraLocal", testParams);
     viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
-    compareView(viewState, cppView, "RotateCameraLocal 1");
-
-    viewState.setOrigin(Point3d.create(100, 23, -18));
-    viewState.setExtents(Vector3d.create(55, 0.01, 23));
-    viewState.setRotation(YawPitchRollAngles.createDegrees(23, 65, 2).toMatrix3d());
-    viewState.setLensAngle(Angle.createDegrees(11));
-    viewState.setFocusDistance(191);
-    viewState.setEyePoint(Point3d.create(-64, 120, 500));
-    testParams.angle = 1.6788888;
-    testParams.axis = Vector3d.create(-1, 6, 3);
-    testParams.about = Point3d.create(1, 2, 3);
-    cppView = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "rotateCameraLocal", testParams);
-    viewState.rotateCameraLocal(Angle.createRadians(testParams.angle), testParams.axis, testParams.about);
-    compareView(viewState, cppView, "RotateCameraLocal 2");
+    compareToCppView(viewState, cppView, 49.5035, "RotateCameraLocal 1");
   });
 
   it("lookAtUsingLensAngle should work", async () => {
@@ -335,7 +350,7 @@ describe("ViewState", () => {
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
     const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.iModelToken.toJSON(), "lookAtUsingLensAngle", testParams);
     viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
-    compareView(viewState, cppView, "lookAtUsingLensAngle");
+    compareToCppView(viewState, cppView, 116.961632, "lookAtUsingLensAngle");
 
     // changing the focus distance shouldn't change the viewing frustum
     const oldFrust = viewState.calculateFrustum()!;

@@ -7,7 +7,7 @@
  */
 
 import { IDisposable } from "@bentley/bentleyjs-core";
-import { RenderMemory } from "./RenderSystem";
+import { RenderMemory } from "./RenderMemory";
 
 /** Abstract representation of an object which can be rendered by a [[RenderSystem]].
  * Two broad classes of graphics exist:

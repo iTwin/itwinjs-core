@@ -1695,8 +1695,10 @@ export class WheelEventProcessor {
       const zDir = view.getZVector();
       target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
 
-      status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens);
-      vp.synchWithView(animationOptions);
+      if (ViewStatus.Success === (status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens)))
+        vp.synchWithView(animationOptions);
+      else
+        vp.view.showFrustumErrorMessage(status);
     } else {
       const targetNpc = vp.worldToNpc(target);
       const trans = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1));

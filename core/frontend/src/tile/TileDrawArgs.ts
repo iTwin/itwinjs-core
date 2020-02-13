@@ -61,6 +61,10 @@ export class TileDrawArgs {
     return 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
   }
 
+  public getTileGraphics(tile: Tile) {
+    return tile.graphics;
+  }
+
   public get frustumPlanes(): FrustumPlanes {
     return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
   }

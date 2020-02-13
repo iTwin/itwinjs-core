@@ -10,7 +10,7 @@ import { dispose } from "@bentley/bentleyjs-core";
 import { FrameBuffer } from "./FrameBuffer";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
-import { RenderMemory } from "../RenderSystem";
+import { RenderMemory } from "../RenderMemory";
 import { Texture, TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { SceneContext } from "../../ViewContext";

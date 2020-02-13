@@ -23,19 +23,21 @@ import {
   AnalysisStyle,
   ContextRealityModelProps,
   Cartographic,
+  GlobeMode,
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem, TextureImage } from "./render/RenderSystem";
-import { BackgroundMapTileTreeReference, BackgroundTerrainTileTreeReference, TileTreeReference } from "./tile/internal";
-import { Plane3dByOriginAndUnitNormal, Vector3d, Point3d } from "@bentley/geometry-core";
+import { BackgroundMapTileTreeReference, BackgroundTerrainTileTreeReference, TileTreeReference, MapTileTree } from "./tile/internal";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";
 import { Viewport, ScreenViewport } from "./Viewport";
 import { calculateSolarDirection } from "./SolarCalculate";
 import { IModelApp } from "./IModelApp";
+import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
+import { Vector3d, Point3d } from "@bentley/geometry-core";
 
 type BackgroundMapOrTerrainTileTreeReference = BackgroundMapTileTreeReference | BackgroundTerrainTileTreeReference;
 
@@ -49,7 +51,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public static get className() { return "DisplayStyle"; }
   private _backgroundMap: BackgroundMapOrTerrainTileTreeReference;
-  private readonly _backgroundDrapeMap: BackgroundMapTileTreeReference;       // We currently drape terrain models with the active map.  At some point the setting should perhaps move to that model itself and be removed from the display style.
+  private readonly _backgroundDrapeMap: BackgroundMapTileTreeReference;
   private readonly _contextRealityModels: ContextRealityModelState[] = [];
   private _analysisStyle?: AnalysisStyle;
   private _scheduleScript?: RenderScheduleState.Script;
@@ -64,12 +66,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
     const styles = this.jsonProperties.styles;
-    const backgroundMap = undefined !== styles ? styles.backgroundMap : undefined;
-    const mapProps = undefined !== backgroundMap ? backgroundMap : {};
-    const mapSettings = BackgroundMapSettings.fromJSON(mapProps);
+    const mapSettings = BackgroundMapSettings.fromJSON(styles?.backgroundMap || { });
 
     this._backgroundMap = mapSettings.applyTerrain ? new BackgroundTerrainTileTreeReference(mapSettings, iModel) : new BackgroundMapTileTreeReference(mapSettings, iModel);
-    this._backgroundDrapeMap = new BackgroundMapTileTreeReference(mapSettings, iModel, true);    // The drape map can not also include terrain. -- drape and background map share trees if terrain not on.
+    this._backgroundDrapeMap = new BackgroundMapTileTreeReference(mapSettings, iModel, false, true);
 
     if (styles) {
       if (styles.contextRealityModels)
@@ -98,10 +98,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
+  public get displayTerrain() {
+    return this.viewFlags.backgroundMap && this.settings.backgroundMap.applyTerrain;
+  }
+
+  /** @internal */
   public get backgroundMap(): BackgroundMapOrTerrainTileTreeReference { return this._backgroundMap; }
 
   /** @internal */
   public get backgroundDrapeMap(): BackgroundMapTileTreeReference { return this._backgroundDrapeMap; }
+
+  /** @internal */
+  public get globeMode(): GlobeMode { return this.settings.backgroundMap.globeMode; }
 
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
@@ -111,7 +119,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get backgroundMapSettings(): BackgroundMapSettings { return this._backgroundMap.settings; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this._backgroundMap.settings = settings;
-    this._backgroundDrapeMap.settings = settings;
     this.settings.backgroundMap = settings;
   }
 
@@ -250,8 +257,34 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get monochromeColor(): ColorDef { return this.settings.monochromeColor; }
   public set monochromeColor(val: ColorDef) { this.settings.monochromeColor = val; }
 
+  private _backgroundMapGeometry?: {
+    bimElevationBias: number;
+    geometry: BackgroundMapGeometry;
+    globeMode: GlobeMode;
+    mapTree: MapTileTree;
+  };
+
   /** @internal */
-  public get backgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return (this.viewFlags.backgroundMap && this.backgroundMap instanceof BackgroundMapTileTreeReference) ? (this._backgroundMap as BackgroundMapTileTreeReference).plane : undefined; }
+  public getBackgroundMapGeometry(): BackgroundMapGeometry | undefined {
+    if (!this.viewFlags.backgroundMap || undefined === this.iModel.ecefLocation)
+      return undefined;
+
+    let bimElevationBias = this.backgroundMapSettings.groundBias;
+    const mapTree = this.backgroundMap.treeOwner.load() as MapTileTree;
+    let ecefToDb = this.iModel.ecefLocation.getTransform().inverse()!;
+
+    if (mapTree !== undefined) {
+      ecefToDb = mapTree.ecefToDb;
+      bimElevationBias = mapTree.bimElevationBias;
+    }
+
+    const globeMode = this.globeMode;
+    if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias || this._backgroundMapGeometry.mapTree) {
+      const geometry = new BackgroundMapGeometry(ecefToDb, bimElevationBias, globeMode, this.iModel);
+      this._backgroundMapGeometry = { bimElevationBias, geometry, globeMode, mapTree };
+    }
+    return this._backgroundMapGeometry.geometry;
+  }
 
   /** Returns true if this is a 3d display style. */
   public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }

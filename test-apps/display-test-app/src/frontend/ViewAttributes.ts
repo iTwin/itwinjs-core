@@ -24,6 +24,7 @@ import {
   ColorDef,
   HiddenLine,
   LinePixels,
+  GlobeMode,
 } from "@bentley/imodeljs-common";
 import {
   CheckBox,
@@ -324,6 +325,16 @@ export class ViewAttributes {
       ],
       handler: (select) => this.updateBackgroundMap({ providerData: { mapType: Number.parseInt(select.value, 10) } }),
     }).select;
+    const globeModes = createComboBox({
+      parent: backgroundSettingsDiv,
+      name: "Globe: ",
+      id: "viewAttr_globeMode",
+      entries: [
+        { name: "3D", value: GlobeMode.ThreeD },
+        { name: "Columbus", value: GlobeMode.Columbus },
+      ],
+      handler: (select) => this.updateBackgroundMap({ globeMode: Number.parseInt(select.value, 10) }),
+    }).select;
 
     const terrainSettings = this.addTerrainSettings();
     const mapSettings = this.addMapSettings();
@@ -337,6 +348,7 @@ export class ViewAttributes {
 
     const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
     const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
+    backgroundSettingsDiv.appendChild(document.createElement("hr")!);
     backgroundSettingsDiv.appendChild(document.createElement("hr")!);
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
@@ -355,6 +367,7 @@ export class ViewAttributes {
       types.value = map.mapType.toString();
       terrainCheckbox.checked = map.applyTerrain;
       transCheckbox.checked = false !== map.transparency;
+      globeModes.value = map.globeMode.toString();
       enableTerrain(terrainCheckbox.checked);
     });
     div.appendChild(backgroundSettingsDiv);
@@ -391,6 +404,7 @@ export class ViewAttributes {
 
   private updateBackgroundMap(props: BackgroundMapProps): void {
     this._vp.changeBackgroundMapProps(props);
+    this.sync();
   }
 
   private addTerrainSettings() {
@@ -425,8 +439,6 @@ export class ViewAttributes {
     heightOriginDiv.style.textAlign = "left";
     settingsDiv.appendChild(heightOriginDiv);
 
-    const lightingCheckBox = this.addCheckbox("Terrain Lighting", (enabled: boolean) => updateTerrainSettings({ applyLighting: enabled }), settingsDiv).checkbox;
-
     const exaggerationDiv = document.createElement("div") as HTMLDivElement;
     const exaggerationLabel = document.createElement("label") as HTMLLabelElement;
     exaggerationLabel.style.display = "inline";
@@ -447,7 +459,6 @@ export class ViewAttributes {
       const terrainSettings = map.terrainSettings;
       heightOriginMode.value = terrainSettings.heightOriginMode.toString();
       heightOrigin.value = terrainSettings.heightOrigin.toString();
-      lightingCheckBox.checked = terrainSettings.applyLighting;
       exaggeration.value = terrainSettings.exaggeration.toString();
     });
 

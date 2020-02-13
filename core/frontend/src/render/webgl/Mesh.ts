@@ -28,7 +28,7 @@ import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
-import { RenderMemory } from "../RenderSystem";
+import { RenderMemory } from "../RenderMemory";
 import { InstanceBuffers } from "./InstancedGeometry";
 import { AttributeMap } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";

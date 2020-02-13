@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane, XYAndZ } from "@bentley/geometry-core";
+import { AxisOrder, Vector3d, Point3d, LowAndHighXYZ, LowAndHighXY, Range3d, Transform, Geometry, Map4d, ConvexClipPlaneSet, ClipPlane, XYAndZ, Matrix3d } from "@bentley/geometry-core";
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
  * @public
@@ -117,6 +117,30 @@ export class Frustum {
     const yVec = org.vectorTo(this.getCorner(Npc.LeftTopRear));
     const zVec = org.vectorTo(this.getCorner(Npc.LeftBottomFront));
     return Map4d.createVectorFrustum(org, xVec, yVec, zVec, this.getFraction());
+  }
+
+  /** Get the rotation matrix to the frame of this frustum.  This is equivalent to the view rotation matrix. */
+  public getRotation(result?: Matrix3d): Matrix3d | undefined {
+    const org = this.getCorner(Npc.LeftBottomRear);
+    const xVec = org.vectorTo(this.getCorner(Npc.RightBottomRear));
+    const yVec = org.vectorTo(this.getCorner(Npc.LeftTopRear));
+    const matrix = Matrix3d.createRigidFromColumns(xVec, yVec, AxisOrder.XYZ, result);
+    if (matrix)
+      matrix.transposeInPlace();
+    return matrix;
+  }
+
+  /** Get the eye point  - undefined if parallel projection */
+  public getEyePoint(result?: Point3d): Point3d | undefined {
+    const fraction = this.getFraction();
+
+    if (Math.abs(fraction - 1) < 1E-8)
+      return undefined;     // Parallel.
+
+    const org = this.getCorner(Npc.LeftBottomRear);
+    const zVec = org.vectorTo(this.getCorner(Npc.LeftBottomFront));
+
+    return org.plusScaled(zVec, 1 / (1 - fraction), result);
   }
 
   /** Invalidate this Frustum by setting all 8 points to zero. */

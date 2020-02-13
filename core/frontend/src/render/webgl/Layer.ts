@@ -14,7 +14,7 @@ import {
   SortedArray,
 } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
-import { RenderMemory } from "../RenderSystem";
+import { RenderMemory } from "../RenderMemory";
 import { RenderPass } from "./RenderFlags";
 import { Graphic } from "./Graphic";
 import { RenderCommands } from "./RenderCommands";

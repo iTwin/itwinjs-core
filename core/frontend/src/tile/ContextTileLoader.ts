@@ -19,7 +19,6 @@ export abstract class ContextTileLoader extends TileLoader {
   private _preloadRealityParentSkip: number;
   public get preloadRealityParentDepth(): number { return this._preloadRealityParentDepth; }
   public get preloadRealityParentSkip(): number { return this._preloadRealityParentSkip; }
-  public get drawAsRealityTiles(): boolean { return true; }
 
   constructor() {
     super();
