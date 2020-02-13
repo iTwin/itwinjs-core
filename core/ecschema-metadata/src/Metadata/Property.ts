@@ -12,7 +12,7 @@ import { RelationshipClass } from "./RelationshipClass";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import {
   EnumerationPropertyProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
-  PrimitivePropertyProps, PropertyProps, StructPropertyProps,
+  PrimitivePropertyProps, PropertyProps, StructPropertyProps, NavigationPropertyProps, ArrayPropertyProps,
 } from "./../Deserialization/JsonProps";
 import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
@@ -91,7 +91,15 @@ export abstract class Property implements CustomAttributeContainerProps {
     return this.class.schema.lookupItemSync(this._kindOfQuantity);
   }
 
+  /** @deprecated */
   public toJson() {
+    return this.toJSON() as any;
+  }
+
+  /**
+   * Save this Property's properties to an object for serializing to JSON.
+   */
+  public toJSON(): PropertyProps {
     const schemaJson: any = {};
     schemaJson.name = this.name;
     schemaJson.type = propertyTypeToString(this._type);
@@ -152,7 +160,12 @@ export abstract class Property implements CustomAttributeContainerProps {
     return itemElement;
   }
 
+  /** @deprecated */
   public deserializeSync(propertyProps: PropertyProps) {
+    this.fromJSONSync(propertyProps);
+  }
+
+  public fromJSONSync(propertyProps: PropertyProps) {
     if (undefined !== propertyProps.label) {
       this._label = propertyProps.label;
     }
@@ -196,8 +209,13 @@ export abstract class Property implements CustomAttributeContainerProps {
     }
   }
 
+  /** @deprecated */
   public async deserialize(propertyProps: PropertyProps) {
-    this.deserializeSync(propertyProps);
+    await this.fromJSON(propertyProps);
+  }
+
+  public async fromJSON(propertyProps: PropertyProps) {
+    this.fromJSONSync(propertyProps);
   }
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {
@@ -254,8 +272,16 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     super(ecClass, name, type);
   }
 
+  /** @deprecated */
   public toJson() {
-    const schemaJson = super.toJson();
+    return this.toJSON();
+  }
+
+  /**
+   * Save this PrimitiveOrEnumPropertyBase's properties to an object for serializing to JSON.
+   */
+  public toJSON(): PrimitiveOrEnumPropertyBaseProps {
+    const schemaJson = super.toJSON() as any;
     if (this.extendedTypeName !== undefined)
       schemaJson.extendedTypeName = this.extendedTypeName;
     if (this._minLength !== undefined)
@@ -286,8 +312,13 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     return itemElement;
   }
 
+  /** @deprecated */
   public deserializeSync(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps) {
-    super.deserializeSync(propertyBaseProps);
+    this.fromJSONSync(propertyBaseProps);
+  }
+
+  public fromJSONSync(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps) {
+    super.fromJSONSync(propertyBaseProps);
 
     if (undefined !== propertyBaseProps.minLength) {
       this._minLength = propertyBaseProps.minLength;
@@ -309,8 +340,14 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
       this._extendedTypeName = propertyBaseProps.extendedTypeName;
     }
   }
+
+  /** @deprecated */
   public async deserialize(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps) {
-    this.deserializeSync(propertyBaseProps);
+    await this.fromJSON(propertyBaseProps);
+  }
+
+  public async fromJSON(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps) {
+    this.fromJSONSync(propertyBaseProps);
   }
 }
 
@@ -322,20 +359,38 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
     super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
   }
 
+  /** @deprecated */
   public deserializeSync(primitivePropertyProps: PrimitivePropertyProps) {
-    super.deserializeSync(primitivePropertyProps);
+    this.fromJSONSync(primitivePropertyProps);
+  }
+
+  public fromJSONSync(primitivePropertyProps: PrimitivePropertyProps) {
+    super.fromJSONSync(primitivePropertyProps);
     if (undefined !== primitivePropertyProps.typeName) {
       if (this.primitiveType !== parsePrimitiveType(primitivePropertyProps.typeName))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
   }
 
+  /** @deprecated */
   public async deserialize(primitivePropertyProps: PrimitivePropertyProps) {
-    this.deserializeSync(primitivePropertyProps);
+    await this.fromJSON(primitivePropertyProps);
   }
 
+  public async fromJSON(primitivePropertyProps: PrimitivePropertyProps) {
+    this.fromJSONSync(primitivePropertyProps);
+  }
+
+  /** @deprecated */
   public toJson() {
-    const schemaJson = super.toJson();
+    return this.toJSON();
+  }
+
+  /**
+   * Save this PrimitiveProperty's properties to an object for serializing to JSON.
+   */
+  public toJSON(): PrimitivePropertyProps {
+    const schemaJson = super.toJSON() as any;
     schemaJson.typeName = primitiveTypeToString(this.primitiveType);
     return schemaJson;
   }
@@ -354,8 +409,16 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
 
   get enumeration(): LazyLoadedEnumeration | undefined { return this._enumeration; }
 
+  /** @deprecated */
   public toJson() {
-    const schemaJson = super.toJson();
+    return this.toJSON();
+  }
+
+  /**
+   * Save this EnumerationProperty's properties to an object for serializing to JSON.
+   */
+  public toJSON(): EnumerationPropertyProps {
+    const schemaJson = super.toJSON() as any;
     schemaJson.typeName = this.enumeration!.fullName;
     return schemaJson;
   }
@@ -366,8 +429,13 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     this._enumeration = type;
   }
 
+  /** @deprecated */
   public deserializeSync(enumerationPropertyProps: EnumerationPropertyProps) {
-    super.deserializeSync(enumerationPropertyProps);
+    this.fromJSONSync(enumerationPropertyProps);
+  }
+
+  public fromJSONSync(enumerationPropertyProps: EnumerationPropertyProps) {
+    super.fromJSONSync(enumerationPropertyProps);
     if (undefined !== enumerationPropertyProps.typeName) {
       if (!(this.enumeration!.fullName).match(enumerationPropertyProps.typeName)) // need to match {schema}.{version}.{itemName} on typeName
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
@@ -391,8 +459,13 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     return itemElement;
   }
 
+  /** @deprecated */
   public async deserialize(enumerationPropertyProps: EnumerationPropertyProps) {
-    this.deserializeSync(enumerationPropertyProps);
+    await this.fromJSON(enumerationPropertyProps);
+  }
+
+  public async fromJSON(enumerationPropertyProps: EnumerationPropertyProps) {
+    this.fromJSONSync(enumerationPropertyProps);
   }
 
 }
@@ -407,8 +480,17 @@ export class StructProperty extends Property {
     super(ecClass, name, PropertyType.Struct);
     this._structClass = type;
   }
+
+  /** @deprecated */
   public toJson() {
-    const schemaJson = super.toJson();
+    return this.toJSON();
+  }
+
+  /**
+   * Save this StructProperty's properties to an object for serializing to JSON.
+   */
+  public toJSON(): StructPropertyProps {
+    const schemaJson = super.toJSON() as any;
     schemaJson.typeName = this.structClass.fullName;
     return schemaJson;
   }
@@ -421,15 +503,26 @@ export class StructProperty extends Property {
     return itemElement;
   }
 
+  /** @deprecated */
   public deserializeSync(structPropertyProps: StructPropertyProps) {
-    super.deserializeSync(structPropertyProps);
+    this.fromJSONSync(structPropertyProps);
+  }
+
+  public fromJSONSync(structPropertyProps: StructPropertyProps) {
+    super.fromJSONSync(structPropertyProps);
     if (undefined !== structPropertyProps.typeName) {
       if (!this.structClass.key.matchesFullName(structPropertyProps.typeName))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
   }
+
+  /** @deprecated */
   public async deserialize(structPropertyProps: StructPropertyProps) {
-    this.deserializeSync(structPropertyProps);
+    await this.fromJSON(structPropertyProps);
+  }
+
+  public async fromJSON(structPropertyProps: StructPropertyProps) {
+    this.fromJSONSync(structPropertyProps);
   }
 }
 
@@ -449,8 +542,16 @@ export class NavigationProperty extends Property {
 
   get direction() { return this._direction; }
 
+  /** @deprecated */
   public toJson() {
-    const schemaJson = super.toJson();
+    return this.toJSON();
+  }
+
+  /**
+   * Save this NavigationProperty's properties to an object for serializing to JSON.
+   */
+  public toJSON(): NavigationPropertyProps {
+    const schemaJson = super.toJSON() as any;
     schemaJson.relationshipName = this.relationshipClass.fullName;
     schemaJson.direction = strengthDirectionToString(this.direction);
     return schemaJson;
@@ -503,8 +604,13 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
       this._type = PropertyTypeUtils.asArray(this._type);
     }
 
+    /** @deprecated */
     public deserializeSync(arrayPropertyProps: PrimitiveArrayPropertyProps) {
-      super.deserializeSync(arrayPropertyProps);
+      this.fromJSONSync(arrayPropertyProps);
+    }
+
+    public fromJSONSync(arrayPropertyProps: PrimitiveArrayPropertyProps) {
+      super.fromJSONSync(arrayPropertyProps);
       if (undefined !== arrayPropertyProps.minOccurs) {
         this._minOccurs = arrayPropertyProps.minOccurs;
       }
@@ -514,12 +620,25 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
       }
     }
 
+    /** @deprecated */
     public async deserialize(arrayPropertyProps: PrimitiveArrayPropertyProps) {
-      this.deserializeSync(arrayPropertyProps);
+      await this.fromJSON(arrayPropertyProps);
     }
 
+    public async fromJSON(arrayPropertyProps: PrimitiveArrayPropertyProps) {
+      this.fromJSONSync(arrayPropertyProps);
+    }
+
+    /** @deprecated */
     public toJson() {
-      const schemaJson = super.toJson();
+      return this.toJSON();
+    }
+
+    /**
+     * Save this ArrayProperty's properties to an object for serializing to JSON.
+     */
+    public toJSON(): ArrayPropertyProps {
+      const schemaJson = super.toJSON() as any;
       schemaJson.minOccurs = this.minOccurs;
       if (this.maxOccurs !== undefined)
         schemaJson.maxOccurs = this.maxOccurs;
@@ -543,6 +662,13 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
 export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty) {
   constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
     super(ecClass, name, primitiveType);
+  }
+
+  /**
+   * Save this PrimitiveArrayProperty's properties to an object for serializing to JSON.
+   */
+  public toJSON(): PrimitiveArrayPropertyProps {
+    return super.toJSON();
   }
 }
 

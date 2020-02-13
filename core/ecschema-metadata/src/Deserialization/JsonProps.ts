@@ -27,6 +27,8 @@ export interface SchemaProps {
   readonly label?: string;
   readonly description?: string;
   readonly references?: SchemaReferenceProps[];
+  readonly items?: { [name: string]: SchemaItemProps };
+  readonly customAttributes?: Array<{ [value: string]: any }>;
 }
 
 /**
@@ -42,11 +44,14 @@ export interface SchemaReferenceProps {
  */
 export interface SchemaItemProps {
   // NEEDSWORK: Still need to clarify how single-item deserialization works...
+  readonly $schema?: string;
   readonly schema?: string;  // conditionally required
   readonly schemaVersion?: string;
+  readonly name?: string;
   readonly schemaItemType?: string;
   readonly label?: string;
   readonly description?: string;
+  readonly customAttributes?: Array<{ [value: string]: any }>;
 }
 
 /**
@@ -55,6 +60,7 @@ export interface SchemaItemProps {
 export interface ClassProps extends SchemaItemProps {
   readonly modifier?: string;
   readonly baseClass?: string;
+  readonly properties?: PropertyProps[];
 }
 
 /**
@@ -152,6 +158,7 @@ export interface PropertyProps {
   readonly priority?: number;
   readonly inherited?: boolean;
   readonly kindOfQuantity?: string;
+  readonly customAttributes?: Array<{ [value: string]: any }>;
 }
 
 /**

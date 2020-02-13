@@ -171,7 +171,8 @@ describe("Constant", () => {
       assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidDefinition), new SchemaContext()), ECObjectsError, `The Constant TestSchema.TestConstant has an invalid 'definition' attribute. It should be of type 'string'.`);
     });
   });
-  describe("toJson", () => {
+
+  describe("toJson (deprecated)", () => {
     // Fully defined constant
     const fullyDefinedConstant = createSchemaJson({
       label: "Test Constant",
@@ -260,6 +261,150 @@ describe("Constant", () => {
       const testConst: Constant = testItem as Constant;
       assert.isDefined(testConst);
       const constantSerialization = testConst.toJson(false, false);
+
+      expect(constantSerialization.label).eql("Test Constant");
+      expect(constantSerialization.description).eql("testing a constant");
+
+      expect(constantSerialization.numerator).eql(5.5);
+      expect(constantSerialization.denominator).eql(5.1);
+
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+    });
+  });
+
+  describe("toJSON", () => {
+    // Fully defined constant
+    const fullyDefinedConstant = createSchemaJson({
+      label: "Test Constant",
+      description: "testing a constant",
+      phenomenon: "TestSchema.TestPhenomenon",
+      definition: "PI",
+      numerator: 5.5,
+      denominator: 5.1,
+    });
+
+    it("async - should succeed with fully defined with standalone", async () => {
+      const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem<Constant>("TestConstant");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      const constantSerialization = testConst.toJSON(true, true);
+
+      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      expect(constantSerialization.name).eql("TestConstant");
+      expect(constantSerialization.schemaVersion).eql("01.02.03");
+      expect(constantSerialization.schema).eql("TestSchema");
+
+      expect(constantSerialization.label).eql("Test Constant");
+      expect(constantSerialization.description).eql("testing a constant");
+
+      expect(constantSerialization.numerator).eql(5.5);
+      expect(constantSerialization.denominator).eql(5.1);
+
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+    });
+
+    it("sync - should succeed with fully defined with standalone", () => {
+      const ecSchema = Schema.fromJsonSync(fullyDefinedConstant, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testItem = ecSchema.getItemSync<Constant>("TestConstant");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      const constantSerialization = testConst.toJSON(true, true);
+
+      expect(constantSerialization.$schema).eql("https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      expect(constantSerialization.name).eql("TestConstant");
+      expect(constantSerialization.schemaVersion).eql("01.02.03");
+      expect(constantSerialization.schema).eql("TestSchema");
+
+      expect(constantSerialization.label).eql("Test Constant");
+      expect(constantSerialization.description).eql("testing a constant");
+
+      expect(constantSerialization.numerator).eql(5.5);
+      expect(constantSerialization.denominator).eql(5.1);
+
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+    });
+
+    it("async - should succeed with fully defined without standalone", async () => {
+      const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem<Constant>("TestConstant");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      const constantSerialization = testConst.toJSON(false, true);
+
+      expect(constantSerialization.label).eql("Test Constant");
+      expect(constantSerialization.description).eql("testing a constant");
+
+      expect(constantSerialization.numerator).eql(5.5);
+      expect(constantSerialization.denominator).eql(5.1);
+
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+    });
+
+    it("async - JSON stringify, should succeed with fully defined", async () => {
+      const ecSchema = await Schema.fromJson(fullyDefinedConstant, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testItem = await ecSchema.getItem<Constant>("TestConstant");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      const json = JSON.stringify(testConst);
+      const constantSerialization = JSON.parse(json);
+
+      expect(constantSerialization.label).eql("Test Constant");
+      expect(constantSerialization.description).eql("testing a constant");
+
+      expect(constantSerialization.numerator).eql(5.5);
+      expect(constantSerialization.denominator).eql(5.1);
+
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+    });
+
+    it("sync - should succeed with fully defined without standalone", () => {
+      const ecSchema = Schema.fromJsonSync(fullyDefinedConstant, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testItem = ecSchema.getItemSync<Constant>("TestConstant");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      const constantSerialization = testConst.toJSON(false, false);
+
+      expect(constantSerialization.label).eql("Test Constant");
+      expect(constantSerialization.description).eql("testing a constant");
+
+      expect(constantSerialization.numerator).eql(5.5);
+      expect(constantSerialization.denominator).eql(5.1);
+
+      assert.strictEqual(constantSerialization.definition, "PI");
+      assert.strictEqual(constantSerialization.phenomenon, "TestSchema.TestPhenomenon");
+    });
+
+    it("sync - JSON stringify, should succeed with fully defined", () => {
+      const ecSchema = Schema.fromJsonSync(fullyDefinedConstant, new SchemaContext());
+      assert.isDefined(ecSchema);
+      const testItem = ecSchema.getItemSync<Constant>("TestConstant");
+      assert.isDefined(testItem);
+      assert.isTrue(testItem instanceof Constant);
+      const testConst: Constant = testItem as Constant;
+      assert.isDefined(testConst);
+      const json = JSON.stringify(testConst);
+      const constantSerialization = JSON.parse(json);
 
       expect(constantSerialization.label).eql("Test Constant");
       expect(constantSerialization.description).eql("testing a constant");

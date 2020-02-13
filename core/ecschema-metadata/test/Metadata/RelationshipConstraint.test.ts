@@ -60,7 +60,7 @@ describe("RelationshipConstraint", () => {
         roleLabel: "test roleLabel",
       };
       const unloadedConstraintClassesJson = { ...json, constraintClasses: ["ThisClassDoesNotExist"] };
-      await expect(testConstraint.deserialize(unloadedConstraintClassesJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testConstraint.fromJSON(unloadedConstraintClassesJson)).to.be.rejectedWith(ECObjectsError);
     });
 
     const targetStubJson = {

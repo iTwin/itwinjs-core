@@ -46,7 +46,16 @@ export class Unit extends SchemaItem {
   get denominator(): number { return this._denominator; }
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    return this.toJSON(standalone, includeSchemaVersion);
+  }
+
+  /**
+   * Save this Unit's properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): UnitProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.phenomenon = this.phenomenon!.fullName;
     schemaJson.unitSystem = this.unitSystem!.fullName;
     schemaJson.definition = this.definition;
@@ -83,8 +92,13 @@ export class Unit extends SchemaItem {
     return itemElement;
   }
 
+  /** @deprecated */
   public deserializeSync(unitProps: UnitProps) {
-    super.deserializeSync(unitProps);
+    this.fromJSONSync(unitProps);
+  }
+
+  public fromJSONSync(unitProps: UnitProps) {
+    super.fromJSONSync(unitProps);
 
     const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(unitProps.phenomenon);
     if (!phenomenonSchemaItemKey)
@@ -129,7 +143,12 @@ export class Unit extends SchemaItem {
     }
   }
 
+  /** @deprecated */
   public async deserialize(unitProps: UnitProps) {
-    this.deserializeSync(unitProps);
+    await this.fromJSON(unitProps);
+  }
+
+  public async fromJSON(unitProps: UnitProps) {
+    this.fromJSONSync(unitProps);
   }
 }

@@ -146,6 +146,8 @@ export interface ClassProps extends SchemaItemProps {
     readonly baseClass?: string;
     // (undocumented)
     readonly modifier?: string;
+    // (undocumented)
+    readonly properties?: PropertyProps[];
 }
 
 // @beta
@@ -159,10 +161,14 @@ export class Constant extends SchemaItem {
     get denominator(): number;
     // (undocumented)
     protected _denominator: number;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(constantProps: ConstantProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(constantProps: ConstantProps): void;
+    // (undocumented)
+    fromJSON(constantProps: ConstantProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(constantProps: ConstantProps): void;
     // (undocumented)
     get numerator(): number;
     // (undocumented)
@@ -173,10 +179,9 @@ export class Constant extends SchemaItem {
     protected _phenomenon?: LazyLoadedPhenomenon;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.Constant;
-    // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    toJSON(standalone: boolean, includeSchemaVersion: boolean): ConstantProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): ConstantProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -284,16 +289,19 @@ export class CustomAttributeClass extends ECClass {
     get containerType(): CustomAttributeContainerType;
     // (undocumented)
     protected _containerType?: CustomAttributeContainerType;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(customAttributeProps: CustomAttributeClassProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(customAttributeProps: CustomAttributeClassProps): void;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.CustomAttributeClass;
+    fromJSON(customAttributeProps: CustomAttributeClassProps): Promise<void>;
     // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    fromJSONSync(customAttributeProps: CustomAttributeClassProps): void;
+    // (undocumented)
+    readonly schemaItemType: SchemaItemType.CustomAttributeClass;
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): CustomAttributeClassProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): CustomAttributeClassProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -655,10 +663,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
     // (undocumented)
     get customAttributes(): CustomAttributeSet | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(classProps: ClassProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(classProps: ClassProps): void;
+    // (undocumented)
+    fromJSON(classProps: ClassProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(classProps: ClassProps): void;
     getAllBaseClasses(): AsyncIterableIterator<ECClass>;
     // (undocumented)
     getAllBaseClassesSync(): Iterable<AnyClass>;
@@ -694,10 +706,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     get properties(): Property[] | undefined;
     // (undocumented)
     protected _properties?: Property[];
-    // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ClassProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): ClassProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
     traverseBaseClasses(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): Promise<boolean>;
@@ -862,10 +873,14 @@ export class EntityClass extends ECClass {
     protected createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
     // (undocumented)
     protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(entityClassProps: EntityClassProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(entityClassProps: EntityClassProps): void;
+    // (undocumented)
+    fromJSON(entityClassProps: EntityClassProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(entityClassProps: EntityClassProps): void;
     getInheritedProperty(name: string): Promise<AnyProperty | undefined>;
     getInheritedPropertySync(name: string): Property | undefined;
     // (undocumented)
@@ -876,7 +891,8 @@ export class EntityClass extends ECClass {
     protected _mixins?: LazyLoadedMixin[];
     // (undocumented)
     readonly schemaItemType: SchemaItemType.EntityClass;
-    // (undocumented)
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): EntityClassProps;
+    // @deprecated (undocumented)
     toJson(standalone: boolean, includeSchemaVersion: boolean): any | void;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -907,14 +923,18 @@ export class Enumeration extends SchemaItem {
     constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String);
     protected addEnumerator(enumerator: AnyEnumerator): void;
     createEnumerator(name: string, value: string | number, label?: string, description?: string): AnyEnumerator;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(enumerationProps: EnumerationProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(enumerationProps: EnumerationProps): void;
     // (undocumented)
     get enumerators(): AnyEnumerator[];
     // (undocumented)
     protected _enumerators: AnyEnumerator[];
+    // (undocumented)
+    fromJSON(enumerationProps: EnumerationProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(enumerationProps: EnumerationProps): void;
     getEnumerator(value: string): Enumerator<string> | undefined;
     // (undocumented)
     getEnumerator(value: number): Enumerator<number> | undefined;
@@ -929,10 +949,9 @@ export class Enumeration extends SchemaItem {
     get isString(): boolean;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.Enumeration;
-    // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): EnumerationProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): EnumerationProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
@@ -955,16 +974,21 @@ export class EnumerationChanges extends SchemaItemChanges {
 // @beta (undocumented)
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     constructor(ecClass: ECClass, name: string, type: LazyLoadedEnumeration);
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(enumerationPropertyProps: EnumerationPropertyProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(enumerationPropertyProps: EnumerationPropertyProps): void;
     // (undocumented)
     get enumeration(): LazyLoadedEnumeration | undefined;
     // (undocumented)
     protected _enumeration?: LazyLoadedEnumeration;
     // (undocumented)
-    toJson(): any;
+    fromJSON(enumerationPropertyProps: EnumerationPropertyProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(enumerationPropertyProps: EnumerationPropertyProps): void;
+    toJSON(): EnumerationPropertyProps;
+    // @deprecated (undocumented)
+    toJson(): EnumerationPropertyProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -1049,14 +1073,18 @@ export class Format extends SchemaItem {
     get decimalSeparator(): string;
     // (undocumented)
     protected _decimalSeparator: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(formatProps: FormatProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(formatProps: FormatProps): void;
     // (undocumented)
     get formatTraits(): FormatTraits;
     // (undocumented)
     protected _formatTraits: FormatTraits;
+    // (undocumented)
+    fromJSON(formatProps: FormatProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(formatProps: FormatProps): void;
     // (undocumented)
     hasFormatTrait(formatTrait: FormatTraits): boolean;
     // (undocumented)
@@ -1103,10 +1131,9 @@ export class Format extends SchemaItem {
     get thousandSeparator(): string;
     // (undocumented)
     protected _thousandSeparator: string;
-    // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): FormatProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): FormatProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
@@ -1281,20 +1308,23 @@ export interface IDiagnosticReporter {
 // @beta
 export class InvertedUnit extends SchemaItem {
     constructor(schema: Schema, name: string);
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(invertedUnitProps: InvertedUnitProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(invertedUnitProps: InvertedUnitProps): void;
+    // (undocumented)
+    fromJSON(invertedUnitProps: InvertedUnitProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(invertedUnitProps: InvertedUnitProps): void;
     // (undocumented)
     get invertsUnit(): LazyLoadedUnit | undefined;
     // (undocumented)
     protected _invertsUnit?: LazyLoadedUnit;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.InvertedUnit;
-    // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): InvertedUnitProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): InvertedUnitProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)
@@ -1531,10 +1561,14 @@ export class KindOfQuantity extends SchemaItem {
     protected addPresentationFormat(format: Format | OverrideFormat, isDefault?: boolean): void;
     protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
     get defaultPresentationFormat(): Format | OverrideFormat | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(kindOfQuantityProps: KindOfQuantityProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(kindOfQuantityProps: KindOfQuantityProps): void;
+    // (undocumented)
+    fromJSON(kindOfQuantityProps: KindOfQuantityProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(kindOfQuantityProps: KindOfQuantityProps): void;
     // (undocumented)
     get persistenceUnit(): LazyLoadedUnit | LazyLoadedInvertedUnit | undefined;
     // (undocumented)
@@ -1548,10 +1582,9 @@ export class KindOfQuantity extends SchemaItem {
     protected _relativeError: number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.KindOfQuantity;
-    // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): KindOfQuantityProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): KindOfQuantityProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -1645,16 +1678,19 @@ export class Mixin extends ECClass {
     protected createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
     // (undocumented)
     protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(mixinProps: MixinProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(mixinProps: MixinProps): void;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.Mixin;
+    fromJSON(mixinProps: MixinProps): Promise<void>;
     // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    fromJSONSync(mixinProps: MixinProps): void;
+    // (undocumented)
+    readonly schemaItemType: SchemaItemType.Mixin;
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): MixinProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): MixinProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -1678,8 +1714,9 @@ export class NavigationProperty extends Property {
     get relationshipClass(): LazyLoadedRelationshipClass;
     // (undocumented)
     protected _relationshipClass: LazyLoadedRelationshipClass;
-    // (undocumented)
-    toJson(): any;
+    toJSON(): NavigationPropertyProps;
+    // @deprecated (undocumented)
+    toJson(): NavigationPropertyProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -1797,16 +1834,19 @@ export class Phenomenon extends SchemaItem {
     get definition(): string;
     // (undocumented)
     protected _definition: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(phenomenonProps: PhenomenonProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(phenomenonProps: PhenomenonProps): void;
     // (undocumented)
-    readonly schemaItemType: SchemaItemType.Phenomenon;
+    fromJSON(phenomenonProps: PhenomenonProps): Promise<void>;
     // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    fromJSONSync(phenomenonProps: PhenomenonProps): void;
+    // (undocumented)
+    readonly schemaItemType: SchemaItemType.Phenomenon;
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): PhenomenonProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): PhenomenonProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -1834,6 +1874,7 @@ export class PresentationUnitChanges extends BaseSchemaChanges {
 // @beta (undocumented)
 export class PrimitiveArrayProperty extends PrimitiveArrayProperty_base {
     constructor(ecClass: ECClass, name: string, primitiveType?: PrimitiveType);
+    toJSON(): PrimitiveArrayPropertyProps;
 }
 
 // @beta (undocumented)
@@ -1845,14 +1886,18 @@ export interface PrimitiveArrayPropertyProps extends ArrayPropertyProps {
 // @beta (undocumented)
 export abstract class PrimitiveOrEnumPropertyBase extends Property {
     constructor(ecClass: ECClass, name: string, type: PropertyType);
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps): void;
     // (undocumented)
     get extendedTypeName(): string | undefined;
     // (undocumented)
     protected _extendedTypeName?: string;
+    // (undocumented)
+    fromJSON(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps): void;
     // (undocumented)
     get maxLength(): number | undefined;
     // (undocumented)
@@ -1869,8 +1914,9 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     get minValue(): number | undefined;
     // (undocumented)
     protected _minValue?: number;
-    // (undocumented)
-    toJson(): any;
+    toJSON(): PrimitiveOrEnumPropertyBaseProps;
+    // @deprecated (undocumented)
+    toJson(): PrimitiveOrEnumPropertyBaseProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -1892,14 +1938,19 @@ export interface PrimitiveOrEnumPropertyBaseProps extends PropertyProps {
 // @beta (undocumented)
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
     constructor(ecClass: ECClass, name: string, primitiveType?: PrimitiveType);
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(primitivePropertyProps: PrimitivePropertyProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(primitivePropertyProps: PrimitivePropertyProps): void;
     // (undocumented)
-    get primitiveType(): PrimitiveType;
+    fromJSON(primitivePropertyProps: PrimitivePropertyProps): Promise<void>;
     // (undocumented)
-    toJson(): any;
+    fromJSONSync(primitivePropertyProps: PrimitivePropertyProps): void;
+    // (undocumented)
+    get primitiveType(): PrimitiveType;
+    toJSON(): PrimitivePropertyProps;
+    // @deprecated (undocumented)
+    toJson(): PrimitivePropertyProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -1958,10 +2009,14 @@ export abstract class Property implements CustomAttributeContainerProps {
     get description(): string | undefined;
     // (undocumented)
     protected _description?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(propertyProps: PropertyProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(propertyProps: PropertyProps): void;
+    // (undocumented)
+    fromJSON(propertyProps: PropertyProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(propertyProps: PropertyProps): void;
     get fullName(): string;
     // (undocumented)
     getCategorySync(): PropertyCategory | undefined;
@@ -2002,7 +2057,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     // (undocumented)
     get propertyType(): PropertyType;
     get schema(): Schema;
-    // (undocumented)
+    toJSON(): PropertyProps;
+    // @deprecated (undocumented)
     toJson(): any;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -2013,20 +2069,23 @@ export abstract class Property implements CustomAttributeContainerProps {
 // @beta (undocumented)
 export class PropertyCategory extends SchemaItem {
     constructor(schema: Schema, name: string);
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(propertyCategoryProps: PropertyCategoryProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(propertyCategoryProps: PropertyCategoryProps): void;
+    // (undocumented)
+    fromJSON(propertyCategoryProps: PropertyCategoryProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(propertyCategoryProps: PropertyCategoryProps): void;
     // (undocumented)
     get priority(): number;
     // (undocumented)
     protected _priority: number;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.PropertyCategory;
-    // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): PropertyCategoryProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): PropertyCategoryProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -2062,6 +2121,10 @@ export class PropertyMissing extends BaseSchemaChange {
 export interface PropertyProps {
     // (undocumented)
     readonly category?: string;
+    // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
     // (undocumented)
     readonly description?: string;
     // (undocumented)
@@ -2175,10 +2238,14 @@ export class RelationshipClass extends ECClass {
     protected createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
     // (undocumented)
     protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(relationshipClassProps: RelationshipClassProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(relationshipClassProps: RelationshipClassProps): void;
+    // (undocumented)
+    fromJSON(relationshipClassProps: RelationshipClassProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(relationshipClassProps: RelationshipClassProps): void;
     // (undocumented)
     readonly schema: Schema;
     // (undocumented)
@@ -2199,10 +2266,9 @@ export class RelationshipClass extends ECClass {
     get target(): RelationshipConstraint;
     // (undocumented)
     protected _target: RelationshipConstraint;
-    // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): RelationshipClassProps;
+    // @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): RelationshipClassProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -2237,10 +2303,14 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
     // (undocumented)
     get customAttributes(): CustomAttributeSet | undefined;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(relationshipConstraintProps: RelationshipConstraintProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(relationshipConstraintProps: RelationshipConstraintProps): void;
+    // (undocumented)
+    fromJSON(relationshipConstraintProps: RelationshipConstraintProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(relationshipConstraintProps: RelationshipConstraintProps): void;
     get fullName(): "Source" | "Target";
     get isSource(): boolean;
     // (undocumented)
@@ -2265,10 +2335,9 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     protected _roleLabel?: string;
     get schema(): Schema;
     supportsClass(ecClass: ECClass): Promise<boolean>;
-    // (undocumented)
-    toJson(): {
-        [value: string]: any;
-    };
+    toJSON(): RelationshipConstraintProps;
+    // @deprecated (undocumented)
+    toJson(): void;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -2409,12 +2478,16 @@ export class Schema implements CustomAttributeContainerProps {
     get description(): string | undefined;
     // (undocumented)
     protected _description?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(schemaProps: SchemaProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(schemaProps: SchemaProps): void;
     // (undocumented)
+    fromJSON(schemaProps: SchemaProps): Promise<void>;
+    // (undocumented)
     static fromJson(jsonObj: object | string, context: SchemaContext): Promise<Schema>;
+    // (undocumented)
+    fromJSONSync(schemaProps: SchemaProps): void;
     // (undocumented)
     static fromJsonSync(jsonObj: object | string, context: SchemaContext): Schema;
     get fullName(): string;
@@ -2450,10 +2523,9 @@ export class Schema implements CustomAttributeContainerProps {
     get schemaKey(): SchemaKey;
     // (undocumented)
     protected _schemaKey?: SchemaKey;
-    // (undocumented)
-    toJson(): {
-        [value: string]: any;
-    };
+    toJSON(): SchemaProps;
+    // @deprecated (undocumented)
+    toJson(): SchemaProps;
     toXml(schemaXml: Document): Promise<Document>;
     // (undocumented)
     get writeVersion(): number;
@@ -2965,11 +3037,15 @@ export abstract class SchemaItem {
     get description(): string | undefined;
     // (undocumented)
     protected _description?: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(schemaItemProps: SchemaItemProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(schemaItemProps: SchemaItemProps): void;
     static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItemOrKey?: SchemaItem | SchemaItemKey): boolean;
+    // (undocumented)
+    fromJSON(schemaItemProps: SchemaItemProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(schemaItemProps: SchemaItemProps): void;
     // (undocumented)
     get fullName(): string;
     // (undocumented)
@@ -2987,10 +3063,9 @@ export abstract class SchemaItem {
     readonly schema: Schema;
     // (undocumented)
     readonly schemaItemType: SchemaItemType;
-    // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): SchemaItemProps;
+    // @internal @deprecated (undocumented)
+    toJson(standalone: boolean, includeSchemaVersion: boolean): SchemaItemProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -3047,9 +3122,17 @@ export class SchemaItemMissing extends SchemaItemChange {
 // @beta (undocumented)
 export interface SchemaItemProps {
     // (undocumented)
+    readonly $schema?: string;
+    // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
+    // (undocumented)
     readonly description?: string;
     // (undocumented)
     readonly label?: string;
+    // (undocumented)
+    readonly name?: string;
     // (undocumented)
     readonly schema?: string;
     // (undocumented)
@@ -3163,7 +3246,15 @@ export interface SchemaProps {
     // (undocumented)
     readonly alias: string;
     // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
+    // (undocumented)
     readonly description?: string;
+    // (undocumented)
+    readonly items?: {
+        [name: string]: SchemaItemProps;
+    };
     // (undocumented)
     readonly label?: string;
     // (undocumented)
@@ -3363,16 +3454,21 @@ export type StructClassProps = ClassProps;
 // @beta (undocumented)
 export class StructProperty extends Property {
     constructor(ecClass: ECClass, name: string, type: StructClass);
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(structPropertyProps: StructPropertyProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(structPropertyProps: StructPropertyProps): void;
+    // (undocumented)
+    fromJSON(structPropertyProps: StructPropertyProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(structPropertyProps: StructPropertyProps): void;
     // (undocumented)
     get structClass(): StructClass;
     // (undocumented)
     protected _structClass: StructClass;
-    // (undocumented)
-    toJson(): any;
+    toJSON(): StructPropertyProps;
+    // @deprecated (undocumented)
+    toJson(): StructPropertyProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
 }
@@ -3402,10 +3498,14 @@ export class Unit extends SchemaItem {
     get denominator(): number;
     // (undocumented)
     protected _denominator: number;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserialize(unitProps: UnitProps): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     deserializeSync(unitProps: UnitProps): void;
+    // (undocumented)
+    fromJSON(unitProps: UnitProps): Promise<void>;
+    // (undocumented)
+    fromJSONSync(unitProps: UnitProps): void;
     // (undocumented)
     get numerator(): number;
     // (undocumented)
@@ -3420,10 +3520,9 @@ export class Unit extends SchemaItem {
     protected _phenomenon?: LazyLoadedPhenomenon;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.Unit;
+    toJSON(standalone?: boolean, includeSchemaVersion?: boolean): UnitProps;
     // (undocumented)
-    toJson(standalone: boolean, includeSchemaVersion: boolean): {
-        [value: string]: any;
-    };
+    toJson(standalone: boolean, includeSchemaVersion: boolean): UnitProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
     // (undocumented)

@@ -121,7 +121,7 @@ describe("ECClass", () => {
             customAttributes: [
               { className: "TestSchema.TestFirstBaseCAClass0" },
               { className: "TestSchema.TestFirstBaseCAClass1" },
-            ]
+            ],
           },
           TestSecondBaseClass: {
             schemaItemType: "EntityClass",
@@ -132,8 +132,8 @@ describe("ECClass", () => {
             baseClass: "TestSchema.TestSecondBaseClass",
             customAttributes: [
               { className: "TestSchema.TestCAClass0" },
-              { className: "TestSchema.TestCAClass1" }
-            ]
+              { className: "TestSchema.TestCAClass1" },
+            ],
           },
         },
       };
@@ -199,7 +199,7 @@ describe("ECClass", () => {
             customAttributes: [
               { className: "TestSchema.TestCAClass0" },
               { className: "TestSchema.TestCAClass1" },
-            ]
+            ],
           },
           TestFirstMixinClass: {
             schemaItemType: "Mixin",
@@ -207,8 +207,8 @@ describe("ECClass", () => {
             appliesTo: "TestSchema.TestBaseClass",
             customAttributes: [
               { className: "TestSchema.TestFirstMixinCAClass0" },
-              { className: "TestSchema.TestFirstMixinCAClass1" }
-            ]
+              { className: "TestSchema.TestFirstMixinCAClass1" },
+            ],
           },
           TestSecondMixinClass: {
             schemaItemType: "Mixin",
@@ -216,8 +216,8 @@ describe("ECClass", () => {
             appliesTo: "TestSchema.TestBaseClass",
             customAttributes: [
               { className: "TestSchema.TestSecondMixinCAClass0" },
-              { className: "TestSchema.TestSecondMixinCAClass1" }
-            ]
+              { className: "TestSchema.TestSecondMixinCAClass1" },
+            ],
           },
 
           TestBaseClass: {
@@ -225,8 +225,8 @@ describe("ECClass", () => {
             mixins: ["TestSchema.TestMixinClass", "TestSchema.TestFirstMixinClass"],
             customAttributes: [
               { className: "TestSchema.TestFirstBaseCAClass0" },
-              { className: "TestSchema.TestFirstBaseCAClass1" }
-            ]
+              { className: "TestSchema.TestFirstBaseCAClass1" },
+            ],
           },
           TestClass: {
             schemaItemType: "EntityClass",
@@ -234,8 +234,8 @@ describe("ECClass", () => {
             mixins: ["TestSchema.TestFirstMixinClass", "TestSchema.TestSecondMixinClass"],
             customAttributes: [
               { className: "TestSchema.TestCAClass0" },
-              { className: "TestSchema.TestCAClass1" }
-            ]
+              { className: "TestSchema.TestCAClass1" },
+            ],
           },
         },
       };
@@ -695,7 +695,7 @@ describe("ECClass", () => {
     });
   });
 
-  describe("toJson", () => {
+  describe("toJson (deprecated)", () => {
     function getTestSchemaJson(classJson: any = {}) {
       return {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -914,6 +914,255 @@ describe("ECClass", () => {
     });
   });
 
+  describe("toJSON", () => {
+    function getTestSchemaJson(classJson: any = {}) {
+      return {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          testBaseClass: {
+            schemaItemType: "EntityClass",
+          },
+          testClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.testBaseClass",
+            properties: [
+              {
+                name: "ValidProp",
+                description: "A really long description...",
+                label: "SomeDisplayLabel",
+                type: "PrimitiveProperty",
+                isReadOnly: true,
+                priority: 100,
+                typeName: "double",
+              },
+            ],
+            ...classJson,
+          },
+        },
+      };
+    }
+    const schemaJsonOne = getTestSchemaJson();
+
+    it("async - Simple serialization", async () => {
+      schema = await Schema.fromJson(schemaJsonOne, new SchemaContext());
+      assert.isDefined(schema);
+
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      assert.isDefined(testClass);
+      expect(testClass).to.exist;
+      const serialized = testClass!.toJSON(true, true);
+      const expectedJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        name: "testClass",
+        schema: "TestSchema",
+        schemaVersion: "01.02.03",
+        ...schemaJsonOne.items.testClass,
+      };
+      expect(serialized).eql(expectedJson);
+    });
+
+    it("async - JSON stringify serialization", async () => {
+      schema = await Schema.fromJson(schemaJsonOne, new SchemaContext());
+      assert.isDefined(schema);
+
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      assert.isDefined(testClass);
+      expect(testClass).to.exist;
+      const json = JSON.stringify(testClass);
+      const serialized = JSON.parse(json);
+      const expectedJson = {
+        ...schemaJsonOne.items.testClass,
+      };
+      expect(serialized).eql(expectedJson);
+    });
+
+    it("should omit modifier if 'None'", async () => {
+      schema = await Schema.fromJson(getTestSchemaJson({ modifier: "None" }), new SchemaContext());
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      expect(testClass).to.exist;
+      expect(testClass!.toJSON(true, true)).to.not.have.property("modifier");
+    });
+
+    it("should include modifier if 'Abstract'", async () => {
+      schema = await Schema.fromJson(getTestSchemaJson({ modifier: "Abstract" }), new SchemaContext());
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      expect(testClass).to.exist;
+      expect(testClass!.toJSON(true, true)).to.include({ modifier: "Abstract" });
+    });
+
+    it("should include modifier if 'Sealed'", async () => {
+      schema = await Schema.fromJson(getTestSchemaJson({ modifier: "Sealed" }), new SchemaContext());
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      expect(testClass).to.exist;
+      expect(testClass!.toJSON(true, true)).to.include({ modifier: "Sealed" });
+    });
+
+    it("should omit customAttributes if empty", async () => {
+      schema = await Schema.fromJson(getTestSchemaJson({ customAttributes: [] }), new SchemaContext());
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      expect(testClass).to.exist;
+      expect(testClass!.toJSON(true, true)).to.not.have.property("customAttributes");
+    });
+
+    it("sync - Simple serialization", () => {
+      schema = Schema.fromJsonSync(schemaJsonOne, new SchemaContext());
+      assert.isDefined(schema);
+
+      const testClass = schema.getItemSync<EntityClass>("testClass");
+      assert.isDefined(testClass);
+      const serialized = testClass!.toJSON(true, true);
+      const expectedJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        name: "testClass",
+        schema: "TestSchema",
+        schemaVersion: "01.02.03",
+        ...schemaJsonOne.items.testClass,
+      };
+      expect(serialized).eql(expectedJson);
+    });
+
+    it("sync - JSON stringify serialization", () => {
+      schema = Schema.fromJsonSync(schemaJsonOne, new SchemaContext());
+      assert.isDefined(schema);
+
+      const testClass = schema.getItemSync<EntityClass>("testClass");
+      assert.isDefined(testClass);
+      const json = JSON.stringify(testClass);
+      const serialized = JSON.parse(json);
+      const expectedJson = {
+        ...schemaJsonOne.items.testClass,
+      };
+      expect(serialized).eql(expectedJson);
+    });
+
+    const schemaJsonFive = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "TestSchema",
+      version: "1.2.3",
+      items: {
+        TestCAClassA: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
+        TestCAClassB: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
+        TestCAClassC: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
+        testBaseClass: {
+          schemaItemType: "EntityClass",
+        },
+        testClass: {
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.testBaseClass",
+          properties: [
+            {
+              name: "ValidProp",
+              description: "A really long description...",
+              label: "SomeDisplayLabel",
+              type: "PrimitiveProperty",
+              isReadOnly: true,
+              priority: 100,
+              typeName: "double",
+              customAttributes: [
+                {
+                  className: "TestSchema.TestCAClassA",
+                  ShowClasses: true,
+                },
+                {
+                  className: "TestSchema.TestCAClassB",
+                  FloatValue: 1.2,
+                },
+                {
+                  className: "TestSchema.TestCAClassC",
+                  IntegerValue: 5,
+                },
+              ],
+            },
+          ],
+        },
+      },
+    };
+    it("async - Serialization with multiple custom attributes- additional properties", async () => {
+      schema = await Schema.fromJson(schemaJsonFive, new SchemaContext());
+      assert.isDefined(schema);
+
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      assert.isDefined(testClass);
+      const serialized = testClass!.toJSON(true, true);
+      assert.isTrue(serialized.properties![0].customAttributes![0].ShowClasses);
+      assert.strictEqual(serialized.properties![0].customAttributes![1].FloatValue, 1.2);
+      assert.strictEqual(serialized.properties![0].customAttributes![2].IntegerValue, 5);
+    });
+    it("sync - Serialization with multiple custom attributes- additional properties", () => {
+      schema = Schema.fromJsonSync(schemaJsonFive, new SchemaContext());
+      assert.isDefined(schema);
+
+      const testClass = schema.getItemSync<EntityClass>("testClass");
+      assert.isDefined(testClass);
+      const serialized = testClass!.toJSON(true, true);
+      assert.isTrue(serialized.properties![0].customAttributes![0].ShowClasses);
+      assert.strictEqual(serialized.properties![0].customAttributes![1].FloatValue, 1.2);
+      assert.strictEqual(serialized.properties![0].customAttributes![2].IntegerValue, 5);
+    });
+    const schemaJsonSix = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "TestSchema",
+      version: "1.2.3",
+      items: {
+        testBaseClass: {
+          schemaItemType: "EntityClass",
+        },
+        testClass: {
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.testBaseClass",
+          properties: [
+            {
+              name: "A",
+              type: "PrimitiveProperty",
+              typeName: "double",
+            },
+            {
+              name: "B",
+              type: "PrimitiveProperty",
+              typeName: "double",
+            },
+            {
+              name: "C",
+              type: "PrimitiveProperty",
+              typeName: "double",
+            },
+            {
+              name: "D",
+              type: "PrimitiveProperty",
+              typeName: "double",
+            },
+          ],
+        },
+      },
+    };
+    it("async - Serialization with proper order of properties", async () => {
+      schema = await Schema.fromJson(schemaJsonSix, new SchemaContext());
+      assert.isDefined(schema);
+
+      const testClass = await schema.getItem<EntityClass>("testClass");
+      assert.isDefined(testClass);
+      const serialized = testClass!.toJSON(true, true);
+      assert.strictEqual(serialized.properties![0].name, "A");
+      assert.strictEqual(serialized.properties![1].name, "B");
+      assert.strictEqual(serialized.properties![2].name, "C");
+      assert.strictEqual(serialized.properties![3].name, "D");
+    });
+    it("sync - Serialization with proper order of properties", () => {
+      schema = Schema.fromJsonSync(schemaJsonSix, new SchemaContext());
+      assert.isDefined(schema);
+
+      const testClass = schema.getItemSync<EntityClass>("testClass");
+      assert.isDefined(testClass);
+      const serialized = testClass!.toJSON(true, true);
+      assert.strictEqual(serialized.properties![0].name, "A");
+      assert.strictEqual(serialized.properties![1].name, "B");
+      assert.strictEqual(serialized.properties![2].name, "C");
+      assert.strictEqual(serialized.properties![3].name, "D");
+    });
+  });
+
   describe("toXml", () => {
     function getCustomAttribute(containerElement: Element, name: string): Element {
       const caElements = containerElement.getElementsByTagName("ECCustomAttributes");
@@ -1034,7 +1283,7 @@ describe("ECClass", () => {
       assert.isDefined(refCAClass);
       await context.addSchema(refSchema);
       const testSchema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
-      (testSchema as MutableSchema).addReference(refSchema);
+      await (testSchema as MutableSchema).addReference(refSchema);
       const testClass = await testSchema.getItem<EntityClass>("testClass") as ECClass as MutableClass;
       testClass.addCustomAttribute({ className: "RefSchema.TestCustomAttribute" });
       const serialized = await testClass.toXml(newDom);

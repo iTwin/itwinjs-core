@@ -161,7 +161,7 @@ describe("Enumeration", () => {
             { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
-        await testEnumSansPrimType.deserialize(json);
+        await testEnumSansPrimType.fromJSON(json);
         assertValidEnumeration(testEnumSansPrimType);
       });
 
@@ -177,7 +177,7 @@ describe("Enumeration", () => {
             { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
-        await testEnum.deserialize(json);
+        await testEnum.fromJSON(json);
         assertValidEnumeration(testEnum);
       });
       it(`with type="string"`, async () => {
@@ -192,7 +192,7 @@ describe("Enumeration", () => {
             { name: "EightValue", value: "8", label: "An enumerator label" },
           ],
         };
-        await testEnumSansPrimType.deserialize(json);
+        await testEnumSansPrimType.fromJSON(json);
         assertValidEnumeration(testEnumSansPrimType);
       });
     });
@@ -209,7 +209,7 @@ describe("Enumeration", () => {
           { name: "SixValue", value: 8, label: "An enumerator label" },
         ],
       };
-      await expect(testEnum.deserialize(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`);
+      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`);
     });
 
     it("Duplicate value", async () => {
@@ -224,7 +224,7 @@ describe("Enumeration", () => {
           { name: "EightValue", value: 6 },
         ],
       };
-      await expect(testEnum.deserialize(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
+      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
     });
 
     it("Basic test with number values", async () => {
@@ -242,7 +242,7 @@ describe("Enumeration", () => {
           { name: "FiveValue", value: 5, label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
-      await testEnum.deserialize(json);
+      await testEnum.fromJSON(json);
       assertValidEnumerator(testEnum, 1, "Label for the first value", "description for the first value");
       assertValidEnumerator(testEnum, 2, "Label for the second value", "description for the second value");
       assertValidEnumerator(testEnum, 3, "Label for the third value", "description for the third value");
@@ -265,7 +265,7 @@ describe("Enumeration", () => {
           { name: "FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
-      await testStringEnum.deserialize(json);
+      await testStringEnum.fromJSON(json);
       assertValidEnumerator(testStringEnum, "one", "Label for the first value", "description for the first value");
       assertValidEnumerator(testStringEnum, "two", "Label for the second value", "description for the second value");
       assertValidEnumerator(testStringEnum, "three", "Label for the third value", "description for the third value");
@@ -285,7 +285,7 @@ describe("Enumeration", () => {
           { name: "onevalue", value: "two", label: "Label for the second value", description: "description for the second value" },
         ],
       };
-      await expect(testStringEnum.deserialize(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`);
+      await expect(testStringEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`);
     });
 
     it("Get enumerator by name", async () => {
@@ -303,7 +303,7 @@ describe("Enumeration", () => {
           { name: "FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
-      await testStringEnum.deserialize(json);
+      await testStringEnum.fromJSON(json);
       expect(testStringEnum.getEnumeratorByName("OneValue")).to.exist;
       expect(testStringEnum.getEnumeratorByName("onevalue")!.description).to.eql("description for the first value");
       expect(testStringEnum.getEnumeratorByName("fourVALUE")!.label).to.eql("Label for the fourth value");
@@ -320,10 +320,11 @@ describe("Enumeration", () => {
           { name: "5FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
-      await expect(testStringEnum.deserialize(json)).to.be.rejectedWith(ECObjectsError, ``);
+      await expect(testStringEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, ``);
     });
   });
-  describe("toJson", () => {
+
+  describe("toJson (deprecated)", () => {
     let testEnumSansPrimType: Enumeration;
     const baseJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
@@ -350,7 +351,7 @@ describe("Enumeration", () => {
             { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
-        await testEnumSansPrimType.deserialize(json);
+        await testEnumSansPrimType.fromJSON(json);
         const serialization = testEnumSansPrimType.toJson(true, true);
         assert.isDefined(serialization);
         expect(serialization.type).eql("int");
@@ -374,7 +375,7 @@ describe("Enumeration", () => {
             { name: "EightValue", value: "eight", label: "Eight label", description: "EightValue enumerator description" },
           ],
         };
-        await testEnumSansPrimType.deserialize(json);
+        await testEnumSansPrimType.fromJSON(json);
         const serialization = testEnumSansPrimType.toJson(true, true);
         assert.isDefined(serialization);
         expect(serialization.type).eql("string");
@@ -401,7 +402,7 @@ describe("Enumeration", () => {
             { name: "BValue", value: "B" },
           ],
         };
-        await testEnumSansPrimType.deserialize(json);
+        await testEnumSansPrimType.fromJSON(json);
         const serialization = testEnumSansPrimType.toJson(true, true);
         assert.isDefined(serialization);
         expect(serialization.enumerators[0].value).eql("A");
@@ -421,11 +422,173 @@ describe("Enumeration", () => {
             { name: "FourValue", value: 4 },
           ],
         };
-        await testEnumSansPrimType.deserialize(json);
+        await testEnumSansPrimType.fromJSON(json);
         const serialization = testEnumSansPrimType.toJson(true, true);
         assert.isDefined(serialization);
         expect(serialization.enumerators[0].value).eql(2);
         expect(serialization.enumerators[1].value).eql(4);
+      });
+    });
+  });
+
+  describe("toJSON", () => {
+    let testEnumSansPrimType: Enumeration;
+    const baseJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+      schemaItemType: "Enumeration",
+      name: "TestEnumeration",
+      schema: "TestSchema",
+      schemaVersion: "1.0.0",
+    };
+
+    beforeEach(() => {
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      testEnumSansPrimType = new Enumeration(schema, "TestEnumeration");
+    });
+    describe("Basic serialization tests", () => {
+      it("Simple int backingType test", async () => {
+        const json = {
+          ...baseJson,
+          type: "int",
+          isStrict: false,
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+          enumerators: [
+            { name: "SixValue", value: 6, description: "An enumerator description" },
+            { name: "EightValue", value: 8, label: "An enumerator label" },
+          ],
+        };
+        await testEnumSansPrimType.fromJSON(json);
+        const serialization = testEnumSansPrimType.toJSON(true, true);
+        assert.isDefined(serialization);
+        expect(serialization.type).eql("int");
+        expect(serialization.isStrict).to.equal(false);
+        expect(serialization.label).eql("SomeDisplayLabel");
+        expect(serialization.description).eql("A really long description...");
+        expect(serialization.enumerators[0].name).eql("SixValue");
+        expect(serialization.enumerators[0].value).to.equal(6);
+        expect(serialization.enumerators[0].description).eql("An enumerator description");
+        expect(serialization.enumerators[1].name).eql("EightValue");
+        expect(serialization.enumerators[1].value).to.equal(8);
+        expect(serialization.enumerators[1].label).eql("An enumerator label");
+      });
+      it("Simple string backingType test", async () => {
+        const json = {
+          ...baseJson,
+          type: "string",
+          isStrict: true,
+          enumerators: [
+            { name: "SixValue", value: "six", label: "Six label", description: "SixValue enumerator description" },
+            { name: "EightValue", value: "eight", label: "Eight label", description: "EightValue enumerator description" },
+          ],
+        };
+        await testEnumSansPrimType.fromJSON(json);
+        const serialization = testEnumSansPrimType.toJSON(true, true);
+        assert.isDefined(serialization);
+        expect(serialization.type).eql("string");
+        expect(serialization.isStrict).to.equal(true);
+        expect(serialization.enumerators[0].name).eql("SixValue");
+        expect(serialization.enumerators[0].value).eql("six");
+        expect(serialization.enumerators[0].label).eql("Six label");
+        expect(serialization.enumerators[0].description).eql("SixValue enumerator description");
+
+        expect(serialization.enumerators[1].name).eql("EightValue");
+        expect(serialization.enumerators[1].value).eql("eight");
+        expect(serialization.enumerators[1].label).eql("Eight label");
+        expect(serialization.enumerators[1].description).eql("EightValue enumerator description");
+      });
+      it(`No name with type="string"`, async () => {
+        const json = {
+          ...baseJson,
+          type: "string",
+          isStrict: false,
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+          enumerators: [
+            { name: "AValue", value: "A" },
+            { name: "BValue", value: "B" },
+          ],
+        };
+        await testEnumSansPrimType.fromJSON(json);
+        const serialization = testEnumSansPrimType.toJSON(true, true);
+        assert.isDefined(serialization);
+        expect(serialization.enumerators[0].value).eql("A");
+        expect(serialization.enumerators[0].name).eql("AValue");
+        expect(serialization.enumerators[1].name).eql("BValue");
+        expect(serialization.enumerators[1].value).eql("B");
+      });
+      it(`No name with type="int"`, async () => {
+        const json = {
+          ...baseJson,
+          type: "int",
+          isStrict: false,
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+          enumerators: [
+            { name: "TwoValue", value: 2 },
+            { name: "FourValue", value: 4 },
+          ],
+        };
+        await testEnumSansPrimType.fromJSON(json);
+        const serialization = testEnumSansPrimType.toJSON(true, true);
+        assert.isDefined(serialization);
+        expect(serialization.enumerators[0].value).eql(2);
+        expect(serialization.enumerators[1].value).eql(4);
+      });
+    });
+    describe("JSON stringify serialization tests", () => {
+      it("Simple int backingType test", async () => {
+        const json = {
+          ...baseJson,
+          type: "int",
+          isStrict: false,
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+          enumerators: [
+            { name: "SixValue", value: 6, description: "An enumerator description" },
+            { name: "EightValue", value: 8, label: "An enumerator label" },
+          ],
+        };
+        await testEnumSansPrimType.fromJSON(json);
+        const enumJson = JSON.stringify(testEnumSansPrimType);
+        const serialization = JSON.parse(enumJson);
+        assert.isDefined(serialization);
+        expect(serialization.type).eql("int");
+        expect(serialization.isStrict).to.equal(false);
+        expect(serialization.label).eql("SomeDisplayLabel");
+        expect(serialization.description).eql("A really long description...");
+        expect(serialization.enumerators[0].name).eql("SixValue");
+        expect(serialization.enumerators[0].value).to.equal(6);
+        expect(serialization.enumerators[0].description).eql("An enumerator description");
+        expect(serialization.enumerators[1].name).eql("EightValue");
+        expect(serialization.enumerators[1].value).to.equal(8);
+        expect(serialization.enumerators[1].label).eql("An enumerator label");
+      });
+      it("Simple string backingType test", async () => {
+        const json = {
+          ...baseJson,
+          type: "string",
+          isStrict: true,
+          enumerators: [
+            { name: "SixValue", value: "six", label: "Six label", description: "SixValue enumerator description" },
+            { name: "EightValue", value: "eight", label: "Eight label", description: "EightValue enumerator description" },
+          ],
+        };
+        await testEnumSansPrimType.fromJSON(json);
+        const enumJson = JSON.stringify(testEnumSansPrimType);
+        const serialization = JSON.parse(enumJson);
+        assert.isDefined(serialization);
+        expect(serialization.type).eql("string");
+        expect(serialization.isStrict).to.equal(true);
+        expect(serialization.enumerators[0].name).eql("SixValue");
+        expect(serialization.enumerators[0].value).eql("six");
+        expect(serialization.enumerators[0].label).eql("Six label");
+        expect(serialization.enumerators[0].description).eql("SixValue enumerator description");
+
+        expect(serialization.enumerators[1].name).eql("EightValue");
+        expect(serialization.enumerators[1].value).eql("eight");
+        expect(serialization.enumerators[1].label).eql("Eight label");
+        expect(serialization.enumerators[1].description).eql("EightValue enumerator description");
       });
     });
   });
@@ -459,7 +622,7 @@ describe("Enumeration", () => {
         ],
       };
 
-      await testEnumeration.deserialize(schemaJson);
+      await testEnumeration.fromJSON(schemaJson);
       const serialized = await testEnumeration.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECEnumeration");
       expect(serialized.getAttribute("backingTypeName")).to.eql("int");
@@ -490,7 +653,7 @@ describe("Enumeration", () => {
         ],
       };
 
-      await testEnumeration.deserialize(schemaJson);
+      await testEnumeration.fromJSON(schemaJson);
       const serialized = await testEnumeration.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECEnumeration");
       expect(serialized.getAttribute("backingTypeName")).to.eql("string");

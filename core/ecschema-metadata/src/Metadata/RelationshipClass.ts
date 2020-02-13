@@ -66,12 +66,22 @@ export class RelationshipClass extends ECClass {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
+  /** @deprecated */
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    return this.toJSON(standalone, includeSchemaVersion);
+  }
+
+  /**
+   * Save this RelationshipClass's properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): RelationshipClassProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.strength = strengthToString(this.strength);
     schemaJson.strengthDirection = strengthDirectionToString(this.strengthDirection);
-    schemaJson.source = this.source.toJson();
-    schemaJson.target = this.target.toJson();
+    schemaJson.source = this.source.toJSON();
+    schemaJson.target = this.target.toJSON();
     return schemaJson;
   }
 
@@ -85,8 +95,13 @@ export class RelationshipClass extends ECClass {
     return itemElement;
   }
 
+  /** @deprecated */
   public deserializeSync(relationshipClassProps: RelationshipClassProps) {
-    super.deserializeSync(relationshipClassProps);
+    this.fromJSONSync(relationshipClassProps);
+  }
+
+  public fromJSONSync(relationshipClassProps: RelationshipClassProps) {
+    super.fromJSONSync(relationshipClassProps);
 
     const strength = parseStrength(relationshipClassProps.strength);
     if (undefined === strength)
@@ -100,8 +115,13 @@ export class RelationshipClass extends ECClass {
     this._strengthDirection = strengthDirection;
   }
 
+  /** @deprecated */
   public async deserialize(relationshipClassProps: RelationshipClassProps) {
-    this.deserializeSync(relationshipClassProps);
+    await this.fromJSON(relationshipClassProps);
+  }
+
+  public async fromJSON(relationshipClassProps: RelationshipClassProps) {
+    this.fromJSONSync(relationshipClassProps);
   }
 }
 
@@ -179,7 +199,15 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     this._constraintClasses.push(new DelayedPromiseWithProps(constraint.key, async () => constraint));
   }
 
+  /** @deprecated */
   public toJson() {
+    this.toJSON();
+  }
+
+  /**
+   * Save this RelationshipConstraint's properties to an object for serializing to JSON.
+   */
+  public toJSON(): RelationshipConstraintProps {
     const schemaJson: { [value: string]: any } = {};
     schemaJson.multiplicity = this.multiplicity!.toString();
     schemaJson.roleLabel = this.roleLabel;
@@ -192,7 +220,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (undefined !== customAttributes)
       schemaJson.customAttributes = customAttributes;
-    return schemaJson;
+    return schemaJson as RelationshipConstraintProps;
   }
 
   /** @internal */
@@ -234,7 +262,12 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     return itemElement;
   }
 
+  /** @deprecated */
   public deserializeSync(relationshipConstraintProps: RelationshipConstraintProps) {
+    this.fromJSONSync(relationshipConstraintProps);
+  }
+
+  public fromJSONSync(relationshipConstraintProps: RelationshipConstraintProps) {
 
     this._roleLabel = relationshipConstraintProps.roleLabel;
     this._polymorphic = relationshipConstraintProps.polymorphic;
@@ -273,8 +306,13 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
     }
   }
 
+  /** @deprecated */
   public async deserialize(relationshipConstraintProps: RelationshipConstraintProps) {
-    this.deserializeSync(relationshipConstraintProps);
+    await this.fromJSON(relationshipConstraintProps);
+  }
+
+  public async fromJSON(relationshipConstraintProps: RelationshipConstraintProps) {
+    this.fromJSONSync(relationshipConstraintProps);
   }
 
   /**

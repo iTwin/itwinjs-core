@@ -38,15 +38,25 @@ export class Constant extends SchemaItem {
   get numerator(): number { return this._numerator; }
   get denominator(): number { return this._denominator; }
 
+  /** @deprecated */
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    return this.toJSON(standalone, includeSchemaVersion);
+  }
+
+  /**
+   * Save this Constants properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean, includeSchemaVersion: boolean): ConstantProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     if (this.phenomenon !== undefined)
       schemaJson.phenomenon = this.phenomenon!.fullName;
     schemaJson.definition = this.definition;
     if (this.numerator !== undefined)
       schemaJson.numerator = this.numerator;
     schemaJson.denominator = this.denominator;
-    return schemaJson;
+    return schemaJson as ConstantProps;
   }
 
   /** @internal */
@@ -67,8 +77,13 @@ export class Constant extends SchemaItem {
     return itemElement;
   }
 
+  /** @deprecated */
   public deserializeSync(constantProps: ConstantProps) {
-    super.deserializeSync(constantProps);
+    this.fromJSONSync(constantProps);
+  }
+
+  public fromJSONSync(constantProps: ConstantProps) {
+    super.fromJSONSync(constantProps);
 
     const schemaItemKey = this.schema.getSchemaItemKey(constantProps.phenomenon);
     if (!schemaItemKey)
@@ -97,7 +112,12 @@ export class Constant extends SchemaItem {
     }
   }
 
+  /** @deprecated */
   public async deserialize(constantProps: ConstantProps) {
-    this.deserializeSync(constantProps);
+    await this.fromJSON(constantProps);
+  }
+
+  public async fromJSON(constantProps: ConstantProps) {
+    this.fromJSONSync(constantProps);
   }
 }

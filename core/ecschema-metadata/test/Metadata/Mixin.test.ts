@@ -184,7 +184,7 @@ describe("Mixin", () => {
         appliesTo: "TestSchema.TestEntity",
       };
       expect(testMixin).to.exist;
-      await testMixin.deserialize(json);
+      await testMixin.fromJSON(json);
       expect(await testMixin.appliesTo).to.eql(testEntity);
       expect(await testMixin.applicableTo(testEntity)).to.be.true;
     });
@@ -192,7 +192,7 @@ describe("Mixin", () => {
     it("should throw for invalid appliesTo", async () => {
       expect(testMixin).to.exist;
       const unloadedAppliesToJson = { ...baseJson, appliesTo: "ThisClassDoesNotExist" };
-      await expect(testMixin.deserialize(unloadedAppliesToJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testMixin.fromJSON(unloadedAppliesToJson)).to.be.rejectedWith(ECObjectsError);
     });
   });
   describe("Sync fromJson", () => {
@@ -212,14 +212,14 @@ describe("Mixin", () => {
         appliesTo: "TestSchema.TestEntity",
       };
       expect(testMixin).to.exist;
-      testMixin.deserializeSync(json);
+      testMixin.fromJSONSync(json);
 
       expect(await testMixin.appliesTo).to.eql(testEntity);
     });
     it("should throw for invalid appliesTo", async () => {
       expect(testMixin).to.exist;
       const json = { ...baseJson, appliesTo: "ThisClassDoesNotExist" };
-      assert.throws(() => testMixin.deserializeSync(json), ECObjectsError);
+      assert.throws(() => testMixin.fromJSONSync(json), ECObjectsError);
     });
   });
 
@@ -275,7 +275,7 @@ describe("Mixin", () => {
     });
   });
 
-  describe("toJson", () => {
+  describe("toJson (deprecated)", () => {
     it("should always omit modifier", async () => {
       const testSchema = createSchemaJsonWithItems({
         TestMixin: {
@@ -299,6 +299,66 @@ describe("Mixin", () => {
       const mixinB = await schemaB.getItem<Mixin>("TestMixin");
       expect(mixinB).to.exist;
       expect(mixinB!.toJson(true, true)).to.not.have.property("modifier");
+    });
+  });
+
+  describe("toJSON", () => {
+    it("should always omit modifier", async () => {
+      const testSchema = createSchemaJsonWithItems({
+        TestMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.TestEntity",
+        },
+        TestEntity: {
+          schemaItemType: "EntityClass",
+        },
+      });
+
+      const schemaA = await Schema.fromJson(testSchema, new SchemaContext());
+      assert.isDefined(schemaA);
+      const mixinA = await schemaA.getItem<Mixin>("TestMixin");
+      expect(mixinA).to.exist;
+      expect(mixinA!.toJSON(true, true)).to.not.have.property("modifier");
+
+      testSchema.items.TestMixin.modifier = "Abstract";
+      const schemaB = await Schema.fromJson(testSchema, new SchemaContext());
+      assert.isDefined(schemaB);
+      const mixinB = await schemaB.getItem<Mixin>("TestMixin");
+      expect(mixinB).to.exist;
+      expect(mixinB!.toJSON(true, true)).to.not.have.property("modifier");
+    });
+
+    it("JSON stringify serialization successful", async () => {
+      const testSchema = createSchemaJsonWithItems({
+        TestMixin: {
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.TestEntity",
+        },
+        TestEntity: {
+          schemaItemType: "EntityClass",
+        },
+      });
+
+      const schemaA = await Schema.fromJson(testSchema, new SchemaContext());
+      assert.isDefined(schemaA);
+      const mixinA = await schemaA.getItem<Mixin>("TestMixin");
+      expect(mixinA).to.exist;
+      const jsonA = JSON.stringify(mixinA);
+      const serializedA = JSON.parse(jsonA);
+      expect(serializedA.schemaItemType).to.equal("Mixin");
+      expect(serializedA.appliesTo).to.equal("TestSchema.TestEntity");
+      expect(serializedA).to.not.have.property("modifier");
+
+      testSchema.items.TestMixin.modifier = "Abstract";
+      const schemaB = await Schema.fromJson(testSchema, new SchemaContext());
+      assert.isDefined(schemaB);
+      const mixinB = await schemaB.getItem<Mixin>("TestMixin");
+      expect(mixinB).to.exist;
+      const jsonB = JSON.stringify(mixinA);
+      const serializedB = JSON.parse(jsonB);
+      expect(serializedB.schemaItemType).to.equal("Mixin");
+      expect(serializedB.appliesTo).to.equal("TestSchema.TestEntity");
+      expect(serializedB).to.not.have.property("modifier");
     });
   });
 

@@ -330,8 +330,18 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return primitiveType;
   }
 
+  /** @deprecated */
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    return this.toJSON(standalone, includeSchemaVersion);
+  }
+
+  /**
+   * Save this Classes properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): ClassProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     const isMixin = SchemaItemType.Mixin === this.schemaItemType;
     const isRelationship = SchemaItemType.RelationshipClass === this.schemaItemType;
     if (!isMixin && (ECClassModifier.None !== this.modifier || isRelationship))
@@ -339,12 +349,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (this.baseClass !== undefined)
       schemaJson.baseClass = this.baseClass.fullName;
     if (this.properties !== undefined && this.properties.length > 0)
-      schemaJson.properties = this.properties.map((prop) => prop.toJson());
+      schemaJson.properties = this.properties.map((prop) => prop.toJSON());
 
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
       schemaJson.customAttributes = customAttributes;
-    return schemaJson;
+    return schemaJson as ClassProps;
   }
 
   /** @internal */
@@ -381,8 +391,13 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return itemElement;
   }
 
+  /** @deprecated */
   public deserializeSync(classProps: ClassProps) {
-    super.deserializeSync(classProps);
+    this.fromJSONSync(classProps);
+  }
+
+  public fromJSONSync(classProps: ClassProps) {
+    super.fromJSONSync(classProps);
 
     if (undefined !== classProps.modifier) {
       const modifier = parseClassModifier(classProps.modifier);
@@ -404,8 +419,14 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         });
     }
   }
+
+  /** @deprecated */
   public async deserialize(classProps: ClassProps): Promise<void> {
-    this.deserializeSync(classProps);
+    await this.fromJSON(classProps);
+  }
+
+  public async fromJSON(classProps: ClassProps): Promise<void> {
+    this.fromJSONSync(classProps);
   }
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {

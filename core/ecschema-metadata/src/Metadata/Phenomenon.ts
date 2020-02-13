@@ -22,8 +22,18 @@ export class Phenomenon extends SchemaItem {
 
   get definition(): string { return this._definition; }
 
+  /** @deprecated */
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+    return this.toJSON(standalone, includeSchemaVersion);
+  }
+
+  /**
+   * Save this Phenomenon's properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): PhenomenonProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.definition = this.definition;
     return schemaJson;
   }
@@ -35,14 +45,25 @@ export class Phenomenon extends SchemaItem {
     return itemElement;
   }
 
+  /** @deprecated */
   public deserializeSync(phenomenonProps: PhenomenonProps) {
-    super.deserializeSync(phenomenonProps);
+    this.fromJSONSync(phenomenonProps);
+  }
+
+  public fromJSONSync(phenomenonProps: PhenomenonProps) {
+    super.fromJSONSync(phenomenonProps);
     if (this._definition !== "" && phenomenonProps.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${this.name} has an invalid 'definition' attribute.`);
     else if (this._definition === "")
       this._definition = phenomenonProps.definition;
   }
+
+  /** @deprecated */
   public async deserialize(phenomenonProps: PhenomenonProps) {
-    this.deserializeSync(phenomenonProps);
+    await this.fromJSON(phenomenonProps);
+  }
+
+  public async fromJSON(phenomenonProps: PhenomenonProps) {
+    this.fromJSONSync(phenomenonProps);
   }
 }

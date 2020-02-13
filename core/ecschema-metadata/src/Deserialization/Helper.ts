@@ -67,7 +67,7 @@ export class SchemaReadHelper<T = unknown> {
     this._parser = new this._parserType(rawSchema);
 
     // Loads all of the properties on the Schema object
-    await schema.deserialize(this._parser.parseSchema());
+    await schema.fromJSON(this._parser.parseSchema());
 
     this._schema = schema;
 
@@ -113,7 +113,7 @@ export class SchemaReadHelper<T = unknown> {
     this._parser = new this._parserType(rawSchema);
 
     // Loads all of the properties on the Schema object
-    schema.deserializeSync(this._parser.parseSchema());
+    schema.fromJSONSync(this._parser.parseSchema());
 
     this._schema = schema;
 
@@ -232,21 +232,21 @@ export class SchemaReadHelper<T = unknown> {
       case SchemaItemType.Phenomenon:
         schemaItem = await (schema as MutableSchema).createPhenomenon(name);
         const phenomenonProps = this._parser.parsePhenomenon(schemaItemObject);
-        await schemaItem.deserialize(phenomenonProps);
+        await schemaItem.fromJSON(phenomenonProps);
         break;
       case SchemaItemType.UnitSystem:
         schemaItem = await (schema as MutableSchema).createUnitSystem(name);
-        await schemaItem.deserialize(this._parser.parseUnitSystem(schemaItemObject));
+        await schemaItem.fromJSON(this._parser.parseUnitSystem(schemaItemObject));
         break;
       case SchemaItemType.PropertyCategory:
         schemaItem = await (schema as MutableSchema).createPropertyCategory(name);
         const propertyCategoryProps = this._parser.parsePropertyCategory(schemaItemObject);
-        await schemaItem.deserialize(propertyCategoryProps);
+        await schemaItem.fromJSON(propertyCategoryProps);
         break;
       case SchemaItemType.Enumeration:
         schemaItem = await (schema as MutableSchema).createEnumeration(name);
         const enumerationProps = this._parser.parseEnumeration(schemaItemObject);
-        await schemaItem.deserialize(enumerationProps);
+        await schemaItem.fromJSON(enumerationProps);
         break;
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
     }
@@ -310,21 +310,21 @@ export class SchemaReadHelper<T = unknown> {
       case SchemaItemType.Phenomenon:
         schemaItem = (schema as MutableSchema).createPhenomenonSync(name);
         const phenomenonProps = this._parser.parsePhenomenon(schemaItemObject);
-        schemaItem.deserializeSync(phenomenonProps);
+        schemaItem.fromJSONSync(phenomenonProps);
         break;
       case SchemaItemType.UnitSystem:
         schemaItem = (schema as MutableSchema).createUnitSystemSync(name);
-        schemaItem.deserializeSync(this._parser.parseUnitSystem(schemaItemObject));
+        schemaItem.fromJSONSync(this._parser.parseUnitSystem(schemaItemObject));
         break;
       case SchemaItemType.PropertyCategory:
         schemaItem = (schema as MutableSchema).createPropertyCategorySync(name);
         const propertyCategoryProps = this._parser.parsePropertyCategory(schemaItemObject);
-        schemaItem.deserializeSync(propertyCategoryProps);
+        schemaItem.fromJSONSync(propertyCategoryProps);
         break;
       case SchemaItemType.Enumeration:
         schemaItem = (schema as MutableSchema).createEnumerationSync(name);
         const enumerationProps = this._parser.parseEnumeration(schemaItemObject);
-        schemaItem.deserializeSync(enumerationProps);
+        schemaItem.fromJSONSync(enumerationProps);
         break;
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
     }
@@ -441,7 +441,7 @@ export class SchemaReadHelper<T = unknown> {
     await this.findSchemaItem(unitProps.phenomenon, true);
     await this.findSchemaItem(unitProps.unitSystem, true);
 
-    await unit.deserialize(unitProps);
+    await unit.fromJSON(unitProps);
   }
 
   /**
@@ -455,7 +455,7 @@ export class SchemaReadHelper<T = unknown> {
     this.findSchemaItemSync(unitProps.phenomenon, true);
     this.findSchemaItemSync(unitProps.unitSystem, true);
 
-    unit.deserializeSync(unitProps);
+    unit.fromJSONSync(unitProps);
   }
 
   /**
@@ -475,7 +475,7 @@ export class SchemaReadHelper<T = unknown> {
       }
     }
 
-    await koq.deserialize(koqProps);
+    await koq.fromJSON(koqProps);
   }
 
   /**
@@ -494,7 +494,7 @@ export class SchemaReadHelper<T = unknown> {
         }
       }
     }
-    koq.deserializeSync(koqProps);
+    koq.fromJSONSync(koqProps);
   }
 
   /**
@@ -506,7 +506,7 @@ export class SchemaReadHelper<T = unknown> {
     const constantProps = this._parser.parseConstant(rawConstant);
 
     await this.findSchemaItem(constantProps.phenomenon, true);
-    await constant.deserialize(constantProps);
+    await constant.fromJSON(constantProps);
   }
 
   /**
@@ -518,7 +518,7 @@ export class SchemaReadHelper<T = unknown> {
     const constantProps = this._parser.parseConstant(rawConstant);
 
     this.findSchemaItemSync(constantProps.phenomenon, true);
-    constant.deserializeSync(constantProps);
+    constant.fromJSONSync(constantProps);
   }
 
   /**
@@ -532,7 +532,7 @@ export class SchemaReadHelper<T = unknown> {
     await this.findSchemaItem(invertedUnitProps.invertsUnit, true);
     await this.findSchemaItem(invertedUnitProps.unitSystem, true);
 
-    await invertedUnit.deserialize(invertedUnitProps);
+    await invertedUnit.fromJSON(invertedUnitProps);
   }
 
   /**
@@ -546,7 +546,7 @@ export class SchemaReadHelper<T = unknown> {
     this.findSchemaItemSync(invertedUnitProps.invertsUnit, true);
     this.findSchemaItemSync(invertedUnitProps.unitSystem, true);
 
-    invertedUnit.deserializeSync(invertedUnitProps);
+    invertedUnit.fromJSONSync(invertedUnitProps);
   }
 
   /**
@@ -563,7 +563,7 @@ export class SchemaReadHelper<T = unknown> {
         await this.findSchemaItem(unit.name, true);
       }
     }
-    await format.deserialize(formatProps);
+    await format.fromJSON(formatProps);
   }
 
   /**
@@ -581,7 +581,7 @@ export class SchemaReadHelper<T = unknown> {
       }
     }
 
-    format.deserializeSync(formatProps);
+    format.fromJSONSync(formatProps);
   }
 
   /**
@@ -603,7 +603,7 @@ export class SchemaReadHelper<T = unknown> {
 
     // Now deserialize the class itself, *before* any properties
     // (We need to do this to break Entity -navProp-> Relationship -constraint-> Entity cycle.)
-    await (classObj as ECClass).deserialize(classProps);
+    await (classObj as ECClass).fromJSON(classProps);
 
     for (const [propName, propType, rawProp] of this._parser.getProperties(rawClass)) {
       await this.loadPropertyTypes(classObj, propName, propType, rawProp);
@@ -631,7 +631,7 @@ export class SchemaReadHelper<T = unknown> {
 
     // Now deserialize the class itself, *before* any properties
     // (We need to do this to break Entity -navProp-> Relationship -constraint-> Entity cycle.)
-    (classObj as ECClass).deserializeSync(classProps);
+    (classObj as ECClass).fromJSONSync(classProps);
 
     for (const [propName, propType, rawProp] of this._parser.getProperties(rawClass)) {
       this.loadPropertyTypesSync(classObj, propName, propType, rawProp);
@@ -756,7 +756,7 @@ export class SchemaReadHelper<T = unknown> {
         await this.findSchemaItem(constraintClass);
       }
     }
-    await relConstraint.deserialize(props);
+    await relConstraint.fromJSON(props);
   }
 
   /**
@@ -774,7 +774,7 @@ export class SchemaReadHelper<T = unknown> {
       }
     }
 
-    relConstraint.deserializeSync(props);
+    relConstraint.fromJSONSync(props);
   }
 
   /**
@@ -895,7 +895,7 @@ export class SchemaReadHelper<T = unknown> {
       await this.findSchemaItem(props.kindOfQuantity);
     }
 
-    await propertyObj.deserialize(props);
+    await propertyObj.fromJSON(props);
     await this.loadCustomAttributes(propertyObj, this._parser.getPropertyCustomAttributeProviders(rawProperty));
   }
 
@@ -914,7 +914,7 @@ export class SchemaReadHelper<T = unknown> {
       this.findSchemaItemSync(props.kindOfQuantity);
     }
 
-    propertyObj.deserializeSync(props);
+    propertyObj.fromJSONSync(props);
     this.loadCustomAttributesSync(propertyObj, this._parser.getPropertyCustomAttributeProviders(rawProperty));
   }
 

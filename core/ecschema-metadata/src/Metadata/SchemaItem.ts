@@ -37,7 +37,17 @@ export abstract class SchemaItem {
 
   get description() { return this._description; }
 
+  /** @deprecated @internal */
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
+    return this.toJSON(standalone, includeSchemaVersion);
+  }
+
+  /**
+   * Save this SchemaItem's properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false) {
     const itemJson: { [value: string]: any } = {};
     if (standalone) {
       itemJson.$schema = SCHEMAURL3_2; // $schema is required
@@ -51,7 +61,8 @@ export abstract class SchemaItem {
       itemJson.label = this.label;
     if (undefined !== this.description)
       itemJson.description = this.description;
-    return itemJson;
+
+    return itemJson as SchemaItemProps;
   }
 
   /** @internal */
@@ -69,7 +80,12 @@ export abstract class SchemaItem {
     return itemElement;
   }
 
+  /** @deprecated */
   public deserializeSync(schemaItemProps: SchemaItemProps) {
+    this.fromJSONSync(schemaItemProps);
+  }
+
+  public fromJSONSync(schemaItemProps: SchemaItemProps) {
     if (undefined !== schemaItemProps.label)
       this._label = schemaItemProps.label;
 
@@ -86,7 +102,12 @@ export abstract class SchemaItem {
     }
   }
 
+  /** @deprecated */
   public async deserialize(schemaItemProps: SchemaItemProps) {
+    await this.fromJSON(schemaItemProps);
+  }
+
+  public async fromJSON(schemaItemProps: SchemaItemProps) {
     if (undefined !== schemaItemProps.label)
       this._label = schemaItemProps.label;
 
