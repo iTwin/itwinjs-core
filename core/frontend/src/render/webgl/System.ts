@@ -240,6 +240,7 @@ export class Capabilities {
   private _maxVaryingVectors: number = 0;
   private _maxFragUniformVectors: number = 0;
   private _canRenderDepthWithoutColor: boolean = false;
+  private _maxAnisotropy?: number;
 
   private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
   private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
@@ -490,6 +491,18 @@ export class Capabilities {
     gl.getError(); // clear any errors
 
     return fbStatus === gl.FRAMEBUFFER_COMPLETE;
+  }
+
+  public setMaxAnisotropy(desiredMax: number | undefined, gl: WebGLRenderingContext | WebGL2RenderingContext): void {
+    const ext = this.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic");
+    if (undefined === ext)
+      return;
+
+    if (undefined === this._maxAnisotropy)
+      this._maxAnisotropy = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number;
+
+    const max = (undefined !== desiredMax) ? Math.min(desiredMax, this._maxAnisotropy) : this._maxAnisotropy;
+    gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, max);
   }
 
   private debugPrint(gl: WebGLRenderingContext | WebGL2RenderingContext, missingRequiredFeatures: WebGLFeature[], _missingOptionalFeatures: WebGLFeature[]) {
@@ -1310,5 +1323,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
     for (const idMap of this.resourceCache.values())
       idMap.collectStatistics(stats);
+  }
+
+  public setMaxAnisotropy(max: number | undefined): void {
+    this.capabilities.setMaxAnisotropy(max, this.context);
   }
 }
