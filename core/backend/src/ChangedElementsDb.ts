@@ -92,8 +92,11 @@ export class ChangedElementsDb implements IDisposable {
    * @param briefcase iModel briefcase to use
    * @param startChangesetId Start Changeset Id
    * @param endChangesetId End Changeset Id
+   * @param filterSpatial [optional] Whether to do processing filtering out spatial elements, defaults to false
+   * @param rulesetDir [optional] Directories string for ruleset directory locater
+   * @param tempDir [optional] Directory to use to store temporary Db used to do processing. This Db is cleaned up automatically unless the process crashes.
    */
-  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean): Promise<DbResult> {
+  public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult> {
     requestContext.enter();
     const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
     const changesets = await ChangeSummaryManager.downloadChangeSets(requestContext, changeSummaryContext, startChangesetId, endChangesetId);
@@ -101,7 +104,7 @@ export class ChangedElementsDb implements IDisposable {
     const tokens = ChangedElementsDb.buildChangeSetTokens(changesets, BriefcaseManager.getChangeSetsPath(briefcase.iModelToken.iModelId!));
     // ChangeSets need to be processed from newest to oldest
     tokens.reverse();
-    const status: DbResult = this.nativeDb.processChangesets(briefcase.nativeDb, JSON.stringify(tokens), rulesetId, !!filterSpatial ? filterSpatial : false);
+    const status: DbResult = this.nativeDb.processChangesets(briefcase.nativeDb, JSON.stringify(tokens), rulesetId, !!filterSpatial ? filterSpatial : false, rulesetDir, tempDir);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to process changesets");
     return status;

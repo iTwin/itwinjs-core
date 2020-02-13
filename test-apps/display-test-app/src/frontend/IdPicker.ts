@@ -3,9 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, compareStringsOrUndefined, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { ViewManip, ScreenViewport, SpatialViewState, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { CheckBox, createButton, createCheckBox, createComboBox, createTextBox, ComboBoxEntry } from "@bentley/frontend-devtools";
+import {
+  assert,
+  compareStringsOrUndefined,
+  Id64,
+  Id64Arg,
+} from "@bentley/bentleyjs-core";
+import { GeometricModel3dProps } from "@bentley/imodeljs-common";
+import {
+  ViewManip,
+  ScreenViewport,
+  SpatialViewState,
+  GeometricModel3dState,
+} from "@bentley/imodeljs-frontend";
+import {
+  CheckBox,
+  createButton,
+  createCheckBox,
+  createComboBox,
+  createTextBox,
+  ComboBoxEntry,
+} from "@bentley/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 
 export abstract class IdPicker extends ToolBarDropDown {
@@ -45,6 +63,11 @@ export abstract class IdPicker extends ToolBarDropDown {
       { name: "Hilite Enabled", value: "Hilite" },
       { name: "Un-hilite Enabled", value: "Dehilite" },
     ];
+  }
+
+  protected enableByIds(ids: string[]): void {
+    for (const id of ids)
+      this.enableById(id);
   }
 
   protected enableById(id: string): void {
@@ -88,12 +111,12 @@ export abstract class IdPicker extends ToolBarDropDown {
       label: "Id: ",
       id: this._elementType + "Enable_byId",
       parent: this._element,
-      tooltip: "Enter Id of entry to enable",
+      tooltip: "Enter comma-separated list of Ids to enable",
       inline: true,
     }).textbox;
     textbox.onkeyup = (e) => {
       if (e.code === "Enter") // enter key
-        this.enableById(textbox.value);
+        this.enableByIds(textbox.value.split(","));
     };
 
     await this._populate();
@@ -192,7 +215,7 @@ export abstract class IdPicker extends ToolBarDropDown {
     return rows.map((value) => value[column]);
   }
 
-  private toggleIds(ids: Id64Arg, enabled: boolean): void {
+  protected toggleIds(ids: Id64Arg, enabled: boolean): void {
     const boxById = new Map<string, HTMLInputElement>();
     this._checkboxes.map((box) => boxById.set(box.id, box));
     Id64.forEach(ids, (id) => {
@@ -301,6 +324,7 @@ export class ModelPicker extends IdPicker {
   private _availableIdList: string[] = [];
   private _stepIndex = -1;
   private _fitOnStep = true;
+  private _planProjectionIds: string[] = [];
 
   public constructor(vp: ScreenViewport, parent: HTMLElement) { super(vp, parent); }
 
@@ -387,14 +411,18 @@ export class ModelPicker extends IdPicker {
     const view = this._vp.view as SpatialViewState;
     assert(undefined !== view && view.isSpatialView());
 
-    const query = { from: SpatialModelState.classFullName, wantPrivate: false };
+    const query = { from: GeometricModel3dState.classFullName, wantPrivate: true };
     const props = await view.iModel.models.queryProps(query);
+    props.forEach((prop) => { if (prop.isPrivate) prop.name = "~" + prop.name; });
     props.sort((lhs, rhs) => compareStringsOrUndefined(lhs.name, rhs.name));
 
     const selector = view.modelSelector;
     for (const prop of props) {
-      if (undefined !== prop.id && undefined !== prop.name)
+      if (undefined !== prop.id && undefined !== prop.name) {
         this.addCheckbox(prop.name, prop.id, selector.has(prop.id));
+        if ((prop as GeometricModel3dProps).isPlanProjection)
+          this._planProjectionIds.push(prop.id);
+      }
     }
 
     this._availableIdList = Array.from(this._availableIds);
@@ -410,5 +438,20 @@ export class ModelPicker extends IdPicker {
 
     if (this._fitOnStep)
       ViewManip.fitView(this._vp, true);
+  }
+
+  protected get _comboBoxEntries() {
+    const entries = super._comboBoxEntries;
+    entries.push({ name: "Plan Projections", value: "PlanProjections" });
+    return entries;
+  }
+
+  protected show(which: string) {
+    if ("PlanProjections" === which) {
+      this.toggleAll(false);
+      this.toggleIds(this._planProjectionIds, true);
+    } else {
+      super.show(which);
+    }
   }
 }

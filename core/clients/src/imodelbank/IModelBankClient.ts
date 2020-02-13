@@ -8,6 +8,7 @@
 import { FileHandler } from "../FileHandler";
 import { IModelClient } from "../IModelClient";
 import { IModelBankHandler } from "./IModelBankHandler";
+import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 /** Class that allows access to different iModelHub class handlers.
  * Handlers should be accessed through an instance of this class, rather than constructed directly.
@@ -19,5 +20,9 @@ export class IModelBankClient extends IModelClient {
    */
   public constructor(url: string, handler: FileHandler | undefined) {
     super(new IModelBankHandler(url, handler));
+  }
+
+  public async getUrl(rqctx: AuthorizedClientRequestContext): Promise<string> {
+    return (this._handler as IModelBankHandler).getUrl(rqctx);
   }
 }

@@ -19,21 +19,28 @@ import {
 } from "../webgl";
 
 describe("Variable declaration tests", () => {
+  before(() => IModelApp.startup());
+  after(() => IModelApp.shutdown());
+
   it("should convert ShaderVariable to glsl declaration", () => {
     let variable = ShaderVariable.createGlobal("x", VariableType.Float, "1.0", true);
-    expect(variable.buildDeclaration()).to.equal("const float x = 1.0;");
+    expect(variable.buildDeclaration(true)).to.equal("const float x = 1.0;");
 
     variable = ShaderVariable.createGlobal("x", VariableType.Vec3, "vec3(1.0, 0.5, 0.0)");
-    expect(variable.buildDeclaration()).to.equal("vec3 x = vec3(1.0, 0.5, 0.0);");
+    expect(variable.buildDeclaration(true)).to.equal("vec3 x = vec3(1.0, 0.5, 0.0);");
 
     variable = ShaderVariable.createGlobal("x", VariableType.Mat4);
-    expect(variable.buildDeclaration()).to.equal("mat4 x;");
+    expect(variable.buildDeclaration(true)).to.equal("mat4 x;");
 
     variable = ShaderVariable.create("x", VariableType.Vec2, VariableScope.Varying);
-    expect(variable.buildDeclaration()).to.equal("varying vec2 x;");
+    if (System.instance.capabilities.isWebGL2) {
+      expect(variable.buildDeclaration(true)).to.equal("out vec2 x;");
+      expect(variable.buildDeclaration(false)).to.equal("in vec2 x;");
+    } else
+      expect(variable.buildDeclaration(true)).to.equal("varying vec2 x;");
 
     variable = ShaderVariable.create("x", VariableType.Sampler2D, VariableScope.Uniform, undefined, VariablePrecision.Medium);
-    expect(variable.buildDeclaration()).to.equal("uniform mediump sampler2D x;");
+    expect(variable.buildDeclaration(true)).to.equal("uniform mediump sampler2D x;");
   });
 
   it("should convert contents of ShaderVariables to glsl declaration", () => {
@@ -52,8 +59,14 @@ describe("Variable declaration tests", () => {
       "const int w = 123;\n",
     ];
 
-    const expectedDecls = parts.join("\n");
-    expect(vars.buildDeclarations()).to.equal(expectedDecls);
+    const partsWebGL2 = [
+      "uniform highp float x;",
+      "out int z;",
+      "const int w = 123;\n",
+    ];
+
+    const expectedDecls = (System.instance.capabilities.isWebGL2 ? partsWebGL2.join("\n") : parts.join("\n"));
+    expect(vars.buildDeclarations(true)).to.equal(expectedDecls);
   });
 });
 

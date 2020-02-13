@@ -85,19 +85,6 @@ function insertPhysicalModel(db: IModelDb): Id64String {
   return modelId;
 }
 
-function createIModel(): IModelDb {
-  const props = {
-    rootSubject: { name: "TileTreeTest", description: "Test purgeTileTrees" },
-    client: "TileTree",
-    globaleOrigin: { x: 0, y: 0 },
-    projectExtents: defaultExtents,
-    guid: Guid.createValue(),
-  };
-
-  const name = "Test_" + (++uniqueId) + ".bim";
-  return IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("TileTree", name), props);
-}
-
 function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
   const range = db.projectExtents.clone();
   range.scaleAboutCenterInPlace(scale);
@@ -106,10 +93,22 @@ function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
   return scaleSpatialRange(range);
 }
 
-describe("purgeTileTrees", () => {
-  it("should update after purge when project extents change", async () => {
-    const db = createIModel();
-    const modelId = insertPhysicalModel(db);
+describe("tile tree", () => {
+  let db: IModelDb;
+  let modelId: string;
+
+  before(() => {
+    const props = {
+      rootSubject: { name: "TileTreeTest", description: "Test purgeTileTrees" },
+      client: "TileTree",
+      globaleOrigin: { x: 0, y: 0 },
+      projectExtents: defaultExtents,
+      guid: Guid.createValue(),
+    };
+
+    const name = "Test_" + (++uniqueId) + ".bim";
+    db = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("TileTree", name), props);
+    modelId = insertPhysicalModel(db);
 
     // NB: The model needs to contain at least one element with a range - otherwise tile tree will have null range.
     const geomBuilder = new GeometryStreamBuilder();
@@ -128,21 +127,37 @@ describe("purgeTileTrees", () => {
       },
     };
     db.elements.insertElement(elemProps);
+  });
 
-    // The "_1-" holds the flag saying to use the project extents as the range of the tile tree.
-    const treeId = "5_1-" + modelId;
+  after(() => {
+    if (db)
+      db.closeSnapshot();
+  });
+
+  it("should update after changing project extents and purging", async () => {
+    // "_x-" holds the flags - 0 = don't use project extents as basis of tile tree range; 1 = use them.
+    let treeId = "8_0-" + modelId;
     const context = new BackendRequestContext();
     let tree = await db.tiles.requestTileTreeProps(context, treeId);
     expect(tree).not.to.be.undefined;
     expect(tree.id).to.equal(treeId);
+    expect(tree.contentIdQualifier).to.be.undefined;
 
     const skewedDefaultExtents = scaleSpatialRange(defaultExtents);
     let range = Range3d.fromJSON(tree.rootTile.range);
+    expect(almostEqualRange(range, skewedDefaultExtents)).to.be.false;
+
+    treeId = "8_1-" + modelId;
+    tree = await db.tiles.requestTileTreeProps(context, treeId);
+    range = Range3d.fromJSON(tree.rootTile.range);
     expect(range.isNull).to.be.false;
     expect(almostEqualRange(range, skewedDefaultExtents)).to.be.true;
     expect(tree.contentRange).not.to.be.undefined;
     expect(tree.rootTile.contentRange).to.be.undefined;
     expect(tree.rootTile.isLeaf).to.be.false;
+
+    expect(tree.contentIdQualifier).not.to.be.undefined;
+    let prevQualifier = tree.contentIdQualifier;
 
     // Change the project extents - nothing should change - we haven't yet purged our model's tile tree.
     let newExtents = scaleProjectExtents(db, 2.0);
@@ -150,6 +165,7 @@ describe("purgeTileTrees", () => {
     tree = await db.tiles.requestTileTreeProps(context, treeId);
     expect(tree).not.to.be.undefined;
     expect(tree.id).to.equal(treeId);
+    expect(tree.contentIdQualifier).to.equal(prevQualifier);
 
     range = Range3d.fromJSON(tree.rootTile.range);
     expect(range.isNull).to.be.false;
@@ -165,6 +181,7 @@ describe("purgeTileTrees", () => {
     tree = await db.tiles.requestTileTreeProps(context, treeId);
     expect(tree).not.to.be.undefined;
     expect(tree.id).to.equal(treeId);
+    expect(tree.contentIdQualifier).to.equal(prevQualifier);
 
     range = Range3d.fromJSON(tree.rootTile.range);
     expect(range.isNull).to.be.false;
@@ -189,6 +206,10 @@ describe("purgeTileTrees", () => {
     expect(tree.rootTile.contentRange).to.be.undefined;
     expect(tree.rootTile.isLeaf).to.be.false;
 
+    expect(tree.contentIdQualifier).not.to.equal(prevQualifier);
+    expect(tree.contentIdQualifier).not.to.be.undefined;
+    prevQualifier = tree.contentIdQualifier;
+
     // Change extents again and purge tile trees for all loaded models (by passing `undefined` for model Ids).
     newExtents = scaleProjectExtents(db, 0.75);
     db.nativeDb.purgeTileTrees(undefined);
@@ -204,5 +225,8 @@ describe("purgeTileTrees", () => {
     expect(tree.contentRange).not.to.be.undefined;
     expect(tree.rootTile.contentRange).to.be.undefined;
     expect(tree.rootTile.isLeaf).to.be.false;
+
+    expect(tree.contentIdQualifier).not.to.equal(prevQualifier);
+    expect(tree.contentIdQualifier).not.to.be.undefined;
   });
 });

@@ -56,7 +56,7 @@ export class HalfEdgeGraphSearch {
    * @param oneCandidateNodePerFace array containing one node from each face to be considered.
    */
   public static findMinimumAreaFace(oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[]): HalfEdge {
-    const summary = HalfEdgeGraphSearch.collectFaceAreaSummary (oneCandidateNodePerFace);
+    const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(oneCandidateNodePerFace);
     return summary.largestNegativeItem!;
   }
 
@@ -78,6 +78,40 @@ export class HalfEdgeGraphSearch {
       result.announceItem(node, area);
     }
     return result;
+  }
+
+  /**
+   * * Test if the graph is triangulated.
+   * * Return false if:
+   *   * Positive area face with more than 3 edges
+   *   * more than 1 negative area face with `allowMultipleNegativeAreaFaces` false
+   * * 2-edge faces are ignored.
+   */
+  public static isTriangulatedCCW(source: HalfEdgeGraph | HalfEdge[], allowMultipleNegativeAreaFaces: boolean = true): boolean {
+    let allFaces: HalfEdge[];
+
+    if (source instanceof HalfEdgeGraph)
+      allFaces = source.collectFaceLoops();
+    else
+      allFaces = source;
+    let numNegative = 0;
+    for (const node of allFaces) {
+      const numEdges = node.countEdgesAroundFace();
+      if (numEdges >= 3) {
+        const area = node.signedFaceArea();
+        if (area > 0) {
+          if (numEdges > 3)
+            return false;
+        } else {
+          numNegative++;
+          if (numNegative > 1) {
+            if (!allowMultipleNegativeAreaFaces)
+              return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 
   /**

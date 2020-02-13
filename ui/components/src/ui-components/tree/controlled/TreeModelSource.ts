@@ -6,10 +6,18 @@
  * @module Tree
  */
 
-import { produce } from "immer";
+import { produce, Patch } from "immer";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
-import { MutableTreeModel, TreeModel, VisibleTreeNodes, TreeNodeItemData, TreeModelNodeInput } from "./TreeModel";
-import { LoadedNodeHierarchy, LoadedNodeHierarchyItem, ITreeNodeLoader } from "./TreeNodeLoader";
+import { MutableTreeModel, TreeModel, VisibleTreeNodes } from "./TreeModel";
+
+/** Data structure that describes changes which happened to the tree model
+ * @beta
+ */
+export interface TreeModelChanges {
+  addedNodeIds: string[];
+  modifiedNodeIds: string[];
+  removedNodeIds: string[];
+}
 
 /**
  * Controls tree model and visible tree nodes.
@@ -21,7 +29,7 @@ export class TreeModelSource {
   private _visibleNodes?: VisibleTreeNodes;
 
   /** Event that is emitted every time tree model is changed. */
-  public onModelChanged = new BeUiEvent<TreeModel>();
+  public onModelChanged = new BeUiEvent<[TreeModel, TreeModelChanges]>();
 
   constructor() {
     this.onModelChanged.addListener(() => this._visibleNodes = undefined);
@@ -32,10 +40,12 @@ export class TreeModelSource {
    * If changes to tree model is detected then onModelChanged event is emitted.
    */
   public modifyModel(callback: (model: MutableTreeModel) => void): void {
-    const newModel = produce(this._model, (draft: MutableTreeModel) => callback(draft));
+    let changes: TreeModelChanges = { addedNodeIds: [], modifiedNodeIds: [], removedNodeIds: [] };
+    const newModel = produce(this._model, (draft: MutableTreeModel) => callback(draft), (patches: Patch[]) => { changes = this.collectModelChanges(patches); });
+
     if (newModel !== this._model) {
       this._model = newModel;
-      this.onModelChanged.emit(this._model);
+      this.onModelChanged.emit([this._model, changes]);
     }
   }
 
@@ -50,95 +60,25 @@ export class TreeModelSource {
 
     return this._visibleNodes;
   }
-}
 
-/**
- * Creates new model source and adds listener to supplied node loader's onNodeLoaded event
- * which will update model source.
- *
- * @returns created TreeModelSource and callback to remove listener from onNodeLoaded event.
- *
- * @beta
- */
-export function createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader) {
-  const modelSource = new TreeModelSource();
-  const nodeLoadHandler = createDefaultNodeLoadHandler(modelSource);
-  const disposeModelSource = nodeLoader.onNodeLoaded.addListener(nodeLoadHandler);
-  return { modelSource, disposeModelSource };
-}
-
-/**
- * Creates a function which can handle ITreeNodeLoader onNodeLoaded event.
- * @beta
- */
-export function createDefaultNodeLoadHandler(modelSource: TreeModelSource) {
-  return (loadedHierarchy: LoadedNodeHierarchy) => {
-    modelSource.modifyModel((model) => {
-      if (loadedHierarchy.parentId !== undefined) {
-        // Make sure the model sill contains the parent node
-        /* istanbul ignore if */
-        if (model.getNode(loadedHierarchy.parentId) === undefined)
-          return;
-      }
-
-      updateChildren(model, loadedHierarchy.parentId, loadedHierarchy.hierarchyItems, loadedHierarchy.offset, loadedHierarchy.numChildren);
-      if (loadedHierarchy.parentId !== undefined) {
-        const parentNode = model.getNode(loadedHierarchy.parentId);
-        /* istanbul ignore else */
-        if (parentNode && parentNode.isLoading && parentNode.numChildren !== undefined) {
-          parentNode.isLoading = false;
+  private collectModelChanges(modelPatches: Patch[]): TreeModelChanges {
+    const addedNodeIds: string[] = [];
+    const modifiedNodeIds: string[] = [];
+    const removedNodeIds: string[] = [];
+    for (const patch of modelPatches) {
+      if (patch.path[0] === "_tree" && patch.path[1] === "_idToNode") {
+        const nodeId = patch.path[2] as string;
+        switch (patch.op) {
+          case "add": addedNodeIds.push(nodeId); break;
+          case "remove": removedNodeIds.push(nodeId); break;
+          case "replace": {
+            if (modifiedNodeIds.indexOf(nodeId) === -1)
+              modifiedNodeIds.push(nodeId);
+            break;
+          }
         }
       }
-    });
-  };
-}
-
-function updateChildren(
-  model: MutableTreeModel,
-  parentId: string | undefined,
-  hierarchyItems: LoadedNodeHierarchyItem[],
-  startIndex: number,
-  numChildren?: number,
-) {
-  /* istanbul ignore else */
-  if (numChildren !== undefined) {
-    model.setNumChildren(parentId, numChildren);
-  }
-
-  // if children array is undefined do not add children as they should be disposed
-  if (model.getChildren(parentId) === undefined) {
-    return;
-  }
-
-  model.setChildren(
-    parentId,
-    hierarchyItems.map(({ item }) => convertToTreeModelNodeInput(item)),
-    startIndex,
-  );
-
-  for (const item of hierarchyItems) {
-    if (item.children) {
-      updateChildren(model, item.item.id, item.children, 0, item.numChildren);
     }
+    return { addedNodeIds, modifiedNodeIds, removedNodeIds };
   }
-}
-
-function convertToTreeModelNodeInput(item: TreeNodeItemData): TreeModelNodeInput {
-  let numChildren: number | undefined;
-  if (item.children) {
-    numChildren = item.children.length;
-  } else if (!item.hasChildren) {
-    numChildren = 0;
-  }
-
-  return {
-    description: item.description,
-    isExpanded: !!item.autoExpand,
-    id: item.id,
-    item,
-    label: item.label,
-    isLoading: false,
-    numChildren,
-    isSelected: false,
-  };
 }

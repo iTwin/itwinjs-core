@@ -13,7 +13,8 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { DisplayStyleState } from "./DisplayStyleState";
-import { AnimationBranchStates, AnimationBranchState, RenderClipVolume } from "./render/System";
+import { RenderClipVolume } from "./render/RenderClipVolume";
+import { AnimationBranchStates, AnimationBranchState } from "./render/GraphicBranch";
 
 /** @internal */
 export namespace RenderScheduleState {

@@ -12,6 +12,7 @@ import * as https from "https";
 import { URL } from "url";
 import WriteStreamAtomic = require("fs-write-stream-atomic");
 import * as http from "http";
+import { PassThrough } from "stream";
 
 /**
  * Provides methods to upload and download files from the Internet
@@ -19,6 +20,7 @@ import * as http from "http";
  */
 export class UrlFileHandler implements FileHandler {
   public agent: https.Agent;
+  protected _uploadMethod = "POST";
 
   constructor() {
   }
@@ -44,6 +46,8 @@ export class UrlFileHandler implements FileHandler {
         if (response.statusCode !== 200) {
           reject();
         } else {
+          const passThroughStream = new PassThrough();
+          let bytesWritten: number = 0;
           const target = new WriteStreamAtomic(downloadToPathname);
           target.on("error", (err) => {
             reject(err);
@@ -57,7 +61,14 @@ export class UrlFileHandler implements FileHandler {
             resolve();
           });
 
-          response.pipe(target);
+          response
+            .pipe(passThroughStream)
+            .on("data", (chunk: any) => {
+              bytesWritten += chunk.length;
+              if (progressCallback)
+                progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
+            })
+            .pipe(target);
         }
       };
       downloadUrl.startsWith("https:") ? https.get(downloadUrl, callback) : http.get(downloadUrl, callback);
@@ -67,11 +78,12 @@ export class UrlFileHandler implements FileHandler {
   public async uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const uploadUrl = new URL(uploadUrlString);
-      const requestOptions = { method: "POST", hostname: uploadUrl.hostname, port: uploadUrl.port, path: uploadUrl.pathname };
+      const fileSize = this.getFileSize(uploadFromPathname);
+      const requestOptions = { method: this._uploadMethod, hostname: uploadUrl.hostname, port: uploadUrl.port, path: uploadUrl.pathname + uploadUrl.search };
       const callback = (response: http.IncomingMessage) => {
-        if (response.statusCode === 200) {
+        if (response.statusCode === 200 || response.statusCode === 201) {
           if (progressCallback)
-            progressCallback({ percent: 100, total: 1, loaded: 1 });
+            progressCallback({ percent: 100, total: fileSize, loaded: fileSize });
           resolve();
         } else {
           reject(new Error(response.statusCode!.toString()));
@@ -79,7 +91,15 @@ export class UrlFileHandler implements FileHandler {
       };
       const request = uploadUrlString.startsWith("https:") ? https.request(requestOptions, callback) : http.request(requestOptions, callback);
 
+      let bytesWritten: number = 0;
       const source = fs.createReadStream(uploadFromPathname);
+      if (progressCallback) {
+        source.on("data", (chunk) => {
+          bytesWritten += chunk.length;
+          progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
+        });
+      }
+
       source.on("error", (err) => {
         reject(err);
       });

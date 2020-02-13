@@ -44,7 +44,7 @@ export class FrameBuffer implements WebGLDisposable {
 
   private constructor(fbo: WebGLFramebuffer, colorTextures: TextureHandle[], depthBuffer?: DepthBuffer) {
     this._fbo = fbo;
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
 
     this.bind(false);
 
@@ -99,7 +99,7 @@ export class FrameBuffer implements WebGLDisposable {
     if (undefined === this._fbo)
       return false;
 
-    const gl: WebGLRenderingContext = System.instance.context;
+    const gl = System.instance.context;
 
     gl.bindFramebuffer(GL.FrameBuffer.TARGET, this._fbo);
 

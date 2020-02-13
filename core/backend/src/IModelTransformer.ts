@@ -269,7 +269,13 @@ export class IModelTransformer extends IModelExportHandler {
     if (!Id64.isValidId64(targetElementId)) {
       targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (undefined !== targetElementId) {
-        this.context.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
+        const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
+        if (targetElement.classFullName === targetElementProps.classFullName) { // ensure code remapping doesn't change the target class
+          this.context.remapElement(sourceElement.id, targetElementId); // record that the targeElement was found by Code
+        } else {
+          targetElementId = undefined;
+          targetElementProps.code = Code.createEmpty(); // clear out invalid code
+        }
       }
     }
     if (undefined !== targetElementId) {
@@ -432,9 +438,11 @@ export class IModelTransformer extends IModelExportHandler {
   protected onExportRelationship(sourceRelationship: Relationship): void {
     const targetRelationshipProps: RelationshipProps = this.onTransformRelationship(sourceRelationship);
     const targetRelationshipInstanceId: Id64String = this.importer.importRelationship(targetRelationshipProps);
-    const aspectProps: ExternalSourceAspectProps = this.initRelationshipProvenance(sourceRelationship, targetRelationshipInstanceId);
-    if (undefined === aspectProps.id) {
-      this.targetDb.elements.insertAspect(aspectProps);
+    if (Id64.isValidId64(targetRelationshipInstanceId)) {
+      const aspectProps: ExternalSourceAspectProps = this.initRelationshipProvenance(sourceRelationship, targetRelationshipInstanceId);
+      if (undefined === aspectProps.id) {
+        this.targetDb.elements.insertAspect(aspectProps);
+      }
     }
   }
 

@@ -10,7 +10,7 @@ import { EMPTY } from "rxjs/internal/observable/empty";
 import { Observable } from "../Observable";
 import { CheckboxStateChange } from "../TreeEvents";
 import { TreeModelSource } from "../TreeModelSource";
-import { ITreeNodeLoader, LoadedNodeHierarchy } from "../TreeNodeLoader";
+import { ITreeNodeLoader, TreeNodeLoadResult } from "../TreeNodeLoader";
 import { TreeNodeItem } from "../../TreeDataProvider";
 import { TreeModelNode, TreeModelNodeEditingInfo } from "../TreeModel";
 
@@ -31,7 +31,7 @@ export class TreeModelMutator {
     this._collapsedChildrenDisposalEnabled = collapsedChildrenDisposalEnabled;
   }
 
-  public expandNode(nodeId: string): Observable<LoadedNodeHierarchy> {
+  public expandNode(nodeId: string): Observable<TreeNodeLoadResult> {
     let needToLoadChildren = false;
     this._modelSource.modifyModel((model) => {
       const node = model.getNode(nodeId);

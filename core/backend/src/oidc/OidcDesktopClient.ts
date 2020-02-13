@@ -233,8 +233,10 @@ export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient
   }
 
   /** Returns a promise that resolves to the AccessToken of the currently authorized user.
-   * The token is refreshed as necessary.
-   * @note The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
+   * - The token is ensured to be valid *at least* for the buffer of time specified by the configuration.
+   * - The token is refreshed if it's possible and necessary.
+   * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
+   * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
    * @throws [[BentleyError]] If signIn() was not called, or there was an authorization error.
    */
   public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {

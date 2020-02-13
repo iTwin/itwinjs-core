@@ -329,15 +329,38 @@ export class IModelDb extends IModel {
     requestContext.enter();
     const perfLogger = new PerfLogger("Opening iModel", () => ({ contextId, iModelId, ...openParams }));
 
+    const briefcaseEntry: BriefcaseEntry = await this.downloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+    requestContext.enter();
+
+    const iModelDb: IModelDb = await this.openBriefcase(requestContext, briefcaseEntry);
+    requestContext.enter();
+
+    perfLogger.dispose();
+    return iModelDb;
+  }
+
+  /**
+   * Download an iModel from iModelHub, and cache it locally as a briefcase.
+   * @param requestContext The client request context.
+   * @param contextId Id of the Connect Project or Asset containing the iModel
+   * @param iModelId Id of the iModel
+   * @param version Version of the iModel to open
+   * @param openParams Parameters to open the iModel
+   * @internal
+   */
+  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseEntry> {
+    requestContext.enter();
+    const perfLogger = new PerfLogger("Downloading briefcase", () => ({ contextId, iModelId, ...openParams }));
+
     IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
 
     let briefcaseEntry: BriefcaseEntry;
     let timedOut = false;
     try {
-      briefcaseEntry = await BriefcaseManager.open(requestContext, contextId, iModelId, openParams, version);
+      briefcaseEntry = await BriefcaseManager.download(requestContext, contextId, iModelId, openParams, version);
       requestContext.enter();
 
-      if (briefcaseEntry.isPending) {
+      if (briefcaseEntry.isPending !== undefined) {
         if (typeof openParams.timeout === "undefined")
           await briefcaseEntry.isPending;
         else {
@@ -360,12 +383,36 @@ export class IModelDb extends IModel {
       throw new RpcPendingResponse();
     }
 
-    const iModelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
-    await this.logUsage(requestContext, contextId, iModelDb);
-    iModelDb.setDefaultConcurrentControlAndPolicy();
-    IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
+    briefcaseEntry.isPending = undefined;
 
     perfLogger.dispose();
+    return briefcaseEntry;
+  }
+
+  /**
+   * Open a previously downloaded briefcase
+   * @param requestContext The client request context.
+   * @param briefcaseEntry Downloaded briefcase - see [[downloadBriefcase]]
+   * @internal
+   */
+  public static async openBriefcase(requestContext: AuthorizedClientRequestContext, briefcaseEntry: BriefcaseEntry): Promise<IModelDb> {
+    if (briefcaseEntry.isPending)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that's not been completely downloaded", Logger.logError, loggerCategory, () => { briefcaseEntry.getDebugInfo(); });
+
+    if (!briefcaseEntry.isOpen)
+      BriefcaseManager.openBriefcase(briefcaseEntry);
+
+    const alreadyOpen = (briefcaseEntry.iModelDb !== undefined);
+
+    const iModelDb = IModelDb.constructIModelDb(briefcaseEntry, briefcaseEntry.openParams, briefcaseEntry.contextId);
+    await this.logUsage(requestContext, briefcaseEntry.contextId, iModelDb);
+
+    if (!alreadyOpen) {
+      iModelDb.setDefaultConcurrentControlAndPolicy();
+      await iModelDb.concurrencyControl.onOpened(requestContext);
+      IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
+    }
+
     return iModelDb;
   }
 
@@ -441,6 +488,11 @@ export class IModelDb extends IModel {
     requestContext.enter();
     if (this.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a snapshot iModel. Use IModelDb.closeSnapshot() instead");
+
+    if (this.needsConcurrencyControl) {
+      await this.concurrencyControl.onClose(requestContext);
+      requestContext.enter();
+    }
 
     try {
       await BriefcaseManager.close(requestContext, this.briefcase, keepBriefcase);
@@ -899,13 +951,15 @@ export class IModelDb extends IModel {
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError, loggerCategory);
 
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
-    this.concurrencyControl.onSaveChanges();
+    if (this.needsConcurrencyControl)
+      this.concurrencyControl.onSaveChanges();
 
     const stat = this.nativeDb.saveChanges(description);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Problem saving changes", Logger.logError, loggerCategory);
 
-    this.concurrencyControl.onSavedChanges();
+    if (this.needsConcurrencyControl)
+      this.concurrencyControl.onSavedChanges();
   }
 
   /** Abandon pending changes in this iModel */
@@ -944,11 +998,16 @@ export class IModelDb extends IModel {
     } else if (!this.briefcase.nativeDb.hasSavedChanges()) {
       return Promise.resolve(); // nothing to push
     }
+
+    await this.concurrencyControl.onPushChanges(requestContext);
+
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
     requestContext.enter();
     this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;
     this.initializeIModelDb();
+
+    return this.concurrencyControl.onPushedChanges(requestContext);
   }
 
   /** Reverse a previously merged set of changes
@@ -1051,7 +1110,7 @@ export class IModelDb extends IModel {
    */
   public static find(iModelToken: IModelToken): IModelDb {
     const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
-    if (!briefcaseEntry || !briefcaseEntry.iModelDb) {
+    if (!briefcaseEntry || !briefcaseEntry.iModelDb || !briefcaseEntry.isOpen) {
       Logger.logError(loggerCategory, "IModelDb not found in the in-memory briefcase cache", () => iModelToken);
       throw new IModelNotFoundResponse();
     }
@@ -1069,7 +1128,15 @@ export class IModelDb extends IModel {
   /** Get the linkTableRelationships for this IModel */
   public get relationships(): Relationships { return this._relationships || (this._relationships = new Relationships(this)); }
 
+  /** Does this briefcase require concurrency control?
+   * @beta
+   */
+  public get needsConcurrencyControl(): boolean {
+    return !this.isReadonly && !this.isSnapshot;
+  }
+
   /** Get the ConcurrencyControl for this IModel.
+   * See [[needsConcurrencyControl]]
    * @beta
    */
   public get concurrencyControl(): ConcurrencyControl {
@@ -1489,14 +1556,14 @@ export namespace IModelDb {
         props.isPrivate = false;
 
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onInsert(props);
+      jsClass.onInsert(props, this._iModel);
 
       const val = this._iModel.nativeDb.insertModel(JSON.stringify(props));
       if (val.error)
         throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggerCategory);
 
       props.id = Id64.fromJSON(JSON.parse(val.result!).id);
-      jsClass.onInserted(props.id);
+      jsClass.onInserted(props.id, this._iModel);
       return props.id;
     }
 
@@ -1506,13 +1573,13 @@ export namespace IModelDb {
      */
     public updateModel(props: UpdateModelOptions): void {
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-      jsClass.onUpdate(props);
+      jsClass.onUpdate(props, this._iModel);
 
       const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
       if (error !== IModelStatus.Success)
         throw new IModelError(error, "updating model id=" + props.id, Logger.logWarning, loggerCategory);
 
-      jsClass.onUpdated(props);
+      jsClass.onUpdated(props, this._iModel);
     }
 
     /** Delete one or more existing models.
@@ -1523,13 +1590,13 @@ export namespace IModelDb {
       Id64.toIdSet(ids).forEach((id) => {
         const props = this.getModelProps(id);
         const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName) as any; // "as any" so we can call the protected methods
-        jsClass.onDelete(props);
+        jsClass.onDelete(props, this._iModel);
 
         const error = this._iModel.nativeDb.deleteModel(id);
         if (error !== IModelStatus.Success)
           throw new IModelError(error, "deleting model id " + id, Logger.logWarning, loggerCategory);
 
-        jsClass.onDeleted(props);
+        jsClass.onDeleted(props, this._iModel);
       });
     }
   }
@@ -1832,7 +1899,7 @@ export namespace IModelDb {
       const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onInsert(aspectProps, iModel);
 
-      const status = iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
+      const status = iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggerCategory, () => ({ classFullName: aspectProps.classFullName }));
 
@@ -1848,7 +1915,7 @@ export namespace IModelDb {
       const jsClass = iModel.getJsClass<typeof ElementAspect>(aspectProps.classFullName) as any; // "as any" so we can call the protected methods
       jsClass.onUpdate(aspectProps, iModel);
 
-      const status = iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps));
+      const status = iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps, BinaryPropertyTypeConverter.createReplacerCallback(false)));
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggerCategory, () => ({ aspectInstanceId: aspectProps.id }));
 

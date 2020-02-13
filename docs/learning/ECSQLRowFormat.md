@@ -16,7 +16,7 @@ If the ECSQL select clause item
   [ECClassId](./ECSQL.md#ECInstanceId-and-ECClassId) | className
   [SourceECInstanceId](./ECSQL.md#ecrelationshipclasses) | sourceId
   [SourceECClassId](./ECSQL.md#ecrelationshipclasses) | sourceClassName
-  [TargetECInstanceId](./ECSQ.mdL#ecrelationshipclasses) | targetId
+  [TargetECInstanceId](./ECSQL.md#ecrelationshipclasses) | targetId
   [TargetECClassId](./ECSQL.md#ecrelationshipclasses) | targetClassName
 
   Navigation property member | JavaScript Type

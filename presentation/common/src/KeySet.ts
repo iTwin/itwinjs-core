@@ -52,10 +52,12 @@ export type Keys = ReadonlyArray<Key> | Readonly<KeySet>;
 
 /**
  * A data structure of serialized [[KeySet]]
- * @internal
+ * @public
  */
 export interface KeySetJSON {
+  /** An array of tuples [class_name, instance_ids[]] */
   instanceKeys: Array<[string, string[]]>;
+  /** An array of serialized node keys */
   nodeKeys: NodeKeyJSON[];
 }
 
@@ -402,7 +404,7 @@ export class KeySet {
 
   /**
    * Serializes this KeySet to JSON
-   * @internal
+   * @public
    */
   public toJSON(): KeySetJSON {
     const instanceKeys = new Array();
@@ -421,7 +423,7 @@ export class KeySet {
 
   /**
    * Creates a KeySet from JSON
-   * @internal
+   * @public
    */
   public static fromJSON(json: KeySetJSON): KeySet {
     const keyset = new KeySet();

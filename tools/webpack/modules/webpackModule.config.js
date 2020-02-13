@@ -255,7 +255,7 @@ function getConfig(env) {
 
   // Loaders setup:
   // always use source-map-loader, use strip-assert-loader on production builds;
-  const stripAssertLoader = path.resolve(__dirname, "../config/strip-assert-loader.js");
+  const stripAssertLoader = require.resolve("@bentley/webpack-tools-core/lib/loaders/strip-assert-loader");
   const sourceMapLoader = require.resolve("source-map-loader");
   const jsLoaders = env.prod ? [sourceMapLoader, stripAssertLoader] : [sourceMapLoader];
   webpackLib.module = {};

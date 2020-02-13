@@ -7,7 +7,7 @@
  */
 
 import { ColorDef } from "@bentley/imodeljs-common";
-import { RenderPlan } from "../System";
+import { RenderPlan } from "../RenderPlan";
 import { FloatRgb, FloatRgba } from "./FloatRGBA";
 import { sync, desync } from "./Sync";
 import { UniformHandle } from "./Handle";

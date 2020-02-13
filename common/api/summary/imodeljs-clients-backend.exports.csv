@@ -13,4 +13,5 @@ beta;OidcBackendClientConfiguration
 beta;OidcDelegationClient 
 beta;OidcDelegationClientConfiguration = OidcBackendClientConfiguration
 internal;RequestHost
+internal;StorageServiceFileHandler 
 internal;UrlFileHandler 

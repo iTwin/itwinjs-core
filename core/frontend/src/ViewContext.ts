@@ -10,21 +10,29 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { CanvasDecoration } from "./render/CanvasDecoration";
+import { Decorations } from "./render/Decorations";
 import {
-  CanvasDecoration,
-  Decorations,
   GraphicBranch,
   GraphicBranchOptions,
+} from "./render/GraphicBranch";
+import {
   GraphicList,
   RenderGraphic,
-  RenderTarget,
-  RenderPlanarClassifier,
-  RenderTextureDrape,
-} from "./render/System";
-import { ScreenViewport, Viewport, ViewingSpace } from "./Viewport";
-import { Tile } from "./tile/Tile";
-import { TileTree } from "./tile/TileTree";
+} from "./render/RenderGraphic";
+import { RenderTarget } from "./render/RenderTarget";
+import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
+import { RenderTextureDrape } from "./render/RenderSystem";
+import { ScreenViewport, Viewport } from "./Viewport";
+import { ViewingSpace } from "./ViewingSpace";
+import {
+  Tile,
+  TileGraphicType,
+  TileLoadStatus,
+  TileTreeReference,
+} from "./tile/internal";
 import { IModelApp } from "./IModelApp";
+import { Scene } from "./render/Scene";
 
 const gridConstants = { minSeparation: 20, maxRefLines: 100, gridTransparency: 220, refTransparency: 150, planeTransparency: 225 };
 
@@ -436,18 +444,12 @@ export class DecorateContext extends RenderContext {
  * @internal
  */
 export class SceneContext extends RenderContext {
-  public readonly graphics: RenderGraphic[] = [];
-  public readonly backgroundGraphics: RenderGraphic[] = [];
-  public readonly overlayGraphics: RenderGraphic[] = [];
+  public readonly scene = new Scene();
   public readonly missingTiles = new Set<Tile>();
   public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
   public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
-  public readonly planarClassifiers = new Map<Id64String, RenderPlanarClassifier>(); // Classifier model id to planar classifier.
-  public readonly textureDrapes = new Map<Id64String, RenderTextureDrape>();
   private _viewingSpace?: ViewingSpace;
-  private _graphicType: TileTree.GraphicType = TileTree.GraphicType.Scene;
-  private _activeVolumeClassifierProps?: SpatialClassificationProps.Classifier;
-  private _activeVolumeClassifierModelId?: Id64String;
+  private _graphicType: TileGraphicType = TileGraphicType.Scene;
 
   public constructor(vp: Viewport, frustum?: Frustum) {
     super(vp, frustum);
@@ -459,10 +461,10 @@ export class SceneContext extends RenderContext {
 
   public outputGraphic(graphic: RenderGraphic): void {
     switch (this._graphicType) {
-      case TileTree.GraphicType.BackgroundMap:
+      case TileGraphicType.BackgroundMap:
         this.backgroundGraphics.push(graphic);
         break;
-      case TileTree.GraphicType.Overlay:
+      case TileGraphicType.Overlay:
         this.overlayGraphics.push(graphic);
         break;
       default:
@@ -473,9 +475,9 @@ export class SceneContext extends RenderContext {
 
   public insertMissingTile(tile: Tile): void {
     switch (tile.loadStatus) {
-      case Tile.LoadStatus.NotLoaded:
-      case Tile.LoadStatus.Queued:
-      case Tile.LoadStatus.Loading:
+      case TileLoadStatus.NotLoaded:
+      case TileLoadStatus.Queued:
+      case TileLoadStatus.Loading:
         this.missingTiles.add(tile);
         break;
     }
@@ -485,7 +487,7 @@ export class SceneContext extends RenderContext {
     IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
   }
 
-  public addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTree, classifiedTree: TileTree): RenderPlanarClassifier | undefined {
+  public addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTreeReference, classifiedTree: TileTreeReference): RenderPlanarClassifier | undefined {
     // Have we already seen this classifier before?
     const id = props.modelId;
     let classifier = this.planarClassifiers.get(id);
@@ -505,12 +507,17 @@ export class SceneContext extends RenderContext {
 
     return classifier;
   }
+
   public getPlanarClassifierForModel(modelId: Id64String) {
     const classifierId = this.modelClassifiers.get(modelId);
     return undefined === classifierId ? undefined : this.planarClassifiers.get(classifierId);
   }
 
-  public addBackgroundDrapedModel(drapedTree: TileTree): RenderTextureDrape | undefined {
+  public addBackgroundDrapedModel(drapedTreeRef: TileTreeReference): RenderTextureDrape | undefined {
+    const drapedTree = drapedTreeRef.treeOwner.tileTree;
+    if (undefined === drapedTree)
+      return undefined;
+
     const id = drapedTree.modelId;
     let drape = this.getTextureDrapeForModel(id);
     if (undefined !== drape)
@@ -518,29 +525,24 @@ export class SceneContext extends RenderContext {
 
     drape = this.viewport.target.getTextureDrape(id);
     if (undefined === drape)
-      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTree, this.viewport.displayStyle.backgroundDrapeMap);
+      drape = this.viewport.target.renderSystem.createBackgroundMapDrape(drapedTreeRef, this.viewport.displayStyle.backgroundDrapeMap);
 
     if (undefined !== drape)
       this.textureDrapes.set(id, drape);
 
     return drape;
   }
+
   public getTextureDrapeForModel(modelId: Id64String) {
     return this.textureDrapes.get(modelId);
   }
 
-  public getActiveVolumeClassifierProps(): SpatialClassificationProps.Classifier | undefined { return this._activeVolumeClassifierProps; }
-  public setActiveVolumeClassifierProps(properties: SpatialClassificationProps.Classifier | undefined) { this._activeVolumeClassifierProps = properties; }
-
-  public getActiveVolumeClassifierModelId(): Id64String | undefined { return this._activeVolumeClassifierModelId; }
-  public setActiveVolumeClassifierModelId(modelId: Id64String | undefined) { this._activeVolumeClassifierModelId = modelId; }
-
-  public withGraphicTypeAndPlane(type: TileTree.GraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
+  public withGraphicTypeAndPlane(type: TileGraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
     const frust = undefined !== plane ? ViewingSpace.createFromViewportAndPlane(this.viewport, plane) : undefined;
     this.withGraphicTypeAndFrustum(type, frust, func);
   }
 
-  public withGraphicTypeAndFrustum(type: TileTree.GraphicType, frustum: ViewingSpace | undefined, func: () => void): void {
+  public withGraphicTypeAndFrustum(type: TileGraphicType, frustum: ViewingSpace | undefined, func: () => void): void {
     const prevType = this._graphicType;
     const prevFrust = this._viewingSpace;
 
@@ -551,5 +553,15 @@ export class SceneContext extends RenderContext {
 
     this._graphicType = prevType;
     this._viewingSpace = prevFrust;
+  }
+
+  public get graphics() { return this.scene.foreground; }
+  public get backgroundGraphics() { return this.scene.background; }
+  public get overlayGraphics() { return this.scene.overlay; }
+  public get planarClassifiers() { return this.scene.planarClassifiers; }
+  public get textureDrapes() { return this.scene.textureDrapes; }
+
+  public setVolumeClassifier(classifier: SpatialClassificationProps.Classifier, modelId: Id64String): void {
+    this.scene.volumeClassifier = { classifier, modelId };
   }
 }

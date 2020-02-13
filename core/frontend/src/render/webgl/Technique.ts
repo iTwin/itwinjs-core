@@ -140,7 +140,7 @@ export abstract class VariedTechnique implements Technique {
   protected abstract computeShaderIndex(flags: TechniqueFlags): number;
   protected abstract get _debugDescription(): string;
 
-  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void {
+  protected addShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext | WebGL2RenderingContext): void {
     const descr = this._debugDescription + ": " + flags.buildDescription();
     builder.setDebugDescription(descr);
 
@@ -153,7 +153,7 @@ export abstract class VariedTechnique implements Technique {
     }
   }
 
-  private addProgram(builder: ProgramBuilder, index: number, gl: WebGLRenderingContext, wantClippingMask: boolean): void {
+  private addProgram(builder: ProgramBuilder, index: number, gl: WebGLRenderingContext | WebGL2RenderingContext, wantClippingMask: boolean): void {
     assert(this._basicPrograms[index] === undefined);
     this._basicPrograms[index] = builder.buildProgram(gl);
     assert(this._basicPrograms[index] !== undefined);
@@ -163,13 +163,13 @@ export abstract class VariedTechnique implements Technique {
     assert(this._clippingPrograms[index] !== undefined);
   }
 
-  protected addHiliteShader(gl: WebGLRenderingContext, instanced: IsInstanced, classified: IsClassified, create: (instanced: IsInstanced, classified: IsClassified) => ProgramBuilder): void {
+  protected addHiliteShader(gl: WebGLRenderingContext | WebGL2RenderingContext, instanced: IsInstanced, classified: IsClassified, create: (instanced: IsInstanced, classified: IsClassified) => ProgramBuilder): void {
     const builder = create(instanced, classified);
     scratchHiliteFlags.initForHilite(new ClipDef(), instanced, classified, false);
     this.addShader(builder, scratchHiliteFlags, gl);
   }
 
-  protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext): void {
+  protected addTranslucentShader(builder: ProgramBuilder, flags: TechniqueFlags, gl: WebGLRenderingContext | WebGL2RenderingContext): void {
     flags.isTranslucent = true;
     addTranslucency(builder);
     this.addShader(builder, flags, gl);
@@ -231,7 +231,7 @@ class SurfaceTechnique extends VariedTechnique {
   // There are 3 base variations - 1 per feature mode - each with translucent and/or shadowed variants; plus 1 for hilite.
   private static readonly _kClassified = SurfaceTechnique._kHilite + numHiliteVariants;
 
-  public constructor(gl: WebGLRenderingContext) {
+  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     super(SurfaceTechnique._kClassified + 13);
     const flags = scratchTechniqueFlags;
 
@@ -331,7 +331,7 @@ class PolylineTechnique extends VariedTechnique {
   private static readonly _kFeature = 4;
   private static readonly _kHilite = numFeatureVariants(PolylineTechnique._kFeature);
 
-  public constructor(gl: WebGLRenderingContext) {
+  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     super(PolylineTechnique._kHilite + numHiliteVariants);
 
     const flags = scratchTechniqueFlags;
@@ -385,7 +385,7 @@ class EdgeTechnique extends VariedTechnique {
   private static readonly _kFeature = 8;
   private readonly _isSilhouette: boolean;
 
-  public constructor(gl: WebGLRenderingContext, isSilhouette: boolean = false) {
+  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext, isSilhouette: boolean = false) {
     super(numFeatureVariants(EdgeTechnique._kFeature));
     this._isSilhouette = isSilhouette;
 
@@ -441,7 +441,7 @@ class PointStringTechnique extends VariedTechnique {
   private static readonly _kFeature = 4;
   private static readonly _kHilite = numFeatureVariants(PointStringTechnique._kFeature);
 
-  public constructor(gl: WebGLRenderingContext) {
+  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     super((PointStringTechnique._kHilite + numHiliteVariants));
 
     const flags = scratchTechniqueFlags;
@@ -490,7 +490,7 @@ class PointStringTechnique extends VariedTechnique {
 class PointCloudTechnique extends VariedTechnique {
   private static readonly _kHilite = 4;
 
-  public constructor(gl: WebGLRenderingContext) {
+  public constructor(gl: WebGLRenderingContext | WebGL2RenderingContext) {
     super(PointCloudTechnique._kHilite + 2);
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       this.addHiliteShader(gl, IsInstanced.No, iClassified, () => createPointCloudHiliter(iClassified));
@@ -527,7 +527,7 @@ export class Techniques implements WebGLDisposable {
   private readonly _list = new Array<Technique>(); // indexed by TechniqueId, which may exceed TechniqueId.NumBuiltIn for dynamic techniques.
   private readonly _dynamicTechniqueIds = new Array<string>(); // technique ID = (index in this array) + TechniqueId.NumBuiltIn
 
-  public static create(gl: WebGLRenderingContext): Techniques {
+  public static create(gl: WebGLRenderingContext | WebGL2RenderingContext): Techniques {
     const techs = new Techniques();
     techs.initializeBuiltIns(gl);
     return techs;
@@ -601,7 +601,7 @@ export class Techniques implements WebGLDisposable {
 
   private constructor() { }
 
-  private initializeBuiltIns(gl: WebGLRenderingContext): void {
+  private initializeBuiltIns(gl: WebGLRenderingContext | WebGL2RenderingContext): void {
     this._list[TechniqueId.OITClearTranslucent] = new SingularTechnique(createClearTranslucentProgram(gl));
     this._list[TechniqueId.ClearPickAndColor] = new SingularTechnique(createClearPickAndColorProgram(gl));
     this._list[TechniqueId.CopyColor] = new SingularTechnique(createCopyColorProgram(gl));

@@ -17,7 +17,9 @@ import { ByteStream } from '@bentley/bentleyjs-core';
 import { ChangeSetStatus } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
+import { ClipVector } from '@bentley/geometry-core';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
+import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { GeometryQuery } from '@bentley/geometry-core';
 import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
@@ -32,6 +34,7 @@ import { IModelStatus } from '@bentley/bentleyjs-core';
 import { IndexedPolyfaceVisitor } from '@bentley/geometry-core';
 import { IndexedValue } from '@bentley/bentleyjs-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
+import { LockLevel } from '@bentley/imodeljs-clients';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
@@ -56,6 +59,7 @@ import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { Writable } from 'stream';
+import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { XYProps } from '@bentley/geometry-core';
 import { XYZProps } from '@bentley/geometry-core';
@@ -766,12 +770,16 @@ export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifi
 export class Code implements CodeProps {
     constructor(val: CodeProps);
     static createEmpty(): Code;
+    // @internal (undocumented)
+    static equalCodes(c1: CodeProps, c2: CodeProps): boolean;
     // (undocumented)
     equals(other: Code): boolean;
     // (undocumented)
     static fromJSON(json?: any): Code;
     // (undocumented)
     getValue(): string;
+    static isEmpty(c: CodeProps): boolean;
+    static isValid(c: CodeProps): boolean;
     scope: string;
     spec: Id64String;
     value?: string;
@@ -1290,8 +1298,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export const enum CurrentImdlVersion {
-    Combined = 458752,
-    Major = 7,
+    Combined = 589824,
+    Major = 9,
     Minor = 0
 }
 
@@ -1623,6 +1631,29 @@ export class EdgeArgs {
     get isValid(): boolean;
     // (undocumented)
     get numEdges(): number;
+}
+
+// @alpha
+export abstract class Editor3dRpcInterface extends RpcInterface {
+    // (undocumented)
+    applyTransform(_tokenProps: IModelTokenProps, _editorId: GuidString, _tprops: TransformProps): Promise<any>;
+    // (undocumented)
+    createElement(_tokenProps: IModelTokenProps, _editorId: GuidString, _props: GeometricElement3dProps, _origin?: Point3d, _angles?: YawPitchRollAngles, _geometry?: any): Promise<void>;
+    // (undocumented)
+    end(_tokenProps: IModelTokenProps, _editorId: GuidString): Promise<void>;
+    static getClient(): Editor3dRpcInterface;
+    static readonly interfaceName = "Editor3dRpcInterface";
+    static interfaceVersion: string;
+    // (undocumented)
+    popState(_tokenProps: IModelTokenProps, _editorId: GuidString): Promise<void>;
+    // (undocumented)
+    pushState(_tokenProps: IModelTokenProps, _editorId: GuidString): Promise<void>;
+    // (undocumented)
+    start(_tokenProps: IModelTokenProps, _editorId: GuidString): Promise<void>;
+    // (undocumented)
+    startModifyingElements(_tokenProps: IModelTokenProps, _editorId: GuidString, _elementIds: Id64Array): Promise<void>;
+    // (undocumented)
+    writeAllChangesToBriefcase(_tokenProps: IModelTokenProps, _editorId: GuidString): Promise<void>;
 }
 
 // @beta
@@ -2613,6 +2644,15 @@ export class GraphicParams {
 }
 
 // @public
+export enum GridOrientationType {
+    AuxCoord = 4,
+    View = 0,
+    WorldXY = 1,
+    WorldXZ = 3,
+    WorldYZ = 2
+}
+
+// @public
 export class GroundPlane implements GroundPlaneProps {
     constructor(ground?: GroundPlaneProps);
     aboveColor: ColorDef;
@@ -3007,6 +3047,8 @@ export class IModelError extends BentleyError {
 
 // @public
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
+    // (undocumented)
+    isIModelNotFoundResponse: boolean;
 }
 
 // @public
@@ -3131,15 +3173,39 @@ export class IModelVersion {
 
 // @alpha
 export abstract class IModelWriteRpcInterface extends RpcInterface {
+    // (undocumented)
+    createAndInsertPhysicalModel(_tokenProps: IModelTokenProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String>;
+    // (undocumented)
+    createAndInsertSpatialCategory(_tokenProps: IModelTokenProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String>;
+    // (undocumented)
+    deleteElements(_tokenProps: IModelTokenProps, _ids: Id64Array): Promise<any>;
+    // (undocumented)
+    doConcurrencyControlRequest(_tokenProps: IModelTokenProps): Promise<void>;
     static getClient(): IModelWriteRpcInterface;
+    // (undocumented)
+    getModelsAffectedByWrites(_tokenProps: IModelTokenProps): Promise<Id64String[]>;
+    // (undocumented)
+    getParentChangeset(_iModelToken: IModelTokenProps): Promise<string>;
+    // (undocumented)
+    hasPendingTxns(_iModelToken: IModelTokenProps): Promise<boolean>;
+    // (undocumented)
+    hasUnsavedChanges(_iModelToken: IModelTokenProps): Promise<boolean>;
     static readonly interfaceName = "IModelWriteRpcInterface";
     static interfaceVersion: string;
     // (undocumented)
+    lockModel(_tokenProps: IModelTokenProps, _modelId: Id64String, _level: LockLevel): Promise<void>;
+    // (undocumented)
     openForWrite(_iModelToken: IModelTokenProps): Promise<IModelProps>;
+    // (undocumented)
+    pullMergePush(_tokenProps: IModelTokenProps, _comment: string, _doPush: boolean): Promise<void>;
+    // (undocumented)
+    requestResources(_tokenProps: IModelTokenProps, _elementIds: Id64Array, _modelIds: Id64Array, _opcode: DbOpcode): Promise<void>;
     // (undocumented)
     saveChanges(_iModelToken: IModelTokenProps, _description?: string): Promise<void>;
     // (undocumented)
     saveThumbnail(_iModelToken: IModelTokenProps, _val: Uint8Array): Promise<void>;
+    // (undocumented)
+    synchConcurrencyControlResourcesCache(_tokenProps: IModelTokenProps): Promise<void>;
     // (undocumented)
     updateProjectExtents(_iModelToken: IModelTokenProps, _newExtents: AxisAlignedBox3dProps): Promise<void>;
 }
@@ -3989,10 +4055,10 @@ export class PlanProjectionSettings {
     constructor(props: PlanProjectionSettingsProps);
     clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings;
     readonly elevation?: number;
+    readonly enforceDisplayPriority?: boolean;
     // (undocumented)
     static fromJSON(props: PlanProjectionSettingsProps | undefined): PlanProjectionSettings | undefined;
     readonly overlay: boolean;
-    readonly priority?: number;
     // (undocumented)
     toJSON(): PlanProjectionSettingsProps;
     readonly transparency?: number;
@@ -4001,8 +4067,8 @@ export class PlanProjectionSettings {
 // @alpha
 export interface PlanProjectionSettingsProps {
     elevation?: number;
+    enforceDisplayPriority?: boolean;
     overlay?: boolean;
-    priority?: number;
     transparency?: number;
 }
 
@@ -4111,6 +4177,8 @@ export interface PrimaryTileTreeId {
     animationId?: Id64String;
     // (undocumented)
     edgesRequired: boolean;
+    // (undocumented)
+    enforceDisplayPriority?: boolean;
     // (undocumented)
     type: BatchType.Primary;
 }
@@ -5904,6 +5972,8 @@ export interface TileOptions {
     // (undocumented)
     readonly enableInstancing: boolean;
     // (undocumented)
+    readonly ignoreAreaPatterns: boolean;
+    // (undocumented)
     readonly maximumMajorTileFormatVersion: number;
     // (undocumented)
     readonly useProjectExtents: boolean;
@@ -5967,10 +6037,12 @@ export interface TileTreeMetadata {
 
 // @internal (undocumented)
 export interface TileTreeProps {
+    contentIdQualifier?: string;
     contentRange?: Range3dProps;
     formatVersion?: number;
     id: string;
     location: TransformProps;
+    maxInitialTilesToSkip?: number;
     maxTilesToSkip?: number;
     rootTile: TileProps;
     yAxisUp?: boolean;
@@ -6103,6 +6175,10 @@ export interface ViewDefinition3dProps extends ViewDefinitionProps {
     camera: CameraProps;
     cameraOn: boolean;
     extents: XYZProps;
+    // @internal (undocumented)
+    jsonProperties?: {
+        viewDetails?: ViewDetails3dProps;
+    };
     origin: XYZProps;
 }
 
@@ -6114,6 +6190,64 @@ export interface ViewDefinitionProps extends DefinitionElementProps {
     description?: string;
     // (undocumented)
     displayStyleId: Id64String;
+    // @internal (undocumented)
+    jsonProperties?: {
+        viewDetails?: ViewDetailsProps;
+    };
+}
+
+// @beta
+export class ViewDetails {
+    // @internal
+    constructor(jsonProperties: {
+        viewDetails?: ViewDetailsProps;
+    });
+    get aspectRatioSkew(): number;
+    set aspectRatioSkew(skew: number);
+    get auxiliaryCoordinateSystemId(): Id64String;
+    set auxiliaryCoordinateSystemId(id: Id64String);
+    get clipVector(): ClipVector | undefined;
+    set clipVector(clip: ClipVector | undefined);
+    // @internal
+    getJSON(): ViewDetailsProps;
+    get gridOrientation(): GridOrientationType;
+    set gridOrientation(orientation: GridOrientationType);
+    get gridSpacing(): XAndY;
+    set gridSpacing(spacing: XAndY);
+    get gridsPerRef(): number;
+    set gridsPerRef(gridsPerRef: number);
+    // @internal (undocumented)
+    protected readonly _json: ViewDetailsProps;
+    // @internal
+    static maxSkew: number;
+}
+
+// @beta
+export class ViewDetails3d extends ViewDetails {
+    // @internal
+    constructor(jsonProperties: {
+        viewDetails?: ViewDetails3dProps;
+    });
+    get allow3dManipulations(): boolean;
+    set allow3dManipulations(allow: boolean);
+    // @internal
+    getJSON(): ViewDetails3dProps;
+    }
+
+// @internal (undocumented)
+export interface ViewDetails3dProps extends ViewDetailsProps {
+    disable3dManipulations?: boolean;
+}
+
+// @internal (undocumented)
+export interface ViewDetailsProps {
+    acs?: Id64String;
+    aspectSkew?: number;
+    clip?: any;
+    gridOrient?: GridOrientationType;
+    gridPerRef?: number;
+    gridSpaceX?: number;
+    gridSpaceY?: number;
 }
 
 // @alpha (undocumented)

@@ -7,7 +7,7 @@ import { BisCoreSchema, ConcurrencyControl, Element, ElementAspect, IModelDb, Ph
 import { IModelTestUtils } from "./IModelTestUtils";
 import { CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
 import { Id64, Id64String, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { AccessToken, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
 import { Range3d } from "@bentley/geometry-core";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -125,8 +125,8 @@ describe("Example Code", () => {
     try {
       await iModel.concurrencyControl.codes.reserve(authorizedRequestContext);
     } catch (err) {
-      if (err instanceof ConcurrencyControl.RequestError) {
-        // Do something about err.unavailableCodes ...
+      if (err instanceof IModelHubError) {
+        // Do something about unavailable Codes ...
       }
     }
     // __PUBLISH_EXTRACT_END__

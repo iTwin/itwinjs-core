@@ -102,4 +102,16 @@ export enum BackendLoggerCategory {
    * - [[EventSink]]
    */
   EventSink = "imodeljs-backend.EventSink",
+
+  /** The logger category used by the following classes:
+   * - [[IModelSchemaLoader]]
+   * @alpha
+   */
+  IModelSchemaLoader = "imodeljs-backend.IModelSchemaLoader",
+
+  /** The logger category used by the following classes:
+   * - [[iModels]]
+   * @alpha
+   */
+  Editing = "imodeljs-backend.Editing",
 }

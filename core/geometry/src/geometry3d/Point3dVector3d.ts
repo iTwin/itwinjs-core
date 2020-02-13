@@ -220,6 +220,17 @@ export class XYZ implements XYAndZ {
       return this.z;
     return this.y;
   }
+  /**
+   * Return the x,y, z component corresponding to 0,1,2.
+   */
+  public setAt(index: number, value: number): void {
+    if (index < 0.5)
+      this.x = value;
+    if (index > 1.5)
+      this.z = value;
+    else
+      this.y = value;
+  }
   /** Return the index (0,1,2) of the x,y,z component with largest absolute value */
   public indexOfMaxAbs(): number {
     let index = 0;
@@ -1014,6 +1025,15 @@ export class Vector3d extends XYZ {
   public dotProduct(vectorB: XYAndZ): number {
     return this.x * vectorB.x + this.y * vectorB.y + this.z * vectorB.z;
   }
+  /**
+   * Return the dot product of the xyz components of two inputs that are XYAndZ but otherwise not explicitly Vector3d
+   * @param targetA target point for first vector
+   * @param targetB target point for second vector
+   */
+  public static dotProductAsXYAndZ(dataA: XYAndZ, dataB: XYAndZ): number {
+    return dataA.x * dataB.x + dataA.y * dataB.y + dataA.z * dataB.z;
+  }
+
   /**
    * Returns the dot product of this vector with the with vector from pointA to pointB
    * @param pointA start point of second vector of dot product

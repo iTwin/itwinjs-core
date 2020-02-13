@@ -11,8 +11,8 @@ import {
   AccessToken, WsgError, IModelQuery, IModelClient, InitializationState, RequestGlobalOptions, RequestTimeoutOptions,
   IModelHubClient, HubIModel, SeedFile, IModelHubError, IModelHubClientError, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 

@@ -6,7 +6,6 @@
 !lib/assets/**/*
 !lib/module/dev/presentation-common.js.map
 !Ruleset.schema.json
-!package.json
 !*.md
 # then ignore some stuff again
 lib/test

@@ -8,7 +8,6 @@ ClipPlane, ConvexClipPlaneSet, and UnionOfConvexClipPlaneSets form a clear seque
 | ConvexClipPlaneSet | Array of clip planes | convex region which is the _intersection_ of the half spaces |
 | UnionOfConvexClipPlaneSets | Array of ConvexClipPlaneSet | _union_ of the convex regions |
 
-
 # ClipPlane
 
 * A single ClipPlane is a plane.
@@ -32,8 +31,6 @@ ClipPlane, ConvexClipPlaneSet, and UnionOfConvexClipPlaneSets form a clear seque
 ![>](./figs/ClipPlanes/ConvexClipPlaneSetTwoPlanes.png)
 
 ![>](./figs/ClipPlanes/ConvexClipPlaneSetThreePlanes.png)
-
-
 
 # UnionOfConvexClipPlaneSets remarks
 

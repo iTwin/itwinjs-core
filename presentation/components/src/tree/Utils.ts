@@ -8,7 +8,7 @@
 
 import { StyleHelper } from "../common/StyleHelper";
 import { CheckBoxState } from "@bentley/ui-core";
-import { Node, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
+import { Node, PageOptions as PresentationPageOptions, LabelDefinition } from "@bentley/presentation-common";
 import { DelayLoadedTreeNodeItem, PageOptions as UiPageOptions, ItemStyle, ItemColorOverrides } from "@bentley/ui-components";
 import { createLabelRecord } from "../common/Utils";
 
@@ -27,7 +27,8 @@ export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parent
 export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): DelayLoadedTreeNodeItem => {
   const item: DelayLoadedTreeNodeItem = {
     id: [...node.key.pathFromRoot].reverse().join("/"),
-    label: node.labelDefinition ? createLabelRecord(node.labelDefinition, "node_label") : node.label,
+    label: node.label,
+    labelDefinition: createLabelRecord(node.labelDefinition ? node.labelDefinition : LabelDefinition.fromLabelString(node.label), "node_label"),
   };
   (item as any)[PRESENTATION_TREE_NODE_KEY] = node.key;
 

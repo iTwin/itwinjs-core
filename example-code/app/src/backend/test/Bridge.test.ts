@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { TestUsers } from "./Utils";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { Robot } from "../RobotElement";
 import { Barrier } from "../BarrierElement";
 import { HubIModel, Project, IModelHubClient, IModelQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { getToken } from "@bentley/oidc-signin-tool";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
 import { BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
@@ -159,9 +158,7 @@ describe.skip("Bridge", async () => {
 
   before(async () => {
     IModelHost.startup();
-    const accessToken = await getToken(TestUsers.superManager.email, TestUsers.superManager.password, TestUsers.scopes, TestUsers.oidcConfig);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
-
+    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
     testProjectId = (await queryProjectIdByName(requestContext, "iModelJsTest")).wsgId;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);

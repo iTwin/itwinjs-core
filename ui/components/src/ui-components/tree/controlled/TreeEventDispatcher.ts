@@ -28,7 +28,7 @@ import { CheckBoxState } from "@bentley/ui-core";
 import { TreeActions } from "./TreeActions";
 import { TreeEvents } from "./TreeEvents";
 import { TreeModelNodePlaceholder, TreeModelNode, isTreeModelNode, VisibleTreeNodes } from "./TreeModel";
-import { ITreeNodeLoader, LoadedNodeHierarchyItem } from "./TreeNodeLoader";
+import { ITreeNodeLoader } from "./TreeNodeLoader";
 import { TreeSelectionManager, IndividualSelection, RangeSelection, isRangeSelection } from "./internal/TreeSelectionManager";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import { TreeNodeItem } from "../TreeDataProvider";
@@ -236,7 +236,7 @@ export class TreeEventDispatcher implements TreeActions {
         // Maybe we could simplify this to `this._nodeLoader.loadNodes(nodesToLoad)`?
         mergeAll(),
         distinctUntilChanged(),
-        map((loadedHierarchy) => TreeEventDispatcher.collectTreeNodeItems(loadedHierarchy.hierarchyItems)),
+        map((loadResult) => loadResult.loadedNodes),
       );
 
     return concat(of(readyNodes), loadedSelectedNodes)
@@ -290,16 +290,6 @@ export class TreeEventDispatcher implements TreeActions {
         items.push(node.item);
     }
     return items;
-  }
-
-  private static collectTreeNodeItems(hierarchyItems: LoadedNodeHierarchyItem[], result: TreeNodeItem[] = []) {
-    for (const hierarchyItem of hierarchyItems) {
-      result.push(hierarchyItem.item);
-      if (hierarchyItem.children)
-        TreeEventDispatcher.collectTreeNodeItems(hierarchyItem.children, result);
-    }
-
-    return result;
   }
 
   private static groupNodesByLoadingState(

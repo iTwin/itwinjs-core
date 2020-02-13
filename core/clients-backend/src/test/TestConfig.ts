@@ -5,11 +5,9 @@
 import { GuidString } from "@bentley/bentleyjs-core";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import {
-  AccessToken, HubIModel,
-  IModelHubClient, IModelClient, ConnectClient, Project, Config, IModelQuery, AuthorizedClientRequestContext,
+  HubIModel, IModelHubClient, IModelClient, ConnectClient, Project, Config, IModelQuery,
+  AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
-import { TestUsers, UserCredentials } from "./TestUsers";
-import { getToken } from "@bentley/oidc-signin-tool";
 
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
@@ -26,20 +24,6 @@ export class TestConfig {
   public static readonly assetName: string = Config.App.get("imjs_test_asset_name", "iModelJsAssetTest");
   public static readonly enableMocks: boolean = isOfflineSet();
   public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && !!JSON.parse(Config.App.get("imjs_test_imodel_bank"));
-
-  private static _testUsers: Map<string, AccessToken> = new Map<string, AccessToken>();
-
-  /** Login the specified user and return the AccessToken */
-  public static async getAccessToken(user: UserCredentials = TestUsers.regular): Promise<AccessToken> {
-    let accessToken: AccessToken;
-    if (TestConfig._testUsers.has(user.email))
-      accessToken = TestConfig._testUsers.get(user.email)!;
-    else {
-      accessToken = await getToken(user.email, user.password, TestUsers.scopes, TestUsers.oidcConfig, Config.App.getNumber("imjs_buddi_resolve_url_using_region", 0));
-      TestConfig._testUsers.set(user.email, accessToken);
-    }
-    return accessToken;
-  }
 
   /** Query for the specified project */
   public static async queryProjectId(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {

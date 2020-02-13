@@ -9,12 +9,13 @@ import * as faker from "faker";
 import { Observable as RxjsObservable } from "rxjs/internal/Observable";
 import { from as rxjsFrom } from "rxjs/internal/observable/from";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { ITreeDataProvider, TreeNodeItem, TreeDataProviderRaw, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
-import { PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, LoadedNodeHierarchyItem, LoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
-import { MutableTreeModelNode, TreeNodeItemData, TreeModelRootNode } from "../../../ui-components/tree/controlled/TreeModel";
-import { createRandomMutableTreeModelNode, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers";
+import { ITreeDataProvider, TreeNodeItem, TreeDataProviderRaw, TreeDataChangesListener, getLabelString } from "../../../ui-components/tree/TreeDataProvider";
+import { PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, TreeNodeLoadResult, LoadedNodeHierarchy, handleLoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
+import { MutableTreeModelNode, TreeNodeItemData, TreeModelRootNode, TreeModelNodeInput } from "../../../ui-components/tree/controlled/TreeModel";
+import { createRandomMutableTreeModelNode, createRandomTreeNodeItems, createRandomTreeNodeItem } from "./RandomTreeNodesHelpers";
 import { extractSequence } from "../ObservableTestHelpers";
 import { Observable } from "../../../ui-components/tree/controlled/Observable";
+import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
 
 const mockDataProvider = (dataProviderMock: moq.IMock<ITreeDataProvider>, pageSize: number) => {
   const rootWithChildren = createRandomMutableTreeModelNode();
@@ -55,39 +56,40 @@ const mockDataProvider = (dataProviderMock: moq.IMock<ITreeDataProvider>, pageSi
   };
 };
 
-const collectIdsFromHierarchy = (hierarchyItems: LoadedNodeHierarchyItem[], result: string[] = []) => {
-  for (const hierarchyItem of hierarchyItems) {
-    result.push(hierarchyItem.item.id);
-    if (hierarchyItem.children)
-      collectIdsFromHierarchy(hierarchyItem.children, result);
-  }
-  return result;
-};
-
-const extractLoadedNodeIds = async (obs: Observable<LoadedNodeHierarchy>) => {
-  const loadedHierarchy = await extractSequence(rxjsFrom(obs));
-  if (loadedHierarchy.length === 0)
+const extractLoadedNodeIds = async (obs: Observable<TreeNodeLoadResult>) => {
+  const loadResult = await extractSequence(rxjsFrom(obs));
+  if (loadResult.length === 0)
     return [];
-  return collectIdsFromHierarchy(loadedHierarchy[0].hierarchyItems);
+  return loadResult[0]!.loadedNodes.map((item) => item.id);
 };
 
 const itemIds = (items: TreeNodeItem[]) => items.map((item) => item.id);
 
 describe("TreeNodeLoader", () => {
   const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
+  const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
   let treeNodeLoader: TreeNodeLoader<ITreeDataProvider>;
 
   beforeEach(() => {
     dataProviderMock.reset();
+    modelSourceMock.reset();
 
     dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
-    treeNodeLoader = new TreeNodeLoader(dataProviderMock.object);
+    treeNodeLoader = new TreeNodeLoader(dataProviderMock.object, modelSourceMock.object);
   });
 
   describe("getDataProvider", () => {
 
     it("returns data provider", () => {
       expect(treeNodeLoader.getDataProvider()).to.be.eq(dataProviderMock.object);
+    });
+
+  });
+
+  describe("modelSource", () => {
+
+    it("returns model source", () => {
+      expect(treeNodeLoader.modelSource).to.be.eq(modelSourceMock.object);
     });
 
   });
@@ -105,15 +107,8 @@ describe("TreeNodeLoader", () => {
       childNodes = mockedItems.childItems;
     });
 
-    it("emits onNodeLoaded event", async () => {
-      const spy = sinon.spy();
-      treeNodeLoader.onNodeLoaded.addListener(spy);
-      await extractLoadedNodeIds(treeNodeLoader.loadNode(treeRootNode));
-      expect(spy).to.be.calledOnce;
-    });
-
     it("loads all root nodes", async () => {
-      const loadResultObs = treeNodeLoader.loadNode(treeRootNode);
+      const loadResultObs = treeNodeLoader.loadNode(treeRootNode, 0);
       const loadedIds = await extractLoadedNodeIds(loadResultObs);
       expect(loadedIds).to.be.deep.eq(itemIds(rootNodes));
     });
@@ -123,14 +118,14 @@ describe("TreeNodeLoader", () => {
 
       dataProviderMock.setup((x) => x.getNodes(rootWithChildren.item, moq.It.isAny())).returns(async () => childNodes);
 
-      const loadResultObs = treeNodeLoader.loadNode(rootWithChildren);
+      const loadResultObs = treeNodeLoader.loadNode(rootWithChildren, 0);
       const loadedIds = await extractLoadedNodeIds(loadResultObs);
       expect(loadedIds).to.be.deep.eq(itemIds(childNodes));
     });
 
     it("makes only one request to load nodes", async () => {
-      const loadResultObs = treeNodeLoader.loadNode(treeRootNode);
-      const loadResultObs2 = treeNodeLoader.loadNode(treeRootNode);
+      const loadResultObs = treeNodeLoader.loadNode(treeRootNode, 0);
+      const loadResultObs2 = treeNodeLoader.loadNode(treeRootNode, 0);
       const loadedIds = await extractLoadedNodeIds(loadResultObs);
       const loadedIds2 = await extractLoadedNodeIds(loadResultObs2);
       expect(loadedIds).to.be.deep.eq(itemIds(rootNodes));
@@ -143,6 +138,7 @@ describe("TreeNodeLoader", () => {
 
 describe("PagedTreeNodeLoader", () => {
   const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
+  const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
 
   let pagedTreeNodeLoader: PagedTreeNodeLoader<ITreeDataProvider>;
 
@@ -150,10 +146,11 @@ describe("PagedTreeNodeLoader", () => {
 
   beforeEach(() => {
     dataProviderMock.reset();
+    modelSourceMock.reset();
 
     dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
 
-    pagedTreeNodeLoader = new PagedTreeNodeLoader(dataProviderMock.object, pageSize);
+    pagedTreeNodeLoader = new PagedTreeNodeLoader(dataProviderMock.object, modelSourceMock.object, pageSize);
   });
 
   describe("getPageSize", () => {
@@ -168,6 +165,14 @@ describe("PagedTreeNodeLoader", () => {
 
     it("return data provider", () => {
       expect(pagedTreeNodeLoader.getDataProvider()).to.be.eq(dataProviderMock.object);
+    });
+
+  });
+
+  describe("modelSource", () => {
+
+    it("returns model source", () => {
+      expect(pagedTreeNodeLoader.modelSource).to.be.eq(modelSourceMock.object);
     });
 
   });
@@ -188,13 +193,6 @@ describe("PagedTreeNodeLoader", () => {
       firstRootPage = mockedItems.firstRootPage;
       secondRootPage = mockedItems.secondRootPage;
       childItems = mockedItems.childItems;
-    });
-
-    it("emits onNodeLoaded event", async () => {
-      const spy = sinon.spy();
-      pagedTreeNodeLoader.onNodeLoaded.addListener(spy);
-      await extractLoadedNodeIds(pagedTreeNodeLoader.loadNode(treeRootNode, 0));
-      expect(spy).to.be.calledOnce;
     });
 
     it("loads root nodes page when asking for first node", async () => {
@@ -259,6 +257,21 @@ describe("TreeDataSource", () => {
       const treeDataSource = new TreeDataSource(dataProviderMock.object);
       const spy = sinon.spy(treeDataSource.onItemsChanged, "raiseEvent");
       onTreeNodeChangedEvent.raiseEvent();
+      expect(spy).to.be.called;
+    });
+
+  });
+
+  describe("dispose", () => {
+
+    it("stops listening from dataProvider onTreeNodeChanges event", () => {
+      const onTreeNodeChangedEvent = new BeEvent<TreeDataChangesListener>();
+      const spy = sinon.spy(onTreeNodeChangedEvent, "removeListener");
+      const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
+      dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => onTreeNodeChangedEvent);
+
+      const treeDataSource = new TreeDataSource(dataProviderMock.object);
+      treeDataSource.dispose();
       expect(spy).to.be.called;
     });
 
@@ -368,6 +381,119 @@ describe("TreeDataSource", () => {
 
     });
 
+  });
+
+});
+
+describe("handleLoadedNodeHierarchy", () => {
+
+  function convertToTreeModelNodeInput(item: TreeNodeItemData): TreeModelNodeInput {
+    let numChildren: number | undefined;
+    if (item.children) {
+      numChildren = item.children.length;
+    } else if (!item.hasChildren) {
+      numChildren = 0;
+    }
+
+    return {
+      description: item.description,
+      isExpanded: !!item.autoExpand,
+      id: item.id,
+      item,
+      label: getLabelString(item.label),
+      isLoading: false,
+      numChildren,
+      isSelected: false,
+    };
+  }
+
+  let modelSource: TreeModelSource;
+
+  beforeEach(() => {
+    modelSource = new TreeModelSource();
+  });
+
+  it("handles loaded hierarchy with root nodes", () => {
+    const loadedHierarchy: LoadedNodeHierarchy = {
+      parentId: undefined,
+      offset: 0,
+      numChildren: 4,
+      hierarchyItems: createRandomTreeNodeItems(6).map((item) => ({ item })),
+    };
+
+    handleLoadedNodeHierarchy(modelSource, loadedHierarchy);
+
+    expect(modelSource.getModel().getChildren(undefined)!.getLength()).to.be.eq(6);
+  });
+
+  it("handles loaded hierarchy with root node and child node", () => {
+    const loadedHierarchy: LoadedNodeHierarchy = {
+      parentId: undefined,
+      offset: 0,
+      numChildren: 1,
+      hierarchyItems: [
+        {
+          item: createRandomTreeNodeItem(),
+          numChildren: 1,
+          children: [
+            {
+              item: createRandomTreeNodeItem(),
+            },
+          ],
+        },
+      ],
+    };
+    handleLoadedNodeHierarchy(modelSource, loadedHierarchy);
+
+    expect(modelSource.getModel().getChildren(undefined)!.getLength()).to.be.eq(1);
+    expect(modelSource.getModel().getChildren(loadedHierarchy.hierarchyItems[0].item.id)!.getLength()).to.be.eq(1);
+  });
+
+  it("handles loaded hierarchy with child for existing parent node", () => {
+    const parentNode = createRandomTreeNodeItem();
+    modelSource.modifyModel((model) => {
+      model.setNumChildren(undefined, 1);
+      model.setChildren(undefined, [convertToTreeModelNodeInput(parentNode)], 0);
+      const node = model.getNode(parentNode.id);
+      node!.isLoading = true;
+    });
+
+    const loadedHierarchy: LoadedNodeHierarchy = {
+      parentId: parentNode.id,
+      offset: 0,
+      numChildren: 1,
+      hierarchyItems: [
+        {
+          item: createRandomTreeNodeItems(1, parentNode.id)[0],
+        },
+      ],
+    };
+    handleLoadedNodeHierarchy(modelSource, loadedHierarchy);
+
+    expect(modelSource.getModel().getChildren(parentNode.id)!.getLength()).to.be.eq(1);
+    expect(modelSource.getModel().getNode(parentNode.id)!.isLoading).to.be.false;
+  });
+
+  it("does not add children if parent was collapsed and children should be disposed", () => {
+    const parentNode = createRandomTreeNodeItem();
+    modelSource.modifyModel((model) => {
+      model.setChildren(undefined, [convertToTreeModelNodeInput(parentNode)], 0);
+    });
+
+    // numChildren set to undefined indicates that this is not he first request for children response
+    const loadedHierarchy: LoadedNodeHierarchy = {
+      parentId: parentNode.id,
+      offset: 0,
+      numChildren: undefined,
+      hierarchyItems: [
+        {
+          item: createRandomTreeNodeItems(1, parentNode.id)[0],
+        },
+      ],
+    };
+    handleLoadedNodeHierarchy(modelSource, loadedHierarchy);
+
+    expect(modelSource.getModel().getChildren(parentNode.id)).to.be.undefined;
   });
 
 });

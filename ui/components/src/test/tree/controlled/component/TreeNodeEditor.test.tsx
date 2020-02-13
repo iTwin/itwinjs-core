@@ -61,7 +61,7 @@ describe("TreeNodeEditor", () => {
   });
 
   it("renders editor with label PropertyRecord", () => {
-    testNode.item.label = TestUtils.createPrimitiveStringProperty("node_label", "Test Value");
+    testNode.item.labelDefinition = TestUtils.createPrimitiveStringProperty("node_label", "Test Value");
 
     const { getByTestId } = render(
       <TreeNodeEditor

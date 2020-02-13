@@ -4,7 +4,7 @@ An [interactive iModel.js app](../learning/App.md#interactive-apps) has two comp
 - [frontend](./Glossary.md#frontend) = user interface and display
 - [backend](./Glossary.md#backend) = iModel access
 
-[Simple Viewer App](https://github.com/imodeljs/simple-viewer-app) is a complete example of an interactive app.
+[Simple Viewer App](https://github.com/imodeljs/imodeljs-samples/tree/master/interactive-app/simple-viewer-app) is a complete example of an interactive app.
 
 ## 1. Write the Frontend
 See the [frontend learning articles](./frontend/index.md).

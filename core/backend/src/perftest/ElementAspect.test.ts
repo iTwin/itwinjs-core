@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  IModelDb, OpenParams, ElementAspect, DictionaryModel, SpatialCategory,
-  ConcurrencyControl, IModelJsFs,
+  IModelDb, OpenParams, ElementAspect, DictionaryModel, SpatialCategory, IModelJsFs,
 } from "../imodeljs-backend";
-import { Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Config, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { IModelVersion, ElementAspectProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
@@ -26,8 +26,8 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
   try {
     await rwIModel.concurrencyControl.request(requestContext);
   } catch (err) {
-    if (err instanceof ConcurrencyControl.RequestError) {
-      assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+    if (err instanceof IModelHubError) {
+      assert.fail(JSON.stringify(err));
     }
   }
   return { modelId, spatialCategoryId };
@@ -51,7 +51,7 @@ describe("ElementAspectPerfomance", () => {
     };
     Config.App.merge(myAppConfig);
 
-    requestContext = await IModelTestUtils.getTestUserRequestContext();
+    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
     imodeldbhub = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(imodeldbhub);
   });

@@ -99,7 +99,8 @@ Array [
     "hasChildren": true,
     "icon": "Prairie",
     "id": "590b334a-e253-4b59-a850-4ca89d679fe9/79663af4-c647-4e5e-a639-9295a54e21ab",
-    "label": PropertyRecord {
+    "label": "model",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -134,7 +135,8 @@ Array [
     "description": "Ducimus similique maxime a eligendi veritatis reiciendis occaecati eaque dolor.",
     "icon": "customer loyalty",
     "id": "a4764c60-c82a-4eba-a538-4c065b3f77fb/098173db-762e-4537-b376-d7efbbdf5e70",
-    "label": PropertyRecord {
+    "label": "Central African Republic",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -175,7 +177,8 @@ Array [
     "id": "9a138287-e887-4429-80a6-f4fc635a36a5/9e6848ae-5ef5-40f6-a931-fa4685cc1418",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": PropertyRecord {
+    "label": "data-warehouse",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -207,7 +210,8 @@ Array [
     },
     "icon": "Frozen",
     "id": "39b762a6-c717-47b4-93aa-82a1d6b76624/0b9c0ad3-c15e-4225-8d91-174cf691c866",
-    "label": PropertyRecord {
+    "label": "Mississippi",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

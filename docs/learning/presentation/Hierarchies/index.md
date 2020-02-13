@@ -11,8 +11,6 @@ Define *where* and *if* specific branch should be created in the hierarchy. Ther
 ## Specifications
 
 Define *contents* for each branch. There are 6 types of specifications:
-- [AllInstanceNodes](./AllInstanceNodes.md)
-- [AllRelatedInstanceNodes](./AllRelatedInstanceNodes.md)
 - [RelatedInstanceNodes](./RelatedInstanceNodes.md)
 - [InstanceNodesOfSpecificClasses](./InstanceNodesOfSpecificClasses.md)
 - [CustomQueryInstanceNodes](./CustomQueryInstanceNodes.md)

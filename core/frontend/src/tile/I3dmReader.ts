@@ -26,18 +26,16 @@ import {
   TileReadStatus,
 } from "@bentley/imodeljs-common";
 import {
+  BatchedTileIdMap,
   GltfReader,
   GltfReaderProps,
   GltfReaderResult,
   ShouldAbortReadGltf,
-} from "./GltfReader";
-import {
-  InstancedGraphicParams,
-  RenderSystem,
-} from "../render/System";
+} from "./internal";
+import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { RenderSystem } from "../render/RenderSystem";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";
-import { BatchedTileIdMap } from "./TileTree";
 
 function setTransform(transforms: Float32Array, index: number, rotation: Matrix3d, origin: Point3d): void {
   const i = index * 12;

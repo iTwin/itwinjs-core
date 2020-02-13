@@ -29,11 +29,9 @@ import {
   QParams3d,
   Quantization,
 } from "@bentley/imodeljs-common";
-import {
-  GraphicBranch,
-  RenderGraphic,
-  RenderSystem,
-} from "../render/System";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { RenderSystem } from "../render/RenderSystem";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { IModelConnection } from "../IModelConnection";

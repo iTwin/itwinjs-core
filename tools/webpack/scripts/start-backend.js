@@ -8,7 +8,7 @@ const chalk = require("chalk");
 const {
   spawn,
   handleInterrupts
-} = require("./utils/simpleSpawn");
+} = require("@bentley/build-tools/scripts/utils/simpleSpawn");
 
 exports.command = "start-backend";
 exports.describe = chalk.bold("Runs the app's backend in development mode. Should be run in parallel with start-frontend.");

@@ -7,12 +7,12 @@ import { expect, assert } from "chai";
 import { OpenMode, DbResult, Id64String, Id64, PerfLogger, ChangeSetStatus, using, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, IModelStatus, ChangeOpCode, ChangedValueState, IModel, SubCategoryAppearance, ColorDef } from "@bentley/imodeljs-common";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import {
   BriefcaseManager, ChangeSummaryManager, ChangeSummary,
   IModelDb, OpenParams, IModelJsFs, AuthorizedBackendRequestContext, ElementOwnsChildElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, DisableNativeAssertions, TestIModelInfo } from "../IModelTestUtils";
-import { TestUsers } from "../TestUsers";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 import { KeepBriefcase } from "../../BriefcaseManager";
@@ -80,14 +80,14 @@ describe("ChangeSummary (#integration)", () => {
     Logger.setLevel("DgnCore", LogLevel.Error);
     Logger.setLevel("BeSQLite", LogLevel.Error);
 
-    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
+    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
 
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadWriteTest");
 
     // Purge briefcases that are close to reaching the acquire limit
-    const managerRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    const managerRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadWriteTest");
   });
@@ -563,7 +563,7 @@ describe("ChangeSummary (#integration)", () => {
     const iModelName = HubUtility.generateUniqueName("ParentElementChangeTest");
 
     // Recreate iModel
-    const managerRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    const managerRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
     const projectId: string = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
     const iModelId = await HubUtility.recreateIModel(managerRequestContext, projectId, iModelName);
 
@@ -635,8 +635,8 @@ describe("ChangeSummary (#integration)", () => {
   });
 
   it("should be able to extract the last change summary right after applying a change set", async () => {
-    const userContext1 = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
-    const userContext2 = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    const userContext1 = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
+    const userContext2 = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
 
     // User1 creates an iModel (on the Hub)
     const testUtility = new TestChangeSetUtility(userContext1, "ChangeSummaryTest");

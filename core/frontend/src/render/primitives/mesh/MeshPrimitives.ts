@@ -33,7 +33,9 @@ import {
 } from "@bentley/imodeljs-common";
 import { DisplayParams } from "../DisplayParams";
 import { ColorMap } from "../ColorMap";
-import { InstancedGraphicParams, RenderGraphic, RenderSystem } from "../../System";
+import { InstancedGraphicParams } from "../../InstancedGraphicParams";
+import { RenderGraphic } from "../../RenderGraphic";
+import { RenderSystem } from "../../RenderSystem";
 import { Triangle, TriangleList } from "../Primitives";
 import { VertexKeyProps } from "../VertexKey";
 

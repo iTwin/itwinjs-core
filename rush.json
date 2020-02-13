@@ -215,6 +215,20 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/webpack-tools-core",
+      "projectFolder": "tools/webpack-core",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/backend-webpack-tools",
+      "projectFolder": "tools/backend-webpack",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/imodeljs-markup",
       "projectFolder": "core/markup",
       "reviewCategory": "frontend",
@@ -355,8 +369,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "presentation-integration-tests",
-      "projectFolder": "test-apps/presentation-integration-tests",
+      "packageName": "presentation-full-stack-tests",
+      "projectFolder": "full-stack-tests/presentation",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
@@ -373,23 +387,29 @@
       "shouldPublish": false
     },
     {
-      "packageName": "core-integration-tests",
-      "projectFolder": "integration-tests/core",
+      "packageName": "core-full-stack-tests",
+      "projectFolder": "full-stack-tests/core",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
-      "packageName": "rpc-integration-tests",
-      "projectFolder": "integration-tests/rpc",
+      "packageName": "rpc-full-stack-tests",
+      "projectFolder": "full-stack-tests/rpc",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
-      "packageName": "@bentley/rpcinterface-integration-test",
-      "projectFolder": "integration-tests/rpc-interface",
+      "packageName": "@bentley/rpcinterface-full-stack-tests",
+      "projectFolder": "full-stack-tests/rpc-interface",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "simple-editor-app",
+      "projectFolder": "test-apps/simple-editor-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
     }
   ]
 }

@@ -159,7 +159,8 @@
     "showLengthEditor": "Show Length Editor",
     "showHeightEditor": "Show Height Editor",
     "showContextMenu": "Show Context Menu",
-    "showToolbar": "Show Toolbar"
+    "showToolbar": "Show Toolbar",
+    "showHTMLElement": "Show HTML Element"
   },
   "tools": {
     "ToolWithSettings": {

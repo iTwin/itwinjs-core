@@ -9,6 +9,7 @@ import {
   IModelTileRpcInterface,
   MobileRpcConfiguration,
   NativeAppRpcInterface,
+  RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import * as fs from "fs";
@@ -24,8 +25,12 @@ import { FakeTileCacheService } from "./FakeTileCacheService";
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
-export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface, NativeAppRpcInterface];
+export function getRpcInterfaces(appType: "native" | "browser"): RpcInterfaceDefinition[] {
+  const intfcs: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
+  if ("native" === appType)
+    intfcs.push(NativeAppRpcInterface);
+
+  return intfcs;
 }
 
 function setupStandaloneConfiguration(): SVTConfiguration {
@@ -49,8 +54,11 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_INSTANCING)
     configuration.disableInstancing = true;
 
-  if (undefined !== process.env.SVT_IMPROVED_ELISION)
-    configuration.enableImprovedElision = true;
+  if (undefined !== process.env.SVT_NO_IMPROVED_ELISION)
+    configuration.enableImprovedElision = false;
+
+  if (undefined !== process.env.SVT_IGNORE_AREA_PATTERNS)
+    configuration.ignoreAreaPatterns = true;
 
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
@@ -63,6 +71,13 @@ function setupStandaloneConfiguration(): SVTConfiguration {
     } catch (_) {
       //
     }
+
+  const maxToSkipVar = process.env.SVT_MAX_TILES_TO_SKIP;
+  if (undefined !== maxToSkipVar) {
+    const maxToSkip = Number.parseInt(maxToSkipVar, 10);
+    if (!Number.isNaN(maxToSkip))
+      configuration.maxTilesToSkip = maxToSkip;
+  }
 
   if (undefined !== process.env.SVT_DISABLE_LOG_Z)
     configuration.logarithmicZBuffer = false;
@@ -82,11 +97,16 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_NO_CANCEL_TILE_REQUESTS)
     configuration.cancelBackendTileRequests = false;
 
+  if (undefined !== process.env.SVT_USE_WEBGL2)
+    configuration.useWebGL2 = true;
+
   const extensions = process.env.SVT_DISABLED_EXTENSIONS;
   if (undefined !== extensions)
     configuration.disabledExtensions = extensions.split(";");
 
   configuration.useFakeCloudStorageTileCache = undefined !== process.env.SVT_FAKE_CLOUD_STORAGE;
+
+  configuration.disableEdges = undefined !== process.env.SVT_DISABLE_EDGE_DISPLAY;
 
   const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
   fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");

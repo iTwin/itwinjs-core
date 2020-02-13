@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapTilingScheme, MapTileRectangle } from "./MapTilingScheme";
+import { MapTilingScheme, MapTileRectangle } from "./internal";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { SortedArray } from "@bentley/bentleyjs-core";
 

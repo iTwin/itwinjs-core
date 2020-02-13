@@ -679,4 +679,15 @@ describe("Range3d", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("CreateFromNull", () => {
+    const ck = new Checker();
+    const r1 = Range1d.createFrom(Range1d.createNull());
+    const r2 = Range2d.createFrom(Range2d.createNull());
+    const r3 = Range3d.createFrom(Range3d.createNull());
+    ck.testTrue (r1.isNull);
+    ck.testTrue (r2.isNull);
+    ck.testTrue (r3.isNull);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

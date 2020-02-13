@@ -26,6 +26,7 @@ import { UiFramework } from "../UiFramework";
 import { InputEditorPopup, InputEditorCommitHandler } from "./InputEditorPopup";
 import { ItemDefFactory } from "../shared/ItemDefFactory";
 import { ToolbarPopup } from "./ToolbarPopup";
+import { HTMLElementPopup } from "./HTMLElementPopup";
 
 /** Information maintained by PopupManager about a Popup
  * @alpha
@@ -63,6 +64,7 @@ export class PopupManager {
   private static _popups: ReadonlyArray<PopupInfo> = [];
   private static _editorId = "InputEditor";
   private static _toolbarId = "Toolbar";
+  private static _htmlElementId = "HTMLElement";
   private static _defaultOffset = { x: 8, y: 8 };
 
   public static readonly onPopupsChangedEvent = new PopupsChangedEvent();
@@ -177,6 +179,29 @@ export class PopupManager {
 
   public static hideToolbar(): boolean {
     return PopupManager.removePopup(PopupManager._toolbarId);
+  }
+
+  public static showHTMLElement(
+    displayElement: HTMLElement, el: HTMLElement, pt: XAndY, offset: XAndY,
+    onCancel: OnCancelFunc, relativePosition: RelativePosition,
+  ): boolean {
+
+    const id = PopupManager._htmlElementId;
+    const component = (
+      <HTMLElementPopup id={id} el={el} pt={pt} offset={offset}
+        element={displayElement} relativePosition={relativePosition} orientation={Orientation.Horizontal} onCancel={onCancel} />
+    );
+
+    const popupInfo: PopupInfo = {
+      id, pt, component,
+    };
+    PopupManager.addOrUpdatePopup(popupInfo);
+
+    return true;
+  }
+
+  public static hideHTMLElement(): boolean {
+    return PopupManager.removePopup(PopupManager._htmlElementId);
   }
 
   public static getPopupPosition(el: HTMLElement, pt: XAndY, offset: XAndY, size: SizeProps): Point {

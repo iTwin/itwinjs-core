@@ -113,8 +113,10 @@ You can use these environment variables to alter the default behavior of various
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
 * SVT_DISABLE_INSTANCING
   * If defined, instanced geometry will not be generated for tiles.
-* SVT_IMPROVED_ELISION
-  * If defined, enables more accurate empty tile elision on backend.
+* SVT_NO_IMPROVED_ELISION
+  * If defined, disables more accurate empty tile elision on backend.
+* SVT_IGNORE_AREA_PATTERNS
+  * If defined, area pattern geometry will be omitted from tiles.
 * SVT_DISABLE_MAGNIFICATION
   * If defined, tiles will always be subdivided (size multipliers will never be applied).
 * SVT_PRESERVE_SHADER_SOURCE_CODE
@@ -134,6 +136,12 @@ You can use these environment variables to alter the default behavior of various
   * If defined, do not respect the DPI of the system when rendering viewports.
  * SVT_NO_CANCEL_TILE_REQUESTS
   * If defined, do not cancel tile requests on backend when cancelled on front-end.
+ * SVT_DISABLE_EDGE_DISPLAY
+  * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
+* SVT_USE_WEBGL2
+  * If defined, the system will attempt to create a WebGL2 context.
+* SVT_MAX_TILES_TO_SKIP
+  * The number of levels of iModel tile trees to skip before loading graphics.
 
 ## Key-ins
 

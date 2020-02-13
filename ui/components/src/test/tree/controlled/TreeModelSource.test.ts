@@ -6,12 +6,10 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import sinon from "sinon";
 import * as faker from "faker";
-import { BeEvent, BeUiEvent } from "@bentley/bentleyjs-core";
-import { TreeModelSource, createModelSourceForNodeLoader, createDefaultNodeLoadHandler } from "../../../ui-components/tree/controlled/TreeModelSource";
-import { ITreeDataProvider, TreeDataChangesListener, getLabelString } from "../../../ui-components/tree/TreeDataProvider";
-import { TreeModelNodeInput, MutableTreeModel, VisibleTreeNodes, TreeNodeItemData } from "../../../ui-components/tree/controlled/TreeModel";
-import { ITreeNodeLoader, LoadedNodeHierarchy } from "../../../ui-components/tree/controlled/TreeNodeLoader";
-import { createRandomTreeNodeItems, createRandomTreeNodeItem } from "./RandomTreeNodesHelpers";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
+import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
+import { TreeModelNodeInput, MutableTreeModel, VisibleTreeNodes } from "../../../ui-components/tree/controlled/TreeModel";
 
 describe("TreeModelSource", () => {
 
@@ -37,7 +35,7 @@ describe("TreeModelSource", () => {
       (modelSource as any)._model = mutableTreeModelMock.object;
       mutableTreeModelMock.setup((x) => x.computeVisibleNodes()).returns(() => visibleNodesMock.object).verifiable(moq.Times.exactly(2));
       modelSource.getVisibleNodes();
-      modelSource.onModelChanged.emit(mutableTreeModelMock.object);
+      modelSource.onModelChanged.emit([mutableTreeModelMock.object, { addedNodeIds: [], modifiedNodeIds: [], removedNodeIds: [] }]);
       modelSource.getVisibleNodes();
       mutableTreeModelMock.verifyAll();
     });
@@ -45,6 +43,20 @@ describe("TreeModelSource", () => {
   });
 
   describe("modifyModel", () => {
+    let inputNode: TreeModelNodeInput;
+
+    beforeEach(() => {
+      inputNode = {
+        id: faker.random.uuid(),
+        isExpanded: faker.random.boolean(),
+        item: { id: faker.random.uuid(), label: faker.random.word() },
+        label: faker.random.word(),
+        isLoading: faker.random.boolean(),
+        isSelected: faker.random.boolean(),
+      };
+
+      modelSource.modifyModel((model) => { model.setChildren(undefined, [inputNode], 0); });
+    });
 
     it("does not emit onModelChanged event if model did not change", () => {
       const spy = sinon.spy(modelSource.onModelChanged, "emit");
@@ -52,8 +64,8 @@ describe("TreeModelSource", () => {
       expect(spy).to.not.be.called;
     });
 
-    it("emits onModelChanged event if model has changed", () => {
-      const input: TreeModelNodeInput = {
+    it("emits onModelChanged event with added node id", () => {
+      const newInput: TreeModelNodeInput = {
         id: faker.random.uuid(),
         isExpanded: faker.random.boolean(),
         item: { id: faker.random.uuid(), label: faker.random.word() },
@@ -62,8 +74,32 @@ describe("TreeModelSource", () => {
         isSelected: faker.random.boolean(),
       };
       const spy = sinon.spy(modelSource.onModelChanged, "emit");
-      modelSource.modifyModel((model) => { model.setChildren(undefined, [input], 0); });
+      modelSource.modifyModel((model) => { model.setChildren(undefined, [newInput], 1); });
       expect(spy).to.be.called;
+      const changes = spy.args[0][0][1];
+      expect(changes.addedNodeIds.length).to.be.eq(1);
+      expect(changes.addedNodeIds[0]).to.be.eq(newInput.id);
+    });
+
+    it("emits onModelChanged event with removed node id", () => {
+      const spy = sinon.spy(modelSource.onModelChanged, "emit");
+      modelSource.modifyModel((model) => { model.clearChildren(undefined); });
+      expect(spy).to.be.called;
+      const changes = spy.args[0][0][1];
+      expect(changes.removedNodeIds.length).to.be.eq(1);
+      expect(changes.removedNodeIds[0]).to.be.eq(inputNode.id);
+    });
+
+    it("emits onModelChanged event with modified node id", () => {
+      const spy = sinon.spy(modelSource.onModelChanged, "emit");
+      modelSource.modifyModel((model) => {
+        const node = model.getNode(inputNode.id);
+        node!.isSelected = !node!.isSelected;
+      });
+      expect(spy).to.be.called;
+      const changes = spy.args[0][0][1];
+      expect(changes.modifiedNodeIds.length).to.be.eq(1);
+      expect(changes.modifiedNodeIds[0]).to.be.eq(inputNode.id);
     });
 
   });
@@ -97,144 +133,6 @@ describe("TreeModelSource", () => {
       mutableTreeModelMock.verifyAll();
     });
 
-  });
-
-});
-
-describe("createModelSourceForNodeLoader", () => {
-  const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();
-  let onNodeLoadedEvent: BeUiEvent<LoadedNodeHierarchy>;
-
-  beforeEach(() => {
-    nodeLoaderMock.reset();
-    onNodeLoadedEvent = new BeUiEvent<LoadedNodeHierarchy>();
-    nodeLoaderMock.setup((x) => x.onNodeLoaded).returns(() => onNodeLoadedEvent);
-  });
-
-  it("creates model source and adds listener to onNodeLoader event", () => {
-    const spy = sinon.spy(onNodeLoadedEvent, "addListener");
-    const { modelSource } = createModelSourceForNodeLoader(nodeLoaderMock.object);
-    expect(modelSource).to.not.be.undefined;
-    expect(spy).to.be.calledOnce;
-  });
-
-  it("removes listener from onNodeLoaded event", () => {
-    const { disposeModelSource } = createModelSourceForNodeLoader(nodeLoaderMock.object);
-    const spy = sinon.spy(onNodeLoadedEvent, "removeListener");
-    disposeModelSource();
-    expect(spy).to.be.calledOnce;
-  });
-
-});
-
-describe("createDefaultNodeLoadHandler", () => {
-  function convertToTreeModelNodeInput(item: TreeNodeItemData): TreeModelNodeInput {
-    let numChildren: number | undefined;
-    if (item.children) {
-      numChildren = item.children.length;
-    } else if (!item.hasChildren) {
-      numChildren = 0;
-    }
-
-    return {
-      description: item.description,
-      isExpanded: !!item.autoExpand,
-      id: item.id,
-      item,
-      label: getLabelString(item.label),
-      isLoading: false,
-      numChildren,
-      isSelected: false,
-    };
-  }
-
-  let modelSource: TreeModelSource;
-
-  beforeEach(() => {
-    modelSource = new TreeModelSource();
-  });
-
-  it("handles onNodeLoaded event with root nodes", () => {
-    const loadedHierarchy: LoadedNodeHierarchy = {
-      parentId: undefined,
-      offset: 0,
-      numChildren: 4,
-      hierarchyItems: createRandomTreeNodeItems(6).map((item) => ({ item })),
-    };
-
-    createDefaultNodeLoadHandler(modelSource)(loadedHierarchy);
-
-    expect(modelSource.getModel().getChildren(undefined)!.getLength()).to.be.eq(6);
-  });
-
-  it("handles onNodeLoaded event with root node and child node", () => {
-    const loadedHierarchy: LoadedNodeHierarchy = {
-      parentId: undefined,
-      offset: 0,
-      numChildren: 1,
-      hierarchyItems: [
-        {
-          item: createRandomTreeNodeItem(),
-          numChildren: 1,
-          children: [
-            {
-              item: createRandomTreeNodeItem(),
-            },
-          ],
-        },
-      ],
-    };
-    createDefaultNodeLoadHandler(modelSource)(loadedHierarchy);
-
-    expect(modelSource.getModel().getChildren(undefined)!.getLength()).to.be.eq(1);
-    expect(modelSource.getModel().getChildren(loadedHierarchy.hierarchyItems[0].item.id)!.getLength()).to.be.eq(1);
-  });
-
-  it("handles onNodeLoaded event with child for existing parent node", () => {
-    const parentNode = createRandomTreeNodeItem();
-    modelSource.modifyModel((model) => {
-      model.setNumChildren(undefined, 1);
-      model.setChildren(undefined, [convertToTreeModelNodeInput(parentNode)], 0);
-      const node = model.getNode(parentNode.id);
-      node!.isLoading = true;
-    });
-
-    const loadedHierarchy: LoadedNodeHierarchy = {
-      parentId: parentNode.id,
-      offset: 0,
-      numChildren: 1,
-      hierarchyItems: [
-        {
-          item: createRandomTreeNodeItems(1, parentNode.id)[0],
-        },
-      ],
-    };
-    createDefaultNodeLoadHandler(modelSource)(loadedHierarchy);
-
-    expect(modelSource.getModel().getChildren(parentNode.id)!.getLength()).to.be.eq(1);
-    expect(modelSource.getModel().getNode(parentNode.id)!.isLoading).to.be.false;
-  });
-
-  it("does not add children if parent was collapsed and children should be disposed", () => {
-    const parentNode = createRandomTreeNodeItem();
-    modelSource.modifyModel((model) => {
-      model.setChildren(undefined, [convertToTreeModelNodeInput(parentNode)], 0);
-    });
-
-    // numChildren set to undefined indicates that this is not he first request for children response
-    const loadedHierarchy: LoadedNodeHierarchy = {
-      parentId: parentNode.id,
-      offset: 0,
-      numChildren: undefined,
-      hierarchyItems: [
-        {
-          item: createRandomTreeNodeItems(1, parentNode.id)[0],
-        },
-      ],
-    };
-    createDefaultNodeLoadHandler(modelSource)(loadedHierarchy);
-
-    expect(modelSource.getModel().getChildren(parentNode.id)).to.be.undefined;
   });
 
 });

@@ -8,9 +8,7 @@
 
 import { AbandonedError, assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { ImageSource } from "@bentley/imodeljs-common";
-import { Tile } from "./Tile";
-import { TileTree, TileLoader } from "./TileTree";
-import { TileAdmin } from "./TileAdmin";
+import { Tile, TileTree, TileLoader, TileAdmin } from "./internal";
 import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 
@@ -143,7 +141,7 @@ export class TileRequest {
     }
 
     try {
-      const content = await this.loader.loadTileContent(this.tile, data, () => this.isCanceled);
+      const content = await this.loader.loadTileContent(this.tile, data, IModelApp.renderSystem, () => this.isCanceled);
       if (this.isCanceled)
         return Promise.resolve();
 

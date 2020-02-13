@@ -108,12 +108,14 @@ export class MarkupTool extends Tool {
 export interface ViewerProps {
   iModel: IModelConnection;
   defaultViewName?: string;
+  disableEdges?: boolean;
 }
 
 export class Viewer extends Window {
   public readonly views: ViewList;
   public readonly viewport: ScreenViewport;
   public readonly toolBar: ToolBar;
+  public readonly disableEdges: boolean;
   private _imodel: IModelConnection;
   private readonly _viewPicker: ViewPicker;
   private readonly _3dOnly: HTMLElement[] = [];
@@ -130,6 +132,7 @@ export class Viewer extends Window {
     const view = this.viewport.view.clone();
     const viewer = new Viewer(Surface.instance, view, this.views, {
       iModel: view.iModel,
+      disableEdges: this.disableEdges,
     });
 
     if (!this.isDocked) {
@@ -147,13 +150,25 @@ export class Viewer extends Window {
     return viewer;
   }
 
+  private _maybeDisableEdges() {
+    if (this.disableEdges && (this.viewport.viewFlags.visibleEdges || this.viewport.viewFlags.hiddenEdges)) {
+      const vf = this.viewport.viewFlags.clone();
+      vf.visibleEdges = false;
+      vf.hiddenEdges = false;
+      this.viewport.viewFlags = vf;
+    }
+  }
+
   private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
     super(surface);
     surface.element.appendChild(this.container);
 
+    this.disableEdges = true === props.disableEdges;
     this._imodel = props.iModel;
     this.viewport = ScreenViewport.create(this.contentDiv, view);
     this.views = views;
+
+    this._maybeDisableEdges();
 
     this.toolBar = new ToolBar(IModelApp.makeHTMLElement("div", { className: "topdiv" }));
 
@@ -222,7 +237,7 @@ export class Viewer extends Window {
       iconUnicode: "\ue90e",
       tooltip: "View settings",
       createDropDown: async (container: HTMLElement) => {
-        const panel = new ViewAttributesPanel(this.viewport, container);
+        const panel = new ViewAttributesPanel(this.viewport, container, this.disableEdges);
         await panel.populate();
         return panel;
       },
@@ -325,6 +340,7 @@ export class Viewer extends Window {
   public async setView(view: ViewState, isSavedView = false): Promise<void> {
     this._isSavedView = isSavedView;
     this.viewport.changeView(view);
+    this._maybeDisableEdges();
     this.updateTitle();
     await this.toolBar.onViewChanged(this.viewport);
   }

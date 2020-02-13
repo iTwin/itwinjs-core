@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "iModel.js UI core components",
   "license": "MIT",
   "repository": {
@@ -57,21 +57,21 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^1.11.0",
-    "@bentley/geometry-core": "^1.11.0",
-    "@bentley/imodeljs-i18n": "^1.11.0"
+    "@bentley/bentleyjs-core": "^1.12.0",
+    "@bentley/geometry-core": "^1.12.0",
+    "@bentley/imodeljs-i18n": "^1.12.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/geometry-core": "1.11.0",
-    "@bentley/build-tools": "1.11.0",
-    "@bentley/bentleyjs-core": "1.11.0",
-    "@bentley/imodeljs-i18n": "1.11.0",
-    "@bentley/ui-abstract": "1.11.0",
-    "@bentley/webpack-tools": "1.11.0",
+    "@bentley/geometry-core": "1.12.0",
+    "@bentley/build-tools": "1.12.0",
+    "@bentley/bentleyjs-core": "1.12.0",
+    "@bentley/imodeljs-i18n": "1.12.0",
+    "@bentley/ui-abstract": "1.12.0",
+    "@bentley/webpack-tools": "1.12.0",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -122,7 +122,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/icons-generic-webfont": "^0.0.43",
+    "@bentley/icons-generic-webfont": "^1.0.0",
     "classnames": "^2.2.5",
     "prop-types": "^15.7.2",
     "react": "^16.8.0",

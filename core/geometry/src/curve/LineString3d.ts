@@ -28,6 +28,7 @@ import { Clipper } from "../clipping/ClipUtils";
 import { LineSegment3d } from "./LineSegment3d";
 import { MultiLineStringDataVariant } from "../topology/Triangulation";
 import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "../geometry3d/PointStreaming";
+import { VariantCurveExtendParameter, CurveExtendOptions } from "./CurveExtendMode";
 
 /* tslint:disable:variable-name no-empty*/
 
@@ -789,9 +790,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
 
   /** Find the point on the linestring (including its segment interiors) that is closest to spacePoint. */
-  public closestPoint(spacePoint: Point3d, extend: boolean, result?: CurveLocationDetail): CurveLocationDetail {
+  public closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail {
     result = CurveLocationDetail.create(this, result);
-
+    const extend0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
+    const extend1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1);
     const numPoints = this._points.length;
     if (numPoints > 0) {
       const lastIndex = numPoints - 1;
@@ -804,10 +806,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         for (let i = 1; i < numPoints; i++) {
           segmentFraction = spacePoint.fractionOfProjectionToLine(this._points.getPoint3dAtUncheckedPointIndex(i - 1), this._points.getPoint3dAtUncheckedPointIndex(i));
           if (segmentFraction < 0) {
-            if (!extend || i > 1)
+            if (!extend0 || i > 1)
               segmentFraction = 0.0;
           } else if (segmentFraction > 1.0) {
-            if (!extend || i < lastIndex)
+            if (!extend1 || i < lastIndex)
               segmentFraction = 1.0;
           }
           this._points.getPoint3dAtUncheckedPointIndex(i - 1).interpolate(segmentFraction, this._points.getPoint3dAtUncheckedPointIndex(i), result.pointQ);

@@ -290,6 +290,15 @@ describe("TableDataProvider", () => {
       expect(cols).to.deep.eq([]);
     });
 
+    it("returns one column descriptor when display type is list", async () => {
+      const descriptor = createRandomDescriptor();
+      descriptor.displayType = DefaultContentDisplayTypes.List;
+      (provider as any).getContentDescriptor = () => descriptor;
+      const cols = await provider.getColumns();
+      expect(cols.length).to.be.eq(1);
+      expect(cols).to.matchSnapshot();
+    });
+
     it("memoizes result", async () => {
       const descriptor = createRandomDescriptor();
       const resultPromiseContainer = new PromiseContainer<Descriptor>();
@@ -375,6 +384,18 @@ describe("TableDataProvider", () => {
         values[field.name] = faker.random.word();
         displayValues[field.name] = faker.random.words();
       });
+      const record = new Item([createRandomECInstanceKey()],
+        faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
+      (provider as any).getContent = async () => new Content(descriptor, [record]);
+      const row = await provider.getRow(0);
+      expect(row).to.matchSnapshot();
+    });
+
+    it("returns valid row when display type is list", async () => {
+      const descriptor = createRandomDescriptor();
+      descriptor.displayType = DefaultContentDisplayTypes.List;
+      const values: ValuesDictionary<any> = {};
+      const displayValues: ValuesDictionary<any> = {};
       const record = new Item([createRandomECInstanceKey()],
         faker.random.words(), faker.random.word(), undefined, values, displayValues, []);
       (provider as any).getContent = async () => new Content(descriptor, [record]);

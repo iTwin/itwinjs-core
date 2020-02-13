@@ -9,12 +9,12 @@
  * Common types used all across Presentation packages.
  */
 export {
-  ClassId, InstanceId, InstanceKey,
+  ClassId, InstanceId, InstanceKey, InstanceKeyJSON,
   ClassInfo, EnumerationChoice, EnumerationInfo, KindOfQuantityInfo,
   PropertyInfo, RelatedClassInfo, RelationshipPath,
 } from "./EC";
 export { PresentationError, PresentationStatus } from "./Error";
-export { KeySet, Keys, Key, DEFAULT_KEYS_BATCH_SIZE } from "./KeySet";
+export { KeySet, KeySetJSON, Keys, Key, DEFAULT_KEYS_BATCH_SIZE } from "./KeySet";
 export { PersistentKeysContainer } from "./PersistentKeysContainer";
 export { RulesetVariablesState, RulesetVariable, VariableValueTypes, VariableValue } from "./RulesetVariables";
 export { RegisteredRuleset, RulesetManagerState } from "./RegisteredRuleset";
@@ -93,6 +93,7 @@ export { NodeKey, NodeKeyPath, StandardNodeTypes } from "./hierarchy/Key";
 export {
   BaseNodeKey, ECInstanceNodeKey, ECInstancesNodeKey, GroupingNodeKey,
   ECClassGroupingNodeKey, ECPropertyGroupingNodeKey, LabelGroupingNodeKey,
+  ECInstanceNodeKeyJSON, ECInstancesNodeKeyJSON, NodeKeyJSON,
 } from "./hierarchy/Key";
 export { Node } from "./hierarchy/Node";
 export { NodePathElement, NodePathFilteringData } from "./hierarchy/NodePathElement";
@@ -167,6 +168,10 @@ export {
 export { Ruleset, SupplementationInfo } from "./rules/Ruleset";
 export { Rule, RuleTypes, RuleBase, ConditionContainer } from "./rules/Rule";
 export { VariablesGroup, Variable, VariableValueType } from "./rules/Variables";
+export {
+  RelationshipStepSpecification, RelationshipPathSpecification,
+  RepeatableRelationshipStepSpecification, RepeatableRelationshipPathSpecification,
+} from "./rules/RelationshipPathSpecification";
 export { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification";
 export { RelationshipDirection } from "./rules/RelationshipDirection";
 export { SingleSchemaClassSpecification, MultiSchemaClassesSpecification } from "./rules/ClassSpecifications";

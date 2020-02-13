@@ -6,15 +6,15 @@
  * @module WebGL
  */
 import { GL } from "./GL";
-import { dispose, assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { RenderMemory, RenderGraphic, RenderClipVolume } from "../System";
+import { dispose, assert } from "@bentley/bentleyjs-core";
+import { RenderGraphic } from "../RenderGraphic";
+import { RenderMemory } from "../RenderSystem";
 import { Geometry, Vector3d, Point3d, Map4d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
 import { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";
 import { FrameBuffer } from "./FrameBuffer";
 import { SceneContext } from "../../ViewContext";
-import { TileTree } from "../../tile/TileTree";
-import { Tile } from "../../tile/Tile";
+import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
 import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SolarShadows, ViewFlags } from "@bentley/imodeljs-common";
 import { System, RenderType } from "./System";
 import { RenderState } from "./RenderState";
@@ -25,53 +25,57 @@ import { EVSMGeometry } from "./CachedGeometry";
 import { getDrawParams } from "./ScratchDrawParams";
 import { WebGLDisposable } from "./Disposable";
 
-class SolarShadowMapDrawArgs extends Tile.DrawArgs {
-  private _useViewportMap?: boolean;
+function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowMap, tree: TileTreeReference, frustumPlanes: FrustumPlanes): TileDrawArgs | undefined {
+  class SolarShadowMapDrawArgs extends TileDrawArgs {
+    private _useViewportMap?: boolean;
 
-  constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, clip?: RenderClipVolume) {
-    super(context, location, root, now, purgeOlderThan, clip);
-  }
+    constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, args: TileDrawArgs) {
+      super(args.context, args.location, args.root, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
+    }
 
-  public get frustumPlanes(): FrustumPlanes {
-    if (true === this._useViewportMap)
-      return super.frustumPlanes;
-    else
-      return this._mapFrustumPlanes;
-  }
-  protected get worldToViewMap(): Map4d {
-    if (true === this._useViewportMap)
-      return super.worldToViewMap;
-    else
-      return this._shadowMap.worldToViewMap;
-  }
+    public get frustumPlanes(): FrustumPlanes {
+      if (true === this._useViewportMap)
+        return super.frustumPlanes;
+      else
+        return this._mapFrustumPlanes;
+    }
 
-  public drawGraphics(): void {
-    if (!this.graphics.isEmpty) {
-      this._shadowMap.addGraphic(this.context.createBranch(this.graphics, this.location));
+    protected get worldToViewMap(): Map4d {
+      if (true === this._useViewportMap)
+        return super.worldToViewMap;
+      else
+        return this._shadowMap.worldToViewMap;
+    }
+
+    public drawGraphics(): void {
+      if (!this.graphics.isEmpty) {
+        this._shadowMap.addGraphic(this.context.createBranch(this.graphics, this.location));
+      }
+    }
+
+    public getPixelSize(tile: Tile): number {
+      // For tiles that are part of the scene, size them based on the viewport frustum so that shadow map uses same resolution tiles as scene
+      // - otherwise artifacts like shadow acne may result.
+      // For tiles that are NOT part of the scene, size them based on the shadow frustum, not the viewport frustum
+      // - otherwise excessive numbers of excessively detailed may be requested for the shadow map.
+      if (undefined === this._useViewportMap) {
+        this._useViewportMap = true;
+        const vis = tile.computeVisibility(this);
+        this._useViewportMap = TileVisibility.OutsideFrustum !== vis;
+      }
+
+      const size = super.getPixelSize(tile);
+      this._useViewportMap = undefined;
+      return size;
+    }
+
+    public static create(context: SceneContext, shadowMap: SolarShadowMap, tileTree: TileTreeReference, planes: FrustumPlanes) {
+      const args = tileTree.createDrawArgs(context);
+      return undefined !== args ? new SolarShadowMapDrawArgs(planes, shadowMap, args) : undefined;
     }
   }
 
-  public getPixelSize(tile: Tile): number {
-    // For tiles that are part of the scene, size them based on the viewport frustum so that shadow map uses same resolution tiles as scene
-    // - otherwise artifacts like shadow acne may result.
-    // For tiles that are NOT part of the scene, size them based on the shadow frustum, not the viewport frustum
-    // - otherwise excessive numbers of excessively detailed may be requested for the shadow map.
-    if (undefined === this._useViewportMap) {
-      this._useViewportMap = true;
-      const vis = tile.computeVisibility(this);
-      this._useViewportMap = Tile.Visibility.OutsideFrustum !== vis;
-    }
-
-    const size = super.getPixelSize(tile);
-    this._useViewportMap = undefined;
-    return size;
-  }
-
-  public static create(context: SceneContext, shadowMap: SolarShadowMap, tileTree: TileTree, planes: FrustumPlanes) {
-    const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(tileTree.expirationTime);
-    return new SolarShadowMapDrawArgs(planes, shadowMap, context, tileTree.location.clone(), tileTree, now, purgeOlderThan, tileTree.clipVolume);
-  }
+  return SolarShadowMapDrawArgs.create(sceneContext, solarShadowMap, tree, frustumPlanes);
 }
 
 const shadowMapWidth = 4096;  // size of original depth buffer map
@@ -101,10 +105,15 @@ class Bundle implements WebGLDisposable {
       case RenderType.TextureFloat:
         break;
       case RenderType.TextureHalfFloat:
-        const exthf = System.instance.capabilities.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
-        if (undefined !== exthf) {
-          pixelDataType = exthf.HALF_FLOAT_OES;
+        if (System.instance.capabilities.isWebGL2) {
+          pixelDataType = (System.instance.context as WebGL2RenderingContext).HALF_FLOAT;
           break;
+        } else {
+          const exthf = System.instance.capabilities.queryExtensionObject<OES_texture_half_float>("OES_texture_half_float");
+          if (undefined !== exthf) {
+            pixelDataType = exthf.HALF_FLOAT_OES;
+            break;
+          }
         }
       /* falls through */
       default:
@@ -319,9 +328,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
       const viewTileRange = Range3d.createNull();
       this._scratchFrustumPlanes.init(this._params.viewFrustum);
       view.forEachModelTreeRef((ref) => {
-        const tree = ref.treeOwner.load();
-        if (undefined !== tree)
-          tree.accumulateTransformedRange(viewTileRange, worldToMap, this._scratchFrustumPlanes);
+        ref.accumulateTransformedRange(viewTileRange, worldToMap, this._scratchFrustumPlanes);
       });
 
       if (!viewTileRange.isNull)
@@ -346,13 +353,12 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     const tileRange = Range3d.createNull();
     this._scratchFrustumPlanes.init(this._shadowFrustum);
     view.forEachModelTreeRef(((ref) => {
-      const tileTree = ref.treeOwner.tileTree;
-      if (undefined === tileTree)
+      const drawArgs = createDrawArgs(context, this, ref, this._scratchFrustumPlanes);
+      if (undefined === drawArgs)
         return;
 
-      const drawArgs = SolarShadowMapDrawArgs.create(context, this, tileTree, this._scratchFrustumPlanes);
-      const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(tileTree.location, this._scratchTransform);
-      const selectedTiles = tileTree.selectTiles(drawArgs);
+      const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(drawArgs.location, this._scratchTransform);
+      const selectedTiles = drawArgs.root.selectTiles(drawArgs);
 
       for (const selectedTile of selectedTiles) {
         tileRange.extendRange(tileToMapTransform.multiplyRange(selectedTile.range, this._scratchRange));

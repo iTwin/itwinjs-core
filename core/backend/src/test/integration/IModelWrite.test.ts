@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbOpcode, DbResult, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { CodeState, HubCode, HubIModel, IModelQuery, Lock, LockLevel, LockType, MultiCode, IModelHubError } from "@bentley/imodeljs-clients";
-import { CodeScopeSpec, CodeSpec, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, IModel, IModelVersion, SubCategoryAppearance, IModelError } from "@bentley/imodeljs-common";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import {
@@ -13,13 +14,13 @@ import {
 } from "../../imodeljs-backend";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils, TestIModelInfo, Timer } from "../IModelTestUtils";
-import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
 
 export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: IModelDb) {
   // Create a new physical model.
   let modelId: Id64String;
-  [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+  [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(requestContext, rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+  requestContext.enter();
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
@@ -30,8 +31,8 @@ export async function createNewModelAndCategory(requestContext: AuthorizedBacken
   try {
     await rwIModel.concurrencyControl.request(requestContext);
   } catch (err) {
-    if (err instanceof ConcurrencyControl.RequestError) {
-      assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+    if (err instanceof IModelHubError) {
+      assert.fail(JSON.stringify(err));
     }
   }
 
@@ -59,8 +60,8 @@ describe("IModelWriteTest (#integration)", () => {
   let readWriteTestIModelName: string;
 
   before(async () => {
-    managerRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
-    superRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.super);
+    managerRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
+    superRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.super);
     testProjectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(managerRequestContext, testProjectId, "ReadOnlyTest");
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
@@ -121,9 +122,9 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
-    const firstUserRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.super);
-    const secondUserRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
-    const neutralObserverUserRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    const firstUserRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.super);
+    const secondUserRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
+    const neutralObserverUserRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
 
     const firstIModel: IModelDb = await IModelDb.open(firstUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
     const secondIModel: IModelDb = await IModelDb.open(secondUserRequestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush());
@@ -279,18 +280,18 @@ describe("IModelWriteTest (#integration)", () => {
 
     const el: Element = iModel.elements.getRootSubject();
     el.buildConcurrencyControlRequest(DbOpcode.Update);    // make a list of the locks, etc. that will be needed to update this element
-    const reqAsAny: any = ConcurrencyControl.convertRequestToAny(iModel.concurrencyControl.pendingRequest);
-    assert.isDefined(reqAsAny);
-    assert.isArray(reqAsAny.Locks);
-    assert.equal(reqAsAny.Locks.length, 3, " we expect to need a lock on the element (exclusive), its model (shared), and the db itself (shared)");
-    assert.isArray(reqAsAny.Codes);
-    assert.equal(reqAsAny.Codes.length, 0, " since we didn't add or change the element's code, we don't expect to need a code reservation");
+    const req = iModel.concurrencyControl.pendingRequest;
+    assert.isDefined(req);
+    assert.isArray(req.locks);
+    assert.equal(req.locks.length, 3, " we expect to need a lock on the element (exclusive), its model (shared), and the db itself (shared)");
+    assert.isArray(req.codes);
+    assert.equal(req.codes.length, 0, " since we didn't add or change the element's code, we don't expect to need a code reservation");
 
     await iModel.close(managerRequestContext);
   });
 
   it("should push changes with codes (#integration)", async () => {
-    const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
@@ -313,7 +314,8 @@ describe("IModelWriteTest (#integration)", () => {
 
     timer = new Timer("make local changes");
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(adminRequestContext, rwIModel, code, true);
+    adminRequestContext.enter();
 
     await rwIModel.concurrencyControl.request(adminRequestContext);
     rwIModel.saveChanges("inserted generic objects");
@@ -336,8 +338,56 @@ describe("IModelWriteTest (#integration)", () => {
     expect(codes.length > initialCodes.length);
   });
 
+  it("should defer locks and codes in bulk mode (#integration)", async () => {
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
+    // Delete any existing iModels with the same name as the read-write test iModel
+    const iModelName = "ConcurrencyControlBulkModeTest";
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(adminRequestContext, writeTestProjectId, new IModelQuery().byName(iModelName));
+    for (const iModelTemp of iModels) {
+      await BriefcaseManager.imodelClient.iModels.delete(adminRequestContext, writeTestProjectId, iModelTemp.id!);
+    }
+
+    // Create a new empty iModel on the Hub & obtain a briefcase
+    const rwIModel: IModelDb = await IModelDb.create(adminRequestContext, writeTestProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const rwIModelId = rwIModel.iModelToken.iModelId;
+    assert.isNotEmpty(rwIModelId);
+
+    const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+    const newCategoryCode2 = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory2");
+    assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
+    const subcat = new SubCategoryAppearance({ color: 0xff0000 });
+    const newModelCode = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
+
+    assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
+
+    assert.throws(() => IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, newModelCode, true), IModelError);  // s/ have errorNumber=RepositoryStatus.LockNotHeld
+    assert.throws(() => SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, subcat), IModelError);  // s/ have errorNumber=RepositoryStatus.LockNotHeld
+
+    // assert.isUndefined(rwIModel.models.tryGetModelProps())
+    assert.isUndefined(rwIModel.elements.tryGetElement(newCategoryCode));
+    assert.isUndefined(rwIModel.elements.tryGetElement(newCategoryCode2));
+
+    rwIModel.concurrencyControl.startBulkMode();
+
+    assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
+
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, newModelCode, true);
+    SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, subcat);
+    SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode2.value!, subcat);
+
+    assert.isTrue(undefined !== rwIModel.elements.getElement(newCategoryCode));
+    assert.isTrue(undefined !== rwIModel.elements.getElement(newCategoryCode2));
+
+    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
+    await rwIModel.concurrencyControl.request(adminRequestContext);
+    assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
+    rwIModel.saveChanges("inserted generic objects");
+
+  });
+
   it("should handle undo/redo (#integration)", async () => {
-    const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
@@ -356,13 +406,12 @@ describe("IModelWriteTest (#integration)", () => {
 
     // create and insert a new model with code1
     const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code1, true);
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(adminRequestContext, rwIModel, code1, true);
+    adminRequestContext.enter();
 
     assert.isTrue(rwIModel.elements.getElement(code1) !== undefined); // throws if element is not found
 
-    //    ... create a local txn with that change
-    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
-    await rwIModel.concurrencyControl.request(adminRequestContext);
+    // create a local txn with that change
     rwIModel.saveChanges("inserted newPhysicalModel");
 
     // Reverse that local txn
@@ -379,10 +428,9 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create and insert a model with code2
     const code2 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel2");
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code2, true);
+    await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(adminRequestContext, rwIModel, code2, true);
+    adminRequestContext.enter();
 
-    assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests);
-    await rwIModel.concurrencyControl.request(adminRequestContext);
     rwIModel.saveChanges("inserted generic objects");
 
     // The iModel should have a model with code1 and not code2
@@ -408,7 +456,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should not push changes with code conflicts (#integration)", async () => {
-    const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesConflictTest";
@@ -434,17 +482,18 @@ describe("IModelWriteTest (#integration)", () => {
     hubCode.briefcaseId = otherBriefcase.briefcaseId;
     hubCode.state = CodeState.Reserved;
     await BriefcaseManager.imodelClient.codes.update(adminRequestContext, rwIModelId!, [hubCode]);
+    adminRequestContext.enter();
+    await rwIModel.concurrencyControl.syncCache(adminRequestContext);
+    adminRequestContext.enter();
 
     timer = new Timer("querying codes");
     /* const initialCodes =*/
     await BriefcaseManager.imodelClient.codes.get(adminRequestContext, rwIModelId!);
     timer.end();
 
-    timer = new Timer("make local changes");
-    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
-
     try {
-      await rwIModel.concurrencyControl.request(adminRequestContext);
+      timer = new Timer("make local changes");
+      await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(adminRequestContext, rwIModel, code, true);
       assert.fail("I should not get here. The Code that I am trying to use was reserved by the other briefcase.");
     } catch (err) {
       assert.isTrue(err instanceof IModelHubError);
@@ -472,7 +521,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should write to briefcase with optimistic concurrency (#integration)", async () => {
-    const adminRequestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    const adminRequestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
 
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
@@ -508,11 +557,13 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new physical model.
     let newModelId: Id64String;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+    [, newModelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(adminRequestContext, rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+    adminRequestContext.enter();
 
     // Find or create a SpatialCategory.
     const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
+    assert.isTrue(await rwIModel.concurrencyControl.areCodesAvailable2(adminRequestContext, [newCategoryCode]));
     const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
     timer.end();
@@ -530,8 +581,8 @@ describe("IModelWriteTest (#integration)", () => {
     try {
       await rwIModel.concurrencyControl.request(adminRequestContext);
     } catch (err) {
-      if (err instanceof ConcurrencyControl.RequestError) {
-        assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+      if (err instanceof IModelHubError) {
+        assert.fail(JSON.stringify(err));
       }
     }
 

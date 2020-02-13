@@ -5,5 +5,4 @@
 !lib/module/dev/imodeljs-frontend.js.map
 !lib/public/**
 test
-!package.json
 !*.md

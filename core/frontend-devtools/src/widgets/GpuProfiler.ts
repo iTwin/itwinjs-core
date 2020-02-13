@@ -228,10 +228,21 @@ export class GpuProfiler {
         value.sum -= oldVal;
         value.values.push(0.0);
       }
-      const text = document.createElement("text");
-      text.innerText = `${value.label}: ${(value.sum / value.values.length / 1.E6).toFixed(6)}ms\n`;
-      text.style.paddingLeft = value.paddingLeft;
-      fragment.appendChild(text);
+      const div = document.createElement("div");
+      div.style.display = "flex";
+      div.style.width = "75%";
+      const textLabel = document.createElement("text");
+      textLabel.innerText = `${value.label}`;
+      textLabel.style.paddingLeft = value.paddingLeft;
+      div.appendChild(textLabel);
+      const divLine = document.createElement("div");
+      divLine.style.flexGrow = "1";
+      divLine.style.borderBottom = "dotted 1px";
+      div.appendChild(divLine);
+      const textValue = document.createElement("text");
+      textValue.innerText = `${(value.sum / value.values.length / 1.E6).toFixed(3)} ms\n`;
+      div.appendChild(textValue);
+      fragment.appendChild(div);
     });
 
     this._resultsDiv.innerHTML = "";

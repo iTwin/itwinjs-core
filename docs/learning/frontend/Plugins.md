@@ -27,7 +27,7 @@ In the code above, note the declaration of PLUGIN_NAME. This variable is convert
 
 The code for the [Plugin]($frontend) is typically transpiled to JavaScript and then converted to a loadable module with [webpack](https://webpack.js.org). It is then packaged into a tar file, along with a manifest and all the resources that it needs. The manifest records the required versions of iModelJs system modules as well as other information needed by the Plugin loader. Those steps (and others that might be required), are sequenced by the buildIModelJsModule script. See [Building iModel.js Modules](./BuildingIModelJsModules.md) for a full description of building a [Plugin]($frontend).
 
-The versions of iModel.js packages that are required by the [Plugin](%frontend) are extracted from the "dependencies" key in the package.json file that is in the root directory of the package that contains the Plugin source. Each iModel.js module from which classes or functions are imported should appear in that dependencies key, along with the version number as is required by [npm](https://docs.npmjs.org).
+The versions of iModel.js packages that are required by the [Plugin]($frontend) are extracted from the "dependencies" key in the package.json file that is in the root directory of the package that contains the Plugin source. Each iModel.js module from which classes or functions are imported should appear in that dependencies key, along with the version number as is required by [npm](https://docs.npmjs.org).
 
 ## Plugin startup
 

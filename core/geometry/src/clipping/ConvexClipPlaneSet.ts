@@ -465,7 +465,7 @@ export class ConvexClipPlaneSet implements Clipper {
    * @param upVector primary sweep direction, as applied by ClipPlane.createEdgeAndUpVector
    * @param tiltAngle angle to tilt sweep planes away from the sweep direction.
    */
-  public static createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle: Angle): ConvexClipPlaneSet | undefined {
+  public static createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle?: Angle): ConvexClipPlaneSet | undefined {
     const result = ConvexClipPlaneSet.createEmpty();
     let reverse = false;
     if (points.length > 3 && points[0].isAlmostEqual(points[points.length - 1])) {

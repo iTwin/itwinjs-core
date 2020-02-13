@@ -5,5 +5,4 @@
 !lib/module/dev/imodeljs-i18n.js.map
 !lib/public/**
 test
-!package.json
 !*.md

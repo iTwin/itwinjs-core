@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AccessToken, IModelClient, /* ChangeSet, */ Version, Thumbnail, ThumbnailSize, ThumbnailQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { GuidString } from "@bentley/bentleyjs-core";

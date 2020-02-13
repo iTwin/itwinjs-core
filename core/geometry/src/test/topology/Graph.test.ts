@@ -475,4 +475,77 @@ describe("VUGraph", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("InSector", () => {
+    const ck = new Checker();
+    const graph = new HalfEdgeGraph();
+
+    const originEdges = [];
+    const edge0 = graph.addEdgeXY(0, 0, 1, 0);
+    const edge90 = graph.addEdgeXY(0, 0, 0, 1);
+    const edge180 = graph.addEdgeXY(0, 0, -1, 0);
+    const edge270 = graph.addEdgeXY(0, 0, 0, -1);
+    originEdges.push(edge0, edge90, edge180, edge270);
+    HalfEdge.pinch(edge0, edge90);
+    HalfEdge.pinch(edge90, edge180);
+    HalfEdge.pinch(edge180, edge270);
+
+    const danglers = [];
+    for (const e of originEdges) {
+      const outerNode = e.faceSuccessor;
+      const edgeVector = e.vectorToFaceSuccessor();
+      const perpEdge = graph.addEdgeXY(outerNode.x, outerNode.y, outerNode.x - edgeVector.y, outerNode.y + outerNode.x);
+      HalfEdge.pinch(outerNode, perpEdge);
+      danglers.push(perpEdge.faceSuccessor);
+    }
+
+    const aroundOrigin = edge0.collectAroundVertex();
+    const aroundSpider = edge0.collectAroundFace();
+    ck.testExactNumber(4, aroundOrigin.length);
+    ck.testExactNumber(16, aroundSpider.length);
+
+    for (const sectorAtOrigin of originEdges) {
+      const nodeA = sectorAtOrigin.faceSuccessor;   // That's on an axis
+      const nodeB = nodeA.faceSuccessor;    // That's rotated into the sector containing originEdge
+      // const nodeC = nodeB.vertexSuccessor;  // That's on the axis but strictly on the other side of the sector.  Nebulous containment status !!
+      // nodeB is "in" sectorAtOrigin but NOT in any of the other sectors around the origin.
+      for (const nodeE of originEdges) {
+        ck.testBoolean(nodeE === sectorAtOrigin, HalfEdge.isNodeVisibleInSector(nodeB, nodeE));
+      }
+      ck.testTrue(HalfEdge.isNodeVisibleInSector(sectorAtOrigin, nodeB));
+    }
+
+    // build a degenerate face !!!
+    const edgeQ0 = graph.addEdgeXY(2, 0, 3, 0);
+    const edgeQ1 = graph.addEdgeXY(2, 0, 3, 0);
+    HalfEdge.pinch(edgeQ0, edgeQ1);
+    HalfEdge.pinch(edgeQ0.faceSuccessor, edgeQ1.faceSuccessor);
+    ck.testTrue(HalfEdge.isNodeVisibleInSector(edgeQ0, edgeQ0.faceSuccessor), "null face inside");
+    ck.testTrue(HalfEdge.isNodeVisibleInSector(edgeQ1, edgeQ1.faceSuccessor), " null face inside");
+    ck.testFalse(HalfEdge.isNodeVisibleInSector(edgeQ1, edgeQ0), "null face outside");
+    ck.testFalse(HalfEdge.isNodeVisibleInSector(edgeQ0, edgeQ1), "null face outside");
+    ck.testFalse(HalfEdge.isNodeVisibleInSector(edge0, edgeQ0), "null face outside");
+
+    // edgeR1 is a 180 degree sector ....
+    const edgeR0 = graph.addEdgeXY(-1, 3, 1, 3);
+    const edgeR1 = graph.addEdgeXY(1, 3, 3, 3);
+    HalfEdge.pinch(edgeR0.faceSuccessor, edgeR1);
+    ck.testFalse(HalfEdge.isNodeVisibleInSector(edge0, edgeR1), "back side of line");
+    ck.testTrue(HalfEdge.isNodeVisibleInSector(edge0, edgeR1.vertexSuccessor), "front side side of line");
+    // these edges have origins on the extended graph edges ...  only the one beyond R1 is considered in ...
+    const edgeS0 = graph.addEdgeXY(-3, 3, 0, 5);
+    const edgeS1 = graph.addEdgeXY(5, 3, 0, 5);
+    ck.testFalse(HalfEdge.isNodeVisibleInSector(edgeS0, edgeR1), "on line before");
+    ck.testTrue(HalfEdge.isNodeVisibleInSector(edgeS1, edgeR1), "on line after");
+    const otherSide = edgeR1.vertexSuccessor;
+    ck.testFalse(HalfEdge.isNodeVisibleInSector(edgeS1, otherSide), "on line before");
+    ck.testTrue(HalfEdge.isNodeVisibleInSector(edgeS0, otherSide), "on line after");
+
+    edgeQ0.setMask(HalfEdgeMask.NULL_FACE);
+    // this exercises an obscure branch ...
+    ck.testTrue(HalfEdge.nodeToMaskString(edgeQ0) === "N");
+
+    ck.testUndefined(HalfEdge.horizontalScanFraction01(edgeQ0, 20.0), " No crossing of horizontal edge");
+    ck.testExactNumber(0.5, HalfEdge.horizontalScanFraction01(edge90, 0.5)!, "scan crossing on simple vertical edge");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

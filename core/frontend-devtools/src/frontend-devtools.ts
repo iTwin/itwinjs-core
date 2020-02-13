@@ -8,12 +8,13 @@ export * from "./FrontEndDevTools";
 
 export * from "./tools/AnimationIntervalTool";
 export * from "./tools/ChangeUnitsTool";
-export * from "./tools/ChangeViewFlagsTool";
+export * from "./tools/DisplayStyleTools";
 export * from "./tools/EmphasizeElementsTool";
 export * from "./tools/FrustumDecoration";
 export * from "./tools/InspectElementTool";
 export * from "./tools/MeasureTileLoadTime";
 export * from "./tools/parseToggle";
+export * from "./tools/PlanProjectionTools";
 export * from "./tools/ProjectExtents";
 export * from "./tools/RealityTransitionTool";
 export * from "./tools/RenderSystemTools";
@@ -22,6 +23,7 @@ export * from "./tools/ReportWebGLCompatibilityTool";
 export * from "./tools/SavedViews";
 export * from "./tools/SelectionTools";
 export * from "./tools/TileRequestDecoration";
+export * from "./tools/TileTreeBoundsDecoration";
 export * from "./tools/ViewportTools";
 
 export * from "./ui/Button";

@@ -18,35 +18,74 @@
       "specifications": [
         {
           "specType": "ContentRelatedInstances",
-          "relationships": {
-            "schemaName": "Functional",
-            "classNames": [
-              "PhysicalElementFulfillsFunction"
+          "relationshipPaths": [
+            [
+              {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsChildElements"
+                },
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "Functional",
+                  "className": "FunctionalElement"
+                },
+                "count": "*"
+              },
+              {
+                "relationship": {
+                  "schemaName": "Functional",
+                  "className": "PhysicalElementFulfillsFunction"
+                },
+                "direction": "Backward"
+              },
+              {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsChildElements"
+                },
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "GeometricElement"
+                },
+                "count": "*"
+              }
+            ],
+            [
+              {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsChildElements"
+                },
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "Functional",
+                  "className": "FunctionalElement"
+                },
+                "count": "*"
+              },
+              {
+                "relationship": {
+                  "schemaName": "Functional",
+                  "className": "DrawingGraphicRepresentsFunctionalElement"
+                },
+                "direction": "Backward"
+              },
+              {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsChildElements"
+                },
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "GeometricElement"
+                },
+                "count": "*"
+              }
             ]
-          },
-          "requiredDirection": "Backward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "PhysicalElement"
-            ]
-          }
-        },
-        {
-          "specType": "ContentRelatedInstances",
-          "relationships": {
-            "schemaName": "Functional",
-            "classNames": [
-              "DrawingGraphicRepresentsFunctionalElement"
-            ]
-          },
-          "requiredDirection": "Backward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "DrawingGraphic"
-            ]
-          }
+          ]
         }
       ]
     }

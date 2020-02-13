@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
   "repository": {
@@ -25,7 +25,9 @@
   },
   "types": "./index.d.ts",
   "dependencies": {
-    "@bentley/config-loader": "1.11.0",
+    "@bentley/config-loader": "1.12.0",
+    "@bentley/build-tools": "1.12.0",
+    "@bentley/webpack-tools-core": "1.12.0",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "3.9.3",
     "@types/mocha": "^5.2.5",
@@ -78,7 +80,6 @@
     "svg-sprite-loader": "^3.8.0",
     "sw-precache-webpack-plugin": "^0.11.5",
     "tar": "^4.4.8",
-    "tree-kill": "^1.2.0",
     "ts-loader": "^6.0.4",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",

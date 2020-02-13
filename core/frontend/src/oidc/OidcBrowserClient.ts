@@ -242,7 +242,10 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     await this._userManager!.signoutRedirect();
   }
 
-  /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
+  /**
+   * Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut(), if the token
+   * expired, or if the token was silently refreshed.
+   */
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
   /**

@@ -6,12 +6,9 @@
  * @module Tile
  */
 import { ColorDef, FrustumPlanes } from "@bentley/imodeljs-common";
-import { TileTree } from "./TileTree";
-import { Tile } from "./Tile";
+import { TileTreeParams, Tile, TileVisibility, TileDrawArgs, TileParams, MapTileLoaderBase, MapTilingScheme, QuadId, TileTree, TileTreeLoadStatus } from "./internal";
 import { assert } from "@bentley/bentleyjs-core";
-import { QuadId, computeMercatorFractionToDb, MapTileLoaderBase } from "./WebMapTileTree";
 import { Point3d, Range1d, Range3d, Transform, Angle, ClipVector, ClipShape } from "@bentley/geometry-core";
-import { MapTilingScheme } from "./MapTilingScheme";
 import { GeoConverter } from "../GeoServices";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { IModelApp } from "../IModelApp";
@@ -24,7 +21,7 @@ import { IModelApp } from "../IModelApp";
  */
 export class MapTile extends Tile {
   private get _mapTree() { return this.root as MapTileTree; }
-  constructor(params: Tile.Params, public quadId: QuadId, public corners: Point3d[], private _heightRange: Range1d | undefined) {
+  constructor(params: TileParams, public quadId: QuadId, public corners: Point3d[], private _heightRange: Range1d | undefined) {
     super(params);
   }
 
@@ -66,10 +63,10 @@ export class MapTile extends Tile {
     }
   }
 
-  protected loadChildren(): TileTree.LoadStatus {
-    if (TileTree.LoadStatus.NotLoaded === this._childrenLoadStatus) {
+  protected loadChildren(): TileTreeLoadStatus {
+    if (TileTreeLoadStatus.NotLoaded === this._childrenLoadStatus) {
       if (undefined === this._children) {
-        this._childrenLoadStatus = TileTree.LoadStatus.Loading;
+        this._childrenLoadStatus = TileTreeLoadStatus.Loading;
         const mapTree = this._mapTree;
         const rowCount = (this.quadId.level === 0) ? mapTree.mapTilingScheme.numberOfLevelZeroTilesY : 2;
         const columnCount = (this.quadId.level === 0) ? mapTree.mapTilingScheme.numberOfLevelZeroTilesX : 2;
@@ -77,15 +74,15 @@ export class MapTile extends Tile {
 
         if (mapTree.reprojectionRequired(this.depth + 1)) {
           mapTree.reprojectTileCorners(this, columnCount, rowCount).then(() => {
-            this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
+            this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
             IModelApp.viewManager.onNewTilesReady();
           }).catch((_err) => {
             assert(false);
             IModelApp.viewManager.onNewTilesReady();
-            this._childrenLoadStatus = TileTree.LoadStatus.NotFound;
+            this._childrenLoadStatus = TileTreeLoadStatus.NotFound;
           });
         } else {
-          this._childrenLoadStatus = TileTree.LoadStatus.Loaded;
+          this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
         }
 
       }
@@ -124,21 +121,21 @@ export class MapTile extends Tile {
     builder.addLineString(this.getBoundaryShape(this.heightRange.low));
     builder.addLineString(this.getBoundaryShape(this.heightRange.high));
   }
-  public isRegionCulled(args: Tile.DrawArgs): boolean {
+  public isRegionCulled(args: TileDrawArgs): boolean {
     return this.isContentCulled(args);
   }
-  public isContentCulled(args: Tile.DrawArgs): boolean {
+  public isContentCulled(args: TileDrawArgs): boolean {
     return FrustumPlanes.Containment.Outside === args.frustumPlanes.computeContainment(this._rangeCorners);
   }
   public getContentClip(): ClipVector | undefined {
     return ClipVector.createCapture([ClipShape.createShape(this.getBoundaryShape())!]);
   }
-  public computeVisibility(args: Tile.DrawArgs): Tile.Visibility {
+  public computeVisibility(args: TileDrawArgs): TileVisibility {
     if (this.isEmpty || this.isRegionCulled(args))
-      return Tile.Visibility.OutsideFrustum;
+      return TileVisibility.OutsideFrustum;
 
     if (!this.isDisplayable)
-      return Tile.Visibility.TooCoarse;
+      return TileVisibility.TooCoarse;
 
     let pixelSize = args.getPixelSize(this);
     const maxSize = this.maximumSize;
@@ -147,7 +144,7 @@ export class MapTile extends Tile {
     if (!args.context.viewport.isCameraOn)
       pixelSize *= Math.sqrt(Math.abs(args.context.viewport.rotation.coffs[8]));
 
-    return (pixelSize > maxSize) ? Tile.Visibility.TooCoarse : Tile.Visibility.Visible;
+    return (pixelSize > maxSize) ? TileVisibility.TooCoarse : TileVisibility.Visible;
   }
 }
 
@@ -163,9 +160,9 @@ export class MapTileTree extends TileTree {
 
   public static minReprojectionDepth = 8;     // Reprojection does not work with very large tiles so just do linear transform.
 
-  constructor(params: TileTree.Params, public groundBias: number, gcsConverterAvailable: boolean, public mapTilingScheme: MapTilingScheme, _isPlanar = false, public heightRange: Range1d) {
+  constructor(params: TileTreeParams, public groundBias: number, gcsConverterAvailable: boolean, public mapTilingScheme: MapTilingScheme, _isPlanar = false, public heightRange: Range1d) {
     super(params);
-    this._mercatorFractionToDb = computeMercatorFractionToDb(params.iModel, groundBias, mapTilingScheme);
+    this._mercatorFractionToDb = mapTilingScheme.computeMercatorFractionToDb(params.iModel, groundBias);
     const quadId = new QuadId(0, 0, 0);
     const corners = this.getTileCorners(quadId);
     const range = Range3d.createArray(MapTile.computeRangeCorners(corners, heightRange));

@@ -5,10 +5,10 @@
 import { GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
 import { AuthorizedBackendRequestContext, IModelDb, NativeLoggerCategory, KnownLocations, OpenParams } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
@@ -40,7 +40,7 @@ describe("ApplyChangeSets (#integration)", () => {
   it("should test all change set operations after downloading iModel from the hub  (#integration)", async () => {
     console.log(`Downloading/Uploading iModels to/from ${iModelRootDir}`); // tslint:disable-line:no-console
 
-    const requestContext: AuthorizedBackendRequestContext = await IModelTestUtils.getTestUserRequestContext();
+    const requestContext: AuthorizedBackendRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
 
     let projectName = "iModelJsIntegrationTest"; let iModelName = "ReadOnlyTest";
     let projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);

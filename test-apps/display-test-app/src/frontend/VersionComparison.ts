@@ -16,10 +16,10 @@ import {
   FeatureSymbology,
   IModelApp,
   IModelConnection,
-  SceneContext,
   SpatialModelState,
   SpatialModelTileTrees,
   SpatialViewState,
+  TileTree,
   TiledGraphicsProvider,
   TileTreeReference,
   Tool,
@@ -225,14 +225,8 @@ class Reference extends TileTreeReference {
 
   public get treeOwner() { return this._ref.treeOwner; }
 
-  public addToScene(context: SceneContext): void {
-    const tree = this.treeOwner.load();
-    if (undefined === tree)
-      return;
-
-    const args = tree.createDrawArgs(context);
-    args.graphics.symbologyOverrides = this._provider.overrides;
-    tree.draw(args);
+  protected getSymbologyOverrides(_tree: TileTree) {
+    return this._provider.overrides;
   }
 }
 

@@ -43,7 +43,15 @@ export class BasicAccessToken extends AccessToken {
  * @internal
  */
 export class BasicAuthorizationClient implements IModelAuthorizationClient {
+  private _token?: AccessToken;
+
   public async authorizeUser(_requestContext: ClientRequestContext, _userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
-    return Promise.resolve(BasicAccessToken.fromCredentials(userCredentials));
+    this._token = BasicAccessToken.fromCredentials(userCredentials);
+    return Promise.resolve(this._token);
   }
+
+  public isAuthorized = true;
+  public hasExpired = true;
+  public hasSignedIn = true;
+  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> { return Promise.resolve(this._token!); }
 }

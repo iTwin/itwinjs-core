@@ -6,7 +6,7 @@
 import * as chai from "chai";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { TestConfig } from "./TestConfig";
-import { TestUsers } from "./TestUsers";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 
 chai.should();
 
@@ -21,7 +21,7 @@ export class HubAccessTestValidator {
     if (HubAccessTestValidator._singletonInstance)
       return HubAccessTestValidator._singletonInstance;
 
-    const accessToken: AccessToken = await TestConfig.getAccessToken(TestUsers.regular);
+    const accessToken: AccessToken = await TestUsers.getAccessToken(TestUsers.regular);
     const requestContext = new AuthorizedClientRequestContext(accessToken);
 
     const testProjectName = "iModelJsIntegrationTest";

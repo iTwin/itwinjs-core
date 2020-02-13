@@ -274,9 +274,10 @@ const getSurfaceFlags = "return u_surfaceFlags;";
 
 const computeBaseSurfaceFlags = `
   float flags = u_surfaceFlags;
+  bool hasTexture = 0.0 != fract(flags / 2.0); // kSurfaceMask_HasTexture = 1.0...
   if (feature_ignore_material) {
-    bool hasTexture = 0.0 != fract(flags / 2.0); // kSurfaceMask_HasTexture = 1.0...
     if (hasTexture) {
+      hasTexture = false;
       flags -= kSurfaceMask_HasTexture;
       if (flags >= kSurfaceMask_MultiplyAlpha) // NB: This only works if MultiplyAlpha is the largest flag!!!
         flags -= kSurfaceMask_MultiplyAlpha;
@@ -286,14 +287,19 @@ const computeBaseSurfaceFlags = `
   }
 `;
 
+// Textured surfaces (including raster glyphs) always *multiply* the sampled alpha by the alpha override.
 const computeColorSurfaceFlags = `
   if (feature_rgb.r >= 0.0)
     flags += kSurfaceMask_OverrideRgb;
 
   if (feature_alpha >= 0.0) {
-    flags += kSurfaceMask_OverrideAlpha;
-    if (flags >= kSurfaceMask_MultiplyAlpha) // NB: This only works if MultiplyAlpha is the largest flag!!!
-      flags -= kSurfaceMask_MultiplyAlpha;
+    if (!hasTexture) {
+      flags += kSurfaceMask_OverrideAlpha;
+      if (flags >= kSurfaceMask_MultiplyAlpha) // NB: This only works if MultiplyAlpha is the largest flag!!!
+        flags -= kSurfaceMask_MultiplyAlpha;
+    } else if (flags < kSurfaceMask_MultiplyAlpha) {
+      flags += kSurfaceMask_MultiplyAlpha;
+    }
   }
 `;
 

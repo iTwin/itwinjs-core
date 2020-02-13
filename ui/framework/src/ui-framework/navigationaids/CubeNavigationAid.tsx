@@ -13,7 +13,7 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import { NavigationAidControl } from "./NavigationAidControl";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import * as classnames from "classnames";
-import { Geometry, Angle, AxisIndex, Matrix3d, Point2d, Vector2d, Vector3d } from "@bentley/geometry-core";
+import { Geometry, Angle, AxisIndex, Matrix3d, Point2d, Vector2d, Vector3d, XYAndZ, AxisOrder } from "@bentley/geometry-core";
 
 import "./CubeNavigationAid.scss";
 import { UiFramework } from "../UiFramework";
@@ -322,6 +322,66 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     return end;
   }
 
+  private static correctSmallNumber(value: number, tolerance: number): number {
+    return Math.abs(value) < tolerance ? 0 : value;
+  }
+
+  /**
+   * Snap coordinates of a vector to zero and to each other so that the vector prefers to be
+   * * perpendicular to a face of the unit cube.
+   * * or pass through a nearby vertex or edge of the unit cube.
+   * @param zVector existing z vector.
+   * @param zTolerance tolerance to determine if a z vector component is close to zero or 1.
+   */
+  private static snapVectorToCubeFeatures(zVector: XYAndZ, tolerance: number = 1.0e-6): Vector3d {
+    const x = CubeNavigationAid.correctSmallNumber(zVector.x, tolerance);
+    let y = CubeNavigationAid.correctSmallNumber(zVector.y, tolerance);
+    let z = CubeNavigationAid.correctSmallNumber(zVector.z, tolerance);
+
+    const xx = Math.abs(x);
+    const yy = Math.abs(y);
+    const zz = Math.abs(z);
+
+    // adjust any adjacent pair of near equal values to the first.
+    // istanbul ignore next
+    if (Geometry.isSameCoordinate(xx, yy, tolerance)) {
+      y = Geometry.split3WaySign(y, -xx, xx, xx);
+    }
+    if (Geometry.isSameCoordinate(yy, zz, tolerance)) {
+      z = Geometry.split3WaySign(z, -yy, yy, yy);
+    }
+    if (Geometry.isSameCoordinate(xx, zz, tolerance)) {
+      z = Geometry.split3WaySign(z, -xx, xx, xx);
+    }
+    return Vector3d.create(x, y, z);
+  }
+
+  /**
+   * Adjust a worldToView matrix to favor both
+   * * direct view at faces, edges, and corners of a view cube.
+   * * heads up
+   * @param matrix candidate matrix
+   * @param tolerance tolerance for cleaning up fuzz.  The default (1.0e-6) is appropriate if very dirty viewing operations are expected.
+   * @param result optional result.
+   */
+  private static snapWorldToViewMatrixToCubeFeatures(worldToView: Matrix3d, tolerance: number = 1.0e-6, result?: Matrix3d): Matrix3d {
+    const oldZ = worldToView.rowZ();
+    const newZ = CubeNavigationAid.snapVectorToCubeFeatures(oldZ, tolerance);
+    // If newZ is true up or down, it will have true 0 for x and y.
+    // special case this to take x direction from the input.
+    // istanbul ignore next
+    if (newZ.x === 0.0 && newZ.y === 0) {
+      const perpVector = worldToView.rowX();
+      result = Matrix3d.createRigidFromColumns(newZ, perpVector, AxisOrder.ZXY, result)!;
+    } else {
+      result = Matrix3d.createRigidViewAxesZTowardsEye(newZ.x, newZ.y, newZ.z, result);
+    }
+    // istanbul ignore else
+    if (result)
+      result.transposeInPlace();
+    return result;
+  }
+
   private _onArrowClick = (arrow: Pointer) => {
     const localRotationAxis = Vector3d.create(0, 0, 0);
     switch (arrow) {
@@ -340,12 +400,9 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     }
     const localRotation = Matrix3d.createRotationAroundVector(localRotationAxis, Angle.createDegrees(-90))!;
     const newRotation = localRotation.multiplyMatrixMatrix(this.state.endRotMatrix);
+    CubeNavigationAid.snapWorldToViewMatrixToCubeFeatures(newRotation, 1.0e-6, newRotation);
     const face = CubeNavigationAid._getMatrixFace(newRotation);
     this._animateRotation(newRotation, face);
-    // const zRow = newRotation.rowZ();
-    // const rotMatrix = Matrix3d.createRigidViewAxesZTowardsEye(zRow.x, zRow.y, zRow.z).transpose();
-    // const face = CubeNavigationAid._getMatrixFace(rotMatrix);
-    // this._animateRotation(this.state.endRotMatrix.clone(), rotMatrix, face);
   }
 
   private _lastClientXY: Vector2d = Vector2d.createZero();

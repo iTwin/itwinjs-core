@@ -22,7 +22,7 @@ const assignFragData = `
 `;
 
 /** @internal */
-export function createCopyPickBuffersProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createCopyPickBuffersProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

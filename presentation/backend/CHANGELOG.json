@@ -2,6 +2,24 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "1.12.0",
+      "tag": "@bentley/presentation-backend_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add new hidden 'functional' selection scopes: 'functional-element', 'functional-assembly', 'functional-top-assembly'"
+          },
+          {
+            "comment": "Update 'functional' hilite rules up to the latest requirements, including recursive lookup both at functional and graphical part of the relationship path"
+          },
+          {
+            "comment": "Ignore invalid IDs when computing element selection instead of failing the whole operation"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.11.0",
       "tag": "@bentley/presentation-backend_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",

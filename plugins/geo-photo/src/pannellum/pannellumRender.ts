@@ -123,7 +123,7 @@ export class PannellumRenderer {
     }
 
     // eliminate need for all the this.gl's from here
-    const gl: WebGLRenderingContext = this._gl;
+    const gl = this._gl;
 
     // Make sure image isn't too big
     const maxWidth = gl.getParameter(gl.MAX_TEXTURE_SIZE);
@@ -387,7 +387,7 @@ export class PannellumRenderer {
     }
 
     // Calculate focal length from vertical field of view
-    const gl: WebGLRenderingContext = this._gl!;
+    const gl = this._gl!;
     const vfov = 2 * Math.atan(Math.tan(hfov * 0.5) / (gl.drawingBufferWidth / gl.drawingBufferHeight));
     focal = 1 / Math.tan(vfov * 0.5);
 

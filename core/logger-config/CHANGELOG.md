@@ -1,6 +1,11 @@
 # Change Log - @bentley/logger-config
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+*Version update only*
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

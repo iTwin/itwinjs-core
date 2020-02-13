@@ -17,7 +17,8 @@ Array [
     "description": "Doloribus aut culpa ratione vel molestias omnis.",
     "icon": "reboot",
     "id": "43142b23-f95f-40db-b473-9fde2c0a107d/66dcb686-2502-41e0-a1c3-9b08a0214f59",
-    "label": PropertyRecord {
+    "label": "A-2-1",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -55,7 +56,8 @@ Array [
     "icon": "Avon",
     "id": "83e0ae64-7290-487e-8e56-9f025212b800/23ea98de-9451-4bb8-8be2-ea063b9cf6fe",
     "isCheckboxVisible": true,
-    "label": PropertyRecord {
+    "label": "A-2-2",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -93,7 +95,8 @@ Array [
     "id": "62f3ccbf-c51b-48ed-ad1d-0420ea196af6/024f2316-265a-46e8-965a-837e308ae678",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": PropertyRecord {
+    "label": "A-1",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -122,7 +125,8 @@ Array [
     "hasChildren": true,
     "id": "680c80a2-8cf0-49ee-8272-ec6682ae559c/e412801a-e3e4-4479-8999-2f94b3186fb7",
     "isCheckboxVisible": true,
-    "label": PropertyRecord {
+    "label": "A-2",
+    "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

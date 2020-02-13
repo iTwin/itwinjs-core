@@ -42,7 +42,8 @@ export const TreeNodeEditor: React.FC<TreeNodeEditorProps> = (props: TreeNodeEdi
     props.onCommit(props.node, newValue);
   };
 
-  const propertyRecord = createPropertyRecord(props.node.item.label);
+  const label = props.node.item.labelDefinition ?? props.node.item.label;
+  const propertyRecord = createPropertyRecord(label);
 
   return (
     <span style={props.style}>

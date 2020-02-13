@@ -460,6 +460,7 @@ export class UiAdmin {
     createXAndY(x: number, y: number): XAndY;
     get cursorPosition(): XAndY;
     hideCalculator(): boolean;
+    hideHTMLElement(): boolean;
     hideInputEditor(): boolean;
     hideMenuButton(_id: string): boolean;
     hideToolbar(): boolean;
@@ -469,6 +470,7 @@ export class UiAdmin {
     showCalculator(_initialValue: number, _resultIcon: string, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showContextMenu(_menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
     showHeightEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
+    showHTMLElement(_displayElement: HTMLElement, _location: XAndY, _offset: XAndY, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;
     showLengthEditor(_initialValue: number, _location: XAndY, _onCommit: OnNumberCommitFunc, _onCancel: OnCancelFunc, _htmlElement?: HTMLElement): boolean;
     showMenuButton(_id: string, _menuItemsProps: AbstractMenuItemProps[], _location: XAndY, _htmlElement?: HTMLElement): boolean;
     showToolbar(_toolbarProps: AbstractToolbarProps, _location: XAndY, _offset: XAndY, _onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relativePosition?: RelativePosition, _htmlElement?: HTMLElement): boolean;

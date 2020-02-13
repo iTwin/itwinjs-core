@@ -15,7 +15,6 @@ import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyVal
 import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPropertyValueRenderer";
 import { DoublePropertyValueRenderer } from "./renderers/value/DoublePropertyValueRenderer";
 import { MergedPropertyValueRenderer } from "./renderers/value/MergedPropertyValueRenderer";
-import { CompositePropertyValueRenderer } from "./renderers/value/CompositePropertyValueRenderer";
 
 /** Types of property containers
  * @public
@@ -146,4 +145,3 @@ export class PropertyValueRendererManager {
 
 PropertyValueRendererManager.defaultManager.registerRenderer("navigation", new NavigationPropertyValueRenderer());
 PropertyValueRendererManager.defaultManager.registerRenderer("double", new DoublePropertyValueRenderer());
-PropertyValueRendererManager.defaultManager.registerRenderer("composite", new CompositePropertyValueRenderer());

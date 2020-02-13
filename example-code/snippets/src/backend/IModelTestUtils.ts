@@ -5,12 +5,11 @@
 import { assert } from "chai";
 import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { AccessToken, ConnectClient, Config } from "@bentley/imodeljs-clients";
+import { ConnectClient, Config } from "@bentley/imodeljs-clients";
 import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { getToken, OidcConfiguration } from "@bentley/oidc-signin-tool";
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
@@ -19,35 +18,6 @@ export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
   enableTransactions?: boolean;
   openMode?: OpenMode;
-}
-
-export interface UserCredentials {
-  email: string;
-  password: string;
-}
-
-/** Test users with various permissions */
-export class TestUsers {
-
-  /** Browser Oidc configuration for all test users */
-  public static get oidcConfig(): OidcConfiguration {
-    return {
-      clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
-      redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
-    };
-  }
-
-  public static get scopes(): string {
-    return Config.App.getString("imjs_oidc_browser_test_scopes");
-  }
-
-  /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static get regular(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_regular_user_name"),
-      password: Config.App.getString("imjs_test_regular_user_password"),
-    };
-  }
 }
 
 export class KnownTestLocations {
@@ -73,14 +43,6 @@ export class IModelTestUtils {
     if (!IModelTestUtils._connectClient)
       IModelTestUtils._connectClient = new ConnectClient();
     return IModelTestUtils._connectClient!;
-  }
-
-  public static async getTestUserAccessToken(userCredentials?: UserCredentials): Promise<AccessToken> {
-    if (userCredentials === undefined)
-      userCredentials = TestUsers.regular;
-    const accessToken = await getToken(userCredentials.email, userCredentials.password, TestUsers.scopes, TestUsers.oidcConfig);
-    assert(accessToken);
-    return accessToken;
   }
 
   private static getStat(name: string) {

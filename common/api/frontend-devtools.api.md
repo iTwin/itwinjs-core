@@ -24,7 +24,7 @@ import { RenderSystemDebugControl } from '@bentley/imodeljs-frontend';
 import { RenderTargetDebugControl } from '@bentley/imodeljs-frontend';
 import { RgbColor } from '@bentley/imodeljs-common';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
-import { Tile } from '@bentley/imodeljs-frontend';
+import { TileBoundingBoxes } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { Viewport } from '@bentley/imodeljs-frontend';
@@ -123,6 +123,22 @@ export abstract class ChangeHiliteTool extends Tool {
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
     run(settings?: Hilite.Settings): boolean;
+}
+
+// @alpha
+export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool {
+    // (undocumented)
+    protected execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected parse(args: string[]): boolean;
+    // (undocumented)
+    protected get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @beta
@@ -387,6 +403,36 @@ export interface DiagnosticsPanelProps {
 }
 
 // @beta
+export abstract class DisplayStyleTool extends Tool {
+    // (undocumented)
+    protected abstract execute(vp: Viewport): boolean;
+    // (undocumented)
+    protected abstract parse(args: string[]): boolean;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    protected get require3d(): boolean;
+    // (undocumented)
+    run(): boolean;
+}
+
+// @alpha
+export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
+    // (undocumented)
+    protected execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected parse(args: string[]): boolean;
+    // (undocumented)
+    protected get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export abstract class EmphasizeElementsTool extends Tool {
     // (undocumented)
     protected abstract execute(emph: EmphasizeElements, vp: ScreenViewport): void;
@@ -631,6 +677,20 @@ export interface NumericInputProps {
     value: number;
 }
 
+// @alpha
+export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
+    // (undocumented)
+    protected execute(vp: Viewport): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    protected parse(args: string[]): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @beta
 export function parseToggle(arg: string | undefined): string | boolean | undefined;
 
@@ -792,7 +852,7 @@ export class ShowTileVolumesTool extends Tool {
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(boxes?: Tile.DebugBoundingBoxes): boolean;
+    run(boxes?: TileBoundingBoxes): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -970,15 +1030,33 @@ export class ToggleShadowFrustumTool extends Tool {
 }
 
 // @beta
-export class ToggleSkyboxTool extends Tool {
+export class ToggleSkyboxTool extends DisplayStyleTool {
     // (undocumented)
-    run(): boolean;
+    execute(vp: Viewport): boolean;
+    // (undocumented)
+    parse(_args: string[]): boolean;
+    // (undocumented)
+    get require3d(): boolean;
     // (undocumented)
     static toolId: string;
 }
 
 // @beta
 export class ToggleTileRequestDecorationTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ToggleTileTreeBoundsDecorationTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
     // (undocumented)

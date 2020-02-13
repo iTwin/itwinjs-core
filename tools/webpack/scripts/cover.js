@@ -17,7 +17,7 @@ exports.handler = (argv) => {
   const path = require("path");
   const paths = require("../config/paths");
   const openBrowser = require("react-dev-utils/openBrowser");
-  const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
+  const { spawn, handleInterrupts } = require("@bentley/build-tools/scripts/utils/simpleSpawn");
 
   (async () => {
     const forwardedArgs = process.argv.slice(3);

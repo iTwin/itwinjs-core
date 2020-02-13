@@ -13,20 +13,21 @@ import {
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery, Config, IModelBaseHandler,
   IModelBankClient, IModelBankFileSystemContextClient, AuthorizedClientRequestContext,
-  ImsUserCredentials,
   WsgError,
+  ChangeSetQuery,
 } from "@bentley/imodeljs-clients";
+import { TestUsers, TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { MobileRpcConfiguration } from "@bentley/imodeljs-common";
 import { IOSAzureFileHandler } from "../../imodelhub/IOSAzureFileHandler";
 import { UrlFileHandler } from "../../UrlFileHandler";
 import { LocalhostHandler } from "../../imodelhub/LocalhostFileHandler";
+import { StorageServiceFileHandler } from "../../StorageServiceFileHandler";
 
 const loggingCategory = "imodeljs-clients-backend.TestUtils";
 
@@ -62,6 +63,8 @@ export function createIModelBankFileHandler(useDownloadBuffer?: boolean) {
       return new LocalhostHandler();
     case "url":
       return new UrlFileHandler();
+    case "storageservice":
+      return new StorageServiceFileHandler();
     default:
       throw new Error(`File handler '${handler}' is not supported.`);
   }
@@ -163,7 +166,7 @@ export class RequestBehaviorOptions {
 const requestBehaviorOptions = new RequestBehaviorOptions();
 
 let _imodelHubClient: IModelHubClient;
-function getImodelHubClient() {
+export function getImodelHubClient() {
   if (_imodelHubClient !== undefined)
     return _imodelHubClient;
   _imodelHubClient = new IModelHubClient(createFileHanlder());
@@ -173,7 +176,7 @@ function getImodelHubClient() {
   return _imodelHubClient;
 }
 
-let _imodelBankClient: IModelBankClient;
+let imodelBankClient: IModelBankClient;
 
 export class IModelHubUrlMock {
   public static getUrl(): string {
@@ -191,7 +194,7 @@ export class IModelHubUrlMock {
 
 export function getDefaultClient() {
   IModelHubUrlMock.mockGetUrl();
-  return getCloudEnv().isIModelHub ? getImodelHubClient() : _imodelBankClient;
+  return getCloudEnv().isIModelHub ? getImodelHubClient() : imodelBankClient;
 }
 
 export function getRequestBehaviorOptionsHandler(): RequestBehaviorOptions {
@@ -236,10 +239,9 @@ export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function login(userCredentials?: ImsUserCredentials): Promise<AccessToken> {
+export async function login(userCredentials?: TestUserCredentials): Promise<AccessToken> {
   if (TestConfig.enableMocks)
     return new MockAccessToken();
-
   userCredentials = userCredentials || TestUsers.regular;
   return getCloudEnv().authorization.authorizeUser(new ClientRequestContext(), undefined, userCredentials);
 }
@@ -747,15 +749,39 @@ export async function createIModel(requestContext: AuthorizedClientRequestContex
   return client.iModels.create(requestContext, contextId, name, { path: pathName, timeOutInMilliseconds: 240000 });
 }
 
+/**
+ * Java style hash code function
+ */
+function hashCode(value: string) {
+  let hash: number = 0;
+  for (let i = 0; i < value.length; i++)
+    hash = (((hash << 5) - hash) + value.charCodeAt(i)) | 0;
+
+  return hash;
+}
+
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
   const dir = path.join(assetsPath, "SeedFile");
   const files = fs.readdirSync(dir);
   let parentId = "";
-  return files.filter((value) => value.endsWith(".cs") && value.length === 45).map((file) => {
+  const matchingFileMap = new Map<number, RegExpMatchArray>();
+  return files.filter((value) => {
+    const fileMatch = value.match(/(^\d+)_([a-f0-9]{40})\.cs/);
+    if (fileMatch)
+      matchingFileMap.set(hashCode(value), fileMatch);
+    return fileMatch;
+  }).sort((left: string, right: string) => {
+    const leftMatch = matchingFileMap.get(hashCode(left));
+    const rightMatch = matchingFileMap.get(hashCode(right));
+
+    const leftId = parseInt(leftMatch![1], 10);
+    const rightId = parseInt(rightMatch![1], 10);
+    return leftId - rightId;
+  }).map((file) => {
     const result = new ChangeSet();
-    const fileName = path.basename(file, ".cs");
-    result.id = fileName.substr(2);
-    result.index = fileName.slice(0, 1);
+    const regexMatchValue = matchingFileMap.get(hashCode(file))!;
+    result.id = regexMatchValue[2]; // second regex group contains ChangeSet id
+    result.index = regexMatchValue[1]; // first regex group contains file index
     result.fileSize = fs.statSync(path.join(dir, file)).size.toString();
     result.briefcaseId = briefcase.briefcaseId;
     result.seedFileId = briefcase.fileId;
@@ -766,32 +792,79 @@ export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
   });
 }
 
+export function generateBridgeProperties(userCount: number, changedFileCount: number): BridgeProperties {
+  const generatedBridgeProperties = new BridgeProperties();
+  generatedBridgeProperties.jobId = Guid.createValue();
+  if (userCount > 0) {
+    generatedBridgeProperties.users = new Set();
+    for (let i: number = 0; i < userCount; i++) {
+      generatedBridgeProperties.users.add(`TestGeneratedUser_${i}`);
+    }
+  }
+  if (changedFileCount > 0) {
+    generatedBridgeProperties.changedFiles = new Set();
+    for (let i: number = 0; i < changedFileCount; i++) {
+      generatedBridgeProperties.changedFiles.add(`TestGeneratedChangedFile_${i}.ext`);
+    }
+  }
+
+  return generatedBridgeProperties;
+}
+
 export function getMockChangeSetPath(index: number, changeSetId: string) {
   return path.join(assetsPath, "SeedFile", `${index}_${changeSetId!}.cs`);
 }
 
 export async function createChangeSets(requestContext: AuthorizedClientRequestContext, imodelId: GuidString, briefcase: Briefcase,
-  startingId = 0, count = 1): Promise<ChangeSet[]> {
+  startingId = 0, count = 1, atLeastOneChangeSetWithBridgeProperties = false): Promise<ChangeSet[]> {
   if (TestConfig.enableMocks)
     return getMockChangeSets(briefcase).slice(startingId, startingId + count);
 
-  const maxCount = 10;
+  const maxCount = 17;
 
   if (startingId + count > maxCount)
     throw Error(`Only have ${maxCount} changesets generated`);
 
   const client = getDefaultClient();
 
-  const existingChangeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
+  let bridgePropertiesExist: boolean = false;
+  const changeSetQuery: ChangeSetQuery = new ChangeSetQuery();
+  if (atLeastOneChangeSetWithBridgeProperties)
+    changeSetQuery.selectBridgeProperties();
+
+  const existingChangeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId, changeSetQuery);
   const result: ChangeSet[] = existingChangeSets.slice(startingId);
+
+  if (atLeastOneChangeSetWithBridgeProperties && existingChangeSets.length >= startingId + count) {
+    // Requested to generate at least one ChangeSet with bridge properties set.
+    // No no new changesets will be generated if requested ChangeSet count (startingId + count) is less than already exists on the server.
+    existingChangeSets.forEach((existingChangeset: ChangeSet) => {
+      if (undefined !== existingChangeset.bridgeJobId) // need to check if iModel contains ChangeSets with bridge properties
+        bridgePropertiesExist = true;
+    });
+
+    // Last check - if existing ChangeSets do not contain bridge properites check if it is possible to create addional ChangeSet.
+    if (!bridgePropertiesExist && existingChangeSets.length + 1 > maxCount)
+      throw Error(`Not enough prepared ChangeSets to create additional one with bridge properties.`);
+    else if (!bridgePropertiesExist)
+      count++; // Create an extra ChangeSet with generated bridge properties.
+  }
 
   const changeSets = getMockChangeSets(briefcase);
 
   for (let i = existingChangeSets.length; i < startingId + count; ++i) {
     const changeSetPath = getMockChangeSetPath(i, changeSets[i].id!);
+    if (atLeastOneChangeSetWithBridgeProperties) {
+      const generatedBridgeProperties = generateBridgeProperties(i + 1, i * 2 + 1);
+      changeSets[i].bridgeJobId = generatedBridgeProperties.jobId;
+      changeSets[i].bridgeUsers = Array.from(generatedBridgeProperties.users!.values());
+      changeSets[i].bridgeChangedFiles = Array.from(generatedBridgeProperties.changedFiles!.values());
+      bridgePropertiesExist = true;
+    }
     const changeSet = await client.changeSets.create(requestContext, imodelId, changeSets[i], changeSetPath);
     result.push(changeSet);
   }
+
   return result;
 }
 
@@ -828,6 +901,12 @@ export async function createVersions(requestContext: AuthorizedClientRequestCont
   }
 }
 
+export class BridgeProperties {
+  public jobId?: string;
+  public users?: Set<string>;
+  public changedFiles?: Set<string>;
+}
+
 export class ProgressTracker {
   private _loaded: number = 0;
   private _total: number = 0;
@@ -859,14 +938,15 @@ let cloudEnv: IModelCloudEnvironment | undefined;
 if (!TestConfig.enableIModelBank || TestConfig.enableMocks) {
   cloudEnv = new TestIModelHubCloudEnv();
 } else {
-  [cloudEnv, _imodelBankClient] = getIModelBankCloudEnv();
+  cloudEnv = getIModelBankCloudEnv();
+  imodelBankClient = cloudEnv.imodelClient as IModelBankClient;
 }
 if (cloudEnv === undefined)
   throw new Error("could not create cloudEnv");
 
 cloudEnv.startup()
-  .catch((_err) => {
-    Logger.logError(loggingCategory, "Error starting cloudEnv");
+  .catch((err: Error) => {
+    Logger.logException(loggingCategory, err);
   });
 
 // TRICKY! All of the "describe" functions are called first. Many of them call getCloudEnv,

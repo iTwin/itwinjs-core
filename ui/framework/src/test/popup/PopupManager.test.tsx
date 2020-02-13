@@ -267,6 +267,22 @@ describe("PopupManager", () => {
       wrapper.unmount();
     });
 
+    it("PopupRenderer should render HTMLElement", async () => {
+      const wrapper = mount(<PopupRenderer />);
+
+      const html = "<div class='test-element'>Hello World!</div>";
+      const display = new DOMParser().parseFromString(html, "text/html");
+
+      const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
+      const spyCancel = sinon.spy();
+
+      PopupManager.showHTMLElement(display.documentElement, doc.documentElement, new Point(150, 250), new Point(8, 8), spyCancel, RelativePosition.TopRight);
+      wrapper.update();
+      wrapper.should.matchSnapshot();
+
+      wrapper.unmount();
+    });
+
   });
 
 });

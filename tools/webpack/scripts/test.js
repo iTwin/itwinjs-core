@@ -49,7 +49,7 @@ exports.handler = (argv) => {
 
   const path = require("path");
   const paths = require("../config/paths");
-  const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
+  const { spawn, handleInterrupts } = require("@bentley/build-tools/scripts/utils/simpleSpawn");
 
 
   // Support jest-style args for updating all snapshots

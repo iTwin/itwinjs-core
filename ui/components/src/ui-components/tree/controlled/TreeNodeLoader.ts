@@ -13,36 +13,41 @@ import { of } from "rxjs/internal/observable/of";
 import { concatMap } from "rxjs/internal/operators/concatMap";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { map } from "rxjs/internal/operators/map";
-import { tap } from "rxjs/internal/operators/tap";
 import { publish } from "rxjs/internal/operators/publish";
 import { toArray } from "rxjs/internal/operators/toArray";
 import { refCount } from "rxjs/internal/operators/refCount";
-import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeUiEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { UiError } from "@bentley/ui-abstract";
 import { Observable } from "./Observable";
 import { SubscriptionScheduler, scheduleSubscription } from "./internal/SubscriptionScheduler";
 import {
-  TreeNodeItemData, isTreeModelNode, TreeModelNode, TreeModelRootNode,
+  TreeNodeItemData, isTreeModelNode, TreeModelNode, TreeModelRootNode, MutableTreeModel, TreeModelNodeInput,
 } from "./TreeModel";
 import {
   TreeDataChangesListener, TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface,
   isTreeDataProviderMethod, isTreeDataProviderPromise, isTreeDataProviderRaw,
 } from "../TreeDataProvider";
 import { UiComponents } from "../../UiComponents";
+import { TreeModelSource } from "./TreeModelSource";
+
+/** Data structure that describes node load result
+ * @beta
+ */
+export interface TreeNodeLoadResult {
+  loadedNodes: TreeNodeItem[];
+}
 
 /**
  * Tree node loader which is used to load tree nodes.
  * @beta
  */
 export interface ITreeNodeLoader {
-  /** Event that is raised when hierarchy for a node is loaded. */
-  onNodeLoaded: BeUiEvent<LoadedNodeHierarchy>;
   /** Loads node at specified place in tree.
    *
    * @param parentId specifies tree branch
    * @param childIndex specifies offset in the branch.
    */
-  loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
+  loadNode(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<TreeNodeLoadResult>;
 }
 
 /**
@@ -54,41 +59,72 @@ export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvi
   getDataProvider(): TDataProvider;
 }
 
+/** Abstract node loader which loads nodes to provided model source.
+ * @beta
+ */
+export abstract class AbstractTreeNodeLoader implements ITreeNodeLoader {
+  private _treeModelSource: TreeModelSource;
+  private _loadScheduler = new SubscriptionScheduler<TreeNodeLoadResult>();
+
+  protected constructor(modelSource: TreeModelSource) { this._treeModelSource = modelSource; }
+
+  public get modelSource() { return this._treeModelSource; }
+
+  public loadNode(parent: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<TreeNodeLoadResult> {
+    return from(this.load(parent, childIndex)).pipe(
+      map((loadedHierarchy) => {
+        this.updateModel(loadedHierarchy);
+        return { loadedNodes: collectTreeNodeItems(loadedHierarchy.hierarchyItems) };
+      }),
+      scheduleSubscription(this._loadScheduler),
+    );
+  }
+
+  protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void {
+    handleLoadedNodeHierarchy(this._treeModelSource, loadedHierarchy);
+  }
+
+  protected abstract load(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
+}
+
+/** Abstract node loader with tree data provider which loads nodes to provided model source.
+ * @beta
+ */
+export abstract class AbstractTreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoader implements ITreeNodeLoaderWithProvider<TDataProvider> {
+  private _dataProvider: TDataProvider;
+
+  protected constructor(modelSource: TreeModelSource, dataProvider: TDataProvider) {
+    super(modelSource);
+    this._dataProvider = dataProvider;
+  }
+
+  public getDataProvider() { return this._dataProvider; }
+}
+
 /**
  * Default tree node loader with TreeDataProvider implementation.
  * @beta
  */
-export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements ITreeNodeLoaderWithProvider<TDataProvider> {
+export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
   private _treeDataSource: TreeDataSource;
-  private _loadScheduler = new SubscriptionScheduler<LoadedNodeHierarchy>();
-  private _dataProvider: TDataProvider;
   private _activeRequests = new Map<string | undefined, RxjsObservable<LoadedNodeHierarchy>>();
 
-  public onNodeLoaded = new BeUiEvent<LoadedNodeHierarchy>();
-
-  constructor(dataProvider: TDataProvider) {
+  constructor(dataProvider: TDataProvider, modelSource: TreeModelSource) {
+    super(modelSource, dataProvider);
     this._treeDataSource = new TreeDataSource(dataProvider);
-    this._dataProvider = dataProvider;
   }
 
-  /** Returns TreeDataProvider used to load nodes. */
-  public getDataProvider(): TDataProvider { return this._dataProvider; }
+  /** Disposes data source */
+  public dispose() { this._treeDataSource.dispose(); }
 
   /**
    * Schedules to load children of node and returns an Observable.
    *
-   * **Note:** It does not start loading node until '.subscribe()' is called
-   * on returned Observable. If called multiple times to load children for same node it will return same Observable.
+   * **Note:** It does not start loading node until '.subscribe()' is called on returned Observable.
    */
-  public loadNode(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy> {
+  protected load(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy> {
     const parentItem = isTreeModelNode(parentNode) ? parentNode.item : undefined;
-    return this.loadForParent(parentItem, parentNode.numChildren === undefined)
-      .pipe(
-        tap((loadedHierarchy) => {
-          this.onNodeLoaded.emit(loadedHierarchy);
-        }),
-        scheduleSubscription(this._loadScheduler),
-      );
+    return this.loadForParent(parentItem, parentNode.numChildren === undefined);
   }
 
   private loadForParent(parentItem: TreeNodeItem | undefined, requestNumChildren: boolean): RxjsObservable<LoadedNodeHierarchy> {
@@ -98,9 +134,9 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements I
       return activeRequest;
     }
 
-    const newRequest = requestLoadedHierarchy(parentItem, this._treeDataSource, 0, 0, requestNumChildren, () => {
-      this._activeRequests.delete(parentId);
-    });
+    const newRequest = requestLoadedHierarchy(parentItem, this._treeDataSource, 0, 0, requestNumChildren,
+      () => { this._activeRequests.delete(parentId); },
+    );
 
     this._activeRequests.set(parentId, newRequest);
     return newRequest;
@@ -111,41 +147,30 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> implements I
  * Default paged tree node loader with TreeDataProvider implementation.
  * @beta
  */
-export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> implements ITreeNodeLoaderWithProvider<TDataProvider> {
+export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
   private _pageLoader: PageLoader;
-  private _loadScheduler = new SubscriptionScheduler<LoadedNodeHierarchy>();
-  private _dataProvider: TDataProvider;
   private _pageSize: number;
 
-  public onNodeLoaded = new BeUiEvent<LoadedNodeHierarchy>();
-
-  constructor(dataProvider: TDataProvider, pageSize: number) {
+  constructor(dataProvider: TDataProvider, modelSource: TreeModelSource, pageSize: number) {
+    super(modelSource, dataProvider);
     this._pageLoader = new PageLoader(new TreeDataSource(dataProvider), pageSize);
     this._pageSize = pageSize;
-    this._dataProvider = dataProvider;
   }
+
+  /** Disposes data source */
+  public dispose() { this._pageLoader.dispose(); }
 
   /** Returns page size used by tree node loader. */
   public getPageSize(): number { return this._pageSize; }
 
-  /** Returns TreeDataProvider used to load nodes. */
-  public getDataProvider(): TDataProvider { return this._dataProvider; }
-
   /**
    * Schedules to load one page of node children and returns an Observable.
    *
-   * **Note:** It does not start loading node page until '.subscribe()' is called
-   * on returned Observable. If called multiple times to load same page it will return same Observable.
+   * **Note:** It does not start loading node page until '.subscribe()' is called on returned Observable.
    */
-  public loadNode(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy> {
+  protected load(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy> {
     const parentItem = isTreeModelNode(parentNode) ? parentNode.item : undefined;
-    return this._pageLoader.loadPageWithItem(parentItem, childIndex, parentNode.numChildren === undefined)
-      .pipe(
-        tap((loadedHierarchy) => {
-          this.onNodeLoaded.emit(loadedHierarchy);
-        }),
-        scheduleSubscription(this._loadScheduler),
-      );
+    return this._pageLoader.loadPageWithItem(parentItem, childIndex, parentNode.numChildren === undefined);
   }
 }
 
@@ -175,7 +200,7 @@ export interface LoadedNodeHierarchyItem {
   numChildren?: number;
 }
 
-class PageLoader {
+class PageLoader implements IDisposable {
   private _dataSource: TreeDataSource;
   private _pageSize: number;
   private _activePageRequests = new Map<string | undefined, Map<number, RxjsObservable<LoadedNodeHierarchy>>>();
@@ -187,6 +212,8 @@ class PageLoader {
     this._dataSource = dataSource;
     this._pageSize = pageSize;
   }
+
+  public dispose() { this._dataSource.dispose(); }
 
   public loadPageWithItem(
     parentItem: TreeNodeItem | undefined,
@@ -202,12 +229,14 @@ class PageLoader {
     }
 
     const startIndex = page * this._pageSize;
-    const newRequest = requestLoadedHierarchy(parentItem, this._dataSource, startIndex, this._pageSize, requestNumChildren, () => {
-      parentPageRequests.delete(page);
-      if (parentPageRequests.size === 0) {
-        this._activePageRequests.delete(parentId);
-      }
-    });
+    const newRequest = requestLoadedHierarchy(parentItem, this._dataSource, startIndex, this._pageSize, requestNumChildren,
+      () => {
+        parentPageRequests.delete(page);
+        if (parentPageRequests.size === 0) {
+          this._activePageRequests.delete(parentId);
+        }
+      },
+    );
 
     parentPageRequests.set(page, newRequest);
     this._activePageRequests.set(parentId, parentPageRequests);
@@ -263,6 +292,87 @@ function loadHierarchy(rootItems: TreeNodeItemData[], dataSource: TreeDataSource
     );
 }
 
+function collectTreeNodeItems(hierarchyItems: LoadedNodeHierarchyItem[], result: TreeNodeItem[] = []) {
+  for (const hierarchyItem of hierarchyItems) {
+    result.push(hierarchyItem.item);
+    if (hierarchyItem.children)
+      collectTreeNodeItems(hierarchyItem.children, result);
+  }
+
+  return result;
+}
+
+/** @internal */
+export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy) {
+  modelSource.modifyModel((model) => {
+    if (loadedHierarchy.parentId !== undefined) {
+      // Make sure the model sill contains the parent node
+      /* istanbul ignore if */
+      if (model.getNode(loadedHierarchy.parentId) === undefined)
+        return;
+    }
+
+    updateChildren(model, loadedHierarchy.parentId, loadedHierarchy.hierarchyItems, loadedHierarchy.offset, loadedHierarchy.numChildren);
+    if (loadedHierarchy.parentId !== undefined) {
+      const parentNode = model.getNode(loadedHierarchy.parentId);
+      /* istanbul ignore else */
+      if (parentNode && parentNode.isLoading && parentNode.numChildren !== undefined) {
+        parentNode.isLoading = false;
+      }
+    }
+  });
+}
+
+function updateChildren(
+  model: MutableTreeModel,
+  parentId: string | undefined,
+  hierarchyItems: LoadedNodeHierarchyItem[],
+  startIndex: number,
+  numChildren?: number,
+) {
+  /* istanbul ignore else */
+  if (numChildren !== undefined) {
+    model.setNumChildren(parentId, numChildren);
+  }
+
+  // if children array is undefined do not add children as they should be disposed
+  if (model.getChildren(parentId) === undefined) {
+    return;
+  }
+
+  model.setChildren(
+    parentId,
+    hierarchyItems.map(({ item }) => convertToTreeModelNodeInput(item)),
+    startIndex,
+  );
+
+  for (const item of hierarchyItems) {
+    if (item.children) {
+      updateChildren(model, item.item.id, item.children, 0, item.numChildren);
+    }
+  }
+}
+
+function convertToTreeModelNodeInput(item: TreeNodeItemData): TreeModelNodeInput {
+  let numChildren: number | undefined;
+  if (item.children) {
+    numChildren = item.children.length;
+  } else if (!item.hasChildren) {
+    numChildren = 0;
+  }
+
+  return {
+    description: item.description,
+    isExpanded: !!item.autoExpand,
+    id: item.id,
+    item,
+    label: item.label,
+    isLoading: false,
+    numChildren,
+    isSelected: false,
+  };
+}
+
 interface TreeDataSourceResult {
   loadedItems: TreeNodeItemData[];
   numChildren?: number;
@@ -274,8 +384,9 @@ interface TreeDataSourceResult {
  * TreeDataProviderPromise or TreeDataProviderInterface.
  * @internal
  */
-export class TreeDataSource {
+export class TreeDataSource implements IDisposable {
   private _dataProvider: TreeDataProvider;
+  private _dispose?: () => void;
 
   public readonly onItemsChanged = new BeUiEvent<TreeDataChangesListener>();
 
@@ -283,11 +394,13 @@ export class TreeDataSource {
     this._dataProvider = dataProvider;
 
     if (isTreeDataProviderInterface(this._dataProvider) && this._dataProvider.onTreeNodeChanged) {
-      this._dataProvider.onTreeNodeChanged!.addListener(
+      this._dispose = this._dataProvider.onTreeNodeChanged!.addListener(
         (changedItems) => this.onItemsChanged.raiseEvent(changedItems),
       );
     }
   }
+
+  public dispose() { this._dispose && this._dispose(); }
 
   public requestItems(
     parent: TreeNodeItem | undefined,

@@ -262,9 +262,12 @@ export class Transform implements BeJSONFunctions {
   /** Create a transform with the specified matrix. Compute an origin (different from the given fixedPoint)
    * so that the fixedPoint maps back to itself.
    */
-  public static createFixedPointAndMatrix(fixedPoint: XYAndZ, matrix: Matrix3d, result?: Transform): Transform {
-    const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
-    return Transform.createRefs(origin, matrix.clone(), result);
+  public static createFixedPointAndMatrix(fixedPoint: XYAndZ | undefined, matrix: Matrix3d, result?: Transform): Transform {
+    if (fixedPoint) {
+      const origin = Matrix3d.xyzMinusMatrixTimesXYZ(fixedPoint, matrix, fixedPoint);
+      return Transform.createRefs(origin, matrix.clone(), result);
+    }
+    return Transform.createRefs(undefined, matrix.clone());
   }
   /** Create a transform with the specified matrix, acting on any `pointX `via
    * `pointY = matrix * (pointX - pointA) + pointB`
@@ -362,6 +365,19 @@ export class Transform implements BeJSONFunctions {
       point.z - this._origin.z,
       result);
   }
+  /** Inverse transform the input homogeneous point.
+   * * Return as a new point or in the optional result.
+   * * returns undefined if the matrix part if this Transform is singular.
+   */
+  public multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined {
+    const w = weightedPoint.w;
+    return this._matrix.multiplyInverseXYZW(
+      weightedPoint.x - w * this.origin.x,
+      weightedPoint.y - w * this.origin.y,
+      weightedPoint.z - w * this.origin.z,
+      w, result);
+  }
+
   /** Return product of the transform's inverse times a point (point given as x,y,z) */
   public multiplyInverseXYZ(x: number, y: number, z: number, result?: Point3d): Point3d | undefined {
     return this._matrix.multiplyInverseXYZAsPoint3d(

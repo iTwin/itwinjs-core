@@ -2,6 +2,36 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "1.12.0",
+      "tag": "@bentley/ui-components_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "iModel write API development"
+          },
+          {
+            "comment": "Upgraded icons-generic-webfont to ^1.0.0"
+          },
+          {
+            "comment": "Added type converter for composite primitive value"
+          },
+          {
+            "comment": "Changed onNodeLoaded event to nodeLoadHandler in NodeLoader. Fixed node loading scheduling to avoid making multiple requests at the same time"
+          },
+          {
+            "comment": "Pass tree model changes to onModelChange event"
+          },
+          {
+            "comment": "Separate label and labelDefinition in PropertyData and TreeNodeItem"
+          },
+          {
+            "comment": "Property grid border fix."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.11.0",
       "tag": "@bentley/ui-components_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",

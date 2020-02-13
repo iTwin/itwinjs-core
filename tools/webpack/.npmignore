@@ -8,6 +8,5 @@
 !scripts/**/*.js
 !lib/**/*.d.ts
 !lib/**/*.js
-!package.json
 !index.d.ts
 !*.md

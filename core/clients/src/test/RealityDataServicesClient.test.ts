@@ -30,6 +30,23 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
     chai.assert.isDefined(projectId);
   });
 
+  it("should be able to parse RDS/Context Share URL both valid and invalid.", async () => {
+    // Test
+    const realityDataId: string | undefined = realityDataServiceClient.getRealityDataIdFromUrl("http://connect-realitydataservices.bentley.com/v2.4/Repositories/S3MXECPlugin--95b8160c-8df9-437b-a9bf-22ad01fecc6b/S3MX/RealityData/73226b81-6d95-45d3-9473-20e52703aea5");
+    chai.assert(realityDataId);
+    chai.assert(realityDataId === "73226b81-6d95-45d3-9473-20e52703aea5");
+
+    const realityDataId2: string | undefined = realityDataServiceClient.getRealityDataIdFromUrl("http:\\\\connect-realitydataservices.bentley.com\\v2.4\\Repositories/S3MXECPlugin--95b8160c-8df9-437b-a9bf-22ad01fecc6b\\S3MX\\RealityData\\73226b81-6d95-45d3-9473-20e52703aea5");
+
+    chai.assert(realityDataId2);
+    chai.assert(realityDataId2 === "73226b81-6d95-45d3-9473-20e52703aea5");
+
+    const realityDataId3: string | undefined = realityDataServiceClient.getRealityDataIdFromUrl("http:\\connect-realitydataservices.bentley.com\\v2.4\\Repositories/S3MXECPlugin--95b8160c-8df9-437b-a9bf-22ad01fecc6b\\S3MX\\RealityData\\73226b81-6d95-45d3-9473-20e52703aea5");
+
+    chai.assert(realityDataId3);
+    chai.assert(realityDataId3 === "73226b81-6d95-45d3-9473-20e52703aea5");
+  });
+
   it("should be able to retrieve reality data properties", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
     chai.assert(realityData);
@@ -89,7 +106,8 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
     chai.assert(url);
   });
 
-  it("should be able to get model data json", async () => {
+  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
+  it.skip("should be able to get model data json", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
@@ -105,7 +123,8 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
     chai.assert(modelData);
   });
 
-  it("should be able to get model data content", async () => {
+  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
+  it.skip("should be able to get model data content", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesId);
 
     const rootData: any = await realityData.getRootDocumentJson(requestContext);
@@ -524,7 +543,8 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
     await realityDataServiceClient.deleteRealityData(requestContext, projectId, realityDataAdded2.id as string);
   });
 
-  it("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
+  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
+  it.skip("should be able to get model data content with root doc not at blob root (root doc path)", async () => {
     const realityData: RealityData = await realityDataServiceClient.getRealityData(requestContext, projectId, tilesIdWithRootDocPath);
 
     // The root document of this reality should not be at the root of the blob
@@ -574,7 +594,8 @@ describe("RealityDataServicesClient Admin (#integration)", () => {
     requestContext = new AuthorizedClientRequestContext(accessToken);
   });
 
-  it("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
+  // NEEDS_WORK: Reality Data Services team - filed TFS#265604
+  it.skip("should be able to create a reality data as an admin (without specific context and admin) and delete it", async () => {
     const realityData: RealityData = new RealityData();
 
     // Generate a temporary GUID. Data will be generated using this GUID.

@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useReducer, useState } from "react";
 import * as _ from "lodash";
-import { ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, PagedTreeNodeLoader, TreeModelSource, useModelSource } from "@bentley/ui-components";
+import { ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, PagedTreeNodeLoader, TreeModelSource, AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
 import { AsyncTasksTracker } from "@bentley/presentation-common";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -23,7 +23,7 @@ interface FilterKey {
 
 interface FilterState {
   inProgress?: FilterKey;
-  filteredNodeLoader?: ITreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>;
+  filteredNodeLoader?: AbstractTreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>;
   matchesCount?: number;
 }
 
@@ -34,7 +34,7 @@ const createFilterKey = (provider: IPresentationTreeDataProvider, filter: string
   filter: normalizeFilter(filter),
 });
 const createFilterKeyFromProvider = (provider: FilteredPresentationTreeDataProvider) => createFilterKey(provider, provider.filter);
-const getActiveFilterKey = (inProgress?: FilterKey, filteredNodeLoader?: ITreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>) => {
+const getActiveFilterKey = (inProgress?: FilterKey, filteredNodeLoader?: AbstractTreeNodeLoaderWithProvider<FilteredPresentationTreeDataProvider>) => {
   return (inProgress ? inProgress : filteredNodeLoader ? createFilterKeyFromProvider(filteredNodeLoader.getDataProvider()) : undefined);
 };
 const normalizeDataProvider = (dataProvider: IPresentationTreeDataProvider | FilteredPresentationTreeDataProvider) => {
@@ -57,7 +57,7 @@ const FILTERED_DATA_PAGE_SIZE = 20;
  * @beta
  */
 export function useControlledTreeFiltering(
-  nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,
+  nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,
   modelSource: TreeModelSource,
   filter: string | undefined,
   activeMatch?: number,
@@ -68,13 +68,12 @@ export function useControlledTreeFiltering(
     matchesCount,
   } = useFilteredNodeLoader(nodeLoader, filter);
 
-  const filteredModelSource = useModelSource(filteredNodeLoader);
   const nodeHighlightingProps = useNodeHighlightingProps(filter, filteredNodeLoader, activeMatch);
 
   return {
     nodeHighlightingProps,
     filteredNodeLoader: filteredNodeLoader || nodeLoader,
-    filteredModelSource: filteredModelSource || modelSource,
+    filteredModelSource: filteredNodeLoader ? filteredNodeLoader.modelSource : modelSource,
     isFiltering,
     matchesCount,
   };
@@ -82,7 +81,7 @@ export function useControlledTreeFiltering(
 
 /** @internal */
 export function useFilteredNodeLoader(
-  nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,
+  nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,
   filter: string | undefined,
 ) {
   const normalizedFilter = normalizeFilter(filter);
@@ -121,7 +120,8 @@ export function useFilteredNodeLoader(
     }
 
     const filteredProvider = new FilteredPresentationTreeDataProvider(dataProvider, usedFilter, nodePaths);
-    const pagedTreeNodeLoader = new PagedTreeNodeLoader(filteredProvider, FILTERED_DATA_PAGE_SIZE);
+    const modelSource = new TreeModelSource();
+    const pagedTreeNodeLoader = new PagedTreeNodeLoader(filteredProvider, modelSource, FILTERED_DATA_PAGE_SIZE);
 
     setState({
       inProgress: undefined,

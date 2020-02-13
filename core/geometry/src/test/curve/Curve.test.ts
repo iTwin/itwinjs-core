@@ -577,7 +577,7 @@ describe("Curves", () => {
     }
 
     ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");
-    GeometryCoreTestIO.saveGeometry(allGeometry, undefined, "CurvePrimitive.CurveChainWithDistanceIndex");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "CurveChainWithDistanceIndex");
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -622,7 +622,50 @@ describe("Curves", () => {
     ck.testUndefined(RuledSweep.mutatePartners((lineSegment as any) as CurveCollection, (lineSegment as any) as CurveCollection, returnUndefined), "mutatePartners rejects non-collection");
     ck.testUndefined(RuledSweep.mutatePartners(bagWithPath, bagWithPath, returnUndefined), "mutatePartners sees undefined step for collection in bag");
     ck.checkpoint("CurvePrimitive.DistanceIndexMismatches");
-    GeometryCoreTestIO.saveGeometry(allGeometry, undefined, "CurvePrimitive.CurveChainWithDistanceIndex");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "CurveChainWithDistanceIndex");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("DistanceIndexClosestPoint", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    const primitives = [];
+    primitives.push(LineString3d.create(Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1.8, 2, 0), Point3d.create(2, 3, 0)));
+    primitives.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 3, 0), Point3d.create(2.2, 4, 0), Point3d.create(2, 5, 0))!);
+    primitives.push(LineString3d.create(Point3d.create(2, 5, 0), Point3d.create(2.2, 6, 0), Point3d.create(1, 7, 0), Point3d.create(2, 8, 0)));
+    primitives.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 8, 0), Point3d.create(1.7, 9, 0), Point3d.create(2, 10, 0))!);
+    primitives.push(LineSegment3d.create(Point3d.create(2, 10, 0), Point3d.create(2.1, 11, 0)));
+    for (const numPrimitive of [1, 2, 3, 4, 5]) {
+      for (const primitive0 of [0, 1, 2, 3, 4]) {
+        const path = Path.create();
+        for (let i = primitive0; i < primitives.length && i < primitive0 + numPrimitive; i++)
+          path.tryAddChild(primitives[i]);
+        const indexedPath = CurveChainWithDistanceIndex.createCapture(path)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
+        const range = indexedPath.range();
+
+        for (const x of [0, 0.7, 2.2, 3]) {
+          for (let y = range.low.y - 1.0; y <= range.high.y + 1.1; y += 0.5) {
+            const spacePoint = Point3d.create(x, y);
+            const detail = indexedPath.closestPoint(spacePoint, false);
+            if (ck.testDefined(detail) && detail) {
+              const unitTangent = indexedPath.fractionToPointAndUnitTangent(detail.fraction);
+              // strokes .. space point to new evaluation to short step on tangent back to nearby point on line from space point to detail point
+              GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(spacePoint, unitTangent.origin,
+                unitTangent.fractionToPoint(0.05),
+                spacePoint.interpolate(0.95, detail.point)), x0, y0);
+
+            }
+          }
+        }
+        y0 += 20;
+      }
+      x0 += 10;
+      y0 = 0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "DistanceIndexClosestPoint");
 
     expect(ck.getNumErrors()).equals(0);
   });
@@ -824,7 +867,7 @@ describe("Linestring3dSpecials", () => {
         ck.testPerpendicular(tangent.direction, frame0.matrix.columnZ());
       }
     }
-    GeometryCoreTestIO.saveGeometry(geometry, undefined, "Linestring3d.fractionToFrenetFrame");
+    GeometryCoreTestIO.saveGeometry(geometry, "Linestring3d", "fractionToFrenetFrame");
     ck.checkpoint("Linestring3dSpecials.FrenetFrame");
     expect(ck.getNumErrors()).equals(0);
   });

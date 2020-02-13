@@ -1,0 +1,38 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+.activeSettings {
+  background-origin: border-box;
+  -webkit-transition: all 500ms ease;
+  -o-transition: all 500ms ease;
+  transition: all 500ms ease;
+  cursor: pointer;
+  font-size: larger;
+};
+
+.toolbar {
+  background-origin: border-box;
+  -webkit-transition: all 500ms ease;
+  -o-transition: all 500ms ease;
+  transition: all 500ms ease;
+  cursor: pointer;
+};
+
+.toolbar a {
+  padding: 12px;
+  color: black;
+  text-decoration: none;
+  background: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, 0.22)));
+  background-color: #f9f9f9;
+  border: 1px #4d575f solid;
+}
+
+.toolbar a:hover {
+ color: #0072b8
+}
+
+.icon {
+  background: none;
+}

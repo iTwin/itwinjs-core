@@ -9,6 +9,7 @@ import * as path from "path";
 import * as rimraf from "rimraf";
 // common includes
 import { Guid } from "@bentley/bentleyjs-core";
+import { Config } from "@bentley/imodeljs-clients";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 // backend includes
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
@@ -31,7 +32,6 @@ import {
 } from "@bentley/presentation-frontend";
 
 import { OidcAgentClientConfiguration, OidcAgentClient } from "@bentley/imodeljs-clients-backend";
-import { TestUsers } from "./TestUsers";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -82,8 +82,8 @@ export const initializeAsync = async (props?: PresentationTestingInitProps) => {
 
   if (!isFrontendAppInitialized && props.useClientServices) {
     const agentConfiguration: OidcAgentClientConfiguration = {
-      clientId: TestUsers.agent.clientId,
-      clientSecret: TestUsers.agent.clientSecret,
+      clientId: Config.App.getString("imjs_agent_test_client_id"),
+      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
       scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686 product-settings-service",
     };
     const authorizationClient = new OidcAgentClient(agentConfiguration);

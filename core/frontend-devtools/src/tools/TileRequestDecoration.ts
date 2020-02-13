@@ -51,7 +51,7 @@ class TileRequestDecoration {
     for (const tile of tiles) {
       let builder = map.get(tile.root);
       if (undefined === builder) {
-        builder = context.createGraphicBuilder(GraphicType.WorldDecoration, tile.root.location);
+        builder = context.createGraphicBuilder(GraphicType.WorldDecoration, tile.root.iModelTransform);
         map.set(tile.root, builder);
       }
 

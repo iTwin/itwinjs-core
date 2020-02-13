@@ -11,12 +11,14 @@ import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
 import { ViewFlag } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { Batch, Branch } from "./Graphic";
+import { BranchState } from "./BranchState";
 import { isFeatureHilited } from "./FeatureOverrides";
 import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { Target, Hilites } from "./Target";
-import { AnimationBranchState, ClippingType } from "../System";
+import { ClippingType } from "../RenderClipVolume";
+import { AnimationBranchState } from "../GraphicBranch";
 import { TechniqueId } from "./TechniqueId";
 import { ClipPlanesVolume } from "./ClipVolume";
 import { UniformHandle } from "./Handle";
@@ -91,6 +93,7 @@ export enum DrawOpCode {
   PopBranch = "popBranch",
   PushBatch = "pushBatch",
   PopBatch = "popBatch",
+  PushState = "pushState",
 }
 
 /** @internal */
@@ -114,6 +117,17 @@ export class PushBatchCommand {
 
   public execute(exec: ShaderProgramExecutor): void {
     exec.target.pushBatch(this.batch);
+  }
+}
+
+/** @internal */
+export class PushStateCommand {
+  public readonly opcode = "pushState";
+
+  public constructor(public readonly state: BranchState) { }
+
+  public execute(exec: ShaderProgramExecutor): void {
+    exec.target.pushState(this.state);
   }
 }
 
@@ -222,7 +236,11 @@ export class PrimitiveCommand {
 }
 
 /** @internal */
-export type DrawCommand = PushBranchCommand | PopBranchCommand | PrimitiveCommand | PushBatchCommand | PopBatchCommand;
+export type PushCommand = PushBranchCommand | PushBatchCommand | PushStateCommand;
+/** @internal */
+export type PopCommand = PopBranchCommand | PopBatchCommand;
+/** @internal */
+export type DrawCommand = PushCommand | PopCommand | PrimitiveCommand;
 
 /** For a single RenderPass, an ordered list of commands to be executed during that pass.
  * @internal

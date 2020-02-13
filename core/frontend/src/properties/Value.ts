@@ -12,6 +12,7 @@ import { Primitives } from "./PrimitiveTypes";
 /**
  * Enumeration for Format of the property value.
  * @beta
+ * @deprecated Move PropertyValueFormat to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export enum PropertyValueFormat {
   Primitive,
@@ -21,6 +22,7 @@ export enum PropertyValueFormat {
 
 /** Base interface for a property value
  * @beta
+ * @deprecated Move BasePropertyValue to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface BasePropertyValue {
   valueFormat: PropertyValueFormat;
@@ -28,6 +30,7 @@ export interface BasePropertyValue {
 
 /** Primitive property value
  * @beta
+ * @deprecated Move PrimitiveValue to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface PrimitiveValue extends BasePropertyValue {
   valueFormat: PropertyValueFormat.Primitive;
@@ -37,6 +40,7 @@ export interface PrimitiveValue extends BasePropertyValue {
 
 /** Struct property value
  * @beta
+ * @deprecated Move StructValue to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface StructValue extends BasePropertyValue {
   valueFormat: PropertyValueFormat.Struct;
@@ -45,6 +49,7 @@ export interface StructValue extends BasePropertyValue {
 
 /** Array property value
  * @beta
+ * @deprecated Move ArrayValue to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface ArrayValue extends BasePropertyValue {
   valueFormat: PropertyValueFormat.Array;
@@ -54,5 +59,6 @@ export interface ArrayValue extends BasePropertyValue {
 
 /** Type for all property values
  * @beta
+ * @deprecated Move PropertyValue to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export type PropertyValue = PrimitiveValue | StructValue | ArrayValue;

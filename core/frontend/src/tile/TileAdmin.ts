@@ -28,8 +28,11 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { Tile } from "./Tile";
-import { TileRequest } from "./TileRequest";
+import {
+  Tile,
+  TileLoadStatus,
+  TileRequest,
+} from "./internal";
 import { Viewport } from "../Viewport";
 
 /** Provides functionality associated with [[Tile]]s, mostly in the area of scheduling requests for tile content.
@@ -76,6 +79,8 @@ export abstract class TileAdmin {
   /** @internal */
   public abstract get enableImprovedElision(): boolean;
   /** @internal */
+  public abstract get ignoreAreaPatterns(): boolean;
+  /** @internal */
   public abstract get useProjectExtents(): boolean;
   /** @internal */
   public abstract get disableMagnification(): boolean;
@@ -92,6 +97,8 @@ export abstract class TileAdmin {
   public abstract get contextPreloadParentSkip(): number;
   /** @internal */
   public abstract get maximumMajorTileFormatVersion(): number;
+  /** @internal */
+  public abstract get maximumLevelsToSkip(): number;
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -143,7 +150,7 @@ export abstract class TileAdmin {
   public abstract async requestTileTreeProps(iModel: IModelConnection, treeId: string): Promise<TileTreeProps>;
 
   /** @internal */
-  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array>;
+  public abstract async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array>;
 
   /** Create a TileAdmin. Chiefly intended for use by subclasses of [[IModelApp]] to customize the behavior of the TileAdmin.
    * @param props Options for customizing the behavior of the TileAdmin.
@@ -241,9 +248,16 @@ export namespace TileAdmin {
     /** If true, during tile generation the backend will perform tighter intersection tests to more accurately identify empty sub-volumes.
      * This can reduce the number of tiles requested and the number of tile requests that return no content.
      *
-     * Default value: false
+     * Default value: true
      */
     enableImprovedElision?: boolean;
+
+    /** If true, during tile generation the backend will omit geometry for area patterns. This can help reduce the amount of memory consumed by the backend and the amount
+     * of geometry sent to the frontend.
+     *
+     * Default value: false
+     */
+    ignoreAreaPatterns?: boolean;
 
     /** The interval in milliseconds at which a request for tile content will be retried until a response is received.
      *
@@ -341,6 +355,16 @@ export namespace TileAdmin {
      * @internal
      */
     cancelBackendTileRequests?: boolean;
+
+    /** For iModel tile trees, the maximum number of levels of the tree to skip loading when selecting tiles.
+     * When selecting tiles, if a given tile is too coarse to display and its graphics have not yet been loaded, we can skip loading its graphics and instead try to select one or more of its children
+     * - *until* we have skipped the specified maximum number of levels of the tree, at which point we will load the coarse tile's graphics before evaluating its children for selection.
+     * Increasing this value can reduce the amount of time before all tiles are ready when opening a zoomed-in view, but can also increase the number of tiles requested.
+     * Default value: 1
+     * Minimum value: 0
+     * @alpha
+     */
+    maximumLevelsToSkip?: number;
   }
 
   /** A set of [[Viewport]]s.
@@ -475,9 +499,11 @@ class Admin extends TileAdmin {
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
   private readonly _enableImprovedElision: boolean;
+  private readonly _ignoreAreaPatterns: boolean;
   private readonly _disableMagnification: boolean;
   private readonly _maxMajorVersion: number;
   private readonly _useProjectExtents: boolean;
+  private readonly _maximumLevelsToSkip: number;
   private readonly _removeIModelConnectionOnCloseListener: () => void;
   private _activeRequests = new Set<TileRequest>();
   private _pendingRequests = new Queue();
@@ -499,7 +525,7 @@ class Admin extends TileAdmin {
   private readonly _contextPreloadParentDepth: number;
   private readonly _contextPreloadParentSkip: number;
   private _canceledRequests?: Map<IModelToken, Map<string, Set<string>>>;
-  private readonly _cancelBackendTileRequests: boolean;
+  private _cancelBackendTileRequests: boolean;
 
   public get emptyViewportSet(): TileAdmin.ViewportSet { return this._uniqueViewportSets.emptySet; }
   public get statistics(): TileAdmin.Statistics {
@@ -535,10 +561,17 @@ class Admin extends TileAdmin {
     this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = false !== options.enableInstancing;
-    this._enableImprovedElision = true === options.enableImprovedElision;
+    this._enableImprovedElision = false !== options.enableImprovedElision;
+    this._ignoreAreaPatterns = true === options.ignoreAreaPatterns;
     this._disableMagnification = true === options.disableMagnification;
     this._maxMajorVersion = undefined !== options.maximumMajorTileFormatVersion ? options.maximumMajorTileFormatVersion : CurrentImdlVersion.Major;
     this._useProjectExtents = false !== options.useProjectExtents;
+
+    if (undefined !== options.maximumLevelsToSkip)
+      this._maximumLevelsToSkip = Math.floor(Math.max(0, options.maximumLevelsToSkip));
+    else
+      this._maximumLevelsToSkip = 1;
+
     this._cancelBackendTileRequests = true === options.cancelBackendTileRequests;
 
     const clamp = (seconds: number | undefined, min: number, max: number): BeDuration | undefined => {
@@ -568,7 +601,9 @@ class Admin extends TileAdmin {
 
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   public get enableImprovedElision() { return this._enableImprovedElision; }
+  public get ignoreAreaPatterns() { return this._ignoreAreaPatterns; }
   public get useProjectExtents() { return this._useProjectExtents; }
+  public get maximumLevelsToSkip() { return this._maximumLevelsToSkip; }
   public get disableMagnification() { return this._disableMagnification; }
   public get tileExpirationTime() { return this._tileExpirationTime; }
   public get realityTileExpirationTime() { return this._realityTileExpirationTime; }
@@ -660,7 +695,7 @@ class Admin extends TileAdmin {
         // ###TODO: This assertion triggers for AttachmentViewports used for rendering 3d sheet attachments.
         // Determine why and fix.
         // assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
-        if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
+        if (TileLoadStatus.NotLoaded === tile.loadStatus) {
           const request = new TileRequest(tile, vp);
           tile.request = request;
           this._pendingRequests.append(request);
@@ -764,10 +799,19 @@ class Admin extends TileAdmin {
     return IModelTileRpcInterface.getClient().purgeTileTrees(iModel.iModelToken.toJSON(), modelIds);
   }
 
-  public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined): Promise<Uint8Array> {
+  public async requestTileContent(iModel: IModelConnection, treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
     this.initializeRpc();
+
+    const tokenProps = iModel.iModelToken.toJSON();
+
+    if (!guid)
+      guid = tokenProps.changeSetId || "first";
+
+    if (qualifier)
+      guid = guid + "_" + qualifier;
+
     const intfc = IModelTileRpcInterface.getClient();
-    return intfc.requestTileContent(iModel.iModelToken.toJSON(), treeId, contentId, isCanceled, guid);
+    return intfc.requestTileContent(tokenProps, treeId, contentId, isCanceled, guid);
   }
 
   private initializeRpc(): void {
@@ -783,8 +827,12 @@ class Admin extends TileAdmin {
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
-    if (this._cancelBackendTileRequests && RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface))
-      this._canceledRequests = new Map<IModelToken, Map<string, Set<string>>>();
+    if (this._cancelBackendTileRequests) {
+      if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface))
+        this._cancelBackendTileRequests = false;
+      else
+        this._canceledRequests = new Map<IModelToken, Map<string, Set<string>>>();
+    }
   }
 
   public onTileFailed(_tile: Tile) { ++this._totalFailed; }

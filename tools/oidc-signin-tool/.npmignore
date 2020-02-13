@@ -3,4 +3,3 @@
 !lib/**/*.d.ts
 !lib/**/*.js
 test
-!package.json

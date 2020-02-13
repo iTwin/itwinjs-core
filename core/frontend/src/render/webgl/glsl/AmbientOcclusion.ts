@@ -152,7 +152,7 @@ vec3 computeNormalFromDepth(vec3 viewPos, vec2 tc, vec2 pixelSize) {
 `;
 
 /** @internal */
-export function createAmbientOcclusionProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createAmbientOcclusionProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 

@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { SpatialClassificationProps } from "@bentley/imodeljs-common";
-import { SpatialClassifiers } from "../SpatialClassification";
+import { SpatialClassifiers } from "../SpatialClassifiers";
 
 describe("SpatialClassifiers", () => {
   it("should construct from JSON", () => {

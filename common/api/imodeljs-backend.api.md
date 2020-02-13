@@ -14,6 +14,7 @@ import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
+import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
 import { CategoryProps } from '@bentley/imodeljs-common';
@@ -32,6 +33,7 @@ import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
 import { CloudStorageProvider } from '@bentley/imodeljs-common';
 import { Code } from '@bentley/imodeljs-common';
+import { CodeProps } from '@bentley/imodeljs-common';
 import { CodeScopeProps } from '@bentley/imodeljs-common';
 import { CodeScopeSpec } from '@bentley/imodeljs-common';
 import { CodeSpec } from '@bentley/imodeljs-common';
@@ -43,6 +45,7 @@ import { CreateIModelProps } from '@bentley/imodeljs-common';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { DefinitionElementProps } from '@bentley/imodeljs-common';
+import { DisplayStyle3dProps } from '@bentley/imodeljs-common';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
@@ -100,6 +103,8 @@ import { LinearlyReferencedFromToLocationProps } from '@bentley/imodeljs-common'
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LineStyleProps } from '@bentley/imodeljs-common';
 import { Lock } from '@bentley/imodeljs-clients';
+import { LockLevel } from '@bentley/imodeljs-clients';
+import { LockType } from '@bentley/imodeljs-clients';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
 import { MassPropertiesRequestProps } from '@bentley/imodeljs-common';
@@ -156,6 +161,8 @@ import { ViewAttachmentProps } from '@bentley/imodeljs-common';
 import { ViewDefinition2dProps } from '@bentley/imodeljs-common';
 import { ViewDefinition3dProps } from '@bentley/imodeljs-common';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
+import { ViewDetails } from '@bentley/imodeljs-common';
+import { ViewDetails3d } from '@bentley/imodeljs-common';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { ViewQueryParams } from '@bentley/imodeljs-common';
 import { ViewStateProps } from '@bentley/imodeljs-common';
@@ -375,6 +382,8 @@ export enum BackendLoggerCategory {
     // @internal
     DevTools = "imodeljs-backend.DevTools",
     ECDb = "imodeljs-backend.ECDb",
+    // @alpha
+    Editing = "imodeljs-backend.Editing",
     EventSink = "imodeljs-backend.EventSink",
     Functional = "imodeljs-backend.Functional",
     IModelDb = "imodeljs-backend.IModelDb",
@@ -383,6 +392,8 @@ export enum BackendLoggerCategory {
     IModelHost = "imodeljs-backend.IModelHost",
     // @beta
     IModelImporter = "imodeljs-backend.IModelImporter",
+    // @alpha
+    IModelSchemaLoader = "imodeljs-backend.IModelSchemaLoader",
     IModelTileRequestRpc = "imodeljs-backend.IModelTileRequestRpc",
     IModelTileUpload = "imodeljs-backend.IModelTileUpload",
     // @beta
@@ -425,7 +436,7 @@ export class BriefcaseEntry {
     set iModelDb(iModelDb: IModelDb | undefined);
     iModelId: GuidString;
     isOpen: boolean;
-    isPending: Promise<void>;
+    isPending?: Promise<void>;
     // (undocumented)
     get nativeDb(): IModelJsNative.DgnDb;
     readonly onAfterOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext) => void>;
@@ -474,6 +485,7 @@ export class BriefcaseManager {
     static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken;
     // (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
+    static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     static dumpChangeSet(briefcase: BriefcaseEntry, changeSetToken: ChangeSetToken): void;
     static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined;
@@ -484,8 +496,8 @@ export class BriefcaseManager {
     // (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
     static get imodelClient(): IModelClient;
-    static set imodelClient(cli: IModelClient);
-    static open(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
+    static initialize(cacheRootDir: string, iModelClient?: IModelClient): void;
+    static openBriefcase(briefcase: BriefcaseEntry): void;
     static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry;
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
     static purgeCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
@@ -576,7 +588,7 @@ export class ChangedElementsDb implements IDisposable {
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean): Promise<DbResult>;
+    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult>;
 }
 
 // @public
@@ -734,55 +746,127 @@ export class ConcurrencyControl {
     abandonRequest(): void;
     areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
     areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
+    areCodesAvailable2(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<boolean>;
+    areLocksAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
+    buildConcurrencyControlRequestForDb(): void;
     // @internal
-    buildRequestForElement(element: Element, opcode: DbOpcode): void;
+    buildRequestForElement(element: ElementProps, opcode: DbOpcode): void;
     // @internal
-    buildRequestForModel(model: Model, opcode: DbOpcode): void;
+    buildRequestForElementTo(request: ConcurrencyControl.Request, element: ElementProps, opcode: DbOpcode, elementClass?: typeof Element): void;
     // @internal
-    buildRequestForRelationship(instance: Relationship, opcode: DbOpcode): void;
+    buildRequestForModel(model: ModelProps, opcode: DbOpcode): void;
+    // @internal
+    buildRequestForRelationship(_instance: RelationshipProps, _opcode: DbOpcode): void;
     get codes(): ConcurrencyControl.Codes;
-    static convertRequestToAny(req: ConcurrencyControl.Request): any;
-    static createRequest(): ConcurrencyControl.Request;
-    // @internal
-    extractPendingRequest(locksOnly?: boolean, codesOnly?: boolean): ConcurrencyControl.Request;
     // @internal (undocumented)
-    getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy | undefined;
+    endBulkMode(rqctx: AuthorizedClientRequestContext): Promise<void>;
+    // (undocumented)
+    getHeldElementLock(elementId: Id64String): LockLevel;
+    // (undocumented)
+    getHeldLock(type: LockType, objectId: Id64String): LockLevel;
+    // (undocumented)
+    getHeldModelLock(modelId: Id64String): LockLevel;
+    // @internal (undocumented)
+    getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
+    // @alpha
+    get hasCodeSpecsLock(): boolean;
     get hasPendingRequests(): boolean;
     // @alpha
-    hasSchemaLock(requestContext: AuthorizedClientRequestContext): Promise<boolean>;
+    get hasSchemaLock(): boolean;
+    // @internal (undocumented)
+    get iModel(): IModelDb;
+    // @internal (undocumented)
+    get isBulkMode(): boolean;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
     lockSchema(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
+    // @internal (undocumented)
+    get modelsAffectedByWrites(): Id64String[];
+    // @internal (undocumented)
+    get needLocks(): boolean;
+    // (undocumented)
+    onClose(_requestContext: AuthorizedClientRequestContext): Promise<void>;
+    // (undocumented)
+    onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void;
+    // (undocumented)
+    onElementWritten(_elementClass: typeof Element, id: Id64String, opcode: DbOpcode): void;
     // @internal (undocumented)
     onMergeChanges(): void;
     // @internal (undocumented)
     onMergedChanges(): void;
+    // (undocumented)
+    onModelWrite(modelClass: typeof Model, model: ModelProps, opcode: DbOpcode): void;
+    // (undocumented)
+    onModelWritten(_modelClass: typeof Model, id: Id64String, opcode: DbOpcode): void;
+    // (undocumented)
+    onOpened(requestContext: AuthorizedClientRequestContext): Promise<void>;
+    // (undocumented)
+    onPushChanges(_requestContext: AuthorizedClientRequestContext): Promise<void>;
+    // (undocumented)
+    onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
     onSaveChanges(): void;
     // @internal (undocumented)
     onSavedChanges(): void;
     // @internal (undocumented)
     onUndoRedo(): void;
+    // (undocumented)
+    openOrCreateCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
     // @internal (undocumented)
     get pendingRequest(): ConcurrencyControl.Request;
     // (undocumented)
-    queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, _value?: string): Promise<HubCode[]>;
+    queryCodeStates(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
     request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void>;
-    reserveCodes(requestContext: AuthorizedClientRequestContext, codes: Code[]): Promise<HubCode[]>;
+    requestResources(ctx: AuthorizedClientRequestContext, elements: ConcurrencyControl.ElementAndOpcode[], models?: ConcurrencyControl.ModelAndOpcode[], relationships?: ConcurrencyControl.RelationshipAndOpcode[]): Promise<void>;
+    // @internal (undocumented)
+    requestResourcesForDelete(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
+    // @internal (undocumented)
+    requestResourcesForInsert(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
+    // @internal (undocumented)
+    requestResourcesForOpcode(ctx: AuthorizedClientRequestContext, opcode: DbOpcode, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
+    // @internal (undocumented)
+    requestResourcesForUpdate(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
+    reserveCodes(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<HubCode[]>;
     setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void;
-    }
+    // @internal (undocumented)
+    startBulkMode(): void;
+    // (undocumented)
+    syncCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
+}
 
 // @beta (undocumented)
 export namespace ConcurrencyControl {
     export class Codes {
         constructor(_iModel: IModelDb);
         query(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
-        reserve(requestContext: AuthorizedClientRequestContext, codes?: Code[]): Promise<void>;
+        reserve(requestContext: AuthorizedClientRequestContext, codes?: CodeProps[]): Promise<void>;
     }
     export class ConflictResolutionPolicy {
         constructor(updateVsUpdate?: OnConflict, updateVsDelete?: OnConflict, deleteVsUpdate?: OnConflict);
         deleteVsUpdate: OnConflict;
         updateVsDelete: OnConflict;
         updateVsUpdate: OnConflict;
+    }
+    // (undocumented)
+    export interface ElementAndOpcode {
+        // (undocumented)
+        element: ElementProps;
+        // (undocumented)
+        opcode: DbOpcode;
+    }
+    export interface LockProps {
+        // (undocumented)
+        level: LockLevel;
+        // (undocumented)
+        objectId: string;
+        // (undocumented)
+        type: LockType;
+    }
+    // (undocumented)
+    export interface ModelAndOpcode {
+        // (undocumented)
+        model: ModelProps;
+        // (undocumented)
+        opcode: DbOpcode;
     }
     export enum OnConflict {
         AcceptIncomingChange = 1,
@@ -795,13 +879,86 @@ export namespace ConcurrencyControl {
     }
     export class PessimisticPolicy {
     }
+    // (undocumented)
+    export interface RelationshipAndOpcode {
+        // (undocumented)
+        opcode: DbOpcode;
+        // (undocumented)
+        relationship: RelationshipProps;
+    }
     export class Request {
-        }
-    export class RequestError extends IModelError {
         // (undocumented)
-        unavailableCodes: HubCode[];
+        addCodes(codes: CodeProps[]): this;
         // (undocumented)
-        unavailableLocks: HubCode[];
+        addLocks(locks: LockProps[]): this;
+        // (undocumented)
+        clear(): void;
+        // (undocumented)
+        get codes(): CodeProps[];
+        // (undocumented)
+        static get codeSpecsLock(): LockProps;
+        // (undocumented)
+        static get dbLock(): LockProps;
+        // (undocumented)
+        static getElementLock(objectId: Id64String, level: LockLevel): LockProps;
+        // (undocumented)
+        static getHubCodeSpecsLock(concurrencyControl: ConcurrencyControl): Lock;
+        // (undocumented)
+        static getHubSchemaLock(concurrencyControl: ConcurrencyControl): Lock;
+        // (undocumented)
+        getLockByKey(type: LockType, objectId: string): LockProps | undefined;
+        // (undocumented)
+        static getModelLock(objectId: Id64String, level: LockLevel): LockProps;
+        // (undocumented)
+        get isEmpty(): boolean;
+        // (undocumented)
+        get locks(): ConcurrencyControl.LockProps[];
+        // (undocumented)
+        removeCodes(filter: (c: CodeProps) => boolean, context: any): void;
+        // (undocumented)
+        removeLocks(filter: (l: LockProps) => boolean, context: any): void;
+        // (undocumented)
+        static get schemaLock(): LockProps;
+        // (undocumented)
+        static toHubCode(concurrencyControl: ConcurrencyControl, code: CodeProps): HubCode;
+        // (undocumented)
+        static toHubCodes(concurrencyControl: ConcurrencyControl, codes: CodeProps[]): HubCode[];
+        // (undocumented)
+        static toHubLock(concurrencyControl: ConcurrencyControl, reqLock: LockProps): Lock;
+        // (undocumented)
+        static toHubLocks(concurrencyControl: ConcurrencyControl, locks: LockProps[]): Lock[];
+    }
+    // @internal
+    export class StateCache {
+        constructor(concurrencyControl: ConcurrencyControl);
+        // (undocumented)
+        clear(): void;
+        // (undocumented)
+        close(saveChanges: boolean): void;
+        // (undocumented)
+        concurrencyControl: ConcurrencyControl;
+        // (undocumented)
+        create(): void;
+        // (undocumented)
+        deleteFile(): void;
+        // (undocumented)
+        getHeldLock(type: LockType, objectId: string): LockLevel;
+        // (undocumented)
+        insertCodes(codes: CodeProps[]): void;
+        // (undocumented)
+        insertLocks(locks: LockProps[]): void;
+        // (undocumented)
+        isCodeReserved(code: CodeProps): boolean;
+        // (undocumented)
+        isLockHeld(lock: LockProps): boolean;
+        // (undocumented)
+        get isOpen(): boolean;
+        // (undocumented)
+        open(): boolean;
+        // (undocumented)
+        populate(requestContext: AuthorizedClientRequestContext): Promise<void>;
+        // (undocumented)
+        saveChanges(): void;
     }
 }
 
@@ -951,13 +1108,17 @@ export class DisplayStyle2d extends DisplayStyle {
     }
 
 // @public
-export class DisplayStyle3d extends DisplayStyle {
+export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps {
     // @internal
-    constructor(props: DisplayStyleProps, iModel: IModelDb);
+    constructor(props: DisplayStyle3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // @alpha (undocumented)
+    protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
+    // @alpha (undocumented)
+    protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
     }
@@ -1041,6 +1202,7 @@ export class DrawingCategory extends Category {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static getCodeSpecName(): string;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props): Id64String;
+    protected static onInserted(props: ElementProps, iModel: IModelDb): void;
     static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined;
 }
 
@@ -1325,18 +1487,20 @@ export class Element extends Entity implements ElementProps {
     // @alpha
     protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void;
     // @beta
-    protected static onDelete(_props: ElementProps, _iModel: IModelDb): void;
+    protected static onDelete(props: ElementProps, iModel: IModelDb): void;
     // @beta
     protected static onDeleted(_props: ElementProps, _iModel: IModelDb): void;
     // @beta
-    protected static onInsert(_props: ElementProps, _iModel: IModelDb): void;
+    protected static onInsert(props: ElementProps, iModel: IModelDb): void;
     // @beta
-    protected static onInserted(_props: ElementProps, _iModel: IModelDb): void;
+    protected static onInserted(props: ElementProps, iModel: IModelDb): void;
     // @beta
-    protected static onUpdate(_props: ElementProps, _iModel: IModelDb): void;
+    protected static onUpdate(props: ElementProps, iModel: IModelDb): void;
     // @beta
-    protected static onUpdated(_props: ElementProps, _iModel: IModelDb): void;
+    protected static onUpdated(props: ElementProps, iModel: IModelDb): void;
     parent?: RelatedElement;
+    // @beta
+    static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, _iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined): void;
     removeUserProperties(nameSpace: string): void;
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;
@@ -1865,7 +2029,7 @@ export abstract class GeometricModel2d extends GeometricModel implements Geometr
 }
 
 // @public
-export abstract class GeometricModel3d extends GeometricModel {
+export abstract class GeometricModel3d extends GeometricModel implements GeometricModel3dProps {
     // @internal
     constructor(props: GeometricModel3dProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -2020,6 +2184,8 @@ export class IModelCloneContext {
     // @internal
     cloneElement(sourceElement: Element): ElementProps;
     dispose(): void;
+    // @internal
+    dump(outputFileName: string): void;
     findTargetCodeSpecId(sourceId: Id64String): Id64String;
     findTargetElementId(sourceElementId: Id64String): Id64String;
     // @internal
@@ -2062,6 +2228,8 @@ export class IModelDb extends IModel {
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
+    // @internal
+    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<BriefcaseEntry>;
     // (undocumented)
     readonly elements: IModelDb.Elements;
     // (undocumented)
@@ -2104,6 +2272,8 @@ export class IModelDb extends IModel {
     readonly models: IModelDb.Models;
     // @internal
     get nativeDb(): IModelJsNative.DgnDb;
+    // @beta
+    get needsConcurrencyControl(): boolean;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
@@ -2111,6 +2281,8 @@ export class IModelDb extends IModel {
     static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>;
     static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: IModelDb) => void>;
     static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelDb>;
+    // @internal
+    static openBriefcase(requestContext: AuthorizedClientRequestContext, briefcaseEntry: BriefcaseEntry): Promise<IModelDb>;
     readonly openParams: OpenParams;
     // @beta
     static openSnapshot(filePath: string): IModelDb;
@@ -2297,6 +2469,8 @@ export class IModelHost {
     static get compressCachedTiles(): boolean;
     // (undocumented)
     static configuration?: IModelHostConfiguration;
+    // @internal
+    static elementEditors: Map<string, IElementEditor>;
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
     // @internal (undocumented)
     static loadNative(region: number, dir?: string): void;
@@ -2977,19 +3151,21 @@ export class Model extends Entity implements ModelProps {
     // (undocumented)
     readonly name: string;
     // @beta
-    protected static onDelete(_props: ModelProps): void;
+    protected static onDelete(props: ModelProps, iModel: IModelDb): void;
     // @beta
-    protected static onDeleted(_props: ModelProps): void;
+    protected static onDeleted(_props: ModelProps, _iModel: IModelDb): void;
     // @beta
-    protected static onInsert(_props: ModelProps): void;
+    protected static onInsert(props: ModelProps, iModel: IModelDb): void;
     // @beta
-    protected static onInserted(_id: string): void;
+    protected static onInserted(id: string, iModel: IModelDb): void;
     // @beta
-    protected static onUpdate(_props: ModelProps): void;
+    protected static onUpdate(props: ModelProps, iModel: IModelDb): void;
     // @beta
-    protected static onUpdated(_props: ModelProps): void;
+    protected static onUpdated(props: ModelProps, iModel: IModelDb): void;
     // (undocumented)
     readonly parentModel: Id64String;
+    // @beta
+    static populateRequest(req: ConcurrencyControl.Request, props: ModelProps, iModel: IModelDb, opcode: DbOpcode): void;
     removeUserProperties(nameSpace: string): void;
     // (undocumented)
     setJsonProperty(name: string, value: any): void;
@@ -3091,7 +3267,7 @@ export class PhysicalElementIsOfType extends GeometricElement3dHasTypeDefinition
 export class PhysicalModel extends SpatialModel {
     // @internal (undocumented)
     static get className(): string;
-    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
 }
 
 // @public (undocumented)
@@ -3415,6 +3591,7 @@ export class SpatialCategory extends Category {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     static getCodeSpecName(): string;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props): Id64String;
+    protected static onInserted(props: ElementProps, iModel: IModelDb): void;
     static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined;
 }
 
@@ -3452,6 +3629,7 @@ export class SpatialLocationIsOfType extends GeometricElement3dHasTypeDefinition
 export class SpatialLocationModel extends SpatialModel {
     // @internal (undocumented)
     static get className(): string;
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, isPlanProjection?: boolean): Id64String;
 }
 
 // @public
@@ -3778,6 +3956,16 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
     recipe?: RelatedElement;
 }
 
+// @internal (undocumented)
+export class UlasUtilities {
+    // (undocumented)
+    static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: string, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
+    // (undocumented)
+    static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: string): BentleyStatus;
+    // (undocumented)
+    static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus;
+}
+
 // @public
 export interface UpdateModelOptions extends ModelProps {
     geometryChanged?: boolean;
@@ -3825,13 +4013,19 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // @beta
+    abstract get details(): ViewDetails;
     displayStyleId: Id64String;
+    getAuxiliaryCoordinateSystemId(): Id64String;
     isDrawingView(): this is DrawingViewDefinition;
     isSpatialView(): this is SpatialViewDefinition;
     isView2d(): this is ViewDefinition2d;
     isView3d(): this is ViewDefinition3d;
     loadCategorySelector(): CategorySelector;
     loadDisplayStyle(): DisplayStyle;
+    // @alpha (undocumented)
+    protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
+    setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
     // @internal (undocumented)
     toJSON(): ViewDefinitionProps;
 }
@@ -3847,6 +4041,8 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     // @alpha (undocumented)
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     delta: Point2d;
+    // @beta
+    get details(): ViewDetails;
     loadDisplayStyle2d(): DisplayStyle2d;
     origin: Point2d;
     // @internal (undocumented)
@@ -3862,6 +4058,8 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     cameraOn: boolean;
     // @internal (undocumented)
     static get className(): string;
+    // @beta
+    get details(): ViewDetails3d;
     extents: Vector3d;
     loadDisplayStyle3d(): DisplayStyle3d;
     origin: Point3d;

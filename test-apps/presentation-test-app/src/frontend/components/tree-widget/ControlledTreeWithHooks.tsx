@@ -32,8 +32,8 @@ interface Props {
 // tslint:disable-next-line: variable-name
 export const ControlledTreeWithHooks: React.FC<Props> = (props: Props) => {
   const dataProvider = useDataProvider(props.imodel, props.rulesetId);
-  const nodeLoader = usePagedNodeLoader(dataProvider, PAGING_SIZE);
-  const modelSource = useModelSource(nodeLoader)!;
+  const modelSource = useModelSource(dataProvider);
+  const nodeLoader = usePagedNodeLoader(dataProvider, PAGING_SIZE, modelSource);
 
   const [filter, setFilter] = useState("");
   const [activeMatch, setActiveMatch] = useState(0);

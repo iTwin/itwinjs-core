@@ -48,12 +48,27 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   // Bind the texture object; make sure we do not interfere with other active textures
   System.instance.activateTexture2d(TextureUnit.Zero, tex);
 
+  // Figure out the internal format.  For all but WebGL2 float/half-float datatypes it is just same as format.
+  // TODO: probably need to just support internal format types in Texture2DCreateParams.
+  let internalFormat = params.format;
+  if (System.instance.capabilities.isWebGL2) {
+    const context2 = System.instance.context as WebGL2RenderingContext;
+    if (GL.Texture.Format.Rgba === params.format) {
+      if (GL.Texture.DataType.Float === params.dataType)
+        internalFormat = context2.RGBA32F;
+      else if (context2.HALF_FLOAT === params.dataType)
+        internalFormat = context2.RGBA16F;
+    } else if (GL.Texture.Format.DepthStencil === params.format)
+      internalFormat = context2.DEPTH24_STENCIL8;
+  }
+
+  gl.getError();
   // send the texture data
   if (undefined !== element) {
-    gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.format, params.dataType, element);
+    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.format, params.dataType, element);
   } else {
     const pixelData = undefined !== bytes ? bytes : null;
-    gl.texImage2D(gl.TEXTURE_2D, 0, params.format, params.width, params.height, 0, params.format, params.dataType, pixelData);
+    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.width, params.height, 0, params.format, params.dataType, pixelData);
   }
 
   if (params.useMipMaps) {

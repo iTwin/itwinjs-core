@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RenderSystem, RenderTarget, AnimationBranchStates } from "./rendering";
+import { AnimationBranchStates } from "./render/GraphicBranch";
+import { RenderTarget } from "./render/RenderTarget";
+import { RenderSystem } from "./render/RenderSystem";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 import { ViewRect } from "./ViewRect";
 
@@ -22,8 +24,6 @@ export class NullTarget extends RenderTarget {
   public onDestroy(): void { }
   public reset(): void { }
   public changeScene(): void { }
-  public changeBackgroundMap(): void { }
-  public changeOverlayGraphics(): void { }
   public changeDynamics(): void { }
   public changeDecorations(): void { }
   public changeRenderPlan(): void { }
@@ -67,6 +67,5 @@ export class NoRenderApp {
     opts = opts ? opts : {};
     opts.renderSys = new NullRenderSystem();
     IModelApp.startup(opts);
-
   }
 }

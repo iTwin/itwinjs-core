@@ -20,7 +20,7 @@ An app [frontend](../learning/Glossary.md#frontend) typically has a different "m
   * You may apply the [backends-for-frontends pattern](#backends-for-frontends).
   * Web apps have several configuration options, as described in [the article on writing an interactive Web app](./WriteAnInteractiveWebApp.md).
 
-An app [backend](../learning/Glossary.md#backend) typically has a different "main" for each configuation. For more information, see:
+An app [backend](../learning/Glossary.md#backend) typically has a different "main" for each configuration. For more information, see:
 
 * [Web app](../learning/WriteAnInteractiveWebApp.md)
 * [Desktop app](../learning/WriteAnInteractiveDesktopApp.md)

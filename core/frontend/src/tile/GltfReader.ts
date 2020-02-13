@@ -47,18 +47,16 @@ import {
   TextureMapping,
   TileReadStatus,
 } from "@bentley/imodeljs-common";
-import {
-  GraphicBranch,
-  InstancedGraphicParams,
-  RenderGraphic,
-  RenderSystem,
-} from "../render/System";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { RenderSystem } from "../render/RenderSystem";
 import {
   getImageSourceFormatForMimeType,
   imageElementFromImageSource,
 } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
-import { Tile } from "./Tile";
+import { TileContent } from "./internal";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
 import { Mesh, MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
@@ -73,7 +71,7 @@ import { Mesh, MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshP
 /** The result of [[GltfReader.read]].
  * @internal
  */
-export interface GltfReaderResult extends Tile.Content {
+export interface GltfReaderResult extends TileContent {
   readStatus: TileReadStatus;
 }
 

@@ -13,6 +13,7 @@ import { PropertyRecord } from "./Record";
 
 /** Primitive ToolSettings Value.
  * @beta
+ * @deprecated Move ToolSettingsValue to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export class ToolSettingsValue implements PrimitiveValue {
   public readonly valueFormat = PropertyValueFormat.Primitive;
@@ -51,6 +52,7 @@ export class ToolSettingsValue implements PrimitiveValue {
 
 /** Interface used to identify the location of the UI control to manipulate a ToolSettings property value.
  * @beta
+ * @deprecated Use EditorPosition in bentley/ui-abstract instead.
  */
 export interface EditorPosition {
   /** Determine the order the row is shown in UI */
@@ -64,6 +66,7 @@ export interface EditorPosition {
 /** Class used to identify a specific ToolSettings property value. This is the minimal amount of info necessary to specify which property a value is associated with. This is used to both
  * display property in UI, save and retrieve the state of the property, and to allow the UI to inform the Tool code about property changes.
  * @beta
+ * @deprecated Move ToolSettingsPropertyItem to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export class ToolSettingsPropertyItem {
   public value: ToolSettingsValue;
@@ -76,6 +79,7 @@ export class ToolSettingsPropertyItem {
 }
 /** Class used to identify a specific ToolSettings property value that can be enabled/disabled in UI.
  * @beta
+ * @deprecated Move ToolSettingsPropertySyncItem to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
   /** used to pass enable state to Ui from Tool so property record can be updated */
@@ -89,6 +93,7 @@ export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
 
 /** Property Record to specify an editor in Tool Settings zone.
  * @beta
+ * @deprecated Move ToolSettingsPropertyRecord to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export class ToolSettingsPropertyRecord extends PropertyRecord {
   public editorPosition: EditorPosition;

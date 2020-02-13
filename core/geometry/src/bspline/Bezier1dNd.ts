@@ -329,7 +329,7 @@ export class Bezier1dNd {
     if (Geometry.isAlmostEqualNumber(fraction0, fraction1))
       return false;
     if (fraction1 < fraction0) {
-      this.subdivideToIntervalInPlace(fraction0, fraction1);
+      this.subdivideToIntervalInPlace(fraction1, fraction0);
       this.reverseInPlace();
       return true;
     }

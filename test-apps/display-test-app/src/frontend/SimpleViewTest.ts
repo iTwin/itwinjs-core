@@ -17,6 +17,7 @@ import {
   NativeAppRpcInterface,
   OidcDesktopClientConfiguration,
   RpcConfiguration,
+  RpcInterfaceDefinition,
   RpcOperation,
   SnapshotIModelRpcInterface,
   TileContentIdentifier,
@@ -149,14 +150,19 @@ async function main() {
     filterMapTextures: true === configuration.filterMapTextures,
     filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
+    useWebGL2: true === configuration.useWebGL2,
+    planProjections: true,
   };
 
   const tileAdminProps = DisplayTestApp.tileAdminProps;
   if (configuration.disableInstancing)
     tileAdminProps.enableInstancing = false;
 
-  if (configuration.enableImprovedElision)
-    tileAdminProps.enableImprovedElision = true;
+  if (false === configuration.enableImprovedElision)
+    tileAdminProps.enableImprovedElision = false;
+
+  if (configuration.ignoreAreaPatterns)
+    tileAdminProps.ignoreAreaPatterns = true;
 
   if (false === configuration.useProjectExtents)
     tileAdminProps.useProjectExtents = false;
@@ -166,6 +172,7 @@ async function main() {
 
   tileAdminProps.cancelBackendTileRequests = (configuration.cancelBackendTileRequests !== false);
   tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
+  tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
 
   if (configuration.useFakeCloudStorageTileCache)
     (CloudStorageTileCache as any)._instance = new FakeTileCache();
@@ -175,11 +182,13 @@ async function main() {
     IModelApp.renderSystem.enableDiagnostics(RenderDiagnostics.All);
 
   // Choose RpcConfiguration based on whether we are in electron or browser
-  const rpcInterfaces = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface, NativeAppRpcInterface ];
+  const rpcInterfaces: RpcInterfaceDefinition[] = [IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface, SVTRpcInterface];
   let rpcConfiguration: RpcConfiguration;
   if (ElectronRpcConfiguration.isElectron) {
+    rpcInterfaces.push(NativeAppRpcInterface);
     rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
   } else if (MobileRpcConfiguration.isMobileFrontend) {
+    rpcInterfaces.push(NativeAppRpcInterface);
     rpcConfiguration = MobileRpcManager.initializeClient(rpcInterfaces);
   } else {
     const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
@@ -258,6 +267,7 @@ async function initView(iModel: IModelConnection | undefined) {
     const viewer = await DisplayTestApp.surface.createViewer({
       iModel,
       defaultViewName: configuration.viewName,
+      disableEdges: true === configuration.disableEdges,
     });
 
     viewer.dock(Dock.Full);

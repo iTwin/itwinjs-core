@@ -7,8 +7,8 @@ import { assert } from "chai";
 import { OpenMode, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { BriefcaseQuery, Briefcase as HubBriefcase, AuthorizedClientRequestContext, HubIModel } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
-import { TestUsers } from "../TestUsers";
 import {
   KeepBriefcase, IModelDb, OpenParams, Element, IModelJsFs,
   IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry, AuthorizedBackendRequestContext, BackendLoggerCategory,
@@ -60,17 +60,21 @@ describe("BriefcaseManager (#integration)", () => {
     IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
-    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.regular);
+    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
     noVersionsTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "NoVersionsTest");
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadWriteTest");
 
     // Purge briefcases that are close to reaching the acquire limit
-    managerRequestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
+    managerRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "NoVersionsTest");
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadWriteTest");
+  });
+
+  after(() => {
+    // IModelTestUtils.resetDebugLogLevels();
   });
 
   afterEach(() => {
@@ -101,7 +105,7 @@ describe("BriefcaseManager (#integration)", () => {
     };
 
     try {
-      const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
+      const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.first());
       assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
 
       iModel.onBeforeClose.addListener(onBeforeCloseListener);
@@ -109,7 +113,7 @@ describe("BriefcaseManager (#integration)", () => {
       // Validate that the IModelDb is readonly
       assert(iModel.openParams.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
 
-      const expectedChangeSetId = await IModelVersion.latest().evaluateChangeSet(requestContext, readOnlyTestIModel.id, BriefcaseManager.imodelClient);
+      const expectedChangeSetId = await IModelVersion.first().evaluateChangeSet(requestContext, readOnlyTestIModel.id, BriefcaseManager.imodelClient);
       assert.strictEqual<string>(iModel.briefcase.parentChangeSetId, expectedChangeSetId);
       assert.strictEqual<string>(iModel.iModelToken.changeSetId!, expectedChangeSetId);
 
@@ -119,7 +123,7 @@ describe("BriefcaseManager (#integration)", () => {
       const pathname = iModel.briefcase.pathname;
       assert.isTrue(IModelJsFs.existsSync(pathname));
       await iModel.close(requestContext, KeepBriefcase.No);
-      assert.isFalse(IModelJsFs.existsSync(pathname));
+      assert.isFalse(IModelJsFs.existsSync(pathname), `Briefcase continues to exist at ${pathname}`);
       assert.isTrue(onBeforeCloseCalled);
     } finally {
 
@@ -260,6 +264,7 @@ describe("BriefcaseManager (#integration)", () => {
 
     rootEl = iModelPullAndPush.elements.getRootSubject();
     rootEl.userLabel = rootEl.userLabel + "changed";
+    await iModelPullAndPush.concurrencyControl.requestResourcesForUpdate(requestContext, [rootEl]);
     iModelPullAndPush.elements.updateElement(rootEl);
 
     await iModelPullAndPush.concurrencyControl.request(requestContext);
@@ -304,12 +309,10 @@ describe("BriefcaseManager (#integration)", () => {
     const config = new IModelHostConfiguration();
     config.briefcaseCacheDir = "\\\\blah\\blah\\blah";
     IModelTestUtils.shutdownBackend();
-    IModelHost.startup(config);
 
     let exceptionThrown = false;
     try {
-      const iModelShared: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
-      assert.notExists(iModelShared);
+      IModelHost.startup(config);
     } catch (error) {
       exceptionThrown = true;
     }
@@ -407,8 +410,8 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should reuse a briefcaseId when re-opening iModel-s of different versions for pullAndPush workflows", async () => {
-    const userContext1 = await IModelTestUtils.getTestUserRequestContext(TestUsers.manager);
-    const userContext2 = await IModelTestUtils.getTestUserRequestContext(TestUsers.superManager);
+    const userContext1 = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
+    const userContext2 = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, "BriefcaseReuseTest");

@@ -22,7 +22,7 @@ const computeTexDir = `v_texDir = rawPosition.xyz;`;
 const scratchRotMatrix = new Matrix3();
 
 /** @internal */
-export function createSkyBoxProgram(context: WebGLRenderingContext): ShaderProgram {
+export function createSkyBoxProgram(context: WebGLRenderingContext | WebGL2RenderingContext): ShaderProgram {
   const prog = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
 
   prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);

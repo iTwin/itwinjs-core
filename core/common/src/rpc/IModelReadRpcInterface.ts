@@ -27,6 +27,7 @@ import { QueryPriority, QueryResponse, QueryLimit, QueryQuota } from "../Paging"
  * @public
  */
 export class IModelNotFoundResponse extends RpcNotFoundResponse {
+  public isIModelNotFoundResponse: boolean = true;
 }
 
 /** The RPC interface for reading from an iModel.

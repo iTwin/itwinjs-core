@@ -26,7 +26,7 @@ public;ContentFlags
 public;ContentInstancesOfSpecificClassesSpecification 
 public;ContentModifier 
 public;ContentModifiersList
-public;ContentRelatedInstancesSpecification 
+public;ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew
 public;ContentRequestOptions
 public;ContentRpcRequestOptions = PresentationRpcRequestOptions & Omit
 public;ContentRule 
@@ -51,7 +51,9 @@ public;DisplayValuesArray
 public;DisplayValuesMap 
 public;ECClassGroupingNodeKey 
 public;ECInstanceNodeKey 
+public;ECInstanceNodeKeyJSON 
 public;ECInstancesNodeKey 
+public;ECInstancesNodeKeyJSON 
 public;ECPropertyGroupingNodeKey 
 public;ECPropertyValueQuerySpecification 
 public;EditorDescription
@@ -73,6 +75,7 @@ public;InstanceKey
 public;InstanceKey
 internal;fromJSON(json: InstanceKeyJSON):
 internal;toJSON(json: InstanceKey): InstanceKeyJSON
+public;InstanceKeyJSON
 public;InstanceLabelOverride 
 public;InstanceLabelOverrideBriefcaseIdSpecification 
 public;InstanceLabelOverrideClassLabelSpecification 
@@ -89,6 +92,7 @@ public;Key = Readonly
 public;Key
 public;Keys = ReadonlyArray
 public;KeySet
+public;KeySetJSON
 public;KindOfQuantityInfo
 public;LabelCompositeValue
 public;LabelCompositeValue
@@ -129,6 +133,7 @@ public;NodeKey
 internal;fromJSON(json: NodeKeyJSON): NodeKey
 deprecated;isInstanceNodeKey(key: NodeKey): key is ECInstanceNodeKey
 internal;toJSON(key: NodeKey): NodeKeyJSON
+public;NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKeyPath = NodeKey[]
 public;NodePathElement
 public;NodePathElement
@@ -180,13 +185,19 @@ public;RelatedClassInfo
 public;RelatedClassInfo
 internal;fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo
 internal;toJSON(info: RelatedClassInfo): RelatedClassInfoJSON
-public;RelatedInstanceNodesSpecification 
-public;RelatedInstanceSpecification
+public;RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew
+public;RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew
 public;RelatedPropertiesSpecialValues
-public;RelatedPropertiesSpecification
+public;RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew
 public;RelationshipDirection
 public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
+public;RelationshipPath
+internal;reverse(path: RelationshipPath): RelationshipPath
+beta;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
+beta;RelationshipStepSpecification
+beta;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[]
+beta;RepeatableRelationshipStepSpecification 
 public;RequestOptions
 public;RequestOptionsWithRuleset
 beta;RequestPriority

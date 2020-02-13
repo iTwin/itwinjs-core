@@ -6,44 +6,8 @@ import { assert } from "chai";
 import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 import { Config } from "@bentley/imodeljs-clients";
-import { OidcConfiguration } from "@bentley/oidc-signin-tool";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
-
-export interface UserCredentials {
-  email: string;
-  password: string;
-}
-
-/** Test users with various permissions */
-export class TestUsers {
-
-  /** Browser Oidc configuration for all test users */
-  public static get oidcConfig(): OidcConfiguration {
-    return {
-      clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
-      redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
-    };
-  }
-
-  public static get scopes(): string {
-    return Config.App.getString("imjs_oidc_browser_test_scopes");
-  }
-
-  /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static get regular(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_regular_user_name"),
-      password: Config.App.getString("imjs_test_regular_user_password"),
-    };
-  }
-  public static get superManager(): UserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_super_manager_user_name"),
-      password: Config.App.getString("imjs_test_super_manager_user_password"),
-    };
-  }
-}
 
 export class KnownTestLocations {
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */

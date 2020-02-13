@@ -49,6 +49,7 @@ beta;CloudStorageUploadOptions
 public;CodeSpecs
 beta;ConcurrencyControl
 beta;ConcurrencyControl
+internal;StateCache
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 public;class DefinitionElement 
@@ -295,6 +296,7 @@ public;TxnAction
 public;TxnIdString = string
 beta;TxnManager
 public;class TypeDefinitionElement 
+internal;UlasUtilities
 public;UpdateModelOptions 
 public;UrlLink 
 beta;ValidationError

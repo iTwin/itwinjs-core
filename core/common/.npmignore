@@ -6,5 +6,4 @@
 test
 !public/**
 !assets/**
-!package.json
 !*.md

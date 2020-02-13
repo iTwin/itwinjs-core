@@ -47,7 +47,20 @@ export interface FacetProjectedVolumeSums {
   /** summed area moments for negative contributions */
   negativeProjectedFacetAreaMoments?: MomentData;
 }
-
+/**
+ * Enumeration of cases for retaining facets among duplicates
+ * @public
+ */
+export enum DuplicateFacetClusterSelector {
+  /** retain none of the duplicates */
+  SelectNone = 0,
+  /** retain any one member among duplicates */
+  SelectAny = 1,
+  /** retain all members among duplicates */
+  SelectAll = 2,
+  /** retain one from any cluster with an odd number of faces */
+  SelectOneByParity = 3,
+}
 /** PolyfaceQuery is a static class whose methods implement queries on a polyface or polyface visitor provided as a parameter to each method.
  * @public
  */
@@ -614,7 +627,114 @@ export class PolyfaceQuery {
 
     return builder.claimPolyface();
   }
-
+  /**
+   * * Each array input structure is: [facetIndex, vertexIndex0, vertexIndex1, ....]
+   * * Vertex indices assumed reversed so it
+   *   * vertexIndex0 is the lowest index on the facet
+   *   * vertexIndex1 is the lowest neighbor of vertex0
+   *   * first different entry among vertex indices determines lexical result.
+   *   * Hence facets with duplicate indices (whether forward or reversed) are considered equal.
+   * @param arrayA
+   * @param arrayB
+   */
+  private static compareFacetIndexAndVertexIndices(arrayA: number[], arrayB: number[]): number {
+    if (arrayA.length !== arrayB.length)
+      return arrayA.length - arrayB.length;
+    for (let i = 1; i < arrayA.length; i++) {
+      if (arrayA[i] !== arrayB[i]) {
+        return arrayA[i] - arrayB[i];
+      }
+    }
+    return 0;
+  }
+  /**
+   * * Return an array of arrays describing facet duplication.
+   * @param includeSingletons if true, non-duplicated facets are included in the output.
+   * * Each array `entry` in the output contains read indices of a cluster of facets with the same vertex indices.
+   */
+  public static collectDuplicateFacetIndices(polyface: Polyface, includeSingletons: boolean = false): number[][] {
+    const result: number[][] = [];
+    this.announceDuplicateFacetIndices(polyface,
+      (clusterFacetIndices: number[]) => {
+        if (includeSingletons || clusterFacetIndices.length > 1)
+          result.push(clusterFacetIndices.slice());
+      });
+    return result;
+  }
+  /**
+   * * Return an array of arrays describing facet duplication.
+   * @param includeSingletons if true, non-duplicated facets are included in the output.
+   * * Each array `entry` in the output contains read indices of a cluster of facets with the same vertex indices.
+   */
+  public static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void) {
+    const visitor = polyface.createVisitor(0);  // This is to visit the existing facets.
+    const facetIndexAndVertexIndices: number[][] = [];
+    for (visitor.reset(); visitor.moveToNextFacet();) {
+      const facetIndex = visitor.currentReadIndex();
+      const entry = [facetIndex];
+      const pointIndex = visitor.pointIndex;
+      const numPointsThisFacet = pointIndex.length;
+      let lowIndex = 0;
+      // find the lowest point index ...
+      for (let i = 1; i < visitor.pointIndex.length; i++) {
+        if (pointIndex[i] < pointIndex[lowIndex])
+          lowIndex = i;
+      }
+      // find its lowest neighbor -- assemble sort array in that direction
+      if (pointIndex[(lowIndex + 1) % numPointsThisFacet] < pointIndex[(lowIndex + numPointsThisFacet - 1) % numPointsThisFacet]) {
+        for (let i = 0; i < numPointsThisFacet; i++) {
+          entry.push(pointIndex[(lowIndex + i) % numPointsThisFacet]);
+        }
+      } else {
+        for (let i = 0; i < numPointsThisFacet; i++) {
+          entry.push(pointIndex[(lowIndex + numPointsThisFacet - i) % numPointsThisFacet]);
+        }
+      }
+      facetIndexAndVertexIndices.push(entry);
+    }
+    facetIndexAndVertexIndices.sort(this.compareFacetIndexAndVertexIndices);
+    let i0, i1;
+    const n = facetIndexAndVertexIndices.length;
+    const clusterArray = [];
+    for (i0 = 0; i0 < n; i0 = i1) {
+      i1 = i0 + 1;
+      clusterArray.length = 0;
+      clusterArray.push(facetIndexAndVertexIndices[i0][0]);
+      while (i1 < n && 0 === this.compareFacetIndexAndVertexIndices(facetIndexAndVertexIndices[i0], facetIndexAndVertexIndices[i1])) {
+        clusterArray.push(facetIndexAndVertexIndices[i1][0]);
+        i1++;
+      }
+      announceCluster(clusterArray);
+    }
+  }
+  /** Return a new facet set with a subset of facets in source
+   * @param includeSingletons true to copy facets that only appear once
+   * @param clusterSelector indicates whether duplicate clusters are to have 0, 1, or all facets included
+   */
+  public static cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface {
+    const builder = PolyfaceBuilder.create();
+    const visitor = source.createVisitor(0);
+    this.announceDuplicateFacetIndices(source,
+      (clusterFacetIndices: number[]) => {
+        let numToSelect = 0;
+        if (clusterFacetIndices.length === 1) {
+          if (includeSingletons)
+            numToSelect = 1;
+        } else if (clusterFacetIndices.length > 1) {
+          if (clusterSelector === DuplicateFacetClusterSelector.SelectAny)
+            numToSelect = 1;
+          else if (clusterSelector === DuplicateFacetClusterSelector.SelectAll)
+            numToSelect = clusterFacetIndices.length;
+          else if (clusterSelector === DuplicateFacetClusterSelector.SelectOneByParity)
+            numToSelect = (clusterFacetIndices.length & 0x01) === 0x01 ? 1 : 0;
+        }
+        for (let i = 0; i < numToSelect; i++) {
+          visitor.moveToReadIndex(clusterFacetIndices[i]);
+          builder.addFacetFromVisitor(visitor);
+        }
+      });
+    return builder.claimPolyface();
+  }
   /** Clone the facets, inserting removing points that are simply within colinear edges.
    *
    */

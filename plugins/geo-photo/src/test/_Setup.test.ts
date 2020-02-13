@@ -12,7 +12,7 @@ RpcConfiguration.developmentMode = true;
 if (ElectronRpcConfiguration.isElectron) {
   ElectronRpcManager.initializeClient({}, rpcInterfaces);
 } else {
-  const config = BentleyCloudRpcManager.initializeClient({ info: { title: "integration-test", version: "v1.0" } }, rpcInterfaces);
+  const config = BentleyCloudRpcManager.initializeClient({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
   config.protocol.pathPrefix = `http://${window.location.hostname}:${Number(window.location.port) + 2000}`;
 
   for (const definition of rpcInterfaces) {
@@ -29,7 +29,7 @@ if (ElectronRpcConfiguration.isElectron) {
       await loaded;
       assert.equal(200, req.status);
       const desc = JSON.parse(req.responseText);
-      assert.equal(desc.info.title, "integration-test");
+      assert.equal(desc.info.title, "full-stack-test");
       assert.equal(desc.info.version, "v1.0");
     });
   });

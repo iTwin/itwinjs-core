@@ -8,15 +8,15 @@ import { Id64String, GuidString } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ImsUserCredentials } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps } from "@bentley/imodeljs-common";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import {
   IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, GeometricElement, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, AuthorizedBackendRequestContext,
 } from "../../imodeljs-backend";
 import { IModelWriter } from "./IModelWriter";
 import { HubUtility } from "./HubUtility";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { TestUsers } from "../TestUsers";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { ConcurrencyControl } from "../../ConcurrencyControl";
 
 const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -35,7 +35,7 @@ export class TestPushUtility {
 
   /** Initializes the utility */
   public async initialize(projectName: string, iModelName: string, user: ImsUserCredentials = TestUsers.superManager) {
-    this._requestContext = await IModelTestUtils.getTestUserRequestContext(user);
+    this._requestContext = await TestUsers.getAuthorizedClientRequestContext(user);
     this.iModelName = iModelName;
     this._projectId = await HubUtility.queryProjectIdByName(this._requestContext, projectName);
   }
@@ -50,6 +50,7 @@ export class TestPushUtility {
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
     this._iModelDb = await IModelDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
 
     const lastLevel = this._currentLevel + count;
     while (this._currentLevel < lastLevel) {

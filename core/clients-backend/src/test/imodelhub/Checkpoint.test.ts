@@ -9,9 +9,9 @@ import { GuidString } from "@bentley/bentleyjs-core";
 import {
   AccessToken, IModelClient, Briefcase, ChangeSet, Checkpoint, CheckpointQuery, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import * as utils from "./TestUtils";
 
 chai.should();

@@ -21,13 +21,13 @@ import { ElementLocateManager } from "./ElementLocateManager";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./QuantityFormatter";
 import { FrontendRequestContext } from "./FrontendRequestContext";
-import { RenderSystem } from "./render/System";
+import { RenderSystem } from "./render/RenderSystem";
 import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
 import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
-import { TileAdmin } from "./tile/TileAdmin";
+import { TileAdmin } from "./tile/internal";
 import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -107,7 +107,9 @@ export interface IModelAppOptions {
   pluginAdmin?: PluginAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
-  /** if present, supplies the [[FeatureTrackingManager]] for this session */
+  /** if present, supplies the [[FeatureTrackingManager]] for this session
+   * @internal
+   */
   features?: FeatureTrackingManager;
   /** if present, supplies the [[FeatureToggleClient]] for this session
    * @internal
@@ -244,7 +246,9 @@ export class IModelApp {
   public static get pluginAdmin() { return this._pluginAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
-  /** The [[FeatureTrackingManager]] for this session */
+  /** The [[FeatureTrackingManager]] for this session
+   * @internal
+   */
   public static get features() { return this._features; }
 
   /** The [[FeatureToggleClient]] for this session

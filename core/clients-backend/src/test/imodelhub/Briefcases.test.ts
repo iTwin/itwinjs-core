@@ -8,8 +8,8 @@ import * as path from "path";
 
 import { IModelHubStatus, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken, IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError, IModelClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 

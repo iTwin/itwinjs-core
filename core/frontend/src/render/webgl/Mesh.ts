@@ -27,7 +27,8 @@ import { System } from "./System";
 import { BufferHandle, BuffersContainer, BufferParameters } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
-import { InstancedGraphicParams, RenderMemory } from "../System";
+import { InstancedGraphicParams } from "../InstancedGraphicParams";
+import { RenderMemory } from "../RenderSystem";
 import { InstanceBuffers } from "./InstancedGeometry";
 import { AttributeMap } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";
@@ -555,7 +556,11 @@ export class SurfaceGeometry extends MeshGeometry {
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
       case RenderPass.OpaqueGeneral:
-      case RenderPass.Translucent: {
+      case RenderPass.Translucent:
+      case RenderPass.WorldOverlay:
+      case RenderPass.OpaqueLayers:
+      case RenderPass.TranslucentLayers:
+      case RenderPass.OverlayLayers: {
         const mode = vf.renderMode;
         if (!this.isGlyph && (RenderMode.HiddenLine === mode || RenderMode.SolidFill === mode)) {
           flags |= SurfaceFlags.TransparencyThreshold;

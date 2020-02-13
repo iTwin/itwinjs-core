@@ -498,12 +498,67 @@ export class HalfEdge {
       this.faceSuccessor.z - this.z,
       result);
   }
+  /** test if spaceNode is in the sector at sectorNode */
+  public static isNodeVisibleInSector(spaceNode: HalfEdge, sectorNode: HalfEdge): boolean {
+    // remark: fussy details ported from native code.
+    // The obscure cases seemed "unlikely" at first.  But preexisting unit tests for triangulation pinged just about everything.
+    // So it really matters to do the "0" cases this way.
+    //  (As usual, hard coded zero is suspect, but it seems to work nicely in the discrete decisions.)
+    if (sectorNode.vertexSuccessor === sectorNode)
+      return true;
+    const successor = sectorNode.faceSuccessor;
+    const predecessor = sectorNode.facePredecessor;
+    const successorCross = this.crossProductXYToTargets(sectorNode, successor, spaceNode);
+    const predecessorCross = this.crossProductXYToTargets(predecessor, sectorNode, spaceNode);
+    // simplest case:  two positives
+    if (successorCross > 0.0 && predecessorCross > 0.0)
+      return true;
 
-  /** Returns Return cross product (2d) of vectors from base to target1 and this to target2 */
+    const sectorCross = this.crossProductXYToTargets(predecessor, sectorNode, successor);
+
+    if (predecessorCross <= 0.0 && successorCross <= 0.0) {
+      if (predecessorCross === 0.0 && successorCross === 0.0 && sectorCross === 0.0) {
+        /* Everything is on a line.*/
+        /* If the sector is a degenerate face, nodeP can only be
+                in if it is the other node in the degenerate face.
+        */
+        if (predecessor === successor && sectorNode.vertexSuccessor !== sectorNode)
+          return spaceNode === successor;
+        /* Sector is 360 degrees.  Call it in only if vector from predP
+            to sectorP points forward to nodeP.
+        */
+        return HalfEdge.dotProductNodeToNodeVectorsXY(predecessor, sectorNode, sectorNode, spaceNode) > 0.0;
+
+      } else {
+        return false;
+      }
+    } else {
+      if (sectorCross === 0.0 && predecessorCross !== 0.0 && successorCross !== 0.0) {
+        // The incoming and outgoing edges at the sector are identical direction.
+        // We have to decide if this node is  inside the degenerate face (i.e. a geometrically empty sector)
+        // or outside (i.e. a nearly complete sector).
+        // In the inside case, the face is just two nodes.
+        // Exact equality for zero is ok because cross product should be using identical
+        // coordinates in subtracted terms.  (All furrow eyebrows in unison ....)
+        return predecessor !== successor;
+      }
+      return sectorCross < 0.0;
+    }
+
+  }
+
+  /** Returns Return cross product (2d) of vectors from baseA to targetA and baseB to targetB */
   public static crossProductXYToTargets(base: HalfEdge, targetA: HalfEdge, targetB: HalfEdge): number {
     return Geometry.crossProductXYXY(
       targetA.x - base.x, targetA.y - base.y,
       targetB.x - base.x, targetB.y - base.y);
+  }
+
+  /** Returns Return dot product (2d) of vectors along two edges. */
+  public static dotProductNodeToNodeVectorsXY(baseA: HalfEdge, targetA: HalfEdge, baseB: HalfEdge, targetB: HalfEdge): number {
+    return Geometry.dotProductXYXY(
+      targetA.x - baseA.x, targetA.y - baseA.y,
+      targetB.x - baseB.x, targetB.y - baseB.y);
   }
 
   /** Return cross product (2d) of vectors from nodeA to nodeB and nodeB to nodeC
@@ -1110,7 +1165,7 @@ export enum HalfEdgeMask {
 
   /** no mask bits */
   NULL_MASK = 0x00000000,
-/** The "upper 12 " bits of 32 bit integer. */
+  /** The "upper 12 " bits of 32 bit integer. */
   ALL_GRAB_DROP_MASKS = 0xffF00000,  // 12 masks reserved for grab/drop.
   /** all mask bits */
   ALL_MASK = 0xFFFFFFFF,

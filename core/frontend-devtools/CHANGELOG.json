@@ -2,6 +2,27 @@
   "name": "@bentley/frontend-devtools",
   "entries": [
     {
+      "version": "1.12.0",
+      "tag": "@bentley/frontend-devtools_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Ignore ReadPixels calls when using GpuProfiler"
+          },
+          {
+            "comment": "Tools for interacting with plan projection models."
+          },
+          {
+            "comment": "Add tools for operating on plan projection models."
+          },
+          {
+            "comment": "Added a tool for visualizing tile tree bounding boxes."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.11.0",
       "tag": "@bentley/frontend-devtools_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",

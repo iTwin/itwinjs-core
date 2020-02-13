@@ -8,12 +8,12 @@ import { OpenMode, GuidString, Logger, LogLevel, ChangeSetStatus, ChangeSetApply
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { Version, RequestGlobalOptions } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import {
   IModelDb, OpenParams, PhysicalModel, AuthorizedBackendRequestContext,
   BriefcaseManager, IModelJsFs,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { TestUsers } from "../TestUsers";
 import { HubUtility } from "./HubUtility";
 import { ChangeSetToken } from "../../BriefcaseManager";
 
@@ -34,7 +34,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     };
     // IModelTestUtils.setupDebugLogLevels();
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Only needed for DEV
-    requestContext = await IModelTestUtils.getTestUserRequestContext(TestUsers.prodUser);
+    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
   });
 
   it.skip("should be able to open the Retail Building Sample", async () => {

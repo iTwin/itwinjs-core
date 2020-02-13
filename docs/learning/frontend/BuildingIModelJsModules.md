@@ -178,7 +178,7 @@ When building a Plugin module, there is one required property "build", and one o
 
 #### The "webpack.build"  property
 
-The "webpack.build" property applies only to Plugin modules. Building Plugin modules invokes an extra step that packages all the files required by the Plugin into a [tar file](https://en.wikipedia.org/wiki/Tar_(computing)). The files that are to be "tarred" are assembled into the directory specified in the webpack.build property. The output from [copying the source resource files](#copying-source-resources) should be put into that directory. The contents of the build directory are tarred into a file with the base name of "webpack.bundleName" and the extension ".plugin.tar".
+The "webpack.build" property applies only to Plugin modules. Building Plugin modules invokes an extra step that packages all the files required by the Plugin into a [tar file](https://en.wikipedia.org/wiki/Tar_(computing%29). The files that are to be "tarred" are assembled into the directory specified in the webpack.build property. The output from [copying the source resource files](#copying-source-resources) should be put into that directory. The contents of the build directory are tarred into a file with the base name of "webpack.bundleName" and the extension ".plugin.tar".
 
 #### The "webpack.sign"  property
 

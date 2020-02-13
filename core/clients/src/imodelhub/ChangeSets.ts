@@ -99,6 +99,18 @@ export class ChangeSet extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[CreatedByApplication].relatedInstance[Application].properties.Name")
   public applicationName?: string;
 
+  /** Id of the bridge that created this ChangeSet. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasBridgeProperties](direction:forward).relatedInstance[BridgeProperties].properties.JobId")
+  public bridgeJobId?: string;
+
+  /** User identifiers of users who made changes contained in this ChangeSet. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasBridgeProperties](direction:forward).relatedInstance[BridgeProperties].properties.Users")
+  public bridgeUsers?: string[];
+
+  /** File names which have been modified with this ChangeSet. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasBridgeProperties](direction:forward).relatedInstance[BridgeProperties].properties.ChangedFiles")
+  public bridgeChangedFiles?: string[];
+
   /** Path to the download ChangeSet file on disk. */
   public pathname?: string;
 }
@@ -256,6 +268,14 @@ export class ChangeSetQuery extends StringIdQuery {
     ArgumentCheck.validGuid("seedFileId", seedFileId);
     this.addFilter(`SeedFileId+eq+'${seedFileId}'`);
     return this;
+  }
+
+  /** Select all bridge properties. */
+  public selectBridgeProperties() {
+    if (!this._query.$select)
+      this._query.$select = "*";
+
+    return this.addSelect(`HasBridgeProperties-forward-BridgeProperties.*`);
   }
 }
 

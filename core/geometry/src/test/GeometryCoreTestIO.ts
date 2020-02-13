@@ -224,9 +224,11 @@ export class GeometryCoreTestIO {
         const rz = momentData1.radiusOfGyration.z;
         this.captureGeometry(collection,
           LineString3d.create([
-            momentData1.origin.plusScaled(unitX, 2.0 * rz),
             momentData1.origin,
-            momentData1.origin.plusScaled(unitY, rz)]), dx, dy, dz);
+            momentData1.origin.plusScaled(unitX, 2.0 * rz),
+            momentData1.origin.plusScaled(unitY, rz),
+            momentData1.origin,
+            momentData1.origin.plusScaled(unitZ, 3.0 * rz)]), dx, dy, dz);
         this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitX.scale(rz), unitY.scale(rz), AngleSweep.createStartEndDegrees(0, 355)), dx, dy, dz);
         if (!xyOnly) {
           this.captureGeometry(collection, Arc3d.create(momentData1.origin, unitY.scale(rx), unitZ.scale(rx)), dx, dy, dz);

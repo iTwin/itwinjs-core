@@ -9,8 +9,8 @@ import {
   AggregateResponseError, ConflictingLocksError,
   IModelHubClientError, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 
@@ -122,8 +122,11 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
   });
 
   it("should get Locks in chunks", async () => {
-    const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId),
-      utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId)];
+    const mockedLocks = [
+      utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId),
+      utils.generateLock(briefcases[0].briefcaseId), utils.generateLock(briefcases[0].briefcaseId),
+      utils.generateLock(briefcases[0].briefcaseId),
+    ];
 
     utils.mockGetLocks(imodelId, `?$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
     const locks: Lock[] = await iModelClient.locks.get(requestContext, imodelId);
@@ -207,8 +210,10 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   it("should get locks by instance ids", async () => {
     const fileId: GuidString = Guid.createValue();
-    const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0"),
-      utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0")];
+    const mockedLocks = [
+      utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0"),
+      utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0"),
+    ];
     utils.mockGetLocks(imodelId, `?$filter=BriefcaseId+eq+2&$top=${LockQuery.defaultPageSize}`, ...mockedLocks);
 
     let existingLocks = await iModelClient.locks.get(requestContext, imodelId, new LockQuery().byBriefcaseId(briefcases[0].briefcaseId!));
@@ -230,9 +235,11 @@ describe("iModelHubClient LockHandler (#iModelBank)", () => {
 
   it("should get unavailable locks", async () => {
     if (TestConfig.enableMocks) {
-      const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared),
+      const mockedLocks = [
+        utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared),
         utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.None),
-        utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.None)];
+        utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.None),
+      ];
       utils.mockGetLocks(imodelId, undefined, ...mockedLocks);
 
       const filter = `?$filter=BriefcaseId+ne+${briefcases[0].briefcaseId}+and+(LockLevel+gt+0+or+ReleasedWithChangeSetIndex+gt+${changeSet.index!})`;

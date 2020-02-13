@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { BeEvent, AbandonedError, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, AbandonedError, Logger, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter, Easing } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
@@ -14,7 +14,7 @@ import { LocateOptions } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { ToolSettingsPropertySyncItem, ToolSettingsPropertyItem, ToolSettingsValue } from "../properties/ToolSettingsValue";
-import { CanvasDecoration } from "../render/System";
+import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { linePlaneIntersect, ScreenViewport, Viewport, ViewChangeOptions } from "../Viewport";
@@ -308,6 +308,12 @@ export class ToolAdmin {
   private _saveLocateCircle = false;
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
+  /**
+   * The active settings that placement tools will use.
+   * @alpha
+   */
+  public readonly activeSettings = new ToolAdmin.ActiveSettings();
+
   /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select".
    * @see [[startDefaultTool]]
    * @internal
@@ -704,7 +710,7 @@ export class ToolAdmin {
       case "mousedown": return this.onMouseButton(event, true);
       case "mouseup": return this.onMouseButton(event, false);
       case "mousemove": return this.onMouseMove(event);
-      case "mouseover": return this.onMouseEnter(event.vp!);
+      case "mouseover": return this.onMouseEnter(event);
       case "mouseout": return this.onMouseLeave(event.vp!);
       case "wheel": return this.onWheel(event);
       case "keydown": return this.onKeyTransition(event, true);
@@ -779,7 +785,21 @@ export class ToolAdmin {
    */
   public readonly manipulatorToolEvent = new BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>();
 
-  private async onMouseEnter(vp: ScreenViewport): Promise<void> { this.currentInputState.viewport = vp; }
+  private async onMouseEnter(event: ToolEvent): Promise<void> {
+    const vp = event.vp!;
+    const current = this.currentInputState;
+    current.viewport = vp;
+
+    // Detect if drag was active and button was released outside the view...
+    const tool = this.activeTool;
+    if (undefined === tool)
+      return;
+
+    const buttonMask = (event.ev as MouseEvent).buttons;
+    const cancelDrag = (current.isDragging(BeButton.Data) && !(buttonMask & 1)) || (current.isDragging(BeButton.Reset) && !(buttonMask & 2)) || (current.isDragging(BeButton.Middle) && !(buttonMask & 4));
+    if (cancelDrag)
+      tool.onReinitialize();
+  }
 
   /** @internal */
   public onMouseLeave(vp: ScreenViewport): void {
@@ -1640,4 +1660,24 @@ export class WheelEventProcessor {
     await IModelApp.accuSnap.reEvaluate();
     return status;
   }
+}
+
+/**
+ * @public
+ */
+export namespace ToolAdmin {
+
+  /**
+   * Active settings that placement tools will use.
+   * @alpha
+   */
+  export class ActiveSettings {
+
+    /** The active category */
+    public category?: Id64String;
+
+    /** The target model */
+    public model?: Id64String;
+  }
+
 }

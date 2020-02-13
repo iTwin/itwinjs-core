@@ -50,15 +50,13 @@ This article assumes that you already know that:
 
 An app must reserve all Codes that it plans to assign to elements during a local editing session. An app can reserve more Codes than it actually uses. For example, an app may reserve a range or block of Codes in a sequence to ensure that it can use them, but before it knows exactly how many it will need. When the local ChangeSet is finally pushed, the Code Service sorts out which reserved Codes were actually used and which were not. Unused Codes are returned to the pool, while used Codes are marked as used and unavailable. When an element is deleted, its Code may be returned to the pool.
 
-See [below](#how-to-acquire-locks-and-reserve-codes) for how to reserve codes.
+See [below](#how-and-when-to-acquire-locks-and-reserve-codes) for how and when to reserve codes.
 
 <!-- TODO: Check if the Code of a deleted element becomes available for assignment to another element or not. -->
 
-The optimistic concurrency control policy does not apply to Codes.
-
 ## Concurrency Control Policies
 
-Preemptive locking is always required when importing Schemas or changing or inserting CodeSpecs. The APIs for those objects take care of locking automatically, so there is nothing special for an app to do.
+Preemptive locking is always required when importing Schemas or changing or inserting CodeSpecs. The APIs for those objects take care of locking automatically.
 
 For models and elements, there are two locking policy options: pessimistic and optimistic. The [ConcurrencyControl]($backend) class specifies the concurrency control policy for an iModel. The app must check the ```iModelDb.concurrencyControl``` property to learn the policy and then implement it.
 
@@ -127,11 +125,11 @@ Locks are normally released when the briefcase pushes its changes, or they may b
 
  Only models and elements may be changed optimistically. Locking is required when importing Schemas or changing or inserting CodeSpecs.
 
-## How to Acquire Locks and Reserve Codes
+## How and When to Acquire Locks and Reserve Codes
 
-This section describes how an app reserves Codes and/or acquires locks. There are two options for when and how to do this during a local transaction: before making changes (preemptively) or after making changes (bulk mode).
+This section describes how an app reserves Codes and/or acquires locks. There are two options for when and how to do this during a local transaction: before making changes (pessimistic) or after making changes (optimistic).
 
-### Acquiring locks and/or codes preemptively
+### Acquiring locks and/or codes pessimistically.
 
  1. Call [Model.buildConcurrencyControlRequest]($backend) and [Element.buildConcurrencyControlRequest]($backend) to discover what locks and codes would be needed before making local changes.
 
@@ -139,12 +137,14 @@ This section describes how an app reserves Codes and/or acquires locks. There ar
  1. If the request fails, cancel the local operation.
  1. If the request succeeds, go ahead with the local operation, make the planned local changes, and then call [IModelDb.saveChanges]($backend).
 
+This approach is the safest way to avoid conflicts. It requires that the app must plan ahead before making local changes.
 
- This approach is the safest way to avoid conflicts. It requires that the app must plan ahead before making local changes.
+This aproach is *required* when the iModel's locking policy is set to pessimistic.
+This approach may be used when the iModel's locking policy is set to optimistic.
 
 Note that sending a request to iModelHub is a relatively expensive operation. Therefore it is important to batch up requests for locks and/or Codes.
 
-### Acquiring locks and/or codes in bulk mode
+### Acquiring locks and/or codes optimistically
 
  1. Insert or update models and elements.
 
@@ -152,7 +152,9 @@ Note that sending a request to iModelHub is a relatively expensive operation. Th
  1. If the request fails, call [IModelDb.abandonChanges]($backend) to roll back the local transaction.
  1. If the request succeeds, call [IModelDb.saveChanges]($backend) to commit the local transaction.
 
- Using bulk mode is simpler than using the preemptive approach, but it carries the risk that you must abandon all of your changes in case of a locking or code-reservation conflict. Use this approach only if you know that your changes are isolated such that conflicts are unlikely.
+ The optimistic approach is simpler than using the pessimistic approach, but it carries the risk that you must abandon all of your changes in case of a locking or code-reservation conflict. Use this approach only if you know that your changes are isolated such that conflicts are unlikely.
+
+ This approach is available *only* when the iModel's locking policy is set to optimistic.
 
 ## ChangeSets and Schema Changes
 

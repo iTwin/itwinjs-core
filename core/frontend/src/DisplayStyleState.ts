@@ -27,10 +27,9 @@ import {
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64, Id64String, assert } from "@bentley/bentleyjs-core";
-import { RenderSystem, TextureImage, AnimationBranchStates } from "./render/System";
-import { BackgroundMapTileTreeReference } from "./tile/WebMapTileTree";
-import { BackgroundTerrainTileTreeReference } from "./tile/BackgroundTerrainTileTree";
-import { TileTreeReference } from "./tile/TileTree";
+import { AnimationBranchStates } from "./render/GraphicBranch";
+import { RenderSystem, TextureImage } from "./render/RenderSystem";
+import { BackgroundMapTileTreeReference, BackgroundTerrainTileTreeReference, TileTreeReference } from "./tile/internal";
 import { Plane3dByOriginAndUnitNormal, Vector3d, Point3d } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";
 import { RenderScheduleState } from "./RenderScheduleState";

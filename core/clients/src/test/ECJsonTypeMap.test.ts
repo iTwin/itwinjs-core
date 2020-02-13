@@ -42,7 +42,7 @@ class TestClass extends TestBaseClass {
   @ECJsonTypeMap.propertyToJson("ecdb", "relatedStringProperty1")
   public relatedStringProperty1: string;
 
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[Test_Relationship_Class2].relatedInstance[Test_Related_Class2].properties.String_Property2")
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[Test_Relationship_Class2](direction:Forward).relatedInstance[Test_Related_Class2].properties.String_Property2")
   @ECJsonTypeMap.propertyToJson("ecdb", "relatedStringProperty2")
   public relatedStringProperty2: string;
 
@@ -76,8 +76,10 @@ describe("ECJsonTypeMap", () => {
       relationshipInstances: [
         {
           className: "Test_Relationship_Class1",
+          schemaName: "Test_Schema",
           relatedInstance: {
             className: "Test_Related_Class1",
+            schemaName: "Test_Schema",
             properties: {
               String_Property1: "Test Related String Property 1",
             },
@@ -85,8 +87,11 @@ describe("ECJsonTypeMap", () => {
         },
         {
           className: "Test_Relationship_Class2",
+          schemaName: "Test_Schema",
+          direction: "Forward",
           relatedInstance: {
             className: "Test_Related_Class2",
+            schemaName: "Test_Schema",
             properties: {
               String_Property2: "Test Related String Property 2",
             },
@@ -94,8 +99,10 @@ describe("ECJsonTypeMap", () => {
         },
         {
           className: "Test_Relationship_Class1",
+          schemaName: "Test_Schema",
           relatedInstance: {
             className: "Test_Related_Class2",
+            schemaName: "Test_Schema",
             properties: {
               String_Property3: "Test Related String Property 3",
               String_Property4: "Test Related String Property 4",
@@ -164,4 +171,106 @@ describe("ECJsonTypeMap", () => {
     chai.expect(untypedECDbInstance).to.deep.equal(seedUntypedECDbInstance);
   });
 
+  it("should create JSON from typed instance with multiple relathionship descriptors", () => {
+    @ECJsonTypeMap.classToJson("wsg", "Test_Schema.Test_ClassMultipleRelationshipDescriptors", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+    class TestClassMultipleRelationshipDescriptors extends WsgInstance {
+      @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[Test_Relationship_Class3](direction:Backward,secondAccessor:anotherValue,schemaName:DifferentSchema).relatedInstance[Test_Related_Class2].properties.String_Property1")
+      public relatedStringProperty1: string;
+
+      @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[Test_Relationship_Class3](direction:Backward,secondAccessor:anotherValue,schemaName:DifferentSchema).relatedInstance[Test_Related_Class2].properties.ArrayProperty1")
+      public arrayProperty1?: string[];
+
+      @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[Test_Relationship_Class3](direction:Backward,secondAccessor:anotherValue,schemaName:DifferentSchema).relatedInstance[Test_Related_Class2].properties.ArrayProperty2")
+      public arrayProperty2?: string[];
+    }
+
+    const expectedUntypedWsgInstance = {
+      instanceId: "TestWsgInstanceId",
+      schemaName: "Test_Schema",
+      className: "Test_ClassMultipleRelationshipDescriptors",
+      relationshipInstances: [
+        {
+          className: "Test_Relationship_Class3",
+          schemaName: "DifferentSchema",
+          direction: "Backward",
+          secondAccessor: "anotherValue",
+          relatedInstance: {
+            className: "Test_Related_Class2",
+            schemaName: "Test_Schema",
+            properties: {
+              String_Property1: "Test Related with Direction String Property 1",
+              ArrayProperty1: ["value11", "value12"],
+              ArrayProperty2: ["value21", "value22"],
+            },
+          },
+        },
+      ],
+    };
+
+    const expectedTypedInstance: TestClassMultipleRelationshipDescriptors = new TestClassMultipleRelationshipDescriptors();
+    expectedTypedInstance.className = expectedUntypedWsgInstance.className;
+    expectedTypedInstance.wsgId = expectedUntypedWsgInstance.instanceId;
+    expectedTypedInstance.relatedStringProperty1 = expectedUntypedWsgInstance.relationshipInstances[0].relatedInstance.properties.String_Property1;
+    expectedTypedInstance.arrayProperty1 = new Array(2);
+    let arrayPropIndex: number = 0;
+    expectedTypedInstance.arrayProperty1[arrayPropIndex] = expectedUntypedWsgInstance.relationshipInstances[0].relatedInstance.properties.ArrayProperty1[arrayPropIndex];
+    arrayPropIndex++;
+    expectedTypedInstance.arrayProperty1[arrayPropIndex] = expectedUntypedWsgInstance.relationshipInstances[0].relatedInstance.properties.ArrayProperty1[arrayPropIndex];
+    arrayPropIndex = 0;
+    expectedTypedInstance.arrayProperty2 = new Array(2);
+    expectedTypedInstance.arrayProperty2[arrayPropIndex] = expectedUntypedWsgInstance.relationshipInstances[0].relatedInstance.properties.ArrayProperty2[arrayPropIndex];
+    arrayPropIndex++;
+    expectedTypedInstance.arrayProperty2[arrayPropIndex] = expectedUntypedWsgInstance.relationshipInstances[0].relatedInstance.properties.ArrayProperty2[arrayPropIndex];
+
+    const actualUntypedWsgInstance: any = ECJsonTypeMap.toJson<TestClassMultipleRelationshipDescriptors>("wsg", expectedTypedInstance);
+    chai.expect(actualUntypedWsgInstance).to.deep.equal(expectedUntypedWsgInstance);
+  });
+
+  it("should fail to create JSON from typed instances with different relationship descriptor", () => {
+    @ECJsonTypeMap.classToJson("wsg", "Test_Schema.Negative_Test_Class", { schemaPropertyName: "schemaName", classPropertyName: "className" })
+    class NegativeTestClass extends WsgInstance {
+      @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[Test_Relationship_Class3](direction:Backward).relatedInstance[Test_Related_Class2].properties.String_Property5")
+      public relatedStringProperty5: string;
+
+      @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[Test_Relationship_Class3](direction:Forward).relatedInstance[Test_Related_Class2].properties.String_Property6")
+      public relatedStringProperty6: string;
+    }
+
+    const expectedUntypedWsgInstance = {
+      instanceId: "TestWsgInstanceId",
+      schemaName: "Test_Schema",
+      className: "Negative_Test_Class",
+      relationshipInstances: [
+        {
+          className: "Test_Relationship_Class3",
+          schemaName: "Test_Schema",
+          direction: "Backward",
+          relatedInstance: {
+            className: "Test_Related_Class2",
+            schemaName: "Test_Schema",
+            properties: {
+              String_Property5: "Test Related with Direction String Property 5",
+              String_Property6: "Test Related with Direction String Property 6",
+            },
+          },
+        },
+      ],
+    };
+
+    const expectedTypedInstance: NegativeTestClass = new NegativeTestClass();
+    expectedTypedInstance.className = expectedUntypedWsgInstance.className;
+    expectedTypedInstance.wsgId = expectedUntypedWsgInstance.instanceId;
+    expectedTypedInstance.relatedStringProperty5 = expectedUntypedWsgInstance.relationshipInstances[0].relatedInstance.properties.String_Property5;
+    expectedTypedInstance.relatedStringProperty6 = expectedUntypedWsgInstance.relationshipInstances[0].relatedInstance.properties.String_Property6;
+
+    let error: Error | undefined;
+    try {
+      ECJsonTypeMap.toJson<NegativeTestClass>("wsg", expectedTypedInstance);
+    } catch (err) {
+      if (err instanceof Error)
+        error = err;
+    }
+    chai.assert(error);
+    chai.expect(error!.message).to.deep.equal("Relationship for class 'Test_Relationship_Class3' cannot contain same descriptor 'direction' with different values: existing - 'Backward', new - 'Forward'.");
+  });
 });

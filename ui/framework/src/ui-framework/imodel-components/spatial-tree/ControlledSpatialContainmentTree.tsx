@@ -10,7 +10,7 @@ import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { usePresentationNodeLoader, useControlledTreeUnifiedSelection, useRulesetRegistration, IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { ControlledTree, useModelSource, TreeEventHandler, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
+import { ControlledTree, TreeEventHandler, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
 
 const PAGING_SIZE = 20;
 /** Presentation rules used by ControlledSpatialContainmentTree
@@ -48,7 +48,7 @@ export const ControlledSpatialContainmentTree: React.FC<ControlledSpatialContain
     preloadingEnabled: props.enablePreloading,
     dataProvider: props.dataProvider,
   });
-  const modelSource = useModelSource(nodeLoader)!;
+  const modelSource = nodeLoader.modelSource;
 
   const eventHandler = React.useMemo(() => new TreeEventHandler({ modelSource, nodeLoader, collapsedChildrenDisposalEnabled: true }), [modelSource, nodeLoader]);
   const unifiedSelectionHandler = useControlledTreeUnifiedSelection(modelSource, eventHandler, nodeLoader.getDataProvider());

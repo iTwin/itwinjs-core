@@ -7,7 +7,7 @@
 import { expect } from "chai";
 import { renderHook } from "@testing-library/react-hooks";
 import * as moq from "typemoq";
-import { ITreeNodeLoaderWithProvider, TreeModelSource } from "@bentley/ui-components";
+import { TreeModelSource, AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodePathElement } from "@bentley/presentation-common";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -16,12 +16,12 @@ import { useControlledTreeFiltering, IPresentationTreeDataProvider } from "../..
 
 describe("useControlledTreeFiltering", () => {
   interface HookProps {
-    nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
+    nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
     modelSource: TreeModelSource;
     filter?: string;
     activeMatchIndex?: number;
   }
-  const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
+  const nodeLoaderMock = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();

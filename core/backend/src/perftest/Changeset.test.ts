@@ -6,7 +6,7 @@ import * as path from "path";
 import { assert } from "chai";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { Config, IModelHubClient, ChangeSet, HubIModel, IModelQuery, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Config, IModelHubClient, ChangeSet, HubIModel, IModelQuery, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
 import {
   IModelDb, OpenParams, IModelJsFs, KeepBriefcase, ConcurrencyControl,
   DictionaryModel, SpatialCategory, BriefcaseManager, Element,
@@ -14,6 +14,7 @@ import {
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 
 async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {
   const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
@@ -60,8 +61,9 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 }
 
 async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
-  const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.named("test"));
+  const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
   assert.exists(iModelPullAndPush);
+  iModelPullAndPush.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
   // get the time of applying a meta data change on an imodel
   const startTime = new Date().getTime();
@@ -98,8 +100,8 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
   try {
     await rwIModel.concurrencyControl.request(requestContext);
   } catch (err) {
-    if (err instanceof ConcurrencyControl.RequestError) {
-      assert.fail(JSON.stringify(err.unavailableCodes) + ", " + JSON.stringify(err.unavailableLocks));
+    if (err instanceof IModelHubError) {
+      assert.fail(JSON.stringify(err));
     }
   }
 
@@ -294,10 +296,7 @@ describe("ImodelChangesetPerformance", async () => {
     Config.App.merge(myAppConfig);
     client = new IModelHubClient();
 
-    requestContext = await IModelTestUtils.getTestUserRequestContext({
-      email: Config.App.getString("imjs_test_regular_user_name"),
-      password: Config.App.getString("imjs_test_regular_user_password"),
-    });
+    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
   });
 
   after(() => {

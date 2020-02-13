@@ -55,22 +55,6 @@ describe("Tooltip", () => {
       expect(record.exists(), "Second record does not exist").to.be.true;
     });
 
-    it("renders correctly with label as PropertyRecord", async () => {
-      data.label = TestUtils.createPrimitiveStringProperty("Label", "Test label");
-      const wrapper = mount(<Tooltip propertyData={data} />);
-
-      await TestUtils.flushAsyncOperations();
-      wrapper.update();
-
-      expect(wrapper.find(".components-element-tooltip").first().exists()).to.be.true;
-
-      let record = wrapper.find(".components-property-record--horizontal").at(0);
-      expect(record.exists(), "First record does not exist").to.be.true;
-
-      record = wrapper.find(".components-property-record--horizontal").at(1);
-      expect(record.exists(), "Second record does not exist").to.be.true;
-    });
-
   });
 
 });

@@ -11,8 +11,8 @@ import {
   CodeEvent, AllCodesDeletedEvent, BriefcaseDeletedEvent, IModelDeletedEvent, VersionEvent,
   EventSubscription, EventSAS, EventType, IModelHubEvent, LockLevel, LockType, AuthorizedClientRequestContext,
 } from "@bentley/imodeljs-clients";
+import { TestUsers } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "../TestConfig";
-import { TestUsers } from "../TestUsers";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 
 chai.should();

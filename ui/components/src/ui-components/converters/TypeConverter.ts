@@ -43,6 +43,7 @@ export enum StandardTypeConverterTypeNames {
   Point2d = "point2d",
   Point3d = "point3d",
   Navigation = "navigation",
+  Composite = "composite",
 }
 
 /** Sort compare method for types that support sorting

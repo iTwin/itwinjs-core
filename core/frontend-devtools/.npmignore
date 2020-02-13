@@ -5,5 +5,4 @@
 !lib/module/dev/frontend-devtools.js.map
 !lib/public/**
 test
-!package.json
 !*.md

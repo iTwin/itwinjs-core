@@ -5,7 +5,7 @@
 !lib/**/*.js
 !lib/**/*.json
 !lib/module/dev/presentation-frontend.js.map
-!package.json
 !*.md
 # then ignore some stuff again
 lib/test
+lib/tsconfig.json

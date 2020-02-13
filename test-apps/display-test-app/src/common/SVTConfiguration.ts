@@ -15,10 +15,12 @@ export interface SVTConfiguration {
   enableDiagnostics?: boolean; // If true, all RenderDiagnostics will be enabled (assertions, debug output, GL state checks).
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
   disableInstancing?: boolean; // default false
-  enableImprovedElision?: boolean; // default false
+  enableImprovedElision?: boolean; // default true
+  ignoreAreaPatterns?: boolean; // default false
   disableMagnification?: boolean;
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean; // default ON
+  maxTilesToSkip?: number;
   tileTreeExpirationSeconds?: number;
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
   filterMapTextures?: boolean;  // default OFF
@@ -26,4 +28,6 @@ export interface SVTConfiguration {
   useFakeCloudStorageTileCache?: boolean; // default OFF
   dpiAwareViewports?: boolean; // default ON
   cancelBackendTileRequests?: boolean; // default ON
+  disableEdges?: boolean; // default OFF
+  useWebGL2?: boolean; // default OFF
 }

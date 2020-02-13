@@ -1,6 +1,16 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Fix broken links
+- Make `KeySetJSON` and related types public
+- Add multi-step relationship path's support in presentation rules.
+- Implement multi-step relationship paths support for find similar ruleset
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

@@ -1,6 +1,15 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Add new hidden 'functional' selection scopes: 'functional-element', 'functional-assembly', 'functional-top-assembly'
+- Update 'functional' hilite rules up to the latest requirements, including recursive lookup both at functional and graphical part of the relationship path
+- Ignore invalid IDs when computing element selection instead of failing the whole operation
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

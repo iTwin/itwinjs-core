@@ -4,5 +4,4 @@
 !lib/**/*.js
 !lib/public/**
 test
-!package.json
 !*.md

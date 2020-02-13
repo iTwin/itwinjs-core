@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/rpcinterface-integration-test",
+      "comment": "Fix issue with detecting whether or not to run a test suite.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/rpcinterface-integration-test",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

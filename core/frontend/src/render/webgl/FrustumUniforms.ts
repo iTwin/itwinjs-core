@@ -17,7 +17,7 @@ import {
   Frustum,
   Npc,
 } from "@bentley/imodeljs-common";
-import { RenderTarget } from "../System";
+import { RenderTarget } from "../RenderTarget";
 import { desync, sync } from "./Sync";
 import { UniformHandle } from "./Handle";
 import { Matrix4 } from "./Matrix";

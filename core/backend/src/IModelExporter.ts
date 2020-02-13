@@ -457,7 +457,7 @@ export class IModelExporter {
   private shouldExportElementAspect(aspect: ElementAspect): boolean {
     for (const excludedElementAspectClass of this._excludedElementAspectClasses) {
       if (aspect instanceof excludedElementAspectClass) {
-        Logger.logInfo(loggerCategory, `Excluded ElementAspect by class`);
+        Logger.logInfo(loggerCategory, `Excluded ElementAspect by class: ${aspect.classFullName}`);
         return false;
       }
     }

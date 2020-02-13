@@ -7,8 +7,9 @@ import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewInde
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps, FontType,
-  GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, IModel, ModelProps, ModelSelectorProps,
-  Placement3d, RelatedElement, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps,
+  GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps,
+  ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, Placement3d, PlanProjectionSettings, RelatedElement,
+  SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
 } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
@@ -18,7 +19,7 @@ import {
   ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
   InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
-  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SubCategory, Subject,
+  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SpatialLocationModel, SubCategory, Subject, Texture, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -66,6 +67,8 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(groupModelId));
     const physicalModelId = PhysicalModel.insert(sourceDb, subjectId, "Physical");
     assert.isTrue(Id64.isValidId64(physicalModelId));
+    const spatialLocationModelId = SpatialLocationModel.insert(sourceDb, subjectId, "SpatialLocation", true);
+    assert.isTrue(Id64.isValidId64(spatialLocationModelId));
     const functionalModelId = FunctionalModel.insert(sourceDb, subjectId, "Functional");
     assert.isTrue(Id64.isValidId64(functionalModelId));
     const documentListModelId = DocumentListModel.insert(sourceDb, subjectId, "Document");
@@ -73,7 +76,7 @@ export namespace IModelTransformerUtils {
     const drawingId = Drawing.insert(sourceDb, documentListModelId, "Drawing");
     assert.isTrue(Id64.isValidId64(drawingId));
     // Insert DefinitionElements
-    const modelSelectorId = ModelSelector.insert(sourceDb, definitionModelId, "PhysicalModels", [physicalModelId]);
+    const modelSelectorId = ModelSelector.insert(sourceDb, definitionModelId, "SpatialModels", [physicalModelId, spatialLocationModelId]);
     assert.isTrue(Id64.isValidId64(modelSelectorId));
     const spatialCategoryId = insertSpatialCategory(sourceDb, definitionModelId, "SpatialCategory", ColorDef.green);
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
@@ -94,6 +97,8 @@ export namespace IModelTransformerUtils {
     };
     const auxCoordSystemId = sourceDb.elements.insertElement(auxCoordSystemProps);
     assert.isTrue(Id64.isValidId64(auxCoordSystemId));
+    const textureId = insertTextureElement(sourceDb, definitionModelId, "Texture");
+    assert.isTrue(Id64.isValidId64(textureId));
     const renderMaterialId = RenderMaterialElement.insert(sourceDb, definitionModelId, "RenderMaterial", new RenderMaterialElement.Params("PaletteName"));
     assert.isTrue(Id64.isValidId64(renderMaterialId));
     const geometryPartProps: GeometryPartProps = {
@@ -297,6 +302,15 @@ export namespace IModelTransformerUtils {
     const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3) });
     displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
     displayStyle3d.settings.addExcludedElements(physicalObjectId1);
+    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
+    displayStyle3d.settings.environment = {
+      sky: {
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: textureId,
+        },
+      },
+    };
     const displayStyle3dId: Id64String = displayStyle3d.insert();
     assert.isTrue(Id64.isValidId64(displayStyle3dId));
     // Insert ViewDefinitions
@@ -444,12 +458,18 @@ export namespace IModelTransformerUtils {
     const informationModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Information"))!;
     const groupModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Group"))!;
     const physicalModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Physical"))!;
+    const spatialLocationModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "SpatialLocation"))!;
     const documentListModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Document"))!;
     assertTargetElement(sourceDb, targetDb, definitionModelId);
     assertTargetElement(sourceDb, targetDb, informationModelId);
     assertTargetElement(sourceDb, targetDb, groupModelId);
     assertTargetElement(sourceDb, targetDb, physicalModelId);
+    assertTargetElement(sourceDb, targetDb, spatialLocationModelId);
     assertTargetElement(sourceDb, targetDb, documentListModelId);
+    const physicalModel: PhysicalModel = targetDb.models.getModel<PhysicalModel>(physicalModelId);
+    const spatialLocationModel: SpatialLocationModel = targetDb.models.getModel<SpatialLocationModel>(spatialLocationModelId);
+    assert.isFalse(physicalModel.isPlanProjection);
+    assert.isTrue(spatialLocationModel.isPlanProjection);
     // SpatialCategory
     const spatialCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, definitionModelId, "SpatialCategory"))!;
     assertTargetElement(sourceDb, targetDb, spatialCategoryId);
@@ -480,10 +500,14 @@ export namespace IModelTransformerUtils {
     const drawingCategorySelectorProps = targetDb.elements.getElementProps<CategorySelectorProps>(drawingCategorySelectorId);
     assert.isTrue(drawingCategorySelectorProps.categories.includes(drawingCategoryId));
     // ModelSelector
-    const modelSelectorId = targetDb.elements.queryElementIdByCode(ModelSelector.createCode(targetDb, definitionModelId, "PhysicalModels"))!;
+    const modelSelectorId = targetDb.elements.queryElementIdByCode(ModelSelector.createCode(targetDb, definitionModelId, "SpatialModels"))!;
     assertTargetElement(sourceDb, targetDb, modelSelectorId);
     const modelSelectorProps = targetDb.elements.getElementProps<ModelSelectorProps>(modelSelectorId);
     assert.isTrue(modelSelectorProps.models.includes(physicalModelId));
+    assert.isTrue(modelSelectorProps.models.includes(spatialLocationModelId));
+    // Texture
+    const textureId = targetDb.elements.queryElementIdByCode(Texture.createCode(targetDb, definitionModelId, "Texture"))!;
+    assert.isTrue(Id64.isValidId64(textureId));
     // RenderMaterial
     const renderMaterialId = targetDb.elements.queryElementIdByCode(RenderMaterialElement.createCode(targetDb, definitionModelId, "RenderMaterial"))!;
     assert.isTrue(Id64.isValidId64(renderMaterialId));
@@ -591,6 +615,9 @@ export namespace IModelTransformerUtils {
     assert.equal(displayStyle3d.settings.subCategoryOverrides.size, 1);
     assert.exists(displayStyle3d.settings.getSubCategoryOverride(subCategoryId), "Expect subCategoryOverrides to have been remapped");
     assert.isTrue(displayStyle3d.settings.excludedElements.has(physicalObjectId1), "Expect excludedElements to be remapped");
+    assert.equal(displayStyle3d.settings.environment.sky?.image?.type, SkyBoxImageType.Spherical);
+    assert.equal(displayStyle3d.settings.environment.sky?.image?.texture, textureId);
+    assert.equal(displayStyle3d.settings.getPlanProjectionSettings(spatialLocationModelId)?.elevation, 10.0);
     // ViewDefinition
     const viewId = targetDb.elements.queryElementIdByCode(OrthographicViewDefinition.createCode(targetDb, definitionModelId, "Orthographic View"))!;
     assertTargetElement(sourceDb, targetDb, viewId);
@@ -940,10 +967,77 @@ export namespace IModelTransformerUtils {
     return geometryStreamBuilder.geometryStream;
   }
 
+  function insertTextureElement(iModelDb: IModelDb, modelId: Id64String, textureName: string): Id64String {
+    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in bottom right pixel. The rest of the square is red.
+    const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
+    const textureData = Base64.btoa(String.fromCharCode(...pngData));
+    const textureWidth = 3;
+    const textureHeight = 3;
+    return Texture.insert(iModelDb, modelId, textureName, ImageSourceFormat.Png, textureData, textureWidth, textureHeight, `Description for ${textureName}`, TextureFlags.None);
+  }
+
   function queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
     return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE UserLabel=:userLabel`, (statement: ECSqlStatement): Id64String => {
       statement.bindString("userLabel", userLabel);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
+    });
+  }
+
+  export function dumpIModelInfo(iModelDb: IModelDb): void {
+    const outputFileName: string = iModelDb.briefcase.pathname + ".info.txt";
+    if (IModelJsFs.existsSync(outputFileName)) {
+      IModelJsFs.removeSync(outputFileName);
+    }
+    IModelJsFs.appendFileSync(outputFileName, `${iModelDb.briefcase.pathname}\n`);
+    IModelJsFs.appendFileSync(outputFileName, "\n=== CodeSpecs ===\n");
+    iModelDb.withPreparedStatement(`SELECT ECInstanceId,Name FROM BisCore:CodeSpec ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const codeSpecId: Id64String = statement.getValue(0).getId();
+        const codeSpecName: string = statement.getValue(1).getString();
+        IModelJsFs.appendFileSync(outputFileName, `${codeSpecId}, ${codeSpecName}\n`);
+      }
+    });
+    IModelJsFs.appendFileSync(outputFileName, "\n=== Schemas ===\n");
+    iModelDb.withPreparedStatement(`SELECT Name FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const schemaName: string = statement.getValue(0).getString();
+        IModelJsFs.appendFileSync(outputFileName, `${schemaName}\n`);
+      }
+    });
+    IModelJsFs.appendFileSync(outputFileName, "\n=== Models ===\n");
+    iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Model.classFullName} ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const modelId: Id64String = statement.getValue(0).getId();
+        const model: Model = iModelDb.models.getModel(modelId);
+        IModelJsFs.appendFileSync(outputFileName, `${modelId}, ${model.name}, ${model.parentModel}, ${model.classFullName}\n`);
+      }
+    });
+    IModelJsFs.appendFileSync(outputFileName, "\n=== ViewDefinitions ===\n");
+    iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${ViewDefinition.classFullName} ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const viewDefinitionId: Id64String = statement.getValue(0).getId();
+        const viewDefinition: ViewDefinition = iModelDb.elements.getElement<ViewDefinition>(viewDefinitionId);
+        IModelJsFs.appendFileSync(outputFileName, `${viewDefinitionId}, ${viewDefinition.code.getValue()}, ${viewDefinition.classFullName}\n`);
+      }
+    });
+    IModelJsFs.appendFileSync(outputFileName, "\n=== Elements ===\n");
+    iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): void => {
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const count: number = statement.getValue(0).getInteger();
+        IModelJsFs.appendFileSync(outputFileName, `Count of ${Element.classFullName}=${count}\n`);
+      }
+    });
+    iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${PhysicalObject.classFullName}`, (statement: ECSqlStatement): void => {
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const count: number = statement.getValue(0).getInteger();
+        IModelJsFs.appendFileSync(outputFileName, `Count of ${PhysicalObject.classFullName}=${count}\n`);
+      }
+    });
+    iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${GeometryPart.classFullName}`, (statement: ECSqlStatement): void => {
+      if (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const count: number = statement.getValue(0).getInteger();
+        IModelJsFs.appendFileSync(outputFileName, `Count of ${GeometryPart.classFullName}=${count}\n`);
+      }
     });
   }
 }

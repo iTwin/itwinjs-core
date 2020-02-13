@@ -37,9 +37,12 @@ export class IModelCloneContext {
   public get isBetweenIModels(): boolean { return this.sourceDb !== this.targetDb; }
 
   /** Dispose any native resources associated with this IModelCloneContext. */
-  public dispose(): void {
-    this._nativeContext.dispose();
-  }
+  public dispose(): void { this._nativeContext.dispose(); }
+
+  /** Debugging aid that dumps the Id remapping details and other information to the specified output file.
+   * @internal
+   */
+  public dump(outputFileName: string): void { this._nativeContext.dump(outputFileName); }
 
   /** Add a rule that remaps the specified source [CodeSpec]($common) to the specified target [CodeSpec]($common).
    * @param sourceCodeSpecName The name of the CodeSpec from the source iModel.

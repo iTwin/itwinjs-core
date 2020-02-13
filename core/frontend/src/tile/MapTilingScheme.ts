@@ -5,9 +5,57 @@
 /** @packageDocumentation
  * @module Tile
  */
-import { Cartographic } from "@bentley/imodeljs-common";
-import { Point2d, Point3d, Angle, Range2d } from "@bentley/geometry-core";
 
+import { assert } from "@bentley/bentleyjs-core";
+import {
+  Cartographic,
+  EcefLocation,
+} from "@bentley/imodeljs-common";
+import {
+  Angle,
+  Point2d,
+  Point3d,
+  Range2d,
+  Transform,
+  Vector3d,
+} from "@bentley/geometry-core";
+import { IModelConnection } from "../IModelConnection";
+
+/** @internal */
+export class QuadId {
+  public level: number;
+  public column: number;
+  public row: number;
+  public get isValid() { return this.level >= 0; }
+  private static _scratchCartographic = new Cartographic();
+  public static createFromContentId(stringId: string) {
+    const idParts = stringId.split("_");
+    if (3 !== idParts.length) {
+      assert(false, "Invalid quad tree ID");
+      return new QuadId(-1, -1, -1);
+    }
+    return new QuadId(parseInt(idParts[0], 10), parseInt(idParts[1], 10), parseInt(idParts[2], 10));
+  }
+  public get contentId(): string { return this.level + "_" + this.column + "_" + this.row; }
+
+  public constructor(level: number, column: number, row: number) {
+    this.level = level;
+    this.column = column;
+    this.row = row;
+  }
+  // Not used in display - used only to tell whether this tile overlaps the range provided by a tile provider for attribution.
+  public getLatLongRange(mapTilingScheme: MapTilingScheme): Range2d {
+    const range = Range2d.createNull();
+    mapTilingScheme.tileXYToCartographic(this.column, this.row, this.level, QuadId._scratchCartographic);
+    range.extendXY(QuadId._scratchCartographic.longitude * Angle.degreesPerRadian, QuadId._scratchCartographic.latitude * Angle.degreesPerRadian);
+    mapTilingScheme.tileXYToCartographic(this.column + 1, this.row + 1, this.level, QuadId._scratchCartographic);
+    range.extendXY(QuadId._scratchCartographic.longitude * Angle.degreesPerRadian, QuadId._scratchCartographic.latitude * Angle.degreesPerRadian);
+
+    return range;
+  }
+}
+
+/** @internal */
 export class MapTileRectangle extends Range2d {
   public constructor(west = 0, south = 0, east = 0, north = 0) {
     super(west, south, east, north);
@@ -41,11 +89,9 @@ export class MapTileRectangle extends Range2d {
 
 /** @internal */
 export abstract class MapTilingScheme {
-
   private _scratchFraction = Point2d.createZero();
 
   /**
-   *
    * @param longitude in radians (-pi to pi)
    */
   public longitudeToXFraction(longitude: number) {
@@ -53,7 +99,7 @@ export abstract class MapTilingScheme {
   }
 
   /**
-   * Return longitude in radians (-pi to pi from fraction.
+   * Return longitude in radians (-pi to pi from fraction).
    * @param xFraction
    */
   public xFractionToLongitude(xFraction: number) {
@@ -160,7 +206,27 @@ export abstract class MapTilingScheme {
     const cartoGraphic = Cartographic.fromEcef(point)!;
     return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), 0.0);
   }
+
+  public computeMercatorFractionToDb(iModel: IModelConnection, groundBias: number): Transform {
+    const ecefLocation: EcefLocation = iModel.ecefLocation!;
+    const dbToEcef = ecefLocation.getTransform();
+
+    const projectCenter = Point3d.create(iModel.projectExtents.center.x, iModel.projectExtents.center.y, groundBias);
+    const projectEast = Point3d.create(projectCenter.x + 1.0, projectCenter.y, groundBias);
+    const projectNorth = Point3d.create(projectCenter.x, projectCenter.y + 1.0, groundBias);
+
+    const mercatorOrigin = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectCenter));
+    const mercatorX = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectEast));
+    const mercatorY = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectNorth));
+
+    const deltaX = Vector3d.createStartEnd(mercatorOrigin, mercatorX);
+    const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY);
+
+    const dbToMercator = Transform.createOriginAndMatrixColumns(mercatorOrigin, deltaX, deltaY, Vector3d.create(0.0, 0.0, 1.0)).multiplyTransformTransform(Transform.createTranslationXYZ(-projectCenter.x, -projectCenter.y, -groundBias));
+    return dbToMercator.inverse() as Transform;
+  }
 }
+
 /** @internal */
 export class GeographicTilingScheme extends MapTilingScheme {
   public constructor(numberOfLevelZeroTilesX: number = 2, numberOfLevelZeroTilesY: number = 1, rowZeroAtTop: boolean = false) {

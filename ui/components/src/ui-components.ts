@@ -33,6 +33,7 @@ export * from "./ui-components/converters/NavigationPropertyTypeConverter";
 export * from "./ui-components/converters/NumericTypeConverter";
 export * from "./ui-components/converters/PointTypeConverter";
 export * from "./ui-components/converters/StringTypeConverter";
+export * from "./ui-components/converters/CompositeTypeConverter";
 
 export * from "./ui-components/converters/valuetypes/ConvertedTypes";
 

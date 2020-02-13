@@ -15,7 +15,7 @@ import { ContentSpecificationTypes } from "./rules/content/ContentSpecification"
 import { Value, DisplayValue } from "./content/Value";
 import { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications";
 import { PropertyValueFormat, PrimitiveTypeDescription } from "./content/TypeDescription";
-import { ClassInfo, RelatedClassInfo } from "./EC";
+import { ClassInfo, RelationshipPath } from "./EC";
 import { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification";
 import { RelationshipDirection } from "./rules/RelationshipDirection";
 
@@ -219,44 +219,36 @@ const createSingleClassSpecification = (classInfo: Readonly<ClassInfo>): SingleS
   return { schemaName, className };
 };
 
-const createRelatedInstanceSpec = (relatedClassInfo: RelatedClassInfo, index: number): { spec: RelatedInstanceSpecification, class: ClassInfo } => ({
+const createRelatedInstanceSpec = (pathFromSelectToPropertyClass: RelationshipPath, index: number): { spec: RelatedInstanceSpecification, class: ClassInfo } => ({
   spec: {
-    relationship: createSingleClassSpecification(relatedClassInfo.relationshipInfo),
-    class: createSingleClassSpecification(relatedClassInfo.isForwardRelationship ? relatedClassInfo.targetClassInfo : relatedClassInfo.sourceClassInfo),
-    requiredDirection: relatedClassInfo.isForwardRelationship ? RelationshipDirection.Backward : RelationshipDirection.Forward,
+    relationshipPath: pathFromSelectToPropertyClass.map((step) => ({
+      relationship: createSingleClassSpecification(step.relationshipInfo),
+      direction: step.isForwardRelationship ? RelationshipDirection.Forward : RelationshipDirection.Backward,
+      targetClass: createSingleClassSpecification(step.targetClassInfo),
+    })),
     isRequired: true,
     alias: `related_${index}`,
   },
-  class: relatedClassInfo.isForwardRelationship ? relatedClassInfo.targetClassInfo : relatedClassInfo.sourceClassInfo,
+  class: pathFromSelectToPropertyClass[pathFromSelectToPropertyClass.length - 1].targetClassInfo,
 });
 
-const createRelatedInstanceSpecs = (field: PropertiesField): Array<{ spec: RelatedInstanceSpecification, class: ClassInfo }> => {
-  const specs = new Array();
-  field.properties.forEach((property, index) => {
-    if (property.relatedClassPath.length === 0) {
-      // not related
-      return;
-    }
-    if (property.relatedClassPath.length > 1) {
-      // RelatedInstance presentation rule doesn't support multiple step relationships yet
-      throw new Error("Can't create related instance specification for property related through multiple relationships");
-    }
-    specs.push(createRelatedInstanceSpec(property.relatedClassPath[0], index));
-  });
-  if (field.parent) {
-    if (specs.length > 0) {
-      // note: should prepend field.parent.pathToPrimaryClass to every spec, but
-      // RelatedInstance presentation rule doesn't support multiple step relationships yet
-      throw new Error("Can't create related instance specification for property related through multiple relationships");
-    }
-    if (field.parent.pathToPrimaryClass.length === 0) {
-      throw new Error("Expecting nested fields to always have relationship path to primary class");
-    }
-    if (field.parent.pathToPrimaryClass.length > 1) {
-      // RelatedInstance presentation rule doesn't support multiple step relationships yet
-      throw new Error("Can't create related instance specification for property related through multiple relationships");
-    }
-    specs.push(createRelatedInstanceSpec(field.parent.pathToPrimaryClass[0], 0));
+const createPathsFromSelectToPropertyClasses = (field: PropertiesField): RelationshipPath[] => {
+  let currField: Field = field;
+  const pathFromPropertyToSelectClass: RelationshipPath = [];
+  while (currField.parent) {
+    pathFromPropertyToSelectClass.push(...currField.parent.pathToPrimaryClass);
+    currField = currField.parent;
   }
-  return specs;
+  const pathFromSelectToPropertyClass = RelationshipPath.reverse(pathFromPropertyToSelectClass);
+  const relatedPropertyPaths = field.properties.map((prop) => prop.relatedClassPath);
+  const fullPaths = relatedPropertyPaths.map((relatedPropertyPath): RelationshipPath => [
+    ...pathFromSelectToPropertyClass,
+    ...relatedPropertyPath,
+  ]).filter((path) => path.length > 0);
+  return fullPaths;
+};
+
+const createRelatedInstanceSpecs = (field: PropertiesField): Array<{ spec: RelatedInstanceSpecification, class: ClassInfo }> => {
+  const paths = createPathsFromSelectToPropertyClasses(field);
+  return paths.map((path, index) => createRelatedInstanceSpec(path, index));
 };

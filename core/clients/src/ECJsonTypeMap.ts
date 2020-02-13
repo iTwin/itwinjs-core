@@ -48,8 +48,11 @@
  *         },
  *       relationshipInstances: [{
  *         className: "FileAccessKey",
+ *         schemaName: "iModelScope",
+ *         direction: "forward"
  *         relatedInstance: {
  *           className: "AccessKey",
+ *           schemaName: "iModelScope",
  *           properties: {
  *           DownloadUrl: "https://imodelhubqasa01.blob.core.windows.net/imodelhub-5018f11f-...",
  *           },
@@ -143,7 +146,7 @@
  *       @ECJsonTypeMap.propertyToJson("ecdb", "isReadOnly")
  *       public isReadOnly: boolean;
  *
- *       @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey].relatedInstance[AccessKey].properties.DownloadUrl")
+ *       @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[FileAccessKey](direction:forward).relatedInstance[AccessKey].properties.DownloadUrl")
  *       public downloadUrl?: string;
  *
  *       @ECJsonTypeMap.propertyToJson("ecdb", "accessMode")
@@ -247,6 +250,8 @@ type ClassesByTypedName = Map<ConstructorType, ClassEntry>;
  */
 export class ECJsonTypeMap {
   private static _classesByTypedName: ClassesByTypedName = new Map<ConstructorType, ClassEntry>();
+  private static readonly _negetadBracketRegex: RegExp = /[^\[\]]+/g;
+  private static readonly _relationshipDescriptorPairsInParanthesis: RegExp = /\(([a-zA-Z]*:[a-zA-Z]*,*)*\)/g;
 
   /** Gets an existing entry for a mapped class from the name of the TypeScript class */
   private static getClassByType(typedConstructor: ConstructorType): ClassEntry | undefined {
@@ -307,6 +312,21 @@ export class ECJsonTypeMap {
     applicationEntry.addProperty(typedPropertyName, propertyAccessString);
   }
 
+  private static getRelationshipDesciptors(relationshipDesciptorsString: string) {
+    // relationshipDescriptorString containing all the descriptors of the relationship separated by a comma.
+    // E.g. direction:forward,schemaName:differentRelationshipSchema
+    const relationshipDescriptorsArray = relationshipDesciptorsString.split(",");
+    const relationshipDescriptorMap: Map<string, string> = new Map<string, string>();
+    for (const relationshipDescriptor of relationshipDescriptorsArray) {
+      const parsedRelationshipDescriptor = relationshipDescriptor.split(":");
+      if (parsedRelationshipDescriptor.length !== 2) {
+        throw new Error(`Invalid relationship descriptor provided: ${relationshipDescriptor}. Relationship descriptors have to be suplied as 'accessor:value' pairs.`);
+      }
+      relationshipDescriptorMap.set(parsedRelationshipDescriptor[0], parsedRelationshipDescriptor[1]);
+    }
+    return relationshipDescriptorMap;
+  }
+
   /** Create a typed instance from an untyped JSON ECInstance  */
   public static fromJson<T extends ECInstance>(typedConstructor: new () => T, applicationKey: string, ecJsonInstance: any): T | undefined {
     const mappedClassEntry: ClassEntry | undefined = ECJsonTypeMap.getClassByType(typedConstructor);
@@ -352,9 +372,15 @@ export class ECJsonTypeMap {
 
         const ecNameParts: string[] = propertyAccessString.split("."); // e.g., "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId"
         for (let i = 0; i < ecNameParts.length; i++) {
-          const ecNameSubParts: string[] | null = ecNameParts[i].match(/[^\[\]]+/g);
-          if (!ecNameSubParts || ecNameSubParts.length === 0 || ecNameSubParts.length > 2)
+          const ecNameSubParts: string[] | null = ecNameParts[i].match(this._negetadBracketRegex);
+
+          if (!ecNameSubParts || ecNameSubParts.length === 0 || ecNameSubParts.length > 3)
             return;
+
+          if (ecNameSubParts.length === 3) {
+            if (ecNameSubParts[2].startsWith("(") && ecNameSubParts[2].endsWith(")"))
+              ecNameSubParts.splice(2, 1); // remove relationship descriptors defined in braces: (). As this is not used in TS intances.
+          }
 
           const subAccessString: string = ecNameSubParts[0];
           ecValue = ecValue[subAccessString];
@@ -362,7 +388,7 @@ export class ECJsonTypeMap {
             return;
 
           if (ecNameSubParts.length === 2 && subAccessString === "relationshipInstances" && i < ecNameParts.length - 1) {
-            const nextEcNameSubParts: string[] | null = ecNameParts[i + 1].match(/[^\[\]]+/g);
+            const nextEcNameSubParts: string[] | null = ecNameParts[i + 1].match(this._negetadBracketRegex);
             if (!nextEcNameSubParts || nextEcNameSubParts.length !== 2)
               return;
 
@@ -409,6 +435,8 @@ export class ECJsonTypeMap {
     if (!mappedApplicationEntry)
       return undefined;
 
+    let schemaPropertyAccessor: string | undefined;
+    let schemaName: string | undefined;
     const untypedInstance: any = {};
 
     if (mappedApplicationEntry.classKeyMapInfo.classKeyPropertyName) {
@@ -417,6 +445,8 @@ export class ECJsonTypeMap {
       const classKeyParts = mappedApplicationEntry.classKey.split(".", 2);
       untypedInstance[mappedApplicationEntry.classKeyMapInfo.schemaPropertyName] = classKeyParts[0];
       untypedInstance[mappedApplicationEntry.classKeyMapInfo.classPropertyName] = classKeyParts[1];
+      schemaPropertyAccessor = mappedApplicationEntry.classKeyMapInfo.schemaPropertyName;
+      schemaName = classKeyParts[0];
     } else {
       assert(false, "Unexpected classKeyMapInfo");
       return undefined;
@@ -430,6 +460,8 @@ export class ECJsonTypeMap {
       if (!applicationEntry)
         return;
 
+      // Key - Relationship Class, Value - a map with key - relationship descriptor accessor, value - descriptor value
+      const relationshipClassToDescriptor: Map<string, Map<string, string>> = new Map<string, Map<string, string>>();
       applicationEntry.propertiesByAccessString.forEach((propertyEntry: PropertyEntry, propertyAccessString: string) => {
         const typedValue: any = typedInstance[propertyEntry.typedPropertyName];
         if (typeof typedValue === "undefined")
@@ -444,9 +476,9 @@ export class ECJsonTypeMap {
           // if the name part has brackets, we want to extract the value inside the brackets and outside into a single array
           // e.g., relationshipInstances[HasThumbnail] --> [relationshipInstances, HasThumbnail]
           // e.g., property --> [property]
-          const ecNameSubParts: string[] | null = ecNamePart.match(/[^\[\]]+/g);
-          // we only want to continue if the ecNameSubParts array has 1 or 2 values
-          if (!ecNameSubParts || ecNameSubParts.length === 0 || ecNameSubParts.length > 2)
+          const ecNameSubParts: string[] | null = ecNamePart.match(this._negetadBracketRegex);
+          // we only want to continue if the ecNameSubParts array has 1, 2 or 3 values
+          if (!ecNameSubParts || ecNameSubParts.length === 0 || ecNameSubParts.length > 3)
             return;
 
           // the access string is the current property of the class
@@ -455,7 +487,7 @@ export class ECJsonTypeMap {
           const isLastPart: boolean = index >= ecNameParts.length - 1;
 
           // if we have just 1 value in the ecNameSubParts array...
-          if (ecNameSubParts.length !== 2) {
+          if (ecNameSubParts.length === 1) {
             // if the current cursor of the ec class object has no value for the access string
             if (undefined === untypedInstanceCursor[accessString]) {
               // we need to bind it the typedValue or initialize an empty object
@@ -474,6 +506,31 @@ export class ECJsonTypeMap {
           // the second value we can assume to be the expected class name of the ec object corresponding to the current position of the cursor
           const expectedclassName: string = ecNameSubParts[1];
 
+          // if we have 3 values in the ecNameSubParts array then the third value is a relationship descriptor
+          if (ecNameSubParts.length > 2) {
+            const relationshipDescriptor: string[] | null = ecNameSubParts[2].match(this._relationshipDescriptorPairsInParanthesis);
+            if (relationshipDescriptor && relationshipDescriptor.length === 1) {
+              let parsedRelationshipDescriptors: Map<string, string> | undefined;
+              parsedRelationshipDescriptors = this.getRelationshipDesciptors(relationshipDescriptor[0].slice(1, -1));
+              const existingRelationshipDescriptors = relationshipClassToDescriptor.get(expectedclassName);
+              if (existingRelationshipDescriptors === undefined) {
+                relationshipClassToDescriptor.set(expectedclassName, parsedRelationshipDescriptors);
+              } else {
+                // merge descriptors
+                parsedRelationshipDescriptors.forEach((parsedValue: string, parsedKey: string) => {
+                  const existingDescriptorValue = existingRelationshipDescriptors.get(parsedKey);
+                  if (undefined === existingDescriptorValue) {
+                    // found new descriptor of a relationship - add it.
+                    existingRelationshipDescriptors.set(parsedKey, parsedValue);
+                  } else if (existingDescriptorValue !== parsedValue) {
+                    const err = `Relationship for class '${expectedclassName}' cannot contain same descriptor '${parsedKey}' with different values: existing - '${existingDescriptorValue}', new - '${parsedValue}'.`;
+                    throw new Error(err);
+                  }
+                });
+              }
+            }
+          }
+
           // if the accessString is relationshipInstances we know we have some like: "relationshipInstances[className]"
           if (accessString === "relationshipInstances") {
             // initially relationshipInstances will be undefined, but it will always be an array, so we need to initialize it as one
@@ -486,7 +543,7 @@ export class ECJsonTypeMap {
             // split the related instance into an array with its class name
             // e.g., relatedInstance[className] --> [relatedInstance, className]
             // e.g., property --> [property]
-            const nextEcNameSubParts: string[] | null = ecNameParts[index + 1].match(/[^\[\]]+/g);
+            const nextEcNameSubParts: string[] | null = ecNameParts[index + 1].match(this._negetadBracketRegex);
             // we only want to continue if the nextEcNameSubParts array has 1 or 2 values
             if (!nextEcNameSubParts || nextEcNameSubParts.length === 0 || nextEcNameSubParts.length > 2)
               return;
@@ -522,6 +579,13 @@ export class ECJsonTypeMap {
 
             // advance the cursor to the newly defined value set by the accessString
             untypedInstanceCursor = untypedInstanceCursor[accessString][relationshipCount];
+            // set relationship properties
+            const relationshipDescriptors = relationshipClassToDescriptor.get(expectedclassName);
+            if (undefined !== relationshipDescriptors) {
+              relationshipDescriptors.forEach((descriptorValue: string, descriptorAccessor: string) => {
+                untypedInstanceCursor[descriptorAccessor] = descriptorValue;
+              });
+            }
           } else {
             if (accessString !== "relatedInstance" || !untypedInstanceCursor[accessString]
               || (accessString === "relatedInstance" && untypedInstanceCursor[accessString][className] !== expectedclassName)) {
@@ -536,6 +600,8 @@ export class ECJsonTypeMap {
 
           if (undefined === untypedInstanceCursor[className])
             untypedInstanceCursor[className] = expectedclassName;
+          if (undefined !== schemaPropertyAccessor && undefined === untypedInstanceCursor[schemaPropertyAccessor])
+            untypedInstanceCursor[schemaPropertyAccessor] = schemaName;
         });
       });
     });

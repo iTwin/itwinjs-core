@@ -7,10 +7,10 @@
  */
 
 import * as React from "react";
-import { ITreeNodeLoaderWithProvider } from "@bentley/ui-components";
+import { AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
 import { useControlledTreeUnifiedSelection } from "./UseUnifiedSelection";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
-import { ControlledTreeWithModelSourceProps } from "./WithModelSource";
+import { ControlledTreeWithVisibleNodesProps } from "./WithVisibleNodes";
 
 /**
  * Props that are injected to the ControlledTreeWithUnifiedSelection HOC component.
@@ -18,7 +18,7 @@ import { ControlledTreeWithModelSourceProps } from "./WithModelSource";
  */
 export interface ControlledTreeWithUnifiedSelectionProps {
   /** Node loader used to load nodes for tree. */
-  nodeLoader: ITreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
+  nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
 
 /**
@@ -26,25 +26,24 @@ export interface ControlledTreeWithUnifiedSelectionProps {
  * controlled tree component.
  *
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]] and
- * wrap supplied tree component in [[controlledTreeWithModelSource]] HOC
+ * wrap supplied tree component in [[controlledTreeWithVisibleNodes]] HOC
  *
  * @beta
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithModelSourceProps>(TreeComponent: React.FC<P>) {
+export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>) {
 
   type CombinedProps = P & ControlledTreeWithUnifiedSelectionProps;
   type TreeWithUnifiedSelectionProps = Omit<CombinedProps, "visibleNodes">;
 
   // tslint:disable-next-line: variable-name naming-convention
   const treeWithUnifiedSelection: React.FC<TreeWithUnifiedSelectionProps> = (props: TreeWithUnifiedSelectionProps) => {
-    const { modelSource, treeEvents, ...strippedProps } = props;
+    const { treeEvents, ...strippedProps } = props;
 
-    const unifiedSelectionEventHandler = useControlledTreeUnifiedSelection(modelSource, treeEvents, strippedProps.nodeLoader.getDataProvider());
+    const unifiedSelectionEventHandler = useControlledTreeUnifiedSelection(props.nodeLoader.modelSource, treeEvents, strippedProps.nodeLoader.getDataProvider());
 
     return (
       <TreeComponent
-        modelSource={modelSource}
         treeEvents={unifiedSelectionEventHandler}
         {...strippedProps as CombinedProps}
       />

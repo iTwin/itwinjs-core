@@ -57,6 +57,9 @@
     "ShowTileVolumes": {
       "keyin": "fdt tile bounds"
     },
+    "ToggleTileTreeBoundsDecoration": {
+      "keyin": "fdt tiletree bounds"
+    },
     "TogglePrimitiveVisibility": {
       "keyin": "fdt visibility"
     },
@@ -113,6 +116,15 @@
     },
     "ViewportAddRealityModel": {
       "keyin": "fdt attach reality model"
+    },
+    "DumpLayerSettings": {
+      "keyin": "fdt layer dump"
+    },
+    "ChangeLayerSettings": {
+      "keyin": "fdt layer set"
+    },
+    "OverrideSubCategoryPriority": {
+      "keyin": "fdt subcat priority"
     }
   }
 }

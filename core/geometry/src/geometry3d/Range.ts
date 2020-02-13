@@ -279,6 +279,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   /** Create a box with 2 pairs of xyz candidates. If any direction has order flip, create null. */
   public static createXYZXYZOrCorrectToNull<T extends Range3d>(xA: number, yA: number, zA: number, xB: number, yB: number, zB: number, result?: T): T {
     result = result ? result : new this() as T;
+    if (xA > xB || yA > yB || zA > zB)
+      return this.createNull(result);
     result.setDirect(
       Math.min(xA, xB), Math.min(yA, yB), Math.min(zA, zB),
       Math.max(xA, xB), Math.max(yA, yB), Math.max(zA, zB), true);

@@ -136,7 +136,7 @@ function getLabel(
     textHighlighter: highlightCallback,
   };
 
-  const nodeRecord = typeof node.item.label === "string" ? nodeToPropertyRecord(node) : node.item.label;
+  const nodeRecord = node.item.labelDefinition ? node.item.labelDefinition : nodeToPropertyRecord(node);
   return valueRendererManager.render(nodeRecord, context);
 }
 

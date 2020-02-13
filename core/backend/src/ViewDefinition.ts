@@ -6,10 +6,62 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { AnalysisStyleProps, AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BackgroundMapProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps, CodeSpec, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyleProps, DisplayStyleSettings, LightLocationProps, ModelSelectorProps, RelatedElement, SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewFlags } from "@bentley/imodeljs-common";
-import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
+import {
+  Id64,
+  Id64Array,
+  Id64Set,
+  Id64String,
+  JsonUtils,
+} from "@bentley/bentleyjs-core";
+import {
+  Angle,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Range2d,
+  Range3d,
+  StandardViewIndex,
+  Transform,
+  Vector3d,
+  YawPitchRollAngles,
+} from "@bentley/geometry-core";
+import {
+  AnalysisStyleProps,
+  AuxCoordSystem2dProps,
+  AuxCoordSystem3dProps,
+  AuxCoordSystemProps,
+  BackgroundMapProps,
+  BisCodeSpec,
+  Camera,
+  CategorySelectorProps,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  ColorDef,
+  ContextRealityModelProps,
+  DisplayStyle3dProps,
+  DisplayStyle3dSettings,
+  DisplayStyleProps,
+  DisplayStyleSettings,
+  LightLocationProps,
+  ModelSelectorProps,
+  PlanProjectionSettingsProps,
+  RelatedElement,
+  SkyBoxImageProps,
+  SpatialViewDefinitionProps,
+  ViewAttachmentProps,
+  ViewDefinition2dProps,
+  ViewDefinition3dProps,
+  ViewDefinitionProps,
+  ViewDetails,
+  ViewDetails3d,
+  ViewFlags,
+} from "@bentley/imodeljs-common";
+import {
+  DefinitionElement,
+  GraphicalElement2d,
+  SpatialLocationElement,
+} from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 
@@ -49,7 +101,7 @@ export abstract class DisplayStyle extends DefinitionElement implements DisplayS
   /** @alpha */
   protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
-    if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.styles) {
+    if (context.isBetweenIModels && targetElementProps?.jsonProperties?.styles) {
       const subCategoryOverrides = JsonUtils.asArray(targetElementProps.jsonProperties.styles.subCategoryOvr);
       if (undefined !== subCategoryOverrides) {
         for (const subCategoryOverride of subCategoryOverrides) {
@@ -132,7 +184,7 @@ export interface DisplayStyleCreationOptions {
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
  * @public
  */
-export class DisplayStyle3d extends DisplayStyle {
+export class DisplayStyle3d extends DisplayStyle implements DisplayStyle3dProps {
   /** @internal */
   public static get className(): string { return "DisplayStyle3d"; }
   private readonly _settings: DisplayStyle3dSettings;
@@ -140,9 +192,66 @@ export class DisplayStyle3d extends DisplayStyle {
   public get settings(): DisplayStyle3dSettings { return this._settings; }
 
   /** @internal */
-  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+  public constructor(props: DisplayStyle3dProps, iModel: IModelDb) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
+  }
+
+  /** @alpha */
+  protected collectPredecessorIds(predecessorIds: Id64Set): void {
+    super.collectPredecessorIds(predecessorIds);
+    const skyBoxImageProps: SkyBoxImageProps | undefined = this.settings.environment?.sky?.image;
+    if (skyBoxImageProps?.texture) {
+      predecessorIds.add(Id64.fromJSON(skyBoxImageProps.texture));
+    }
+    if (skyBoxImageProps?.textures) {
+      if (skyBoxImageProps.textures.back) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.back)); }
+      if (skyBoxImageProps.textures.bottom) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.bottom)); }
+      if (skyBoxImageProps.textures.front) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.front)); }
+      if (skyBoxImageProps.textures.left) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.left)); }
+      if (skyBoxImageProps.textures.right) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.right)); }
+      if (skyBoxImageProps.textures.top) { predecessorIds.add(Id64.fromJSON(skyBoxImageProps.textures.top)); }
+    }
+    if (this.settings.planProjectionSettings) {
+      for (const planProjectionSetting of this.settings.planProjectionSettings) {
+        predecessorIds.add(planProjectionSetting[0]);
+      }
+    }
+  }
+  /** @alpha */
+  protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
+    super.onCloned(context, sourceElementProps, targetElementProps);
+    if (context.isBetweenIModels) {
+      const skyBoxImageProps: SkyBoxImageProps | undefined = targetElementProps?.jsonProperties?.styles?.environment?.sky?.image;
+      if (skyBoxImageProps?.texture) {
+        const textureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.texture));
+        skyBoxImageProps.texture = Id64.isValidId64(textureId) ? textureId : undefined;
+      }
+      if (skyBoxImageProps?.textures) {
+        const backTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.back));
+        skyBoxImageProps.textures.back = Id64.isValidId64(backTextureId) ? backTextureId : undefined;
+        const bottomTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.bottom));
+        skyBoxImageProps.textures.bottom = Id64.isValidId64(bottomTextureId) ? bottomTextureId : undefined;
+        const frontTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.front));
+        skyBoxImageProps.textures.front = Id64.isValidId64(frontTextureId) ? frontTextureId : undefined;
+        const leftTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.left));
+        skyBoxImageProps.textures.left = Id64.isValidId64(leftTextureId) ? leftTextureId : undefined;
+        const rightTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.right));
+        skyBoxImageProps.textures.right = Id64.isValidId64(rightTextureId) ? rightTextureId : undefined;
+        const topTextureId: Id64String = context.findTargetElementId(Id64.fromJSON(skyBoxImageProps.textures.top));
+        skyBoxImageProps.textures.top = Id64.isValidId64(topTextureId) ? topTextureId : undefined;
+      }
+      if (targetElementProps?.jsonProperties?.styles?.planProjections) {
+        const remappedPlanProjections: { [modelId: string]: PlanProjectionSettingsProps } = {};
+        for (const entry of Object.entries(targetElementProps.jsonProperties.styles.planProjections)) {
+          const remappedModelId: Id64String = context.findTargetElementId(entry[0]);
+          if (Id64.isValidId64(remappedModelId)) {
+            remappedPlanProjections[remappedModelId] = entry[1];
+          }
+        }
+        targetElementProps.jsonProperties.styles.planProjections = remappedPlanProjections;
+      }
+    }
   }
 
   /** Create a DisplayStyle3d for use by a ViewDefinition.
@@ -172,7 +281,7 @@ export class DisplayStyle3d extends DisplayStyle {
         stylesIn.backgroundMap = options.backgroundMap;
     }
 
-    const displayStyleProps: DisplayStyleProps = {
+    const displayStyleProps: DisplayStyle3dProps = {
       classFullName: this.classFullName,
       code: this.createCode(iModelDb, definitionModelId, name),
       model: definitionModelId,
@@ -371,6 +480,21 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.categorySelectorId);
     predecessorIds.add(this.displayStyleId);
+    const acsId: Id64String = this.getAuxiliaryCoordinateSystemId();
+    if (Id64.isValidId64(acsId)) {
+      predecessorIds.add(acsId);
+    }
+  }
+
+  /** @alpha */
+  protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
+    super.onCloned(context, sourceElementProps, targetElementProps);
+    if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.viewDetails) {
+      const acsId: Id64String = Id64.fromJSON(targetElementProps.jsonProperties.viewDetails.acs);
+      if (Id64.isValidId64(acsId)) {
+        targetElementProps.jsonProperties.viewDetails.acs = context.findTargetElementId(acsId);
+      }
+    }
   }
 
   /** Type guard for `instanceof ViewDefinition3d`  */
@@ -388,6 +512,23 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   /** Load this view's CategorySelector from the IModelDb. */
   public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement<CategorySelector>(this.categorySelectorId); }
 
+  /** Provides access to optional detail settings for this view.
+   * @beta
+   */
+  public abstract get details(): ViewDetails;
+
+  /** The Id of the AuxiliaryCoordinateSystem for this ViewDefinition, or an invalid Id if no ACS is defined. */
+  public getAuxiliaryCoordinateSystemId(): Id64String {
+    return this.details.auxiliaryCoordinateSystemId;
+  }
+
+  /** Set or clear the AuxiliaryCoordinateSystem for this ViewDefinition.
+   * @param acsId The Id of the new AuxiliaryCoordinateSystem. If `Id64.invalid` is passed, then no AuxiliaryCoordinateSystem will be used.
+   */
+  public setAuxiliaryCoordinateSystemId(acsId: Id64String) {
+    this.details.auxiliaryCoordinateSystemId = acsId;
+  }
+
   /** Create a Code for a ViewDefinition given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel to contain the ViewDefinition and provides the scope for its name.
@@ -403,6 +544,7 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
  * @public
  */
 export abstract class ViewDefinition3d extends ViewDefinition implements ViewDefinition3dProps {
+  private readonly _details: ViewDetails3d;
   /** @internal */
   public static get className(): string { return "ViewDefinition3d"; }
   /** If true, camera is used. Otherwise, use an orthographic projection. */
@@ -424,6 +566,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     this.extents = Vector3d.fromJSON(props.extents);
     this.angles = YawPitchRollAngles.fromJSON(props.angles);
     this.camera = new Camera(props.camera);
+    this._details = new ViewDetails3d(this.jsonProperties);
   }
 
   /** @internal */
@@ -436,6 +579,11 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
     val.camera = this.camera;
     return val;
   }
+
+  /** Provides access to optional detail settings for this view.
+   * @beta
+   */
+  public get details(): ViewDetails3d { return this._details; }
 
   /** Load this view's DisplayStyle3d from the IModelDb. */
   public loadDisplayStyle3d(): DisplayStyle3d { return this.iModel.elements.getElement<DisplayStyle3d>(this.displayStyleId); }
@@ -604,6 +752,8 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
  * @public
  */
 export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2dProps {
+  private readonly _details: ViewDetails;
+
   /** @internal */
   public static get className(): string { return "ViewDefinition2d"; }
   /** The Id of the Model displayed by this view. */
@@ -622,7 +772,9 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     this.origin = Point2d.fromJSON(props.origin);
     this.delta = Point2d.fromJSON(props.delta);
     this.angle = Angle.fromJSON(props.angle);
+    this._details = new ViewDetails(this.jsonProperties);
   }
+
   /** @internal */
   public toJSON(): ViewDefinition2dProps {
     const val = super.toJSON() as ViewDefinition2dProps;
@@ -632,11 +784,18 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
     val.angle = this.angle;
     return val;
   }
+
   /** @alpha */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.baseModelId);
   }
+
+  /** Provides access to optional detail settings for this view.
+   * @beta
+   */
+  public get details(): ViewDetails { return this._details; }
+
   /** Load this view's DisplayStyle2d from the IModelDb. */
   public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement<DisplayStyle2d>(this.displayStyleId); }
 }

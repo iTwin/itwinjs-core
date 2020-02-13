@@ -8,6 +8,5 @@ assets/**
 test
 perftest
 !public/**
-!package.json
 !*.md
 !*.schema.json

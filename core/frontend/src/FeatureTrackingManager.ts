@@ -5,18 +5,25 @@
 /** @packageDocumentation
  * @module Features
  */
-import { FeatureLogEntry, UsageType } from "@bentley/imodeljs-clients";
+import { UsageType } from "@bentley/imodeljs-clients";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
-import { GuidString } from "@bentley/bentleyjs-core";
 import { FeatureLogBatchClient } from "./FeatureLogBatchClient";
+import { IModelConnection } from "./IModelConnection";
 
 /** Class that offers a default implementation of Feature Tracking, using a batch client to minimize traffic.
- * @internal
+ * @alpha
  */
 export class FeatureTrackingManager {
+  /** Client that batches up tracking requests to limit traffic */
   protected _client: FeatureLogBatchClient;
+  /** Host of the current app */
   protected _hostName: string;
+  /** Fallback name to use in the event hostname can't be determined */
   protected _hostFallbackName = "imodeljs-frontend";
+  /** Current Ulas usage type
+   * See also
+   *  - [[UsageLogEntry]], [[FeatureLogEntry]]
+   */
   protected _usageType = UsageType.Beta;
 
   constructor() {
@@ -24,8 +31,8 @@ export class FeatureTrackingManager {
     this._hostName = (typeof (window) !== "undefined") ? window.location.host : this._hostFallbackName;
   }
 
-  public async trackFeature(featureId: GuidString, contextId: string) {
-    const entry = new FeatureLogEntry(featureId, this._hostName, this._usageType, contextId);
-    return this._client.queueLog(entry);
+  /** Basic tracking function to be overridden by an app. By default, iModelApp does not know the context to log track features.  */
+  public track ( _iModelConnection: IModelConnection, _featureId: string, _featureName?: string) {
+    return;
   }
 }

@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
@@ -19,6 +19,8 @@ import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 import { DrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
+import { ConcurrencyControl } from "./ConcurrencyControl";
+import { LockLevel } from "@bentley/imodeljs-clients";
 
 /** Elements are the smallest individually identifiable building blocks for modeling the real world in an iModel.
  * Each element represents an entity in the real world. Sets of Elements (contained in [[Model]]s) are used to model
@@ -67,36 +69,74 @@ export class Element extends Entity implements ElementProps {
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
+  /**
+   * Disclose the codes and locks needed to perform the specified operation on this element
+   * @param req the request to populate
+   * @param props the version of the element that will be written
+   * @param _iModel the iModel
+   * @param opcode the operation
+   * @param original a pre-change copy of the element. Passed only in the case of Update.
+   * @beta
+   */
+  public static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, _iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined) {
+    switch (opcode) {
+      case DbOpcode.Insert: {
+        if (Code.isValid(props.code) && !Code.isEmpty(props.code))
+          req.addCodes([props.code]);
+        req.addLocks([ConcurrencyControl.Request.getModelLock(props.model, LockLevel.Shared)]);
+        break;
+      }
+      case DbOpcode.Delete: {
+        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id!, LockLevel.Exclusive)]);
+        break;
+      }
+      case DbOpcode.Update: {
+        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id!, LockLevel.Exclusive)]);
+
+        assert(original !== undefined && original.id === props.id);
+        if (original !== undefined) {
+
+          if (Code.isValid(props.code) && !Code.isEmpty(props.code) && !Code.equalCodes(props.code, original.code))
+            req.addCodes([props.code]);
+
+          if (props.model !== original.model)
+            req.addLocks([ConcurrencyControl.Request.getModelLock(original.model, LockLevel.Shared)]);
+        }
+        break;
+      }
+    }
+  }
+
   /** Called before a new Element is inserted.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onInsert(_props: ElementProps, _iModel: IModelDb): void { }
+  protected static onInsert(props: ElementProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert); }
   /** Called before an Element is updated.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onUpdate(_props: ElementProps, _iModel: IModelDb): void { }
+  protected static onUpdate(props: ElementProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update); }
   /** Called before an Element is deleted.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onDelete(_props: ElementProps, _iModel: IModelDb): void { }
+  protected static onDelete(props: ElementProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete); }
   /** Called after a new Element was inserted.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onInserted(_props: ElementProps, _iModel: IModelDb): void { }
+  protected static onInserted(props: ElementProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert); }
   /** Called after an Element was updated.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
    * @beta
    */
-  protected static onUpdated(_props: ElementProps, _iModel: IModelDb): void { }
+  protected static onUpdated(props: ElementProps, iModel: IModelDb): void { if (iModel.needsConcurrencyControl) iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update); }
   /** Called after an Element was deleted.
    * @throws [[IModelError]] if there is a problem
    * @note Any class that overrides this method must call super.
