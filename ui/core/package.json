@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.0.0-dev.6",
+  "version": "2.0.0-dev.7",
   "description": "iModel.js UI core components",
   "license": "MIT",
   "repository": {
@@ -57,21 +57,21 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.6",
-    "@bentley/geometry-core": "^2.0.0-dev.6",
-    "@bentley/imodeljs-i18n": "^2.0.0-dev.6"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.7",
+    "@bentley/geometry-core": "^2.0.0-dev.7",
+    "@bentley/imodeljs-i18n": "^2.0.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/geometry-core": "2.0.0-dev.6",
-    "@bentley/build-tools": "2.0.0-dev.6",
-    "@bentley/bentleyjs-core": "2.0.0-dev.6",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.6",
-    "@bentley/ui-abstract": "2.0.0-dev.6",
-    "@bentley/webpack-tools": "2.0.0-dev.6",
+    "@bentley/geometry-core": "2.0.0-dev.7",
+    "@bentley/build-tools": "2.0.0-dev.7",
+    "@bentley/bentleyjs-core": "2.0.0-dev.7",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.7",
+    "@bentley/ui-abstract": "2.0.0-dev.7",
+    "@bentley/webpack-tools": "2.0.0-dev.7",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
