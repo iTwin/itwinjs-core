@@ -77,5 +77,5 @@ function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Tra
 
 ## Geometry
 
-# BUGS
+### Bug fixes
  * Apply on-plane tolerances in mesh-plane clip. (https://bentleycs.visualstudio.com/iModelTechnologies/_workitems/edit/273249/)
