@@ -10,13 +10,14 @@ import {
 } from "@bentley/bentleyjs-core";
 import {
   BRepEntity,
+  GeometricElement3dProps,
   GeometryParams,
   GeometryStreamIterator,
-  GeometryStreamIteratorEntry,
   GeometrySummaryRequestProps,
   GeometrySummaryVerbosity,
   IModelError,
-  GeometricElement3dProps,
+  ImagePrimitive,
+  TextStringPrimitive,
 } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import {
@@ -180,7 +181,7 @@ class ResponseGenerator {
     return "SubGraphicRange: " + this.stringify(range);
   }
 
-  public summarizePrimitive(lines: string[], primitive: GeometryStreamIteratorEntry.TextStringPrimitive | GeometryStreamIteratorEntry.ImagePrimitive): void {
+  public summarizePrimitive(lines: string[], primitive: TextStringPrimitive | ImagePrimitive): void {
     const summary = primitive.type;
     if (GeometrySummaryVerbosity.Basic >= this.verbosity) {
       lines.push(summary);

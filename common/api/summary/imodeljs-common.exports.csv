@@ -28,6 +28,7 @@ internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
 internal;BoundingSphere
 beta;BRepEntity
+public;BRepPrimitive
 public;CalloutProps 
 public;Camera 
 public;CameraProps
@@ -141,13 +142,14 @@ public;GeometryClass
 public;GeometryParams
 public;GeometryPartInstanceProps
 public;GeometryPartProps 
+public;GeometryPrimitive
 public;GeometryStreamBuilder
 public;GeometryStreamEntryProps 
 public;GeometryStreamFlags
 public;GeometryStreamHeaderProps
 public;GeometryStreamIterator 
 public;GeometryStreamIteratorEntry
-public;GeometryStreamIteratorEntry
+public;GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive
 public;GeometryStreamProps = GeometryStreamEntryProps[]
 alpha;GeometrySummaryOptions
 alpha;GeometrySummaryRequestProps
@@ -186,6 +188,7 @@ beta;ImageGraphicCorners
 beta;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
 beta;ImageGraphicProps
 internal;ImageLight
+public;ImagePrimitive
 public;ImageSource
 public;ImageSourceFormat
 internal;enum ImdlFlags
@@ -277,6 +280,7 @@ internal;OpenAPISchema
 internal;OPERATION: unique symbol
 internal;PackedFeature
 internal;PackedFeatureTable
+public;PartReference
 public;Placement2d 
 public;Placement2dProps
 public;Placement3d 
@@ -411,6 +415,7 @@ alpha;TerrainProviderName = "CesiumWorldTerrain"
 alpha;TerrainSettings
 internal;TestRpcManager
 public;TextString
+public;TextStringPrimitive
 public;TextStringProps
 beta;TextureFlags
 beta;TextureMapping

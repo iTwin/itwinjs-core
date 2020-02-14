@@ -34,6 +34,47 @@ The following are view tools that allow a user to navigate a plane or three-dime
   * To navigate to a precise latitude/longitude location on the map, specify exactly two numeric arguments to `parseAndRun`. The first will be the latitude and the second will be the longitude. These are specified in degrees.
   * To search for and possibly navigate to a named location, specify any number of string arguments to `parseAndRun`. They will be joined with single spaces between them. If a location corresponding to the joined strings can be found, the tool will navigate there.
 
+## Breaking API changes
+
+With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APis have changed in ways that may require calling code to be adjusted:
+
+### GeometryStream iteration
+
+The [GeometryStreamIteratorEntry]($common) exposed by a [GeometryStreamIterator]($common) has been simplified down to only four members. Access the geometric primitive associated with the entry by type-switching on its `type` property. For example, code that previously looked like:
+```ts
+function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Transform): void {
+  if (undefined !== entry.geometryQuery)
+    return entry.geometryQuery.tryTransformInPlace(transform);
+
+  if (undefined !== entry.textString) {
+    entry.textString.transformInPlace(transform);
+    return true;
+  } else if (undefined !== entry.image)
+    entry.image.transformInPlace(transform);
+    return true;
+  }
+  // etc...
+}
+
+```
+
+Is now written as:
+```ts
+function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Transform): void {
+  switch (entry.primitive.type) {
+    case "geometryQuery":
+      // The compiler knows that entry.primitive is of type AnyGeometryQuery
+      return entry.primitive.geometryQuery.tryTransformInPlace(transform);
+    case "textString":
+    case "image":
+      // The compiler knows that entry.primitive is a TextString or an ImageGraphic, both of which have a transformInPlace() method
+      entry.primitive.transformInPlace(transform);
+      return true;
+    // etc...
+  }
+}
+```
+
 ## Geometry
 
 # BUGS

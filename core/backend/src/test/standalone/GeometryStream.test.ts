@@ -35,6 +35,10 @@ import { assert, expect } from "chai";
 import { BackendRequestContext, GeometricElement, GeometryPart, IModelDb, LineStyleDefinition, PhysicalObject, Platform } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
+function assertTrue(expr: boolean): asserts expr {
+  assert.isTrue(expr);
+}
+
 describe("GeometryStream", () => {
   let imodel: IModelDb;
 
@@ -120,7 +124,6 @@ describe("GeometryStream", () => {
     const lsStylesUsed: Id64String[] = [];
     const it = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of it) {
-      assert.isDefined(entry.geometryQuery);
       assert.equal(entry.primitive.type, "geometryQuery");
       lsStylesUsed.push(entry.geomParams.styleInfo ? entry.geomParams.styleInfo.styleId : Id64.invalid);
     }
@@ -201,7 +204,6 @@ describe("GeometryStream", () => {
     const widthsUsed: number[] = [];
     const it = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of it) {
-      assert.isDefined(entry.geometryQuery);
       assert.equal(entry.primitive.type, "geometryQuery");
       assert.isDefined(entry.geomParams.styleInfo);
       stylesUsed.push(entry.geomParams.styleInfo!.styleId);
@@ -434,7 +436,6 @@ describe("GeometryStream", () => {
     let iShape = 0;
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
-      assert.isDefined(entry.geometryQuery);
       assert.equal(entry.primitive.type, "geometryQuery");
       switch (iShape++) {
         case 0:
@@ -579,7 +580,6 @@ describe("GeometryStream", () => {
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "geometryQuery");
-      assert.isDefined(entry.geometryQuery);
       assert.isDefined(entry.geomParams.pattern);
       switch (iShape++) {
         case 0:
@@ -681,18 +681,16 @@ describe("GeometryStream", () => {
 
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
-      assert.equal(entry.primitive.type, "textString");
-      assert.isDefined(entry.textString);
-      assert.isTrue(entry.textString!.origin.isAlmostZero);
-      assert.isTrue(entry.textString!.rotation.isIdentity());
+      assertTrue(entry.primitive.type === "textString");
+      assert.isTrue(entry.primitive.textString.origin.isAlmostZero);
+      assert.isTrue(entry.primitive.textString.rotation.isIdentity());
     }
 
     const itWorld = GeometryStreamIterator.fromGeometricElement3d(value);
     for (const entry of itWorld) {
-      assert.equal(entry.primitive.type, "textString");
-      assert.isDefined(entry.textString);
-      assert.isTrue(entry.textString!.origin.isAlmostEqual(testOrigin));
-      assert.isTrue(entry.textString!.rotation.isAlmostEqual(testAngles));
+      assertTrue(entry.primitive.type === "textString");
+      assert.isTrue(entry.primitive.textString.origin.isAlmostEqual(testOrigin));
+      assert.isTrue(entry.primitive.textString.rotation.isAlmostEqual(testAngles));
     }
   });
 
@@ -732,9 +730,9 @@ describe("GeometryStream", () => {
     const geomArrayOut: Arc3d[] = [];
     const itLocal = GeometryStreamIterator.fromGeometryPart(value as GeometryPartProps);
     for (const entry of itLocal) {
-      assert.equal(entry.primitive.type, "geometryQuery");
-      assert.isDefined(entry.geometryQuery && entry.geometryQuery instanceof Arc3d);
-      geomArrayOut.push(entry.geometryQuery! as Arc3d);
+      assertTrue(entry.primitive.type === "geometryQuery");
+      assertTrue(entry.primitive.geometry instanceof Arc3d);
+      geomArrayOut.push(entry.primitive.geometry);
     }
 
     assert.isTrue(geomArrayOut.length === geomArray.length);
@@ -781,9 +779,9 @@ describe("GeometryStream", () => {
     const geomArrayOut: Arc3d[] = [];
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
-      assert.equal(entry.primitive.type, "geometryQuery");
-      assert.isDefined(entry.geometryQuery && entry.geometryQuery instanceof Arc3d);
-      geomArrayOut.push(entry.geometryQuery! as Arc3d);
+      assertTrue(entry.primitive.type === "geometryQuery");
+      assertTrue(entry.primitive.geometry instanceof Arc3d);
+      geomArrayOut.push(entry.primitive.geometry);
     }
 
     assert.isTrue(geomArrayOut.length === geomArray.length);
@@ -826,7 +824,6 @@ describe("GeometryStream", () => {
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "geometryQuery");
-      assert.isDefined(entry.geometryQuery);
       assert.isTrue(FillDisplay.ByView === entry.geomParams.fillDisplay);
     }
 
@@ -902,13 +899,11 @@ describe("GeometryStream", () => {
     const itLocal = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of itLocal) {
       assert.equal(entry.primitive.type, "brep");
-      assert.isDefined(entry.brep);
     }
 
     const itWorld = GeometryStreamIterator.fromGeometricElement3d(value as GeometricElement3dProps);
     for (const entry of itWorld) {
       assert.equal(entry.primitive.type, "brep");
-      assert.isDefined(entry.brep);
     }
   });
 

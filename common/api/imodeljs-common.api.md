@@ -509,6 +509,14 @@ export namespace BRepEntity {
     }
 }
 
+// @public
+export interface BRepPrimitive {
+    // @beta (undocumented)
+    readonly brep: BRepEntity.DataProps;
+    // (undocumented)
+    type: "brep";
+}
+
 export { BriefcaseStatus }
 
 // @public (undocumented)
@@ -2195,6 +2203,14 @@ export interface GeometryPartProps extends ElementProps {
 }
 
 // @public
+export interface GeometryPrimitive {
+    // (undocumented)
+    readonly geometry: AnyGeometryQuery;
+    // (undocumented)
+    type: "geometryQuery";
+}
+
+// @public
 export class GeometryStreamBuilder {
     // @beta
     appendBRepData(brep: BRepEntity.DataProps): boolean;
@@ -2260,8 +2276,7 @@ export interface GeometryStreamHeaderProps {
 export class GeometryStreamIterator implements IterableIterator<GeometryStreamIteratorEntry> {
     // (undocumented)
     [Symbol.iterator](): IterableIterator<GeometryStreamIteratorEntry>;
-    constructor(geometryStream: GeometryStreamProps, category?: Id64String);
-    entry: GeometryStreamIteratorEntry;
+    constructor(geometryStream: GeometryStreamProps, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform);
     readonly flags: GeometryStreamFlags;
     static fromGeometricElement2d(element: GeometricElement2dProps): GeometryStreamIterator;
     static fromGeometricElement3d(element: GeometricElement3dProps): GeometryStreamIterator;
@@ -2271,65 +2286,18 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     get isViewIndependent(): boolean;
     next(): IteratorResult<GeometryStreamIteratorEntry>;
     partToWorld(): Transform | undefined;
-    setLocalToWorld(localToWorld?: Transform): void;
-    setLocalToWorld2d(origin: Point2d, angle?: Angle): void;
-    setLocalToWorld3d(origin: Point3d, angles?: YawPitchRollAngles): void;
 }
 
 // @public
-export class GeometryStreamIteratorEntry {
-    constructor(category?: Id64String);
-    // @beta
-    brep?: BRepEntity.DataProps;
-    geometryQuery?: AnyGeometryQuery;
-    geomParams: GeometryParams;
-    // @beta
-    image?: ImageGraphic;
-    localRange?: Range3d;
-    localToWorld?: Transform;
-    partId?: Id64String;
-    partToLocal?: Transform;
-    get primitive(): GeometryStreamIteratorEntry.Primitive;
-    textString?: TextString;
+export interface GeometryStreamIteratorEntry {
+    readonly geomParams: GeometryParams;
+    readonly localRange?: Range3d;
+    readonly localToWorld?: Transform;
+    readonly primitive: GeometryStreamPrimitive;
 }
 
-// @public (undocumented)
-export namespace GeometryStreamIteratorEntry {
-    export interface BRepPrimitive {
-        // @beta (undocumented)
-        readonly brep: BRepEntity.DataProps;
-        // (undocumented)
-        type: "brep";
-    }
-    export interface GeometryPrimitive {
-        // (undocumented)
-        readonly geometry: AnyGeometryQuery;
-        // (undocumented)
-        type: "geometryQuery";
-    }
-    export interface ImagePrimitive {
-        // @beta (undocumented)
-        readonly image: ImageGraphic;
-        // (undocumented)
-        type: "image";
-    }
-    export interface PartReference {
-        // (undocumented)
-        part: {
-            id: Id64String;
-            readonly toLocal?: Transform;
-        };
-        // (undocumented)
-        type: "partReference";
-    }
-    export type Primitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive;
-    export interface TextStringPrimitive {
-        // (undocumented)
-        readonly textString: TextString;
-        // (undocumented)
-        type: "textString";
-    }
-}
+// @public
+export type GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive;
 
 // @public
 export type GeometryStreamProps = GeometryStreamEntryProps[];
@@ -2964,6 +2932,14 @@ export namespace ImageLight {
         // (undocumented)
         intensity: number;
     }
+}
+
+// @public
+export interface ImagePrimitive {
+    // @beta (undocumented)
+    readonly image: ImageGraphic;
+    // (undocumented)
+    type: "image";
 }
 
 // @public
@@ -4002,6 +3978,17 @@ export class PackedFeatureTable {
     readonly type: BatchType;
     get uniform(): Feature | undefined;
     unpack(): FeatureTable;
+}
+
+// @public
+export interface PartReference {
+    // (undocumented)
+    part: {
+        id: Id64String;
+        readonly toLocal?: Transform;
+    };
+    // (undocumented)
+    type: "partReference";
 }
 
 // @public
@@ -5775,6 +5762,14 @@ export class TextString {
     get width(): number;
     // (undocumented)
     widthFactor?: number;
+}
+
+// @public
+export interface TextStringPrimitive {
+    // (undocumented)
+    readonly textString: TextString;
+    // (undocumented)
+    type: "textString";
 }
 
 // @public
