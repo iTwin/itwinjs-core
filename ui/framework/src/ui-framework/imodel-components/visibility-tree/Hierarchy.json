@@ -42,19 +42,19 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SubjectOwnsSubjects"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Subject"
-            ]
-          },
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "SubjectOwnsSubjects"
+              },
+              "direction": "Forward",
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "Subject"
+              }
+            }
+          ],
           "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"Hierarchy\" AND this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Element\")",
           "hideNodesInHierarchy": true,
           "groupByClass": false,
@@ -62,19 +62,19 @@
         },
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SubjectOwnsSubjects"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "Subject"
-            ]
-          },
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "SubjectOwnsSubjects"
+              },
+              "direction": "Forward",
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "Subject"
+              }
+            }
+          ],
           "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") = NULL AND ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") <> \"Hierarchy\" AND this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Element\")",
           "hideIfNoChildren": true,
           "groupByClass": false,
@@ -118,14 +118,16 @@
           "arePolymorphic": true,
           "relatedInstances": [
             {
-              "relationship": {
-                "schemaName": "BisCore",
-                "className": "ModelModelsElement"
-              },
-              "requiredDirection": "Forward",
-              "class": {
-                "schemaName": "BisCore",
-                "className": "InformationPartitionElement"
+              "relationshipPath": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ModelModelsElement"
+                },
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "InformationPartitionElement"
+                }
               },
               "alias": "partition",
               "isRequired": true
@@ -147,14 +149,16 @@
           "arePolymorphic": true,
           "relatedInstances": [
             {
-              "relationship": {
-                "schemaName": "BisCore",
-                "className": "ModelModelsElement"
-              },
-              "requiredDirection": "Forward",
-              "class": {
-                "schemaName": "BisCore",
-                "className": "InformationPartitionElement"
+              "relationshipPath": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ModelModelsElement"
+                },
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "InformationPartitionElement"
+                }
               },
               "alias": "partition",
               "isRequired": true
@@ -182,20 +186,32 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ModelContainsElements",
-              "GeometricElement3dIsInCategory"
+          "relationshipPaths": [
+            [
+              {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ModelContainsElements"
+                },
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "GeometricElement3d"
+                }
+              },
+              {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "GeometricElement3dIsInCategory"
+                },
+                "direction": "Forward",
+                "targetClass": {
+                  "schemaName": "BisCore",
+                  "className": "SpatialCategory"
+                }
+              }
             ]
-          },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SpatialCategory"
-            ]
-          },
-          "skipRelatedLevel": 1,
+          ],
           "groupByClass": false,
           "groupByLabel": false
         }
@@ -216,19 +232,19 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "GeometricElement3dIsInCategory"
-            ]
-          },
-          "requiredDirection": "Backward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "GeometricElement3d"
-            ]
-          },
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "GeometricElement3dIsInCategory"
+              },
+              "direction": "Backward",
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "GeometricElement3d"
+              }
+            }
+          ],
           "instanceFilter": "this.Model.Id = parent.parent.ECInstanceId ANDALSO this.Parent = NULL",
           "groupByClass": false,
           "groupByLabel": false
@@ -250,19 +266,19 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementOwnsChildElements"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "GeometricElement3d"
-            ]
-          },
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ElementOwnsChildElements"
+              },
+              "direction": "Forward",
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "GeometricElement3d"
+              }
+            }
+          ],
           "groupByClass": false,
           "groupByLabel": false
         }
