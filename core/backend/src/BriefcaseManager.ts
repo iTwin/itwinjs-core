@@ -15,9 +15,9 @@ import { IModelBankClient } from "@bentley/imodeljs-clients/lib/imodelbank/IMode
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
-  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
+  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration, Guid,
 } from "@bentley/bentleyjs-core";
-import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps, MobileRpcConfiguration, BriefcaseProps } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb, OpenParams, SyncMode } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -314,6 +314,29 @@ class BriefcaseCache {
     return filteredBriefcases;
   }
 
+  /**
+   * Gets briefcases properties for native app use case.
+   * @returns briefcase props
+   * @note This only return briefcases and not standalone or snapshot models.
+   * @internal
+   */
+  public getBriefcases(): BriefcaseProps[] {
+    const briefcases = new Array<BriefcaseProps>();
+    this._briefcases.forEach((value: BriefcaseEntry) => {
+      if (value.openParams.isBriefcase) {
+        briefcases.push({
+          key: value.getKey(),
+          contextId: value.contextId,
+          iModelId: value.iModelId,
+          changeSetId: value.currentChangeSetId,
+          openMode: value.openParams.openMode,
+          downloading: value.isPending ? true : false,
+          isOpen: value.isOpen,
+        });
+      }
+    });
+    return briefcases;
+  }
   /** Checks if the cache is empty */
   public get isEmpty(): boolean { return this._briefcases.size === 0; }
 
@@ -356,6 +379,36 @@ export class BriefcaseManager {
   public static getChangeSetsPath(iModelId: GuidString): string { return path.join(BriefcaseManager.getIModelPath(iModelId), "csets"); }
   public static getChangeCachePathName(iModelId: GuidString): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
   public static getChangedElementsPathName(iModelId: GuidString): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
+
+  private static initializeDiskCache(requestContext: AuthorizedClientRequestContext) {
+    if (this._initializedDiskCache)
+      return;
+    const imodelDirs = IModelJsFs.readdirSync(BriefcaseManager.cacheDir);
+    for (const imodelDir of imodelDirs) {
+      const fullPath = path.join(BriefcaseManager.cacheDir, imodelDir);
+      const isDir = IModelJsFs.lstatSync(fullPath)?.isDirectory;
+      if (isDir) {
+        if (Guid.isGuid(imodelDir)) {
+          const fixedVersions = BriefcaseManager.getFixedVersionBriefcasePath(imodelDir);
+          const fixedVersionChangesetDirs = IModelJsFs.readdirSync(fixedVersions);
+          for (const changesetDir of fixedVersionChangesetDirs) {
+            if (!BriefcaseManager._cache.findFixedVersionBriefcase(imodelDir, changesetDir)) {
+              this.initializeFixedVersionBriefcaseOnDisk(requestContext, "", imodelDir, changesetDir);
+            }
+          }
+          // const pullPushVersions = BriefcaseManager.getPullAndPushBriefcasePath(imodelDir);
+          // const pullPushBriefcaseIds = IModelJsFs.readdirSync(pullPushVersions);
+          // for (const briefcaseIdStr of pullPushBriefcaseIds) {
+          //   const briefcaseId = Number(briefcaseIdStr);
+          //   if (!BriefcaseManager._cache.findPullAndPushBriefcase(imodelDir, briefcaseId)) {
+          //     // not handled
+          //   }
+          // }
+        }
+      }
+    }
+    this._initializedDiskCache = true;
+  }
 
   private static getFixedVersionBriefcasePath(iModelId: GuidString) {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "bc", "FixedVersion");
@@ -418,6 +471,11 @@ export class BriefcaseManager {
   }
 
   private static _initialized?: boolean;
+
+  /**
+   * Required for native apps only in order to read model that is stored in cache
+   */
+  private static _initializedDiskCache: boolean;
 
   private static setupDefaultIModelClient() {
     if (MobileRpcConfiguration.isMobileBackend)
@@ -528,10 +586,7 @@ export class BriefcaseManager {
   private static _asyncMutex = new AsyncMutex();
 
   /** Open a briefcase */
-  public static async download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
-    requestContext.enter();
-
-    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, BriefcaseManager.imodelClient);
+  public static async download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry> {
     requestContext.enter();
 
     if (openParams.openMode === OpenMode.Readonly)
@@ -545,7 +600,10 @@ export class BriefcaseManager {
       unlock();
     }
   }
-
+  public static getBriefcases(requestContext: AuthorizedClientRequestContext): BriefcaseProps[] {
+    this.initializeDiskCache(requestContext);
+    return BriefcaseManager._cache.getBriefcases();
+  }
   /** Open a downloaded briefcase */
   public static openBriefcase(briefcase: BriefcaseEntry) {
     const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openParams.openMode);
@@ -717,6 +775,7 @@ export class BriefcaseManager {
       Logger.logError(loggerCategory, "Initializing a briefcase fails. Deleting it to allow retries", () => briefcase.getDebugInfo());
       await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
       requestContext.enter();
+      throw error;
     }
   }
 

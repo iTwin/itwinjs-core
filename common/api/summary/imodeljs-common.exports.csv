@@ -29,6 +29,7 @@ internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
 internal;BoundingSphere
 beta;BRepEntity
 public;BRepPrimitive
+internal;BriefcaseProps 
 public;CalloutProps 
 public;Camera 
 public;CameraProps
@@ -108,6 +109,7 @@ beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
 public;EnvironmentProps
+internal;Events
 public;ExternalSourceAspectProps 
 public;Feature
 internal;FeatureGates
@@ -210,6 +212,7 @@ alpha;class IModelWriteRpcInterface
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
+internal;InternetConnectivityStatus
 internal;interop: any
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
@@ -278,6 +281,7 @@ internal;OpenAPIResponse
 internal;OpenAPIResponses
 internal;OpenAPISchema
 internal;OPERATION: unique symbol
+internal;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
 public;PartReference
@@ -404,6 +408,7 @@ beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;Spot 
 internal;SpotProps 
+internal;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
 public;SubCategoryOverride

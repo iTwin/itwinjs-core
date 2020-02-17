@@ -517,6 +517,14 @@ export interface BRepPrimitive {
     type: "brep";
 }
 
+// @internal
+export interface BriefcaseProps extends IModelTokenProps {
+    // (undocumented)
+    downloading?: boolean;
+    // (undocumented)
+    isOpen?: boolean;
+}
+
 export { BriefcaseStatus }
 
 // @public (undocumented)
@@ -1814,6 +1822,19 @@ export interface EnvironmentProps {
     ground?: GroundPlaneProps;
     // (undocumented)
     sky?: SkyBoxProps;
+}
+
+// @internal
+export namespace Events {
+    // (undocumented)
+    export namespace NativeApp {
+        const // (undocumented)
+        namespace = "NativeApp";
+        const // (undocumented)
+        onMemoryWarning = "onMemoryWarning";
+        const // (undocumented)
+        onInternetConnectivityChanged = "onInternetConnectivityChanged";
+    }
 }
 
 // @public
@@ -3213,6 +3234,14 @@ export const initializeRpcRequest: () => void;
 // @internal (undocumented)
 export const INSTANCE: unique symbol;
 
+// @internal
+export enum InternetConnectivityStatus {
+    // (undocumented)
+    Offline = 1,
+    // (undocumented)
+    Online = 0
+}
+
 // @internal (undocumented)
 export const interop: any;
 
@@ -3666,10 +3695,33 @@ export interface ModelSelectorProps extends DefinitionElementProps {
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
     cancelTileContentRequests(_iModelToken: IModelTokenProps, _contentIds: TileTreeContentIds[]): Promise<void>;
+    checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
+    downloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps>;
     fetchEvents(_iModelToken: IModelTokenProps, _maxToFetch: number): Promise<QueuedEvent[]>;
+    getBriefcases(): Promise<BriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
+    getConfig(): Promise<any>;
     static readonly interfaceName = "NativeAppRpcInterface";
     static interfaceVersion: string;
+    log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
+    openBriefcase(_iModelToken: IModelTokenProps): Promise<IModelProps>;
+    overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
+    // (undocumented)
+    storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
+    // (undocumented)
+    storageKeys(_storageId: string): Promise<string[]>;
+    // (undocumented)
+    storageMgrClose(_storageId: string, _deleteIt: boolean): Promise<void>;
+    // (undocumented)
+    storageMgrNames(): Promise<string[]>;
+    // (undocumented)
+    storageMgrOpen(_storageId: string): Promise<string>;
+    // (undocumented)
+    storageRemove(_storageId: string, _key: string): Promise<void>;
+    // (undocumented)
+    storageRemoveAll(_storageId: string): Promise<void>;
+    // (undocumented)
+    storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
 }
 
 // @public
@@ -3929,6 +3981,14 @@ export interface OpenAPISchema {
 
 // @internal (undocumented)
 export const OPERATION: unique symbol;
+
+// @internal
+export enum OverriddenBy {
+    // (undocumented)
+    Browser = 0,
+    // (undocumented)
+    User = 1
+}
 
 // @internal (undocumented)
 export interface PackedFeature {
@@ -5609,6 +5669,9 @@ export interface SpotProps extends LightProps {
     // (undocumented)
     outer?: AngleProps;
 }
+
+// @internal
+export type StorageValue = string | number | boolean | null | Uint8Array;
 
 // @public
 export class SubCategoryAppearance {

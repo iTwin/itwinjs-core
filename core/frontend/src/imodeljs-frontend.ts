@@ -21,6 +21,8 @@ export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./HitDetail";
 export * from "./IModelApp";
+export * from "./NativeApp";
+export * from "./NativeAppLogger";
 export * from "./IModelConnection";
 export * from "./ElementEditor";
 export * from "./ImageUtil";

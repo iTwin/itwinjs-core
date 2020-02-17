@@ -82,6 +82,7 @@ export interface EventSinkOptions {
 export enum ApplicationType {
   WebAgent,
   WebApplicationBackend,
+  NativeApp,
 }
 
 /** Configuration of imodeljs-backend.
@@ -91,17 +92,23 @@ export class IModelHostConfiguration {
   /** The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically. */
   public nativePlatform?: any;
 
-  private _briefcaseCacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"));
+  private static getDefaultBriefcaseCacheDir(): string { return path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/")); }
+  private static getDefaultNativeAppCacheDir(): string { return path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/NativeApp/Cache")); }
+  private _briefcaseCacheDir = IModelHostConfiguration.getDefaultBriefcaseCacheDir();
 
   /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/iModels/")`
    * If overriding this, ensure it's set to a folder with complete access - it may have to be deleted and recreated.
    */
   public get briefcaseCacheDir(): string { return this._briefcaseCacheDir; }
   public set briefcaseCacheDir(cacheDir: string) { this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
-
+  public get isDefaultBriefcaseCacheDir(): boolean { return this._briefcaseCacheDir === IModelHostConfiguration.getDefaultBriefcaseCacheDir(); }
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 
+  /** Native app local data
+   * @internal
+   */
+  public nativeAppCacheDir?: string = IModelHostConfiguration.getDefaultNativeAppCacheDir();
   /** The kind of iModel server to use. Defaults to iModelHubClient */
   public imodelClient?: IModelClient;
 
@@ -188,10 +195,13 @@ export class IModelHostConfiguration {
  */
 export class IModelHost {
   private static _authorizationClient?: IAuthorizationClient;
+  private static _nativeAppBackend: boolean;
   public static backendVersion = "";
   private static _platform?: typeof IModelJsNative;
   /** @internal */
   public static get platform(): typeof IModelJsNative { return this._platform!; }
+
+  public static get isNativeAppBackend(): boolean { return IModelHost._nativeAppBackend; }
 
   public static configuration?: IModelHostConfiguration;
   /** Event raised just after the backend IModelHost was started */
@@ -314,7 +324,9 @@ export class IModelHost {
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once", Logger.logError, loggerCategory, () => (configuration));
 
     IModelHost.sessionId = Guid.createValue();
-
+    if (configuration.applicationType && configuration.applicationType === ApplicationType.NativeApp) {
+      this._nativeAppBackend = true;
+    }
     // Setup a current context for all requests that originate from this backend
     const requestContext = new BackendRequestContext();
     requestContext.enter();

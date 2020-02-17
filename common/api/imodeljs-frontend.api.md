@@ -25,6 +25,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BeTimePoint } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
 import { Cartographic } from '@bentley/imodeljs-common';
@@ -78,6 +79,7 @@ import { GeometricModelProps } from '@bentley/imodeljs-common';
 import { GeometryClass } from '@bentley/imodeljs-common';
 import { GeometryQuery } from '@bentley/geometry-core';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
+import { GetMetaDataFunction } from '@bentley/bentleyjs-core';
 import { GlobeMode } from '@bentley/imodeljs-common';
 import { GltfBufferData } from '@bentley/imodeljs-common';
 import { GltfBufferView } from '@bentley/imodeljs-common';
@@ -105,10 +107,12 @@ import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodeljs-clients';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
+import { IModelProps } from '@bentley/imodeljs-common';
 import { IModelToken } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
+import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { LDClient } from 'ldclient-js';
 import { LDFlagValue } from 'ldclient-js';
@@ -190,6 +194,7 @@ import { SortedArray } from '@bentley/bentleyjs-core';
 import { SpatialClassificationProps } from '@bentley/imodeljs-common';
 import { SpatialViewDefinitionProps } from '@bentley/imodeljs-common';
 import { StopWatch } from '@bentley/bentleyjs-core';
+import { StorageValue } from '@bentley/imodeljs-common';
 import { StrokeOptions } from '@bentley/geometry-core';
 import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryOverride } from '@bentley/imodeljs-common';
@@ -4278,6 +4283,8 @@ export class IModelApp {
     static get iModelClient(): IModelClient;
     // @internal (undocumented)
     static get initialized(): boolean;
+    // @internal
+    static get isNativeApp(): boolean;
     // @internal (undocumented)
     static get locateManager(): ElementLocateManager;
     // @internal (undocumented)
@@ -4383,6 +4390,8 @@ export class IModelConnection extends IModel {
     closeSnapshot(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
+    // @internal
+    static create(iModel: IModelProps, openMode: OpenMode): IModelConnection;
     // @beta
     static createBlank(props: BlankConnectionProps): IModelConnection;
     // @internal
@@ -5809,6 +5818,46 @@ export interface MultilineTextEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     type: PropertyEditorParamTypes.MultilineText;
 }
+
+// @internal
+export class NativeApp {
+    // (undocumented)
+    static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
+    static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
+    // (undocumented)
+    static downloadBriefcase(contextId: string, iModelId: string, purpose?: OpenMode, version?: IModelVersion): Promise<void>;
+    static getBriefcases(): Promise<BriefcaseProps[]>;
+    static getStorageNames(): Promise<string[]>;
+    // (undocumented)
+    static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
+    // (undocumented)
+    static onMemoryWarning: BeEvent<() => void>;
+    // (undocumented)
+    static openBriefcase(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<IModelConnection>;
+    static openStorage(name: string): Promise<Storage>;
+    // (undocumented)
+    static overrideInternetConnectivity(status?: InternetConnectivityStatus): Promise<void>;
+    // (undocumented)
+    static shutdown(): Promise<void>;
+    // (undocumented)
+    static startup(opts?: IModelAppOptions): Promise<void>;
+    }
+
+// @internal
+export class NativeAppLogger {
+    // (undocumented)
+    static flush(): Promise<void>;
+    // (undocumented)
+    static initialize(): void;
+    // (undocumented)
+    static logError(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    // (undocumented)
+    static logInfo(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    // (undocumented)
+    static logTrace(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    // (undocumented)
+    static logWarning(category: string, message: string, getMetaData?: GetMetaDataFunction): void;
+    }
 
 // @internal
 export class NoRenderApp {
@@ -8290,6 +8339,19 @@ export enum StartOrResume {
     Resume = 2,
     // (undocumented)
     Start = 1
+}
+
+// @internal
+export class Storage {
+    constructor(id: string, _isOpen?: boolean);
+    close(deleteIt?: boolean): Promise<void>;
+    getData(key: string): Promise<StorageValue | undefined>;
+    getKeys(): Promise<string[]>;
+    // (undocumented)
+    readonly id: string;
+    get isOpen(): boolean;
+    removeAll(): Promise<void>;
+    setData(key: string, value: StorageValue): Promise<void>;
 }
 
 // @beta @deprecated

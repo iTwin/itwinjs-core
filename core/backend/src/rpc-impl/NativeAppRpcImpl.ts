@@ -10,13 +10,26 @@
 import {
   IModelTokenProps,
   NativeAppRpcInterface,
+  InternetConnectivityStatus,
+  OverriddenBy,
   QueuedEvent,
   RpcInterface,
   RpcManager,
   TileTreeContentIds,
+  IModelToken,
+  IModelVersion,
+  IModelProps,
+  BriefcaseProps,
+  StorageValue,
 } from "@bentley/imodeljs-common";
 import { EventSinkManager } from "../EventSink";
 import { cancelTileContentRequests } from "./IModelTileRpcImpl";
+import { NativeAppBackend } from "../NativeAppBackend";
+import { Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { Logger, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { IModelDb, OpenParams } from "../IModelDb";
+import { BriefcaseManager } from "../BriefcaseManager";
+import { NativeAppStorage } from "../NativeAppStorage";
 
 /** The backend implementation of NativeAppRpcInterface.
  * @internal
@@ -26,6 +39,49 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     RpcManager.registerImpl(NativeAppRpcInterface, NativeAppRpcImpl);
   }
 
+  /**
+   * Proxy logger that redirect logging from frontend to backend. Help with debugging issue
+   * @param _timestamp unused but would be help ful to tell when event happened
+   * @param level log level for the message
+   * @param category category of the message
+   * @param message message itself
+   * @param [metaData] any addition meta data that needed to be logged.
+   */
+  public async log(_timestamp: number, level: LogLevel, category: string, message: string, metaData?: any) {
+    Logger.logRaw(level, category, message, () => metaData);
+  }
+
+  /**
+   * Checks internet connectivity
+   * @returns internet connectivity value at backend.
+   */
+  public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
+    return NativeAppBackend.checkInternetConnectivity();
+  }
+
+  /**
+   * Overrides internet connectivity
+   * @param Specify who like to override the status
+   * @param [status] online/offline status
+   */
+  public async overrideInternetConnectivity(by: OverriddenBy, status?: InternetConnectivityStatus): Promise<void> {
+    NativeAppBackend.overrideInternetConnectivity(by, status);
+  }
+
+  /**
+   * Return config object from backend
+   * @returns config.
+   */
+  public async getConfig(): Promise<any> {
+    return Config.App.getContainer();
+  }
+
+  /**
+   * Fetches events from backend
+   * @param tokenProps global or imodel base context for event queue
+   * @param limit maximum number of event to return.
+   * @returns list of queued event that is pending on backend.
+   */
   public async fetchEvents(tokenProps: IModelTokenProps, limit: number): Promise<QueuedEvent[]> {
     let key: string = EventSinkManager.GLOBAL;
     if (tokenProps.key && tokenProps.key !== EventSinkManager.GLOBAL)
@@ -36,5 +92,117 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
 
   public async cancelTileContentRequests(tokenProps: IModelTokenProps, contentIds: TileTreeContentIds[]): Promise<void> {
     return cancelTileContentRequests(tokenProps, contentIds);
+  }
+
+  /**
+   * Downloads briefcase and wait for it until its done
+   * @param tokenProps context for imodel to download.
+   * @returns briefcase id of the briefcase that is downloaded.
+   * @note this api can be call only in connected mode where internet is available.
+   */
+  public async downloadBriefcase(tokenProps: IModelTokenProps): Promise<IModelTokenProps> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const openParams: OpenParams = OpenParams.fixedVersion();
+    const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
+    const db = await IModelDb.downloadBriefcase(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    return db.toJSON();
+  }
+
+  /**
+   * Opens briefcase on the backend. The briefcase must be present or download before call this api.
+   * @param tokenProps Context for imodel to open.
+   * @returns briefcase id of briefcase.
+   */
+  public async openBriefcase(tokenProps: IModelTokenProps): Promise<IModelProps> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const db = await IModelDb.openBriefcase(requestContext, iModelToken);
+    return db.toJSON();
+  }
+
+  /**
+   * Return list of briefcase available on disk
+   * @returns briefcases
+   * @note The ContextId in empty and should remain empty when pass to openBriefcase() call.
+   */
+  public async getBriefcases(): Promise<BriefcaseProps[]> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    return BriefcaseManager.getBriefcases(requestContext);
+  }
+
+  /**
+   * Open or create a storage backed by a sqlite file
+   * @param storageId should a valid file name without extension
+   * @returns id of storage use by subsequent calls.
+   */
+  public async storageMgrOpen(storageId: string): Promise<string> {
+    return NativeAppStorage.open(storageId).id;
+  }
+
+  /**
+   * Close the storage and subsequent api cannot use it.
+   * @param storageId  id of the storage
+   * @param deleteIt optionally let you delete the underlying sqlite file.
+   */
+  public async storageMgrClose(storageId: string, deleteIt: boolean): Promise<void> {
+    NativeAppStorage.find(storageId)?.close(deleteIt);
+  }
+
+  /**
+   * List available storage on disk.
+   * @returns list name that can be use to open a storage.
+   */
+  public async storageMgrNames(): Promise<string[]> {
+    return NativeAppStorage.getStorageNames();
+  }
+
+  /**
+   * Get a value from storage.
+   * @param storageId id of the storage from which to return the value.
+   * @param key a key can be any string large or small for which this function will return a value.
+   * @returns value or undefined.
+   */
+  public async storageGet(storageId: string, key: string): Promise<StorageValue | undefined> {
+    return NativeAppStorage.find(storageId)?.getData(key);
+  }
+
+  /**
+   * Set a value in storage against a key.
+   * @param storageId id of the storage that would hold the key/value pair.
+   * @param key a string value that can be large or small.
+   * @param value that would be written to db and persisted across sessions.
+   */
+  public async storageSet(storageId: string, key: string, value: StorageValue): Promise<void> {
+    NativeAppStorage.find(storageId)?.setData(key, value);
+  }
+
+  /**
+   * Remove a value from storage.
+   * @param storageId id of the storage that would hold the key/value pair.
+   * @param key a string value that can be large or small.
+   */
+  public async storageRemove(storageId: string, key: string): Promise<void> {
+    NativeAppStorage.find(storageId)?.removeData(key);
+  }
+
+  /**
+   * Return list of keys in storage.
+   * @param storageId  id of the storage that would hold the key/value pairs.
+   * @returns keys list of string.
+   * @note this function could have performance issue if the number of keys are large or each key is a large string object.
+   */
+  public async storageKeys(storageId: string): Promise<string[]> {
+    const storage = NativeAppStorage.find(storageId)!;
+    return storage.getKeys();
+  }
+
+  /**
+   * Storages remove all key and values.
+   * @param storageId id of the storage that would hold the key/value pairs.
+   */
+  public async storageRemoveAll(storageId: string): Promise<void> {
+    const storage = NativeAppStorage.find(storageId)!;
+    storage.removeAll();
   }
 }

@@ -212,6 +212,13 @@ export class IModelConnection extends IModel {
     }
   }
 
+  /**
+   * Creates imodel connection
+   * @internal
+   */
+  public static create(iModel: IModelProps, openMode: OpenMode): IModelConnection {
+    return new this(iModel, openMode);
+  }
   /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
    * @param props The properties of the new blank IModelConnection.
    * @beta

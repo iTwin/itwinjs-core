@@ -107,6 +107,8 @@ public;ElementRefersToElements
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
+internal;EmitOptions
+internal;EmitStrategy
 public;Entity 
 internal;EventSink
 internal;EventSinkManager
@@ -219,6 +221,7 @@ public;LinkPartition
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;NativeAppBackend
 alpha;OidcDesktopClient 
 public;OpenParams
 public;OrthographicViewDefinition 

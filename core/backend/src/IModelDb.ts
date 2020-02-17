@@ -221,13 +221,6 @@ export class IModelDb extends IModel {
     super.initialize(name, props);
   }
 
-  private static constructIModelDb(briefcaseEntry: BriefcaseEntry, openParams: OpenParams, contextId?: string): IModelDb {
-    if (briefcaseEntry.iModelDb)
-      return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openParams.openMode);
-    return new IModelDb(briefcaseEntry, iModelToken, openParams);
-  }
-
   /** @deprecated @internal */
   public static performUpgrade(pathname: string): DbResult {
     const nativeDb = new IModelHost.platform.DgnDb();
@@ -247,7 +240,9 @@ export class IModelDb extends IModel {
    */
   public static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, args);
-    return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams.openMode));
+    const openMode = briefcaseEntry.openParams.openMode;
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
+    return new IModelDb(briefcaseEntry, iModelToken, briefcaseEntry.openParams);
   }
 
   /** Create a local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file, using this iModel as a *seed* or starting point.
@@ -268,7 +263,10 @@ export class IModelDb extends IModel {
       briefcaseEntry.iModelId = Guid.createValue();
     }
     briefcaseEntry.briefcaseId = BriefcaseId.Snapshot;
-    const snapshotDb: IModelDb = IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(OpenMode.ReadWrite)); // WIP: clean up copied file on error?
+
+    const openMode = OpenMode.ReadWrite;
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
+    const snapshotDb = new IModelDb(briefcaseEntry, iModelToken, OpenParams.standalone(OpenMode.ReadWrite)); // WIP: clean up copied file on error?
     if (isSeedFileMaster) {
       snapshotDb.setGuid(briefcaseEntry.iModelId);
     } else {
@@ -298,7 +296,8 @@ export class IModelDb extends IModel {
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
-    return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(openMode));
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
+    return new IModelDb(briefcaseEntry, iModelToken, OpenParams.standalone(openMode));
   }
 
   /** Open a local iModel *snapshot*. Once created, *snapshots* are read-only and are typically used for archival or data transfer purposes.
@@ -327,15 +326,41 @@ export class IModelDb extends IModel {
    */
   public static async open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     requestContext.enter();
-    const perfLogger = new PerfLogger("Opening iModel", () => ({ contextId, iModelId, ...openParams }));
 
-    const briefcaseEntry: BriefcaseEntry = await this.downloadBriefcase(requestContext, contextId, iModelId, openParams, version);
-    requestContext.enter();
+    IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
 
-    const iModelDb: IModelDb = await this.openBriefcase(requestContext, briefcaseEntry);
-    requestContext.enter();
+    let iModelDb: IModelDb | undefined;
+    const finishOpen = async (): Promise<void> => {
+      requestContext.enter();
+      const perfLogger = new PerfLogger("Opening iModel", () => ({ contextId, iModelId, ...openParams }));
 
-    perfLogger.dispose();
+      const iModelToken: IModelToken = await this.downloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+      requestContext.enter();
+
+      iModelDb = await this.openBriefcase(requestContext, iModelToken);
+      requestContext.enter();
+
+      perfLogger.dispose();
+    };
+
+    try {
+      if (openParams.timeout === undefined)
+        await finishOpen();
+      else {
+        iModelDb = undefined;
+        await BeDuration.race(openParams.timeout, finishOpen());
+      }
+    } catch (error) {
+      requestContext.enter();
+      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
+      throw error;
+    }
+
+    if (iModelDb === undefined) {
+      Logger.logTrace(loggerCategory, "Issuing pending status in IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
+      throw new RpcPendingResponse();
+    }
+
     return iModelDb;
   }
 
@@ -348,45 +373,46 @@ export class IModelDb extends IModel {
    * @param openParams Parameters to open the iModel
    * @internal
    */
-  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseEntry> {
+  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
     requestContext.enter();
-    const perfLogger = new PerfLogger("Downloading briefcase", () => ({ contextId, iModelId, ...openParams }));
 
-    IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
+    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, BriefcaseManager.imodelClient);
+    requestContext.enter();
 
     let briefcaseEntry: BriefcaseEntry;
-    let timedOut = false;
     try {
-      briefcaseEntry = await BriefcaseManager.download(requestContext, contextId, iModelId, openParams, version);
+      briefcaseEntry = await BriefcaseManager.download(requestContext, contextId, iModelId, openParams, changeSetId);
       requestContext.enter();
-
-      if (briefcaseEntry.isPending !== undefined) {
-        if (typeof openParams.timeout === "undefined")
-          await briefcaseEntry.isPending;
-        else {
-          timedOut = true;
-          const waitForOpen = async () => {
-            await briefcaseEntry.isPending;
-            timedOut = false;
-          };
-          await BeDuration.race(openParams.timeout, waitForOpen());
-        }
-      }
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
+      Logger.logError(loggerCategory, "Failed to start IModelDb.downloadBriefcase", () => ({ contextId, iModelId, ...openParams }));
       throw error;
     }
 
-    if (timedOut) {
-      Logger.logTrace(loggerCategory, "Issuing pending status in IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
-      throw new RpcPendingResponse();
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, iModelId, changeSetId, openParams.openMode);
+
+    // If the briefcase has already been downloaded
+    if (briefcaseEntry.isPending === undefined)
+      return iModelToken;
+
+    // Setup the async-s after the download completes
+    const perfLogger = new PerfLogger("IModelDb.downloadBriefcase", () => briefcaseEntry.getDebugInfo());
+
+    // Finish the download
+    try {
+      await briefcaseEntry.isPending;
+      requestContext.enter();
+    } catch (error) {
+      // Note: If the briefcase download fails, the entry is cleared from the cache and the next call for the same briefcase will be a fresh attempt
+      requestContext.enter();
+      Logger.logError(loggerCategory, "Failed to finish IModelDb.downloadBriefcase", () => briefcaseEntry.getDebugInfo());
+      throw error;
+    } finally {
+      briefcaseEntry.isPending = undefined;
+      perfLogger.dispose();
     }
 
-    briefcaseEntry.isPending = undefined;
-
-    perfLogger.dispose();
-    return briefcaseEntry;
+    return iModelToken;
   }
 
   /**
@@ -395,25 +421,38 @@ export class IModelDb extends IModel {
    * @param briefcaseEntry Downloaded briefcase - see [[downloadBriefcase]]
    * @internal
    */
-  public static async openBriefcase(requestContext: AuthorizedClientRequestContext, briefcaseEntry: BriefcaseEntry): Promise<IModelDb> {
-    if (briefcaseEntry.isPending)
+  public static async openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<IModelDb> {
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    if (briefcaseEntry === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => iModelToken);
+    if (briefcaseEntry.isPending !== undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that's not been completely downloaded", Logger.logError, loggerCategory, () => { briefcaseEntry.getDebugInfo(); });
 
-    if (!briefcaseEntry.isOpen)
+    /**
+     * Validate any briefcases that were setup before
+     * Note: This validation should never fail since the iModelDb field is set to undefined when the briefcase is closed.
+     * - turn this into an assertion once testing/seq-logs validates it.
+     */
+    if (briefcaseEntry.iModelDb !== undefined && !briefcaseEntry.isOpen) {
+      Logger.logError(loggerCategory, "Briefcase was closed but the iModelDb was left initialized", () => briefcaseEntry.getDebugInfo());
       BriefcaseManager.openBriefcase(briefcaseEntry);
+    }
 
-    const alreadyOpen = (briefcaseEntry.iModelDb !== undefined);
+    // Setup an iModelDb
+    if (briefcaseEntry.iModelDb === undefined) {
+      if (!briefcaseEntry.isOpen)
+        BriefcaseManager.openBriefcase(briefcaseEntry);
 
-    const iModelDb = IModelDb.constructIModelDb(briefcaseEntry, briefcaseEntry.openParams, briefcaseEntry.contextId);
-    await this.logUsage(requestContext, briefcaseEntry.contextId, iModelDb);
+      const iModelDb = new IModelDb(briefcaseEntry, iModelToken, briefcaseEntry.openParams);
+      briefcaseEntry.iModelDb = iModelDb;
 
-    if (!alreadyOpen) {
       iModelDb.setDefaultConcurrentControlAndPolicy();
       await iModelDb.concurrencyControl.onOpened(requestContext);
       IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
     }
 
-    return iModelDb;
+    await this.logUsage(requestContext, briefcaseEntry.contextId, briefcaseEntry.iModelDb);
+    return briefcaseEntry.iModelDb;
   }
 
   private static _ulasClient: UlasClient;

@@ -171,6 +171,6 @@ describe("IModelOpen (#integration)", () => {
     for (const iModel of iModels) {
       await iModel.close(requestContext, KeepBriefcase.Yes);
     }
-  });
+  }).timeout(1000000);
 
 });

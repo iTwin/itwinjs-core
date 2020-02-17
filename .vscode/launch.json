@@ -710,6 +710,46 @@
       "webRoot": "${workspaceFolder}",
       "internalConsoleOptions": "openOnSessionStart"
     },
+    //sss
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "⚠︝Full Stack NativeApp Integration Tests (backend)",
+      "cwd": "${workspaceRoot}/full-stack-tests/native-app/",
+      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
+      "runtimeArgs": [
+        "--max-http-header-size=16000",
+      ],
+      "args": [
+        "--debug",
+        "-r",
+        "${input:integrationTestEnvironment}",
+        "--grep",
+        "#integration",
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/full-stack-tests/native-app/lib/**/*.js",
+        "${workspaceRoot}/core/*/lib/**/*.js",
+        "${workspaceRoot}/tools/certa/lib/**/*.js"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in full-stack-tests/native-app/certa.json
+    },
+    {
+      "name": "⚠︝Full Stack NativeApp Integration Tests (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/native-app/certa.json
+      "sourceMaps": true,
+      "timeout": 200000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "webRoot": "${workspaceFolder}"
+    },
+    //sss
     {
       "type": "node",
       "request": "launch",
@@ -952,6 +992,13 @@
       "configurations": [
         "⚠︝Full Stack Core Integration Tests (frontend)",
         "⚠︝Full Stack Core Integration Tests (backend)"
+      ]
+    },
+    {
+      "name": "✔Full Stack NativeApp Integration Tests",
+      "configurations": [
+        "⚠︝Full Stack NativeApp Integration Tests (backend)",
+        "⚠︝Full Stack NativeApp Integration Tests (frontend)"
       ]
     },
     {

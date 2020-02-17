@@ -400,6 +400,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "native-app-full-stack-tests",
+      "projectFolder": "full-stack-tests/native-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "rpc-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc",
       "reviewCategory": "internal",

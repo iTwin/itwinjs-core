@@ -926,6 +926,8 @@ export class Logger {
     static set logExceptionCallstacks(b: boolean);
     static get logExceptionCallstacks(): boolean;
     static logInfo(category: string, message: string, metaData?: GetMetaDataFunction): void;
+    // @internal
+    static logRaw(level: LogLevel, category: string, message: string, getMetaData?: GetMetaDataFunction): void;
     static logTrace(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static logWarning(category: string, message: string, metaData?: GetMetaDataFunction): void;
     static makeMetaData(getMetaData?: GetMetaDataFunction): any;

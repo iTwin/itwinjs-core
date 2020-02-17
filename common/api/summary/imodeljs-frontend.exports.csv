@@ -275,6 +275,8 @@ public;ModelSelectorState
 public;ModelState 
 internal;ModifyElementSource
 alpha;MultilineTextEditorParams 
+internal;NativeApp
+internal;NativeAppLogger
 internal;NoRenderApp
 public;NotificationManager
 public;NotifyMessageDetails
@@ -397,6 +399,7 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
+internal;Storage
 beta;StructValue 
 internal;SubCategoriesCache
 internal;SubCategoriesCache
