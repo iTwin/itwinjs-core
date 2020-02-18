@@ -235,12 +235,12 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
 
 const DISPLAY_LABEL_COLUMN_KEY = "/DisplayLabel/";
 
-const createColumns = async (descriptor: Readonly<Descriptor> | undefined): Promise<ColumnDescription[]> => {
+const createColumns = (descriptor: Readonly<Descriptor> | undefined): ColumnDescription[] => {
   if (!descriptor)
     return [];
 
   if (descriptor.displayType === DefaultContentDisplayTypes.List)
-    return [await createLabelColumn()];
+    return [createLabelColumn()];
 
   const sortedFields = [...descriptor.fields].sort(priorityAndNameSortFunction);
   return sortedFields.map((field) => createColumn(field));
@@ -258,10 +258,10 @@ const createColumn = (field: Readonly<Field>): ColumnDescription => {
   };
 };
 
-const createLabelColumn = async (): Promise<ColumnDescription> => {
+const createLabelColumn = (): ColumnDescription => {
   return {
     key: DISPLAY_LABEL_COLUMN_KEY,
-    label: await translate("general.display-label"),
+    label: translate("general.display-label"),
     sortable: true,
     editable: false,
     filterable: false,

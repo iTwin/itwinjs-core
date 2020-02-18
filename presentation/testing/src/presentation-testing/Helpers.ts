@@ -92,22 +92,10 @@ export const initializeAsync = async (props?: PresentationTestingInitProps) => {
     isFrontendAppInitialized = true;
   }
 
-  initialize(props.backendProps, props.frontendProps, props.frontendApp);
+  await initialize(props.backendProps, props.frontendProps, props.frontendApp);
 };
 
-/**
- * Initialize the framework for presentation testing. The function sets up backend,
- * frontend and RPC communication between them.
- * @param backendProps Properties for backend initialization
- * @param frontendProps Properties for frontend initialization
- * @param frontendApp IModelApp implementation
- *
- * @see `terminate`
- *
- * @public
- * @deprecated Functions requiring authentication will not work. Instead use [[initializeAsync]].
- */
-export const initialize = (backendProps?: PresentationBackendProps, frontendProps?: PresentationFrontendProps, frontendApp: { startup: (opts?: IModelAppOptions) => void } = NoRenderApp) => {
+const initialize = async (backendProps?: PresentationBackendProps, frontendProps?: PresentationFrontendProps, frontendApp: { startup: (opts?: IModelAppOptions) => void } = NoRenderApp) => {
   if (isInitialized)
     return;
 
@@ -133,7 +121,7 @@ export const initialize = (backendProps?: PresentationBackendProps, frontendProp
   const defaultFrontendProps: PresentationFrontendProps = {
     activeLocale: IModelApp.i18n.languageList()[0],
   };
-  PresentationFrontend.initialize({ ...defaultFrontendProps, ...frontendProps });
+  await PresentationFrontend.initialize({ ...defaultFrontendProps, ...frontendProps });
 
   isInitialized = true;
 };

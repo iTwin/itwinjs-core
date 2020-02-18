@@ -170,7 +170,7 @@ describe("Favorite properties", () => {
 
       // refresh Presentation
       Presentation.terminate();
-      Presentation.initialize();
+      await Presentation.initialize();
       propertiesRuleset = await Presentation.presentation.rulesets().add(ruleset);
       propertiesDataProvider = new PresentationPropertyDataProvider(imodel, propertiesRuleset.id);
       propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);

@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Presentation } from "@bentley/presentation-frontend";
+import { initializeLocalization } from "./presentation-components/common/Utils";
+
 /**
  * @module Core
  *
@@ -72,6 +75,8 @@ export { viewWithUnifiedSelection, ViewWithUnifiedSelectionProps } from "./prese
  * Types related to display labels
  */
 export { IPresentationLabelsProvider, LabelsProvider } from "./presentation-components/labels/LabelsProvider";
+
+Presentation.registerInitializationHandler(initializeLocalization);
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

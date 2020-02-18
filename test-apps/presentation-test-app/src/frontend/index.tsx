@@ -60,8 +60,15 @@ export class SampleApp {
 
     setCustomFavoritePropertiesManager();
 
+    readyPromises.push(this.initializePresentation());
+    readyPromises.push(UiCore.initialize(IModelApp.i18n));
+    readyPromises.push(UiComponents.initialize(IModelApp.i18n));
+    this._ready = Promise.all(readyPromises).then(() => { });
+  }
+
+  private static async initializePresentation() {
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
-    Presentation.initialize({
+    await Presentation.initialize({
       // specify `clientId` so Presentation framework can share caches
       // between sessions for the same clients
       clientId: MyAppFrontend.getClientId(),
@@ -74,10 +81,6 @@ export class SampleApp {
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.SetSelectionScope
     Presentation.selection.scopes.activeScope = "top-assembly";
     // __PUBLISH_EXTRACT_END__
-
-    readyPromises.push(UiCore.initialize(IModelApp.i18n));
-    readyPromises.push(UiComponents.initialize(IModelApp.i18n));
-    this._ready = Promise.all(readyPromises).then(() => { });
   }
 
   public static get ready(): Promise<void> { return this._ready; }

@@ -30,6 +30,7 @@ import { IModelToken } from "@bentley/imodeljs-common";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
+import { initializeLocalization } from "../../presentation-components/common/Utils";
 
 const favoritesCategoryName = "Favorite";
 /**
@@ -66,13 +67,14 @@ describe("PropertyDataProvider", () => {
   const favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
-  before(() => {
+  before(async () => {
     rulesetId = faker.random.word();
     Presentation.presentation = presentationManagerMock.object;
     Presentation.favoriteProperties = favoritePropertiesManagerMock.object;
     Presentation.i18n = new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     });
+    await initializeLocalization();
   });
 
   beforeEach(() => {

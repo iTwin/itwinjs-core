@@ -7,6 +7,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as React from "react";
+import * as moq from "typemoq";
 import {
   createRandomDescriptor, createRandomPropertiesField, createRandomNestedContentField,
   createRandomLabelDefinition, createRandomLabelCompositeValue,
@@ -15,6 +16,8 @@ import { PrimitiveValue, Primitives } from "@bentley/imodeljs-frontend";
 import { LabelCompositeValue } from "@bentley/presentation-common";
 import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 import * as utils from "../../presentation-components/common/Utils";
+import { Presentation } from "@bentley/presentation-frontend";
+import { I18N } from "@bentley/imodeljs-i18n";
 
 class TestComponent extends React.Component {
 }
@@ -97,6 +100,27 @@ describe("Utils", () => {
       descriptor.fields = [nestingField];
       const result = utils.findField(descriptor, applyOptionalPrefix(nestedField.name, nestingField.name));
       expect(result).to.eq(nestedField);
+    });
+
+  });
+
+  describe("initializeLocalization", () => {
+    const i18nMock = moq.Mock.ofType<I18N>();
+
+    beforeEach(() => {
+      i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(() => ({ name: "namespace", readFinished: Promise.resolve() }));
+      Presentation.i18n = i18nMock.object;
+    });
+
+    afterEach(() => {
+      Presentation.terminate();
+    });
+
+    it("registers and unregisters namespace", async () => {
+      const terminate = await utils.initializeLocalization();
+      i18nMock.verify((x) => x.registerNamespace(moq.It.isAny()), moq.Times.once());
+      terminate();
+      i18nMock.verify((x) => x.unregisterNamespace(moq.It.isAny()), moq.Times.once());
     });
 
   });

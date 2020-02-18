@@ -15,23 +15,16 @@ import { translate } from "../common/Utils";
 import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
 
 const favoritesCategoryName = "Favorite";
-let favoritesCategoryPromise: Promise<CategoryDescription> | undefined;
 
 /** @internal */
-export const getFavoritesCategory = async (): Promise<CategoryDescription> => {
-  if (!favoritesCategoryPromise) {
-    favoritesCategoryPromise = Promise.all([
-      translate("categories.favorite.label"),
-      translate("categories.favorite.description"),
-    ]).then(([label, description]): CategoryDescription => ({
-      name: favoritesCategoryName,
-      label,
-      description,
-      priority: Number.MAX_VALUE,
-      expand: true,
-    }));
-  }
-  return favoritesCategoryPromise;
+export const getFavoritesCategory = (): CategoryDescription => {
+  return {
+    name: favoritesCategoryName,
+    label: translate("categories.favorite.label"),
+    description: translate("categories.favorite.description"),
+    priority: Number.MAX_VALUE,
+    expand: true,
+  };
 };
 
 /** @beta */
@@ -95,7 +88,7 @@ export class FavoritePropertiesDataProvider implements IElementPropertyDataProvi
     const propertyData = await propertyDataProvider.getData();
 
     // leave only favorite properties
-    const favoritesCategory = await getFavoritesCategory();
+    const favoritesCategory = getFavoritesCategory();
     propertyData.categories = propertyData.categories.filter((c) => c.name === favoritesCategory.name);
     propertyData.records = propertyData.records.hasOwnProperty(favoritesCategory.name) ?
       { [favoritesCategory.name]: propertyData.records[favoritesCategory.name] } : {};

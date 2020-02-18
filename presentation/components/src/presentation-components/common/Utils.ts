@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Descriptor, Field, LabelDefinition, LabelCompositeValue } from "@bentley/presentation-common";
 import { FIELD_NAMES_SEPARATOR } from "./ContentBuilder";
@@ -44,7 +43,18 @@ export const priorityAndNameSortFunction = (a: IPrioritized & INamed, b: IPriori
   return a.name.localeCompare(b.name);
 };
 
-let localizationNamespace: I18NNamespace | undefined;
+const localizationNamespaceName = "PresentationComponents";
+
+/**
+ * Registers 'PresentationComponents' localization namespace and returns callback
+ * to unregister it.
+ * @internal
+ */
+export const initializeLocalization = async () => {
+  await Presentation.i18n.registerNamespace(localizationNamespaceName).readFinished;
+  return () => Presentation.i18n.unregisterNamespace(localizationNamespaceName);
+};
+
 /**
  * Translate a string with the specified id from `PresentationComponents`
  * localization namespace. The `stringId` should not contain namespace - it's
@@ -52,12 +62,7 @@ let localizationNamespace: I18NNamespace | undefined;
  *
  * @internal
  */
-export const translate = async (stringId: string): Promise<string> => {
-  const localizationNamespaceName = "PresentationComponents";
-  if (!localizationNamespace) {
-    localizationNamespace = Presentation.i18n.registerNamespace(localizationNamespaceName);
-  }
-  await localizationNamespace.readFinished;
+export const translate = (stringId: string): string => {
   stringId = `${localizationNamespaceName}:${stringId}`;
   return Presentation.i18n.translate(stringId);
 };

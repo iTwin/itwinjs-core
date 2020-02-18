@@ -55,9 +55,9 @@ export class SimpleEditorApp {
     initPromises.push(UiComponents.initialize(IModelApp.i18n));
 
     // initialize Presentation
-    Presentation.initialize({
+    initPromises.push(Presentation.initialize({
       activeLocale: IModelApp.i18n.languageList()[0],
-    });
+    }));
 
     // initialize RPC communication
     initPromises.push(SimpleEditorApp.initializeRpc());

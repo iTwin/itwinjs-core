@@ -38,9 +38,6 @@ export interface PropertyGridWithUnifiedSelectionProps {
 
 interface State {
   overLimit?: boolean;
-  localizedStrings?: {
-    tooManyElements: string;
-  };
 }
 
 /**
@@ -59,20 +56,10 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
   return class WithUnifiedSelection extends React.Component<CombinedProps, State> implements IUnifiedSelectionComponent {
 
     private _selectionHandler?: SelectionHandler;
-    private _isMounted?: boolean;
 
     public constructor(props: CombinedProps) {
       super(props);
       this.state = {};
-      this.initLocalizedStrings(); // tslint:disable-line:no-floating-promises
-    }
-
-    private async initLocalizedStrings() {
-      const localizedStrings = {
-        tooManyElements: await translate("property-grid.too-many-elements-selected"),
-      };
-      if (this._isMounted)
-        this.setState({ localizedStrings });
     }
 
     /** Returns the display name of this component */
@@ -98,7 +85,6 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
       const name = `PropertyGrid_${counter++}`;
       const imodel = this.props.dataProvider.imodel;
       const rulesetId = this.props.dataProvider.rulesetId;
-      this._isMounted = true;
       this._selectionHandler = this.props.selectionHandler
         ? this.props.selectionHandler : new SelectionHandler(Presentation.selection, name, imodel, rulesetId);
       this._selectionHandler!.onSelect = this.onSelectionChanged;
@@ -108,7 +94,6 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
     public componentWillUnmount() {
       if (this._selectionHandler)
         this._selectionHandler.dispose();
-      this._isMounted = false;
     }
 
     public componentDidUpdate() {
@@ -165,7 +150,7 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
 
       let content;
       if (this.state.overLimit) {
-        content = (<FillCentered>{this.state.localizedStrings ? this.state.localizedStrings.tooManyElements : undefined}</FillCentered>);
+        content = (<FillCentered>{translate("property-grid.too-many-elements-selected")}</FillCentered>);
       } else {
         content = (<PropertyGridComponent {...props} />);
       }

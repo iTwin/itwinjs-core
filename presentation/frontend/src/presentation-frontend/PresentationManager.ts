@@ -159,7 +159,7 @@ export class PresentationManager implements IDisposable {
     const parentKeyJson = parentKey ? NodeKey.toJSON(parentKey) : undefined;
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getNodesAndCount(this.toIModelTokenOptions(options), parentKeyJson);
-    return { ...result, nodes: await this._localizationHelper.getLocalizedNodes(result.nodes.map(Node.fromJSON)) };
+    return { ...result, nodes: this._localizationHelper.getLocalizedNodes(result.nodes.map(Node.fromJSON)) };
   }
 
   /**
@@ -295,7 +295,7 @@ export class PresentationManager implements IDisposable {
 
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
-    return { ...result, content: await this._localizationHelper.getLocalizedContent(Content.fromJSON(result.content)) };
+    return { ...result, content: this._localizationHelper.getLocalizedContent(Content.fromJSON(result.content)) };
   }
 
   private createDescriptorParam(descriptorOrOverrides: Descriptor | DescriptorOverrides) {

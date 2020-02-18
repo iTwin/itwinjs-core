@@ -50,11 +50,6 @@ export interface IContentBuilderDataProvider {
     keys: Readonly<KeySet>;
 }
 
-// @public @deprecated
-export const initialize: (backendProps?: PresentationManagerProps | undefined, frontendProps?: PresentationManagerProps_2 | undefined, frontendApp?: {
-    startup: (opts?: IModelAppOptions | undefined) => void;
-}) => void;
-
 // @public
 export const initializeAsync: (props?: PresentationTestingInitProps | undefined) => Promise<void>;
 

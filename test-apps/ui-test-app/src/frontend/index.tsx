@@ -207,8 +207,6 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    Presentation.initialize();
-    Presentation.selection.scopes.activeScope = "top-assembly";
     UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
@@ -216,9 +214,10 @@ export class SampleAppIModelApp {
     await UiFramework.initialize(undefined, IModelApp.i18n, oidcConfiguration);
 
     // initialize Presentation
-    Presentation.initialize({
+    await Presentation.initialize({
       activeLocale: IModelApp.i18n.languageList()[0],
     });
+    Presentation.selection.scopes.activeScope = "top-assembly";
 
     // Register tools.
     Tool1.register(this.sampleAppNamespace);

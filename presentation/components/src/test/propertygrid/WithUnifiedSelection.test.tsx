@@ -25,17 +25,19 @@ import {
   IPresentationPropertyDataProvider, IUnifiedSelectionComponent,
   propertyGridWithUnifiedSelection,
 } from "../../presentation-components";
+import { initializeLocalization } from "../../presentation-components/common/Utils";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationPropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 describe("PropertyGrid withUnifiedSelection", () => {
 
-  before(() => {
+  before(async () => {
     Presentation.presentation = moq.Mock.ofType<PresentationManager>().object;
     Presentation.i18n = new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     });
+    await initializeLocalization();
   });
 
   let testRulesetId: string;

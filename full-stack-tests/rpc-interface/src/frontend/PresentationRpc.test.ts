@@ -31,7 +31,7 @@ describe("PresentationRpcInterface tests", () => {
 
     client = RpcManager.getClientForInterface(PresentationRpcInterface);
 
-    Presentation.initialize();
+    await Presentation.initialize();
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const contextId = testContext.iModelWithChangesets!.contextId;

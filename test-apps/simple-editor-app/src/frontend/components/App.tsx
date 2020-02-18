@@ -159,11 +159,6 @@ export default class App extends React.Component<{}, AppComponentState> {
     return split[split.length - 1];
   }
 
-  private delayedInitialization() {
-    // initialize Presentation
-    Presentation.initialize({ activeLocale: IModelApp.i18n.languageList()[0] });
-  }
-
   private getBanner(): JSX.Element {
     return (
       <div className="app-header">
@@ -194,8 +189,6 @@ export default class App extends React.Component<{}, AppComponentState> {
       ui = (<FindIModelComponent projectName={this.state.projectName!} iModelName={this.state.iModelName!} onIModelInfoFound={(p, m) => this._onIModelFound(p, m)} />);
       showBanner = true;
     } else if (!AppState.isOpen || !this.state.viewDefinitionId) {
-      // NOTE: We needed to delay some initialization until now so we know if we are opening a snapshot or an imodel.
-      this.delayedInitialization();
       // if we don't have an imodel / view definition id - initiate imodel open and show progress.
       ui = (<OpenIModelComponent iModelId={this.state.iModelId!} projectId={this.state.projectId!} onIModelOpened={(i) => this._onIModelOpened(i)} />);
       showBanner = true;

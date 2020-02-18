@@ -5,7 +5,6 @@ public;ContentBuilderResult
 public;HierarchyBuilder
 public;HierarchyNode 
 public;IContentBuilderDataProvider
-public;initialize: (backendProps?: PresentationManagerProps | undefined, frontendProps?: PresentationManagerProps_2 | undefined, frontendApp?:
 public;initializeAsync: (props?: PresentationTestingInitProps | undefined) => Promise
 public;MappedNode
 public;NodeMappingFunc = (node: TreeNodeItem) => MappedNode

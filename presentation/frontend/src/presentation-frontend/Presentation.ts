@@ -13,11 +13,14 @@ import { PresentationManager, PresentationManagerProps } from "./PresentationMan
 import { SelectionManager } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 import { FavoritePropertiesManager } from "./favorite-properties/FavoritePropertiesManager";
+import { LocalizationHelper } from "./LocalizationHelper";
 
 let presentationManager: PresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
 let i18n: I18N | undefined;
 let favoritePropertiesManager: FavoritePropertiesManager | undefined;
+const initializationHandlers: Array<() => Promise<(() => void) | void>> = [];
+const terminationHandlers: Array<() => void> = [];
 
 /**
  * Static class used to statically set up Presentation library for the frontend.
@@ -47,7 +50,7 @@ export class Presentation {
    * @param props Optional properties to use when creating [[PresentationManager]]. If not provided
    * or provided with `activeLocale` not set, `Presentation.i18n.languageList()[0]` is used as active locale.
    */
-  public static initialize(props?: PresentationManagerProps): void {
+  public static async initialize(props?: PresentationManagerProps): Promise<void> {
     if (!IModelApp.initialized) {
       throw new PresentationError(PresentationStatus.NotInitialized,
         "IModelApp.startup must be called before calling Presentation.initialize");
@@ -77,6 +80,12 @@ export class Presentation {
       favoritePropertiesManager = new FavoritePropertiesManager();
     }
     presentationManager.onNewiModelConnection = favoritePropertiesManager.initializeConnection;
+    await LocalizationHelper.registerNamespaces();
+    for (const handler of initializationHandlers) {
+      const cleanup = await handler();
+      if (cleanup)
+        terminationHandlers.push(cleanup);
+    }
   }
 
   /**
@@ -84,12 +93,28 @@ export class Presentation {
    * before a call to [IModelApp.shutdown]($imodeljs-frontend)
    */
   public static terminate(): void {
+    if (i18n)
+      LocalizationHelper.unregisterNamespaces();
+
+    terminationHandlers.forEach((handler) => handler());
+    terminationHandlers.length = 0;
+
     if (presentationManager)
       presentationManager.dispose();
     presentationManager = undefined;
     selectionManager = undefined;
     favoritePropertiesManager = undefined;
     i18n = undefined;
+  }
+
+  /**
+   * Registers an additional handler which will be invoked during Presentation library frontend
+   * initialization.
+   *
+   * @internal
+   */
+  public static registerInitializationHandler(handler: () => Promise<() => void>): void {
+    initializationHandlers.push(handler);
   }
 
   /**

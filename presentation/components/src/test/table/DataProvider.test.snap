@@ -6,7 +6,7 @@ Array [
     "editable": false,
     "filterable": false,
     "key": "/DisplayLabel/",
-    "label": "general.display-label",
+    "label": "Label",
     "sortable": true,
   },
 ]

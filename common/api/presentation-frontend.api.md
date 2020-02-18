@@ -105,9 +105,11 @@ export class Presentation {
     static set favoriteProperties(value: FavoritePropertiesManager);
     static get i18n(): I18N;
     static set i18n(value: I18N);
-    static initialize(props?: PresentationManagerProps): void;
+    static initialize(props?: PresentationManagerProps): Promise<void>;
     static get presentation(): PresentationManager;
     static set presentation(value: PresentationManager);
+    // @internal
+    static registerInitializationHandler(handler: () => Promise<() => void>): void;
     static get selection(): SelectionManager;
     static set selection(value: SelectionManager);
     static terminate(): void;
