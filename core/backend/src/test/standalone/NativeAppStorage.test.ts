@@ -7,7 +7,7 @@ import { NativeAppStorage } from "../../NativeAppStorage";
 
 describe("NativeApp Storage", () => {
   it("Primitive Type", () => {
-    const test1 = NativeAppStorage.open("test");
+    const test1 = NativeAppStorage.open("backend_test_1");
     test1.removeAll();
     const dataset = [
       { key: "a", value: 100 },
@@ -35,7 +35,7 @@ describe("NativeApp Storage", () => {
     assert.throw(() => { test1.removeData("t"); });
 
     // Reopen it.
-    const test2 = NativeAppStorage.open("test");
+    const test2 = NativeAppStorage.open("backend_test_1");
 
     // reopen and test it
     for (const item of dataset) {
@@ -47,7 +47,7 @@ describe("NativeApp Storage", () => {
       }
     }
 
-    const test3 = NativeAppStorage.open("test");
+    const test3 = NativeAppStorage.open("backend_test_1");
     // return same storage if it was previously opened
     assert.equal(test3, test2);
     test2.close(true);
@@ -55,7 +55,7 @@ describe("NativeApp Storage", () => {
   });
 
   it("Override and type check", () => {
-    const test1 = NativeAppStorage.open("test");
+    const test1 = NativeAppStorage.open("backend_test_2");
     test1.removeAll();
     test1.setData("key1", null);
     assert.isNull(test1.getData("key1"));
@@ -87,7 +87,7 @@ describe("NativeApp Storage", () => {
   it("Storage open/close test", () => {
     const storages: NativeAppStorage[] = [];
     for (let i = 0; i < 20; i++) {
-      storages.push(NativeAppStorage.open(`test-${i}`));
+      storages.push(NativeAppStorage.open(`backend_test_3-${i}`));
     }
     storages.forEach((storage) => {
       storage.setData("name", storage.id);

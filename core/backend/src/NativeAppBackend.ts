@@ -38,13 +38,15 @@ export class NativeAppBackend {
     }
     /** Override applicationType to NativeApp */
     configuration!.applicationType = ApplicationType.NativeApp;
-
-    /** Set briefcase cache to home directory */
-    if (configuration.isDefaultBriefcaseCacheDir) {
-      configuration.briefcaseCacheDir = path.normalize(path.join(this.cacheFolder, "bentley/imodeljs/cache/"));
-    }
-    if (!configuration.nativeAppCacheDir) {
-      configuration.nativeAppCacheDir = path.normalize(path.join(this.cacheFolder, "bentley/imodeljs-native-app/storage"));
+    /** Do not override default on a build server */
+    if (!process.env.TF_BUILD) {
+      /** Set briefcase cache to home directory */
+      if (configuration.isDefaultBriefcaseCacheDir) {
+        configuration.briefcaseCacheDir = path.normalize(path.join(this.cacheFolder, "bentley/imodeljs/cache/"));
+      }
+      if (configuration.isDefaultNativeAppCacheDir) {
+        configuration.nativeAppCacheDir = path.normalize(path.join(this.cacheFolder, "bentley/imodeljs-native-app/storage"));
+      }
     }
     IModelHost.startup(configuration);
   }

@@ -102,6 +102,7 @@ export class IModelHostConfiguration {
   public get briefcaseCacheDir(): string { return this._briefcaseCacheDir; }
   public set briefcaseCacheDir(cacheDir: string) { this._briefcaseCacheDir = path.normalize(cacheDir.replace(/\/?$/, path.sep)); }
   public get isDefaultBriefcaseCacheDir(): boolean { return this._briefcaseCacheDir === IModelHostConfiguration.getDefaultBriefcaseCacheDir(); }
+  public get isDefaultNativeAppCacheDir(): boolean { return this.nativeAppCacheDir === IModelHostConfiguration.getDefaultNativeAppCacheDir(); }
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 

@@ -2534,6 +2534,8 @@ export class IModelHostConfiguration {
     imodelClient?: IModelClient;
     // (undocumented)
     get isDefaultBriefcaseCacheDir(): boolean;
+    // (undocumented)
+    get isDefaultNativeAppCacheDir(): boolean;
     // @internal
     logTileLoadTimeThreshold: number;
     // @internal

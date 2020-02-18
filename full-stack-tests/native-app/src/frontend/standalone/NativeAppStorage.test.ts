@@ -15,7 +15,7 @@ describe("NativeApp Storage", () => {
   });
 
   it("Primitive Type ", async () => {
-    const test1 = await NativeApp.openStorage("fronted_test");
+    const test1 = await NativeApp.openStorage("fronted_test_1");
     await test1.removeAll();
     const dataset = [
       { key: "a", value: 100 },
@@ -39,7 +39,7 @@ describe("NativeApp Storage", () => {
   });
 
   it("Override and type check", async () => {
-    const test1 = await NativeApp.openStorage("test");
+    const test1 = await NativeApp.openStorage("fronted_test_2");
     await test1.setData("key1", null);
     assert.isNull(await test1.getData("key1"));
 
