@@ -58,7 +58,6 @@ import {
   TileDrawArgs,
   TileParams,
   TileTree,
-  TileTreeLoadStatus,
   TileTreeOwner,
   TileTreeParams,
   TileTreeReference,
@@ -371,15 +370,6 @@ export class TerrainMapTile extends MapTile {
     super.disposeContents();
     this._geometry = dispose(this._geometry);
     this._mesh = undefined;
-
-    // If this is a leaf, dispose of upsampled children.
-    if (this._children && this._children.length > 0 && (this._children[0] instanceof BackgroundTerrainMapUpsampledChild)) {
-      for (const child of this._children)
-        dispose(child);
-
-      this._children = undefined;
-      this._childrenLoadStatus = TileTreeLoadStatus.NotLoaded;
-    }
   }
 }
 
@@ -419,7 +409,7 @@ class BackgroundTerrainMapUpsampledChild extends TerrainMapTile {
   public get isLoading(): boolean { return this.loadableTile.isLoading; }
   public get isQueued(): boolean { return this.loadableTile.isQueued; }
   public get isNotFound(): boolean { return this.loadableTile.isNotFound; }
-  public get isReady(): boolean { return this.loadableTile.loadStatus === TileLoadStatus.Ready && this.drapesAreReady; }
+  public get isReady(): boolean { return (this._geometry !== undefined || this.loadableTile.loadStatus === TileLoadStatus.Ready) && this.drapesAreReady; }
 }
 
 /** @internal */

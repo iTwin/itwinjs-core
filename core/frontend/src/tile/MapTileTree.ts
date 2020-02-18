@@ -127,11 +127,15 @@ export abstract class MapTile extends RealityTile {
 
     const inColor = new ColorDef(ColorByName.cornflowerBlue);
     const outColor = new ColorDef(ColorByName.chartreuse);
-    const inPoints = [], outPoints = [];
+    const transitionColor = new ColorDef(ColorByName.aquamarine);
+
+    const inPoints = [], outPoints = [], transitionPoints = [];
 
     for (const point of highs)
       if (this.mapTree.cartesianRange.containsPoint(point))
         inPoints.push(point);
+      else if (this.mapTree.cartesianRange.distanceToPoint(point) < this.mapTree.cartesianTransitionDistance)
+        transitionPoints.push(point);
       else
         outPoints.push(point);
 
@@ -139,6 +143,8 @@ export abstract class MapTile extends RealityTile {
     builder.addPointString(inPoints);
     builder.setSymbology(outColor, outColor, 15);
     builder.addPointString(outPoints);
+    builder.setSymbology(transitionColor, transitionColor, 31);
+    builder.addPointString(transitionPoints);
   }
 
   public getContentClip(): ClipVector | undefined {
@@ -613,6 +619,7 @@ export class MapTileTree extends RealityTileTree {
   public globeMode: GlobeMode;
   public globeOrigin: Point3d;
   public cartesianRange: Range3d;
+  public cartesianTransitionDistance: number;
   private _gcsConverter: GeoConverter | undefined;
   private _mercatorTilingScheme: MapTilingScheme;
 
@@ -649,6 +656,7 @@ export class MapTileTree extends RealityTileTree {
     this.earthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
     const globalHeightRange = includeTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(0, 0);
     const globalRectangle = new MapCartoRectangle(-Angle.piRadians, - Angle.piOver2Radians, Angle.piRadians, Angle.piOver2Radians);
+    this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
     if (includeTerrain) {
       this.minEarthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator + globalHeightRange.low, Constant.earthRadiusWGS84.equator + globalHeightRange.low, Constant.earthRadiusWGS84.polar + globalHeightRange.low);
       this.maxEarthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator + globalHeightRange.high, Constant.earthRadiusWGS84.equator + globalHeightRange.high, Constant.earthRadiusWGS84.polar + globalHeightRange.high);
@@ -790,6 +798,9 @@ export class MapTileTree extends RealityTileTree {
       } else {
         this._mercatorTilingScheme.fractionToCartographic(gridPoint.x, gridPoint.y, MapTileTree._scratchCarto);
         this.earthEllipsoid.radiansToPoint(MapTileTree._scratchCarto.longitude, Cartographic.parametricLatitudeFromGeodeticLatitude(MapTileTree._scratchCarto.latitude), gridPoint);
+        const cartesianDistance = this.cartesianRange.distanceToPoint(scratchCorner);
+        if (cartesianDistance < this.cartesianTransitionDistance)
+          scratchCorner.interpolate(cartesianDistance / this.cartesianTransitionDistance, gridPoint, gridPoint);
       }
     }
 

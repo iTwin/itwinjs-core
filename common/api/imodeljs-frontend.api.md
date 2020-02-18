@@ -5043,6 +5043,8 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     cartesianRange: Range3d;
     // (undocumented)
+    cartesianTransitionDistance: number;
+    // (undocumented)
     createGlobeChild(params: TileParams, quadId: QuadId, rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, _heightRange?: Range1d): MapTile;
     // (undocumented)
     createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, _heightRange?: Range1d): MapTile;

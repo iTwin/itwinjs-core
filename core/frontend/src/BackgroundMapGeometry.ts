@@ -6,6 +6,7 @@
 
 import {
   Angle,
+  ClipPlane,
   ClipPlaneContainment,
   Constant,
   CurvePrimitive,
@@ -35,6 +36,7 @@ const scratchCenterPoint = Point3d.createZero();
 const scratchIntersectRay = Ray3d.create(Point3d.create(), Vector3d.create());
 const scratchEyePoint = Point3d.createZero();
 const scratchViewRotation = Matrix3d.createIdentity();
+const scratchSilhouetteNormal = Vector3d.create();
 
 /** Geometry of background map. An ellipsoid if GlobeMode is 3D.   A plane if GlobeMode is Columbus.
  * @internal
@@ -211,41 +213,39 @@ export class BackgroundMapGeometry {
           clipPlanes.classifyPointContainment([extremaPoint], false) !== ClipPlaneContainment.StronglyOutside)
           depthRange.extendX(viewZ.dotProduct(extremaPoint));
 
-        // Silhouettes
-        if (isInside)
+        if (isInside) {
           depthRange.extendX(eyeDepth);
-        else {
+        } else {
           const silhouette = ellipsoid.silhouetteArc(eyePoint4d);
           if (silhouette !== undefined) {
-            silhouette.announceClipIntervals(clipPlanes, (a0: number, _a1: number, cp: CurvePrimitive) => {
-              depthRange.extendX(viewZ.dotProduct(cp.fractionToPoint(a0)));
-            });
+            silhouette.perpendicularVector.clone(scratchSilhouetteNormal);
+            if (scratchSilhouetteNormal.dotProduct(viewZ) < 0)
+              scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
+            clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
+          } else {
+            clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
           }
-        }
 
-        // Intersections with frustum planes...
-        const viewingInside = eyePoint !== undefined && viewZ.dotProduct(Vector3d.createStartEnd(center, eyePoint)) < 0;
-        if (eyePoint === undefined || !isInside || viewingInside) {
-          for (const clipPlane of clipPlanes.planes) {
-            const plane = clipPlane.getPlane3d();
-            const arc = ellipsoid.createPlaneSection(plane);
-
-            if (undefined !== arc) {
-              const closeRange = Range1d.createNull();
-              arc.announceClipIntervals(clipPlanes, (a0: number, a1: number, cp: CurvePrimitive) => {
-                const segment = cp.clonePartialCurve(a0, a1);
-                if (segment !== undefined) {
-                  scratchRange.setNull();
-                  segment.extendRange(scratchRange, toView);
-                  if (closeRange.isNull || scratchRange.low.z > closeRange.low) {
-                    closeRange.low = scratchRange.low.z;
-                    closeRange.high = scratchRange.high.z;
+          // Intersections with frustum planes...
+          const viewingInside = eyePoint !== undefined && viewZ.dotProduct(Vector3d.createStartEnd(center, eyePoint)) < 0;
+          if (eyePoint === undefined || !isInside || viewingInside) {
+            for (const clipPlane of clipPlanes.planes) {
+              const plane = clipPlane.getPlane3d();
+              const arc = ellipsoid.createPlaneSection(plane);
+              if (undefined !== arc) {
+                arc.announceClipIntervals(clipPlanes, (a0: number, a1: number, cp: CurvePrimitive) => {
+                  if (Math.abs(a1 - a0) < 1.0E-8) {
+                    depthRange.extendX(viewZ.dotProduct(cp.fractionToPoint(a0)));   // Tiny sweep - avoid problem with rangeMethod (not worth doing anyway).
+                  } else {
+                    const segment = cp.clonePartialCurve(a0, a1);
+                    if (segment !== undefined) {
+                      scratchRange.setNull();
+                      segment.extendRange(scratchRange, toView);
+                      depthRange.extendX(scratchRange.low.z);
+                      depthRange.extendX(scratchRange.high.z);
+                    }
                   }
-                }
-              });
-              if (!closeRange.isNull) {
-                depthRange.extendX(closeRange.low);
-                depthRange.extendX(closeRange.high);
+                });
               }
             }
           }
@@ -258,19 +258,35 @@ export class BackgroundMapGeometry {
     if (this.geometry instanceof Ellipsoid) {
       const ellipsoid = this.geometry as Ellipsoid;
       const clipPlanes = frustum.getRangePlanes(false, false, 0);
-      for (const clipPlane of clipPlanes.planes) {
-        const plane = clipPlane.getPlane3d();
-        const arc = ellipsoid.createPlaneSection(plane);
+      const viewRotation = frustum.getRotation()!;
+      const eyePoint = frustum.getEyePoint(scratchEyePoint);
+      const viewZ = viewRotation.getRow(2);
+      const eyePoint4d = eyePoint ? Point4d.createFromPointAndWeight(eyePoint, 1) : Point4d.createFromPointAndWeight(viewZ, 0);
+      const isInside = eyePoint && ellipsoid.worldToLocal(eyePoint)!.magnitude() < 1.0;
+      const center = ellipsoid.localToWorld(scratchZeroPoint, scratchCenterPoint);
 
-        if (undefined !== arc) {
-          builder.setSymbology(ColorDef.white, ColorDef.white, 1, 1);
-          builder.addArc(arc as Arc3d, false, false);
-          arc.announceClipIntervals(clipPlanes, (a0: number, a1: number, cp: CurvePrimitive) => {
-            builder.setSymbology(ColorDef.white, ColorDef.white, 2, 0);
-            const segment = cp.clonePartialCurve(a0, a1);
-            if (undefined !== segment)
-              builder.addArc(segment as Arc3d, false, false);
-          });
+      if (!isInside) {
+        const silhouette = ellipsoid.silhouetteArc(eyePoint4d);
+        if (silhouette !== undefined) {
+          silhouette.perpendicularVector.clone(scratchSilhouetteNormal);
+          if (scratchSilhouetteNormal.dotProduct(viewZ) < 0)
+            scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
+          clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
+        } else {
+          clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
+        }
+
+        builder.setSymbology(ColorDef.green, ColorDef.green, 15, 0);
+        for (const clipPlane of clipPlanes.planes) {
+          const plane = clipPlane.getPlane3d();
+          const arc = ellipsoid.createPlaneSection(plane);
+          if (undefined !== arc) {
+            arc.announceClipIntervals(clipPlanes, (a0: number, a1: number, cp: CurvePrimitive) => {
+              const segment = cp.clonePartialCurve(a0, a1);
+              if (segment !== undefined)
+                builder.addArc(segment as Arc3d, false, false);
+            });
+          }
         }
       }
     }

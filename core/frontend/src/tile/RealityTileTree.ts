@@ -180,6 +180,7 @@ export class RealityTileTree extends TileTree {
 
     args.drawGraphics();
     args.context.viewport.numSelectedTiles += selectedTiles.length;
+    this.purgeRealityTiles(args.purgeOlderThan);        // Purge stale tiles....
   }
 
   public getTraversalChildren(depth: number) {
@@ -197,7 +198,6 @@ export class RealityTileTree extends TileTree {
 
   public static freezeRealityState = false;
   public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadBuilder?: GraphicBuilder): RealityTile[] {
-    this.purgeRealityTiles(args.purgeOlderThan);        // Purge stale tiles....
     this._lastSelected = BeTimePoint.now();
     const selected: RealityTile[] = [];
     const context = new TraversalSelectionContext(selected, displayedDescendants, preloadBuilder);
