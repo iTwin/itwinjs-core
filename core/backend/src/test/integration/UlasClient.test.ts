@@ -18,7 +18,7 @@ import { getTestOidcToken, TestOidcConfiguration, TestUsers } from "@bentley/oid
 //    imjs_oidc_ulas_test_redirect_uri
 //    imjs_oidc_ulas_test_scopes
 
-describe("UlasUtilities - OIDC Token (#integration)", () => {
+describe.only("UlasUtilities - OIDC Token (#integration)", () => {
   const imodelJsProductId = 2686;
   const OIDC_TYPE = 2;
   let requestContext: AuthorizedBackendRequestContext;

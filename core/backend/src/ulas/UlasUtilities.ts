@@ -9,6 +9,16 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 
 const loggerCategory: string = ClientsLoggerCategory.UlasClient;
 
+/**
+ * @internal
+ * Defines a base set of additional properties that might be useful to attach to feature logs
+ */
+interface AdditionalFeatureData {
+  iModelId?: GuidString,
+  startTime: Date,
+  endTime: Date,
+}
+
 /** @internal */
 export class UlasUtilities {
 
@@ -35,13 +45,22 @@ export class UlasUtilities {
       UlasUtilities.getSessionId(requestContext));
   }
 
-  public static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: string): BentleyStatus {
+  public static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: string, additionalData: AdditionalFeatureData): BentleyStatus {
+    const featureUserData: IModelJsNative.FeatureUserDataKeyValuePair[] = [];
+    for (const propName in additionalData) {
+      featureUserData.push({
+        key: propName,
+        value: (additionalData as any)[propName],
+      });
+    }
+
     return IModelHost.platform.NativeUlasClient.markFeature(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
       {
         featureId,
         versionStr: requestContext.applicationVersion,
         projectId: contextId,
+        featureUserData: featureUserData,
       },
       authType,
       UlasUtilities.getApplicationId(requestContext),
