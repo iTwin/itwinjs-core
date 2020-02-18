@@ -1,6 +1,14 @@
-# Change Log - @bentley/rpcinterface-integration-test
+# Change Log - @bentley/rpcinterface-full-stack-tests
 
-This log was last generated on Thu, 16 Jan 2020 06:01:31 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Consolidated sign-in across packages for integration tests
+- Test prevention of reuse of cached tiles after project extents change.
 
 ## 1.11.7
 Thu, 16 Jan 2020 06:01:31 GMT

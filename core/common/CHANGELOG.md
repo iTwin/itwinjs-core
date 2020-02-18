@@ -1,6 +1,21 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Bump tile format version.
+- iModel write API development
+- Fix issue with constructing the tile cache URL() on Safari.
+- Prevent reuse of cached tiles after project extents change.
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
+- Define ViewDetails for manipulating optional detail settings of ViewDefinition and ViewState.
+- Add support for plan projection models with 3d display priority.
+- Add settings to control display of plan projection models.
+- Add PlanProjectionSettings.enforceDisplayPriority.
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT
