@@ -7,7 +7,7 @@ import { ClientRequestContext, Guid, GuidString } from "@bentley/bentleyjs-core"
 import { AuthorizationToken } from "../Token";
 import { TestConfig, TestUsers } from "./TestConfig";
 import { RealityDataServicesClient, RealityData, RealityDataRelationship } from "../RealityDataServicesClient";
-import { Range2d } from "@bentley/geometry-core";
+import { Range2d, Angle } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 chai.should();
@@ -69,8 +69,12 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
   });
 
   it("should be able to retrieve reality data properties for every reality data associated to project within an extent", async () => {
-    const theRange = Range2d.createXYXY(-81 * 3.1416 / 180, 39 * 3.1416 / 180, -74 * 3.1416 / 180, 42 * 3.1416 / 180); // Range encloses Pensylvania and should gather Shell project
-    const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProjectOverlapping(requestContext, projectId, theRange);
+    const theRange = Range2d.createXYXY(-81 * 3.1416 / 180, 39 * 3.1416 / 180, -74 * 3.1416 / 180, 42 * 3.1416 / 180); // Range encloses Pennsylvania and should gather Shell project
+    const minLongDeg = Angle.radiansToDegrees(theRange.low.x);
+    const maxLongDeg = Angle.radiansToDegrees(theRange.high.x);
+    const minLatDeg = Angle.radiansToDegrees(theRange.low.y);
+    const maxLatDeg = Angle.radiansToDegrees(theRange.high.y);
+    const realityData: RealityData[] = await realityDataServiceClient.getRealityDataInProjectOverlapping(requestContext, projectId, minLongDeg, maxLongDeg, minLatDeg, maxLatDeg);
 
     chai.expect(realityData).that.is.not.empty;
     realityData.forEach((value) => {
