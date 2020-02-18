@@ -67,7 +67,7 @@ The BIS schema for a Domain is expected to be useful to a wide variety of client
 
 ## Lifecycle Considerations
 
-Disciplines that will be using BIS usually focus on the entire lifecycle of infrastructure assets. That is, conceptual/detailed design, construction, operations and maintenance lifecycle phases. BIS, at its core, does not intent to break up schemas further into lifecycle phases, but rather be agnostic of them. Thus, a domain BIS ECSchema should be designed so that it can accommodate data at various phases.The quality and/or detail of data for any BIS concept modeled by an ECSchema should evolve as it “flows” through lifecycle phases. No import/export workflows shall be needed.
+Disciplines that will be using BIS usually focus on the entire lifecycle of infrastructure assets. That is, conceptual/detailed design, construction, operations and maintenance lifecycle phases. BIS, at its core, does not intend to break up schemas further into lifecycle phases, but rather be agnostic of them. Thus, a domain BIS ECSchema should be designed so that it can accommodate data at various phases.The quality and/or detail of data for any BIS concept modeled by an ECSchema should evolve as it “flows” through lifecycle phases. No import/export workflows shall be needed.
 
 Designing BIS schemas backwards (i.e. understanding concepts needed for Operations and Maintenance first, while leaving Conceptual Design last) may help to identify all needed pieces towards achieving a schema that works for the entire lifecycle of the infrastructure of interest.
 
