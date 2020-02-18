@@ -763,7 +763,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public setDrawBuffers(attachments: GLenum[]): void { this._extensions.setDrawBuffers(attachments); }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
-  public static createContext(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes, useWebGL2?: boolean): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+  public static createContext(canvas: HTMLCanvasElement, inputContextAttributes?: WebGLContextAttributes, useWebGL2?: boolean): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+    let contextAttributes: WebGLContextAttributes = { powerPreference: "high-performance" };
+    if (undefined !== inputContextAttributes)
+      contextAttributes = { ...inputContextAttributes, ...contextAttributes };
+
     let context = null;
     if (useWebGL2) // optionally first try using a WebGL2 context
       context = canvas.getContext("webgl2", contextAttributes);

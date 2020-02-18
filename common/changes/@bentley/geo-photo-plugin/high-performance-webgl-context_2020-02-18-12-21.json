@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geo-photo-plugin",
+      "comment": "Request high-performance webgl context.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geo-photo-plugin",
+  "email": "Paul.Connelly@bentley.com"
+}
