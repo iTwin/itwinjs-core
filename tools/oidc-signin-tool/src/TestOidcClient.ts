@@ -139,6 +139,8 @@ export class TestOidcClient implements IAuthorizationClient {
     try {
       await this.handleLoginPage(page);
 
+      await this.handlePingLoginPage(page);
+
       // Handle federated sign-in
       await this.handleFederatedSignin(page);
     } catch (err) {
@@ -243,9 +245,46 @@ export class TestOidcClient implements IAuthorizationClient {
     await this.checkErrorOnPage(page, "#errormessage");
   }
 
+  private async handlePingLoginPage(page: puppeteer.Page): Promise<void> {
+    if (undefined === this._issuer.metadata.authorization_endpoint || !page.url().startsWith(this._issuer.metadata.authorization_endpoint!))
+      return;
+
+    await page.waitForSelector("#identifierInput");
+    await page.type("#identifierInput", this._user.email);
+
+    await page.waitForSelector(".allow");
+
+    await Promise.all([
+      page.waitForNavigation({
+        // Need to wait for 'load' here instead of using 'networkidle2' because during a federated login there is a second redirect. With a fast connection,
+        // the redirect happens so quickly it doesn't hit the 500 ms threshold that puppeteer expects for an idle network.
+        waitUntil: "load",
+      }),
+      page.$eval(".allow", (button: any) => button.click()),
+    ]);
+
+    // Cut out for federated sign-in
+    if (-1 !== page.url().indexOf("microsoftonline")) {
+      await page.waitForNavigation({ waitUntil: "networkidle2" });
+      return;
+    }
+
+    await page.waitForSelector("#password");
+    await page.type("#password", this._user.password);
+
+    await Promise.all([
+      page.waitForNavigation({
+        // Need to wait for 'load' here instead of using 'networkidle2' because during a federated login there is a second redirect. With a fast connection,
+        // the redirect happens so quickly it doesn't hit the 500 ms threshold that puppeteer expects for an idle network.
+        waitUntil: "load",
+      }),
+      page.$eval(".allow", (button: any) => button.click()),
+    ]);
+  }
+
   // Bentley-specific federated login.  This will get called if a redirect to a url including "wsfed".
   private async handleFederatedSignin(page: puppeteer.Page): Promise<void> {
-    if (- 1 === page.url().indexOf("wsfed"))
+    if (-1 === page.url().indexOf("wsfed"))
       return;
 
     if (await this.checkSelectorExists(page, "#i0116")) {
@@ -308,6 +347,20 @@ export class TestOidcClient implements IAuthorizationClient {
     const consentUrl = url.resolve(this._issuer.issuer as string, "/consent");
     if (page.url().startsWith(consentUrl))
       await page.click("button[value=yes]");
+
+    // New consent page acceptance
+    if (await page.title() === "Request for Approval") {
+      await page.waitForSelector(".allow");
+
+      await Promise.all([
+        page.waitForNavigation({
+          timeout: 60000,
+          waitUntil: "networkidle2",
+        }),
+        page.$eval(".allow", (button: any) => button.click()),
+      ]);
+    }
+
   }
 
   private async checkSelectorExists(page: puppeteer.Page, selector: string): Promise<boolean> {
