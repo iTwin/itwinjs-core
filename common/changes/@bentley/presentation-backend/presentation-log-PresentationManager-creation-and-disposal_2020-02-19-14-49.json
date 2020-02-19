@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-backend",
+      "comment": "Log when `PresentationManager` instances are created and disposed",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "grigas.petraitis@bentley.com"
+}

@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { DisposeFunc, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { DisposeFunc, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import {
@@ -101,6 +101,10 @@ export class Presentation {
       cleanupInterval: 60 * 1000,
       // by default, manager is disposed after 1 hour of being unused
       valueLifetime: (props && props.unusedClientLifetime) ? props.unusedClientLifetime : 60 * 60 * 1000,
+      // add some logging
+      onCreated: /* istanbul ignore next */ (id: string) => Logger.logInfo("Presentation", `Created a PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
+      onDisposedSingle: /* istanbul ignore next */ (id: string) => Logger.logInfo("Presentation", `Disposed PresentationManager instance with ID: ${id}. Total instances: ${this._clientsStorage?.values.length}.`),
+      onDisposedAll: /* istanbul ignore next */ () => Logger.logInfo("Presentation", `Disposed all PresentationManager instances.`),
     });
   }
 
