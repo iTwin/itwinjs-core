@@ -103,17 +103,14 @@ describe("iModel", () => {
     imodel5.closeSnapshot();
   });
 
-  /** test the copy constructor and to/from Json methods for the supplied entity */
-  const testCopyAndJson = (entity: Entity) => {
-    const copyOf = entity.clone();
-    const s1 = JSON.stringify(entity); let s2 = JSON.stringify(copyOf);
-    assert.equal(s1, s2);
-
-    // now round trip the entity through a json string and back to a new entity.
-    const jsonObj = JSON.parse(s1) as EntityProps;
-    const el2 = new (entity.constructor as any)(jsonObj, entity.iModel); // create a new entity from the json
-    s2 = JSON.stringify(el2);
-    assert.equal(s1, s2);
+  /** Roundtrip the entity through a json string and back to a new entity. */
+  const roundtripThroughJson = (entity1: Entity): Entity => {
+    const string1 = JSON.stringify(entity1);
+    const props1 = JSON.parse(string1) as EntityProps;
+    const entity2 = new (entity1.constructor as any)(props1, entity1.iModel); // create a new entity from the EntityProps
+    const string2 = JSON.stringify(entity2);
+    assert.equal(string1, string2);
+    return entity2;
   };
 
   it("should verify object vault", () => {
@@ -307,7 +304,7 @@ describe("iModel", () => {
       assert.equal(Id64.getBriefcaseId(subCat.code.spec), 0);
       assert.isTrue(subCat.code.scope === "0x2d");
       assert.isTrue(subCat.code.value === "A-Z013-G-Legn");
-      testCopyAndJson(subCat);
+      roundtripThroughJson(subCat);
     }
 
     /// Get the parent Category of the subcategory.
@@ -320,7 +317,7 @@ describe("iModel", () => {
       assert.equal(Id64.getLocalId(cat.code.spec), 22);
       assert.equal(Id64.getBriefcaseId(cat.code.spec), 0);
       assert.isTrue(cat.code.value === "A-Z013-G-Legn");
-      testCopyAndJson(cat);
+      roundtripThroughJson(cat);
     }
 
     const phys = imodel1.elements.getElement("0x38");
@@ -336,7 +333,7 @@ describe("iModel", () => {
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.equal(a2.id, el3.id);
-    testCopyAndJson(el3);
+    roundtripThroughJson(el3);
 
     const newEl = el3;
     newEl.federationGuid = undefined;
@@ -618,7 +615,7 @@ describe("iModel", () => {
       assert.exists(childElement);
       assert.isTrue(childElement instanceof Element);
 
-      testCopyAndJson(childElement);
+      roundtripThroughJson(childElement);
       assert.equal(rootSubject.id, childElement.parent!.id);
 
       const childLocalId = Id64.getLocalId(childId);
@@ -658,17 +655,17 @@ describe("iModel", () => {
     assert.exists(formatter, "formatter should exist as json property");
     assert.equal(formatter.fmtFlags.angMode, 1, "fmtFlags");
     assert.equal(formatter.mastUnit.label, "m", "mastUnit is meters");
-    testCopyAndJson(model2);
+    roundtripThroughJson(model2);
     let model = imodel1.models.getModel(IModel.repositoryModelId);
     assert.exists(model);
-    testCopyAndJson(model!);
+    roundtripThroughJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = imodel1.models.getSubModel(code1);
     // By this point, we expect the submodel's class to be in the class registry *cache*
     const geomModel = ClassRegistry.getClass(PhysicalModel.classFullName, imodel1);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
-    testCopyAndJson(model!);
+    roundtripThroughJson(model!);
     const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents();
     assert.isBelow(modelExtents.low.x, modelExtents.high.x);
     assert.isBelow(modelExtents.low.y, modelExtents.high.y);
@@ -907,7 +904,7 @@ describe("iModel", () => {
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
     assert.isUndefined(testElem.asAny.integerProperty1);
 
-    const newTestElem = testElem.clone();
+    const newTestElem = roundtripThroughJson(testElem) as Element;
     assert.equal(newTestElem.classFullName, testElem.classFullName);
     newTestElem.asAny.integerProperty1 = 999;
     assert.isTrue(testElem.asAny.arrayOfPoint3d[0].isAlmostEqual(newTestElem.asAny.arrayOfPoint3d[0]));

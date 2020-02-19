@@ -1679,8 +1679,6 @@ export class Entity implements EntityProps {
     get classFullName(): string;
     static get className(): string;
     get className(): string;
-    // @internal @deprecated
-    clone(): this;
     // @beta
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
