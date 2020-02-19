@@ -768,7 +768,7 @@ export class PresentationManager {
       let keyToAdd = assemblyKey;
       if (is3d && keyToAdd) {
         // if we're computing scope for a 3d element, try to switch to its related functional element
-        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, id);
+        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, keyToAdd.id);
         if (relatedFunctionalKey)
           keyToAdd = relatedFunctionalKey;
       }
@@ -793,7 +793,7 @@ export class PresentationManager {
       let keyToAdd = topAssemblyKey;
       if (is3d && keyToAdd) {
         // if we're computing scope for a 3d element, try to switch to its related functional element
-        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, id);
+        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, keyToAdd.id);
         if (relatedFunctionalKey)
           keyToAdd = relatedFunctionalKey;
       }
