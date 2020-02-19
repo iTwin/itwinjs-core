@@ -1251,11 +1251,12 @@ export class IModelDb extends IModel {
   /** Query if this iModel contains the definition of the specified class.
    * @param classFullName The full name of the class, for example, SomeSchema:SomeClass
    * @returns true if the iModel contains the class definition or false if not.
+   * @see querySchemaVersion
    * @see importSchema
    */
   public containsClass(classFullName: string): boolean {
-    const className = classFullName.split(":");
-    return className.length === 2 && this.nativeDb.getECClassMetaData(className[0], className[1]).error === undefined;
+    const classNameParts: string[] = classFullName.replace(".", ":").split(":");
+    return classNameParts.length === 2 && this.nativeDb.getECClassMetaData(classNameParts[0], classNameParts[1]).error === undefined;
   }
 
   /** Query for a schema of the specified name in this iModel.
