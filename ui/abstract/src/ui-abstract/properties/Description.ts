@@ -7,12 +7,10 @@
  */
 
 import { PropertyEditorParams } from "./EditorParams";
-import { QuantityType } from "../QuantityFormatter";
 
 /**
  * Information about an enumeration choice
  * @beta
- * @deprecated Move EnumerationChoice  to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface EnumerationChoice {
   label: string;
@@ -22,7 +20,6 @@ export interface EnumerationChoice {
 /**
  * Information about a set of enumeration choices
  * @beta
- * @deprecated Move EnumerationChoicesInfo to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface EnumerationChoicesInfo {
   choices: EnumerationChoice[];
@@ -33,7 +30,6 @@ export interface EnumerationChoicesInfo {
 /**
  * Information about a Property Editor
  * @beta
- * @deprecated Move PropertyEditorInfo  to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface PropertyEditorInfo {
   name?: string;
@@ -43,7 +39,6 @@ export interface PropertyEditorInfo {
 /**
  * PropertyDescription contains metadata about a Property
  * @beta
- * @deprecated Move PropertyDescription to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface PropertyDescription {
   name: string;
@@ -51,10 +46,11 @@ export interface PropertyDescription {
   typename: string;
   enum?: EnumerationChoicesInfo;
   editor?: PropertyEditorInfo;
-  /** QuantityType or name KOQ full name - used by quantity formatter
+  /** Quantity type key used to look up formatting and parsing specs. This is typically either the name of a quantity type used by a tool
+   *  or the full name of a KOQ (schema:koq).
    * @alpha
    */
-  quantityType?: QuantityType | string;
+  quantityType?: string;
   /** Get the custom DataController by this name and register it with the property editor */
   dataController?: string;
 }

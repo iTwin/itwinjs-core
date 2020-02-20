@@ -15,6 +15,8 @@ import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarg
 
 import "./DragDropTreeNode.scss";
 
+// tslint:disable:deprecation
+
 /** Properties for the [[DragDropTreeNodeComponent]] React component */
 /** @internal @deprecated  */
 export interface DragDropNodeProps extends React.AllHTMLAttributes<HTMLDivElement> {

@@ -6,6 +6,7 @@
  * @module Tools
  */
 
+import { ToolSettingsPropertySyncItem, ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/ui-abstract";
 import { BeEvent, AbandonedError, Logger, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter, Easing } from "@bentley/imodeljs-common";
@@ -13,7 +14,6 @@ import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { LocateOptions } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { ToolSettingsPropertySyncItem, ToolSettingsPropertyItem, ToolSettingsValue } from "../properties/ToolSettingsValue";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";

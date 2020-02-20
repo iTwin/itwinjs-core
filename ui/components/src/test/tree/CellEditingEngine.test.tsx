@@ -10,9 +10,12 @@ import { BeInspireTreeNode, BeInspireTree } from "../../ui-components/tree/compo
 import { TreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
 import { Tree } from "../../ui-components/tree/component/Tree";
 
+// tslint:disable:deprecation
+
 describe("CellEditingEngine", () => {
   const setStateSpy = sinon.spy();
   const getStateSpy = sinon.spy();
+
   const props: EditableTreeProps = { onCellEditing: sinon.spy(), onCellUpdated: sinon.spy() };
   let tree: BeInspireTree<TreeNodeItem>;
   let node: BeInspireTreeNode<TreeNodeItem>;

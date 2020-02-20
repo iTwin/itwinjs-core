@@ -2,5 +2,11 @@
   "general": {
     "newFeature": "New",
     "technicalPreview": "Technical Preview"
+  },
+  "Properties": {
+    "Angle": "Angle",
+    "Length": "Length",
+    "UnableToParseAngle": "Unable to parse angle value",
+    "UnableToParseLength": "Unable to parse length value"
   }
 }

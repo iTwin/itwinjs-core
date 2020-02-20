@@ -16,6 +16,8 @@ import TestUtils from "../../TestUtils";
 import { ITreeImageLoader, TreeImageLoader } from "../../../ui-components/tree/ImageLoader";
 import { LoadedImage } from "../../../ui-components/common/IImageLoader";
 
+// tslint:disable:deprecation
+
 describe("Node", () => {
   let tree: BeInspireTree<TreeNodeItem>;
   let node: BeInspireTreeNode<TreeNodeItem>;

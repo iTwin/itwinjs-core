@@ -11,7 +11,6 @@ import { PropertyValue } from "./Value";
 
 /** Properties for the [[PropertyRecord]] with link info supplied
  * @beta
- * @deprecated Move LinkElementsInfo to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export interface LinkElementsInfo {
   /** Callback to link click event */
@@ -29,7 +28,6 @@ export interface LinkElementsInfo {
  * PropertyRecord contains instance information about a Property, including a
  * value that can be edited using a PropertyEditor and converted using a TypeConverter.
  * @beta
- * @deprecated Move PropertyRecord to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export class PropertyRecord {
   public readonly value: PropertyValue;

@@ -5,7 +5,8 @@
 /** @packageDocumentation
  * @module Content
  */
-import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import {PropertyRecord } from "@bentley/ui-abstract";
 import { Presentation } from "@bentley/presentation-frontend";
 import { InstanceKey, KeySet, Ruleset, RegisteredRuleset, PageOptions, DefaultContentDisplayTypes, Content } from "@bentley/presentation-common";
 import { ContentBuilder as PresentationContentBuilder, ContentDataProvider } from "@bentley/presentation-components";

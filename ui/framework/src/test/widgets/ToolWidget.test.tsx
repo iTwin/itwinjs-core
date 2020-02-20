@@ -115,10 +115,10 @@ describe("ToolWidget", () => {
 
     it("ToolWidgetDef from WidgetProps", () => {
 
-      const widgetDef = new ToolWidgetDef(widgetProps);
-      expect(widgetDef).to.be.instanceof(ToolWidgetDef);
+      const widgetDef = new ToolWidgetDef(widgetProps); // tslint:disable-line:deprecation
+      expect(widgetDef).to.be.instanceof(ToolWidgetDef); // tslint:disable-line:deprecation
 
-      const toolWidgetDef = widgetDef as ToolWidgetDef;
+      const toolWidgetDef = widgetDef as ToolWidgetDef; // tslint:disable-line:deprecation
       backstageToggleCommand.execute();
       expect(testCallback.calledOnce).to.be.true;
 
@@ -131,7 +131,7 @@ describe("ToolWidget", () => {
 
     it("ToolWidget should render", () => {
       const wrapper = mount(
-        <ToolWidget
+        <ToolWidget // tslint:disable-line:deprecation
           appButton={backstageToggleCommand}
           horizontalToolbar={horizontalToolbar}
           verticalToolbar={verticalToolbar}
@@ -142,7 +142,7 @@ describe("ToolWidget", () => {
 
     it("ToolWidget should render correctly", () => {
       shallow(
-        <ToolWidget
+        <ToolWidget // tslint:disable-line:deprecation
           id="toolWidget"
           appButton={backstageToggleCommand}
           horizontalToolbar={horizontalToolbar}
@@ -153,7 +153,7 @@ describe("ToolWidget", () => {
 
     it("ToolWidget should support update", () => {
       const wrapper = mount(
-        <ToolWidget
+        <ToolWidget // tslint:disable-line:deprecation
           button={<button />}
           horizontalToolbar={horizontalToolbar}
           verticalToolbar={verticalToolbar}
@@ -170,7 +170,7 @@ describe("ToolWidget", () => {
 
     it("ToolWidget should tool activated", () => {
       const wrapper = mount(
-        <ToolWidget
+        <ToolWidget // tslint:disable-line:deprecation
           button={<button />}
           horizontalToolbar={horizontalToolbar}
           verticalToolbar={verticalToolbar}
@@ -246,7 +246,7 @@ describe("ToolWidget", () => {
         <div style={parentDivStyle}>
           <div style={toolWidgetDivStyle} className="nz-zones-zone">
             <ToolbarDragInteractionContext.Provider value={true}>
-              <ToolWidget
+              <ToolWidget // tslint:disable-line:deprecation
                 appButton={backstageToggleCommand}
                 horizontalItems={hItemList}
                 verticalItems={vItemList}

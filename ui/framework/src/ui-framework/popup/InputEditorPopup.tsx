@@ -8,13 +8,12 @@
 
 import * as React from "react";
 
-import { OnCancelFunc, OnNumberCommitFunc } from "@bentley/ui-abstract";
+import { OnCancelFunc, OnNumberCommitFunc, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { DivWithOutsideClick, SizeProps, Size } from "@bentley/ui-core";
 import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
 
 import { PositionPopup, PositionPopupContent } from "./PositionPopup";
 import { PopupManager, PopupPropsBase } from "./PopupManager";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
 
 /** @alpha */
 export class InputEditorCommitHandler {

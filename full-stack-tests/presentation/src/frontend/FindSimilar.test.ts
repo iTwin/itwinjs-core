@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Id64String, using } from "@bentley/bentleyjs-core";
-import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { KeySet, Ruleset, RuleTypes, ContentSpecificationTypes, RegisteredRuleset, InstanceKey } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import {

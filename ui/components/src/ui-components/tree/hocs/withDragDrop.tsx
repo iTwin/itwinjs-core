@@ -16,6 +16,8 @@ import { TreeNodeItem, TreeDataProvider } from "../TreeDataProvider";
 import { DragDropTreeNode } from "./DragDropTreeNode";
 import { TreeNodeProps, TreeNode } from "../component/Node";
 
+// tslint:disable:deprecation
+
 /**
  * Type for drag and drop,
  * @beta @deprecated

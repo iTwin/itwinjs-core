@@ -82,7 +82,7 @@ export const ModelsTree: React.FC<ModelsTreeProps> = (props: ModelsTreeProps) =>
   if (useControlledTree)
     return <ControlledModelsTree {...strippedProps} />;
 
-  return <VisibilityTree {...strippedProps} />;
+  return <VisibilityTree {...strippedProps} />; // tslint:disable-line:deprecation
 };
 
 /** ModelsTree that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.

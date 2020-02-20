@@ -13,7 +13,7 @@ import { TreeNodeContent } from "../../../../ui-components/tree/controlled/compo
 import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
 import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import { TestUtils } from "../../../TestUtils";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 describe("NodeContent", () => {
   const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();

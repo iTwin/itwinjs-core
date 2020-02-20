@@ -7,7 +7,7 @@
  */
 
 import { RulesetsFactory, Omit } from "@bentley/presentation-common";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { TypeConverterManager } from "@bentley/ui-components";
 import { IPresentationPropertyDataProvider } from "./propertygrid/DataProvider";
 import {

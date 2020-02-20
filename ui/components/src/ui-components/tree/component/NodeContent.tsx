@@ -9,7 +9,7 @@
 import * as React from "react";
 import classnames from "classnames";
 
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/ui-abstract";
 import { HighlightingEngine, HighlightableTreeNodeProps } from "../HighlightingEngine";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
 import { BeInspireTreeNode } from "./BeInspireTree";
@@ -20,6 +20,8 @@ import { UiComponents } from "../../UiComponents";
 import { ItemStyleProvider, ItemStyle } from "../../properties/ItemStyle";
 
 import "./NodeContent.scss";
+
+// tslint:disable:deprecation
 
 /** Properties for [[TreeNodeContent]] component
  * @internal @deprecated

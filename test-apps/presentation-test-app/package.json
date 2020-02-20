@@ -68,6 +68,7 @@
     "@bentley/presentation-components": "2.0.0-dev.12",
     "@bentley/ui-core": "2.0.0-dev.12",
     "@bentley/ui-components": "2.0.0-dev.12",
+    "@bentley/ui-abstract": "2.0.0-dev.12",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "semver": "^5.5.0"

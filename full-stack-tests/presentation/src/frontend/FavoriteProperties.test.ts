@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { KeySet, Ruleset, RuleTypes, ContentSpecificationTypes, RegisteredRuleset, Field } from "@bentley/presentation-common";
 import { Presentation, IModelAppFavoritePropertiesStorage, FavoritePropertiesScope, PropertyFullName } from "@bentley/presentation-frontend";

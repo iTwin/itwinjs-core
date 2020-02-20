@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
-import { PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription } from "@bentley/ui-abstract";
 import {
   Table, ColumnDescription, RowItem, TableDataProvider, FilterRenderer,
   SimpleTableDataProvider, TableSelectionTarget, SelectionMode,

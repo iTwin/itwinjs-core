@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { SortDirection } from "@bentley/ui-core";
-import { PropertyValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import {
   TableDataProvider, MutableTableDataProvider,
   RowItem, TableDataChangeEvent, ColumnDescription,

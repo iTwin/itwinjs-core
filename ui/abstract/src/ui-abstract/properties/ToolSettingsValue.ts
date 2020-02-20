@@ -1,19 +1,18 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Properties
  */
 
-// import { HorizontalAlignment, VerticalAlignment } from "@bentley/ui-core";
 import { PropertyDescription } from "./Description";
 import { PrimitiveValue, PropertyValue, PropertyValueFormat } from "./Value";
 import { PropertyRecord } from "./Record";
+import { EditorPosition } from "../dialogs/DialogItem";
 
 /** Primitive ToolSettings Value.
  * @beta
- * @deprecated Move ToolSettingsValue to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export class ToolSettingsValue implements PrimitiveValue {
   public readonly valueFormat = PropertyValueFormat.Primitive;
@@ -34,9 +33,11 @@ export class ToolSettingsValue implements PrimitiveValue {
   }
 
   public update(newValue: ToolSettingsValue): boolean {
+    // istanbul ignore next
     if (newValue.valueFormat !== this.valueFormat)
       throw new Error("ToolSettingsValue.update requires both values to be of the same format");
 
+    // istanbul ignore else
     if (this.value === newValue.value && this.displayValue === newValue.displayValue)
       return false;
 
@@ -50,23 +51,9 @@ export class ToolSettingsValue implements PrimitiveValue {
   }
 }
 
-/** Interface used to identify the location of the UI control to manipulate a ToolSettings property value.
- * @beta
- * @deprecated Use EditorPosition in bentley/ui-abstract instead.
- */
-export interface EditorPosition {
-  /** Determine the order the row is shown in UI */
-  rowPriority: number;
-  /** Determines the column position for the type editor */
-  columnIndex: number;
-  /** Number of columns to occupy. Defaults to 1 */
-  columnSpan?: number;
-}
-
 /** Class used to identify a specific ToolSettings property value. This is the minimal amount of info necessary to specify which property a value is associated with. This is used to both
  * display property in UI, save and retrieve the state of the property, and to allow the UI to inform the Tool code about property changes.
  * @beta
- * @deprecated Move ToolSettingsPropertyItem to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export class ToolSettingsPropertyItem {
   public value: ToolSettingsValue;
@@ -79,7 +66,6 @@ export class ToolSettingsPropertyItem {
 }
 /** Class used to identify a specific ToolSettings property value that can be enabled/disabled in UI.
  * @beta
- * @deprecated Move ToolSettingsPropertySyncItem to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
   /** used to pass enable state to Ui from Tool so property record can be updated */
@@ -93,7 +79,6 @@ export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
 
 /** Property Record to specify an editor in Tool Settings zone.
  * @beta
- * @deprecated Move ToolSettingsPropertyRecord to bentley/ui-abstract beginning in iModel.js 2.0.
  */
 export class ToolSettingsPropertyRecord extends PropertyRecord {
   public editorPosition: EditorPosition;

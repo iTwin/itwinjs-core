@@ -11,7 +11,7 @@ import * as React from "react";
 import { useEffect, useMemo } from "react";
 import classnames from "classnames";
 import { CommonProps, TreeNodePlaceholder } from "@bentley/ui-core";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/ui-abstract";
 import { TreeModelNode } from "../TreeModel";
 import { HighlightingEngine, HighlightableTreeNodeProps } from "../../HighlightingEngine";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../properties/ValueRendererManager";

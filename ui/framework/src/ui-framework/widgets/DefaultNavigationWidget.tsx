@@ -31,7 +31,7 @@ export interface DefaultNavigationProps {
  * This definition will also show a overflow button if there is not enough room to display all the toolbar buttons.
  * @beta @deprecated use BasicNavigationWidget instead
  */
-export class DefaultNavigationWidget extends React.Component<DefaultNavigationProps> {
+export class DefaultNavigationWidget extends React.Component<DefaultNavigationProps> { // tslint:disable-line:deprecation
 
   private _horizontalToolbarItems = new ItemList([
     CoreTools.rotateViewCommand,
@@ -59,7 +59,7 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
     if (this.props.suffixVerticalItems) verticalToolbarItems.addItems(this.props.suffixVerticalItems);
 
     return (
-      <NavigationWidget
+      <NavigationWidget // tslint:disable-line:deprecation
         navigationAidId="CubeNavigationAid"
         iModelConnection={UiFramework.getIModelConnection()}
         horizontalItems={horizontalToolbarItems}
@@ -72,4 +72,4 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
 /** DefaultNavigationWidget that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
  * @beta @deprecated use BasicNavigationWidget instead
  */
-export const IModelConnectedNavigationWidget = connectIModelConnection(null, null)(DefaultNavigationWidget); // tslint:disable-line:variable-name
+export const IModelConnectedNavigationWidget = connectIModelConnection(null, null)(DefaultNavigationWidget); // tslint:disable-line:variable-name , deprecation

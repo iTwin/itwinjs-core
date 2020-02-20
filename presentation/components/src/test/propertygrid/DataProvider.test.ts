@@ -16,7 +16,8 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { IModelConnection, PropertyRecord, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PrimitiveValue } from "@bentley/ui-abstract";
 import {
   ValuesDictionary, Descriptor, Field,
   CategoryDescription, Content, ContentFlags, Item,

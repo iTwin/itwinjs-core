@@ -16,6 +16,8 @@ import { BreadcrumbDetailsProps } from "../BreadcrumbDetails";
 import { TableDataProvider } from "../../../table/TableDataProvider";
 import { TreeNodeItem } from "../../../tree/TreeDataProvider";
 
+// tslint:disable:deprecation
+
 /**
  * Type for drag and drop,
  * @beta

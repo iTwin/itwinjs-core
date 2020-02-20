@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import {
   PropertyValueFormat,
   PrimitiveValue,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 
 import {
   ColumnDescription,

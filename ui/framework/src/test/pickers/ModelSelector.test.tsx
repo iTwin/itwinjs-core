@@ -87,7 +87,7 @@ describe("ModelSelector", () => {
     afterEach(cleanup);
 
     it("should render", async () => {
-      const component = render(<ModelSelectorWidget iModelConnection={imodel} />);
+      const component = render(<ModelSelectorWidget iModelConnection={imodel} />); // tslint:disable-line:deprecation
       const widget = component.getByTestId("model-selector-widget");
       expect(widget).to.exist;
     });

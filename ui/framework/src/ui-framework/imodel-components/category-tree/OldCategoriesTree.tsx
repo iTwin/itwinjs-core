@@ -61,7 +61,7 @@ export interface OldCategoryTreeProps {
  * @deprecated
  */
 // istanbul ignore next
-export class OldCategoryTree extends React.Component<OldCategoryTreeProps, CategoryTreeState> {
+export class OldCategoryTree extends React.Component<OldCategoryTreeProps, CategoryTreeState> { // tslint:disable-line:deprecation
   private _isMounted = false;
   private _rulesetRegistration?: RegisteredRuleset;
 
@@ -71,7 +71,7 @@ export class OldCategoryTree extends React.Component<OldCategoryTreeProps, Categ
    */
   public static readonly RULESET: Ruleset = RULESET;
 
-  constructor(props: OldCategoryTreeProps) {
+  constructor(props: OldCategoryTreeProps) { // tslint:disable-line:deprecation
     super(props);
 
     this.state = {
@@ -111,7 +111,7 @@ export class OldCategoryTree extends React.Component<OldCategoryTreeProps, Categ
     //    provider.dispose();
   }
 
-  public componentDidUpdate(prevProps: OldCategoryTreeProps) {
+  public componentDidUpdate(prevProps: OldCategoryTreeProps) { // tslint:disable-line:deprecation
     if (prevProps.selectAll) {
       // tslint:disable-next-line: no-floating-promises
       this._onSelectAll();
@@ -459,7 +459,7 @@ export class OldCategoryTree extends React.Component<OldCategoryTreeProps, Categ
               }}
             />
           }
-          <CategoryFilterTree
+          <CategoryFilterTree // tslint:disable-line:deprecation
             dataProvider={dataProvider}
             filter={filterInfo ? filterInfo!.filter : ""}
             onFilterApplied={this.onFilterApplied}

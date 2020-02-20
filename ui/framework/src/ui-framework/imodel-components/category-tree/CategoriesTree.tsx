@@ -36,7 +36,7 @@ export interface FilterInfo {
  */
 export interface CategoryTreeState {
   checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
-  filterInfo?: FilterInfo;
+  filterInfo?: FilterInfo; // tslint:disable-line:deprecation
   dataProvider?: IPresentationTreeDataProvider;
   categories: Category[];
   activeView?: Viewport;
@@ -86,7 +86,7 @@ export const CategoryTree: React.FC<CategoryTreeProps> = (props: CategoryTreePro
   if (useControlledTree)
     return <ControlledCategoryTree {...strippedProps} />;
 
-  return <OldCategoryTree {...strippedProps} />;
+  return <OldCategoryTree {...strippedProps} />; // tslint:disable-line:deprecation
 };
 
 /** CategoryTree that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.

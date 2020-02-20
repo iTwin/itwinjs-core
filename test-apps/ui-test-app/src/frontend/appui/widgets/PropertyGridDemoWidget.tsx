@@ -10,7 +10,7 @@ import { Orientation } from "@bentley/ui-core";
 
 import {
   PropertyDescription, PropertyRecord, PropertyValueFormat, PrimitiveValue, PropertyValue,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 import {
   PropertyGrid, SimplePropertyDataProvider, PropertyUpdatedArgs, PropertyCategory,
 } from "@bentley/ui-components";

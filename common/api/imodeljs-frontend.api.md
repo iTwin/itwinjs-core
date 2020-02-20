@@ -19,6 +19,7 @@ import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BackgroundMapProviderName } from '@bentley/imodeljs-common';
 import { BackgroundMapSettings } from '@bentley/imodeljs-common';
 import { BackgroundMapType } from '@bentley/imodeljs-common';
+import { BaseQuantityDescription } from '@bentley/ui-abstract';
 import { BatchType } from '@bentley/imodeljs-common';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
@@ -141,6 +142,7 @@ import { OidcFrontendClientConfiguration } from '@bentley/imodeljs-clients';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import { PackedFeatureTable } from '@bentley/imodeljs-common';
 import { ParseResult } from '@bentley/imodeljs-quantity';
+import { ParseResults } from '@bentley/ui-abstract';
 import { ParserSpec } from '@bentley/imodeljs-quantity';
 import { Path } from '@bentley/geometry-core';
 import { Placement2d } from '@bentley/imodeljs-common';
@@ -156,6 +158,7 @@ import { PolylineData } from '@bentley/imodeljs-common';
 import { PolylineEdgeArgs } from '@bentley/imodeljs-common';
 import { PolylineFlags } from '@bentley/imodeljs-common';
 import { PolylineTypeFlags } from '@bentley/imodeljs-common';
+import { PropertyDescription } from '@bentley/ui-abstract';
 import { QParams2d } from '@bentley/imodeljs-common';
 import { QParams3d } from '@bentley/imodeljs-common';
 import { QPoint2d } from '@bentley/imodeljs-common';
@@ -205,6 +208,9 @@ import { TileHeader } from '@bentley/imodeljs-common';
 import { TileProps } from '@bentley/imodeljs-common';
 import { TileReadStatus } from '@bentley/imodeljs-common';
 import { TileTreeProps } from '@bentley/imodeljs-common';
+import { ToolSettingsPropertyItem } from '@bentley/ui-abstract';
+import { ToolSettingsPropertyRecord } from '@bentley/ui-abstract';
+import { ToolSettingsPropertySyncItem } from '@bentley/ui-abstract';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
@@ -1581,12 +1587,14 @@ export enum ActivityMessageEndReason {
 }
 
 // @beta
-export class AngleDescription extends BaseQuantityDescription {
+export class AngleDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    // (undocumented)
+    get formatterQuantityType(): QuantityType;
     // (undocumented)
     get parseError(): string;
     // (undocumented)
-    get quantityType(): QuantityType;
+    get quantityType(): string;
 }
 
 // @internal
@@ -1617,16 +1625,6 @@ export interface AppearanceOverrideProps {
     ids?: Id64Array;
     // (undocumented)
     overrideType?: FeatureOverrideType;
-}
-
-// @beta @deprecated
-export interface ArrayValue extends BasePropertyValue {
-    // (undocumented)
-    items: PropertyRecord[];
-    // (undocumented)
-    itemsTypeName: string;
-    // (undocumented)
-    valueFormat: PropertyValueFormat.Array;
 }
 
 // @internal (undocumented)
@@ -1886,43 +1884,6 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     unionFitRange(_range: Range3d): void;
 }
 
-// @beta @deprecated
-export interface BasePropertyEditorParams {
-    // (undocumented)
-    type: string;
-}
-
-// @beta @deprecated
-export interface BasePropertyValue {
-    // (undocumented)
-    valueFormat: PropertyValueFormat;
-}
-
-// @beta @deprecated
-export abstract class BaseQuantityDescription implements PropertyDescription {
-    constructor(name: string, displayLabel: string, iconSpec?: string);
-    // (undocumented)
-    displayLabel: string;
-    // (undocumented)
-    editor: PropertyEditorInfo;
-    // (undocumented)
-    format: (numberValue: number) => string;
-    // (undocumented)
-    get formatterSpec(): FormatterSpec | undefined;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    parse: (userInput: string) => ParseResults;
-    // (undocumented)
-    abstract get parseError(): string;
-    // (undocumented)
-    get parserSpec(): ParserSpec | undefined;
-    // (undocumented)
-    abstract get quantityType(): QuantityType;
-    // (undocumented)
-    typename: string;
-}
-
 // @internal
 export class BatchedTileIdMap {
     constructor(iModel: IModelConnection);
@@ -2103,14 +2064,6 @@ export interface BlankConnectionProps {
     name: string;
 }
 
-// @beta @deprecated
-export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
-    // (undocumented)
-    buttons: IconDefinition[];
-    // (undocumented)
-    type: PropertyEditorParamTypes.ButtonGroupData;
-}
-
 // @internal
 export interface CachedIModelCoordinatesResponseProps {
     missing?: XYZProps[];
@@ -2243,16 +2196,6 @@ export interface ChangeViewedModel2dOptions {
     doFit?: boolean;
 }
 
-// @alpha @deprecated
-export interface CheckBoxIconsEditorParams extends BasePropertyEditorParams {
-    // (undocumented)
-    offIconDefinition?: IconDefinition;
-    // (undocumented)
-    onIconDefinition?: IconDefinition;
-    // (undocumented)
-    type: PropertyEditorParamTypes.CheckBoxIcons;
-}
-
 // @alpha
 export enum ClipEventType {
     // (undocumented)
@@ -2304,14 +2247,6 @@ export class Cluster<T extends Marker> {
     readonly markers: T[];
     // (undocumented)
     readonly rect: ViewRect;
-}
-
-// @beta @deprecated
-export interface ColorEditorParams extends BasePropertyEditorParams {
-    colorValues: number[];
-    numColumns?: number;
-    // (undocumented)
-    type: PropertyEditorParamTypes.ColorData;
 }
 
 // @internal (undocumented)
@@ -2525,16 +2460,6 @@ export enum CurrentState {
     Inactive = 2,
     // (undocumented)
     NotEnabled = 0
-}
-
-// @beta @deprecated
-export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
-    // (undocumented)
-    formatFunction: (numberValue: number, quantityType?: QuantityType | string) => string;
-    // (undocumented)
-    parseFunction: (stringValue: string, quantityType?: QuantityType | string) => ParseResults;
-    // (undocumented)
-    type: PropertyEditorParamTypes.CustomFormattedNumber;
 }
 
 // @public
@@ -2913,13 +2838,6 @@ export namespace EditManipulator {
     }
 }
 
-// @beta @deprecated
-export interface EditorPosition {
-    columnIndex: number;
-    columnSpan?: number;
-    rowPriority: number;
-}
-
 // @internal (undocumented)
 export class ElementAgenda {
     constructor(iModel: IModelConnection);
@@ -3120,12 +3038,14 @@ export interface EmphasizeElementsProps {
 }
 
 // @beta
-export class EngineeringLengthDescription extends BaseQuantityDescription {
+export class EngineeringLengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    // (undocumented)
+    get formatterQuantityType(): QuantityType;
     // (undocumented)
     get parseError(): string;
     // (undocumented)
-    get quantityType(): QuantityType;
+    get quantityType(): string;
 }
 
 // @public
@@ -3145,24 +3065,6 @@ export class EntityState implements EntityProps {
     static get schemaName(): string;
     // @internal (undocumented)
     toJSON(): EntityProps;
-}
-
-// @beta @deprecated
-export interface EnumerationChoice {
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    value: string | number;
-}
-
-// @beta @deprecated
-export interface EnumerationChoicesInfo {
-    // (undocumented)
-    choices: EnumerationChoice[];
-    // (undocumented)
-    isStrict?: boolean;
-    // (undocumented)
-    maxDisplayedRows?: number;
 }
 
 // @public
@@ -3502,6 +3404,23 @@ export class FlyViewTool extends ViewManip {
     provideToolAssistance(mainInstrKey: string): void;
     // (undocumented)
     static toolId: string;
+}
+
+// @beta
+export abstract class FormattedQuantityDescription extends BaseQuantityDescription {
+    constructor(name: string, displayLabel: string, iconSpec?: string);
+    // (undocumented)
+    abstract get formatterQuantityType(): QuantityType;
+    // (undocumented)
+    get formatterSpec(): FormatterSpec | undefined;
+    // (undocumented)
+    protected formatValue(numberValue: number): string;
+    // (undocumented)
+    abstract get parseError(): string;
+    // (undocumented)
+    get parserSpec(): ParserSpec | undefined;
+    // (undocumented)
+    protected parseString(userInput: string): ParseResults;
 }
 
 // @public
@@ -4131,29 +4050,6 @@ export class I3dmReader extends GltfReader {
     protected readFeatures(_features: Mesh.Features, _json: any): boolean;
     }
 
-// @beta @deprecated
-export interface IconDefinition {
-    iconSpec: string;
-    isEnabledFunction?: () => boolean;
-}
-
-// @beta @deprecated
-export interface IconEditorParams extends BasePropertyEditorParams {
-    // (undocumented)
-    definition: IconDefinition;
-    // (undocumented)
-    type: PropertyEditorParamTypes.Icon;
-}
-
-// @beta @deprecated
-export interface IconListEditorParams extends BasePropertyEditorParams {
-    iconValue: string;
-    iconValues: string[];
-    numColumns?: number;
-    // (undocumented)
-    type: PropertyEditorParamTypes.IconListData;
-}
-
 // @public
 export class IconSprites {
     static emptyAll(): void;
@@ -4598,14 +4494,6 @@ export abstract class InputCollector extends InteractiveTool {
     run(..._args: any[]): boolean;
 }
 
-// @beta @deprecated
-export interface InputEditorSizeParams extends BasePropertyEditorParams {
-    maxLength?: number;
-    size?: number;
-    // (undocumented)
-    type: PropertyEditorParamTypes.InputEditorSize;
-}
-
 // @public
 export enum InputSource {
     Mouse = 1,
@@ -4703,14 +4591,6 @@ export enum ItemField {
     Z_Item = 4
 }
 
-// @alpha @deprecated
-export interface JsonEditorParams extends BasePropertyEditorParams {
-    // (undocumented)
-    json: any;
-    // (undocumented)
-    type: PropertyEditorParamTypes.JSON;
-}
-
 // @internal (undocumented)
 export enum KeyinStatus {
     // (undocumented)
@@ -4722,25 +4602,18 @@ export enum KeyinStatus {
 }
 
 // @beta
-export class LengthDescription extends BaseQuantityDescription {
+export class LengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    // (undocumented)
+    get formatterQuantityType(): QuantityType;
     // (undocumented)
     get parseError(): string;
     // (undocumented)
-    get quantityType(): QuantityType;
+    get quantityType(): string;
 }
 
 // @internal (undocumented)
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
-
-// @beta @deprecated
-export interface LinkElementsInfo {
-    matcher?: (displayValue: string) => Array<{
-        start: number;
-        end: number;
-    }>;
-    onClick?: (record: PropertyRecord, text: string) => void;
-}
 
 // @internal (undocumented)
 export class LoadSavedPluginsResult {
@@ -5813,14 +5686,6 @@ export enum ModifyElementSource {
     Unknown = 0
 }
 
-// @alpha @deprecated
-export interface MultilineTextEditorParams extends BasePropertyEditorParams {
-    // (undocumented)
-    heightInRows: number;
-    // (undocumented)
-    type: PropertyEditorParamTypes.MultilineText;
-}
-
 // @internal
 export class NativeApp {
     // (undocumented)
@@ -6158,14 +6023,6 @@ export class PanViewTool extends ViewManip {
     static toolId: string;
 }
 
-// @beta @deprecated
-export interface ParseResults {
-    // (undocumented)
-    parseError?: string;
-    // (undocumented)
-    value?: string | number | boolean | {} | string[] | Date | [] | undefined;
-}
-
 // @internal (undocumented)
 export class PerformanceMetrics {
     constructor(gatherGlFinish?: boolean, gatherCurPerformanceMetrics?: boolean, gpuResults?: GLTimerResultCallback);
@@ -6347,59 +6204,6 @@ export class PluginAdmin {
 // @beta
 export type PluginLoadResults = Plugin | undefined | string | string[];
 
-// @beta @deprecated
-export namespace Primitives {
-    // (undocumented)
-    export type Boolean = boolean | string | {} | [];
-    // (undocumented)
-    export interface Composite {
-        // (undocumented)
-        parts: CompositePart[];
-        // (undocumented)
-        separator: string;
-    }
-    // (undocumented)
-    export interface CompositePart {
-        // (undocumented)
-        displayValue: string;
-        // (undocumented)
-        rawValue: Value;
-        // (undocumented)
-        typeName: string;
-    }
-    // (undocumented)
-    export type Enum = number | string;
-    // (undocumented)
-    export type Float = number | string;
-    // (undocumented)
-    export type Hexadecimal = Id64String;
-    // (undocumented)
-    export type Int = number | string;
-    // (undocumented)
-    export type Numeric = Float | Int;
-    // (undocumented)
-    export type Point = Point2d | Point3d;
-    // (undocumented)
-    export type Point2d = string[] | number[] | {
-        x: number;
-        y: number;
-    };
-    // (undocumented)
-    export type Point3d = string[] | number[] | {
-        x: number;
-        y: number;
-        z: number;
-    };
-    // (undocumented)
-    export type ShortDate = string | Date;
-    // (undocumented)
-    export type String = string;
-    // (undocumented)
-    export type Text = string;
-    // (undocumented)
-    export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite;
-}
-
 // @public
 export abstract class PrimitiveTool extends InteractiveTool {
     autoLockTarget(): void;
@@ -6429,117 +6233,11 @@ export abstract class PrimitiveTool extends InteractiveTool {
     undoPreviousStep(): Promise<boolean>;
 }
 
-// @beta @deprecated
-export interface PrimitiveValue extends BasePropertyValue {
-    // (undocumented)
-    displayValue?: string;
-    // (undocumented)
-    value?: Primitives.Value;
-    // (undocumented)
-    valueFormat: PropertyValueFormat.Primitive;
-}
-
 // @alpha
 export const enum PrimitiveVisibility {
     All = 0,
     Instanced = 1,
     Uninstanced = 2
-}
-
-// @beta @deprecated
-export interface PropertyDescription {
-    dataController?: string;
-    // (undocumented)
-    displayLabel: string;
-    // (undocumented)
-    editor?: PropertyEditorInfo;
-    // (undocumented)
-    enum?: EnumerationChoicesInfo;
-    // (undocumented)
-    name: string;
-    // @alpha
-    quantityType?: QuantityType | string;
-    // (undocumented)
-    typename: string;
-}
-
-// @beta @deprecated
-export interface PropertyEditorInfo {
-    // (undocumented)
-    name?: string;
-    // (undocumented)
-    params?: PropertyEditorParams[];
-}
-
-// @beta @deprecated
-export type PropertyEditorParams = BasePropertyEditorParams;
-
-// @beta @deprecated
-export enum PropertyEditorParamTypes {
-    // (undocumented)
-    ButtonGroupData = "ButtonGroupData",
-    // (undocumented)
-    CheckBoxIcons = "CheckBoxIcons",
-    // (undocumented)
-    ColorData = "ColorData",
-    // (undocumented)
-    CustomFormattedNumber = "CustomFormattedNumber",
-    // (undocumented)
-    Icon = "Icon",
-    // (undocumented)
-    IconListData = "IconListData",
-    // (undocumented)
-    InputEditorSize = "InputEditorSize",
-    // (undocumented)
-    JSON = "JSON",
-    // (undocumented)
-    MultilineText = "MultilineText",
-    // (undocumented)
-    Range = "Range",
-    // (undocumented)
-    Slider = "Slider",
-    // (undocumented)
-    SuppressEditorLabel = "SuppressEditorLabel",
-    // (undocumented)
-    SuppressUnitLabel = "SuppressUnitLabel"
-}
-
-// @beta @deprecated
-export class PropertyRecord {
-    constructor(value: PropertyValue, property: PropertyDescription);
-    // (undocumented)
-    autoExpand?: boolean;
-    copyWithNewValue(newValue: PropertyValue): PropertyRecord;
-    // (undocumented)
-    description?: string;
-    // (undocumented)
-    extendedData?: {
-        [key: string]: any;
-    };
-    // (undocumented)
-    isDisabled?: boolean;
-    // (undocumented)
-    isMerged?: boolean;
-    // (undocumented)
-    isReadonly?: boolean;
-    links?: LinkElementsInfo;
-    // (undocumented)
-    readonly property: PropertyDescription;
-    // (undocumented)
-    readonly value: PropertyValue;
-}
-
-// @beta @deprecated
-export type PropertyValue = PrimitiveValue | StructValue | ArrayValue;
-
-// @beta @deprecated
-export enum PropertyValueFormat {
-    // (undocumented)
-    Array = 1,
-    // (undocumented)
-    Primitive = 0,
-    // (undocumented)
-    Struct = 2
 }
 
 // @internal (undocumented)
@@ -6640,14 +6338,6 @@ export enum QuantityType {
     Stationing = 7,
     // (undocumented)
     Volume = 4
-}
-
-// @alpha @deprecated
-export interface RangeEditorParams extends BasePropertyEditorParams {
-    maximum?: number;
-    minimum?: number;
-    // (undocumented)
-    type: PropertyEditorParamTypes.Range;
 }
 
 // @internal
@@ -8068,18 +7758,6 @@ export class SkySphere extends SkyBox {
     toJSON(): SkyBoxProps;
 }
 
-// @alpha @deprecated
-export interface SliderEditorParams extends BasePropertyEditorParams {
-    intervals?: boolean;
-    maximum: number;
-    minimum: number;
-    numButtons?: number;
-    // (undocumented)
-    type: PropertyEditorParamTypes.Slider;
-    valueFactor?: number;
-    vertical?: boolean;
-}
-
 // @public
 export class SnapDetail extends HitDetail {
     constructor(from: HitDetail, snapMode?: SnapMode, heat?: SnapHeat, snapPoint?: XYZProps);
@@ -8356,16 +8034,6 @@ export class Storage {
     setData(key: string, value: StorageValue): Promise<void>;
 }
 
-// @beta @deprecated
-export interface StructValue extends BasePropertyValue {
-    // (undocumented)
-    members: {
-        [name: string]: PropertyRecord;
-    };
-    // (undocumented)
-    valueFormat: PropertyValueFormat.Struct;
-}
-
 // @internal
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
@@ -8434,26 +8102,15 @@ export interface SubCategoriesRequest {
     readonly promise: Promise<boolean>;
 }
 
-// @beta @deprecated
-export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
-    suppressLabelPlaceholder?: boolean;
-    // (undocumented)
-    type: PropertyEditorParamTypes.SuppressEditorLabel;
-}
-
-// @alpha @deprecated
-export interface SuppressUnitLabelEditorParams extends BasePropertyEditorParams {
-    // (undocumented)
-    type: PropertyEditorParamTypes.SuppressUnitLabel;
-}
-
 // @beta
-export class SurveyLengthDescription extends BaseQuantityDescription {
+export class SurveyLengthDescription extends FormattedQuantityDescription {
     constructor(name?: string, displayLabel?: string, iconSpec?: string);
+    // (undocumented)
+    get formatterQuantityType(): QuantityType;
     // (undocumented)
     get parseError(): string;
     // (undocumented)
-    get quantityType(): QuantityType;
+    get quantityType(): string;
 }
 
 // @internal (undocumented)
@@ -9862,57 +9519,12 @@ export class ToolSettings {
     static zoomSpeed: number;
 }
 
-// @beta @deprecated
-export class ToolSettingsPropertyItem {
-    constructor(value: ToolSettingsValue, propertyName: string);
-    // (undocumented)
-    propertyName: string;
-    // (undocumented)
-    value: ToolSettingsValue;
-}
-
-// @beta @deprecated
-export class ToolSettingsPropertyRecord extends PropertyRecord {
-    constructor(value: PropertyValue, property: PropertyDescription, editorPosition: EditorPosition, isReadonly?: boolean, lockProperty?: PropertyRecord);
-    // (undocumented)
-    static clone(record: ToolSettingsPropertyRecord, newValue?: ToolSettingsValue): ToolSettingsPropertyRecord;
-    // (undocumented)
-    editorPosition: EditorPosition;
-    // (undocumented)
-    lockProperty?: PropertyRecord;
-}
-
-// @beta @deprecated
-export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
-    constructor(value: ToolSettingsValue, propertyName: string, isDisabled?: boolean);
-    isDisabled?: boolean;
-}
-
 // @internal
 export class ToolSettingsState {
     initializeToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void;
     initializeToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void;
     saveToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void;
     saveToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void;
-}
-
-// @beta @deprecated
-export class ToolSettingsValue implements PrimitiveValue {
-    constructor(value?: number | string | boolean | Date, displayValue?: string);
-    // (undocumented)
-    clone(): ToolSettingsValue;
-    // (undocumented)
-    displayValue?: string;
-    // (undocumented)
-    get hasDisplayValue(): boolean;
-    // (undocumented)
-    get isNullValue(): boolean;
-    // (undocumented)
-    update(newValue: ToolSettingsValue): boolean;
-    // (undocumented)
-    value?: number | string | boolean | Date;
-    // (undocumented)
-    readonly valueFormat = PropertyValueFormat.Primitive;
 }
 
 // @internal (undocumented)

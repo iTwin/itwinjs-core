@@ -50,6 +50,8 @@ import { ITreeImageLoader, TreeImageLoader } from "../ImageLoader";
 // css
 import "./Tree.scss";
 
+// tslint:disable:deprecation
+
 /** Type for nodesSelected callback
  * @internal
  */

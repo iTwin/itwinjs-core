@@ -10,7 +10,8 @@ import * as _ from "lodash";
 import {
   PropertyData, PropertyDataChangeEvent, IPropertyDataProvider, PropertyCategory,
 } from "@bentley/ui-components";
-import { IModelConnection, PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/ui-abstract";
 import {
   CategoryDescription, DescriptorOverrides,
   Field, DefaultContentDisplayTypes, ContentFlags, Ruleset,

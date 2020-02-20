@@ -157,14 +157,14 @@ describe("VisibilityTree", () => {
       it("should match snapshot", async () => {
         setupDataProvider([{ id: "test", label: "test-node" }]);
         visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
-        const result = render(<VisibilityTree imodel={imodelMock.object} dataProvider={dataProvider} visibilityHandler={visibilityHandlerMock.object} />);
+        const result = render(<VisibilityTree imodel={imodelMock.object} dataProvider={dataProvider} visibilityHandler={visibilityHandlerMock.object} />); // tslint:disable-line:deprecation
         await waitForElement(() => result.getByText("test-node"), { container: result.container });
         expect(result.baseElement).to.matchSnapshot();
       });
 
       it("requests data provider to load the hierarchy if `enablePreloading` is set in props", async () => {
         const spy = sinon.spy(dataProvider, "loadHierarchy");
-        render(<VisibilityTree imodel={imodelMock.object} dataProvider={dataProvider}
+        render(<VisibilityTree imodel={imodelMock.object} dataProvider={dataProvider} // tslint:disable-line:deprecation
           visibilityHandler={visibilityHandlerMock.object} enablePreloading={true} />);
         expect(spy).to.be.calledOnce;
       });
@@ -175,7 +175,7 @@ describe("VisibilityTree", () => {
 
         visibilityHandlerMock.setup((x) => x.getDisplayStatus(moq.It.isAny())).returns(() => ({ isDisplayed: false }));
 
-        const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />); // tslint:disable-line:deprecation
         const renderedNode = await waitForElement(() => result.getByText("element"));
         expect(within(renderedNode).queryAllByTestId("tree-node-checkbox").length).to.eq(0);
       });
@@ -184,7 +184,7 @@ describe("VisibilityTree", () => {
         setupDataProviderForEachNodeType();
         visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
-        const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />); // tslint:disable-line:deprecation
         await waitForElement(() => result.getByText("model"));
         const nodes = result.getAllByTestId("tree-node");
         expect(nodes.length).to.eq(4);
@@ -195,7 +195,7 @@ describe("VisibilityTree", () => {
         setupDataProviderForEachNodeType();
         visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: true }));
 
-        const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />); // tslint:disable-line:deprecation
         await waitForElement(() => result.getByText("model"));
         const nodes = result.getAllByTestId("tree-node");
         expect(nodes.length).to.eq(4);
@@ -209,7 +209,7 @@ describe("VisibilityTree", () => {
         let cb: undefined | (() => void);
         visibilityHandlerMock.setup((x) => x.onVisibilityChange = moq.It.isAny()).callback((value) => cb = value).verifiable();
         visibilityHandlerMock.setup((x) => x.getDisplayStatus(moq.It.isAny())).returns(() => ({ isDisplayed: false })).verifiable(moq.Times.exactly(2));
-        const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />); // tslint:disable-line:deprecation
         await waitForElement(() => {
           const renderedNode = result.getByTestId("tree-node");
           if (isNodeChecked(renderedNode))
@@ -236,7 +236,7 @@ describe("VisibilityTree", () => {
         visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
         visibilityHandlerMock.setup(async (x) => x.changeVisibility(node, true)).verifiable();
 
-        const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<VisibilityTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />); // tslint:disable-line:deprecation
         await waitForElement(() => result.getByText("model"));
         const renderedNode = result.getByTestId("tree-node");
         const cb = renderedNode.querySelector("input");
@@ -1346,12 +1346,12 @@ describe("VisibilityTree", () => {
 
     it("shows correct hierarchy", async () => {
       const hierarchyBuilder = new HierarchyBuilder(imodel);
-      const hierarchy = await hierarchyBuilder.createHierarchy(VisibilityTree.RULESET);
+      const hierarchy = await hierarchyBuilder.createHierarchy(VisibilityTree.RULESET); // tslint:disable-line:deprecation
       expect(hierarchy).to.matchSnapshot();
     });
 
     it("renders component with real data and no active viewport", async () => {
-      const result = render(<VisibilityTree imodel={imodel} />);
+      const result = render(<VisibilityTree imodel={imodel} />); // tslint:disable-line:deprecation
       await waitForElement(() => result.getByText("Joe's house.bim"), { timeout: 60 * 1000 });
       expect(result.container).to.matchSnapshot();
     });

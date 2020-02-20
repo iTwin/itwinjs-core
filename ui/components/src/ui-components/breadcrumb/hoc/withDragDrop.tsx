@@ -15,6 +15,8 @@ import { TreeNodeItem } from "../../tree/TreeDataProvider";
 import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
 import { DragDropBreadcrumbNode } from "./DragDropBreadcrumbNode";
 
+// tslint:disable:deprecation
+
 /**
  * Props that are injected to the HOC component.
  * @beta

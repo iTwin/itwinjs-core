@@ -12,6 +12,8 @@ import { TreeNodeItem } from "./TreeDataProvider";
 import { concat } from "rxjs/internal/observable/concat";
 import { CheckBoxState } from "@bentley/ui-core";
 
+// tslint:disable:deprecation
+
 interface NodeEventManagerCallbacks {
   onSelectionModified: (selectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>, deselectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => void;
   onSelectionReplaced: (selectedNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => void;

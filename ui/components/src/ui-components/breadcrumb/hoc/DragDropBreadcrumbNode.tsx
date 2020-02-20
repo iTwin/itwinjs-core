@@ -13,6 +13,8 @@ import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
 import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
 
+// tslint:disable:deprecation
+
 /** @internal */
 export interface DragDropBreadcrumbNodeProps extends React.AllHTMLAttributes<HTMLSpanElement> {
   isOver?: boolean;

@@ -14,7 +14,7 @@ import { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 import { PropertyRenderer } from "./PropertyRenderer";
 import { UiComponents } from "../../UiComponents";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat, StructValue, ArrayValue } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, StructValue, ArrayValue } from "@bentley/ui-abstract";
 
 import "./NonPrimitivePropertyRenderer.scss";
 

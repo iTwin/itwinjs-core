@@ -19,6 +19,8 @@ import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNod
 import { UiComponents } from "../../UiComponents";
 import { CommonProps } from "@bentley/ui-core";
 
+// tslint:disable:deprecation
+
 /** Properties for the [[BreadcrumbDetails]] component
  * @beta
  */

@@ -10,6 +10,8 @@ import { IImageLoader, LoadedImage } from "../common/IImageLoader";
 import { TreeNodeItem } from "./TreeDataProvider";
 import { BeInspireTreeNodeITree } from "./component/BeInspireTree";
 
+// tslint:disable:deprecation
+
 /** Interface for a tree image loader
  * @public
  */

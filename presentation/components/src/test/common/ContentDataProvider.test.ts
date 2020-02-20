@@ -14,7 +14,8 @@ import {
   createRandomDescriptor, createRandomRuleset, createRandomContent,
   createRandomECInstanceKey, createRandomPropertiesField, createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription, createRandomECClassInfo, createRandomRelationshipPath,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { IModelConnection, PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import {
   Descriptor, Field,
   SelectionInfo, Item,

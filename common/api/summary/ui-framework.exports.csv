@@ -142,8 +142,10 @@ beta;CustomToolbarButton
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
+beta;DefaultDisplayProps
 beta;DefaultNavigationProps
 beta;DefaultNavigationWidget 
+beta;DefaultReactDisplay 
 internal;DefaultToolSettingsProvider 
 alpha;DefaultViewOverlay 
 public;DialogChangedEvent 
@@ -367,8 +369,6 @@ internal;ProjectReadStatus
 internal;ProjectScope
 internal;ProjectServices
 public;PromptField: any
-alpha;PropertyChangeResult
-alpha;PropertyChangeStatus
 public;PropsHelper
 alpha;RealityDataPicker 
 alpha;RealityDataPickerControl 
@@ -460,8 +460,6 @@ internal;StatusBarZone
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
 public;SupportsViewSelectorChange
-alpha;SyncPropertiesChangeEvent 
-alpha;SyncPropertiesChangeEventArgs
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs
 public;SyncUiEvent 
@@ -513,7 +511,6 @@ public;ToolWidget
 public;ToolWidgetDef 
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
-alpha;class UiDataProvider
 public;UiFramework
 alpha;UiShowHideManager
 beta;UiVisibilityChangedEvent 

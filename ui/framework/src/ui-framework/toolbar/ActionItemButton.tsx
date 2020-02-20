@@ -32,8 +32,8 @@ const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
 
   // Parent Component can only modify the isEnable state if the actionItem.isEnabled value is set to true.
   return {
-    isEnabled: undefined !== props.isEnabled ? props.isEnabled && props.actionItem.isEnabled : props.actionItem.isEnabled,
-    isVisible: props.actionItem.isVisible,
+    isEnabled: undefined !== props.isEnabled ? props.isEnabled && props.actionItem.isEnabled : props.actionItem.isEnabled, // tslint:disable-line:deprecation
+    isVisible: props.actionItem.isVisible, // tslint:disable-line:deprecation
     isActive: undefined !== props.actionItem.isActive ? props.actionItem.isActive : false,
   };
 };
@@ -67,18 +67,18 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
       refreshState = true;
     }
 
-    if (!refreshState && this.props.actionItem.stateSyncIds && this.props.actionItem.stateSyncIds.length > 0)
-      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+    if (!refreshState && this.props.actionItem.stateSyncIds && this.props.actionItem.stateSyncIds.length > 0) // tslint:disable-line:deprecation
+      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // tslint:disable-line:deprecation
 
     if (refreshState) {
-      if (this.props.actionItem.stateFunc)
-        newState = this.props.actionItem.stateFunc(newState);
+      if (this.props.actionItem.stateFunc) // tslint:disable-line:deprecation
+        newState = this.props.actionItem.stateFunc(newState); // tslint:disable-line:deprecation
 
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         // update actionItem as it hold the 'truth' for all state
         /* istanbul ignore else */
-        if (undefined !== newState.isVisible)
-          this.props.actionItem.isVisible = newState.isVisible;
+        if (undefined !== newState.isVisible) // tslint:disable-line:deprecation
+          this.props.actionItem.isVisible = newState.isVisible; // tslint:disable-line:deprecation
 
         /* istanbul ignore else */
         if (undefined !== newState.isActive)

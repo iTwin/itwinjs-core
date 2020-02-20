@@ -17,7 +17,7 @@ import ReactDataGrid = require("react-data-grid");
 import ReactDataGridAddons = require("react-data-grid-addons");
 
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PropertyValueFormat, PrimitiveValue } from "@bentley/ui-abstract";
 import {
   SortDirection, Dialog,
   LocalUiSettings, UiSettings, UiSettingsStatus, CommonProps,

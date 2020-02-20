@@ -16,6 +16,8 @@ import { TreeNodeItem } from "../../ui-components";
 import { Tree } from "../../ui-components/tree/component/Tree";
 import sinon from "sinon";
 
+// tslint:disable:deprecation
+
 describe("NodeLoadingOrchestrator", () => {
   const onLoadProgress = sinon.stub();
   const onLoadCanceled = sinon.stub();

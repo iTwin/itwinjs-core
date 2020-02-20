@@ -38,7 +38,7 @@ export interface OldSpatialContainmentTreeProps {
  * @deprecated
  */
 // istanbul ignore next
-export class OldSpatialContainmentTree extends React.Component<OldSpatialContainmentTreeProps, SpatialContainmentTreeState> {
+export class OldSpatialContainmentTree extends React.Component<OldSpatialContainmentTreeProps, SpatialContainmentTreeState> { // tslint:disable-line:deprecation
   private _rulesetRegistration?: RegisteredRuleset;
 
   /**
@@ -47,7 +47,7 @@ export class OldSpatialContainmentTree extends React.Component<OldSpatialContain
    */
   public static readonly RULESET: Ruleset = RULESET;
 
-  constructor(props: OldSpatialContainmentTreeProps) {
+  constructor(props: OldSpatialContainmentTreeProps) { // tslint:disable-line:deprecation
     super(props);
 
     this.state = {};

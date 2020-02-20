@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { PrimitiveValue, PropertyValueFormat, PropertyDescription, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue, PropertyValueFormat, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs, TreeModelNode } from "../../../../ui-components";
 
 /** Properties for [[TreeNodeEditor]] component

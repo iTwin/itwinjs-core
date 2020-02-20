@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 import { mount } from "enzyme";
 
-import { PropertyRecord, PrimitiveValue, PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PrimitiveValue, PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 
 import { CustomNumberEditor } from "../../ui-components/editors/CustomNumberEditor";

@@ -65,7 +65,7 @@ export interface VisibilityTreeProps {
  * @internal
  */
 interface VisibilityTreeState {
-  prevProps: VisibilityTreeProps;
+  prevProps: VisibilityTreeProps; // tslint:disable-line:deprecation
   ruleset: Ruleset;
   dataProvider: IPresentationTreeDataProvider;
   checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
@@ -78,7 +78,7 @@ interface VisibilityTreeState {
  * @public
  * @deprecated Use ModelsTree
  */
-export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
+export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, VisibilityTreeState> { // tslint:disable-line:deprecation
 
   private _treeRef: React.RefObject<BasicTree>;
   private _visibilityHandler?: VisibilityHandler;
@@ -90,7 +90,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
    */
   public static readonly RULESET: Ruleset = RULESET;
 
-  public constructor(props: VisibilityTreeProps) {
+  public constructor(props: VisibilityTreeProps) { // tslint:disable-line:deprecation
     super(props);
     this.state = {
       prevProps: props,
@@ -108,7 +108,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
     this.registerRuleset(); // tslint:disable-line:no-floating-promises
   }
 
-  public static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null {
+  public static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null { // tslint:disable-line:deprecation
     const base = { ...state, prevProps: nextProps };
     // istanbul ignore next
     if (nextProps.imodel !== state.prevProps.imodel || nextProps.dataProvider !== state.prevProps.dataProvider)
@@ -116,7 +116,7 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
     return base;
   }
 
-  public componentDidUpdate(prevProps: VisibilityTreeProps, _prevState: VisibilityTreeState) {
+  public componentDidUpdate(prevProps: VisibilityTreeProps, _prevState: VisibilityTreeState) { // tslint:disable-line:deprecation
     // istanbul ignore next
     if (!this.props.visibilityHandler && this.props.activeView !== prevProps.activeView) {
       if (this._visibilityHandler) {
@@ -231,9 +231,9 @@ export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, Vis
  * @beta
  * @deprecated Use IModelConnectedModelsTree
  */
-export const IModelConnectedVisibilityTree = connectIModelConnection(null, null)(VisibilityTree); // tslint:disable-line:variable-name
+export const IModelConnectedVisibilityTree = connectIModelConnection(null, null)(VisibilityTree); // tslint:disable-line:variable-name , deprecation
 
-const createDataProvider = (props: VisibilityTreeProps): IPresentationTreeDataProvider => {
+const createDataProvider = (props: VisibilityTreeProps): IPresentationTreeDataProvider => { // tslint:disable-line:deprecation
   let dataProvider: IPresentationTreeDataProvider;
   if (props.dataProvider) {
     dataProvider = props.dataProvider;

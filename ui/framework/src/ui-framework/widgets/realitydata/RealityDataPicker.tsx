@@ -756,4 +756,4 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
 
 export default RealityDataPicker;
 
-ConfigurableUiManager.registerControl("RealityDataPicker", RealityDataPickerControl);
+ConfigurableUiManager.registerControl("RealityDataPicker", RealityDataPickerControl); // tslint:disable-line:deprecation

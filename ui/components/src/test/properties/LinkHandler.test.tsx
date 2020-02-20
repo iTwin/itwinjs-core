@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { render, fireEvent, waitForElement } from "@testing-library/react";
 import * as sinon from "sinon";
 import * as React from "react";
+import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
 import TestUtils from "../TestUtils";
-import { PropertyRecord, LinkElementsInfo } from "@bentley/imodeljs-frontend";
 import { hasLinks, renderLinks, withLinks, LinksRenderer } from "../../ui-components/properties/LinkHandler";
 
 describe("LinkHandler", () => {

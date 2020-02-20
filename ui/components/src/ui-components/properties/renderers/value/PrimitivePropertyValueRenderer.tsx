@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/ui-abstract";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { withContextStyle } from "./WithContextStyle";

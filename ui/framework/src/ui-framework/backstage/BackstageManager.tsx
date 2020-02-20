@@ -40,7 +40,7 @@ export class BackstageManager {
     this.onToggled.raiseEvent({
       isOpen,
     });
-    Backstage.onBackstageEvent.emit({ isVisible: isOpen });
+    Backstage.onBackstageEvent.emit({ isVisible: isOpen }); // tslint:disable-line:deprecation
   }
 
   public open() {

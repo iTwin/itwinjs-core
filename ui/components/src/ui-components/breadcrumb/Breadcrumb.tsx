@@ -19,6 +19,7 @@ import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadTo
 import { UiComponents } from "../UiComponents";
 
 // cspell:ignore itree autocompleting
+// tslint:disable:deprecation
 
 /** @internal */
 export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode;

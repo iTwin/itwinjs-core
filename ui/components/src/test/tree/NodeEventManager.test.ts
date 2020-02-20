@@ -13,6 +13,8 @@ import { TreeNodeItem } from "../../ui-components";
 import { BeInspireTree, BeInspireTreeNode } from "../../ui-components/tree/component/BeInspireTree";
 import { CheckBoxState } from "@bentley/ui-core";
 
+// tslint:disable:deprecation
+
 describe("NodeEventManager", () => {
   function matchNodes(...expectedNodes: number[]): sinon.SinonMatcher {
     return sinon.match((nodes) => {

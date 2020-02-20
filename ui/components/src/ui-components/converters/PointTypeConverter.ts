@@ -8,7 +8,7 @@
 
 import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Primitives } from "@bentley/imodeljs-frontend";
+import { Primitives } from "@bentley/ui-abstract";
 import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
 
 // cSpell:ignore valuetypes

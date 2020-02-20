@@ -6,7 +6,8 @@
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
 import { useMemo } from "react";
-import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   PresentationPropertyDataProvider, propertyGridWithUnifiedSelection,
   IPresentationPropertyDataProvider,

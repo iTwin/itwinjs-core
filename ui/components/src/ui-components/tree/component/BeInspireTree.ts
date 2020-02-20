@@ -15,6 +15,8 @@ import { CheckBoxInfo, CheckBoxState, isPromiseLike } from "@bentley/ui-core";
 import { PageOptions } from "../../common/PageOptions";
 import { UiComponents } from "../../UiComponents";
 
+// tslint:disable:deprecation
+
 /**
  * Enum containing all events that may be emitted by [[BeInspireTree]]
  * @public @deprecated Use [[ControlledTree]] instead

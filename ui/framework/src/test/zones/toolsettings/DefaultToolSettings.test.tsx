@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  QuantityType, PropertyDescription, PrimitiveValue, ToolSettingsValue, PropertyEditorParamTypes,
+  PropertyDescription, PrimitiveValue, ToolSettingsValue, PropertyEditorParamTypes,
   ToolSettingsPropertySyncItem, ToolSettingsPropertyRecord, ButtonGroupEditorParams,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 
 // tslint:disable: completed-docs
 
@@ -111,7 +111,7 @@ const lengthDescription: PropertyDescription = {
   name: "length",
   displayLabel: "Length",
   typename: "double",
-  quantityType: QuantityType.Length,  // QuantityType or KOQ (schema:koq) [maybe make string | QuantityType]
+  quantityType: "Length",  // QuantityType or KOQ (schema:koq) [maybe make string | QuantityType]
   editor: { name: "koq-double" },
 };
 
@@ -126,7 +126,7 @@ const angleDescription: PropertyDescription = {
   name: "angle",
   displayLabel: "Angle",
   typename: "double",
-  quantityType: QuantityType.LatLong,  // QuantityType or KOQ fullname (schema:koq)
+  quantityType: "angle",  // QuantityType or KOQ fullname (schema:koq)
   editor: { name: "koq-double" },
 };
 

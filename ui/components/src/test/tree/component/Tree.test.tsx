@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { RenderResult, render, within, fireEvent, cleanup, waitForElement, wait } from "@testing-library/react";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
 import { TestTreeDataProvider } from "../TestDataFactories";
 import { waitForUpdate, ResolvablePromise } from "../../test-helpers/misc";
@@ -26,6 +26,8 @@ import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyCon
 import { ImmediatelyLoadedTreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 import { ITreeImageLoader } from "../../../ui-components/tree/ImageLoader";
 import { LoadedImage } from "../../../ui-components/common/IImageLoader";
+
+// tslint:disable:deprecation
 
 describe("Tree", () => {
 

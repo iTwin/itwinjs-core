@@ -10,7 +10,7 @@ import * as React from "react";
 import { Presentation } from "@bentley/presentation-frontend";
 import { Descriptor, Field, LabelDefinition, LabelCompositeValue } from "@bentley/presentation-common";
 import { FIELD_NAMES_SEPARATOR } from "./ContentBuilder";
-import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, Primitives } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, Primitives } from "@bentley/ui-abstract";
 
 /**
  * An interface of something that has a priority.

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { PrimitiveValue, PropertyValueFormat, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue, PropertyValueFormat, PropertyRecord } from "@bentley/ui-abstract";
 import { SimplePropertyDataProvider, PropertyCategory } from "../../ui-components";
 import TestUtils from "../TestUtils";
 

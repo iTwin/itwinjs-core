@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
-import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { FavoritePropertiesDataProvider, PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { KeySet } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";

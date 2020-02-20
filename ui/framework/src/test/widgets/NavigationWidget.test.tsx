@@ -50,10 +50,10 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidgetDef from WidgetProps", () => {
 
-    const widgetDef = new NavigationWidgetDef(widgetProps);
-    expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
+    const widgetDef = new NavigationWidgetDef(widgetProps); // tslint:disable-line:deprecation
+    expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // tslint:disable-line:deprecation
 
-    const navigationWidgetDef = widgetDef as NavigationWidgetDef;
+    const navigationWidgetDef = widgetDef as NavigationWidgetDef; // tslint:disable-line:deprecation
 
     const reactElement = navigationWidgetDef.reactElement;
     expect(reactElement).to.not.be.undefined;
@@ -86,7 +86,7 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidget should render", () => {
     const wrapper = mount(
-      <NavigationWidget
+      <NavigationWidget // tslint:disable-line:deprecation
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />,
@@ -96,7 +96,7 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidget should render correctly", () => {
     shallow(
-      <NavigationWidget
+      <NavigationWidget // tslint:disable-line:deprecation
         id="navigationWidget"
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
@@ -109,7 +109,7 @@ describe("NavigationWidget", () => {
     const vItemList = new ItemList([CoreTools.fitViewCommand]);
 
     const wrapper = mount(
-      <NavigationWidget
+      <NavigationWidget // tslint:disable-line:deprecation
         horizontalItems={hItemList}
         verticalItems={vItemList}
       />,
@@ -119,7 +119,7 @@ describe("NavigationWidget", () => {
 
   it("NavigationWidget should support update", () => {
     const wrapper = mount(
-      <NavigationWidget
+      <NavigationWidget // tslint:disable-line:deprecation
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />,
@@ -150,7 +150,7 @@ describe("NavigationWidget", () => {
   }
 
   it("NavigationWidgetDef with invalid navigation aid should throw Error", () => {
-    const def = new NavigationWidgetDef({
+    const def = new NavigationWidgetDef({ // tslint:disable-line:deprecation
       navigationAidId: "Aid1",
     });
     ConfigurableUiManager.registerControl("Aid1", TestContentControl);
@@ -159,7 +159,7 @@ describe("NavigationWidget", () => {
   });
 
   it("NavigationWidgetDef should handle updateNavigationAid", () => {
-    const def = new NavigationWidgetDef({
+    const def = new NavigationWidgetDef({ // tslint:disable-line:deprecation
       navigationAidId: "Aid1",
     });
     ConfigurableUiManager.registerControl("Aid1", TestNavigationAidControl);

@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { Id64 } from "@bentley/bentleyjs-core";
 import TestUtils from "../../../TestUtils";
 import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
-import { PrimitiveValue, Primitives } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue, Primitives } from "@bentley/ui-abstract";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 
 function createNavigationProperty(value: Primitives.Hexadecimal, displayValue?: string) {

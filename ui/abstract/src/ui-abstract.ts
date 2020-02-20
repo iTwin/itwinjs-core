@@ -11,15 +11,30 @@ export * from "./ui-abstract/UiItemsArbiter";
 export * from "./ui-abstract/backstage/BackstageItem";
 export * from "./ui-abstract/backstage/BackstageItemsManager";
 
+export * from "./ui-abstract/dialogs/DialogItem";
+export * from "./ui-abstract/dialogs/DialogItemsManager";
+export * from "./ui-abstract/dialogs/UiDataProvider";
+
 export * from "./ui-abstract/items/AbstractItemProps";
 export * from "./ui-abstract/items/AbstractMenuItemProps";
+export * from "./ui-abstract/items/ProvidedItem";
 export * from "./ui-abstract/items/AbstractToolbarProps";
 export * from "./ui-abstract/items/BadgeType";
+
 export * from "./ui-abstract/items/ConditionalBooleanValue";
 export * from "./ui-abstract/items/ConditionalStringValue";
+export * from "./ui-abstract/items/RelativePosition";
 export * from "./ui-abstract/items/ProvidedItem";
 export * from "./ui-abstract/items/RelativePosition";
 
+export * from "./ui-abstract/properties/Description";
+export * from "./ui-abstract/properties/EditorParams";
+export * from "./ui-abstract/properties/PrimitiveTypes";
+export * from "./ui-abstract/properties/Record";
+export * from "./ui-abstract/properties/ToolSettingsValue";
+export * from "./ui-abstract/properties/Value";
+
+export * from "./ui-abstract/quantity/BaseQuantityDescription";
 export * from "./ui-abstract/statusbar/StatusBarItem";
 export * from "./ui-abstract/statusbar/StatusBarItemsManager";
 
@@ -79,4 +94,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Utilities
  * Various utility classes for working with a UI.
+ */
+/**
+ * @docs-group-description Properties
+ * Properties system for data input and formatting.
  */

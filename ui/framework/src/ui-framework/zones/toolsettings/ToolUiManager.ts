@@ -7,7 +7,8 @@
  */
 
 import { UiEvent } from "@bentley/ui-core";
-import { IModelApp, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, InteractiveTool } from "@bentley/imodeljs-frontend";
+import { IModelApp, InteractiveTool } from "@bentley/imodeljs-frontend";
+import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "@bentley/ui-abstract";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../../UiFramework";
 import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";

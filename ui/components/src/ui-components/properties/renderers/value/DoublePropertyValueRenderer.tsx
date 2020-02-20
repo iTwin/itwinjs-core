@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
-import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/ui-abstract";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { withContextStyle } from "./WithContextStyle";
 import { LinksRenderer } from "../../LinkHandler";

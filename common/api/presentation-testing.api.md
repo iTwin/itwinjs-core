@@ -14,7 +14,7 @@ import { Omit } from '@bentley/presentation-common';
 import { PageOptions } from '@bentley/presentation-common';
 import { PresentationManagerProps } from '@bentley/presentation-backend';
 import { PresentationManagerProps as PresentationManagerProps_2 } from '@bentley/presentation-frontend';
-import { PropertyRecord } from '@bentley/imodeljs-frontend';
+import { PropertyRecord } from '@bentley/ui-abstract';
 import { Ruleset } from '@bentley/presentation-common';
 import { TreeNodeItem } from '@bentley/ui-components';
 

@@ -10,7 +10,7 @@ import sinon from "sinon";
 import { ColorEditor } from "../../ui-components/editors/ColorEditor";
 import { PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue } from "@bentley/ui-abstract";
 import { ColorByName } from "@bentley/imodeljs-common";
 
 describe("<ColorEditor />", () => {

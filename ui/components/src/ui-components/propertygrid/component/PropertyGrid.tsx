@@ -11,7 +11,7 @@ import ReactResizeDetector from "react-resize-detector";
 
 import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { Orientation, Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat, ArrayValue, StructValue } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, ArrayValue, StructValue } from "@bentley/ui-abstract";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";

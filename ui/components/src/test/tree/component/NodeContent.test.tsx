@@ -14,6 +14,8 @@ import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../../TestUtils";
 
+// tslint:disable:deprecation
+
 describe("NodeContent", () => {
   const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();
 

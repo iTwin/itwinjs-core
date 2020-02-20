@@ -25,6 +25,8 @@ import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { takeWhile } from "rxjs/internal/operators/takeWhile";
 import { tap } from "rxjs/internal/operators/tap";
 
+// tslint:disable:deprecation
+
 /** @internal @deprecated */
 export interface NodeLoadingOrchestratorCallbacks {
   onLoadProgress: (loaded: number, total: number, cancel: () => void) => void;

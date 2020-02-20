@@ -56,5 +56,5 @@ export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps> = (pr
   if (useControlledTree)
     return <ControlledSpatialContainmentTree {...strippedProps} />;
 
-  return <OldSpatialContainmentTree {...strippedProps} />;
+  return <OldSpatialContainmentTree {...strippedProps} />; // tslint:disable-line:deprecation
 };

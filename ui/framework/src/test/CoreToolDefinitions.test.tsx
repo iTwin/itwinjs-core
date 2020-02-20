@@ -46,7 +46,7 @@ describe("CoreToolDefinitions", () => {
 
   it("ToolWidget should render with Core Tool Definitions", () => {
     const wrapper = mount(
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         horizontalToolbar={horizontalToolbar}
       />,
     );
@@ -55,7 +55,7 @@ describe("CoreToolDefinitions", () => {
 
   it("ToolWidget should render correctly with Core Tool Definitions", () => {
     shallow(
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         id="toolWidget"
         horizontalToolbar={horizontalToolbar}
       />,

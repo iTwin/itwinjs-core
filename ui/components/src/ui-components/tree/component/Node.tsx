@@ -22,6 +22,8 @@ import { ITreeImageLoader } from "../ImageLoader";
 import { Image } from "../../common/IImageLoader";
 import { ImageRenderer } from "../../common/ImageRenderer";
 
+// tslint:disable:deprecation
+
 /**
  * Properties for Checkbox in [[TreeNode]]
  * @public @deprecated Use [[ControlledTree]] instead

@@ -16,6 +16,8 @@ import {
 } from "../../../ui-components/tree/component/BeInspireTree";
 import { PageOptions } from "../../../ui-components/common/PageOptions";
 
+// tslint:disable:deprecation
+
 interface Node {
   id: string;
   children: Node[];

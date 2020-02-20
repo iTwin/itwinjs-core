@@ -85,7 +85,7 @@ class TestNestedFrontstage extends FrontstageProvider {
 class FrontstageToolWidget extends React.Component {
   public render() {
     return (
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         appButton={NestedFrontstage.backToPreviousFrontstageCommand}
       />
     );

@@ -13,6 +13,8 @@ import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, Dro
 import { BeInspireTree } from "../../../ui-components/tree/component/BeInspireTree";
 import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 
+// tslint:disable:deprecation
+
 describe("Tree withDragDrop HOC", () => {
 
   afterEach(cleanup);

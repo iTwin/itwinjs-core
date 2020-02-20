@@ -5,7 +5,8 @@
 import * as React from "react";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { Dialog, DialogButtonType, LabeledInput, LoadingBar, Spinner, Checkbox, CheckBoxState, SpinnerSize, DialogButtonDef } from "@bentley/ui-core";
-import { ModelessDialogManager, SyncPropertiesChangeEventArgs } from "@bentley/ui-framework";
+import { ModelessDialogManager } from "@bentley/ui-framework";
+import { SyncPropertiesChangeEventArgs } from "@bentley/ui-abstract";
 import { GPDialogUiProvider, SyncTreeDataEventArgs, SyncTitleEventArgs } from "./GPDialogUiProvider";
 import { ITreeDataProvider, Tree, TreeNodeItem } from "@bentley/ui-components";
 import { PhotoFolder } from "../PhotoTree";

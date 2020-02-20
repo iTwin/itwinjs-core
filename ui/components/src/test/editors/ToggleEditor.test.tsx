@@ -10,7 +10,7 @@ import sinon from "sinon";
 import { ToggleEditor } from "../../ui-components/editors/ToggleEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue } from "@bentley/ui-abstract";
 
 describe("<ToggleEditor />", () => {
   it("should render", () => {

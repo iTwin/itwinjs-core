@@ -5,7 +5,8 @@
 import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewQueryParams } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { DefaultContentDisplayTypes } from "@bentley/presentation-common";
 import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { ElementSeparator, Orientation } from "@bentley/ui-core";

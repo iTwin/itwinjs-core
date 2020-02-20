@@ -14,8 +14,9 @@ import * as classnames from "classnames";
 import {
   PropertyRecord, ToolSettingsPropertyRecord,
   PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams, PrimitiveValue,
-  IModelApp, ToolSettingsPropertySyncItem, ToolSettingsValue, PropertyValueFormat,
-} from "@bentley/imodeljs-frontend";
+  ToolSettingsPropertySyncItem, ToolSettingsValue, PropertyValueFormat,
+} from "@bentley/ui-abstract";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
 import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
 

@@ -240,7 +240,7 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
     });
 
-    Backstage.onBackstageEvent.addListener(() => {
+    Backstage.onBackstageEvent.addListener(() => { // tslint:disable-line:deprecation
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageEvent);
     });
 

@@ -8,7 +8,8 @@
 
 import * as _ from "lodash";
 import { IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   KeySet, DEFAULT_KEYS_BATCH_SIZE, PageOptions, SelectionInfo,
   ContentRequestOptions, Content, Descriptor, Field,

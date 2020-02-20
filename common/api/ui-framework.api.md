@@ -38,6 +38,8 @@ import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { CustomDefinition } from '@bentley/ui-abstract';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
+import { DialogItem } from '@bentley/ui-abstract';
+import { DialogItemsManager } from '@bentley/ui-abstract';
 import { DialogProps } from '@bentley/ui-core';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
@@ -93,8 +95,8 @@ import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
-import { PropertyDescription } from '@bentley/imodeljs-frontend';
-import { PropertyRecord } from '@bentley/imodeljs-frontend';
+import { PropertyDescription } from '@bentley/ui-abstract';
+import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyUpdatedArgs } from '@bentley/ui-components';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
@@ -130,9 +132,8 @@ import { ToolbarItemsManager } from '@bentley/ui-abstract';
 import { ToolbarOrientation } from '@bentley/ui-abstract';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolbarUsage } from '@bentley/ui-abstract';
-import { ToolSettingsPropertyItem } from '@bentley/imodeljs-frontend';
-import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
-import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
+import { ToolSettingsPropertyRecord } from '@bentley/ui-abstract';
+import { ToolSettingsPropertySyncItem } from '@bentley/ui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
@@ -1458,6 +1459,12 @@ export type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
+// @beta
+export interface DefaultDisplayProps {
+    // (undocumented)
+    readonly itemsManager: DialogItemsManager;
+}
+
 // @beta @deprecated
 export interface DefaultNavigationProps {
     prefixHorizontalItems?: ItemList;
@@ -1471,6 +1478,21 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @beta
+export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, DefaultDisplayState> {
+    constructor(props: DefaultDisplayProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    static hasAssociatedLockProperty(record: DialogItem): boolean;
+    get itemsManager(): DialogItemsManager;
+    set itemsManager(itemsManager: DialogItemsManager);
+    // (undocumented)
+    render(): React.ReactNode;
+}
 
 // @internal
 export class DefaultToolSettingsProvider extends ToolUiProvider {
@@ -3765,22 +3787,6 @@ export interface ProjectServices {
 // @public @deprecated
 export const PromptField: any;
 
-// @alpha
-export interface PropertyChangeResult {
-    // (undocumented)
-    errorMsg?: string;
-    // (undocumented)
-    status: PropertyChangeStatus;
-}
-
-// @alpha
-export enum PropertyChangeStatus {
-    // (undocumented)
-    Error = 2,
-    // (undocumented)
-    Success = 0
-}
-
 // @public
 export class PropsHelper {
     static getIcon(iconSpec: string | ConditionalStringValue | React.ReactNode): JSX.Element | undefined;
@@ -4612,16 +4618,6 @@ export interface SupportsViewSelectorChange {
     supportsViewSelectorChange: boolean;
 }
 
-// @alpha
-export class SyncPropertiesChangeEvent extends UiEvent<SyncPropertiesChangeEventArgs> {
-}
-
-// @alpha
-export interface SyncPropertiesChangeEventArgs {
-    // (undocumented)
-    properties: ToolSettingsPropertyItem[];
-}
-
 // @public
 export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> {
 }
@@ -5112,17 +5108,6 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
     horizontalToolbar?: React.ReactNode;
     // (undocumented)
     verticalToolbar?: React.ReactNode;
-}
-
-// @alpha
-export abstract class UiDataProvider {
-    // (undocumented)
-    onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
-    processChangesInUi(_properties: ToolSettingsPropertyItem[]): PropertyChangeResult;
-    supplyAvailableProperties(): ToolSettingsPropertyItem[];
-    // @internal
-    syncPropertiesInUi(properties: ToolSettingsPropertyItem[]): void;
-    validateProperty(_item: ToolSettingsPropertyItem): PropertyChangeResult;
 }
 
 // @public

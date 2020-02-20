@@ -7,10 +7,12 @@
  */
 
 import * as React from "react";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/ui-abstract";
 import { BeInspireTreeNode } from "./component/BeInspireTree";
 import { TreeNodeItem } from "./TreeDataProvider";
 import { PropertyUpdatedArgs, EditorContainer } from "../editors/EditorContainer";
+
+// tslint:disable:deprecation
 
 /** Properties for a [[Tree]] that has cell editing enabled
  * @beta @deprecated Use [[ControlledTree]] instead

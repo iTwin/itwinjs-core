@@ -5,6 +5,8 @@
 import { ResolvablePromise } from "../test-helpers/misc";
 import { ITreeDataProvider, DelayLoadedTreeNodeItem, TreeNodeItem, PageOptions, BeInspireTree, Tree } from "../../ui-components";
 
+// tslint:disable:deprecation
+
 /** @internal */
 export interface TestTreeHierarchyNode {
   id: string;
