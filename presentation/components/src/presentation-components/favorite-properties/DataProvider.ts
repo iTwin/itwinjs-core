@@ -14,12 +14,13 @@ import { Presentation, getScopeId } from "@bentley/presentation-frontend";
 import { translate } from "../common/Utils";
 import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
 
-const favoritesCategoryName = "Favorite";
+/** @internal */
+export const FAVORITES_CATEGORY_NAME = "Favorite";
 
 /** @internal */
 export const getFavoritesCategory = (): CategoryDescription => {
   return {
-    name: favoritesCategoryName,
+    name: FAVORITES_CATEGORY_NAME,
     label: translate("categories.favorite.label"),
     description: translate("categories.favorite.description"),
     priority: Number.MAX_VALUE,

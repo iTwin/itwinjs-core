@@ -14,7 +14,7 @@ import { Orientation, GlobalContextMenu, ContextMenuItem, ContextMenuItemProps }
 import { PropertyGrid, PropertyGridContextMenuArgs, ActionButtonRendererProps, useAsyncValue } from "@bentley/ui-components";
 import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
 import { Field } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Presentation, FavoritePropertiesScope } from "@bentley/presentation-frontend";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 
 // create a HOC property grid component that supports unified selection
@@ -53,15 +53,11 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
   }
 
   private _onAddFavorite = async (propertyField: Field) => {
-    const imodelId = this.props.iModelConnection.iModelToken.iModelId;
-    const projectId = this.props.iModelConnection.iModelToken.contextId;
-    await Presentation.favoriteProperties.add(propertyField, projectId, imodelId);
+    await Presentation.favoriteProperties.add(propertyField, this.props.iModelConnection, FavoritePropertiesScope.IModel);
     this.setState({ contextMenu: undefined });
   }
   private _onRemoveFavorite = async (propertyField: Field) => {
-    const imodelId = this.props.iModelConnection.iModelToken.iModelId;
-    const projectId = this.props.iModelConnection.iModelToken.contextId;
-    await Presentation.favoriteProperties.remove(propertyField, projectId, imodelId);
+    await Presentation.favoriteProperties.remove(propertyField, this.props.iModelConnection, FavoritePropertiesScope.IModel);
     this.setState({ contextMenu: undefined });
   }
 
@@ -83,9 +79,7 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
     const field = await this.state.dataProvider.getFieldByPropertyRecord(args.propertyRecord);
     const items: ContextMenuItemInfo[] = [];
     if (field !== undefined) {
-      const imodelId = this.props.iModelConnection.iModelToken.iModelId;
-      const projectId = this.props.iModelConnection.iModelToken.contextId;
-      if (Presentation.favoriteProperties.has(field, projectId, imodelId)) {
+      if (Presentation.favoriteProperties.has(field, this.props.iModelConnection, FavoritePropertiesScope.IModel)) {
         items.push({
           key: "remove-favorite",
           icon: "icon-remove-2",
@@ -143,18 +137,15 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
     const { dataProvider } = this.state;
     const { property } = props;
     const field = useAsyncValue(useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
-    const imodelId = this.props.iModelConnection.iModelToken.iModelId;
-    const projectId = this.props.iModelConnection.iModelToken.contextId;
 
     return (
       <div>
         {
           field &&
-          (Presentation.favoriteProperties.has(field, projectId, imodelId) || props.isPropertyHovered) &&
+          (Presentation.favoriteProperties.has(field, this.props.iModelConnection, FavoritePropertiesScope.IModel) || props.isPropertyHovered) &&
           <FavoriteActionButton
             field={field}
-            projectId={projectId}
-            imodelId={imodelId} />
+            imodel={this.props.iModelConnection} />
         }
       </div>
     );
@@ -188,8 +179,7 @@ ConfigurableUiManager.registerControl("UnifiedSelectionPropertyGridDemoWidget", 
 
 interface FavoriteActionButtonProps {
   field: Field;
-  projectId?: string;
-  imodelId?: string;
+  imodel: IModelConnection;
 }
 
 class FavoriteActionButton extends React.Component<FavoriteActionButtonProps> {
@@ -220,14 +210,14 @@ class FavoriteActionButton extends React.Component<FavoriteActionButtonProps> {
 
   private async toggleFavoriteProperty() {
     if (this.isFavorite())
-      await Presentation.favoriteProperties.remove(this.props.field, this.props.projectId, this.props.imodelId);
+      await Presentation.favoriteProperties.remove(this.props.field, this.props.imodel, FavoritePropertiesScope.IModel);
     else
-      await Presentation.favoriteProperties.add(this.props.field, this.props.projectId, this.props.imodelId);
+      await Presentation.favoriteProperties.add(this.props.field, this.props.imodel, FavoritePropertiesScope.IModel);
     if (this._isMounted)
       this.setState({ isFavorite: this.isFavorite() });
   }
 
   private isFavorite(): boolean {
-    return Presentation.favoriteProperties.has(this.props.field, this.props.projectId, this.props.imodelId);
+    return Presentation.favoriteProperties.has(this.props.field, this.props.imodel, FavoritePropertiesScope.IModel);
   }
 }

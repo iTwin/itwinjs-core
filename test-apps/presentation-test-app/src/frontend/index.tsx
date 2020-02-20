@@ -16,7 +16,7 @@ import {
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import {
   Presentation, FavoritePropertiesManager,
-  IFavoritePropertiesStorage, FavoriteProperties,
+  IFavoritePropertiesStorage, FavoritePropertiesOrderInfo, PropertyFullName,
 } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiCore } from "@bentley/ui-core";
@@ -88,12 +88,11 @@ export class SampleApp {
 
 const setCustomFavoritePropertiesManager = () => {
   const storage: IFavoritePropertiesStorage = {
-    loadProperties: async (_?: string, __?: string) => ({
-      nestedContentInfos: new Set<string>(),
-      propertyInfos: new Set<string>(),
-      baseFieldInfos: new Set<string>(),
-    }),
-    async saveProperties(_: FavoriteProperties, __?: string, ___?: string) { },
+    loadProperties: async (_?: string, __?: string) => new Set<string>(),
+    async saveProperties(_: Set<PropertyFullName>, __?: string, ___?: string) { },
+    loadPropertiesOrder: async (_: string | undefined, __: string) => ([]),
+    async savePropertiesOrder(_: FavoritePropertiesOrderInfo[], __: string | undefined, ___: string) { },
+
   };
   Presentation.favoriteProperties = new FavoritePropertiesManager({ storage });
 };

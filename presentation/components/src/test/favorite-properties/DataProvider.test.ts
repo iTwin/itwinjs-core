@@ -110,7 +110,7 @@ describe("FavoritePropertiesDataProvider", () => {
     });
 
     it("filters out only favorite category", async () => {
-      const favoritesCategory = await getFavoritesCategory();
+      const favoritesCategory = getFavoritesCategory();
       const favoritePropertyName = faker.random.word();
       const regularPropertyName = faker.random.word();
 

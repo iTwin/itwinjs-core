@@ -73,13 +73,13 @@ export const createRandomPropertyJSON = (): PropertyJSON => ({
   relatedClassPath: createRandomRelationshipPathJSON(1),
 });
 
-export const createRandomPropertiesFieldJSON = (category: CategoryDescription | boolean = true): PropertiesFieldJSON => ({
+export const createRandomPropertiesFieldJSON = (category: CategoryDescription | boolean = true, propertiesCount: number = 1): PropertiesFieldJSON => ({
   ...createRandomPrimitiveFieldJSON(category),
-  properties: [createRandomPropertyJSON()],
+  properties: [...Array(propertiesCount).keys()].map(() => createRandomPropertyJSON()),
 });
 
-export const createRandomPropertiesField = (category: CategoryDescription | boolean = true): PropertiesField => {
-  return PropertiesField.fromJSON(createRandomPropertiesFieldJSON(category))!;
+export const createRandomPropertiesField = (category: CategoryDescription | boolean = true, propertiesCount: number = 1): PropertiesField => {
+  return PropertiesField.fromJSON(createRandomPropertiesFieldJSON(category, propertiesCount))!;
 };
 
 export const createRandomNestedFieldJSON = (category: CategoryDescription | boolean = true): NestedContentFieldJSON => ({

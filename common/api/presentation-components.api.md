@@ -233,7 +233,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
     onDataChanged: PropertyDataChangeEvent;
     protected shouldConfigureContentDescriptor(): boolean;
     protected sortCategories(categories: CategoryDescription[]): void;
-    protected sortFields(_category: CategoryDescription, fields: Field[]): void;
+    protected sortFields: (category: CategoryDescription, fields: Field[]) => void;
     }
 
 // @public

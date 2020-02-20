@@ -1,7 +1,10 @@
 sep=;
 Release Tag;API Item
-internal;FavoriteProperties
+internal;createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[]
 beta;FavoritePropertiesManager
+internal;FavoritePropertiesOrderInfo
+beta;FavoritePropertiesScope
+internal;getFieldInfos: (field: Field) => Set
 public;getScopeId(scope: SelectionScope | string | undefined): string
 alpha;HiliteSet
 alpha;HiliteSetProvider
@@ -12,6 +15,7 @@ beta;PersistenceHelper
 public;Presentation
 public;PresentationManager 
 public;PresentationManagerProps
+internal;PropertyFullName = string
 public;RulesetManager
 public;RulesetVariablesManager
 public;SelectionChangeEvent 

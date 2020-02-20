@@ -25,7 +25,7 @@ import {
   PresentationError,
   RegisteredRuleset,
 } from "@bentley/presentation-common";
-import { Presentation, PresentationManager, FavoritePropertiesManager, RulesetManager } from "@bentley/presentation-frontend";
+import { Presentation, PresentationManager, FavoritePropertiesManager, RulesetManager, FavoritePropertiesScope } from "@bentley/presentation-frontend";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
@@ -43,7 +43,13 @@ class Provider extends PresentationPropertyDataProvider {
   public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
   public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
   public sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
-  public sortFields(category: CategoryDescription, fields: Field[]) { return super.sortFields(category, fields); }
+
+  public get sortFields() {
+    return super.sortFields;
+  }
+  public set sortFields(value) {
+    super.sortFields = value;
+  }
 
   public get isFieldFavorite() {
     return super.isFieldFavorite;
@@ -209,7 +215,7 @@ describe("PropertyDataProvider", () => {
       imodelTokenMock.setup((x) => x.contextId).returns(() => projectId);
       imodelMock.setup((x) => x.iModelToken).returns(() => imodelTokenMock.object);
 
-      favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(() => false);
+      favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), imodelMock.object, moq.It.isAny())).returns(() => false);
     });
 
     it("calls FavoritePropertiesManager", () => {
@@ -217,7 +223,7 @@ describe("PropertyDataProvider", () => {
 
       const field = createRandomPropertiesField();
       provider.isFieldFavorite(field);
-      favoritePropertiesManagerMock.verify((x) => x.has(field, projectId, imodelId), moq.Times.once());
+      favoritePropertiesManagerMock.verify((x) => x.has(field, imodelMock.object, FavoritePropertiesScope.IModel), moq.Times.once());
     });
 
   });

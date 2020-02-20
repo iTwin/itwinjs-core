@@ -19,11 +19,11 @@ import {
   PropertyValueFormat as PresentationPropertyValueFormat,
   InstanceKey,
 } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { Presentation, FavoritePropertiesScope } from "@bentley/presentation-frontend";
 import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
 import { priorityAndNameSortFunction, createLabelRecord } from "../common/Utils";
 import { ContentBuilder, filterMatchingFieldPaths, applyOptionalPrefix } from "../common/ContentBuilder";
-import { getFavoritesCategory } from "../favorite-properties/DataProvider";
+import { getFavoritesCategory, FAVORITES_CATEGORY_NAME } from "../favorite-properties/DataProvider";
 
 /** @internal */
 // tslint:disable-next-line: no-var-requires
@@ -134,12 +134,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   }
 
   /** Should the specified field be included in the favorites category. */
-  protected isFieldFavorite = (field: Field): boolean => {
-    const projectId = this.imodel.iModelToken.contextId;
-    const imodelId = this.imodel.iModelToken.iModelId;
-
-    return Presentation.favoriteProperties.has(field, projectId, imodelId);
-  }
+  protected isFieldFavorite = (field: Field): boolean => (Presentation.favoriteProperties.has(field, this.imodel, FavoritePropertiesScope.IModel));
 
   /**
    * Sorts the specified list of categories by priority. May be overriden
@@ -153,8 +148,11 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * Sorts the specified list of fields by priority. May be overriden
    * to supply a different sorting algorithm.
    */
-  protected sortFields(_category: CategoryDescription, fields: Field[]): void {
-    fields.sort(priorityAndNameSortFunction);
+  protected sortFields = (category: CategoryDescription, fields: Field[]) => {
+    if (category.name === FAVORITES_CATEGORY_NAME)
+      Presentation.favoriteProperties.sortFields(this.imodel, fields);
+    else
+      fields.sort(priorityAndNameSortFunction);
   }
 
   /**
@@ -199,7 +197,7 @@ interface PropertyPaneCallbacks {
   isFavorite(field: Field): boolean;
   isHidden(field: Field): boolean;
   sortCategories(categories: CategoryDescription[]): void;
-  sortFields(category: CategoryDescription, fields: Field[]): void;
+  sortFields: (category: CategoryDescription, fields: Field[]) => void;
 }
 
 interface CategorizedFields {
@@ -229,9 +227,9 @@ class PropertyDataBuilder {
     this._callbacks = callbacks;
   }
 
-  public async buildPropertyData(): Promise<PropertyData> {
-    const fields = await this.createCategorizedFields();
-    const records = await this.createCategorizedRecords(fields);
+  public buildPropertyData(): PropertyData {
+    const fields = this.createCategorizedFields();
+    const records = this.createCategorizedRecords(fields);
     return {
       ...records,
       label: this._contentItem.label,
@@ -240,8 +238,8 @@ class PropertyDataBuilder {
     } as PropertyData;
   }
 
-  private async createCategorizedFields(): Promise<CategorizedFields> {
-    const favoritesCategory = await getFavoritesCategory();
+  private createCategorizedFields(): CategorizedFields {
+    const favoritesCategory = getFavoritesCategory();
     const categories = new Array<CategoryDescription>();
     const categoryFields: { [categoryName: string]: Field[] } = {};
     const hiddenFieldPaths = new Array<Field[]>();
@@ -311,8 +309,8 @@ class PropertyDataBuilder {
     };
   }
 
-  private async createCategorizedRecords(fields: CategorizedFields): Promise<CategorizedRecords> {
-    const favoritesCategory = await getFavoritesCategory();
+  private createCategorizedRecords(fields: CategorizedFields): CategorizedRecords {
+    const favoritesCategory = getFavoritesCategory();
     const result: CategorizedRecords = {
       categories: [],
       records: {},

@@ -13,7 +13,7 @@ export { Presentation } from "./presentation-frontend/Presentation";
 export { PresentationManager, PresentationManagerProps } from "./presentation-frontend/PresentationManager";
 export { RulesetManager } from "./presentation-frontend/RulesetManager";
 export { RulesetVariablesManager } from "./presentation-frontend/RulesetVariablesManager";
-export { FavoritePropertiesManager, FavoriteProperties } from "./presentation-frontend/favorite-properties/FavoritePropertiesManager";
+export { FavoritePropertiesManager, PropertyFullName, FavoritePropertiesOrderInfo, FavoritePropertiesScope, getFieldInfos, createFieldOrderInfos } from "./presentation-frontend/favorite-properties/FavoritePropertiesManager";
 export { IFavoritePropertiesStorage, IModelAppFavoritePropertiesStorage } from "./presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 
 /**

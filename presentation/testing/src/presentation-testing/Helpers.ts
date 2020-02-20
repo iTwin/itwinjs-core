@@ -28,7 +28,8 @@ import {
   PresentationManagerProps as PresentationFrontendProps,
   FavoritePropertiesManager,
   IFavoritePropertiesStorage,
-  FavoriteProperties,
+  PropertyFullName,
+  FavoritePropertiesOrderInfo,
 } from "@bentley/presentation-frontend";
 
 import { OidcAgentClientConfiguration, OidcAgentClient } from "@bentley/imodeljs-clients-backend";
@@ -128,12 +129,10 @@ const initialize = async (backendProps?: PresentationBackendProps, frontendProps
 
 const setCustomFavoritePropertiesManager = () => {
   const storage: IFavoritePropertiesStorage = {
-    loadProperties: async (_projectId?: string, _imodelId?: string) => ({
-      nestedContentInfos: new Set<string>(),
-      propertyInfos: new Set<string>(),
-      baseFieldInfos: new Set<string>(),
-    }),
-    async saveProperties(_properties: FavoriteProperties, _projectId?: string, _imodelId?: string) { },
+    loadProperties: async (_projectId?: string, _imodelId?: string) => (new Set<PropertyFullName>()),
+    async saveProperties(_properties: Set<PropertyFullName>, _projectId?: string, _imodelId?: string) { },
+    loadPropertiesOrder: async (_projectId?: string, _imodelId?: string) => ([]),
+    async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _projectId?: string, _imodelId?: string) { },
   };
   PresentationFrontend.favoriteProperties = new FavoritePropertiesManager({ storage });
 };

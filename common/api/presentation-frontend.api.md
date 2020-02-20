@@ -34,24 +34,55 @@ import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 
-// @internal
-export interface FavoriteProperties {
-    baseFieldInfos: Set<string>;
-    nestedContentInfos: Set<string>;
-    propertyInfos: Set<string>;
-}
+// @internal (undocumented)
+export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
 
 // @beta
 export class FavoritePropertiesManager {
     constructor(props?: FavoritePropertiesManagerProps);
+    // @deprecated
     add(field: Field, projectId?: string, imodelId?: string): Promise<void>;
+    add(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
+    changeFieldPriority(imodel: IModelConnection, field: Field, afterField: Field | undefined, visibleFields: Field[]): Promise<void>;
+    // @deprecated
     clear(projectId?: string, imodelId?: string): Promise<void>;
+    clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
+    // @deprecated
     has(field: Field, projectId?: string, imodelId?: string): boolean;
+    has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean;
     // @internal
     initializeConnection: (imodelConnection: IModelConnection) => Promise<void>;
     onFavoritesChanged: BeEvent<() => void>;
+    // @deprecated
     remove(field: Field, projectId?: string, imodelId?: string): Promise<void>;
+    remove(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
+    sortFields: (imodel: IModelConnection, fields: Field[]) => Field[];
     }
+
+// @internal
+export interface FavoritePropertiesOrderInfo {
+    // (undocumented)
+    name: PropertyFullName;
+    // (undocumented)
+    orderedTimestamp: Date;
+    // (undocumented)
+    parentClassName: string | undefined;
+    // (undocumented)
+    priority: number;
+}
+
+// @beta
+export enum FavoritePropertiesScope {
+    // (undocumented)
+    Global = 0,
+    // (undocumented)
+    IModel = 2,
+    // (undocumented)
+    Project = 1
+}
+
+// @internal (undocumented)
+export const getFieldInfos: (field: Field) => Set<string>;
 
 // @public
 export function getScopeId(scope: SelectionScope | string | undefined): string;
@@ -74,16 +105,22 @@ export class HiliteSetProvider {
 
 // @internal
 export interface IFavoritePropertiesStorage {
-    loadProperties(projectId?: string, imodelId?: string): Promise<FavoriteProperties | undefined>;
-    saveProperties(properties: FavoriteProperties, projectId?: string, imodelId?: string): Promise<void>;
+    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
 }
 
 // @internal (undocumented)
 export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
     // (undocumented)
-    loadProperties(projectId?: string, imodelId?: string): Promise<FavoriteProperties | undefined>;
+    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
     // (undocumented)
-    saveProperties(properties: FavoriteProperties, projectId?: string, imodelId?: string): Promise<void>;
+    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    // (undocumented)
+    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    // (undocumented)
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
 }
 
 // @public
@@ -160,6 +197,9 @@ export interface PresentationManagerProps {
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
 }
+
+// @internal
+export type PropertyFullName = string;
 
 // @public
 export interface RulesetManager {
