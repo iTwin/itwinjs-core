@@ -61,6 +61,8 @@ export interface PropertyValueRendererContext {
   decoratedTextElement?: React.ReactNode;
   /** Callback to highlight text */
   textHighlighter?: (text: string) => React.ReactNode;
+  /** Default value to show if value rendering is asynchronous */
+  defaultValue?: React.ReactNode;
 }
 
 /** Custom property value renderer interface
@@ -70,7 +72,7 @@ export interface IPropertyValueRenderer {
   /** Checks if the renderer can handle given property */
   canRender: (record: PropertyRecord, context?: PropertyValueRendererContext) => boolean;
   /** Method that returns a JSX representation of PropertyRecord */
-  render: (record: PropertyRecord, context?: PropertyValueRendererContext) => React.ReactNode | Promise<React.ReactNode>;
+  render: (record: PropertyRecord, context?: PropertyValueRendererContext) => React.ReactNode;
 }
 
 /** Default implementation of property value renderer manager
@@ -106,7 +108,7 @@ export class PropertyValueRendererManager {
   }
 
   /** Render property into JSX element */
-  public render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode | Promise<React.ReactNode> {
+  public render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode {
     const selectedRenderer = this.selectRenderer(record);
 
     if (!selectedRenderer || !selectedRenderer.canRender(record, context))

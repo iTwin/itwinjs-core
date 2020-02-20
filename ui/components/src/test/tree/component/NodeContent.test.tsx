@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { render, waitForElement } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { Tree } from "../../../ui-components/tree/component/Tree";
 import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/component/BeInspireTree";
 import { TreeNodeContent } from "../../../ui-components/tree/component/NodeContent";
@@ -43,21 +43,6 @@ describe("NodeContent", () => {
       />);
 
     renderedNode.getByText("Test label");
-  });
-
-  it("renders label with asynchronous function", async () => {
-    rendererManagerMock.reset();
-    rendererManagerMock.setup((m) => m.render(moq.It.isAny(), moq.It.isAny())).returns(async () => "Test label");
-
-    const renderedNode = render(
-      <TreeNodeContent
-        node={node}
-        valueRendererManager={rendererManagerMock.object}
-      />);
-
-    renderedNode.getByTestId("node-label-placeholder");
-
-    await waitForElement(() => renderedNode.getByText("Test label"));
   });
 
   it("calls onFullyRendered even if shouldComponentUpdate returns false", () => {

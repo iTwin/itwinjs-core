@@ -77,8 +77,6 @@ interface PropertyRendererState {
  * @public
  */
 export class PropertyRenderer extends React.Component<PropertyRendererProps, PropertyRendererState> {
-  private _isMounted = false;
-
   /** @internal */
   public readonly state: Readonly<PropertyRendererState> = {
     displayValue: UiComponents.translate("general.loading"),
@@ -95,7 +93,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     return indentation * 17;
   }
 
-  private async updateDisplayValue(props: PropertyRendererProps) {
+  private updateDisplayValue(props: PropertyRendererProps) {
     if (props.isEditing) {
       this.updateDisplayValueAsEditor(props);
       return;
@@ -108,17 +106,13 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     let displayValue: React.ReactNode | undefined;
 
     if (this.props.propertyValueRendererManager)
-      displayValue = await this.props.propertyValueRendererManager.render(props.propertyRecord, rendererContext);
+      displayValue = this.props.propertyValueRendererManager.render(props.propertyRecord, rendererContext);
     else
-      displayValue = await PropertyValueRendererManager.defaultManager.render(props.propertyRecord, rendererContext);
+      displayValue = PropertyValueRendererManager.defaultManager.render(props.propertyRecord, rendererContext);
 
     // Align value with label if orientation is vertical
     if (this.props.orientation === Orientation.Vertical)
       displayValue = <span style={{ paddingLeft: PropertyRenderer.getLabelOffset(this.props.indentation) }}>{displayValue}</span>;
-
-    // istanbul ignore next
-    if (!this._isMounted)
-      return;
 
     this.setState({ displayValue });
   }
@@ -135,10 +129,6 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
   /** Display property record value in an editor */
   public updateDisplayValueAsEditor(props: PropertyRendererProps) {
-    // istanbul ignore next
-    if (!this._isMounted)
-      return;
-
     this.setState({
       displayValue:
         <EditorContainer
@@ -152,20 +142,14 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
   /** @internal */
   public componentDidMount() {
-    this._isMounted = true;
-    this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
-  }
-
-  /** @internal */
-  public componentWillUnmount() {
-    this._isMounted = false;
+    this.updateDisplayValue(this.props);
   }
 
   /** @internal */
   public componentDidUpdate(prevProps: PropertyRendererProps) {
     if (prevProps.propertyRecord !== this.props.propertyRecord
       || prevProps.isEditing !== this.props.isEditing)
-      this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
+      this.updateDisplayValue(this.props);
   }
 
   /** @internal */

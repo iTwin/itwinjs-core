@@ -4,19 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
-import { useCallback } from "react";
-import { useAsync } from "react-async-hook";
+import { useMemo } from "react";
 import {
   ConfigurableUiManager,
   ConfigurableCreateInfo,
   WidgetControl,
 } from "@bentley/ui-framework";
 import { Orientation, GlobalContextMenu, ContextMenuItem, ContextMenuItemProps } from "@bentley/ui-core";
-import { PropertyGrid, PropertyGridContextMenuArgs, ActionButtonRendererProps } from "@bentley/ui-components";
+import { PropertyGrid, PropertyGridContextMenuArgs, ActionButtonRendererProps, useAsyncValue } from "@bentley/ui-components";
 import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
 import { Field } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 
 // create a HOC property grid component that supports unified selection
 // tslint:disable-next-line:variable-name
@@ -142,8 +141,8 @@ class UnifiedSelectionPropertyGridWidget extends React.Component<UnifiedSelectio
 
   private _favoriteActionButtonRenderer = (props: ActionButtonRendererProps) => {
     const { dataProvider } = this.state;
-    const getFieldByPropertyRecordCallback = useCallback((property: PropertyRecord) => dataProvider.getFieldByPropertyRecord(property), [dataProvider]);
-    const { result: field } = useAsync(getFieldByPropertyRecordCallback, [props.property]);
+    const { property } = props;
+    const field = useAsyncValue(useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
     const imodelId = this.props.iModelConnection.iModelToken.iModelId;
     const projectId = this.props.iModelConnection.iModelToken.contextId;
 

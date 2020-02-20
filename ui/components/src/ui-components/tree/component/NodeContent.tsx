@@ -15,7 +15,7 @@ import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyCon
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
 import { CellEditingEngine } from "../CellEditingEngine";
-import { TreeNodePlaceholder, shallowDiffers, isPromiseLike, CommonProps } from "@bentley/ui-core";
+import { TreeNodePlaceholder, shallowDiffers, CommonProps } from "@bentley/ui-core";
 import { UiComponents } from "../../UiComponents";
 import { ItemStyleProvider, ItemStyle } from "../../properties/ItemStyle";
 
@@ -59,8 +59,6 @@ export interface TreeNodeContentState {
  * @internal @deprecated
  */
 export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeNodeContentState> {
-  private _isMounted = false;
-
   public constructor(props: TreeNodeContentProps) {
     super(props);
     this.state = {
@@ -109,22 +107,12 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
       this.props.onFinalRenderComplete(this.props.renderId);
   }
 
-  private async updateLabel(props: TreeNodeContentProps) {
+  private updateLabel(props: TreeNodeContentProps) {
     const label = this.getLabel(props);
-    if (isPromiseLike(label)) {
-      const result = await label;
-
-      if (this._isMounted)
-        this.setState({ label: result }, this._onLabelStateChanged);
-    } else {
-      this.setState({ label }, this._onLabelStateChanged);
-    }
+    this.setState({ label }, this._onLabelStateChanged);
   }
 
   public componentDidMount() {
-    this._isMounted = true;
-
-    // tslint:disable-next-line:no-floating-promises
     this.updateLabel(this.props);
     this.setState((_, props) => ({ renderInfo: createRenderInfo(props.node) }));
   }
@@ -148,17 +136,12 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
 
   public componentDidUpdate(prevProps: TreeNodeContentProps) {
     if (TreeNodeContent.needsLabelUpdate(this.state, prevProps, this.props)) {
-      // tslint:disable-next-line:no-floating-promises
       this.updateLabel(this.props);
     }
 
     const renderInfo = createRenderInfo(this.props.node);
     if (renderInfo !== this.state.renderInfo)
       this.setState({ renderInfo });
-  }
-
-  public componentWillUnmount() {
-    this._isMounted = false;
   }
 
   public shouldComponentUpdate(nextProps: TreeNodeContentProps, nextState: TreeNodeContentState) {

@@ -22,6 +22,7 @@ export * from "./ui-components/common/selection/SelectionHandler";
 export * from "./ui-components/common/showhide/ShowHideDialog";
 export * from "./ui-components/common/showhide/ShowHideItem";
 export * from "./ui-components/common/showhide/ShowHideMenu";
+export * from "./ui-components/common/UseAsyncValue";
 
 export * from "./ui-components/converters/TypeConverter";
 export * from "./ui-components/converters/TypeConverterManager";

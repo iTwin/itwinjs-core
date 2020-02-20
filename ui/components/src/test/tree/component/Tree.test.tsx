@@ -1557,15 +1557,15 @@ describe("Tree", () => {
       let error: Error | undefined;
 
       rendererManagerMock
-        .setup(async (manager) => manager.render(moq.It.isAny(), moq.It.isAny()))
-        .callback(async (record: PropertyRecord, context: PropertyValueRendererContext) => {
+        .setup((manager) => manager.render(moq.It.isAny(), moq.It.isAny()))
+        .callback((record: PropertyRecord, context: PropertyValueRendererContext) => {
           try {
             expect(record.property.typename).to.equal("test_type");
             expect(context).to.exist;
             expect(context.containerType).to.equal(PropertyContainerType.Tree);
           } catch (testFailure) { error = testFailure; }
         })
-        .returns(async () => "Custom renderer label")
+        .returns(() => "Custom renderer label")
         .verifiable(moq.Times.atLeastOnce());
 
       await waitForUpdate(() => {

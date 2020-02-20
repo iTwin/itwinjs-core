@@ -6,11 +6,12 @@
  * @module Properties
  */
 
-import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
+import * as React from "react";
 import { PropertyRecord, PropertyValueFormat, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 import { withContextStyle } from "./WithContextStyle";
-import { withLinks } from "../../LinkHandler";
+import { LinksRenderer } from "../../LinkHandler";
 
 /** Default Primitive Property Renderer
  * @public
@@ -33,6 +34,13 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
 
     const stringValue = TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitiveValue.value);
 
-    return withContextStyle(withLinks(record, stringValue, context && context.textHighlighter), context);
+    return withContextStyle(
+      <LinksRenderer
+        value={stringValue}
+        record={record}
+        highlighter={context?.textHighlighter}
+        defaultValue={context?.defaultValue} />,
+      context,
+    );
   }
 }

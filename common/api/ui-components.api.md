@@ -1725,7 +1725,7 @@ export interface IPropertyDataProvider {
 // @public
 export interface IPropertyValueRenderer {
     canRender: (record: PropertyRecord, context?: PropertyValueRendererContext) => boolean;
-    render: (record: PropertyRecord, context?: PropertyValueRendererContext) => React.ReactNode | Promise<React.ReactNode>;
+    render: (record: PropertyRecord, context?: PropertyValueRendererContext) => React.ReactNode;
 }
 
 // @public
@@ -2421,8 +2421,6 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     componentDidMount(): void;
     // @internal (undocumented)
     componentDidUpdate(prevProps: PropertyRendererProps): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
     // (undocumented)
     static getLabelOffset(indentation?: number): number;
     // @internal (undocumented)
@@ -2454,6 +2452,7 @@ export interface PropertyUpdatedArgs {
 export interface PropertyValueRendererContext {
     containerType?: string;
     decoratedTextElement?: React.ReactNode;
+    defaultValue?: React.ReactNode;
     onDialogOpen?: (dialogState: PropertyDialogState) => void;
     onPopupHide?: () => void;
     onPopupShow?: (popupState: PropertyPopupState) => void;
@@ -2477,7 +2476,7 @@ export class PropertyValueRendererManager {
     // (undocumented)
     protected _propertyRenderers: Map<string, IPropertyValueRenderer>;
     registerRenderer(rendererType: string, propertyRenderer: IPropertyValueRenderer, overwrite?: boolean): void;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode | Promise<React.ReactNode>;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode;
     unregisterRenderer(rendererType: string): void;
 }
 
@@ -3888,6 +3887,9 @@ export interface Unsubscribable {
     // (undocumented)
     unsubscribe(): void;
 }
+
+// @beta
+export const useAsyncValue: <T extends any>(value: T | PromiseLike<T>) => T | undefined;
 
 // @beta
 export function useModelSource(dataProvider: TreeDataProvider): TreeModelSource;

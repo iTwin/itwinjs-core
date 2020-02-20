@@ -8,8 +8,9 @@
 
 import * as React from "react";
 import { PropertyRecord } from "@bentley/imodeljs-frontend";
-import { isPromiseLike, UnderlinedButton } from "@bentley/ui-core";
+import { UnderlinedButton } from "@bentley/ui-core";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { useAsyncValue } from "../common/UseAsyncValue";
 
 /** Render a single anchor tag */
 function renderTag(text: string, record: PropertyRecord, highlight?: (text: string) => React.ReactNode) {
@@ -18,6 +19,7 @@ function renderTag(text: string, record: PropertyRecord, highlight?: (text: stri
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
+        // istanbul ignore else
         if (record.links!.onClick)
           record.links!.onClick(record, text);
       }}
@@ -74,10 +76,7 @@ function renderText(text: string, record: PropertyRecord, highlight?: (text: str
   return parts.map((part, index) => <React.Fragment key={index}>{part}</React.Fragment>);
 }
 
-function renderHighlighted(text: string | Promise<string>, highlight: (text: string) => React.ReactNode): React.ReactNode | Promise<React.ReactNode> {
-  if (isPromiseLike(text)) {
-    return text.then((result) => highlight(result));
-  }
+function renderHighlighted(text: string, highlight: (text: string) => React.ReactNode): React.ReactNode | Promise<React.ReactNode> {
   return highlight(text);
 }
 
@@ -89,11 +88,7 @@ export const hasLinks = (record: PropertyRecord) => !!record.links;
 /** Renders anchor tag by wrapping or splitting provided text
  * @public
  */
-export const renderLinks = (text: string | Promise<string>, record: PropertyRecord, highlight?: (text: string) => React.ReactNode): React.ReactNode | Promise<React.ReactNode> => {
-  if (isPromiseLike(text)) {
-    return text.then((result) => renderText(result, record, highlight));
-  }
-
+export const renderLinks = (text: string, record: PropertyRecord, highlight?: (text: string) => React.ReactNode): React.ReactNode => {
   return renderText(text, record, highlight);
 };
 
@@ -101,10 +96,32 @@ export const renderLinks = (text: string | Promise<string>, record: PropertyReco
  * Optionally it can highlight text
  * @public
  */
-export const withLinks = (record: PropertyRecord, stringValue: string | Promise<string>, highlight?: (text: string) => React.ReactNode): React.ReactNode | Promise<React.ReactNode> => {
+export const withLinks = (record: PropertyRecord, stringValue: string, highlight?: (text: string) => React.ReactNode): React.ReactNode => {
   if (hasLinks(record))
     return renderLinks(stringValue, record, highlight);
   if (highlight)
     return renderHighlighted(stringValue, highlight);
   return stringValue;
+};
+
+/**
+ * Properties for [[LinksRenderer]] component.
+ * @alpha
+ */
+interface LinksRendererProps {
+  value: string | Promise<string>;
+  record: PropertyRecord;
+  highlighter?: (text: string) => React.ReactNode;
+  defaultValue?: React.ReactNode;
+}
+
+/**
+ * React component for rendering string with links.
+ * @alpha
+ */
+// tslint:disable-next-line: variable-name
+export const LinksRenderer: React.FC<LinksRendererProps> = (props: LinksRendererProps) => {
+  const { value } = props;
+  const stringValue = useAsyncValue(value);
+  return <>{stringValue ? withLinks(props.record, stringValue, props.highlighter) : props.defaultValue}</>;
 };
