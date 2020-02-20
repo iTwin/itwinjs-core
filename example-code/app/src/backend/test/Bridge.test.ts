@@ -159,7 +159,7 @@ describe.skip("Bridge", async () => {
   before(async () => {
     IModelHost.startup();
     requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
-    testProjectId = (await queryProjectIdByName(requestContext, "iModelJsTest")).wsgId;
+    testProjectId = (await queryProjectIdByName(requestContext, "iModelJsIntegrationTest")).wsgId;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);
     IModelHost.shutdown();
