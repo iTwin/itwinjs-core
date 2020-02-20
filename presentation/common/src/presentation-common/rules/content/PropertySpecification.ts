@@ -10,7 +10,7 @@ import { PropertyEditorSpecification } from "./modifiers/PropertyEditorsSpecific
 
 /**
  * A container structure for possible property overrides
- * @beta
+ * @public
  */
 export interface PropertyOverrides {
   /** Priority of the specified overrides */
@@ -27,7 +27,7 @@ export interface PropertyOverrides {
 
 /**
  * Specification of an ECProperty and its overrides
- * @beta
+ * @public
  */
 export interface PropertySpecification extends PropertyOverrides {
   /** Name of the ECProperty */

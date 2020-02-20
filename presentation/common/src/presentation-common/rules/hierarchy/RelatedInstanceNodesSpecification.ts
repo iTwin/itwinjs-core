@@ -19,7 +19,7 @@ import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpec
  *
  * @public
  */
-export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew;
+export type RelatedInstanceNodesSpecification = DEPRECATED_RelatedInstanceNodesSpecification | RelatedInstanceNodesSpecificationNew; // tslint:disable-line:deprecation
 
 /**
  * @public

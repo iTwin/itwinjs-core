@@ -18,8 +18,6 @@ export interface Props {
   imodel: IModelConnection;
   /** View definition to use when the viewport is first loaded */
   viewDefinitionId: Id64String;
-  /** ID of the presentation rule set to use for unified selection */
-  rulesetId: string;
 }
 
 /** Viewport component for the viewer app */
@@ -29,7 +27,6 @@ export default class SimpleViewportComponent extends React.Component<Props> {
       <>
         <SimpleViewport
           imodel={this.props.imodel}
-          ruleset={this.props.rulesetId}
           viewDefinitionId={this.props.viewDefinitionId}
         />
       </>

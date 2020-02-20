@@ -10,22 +10,24 @@ import { renderHook } from "@testing-library/react-hooks";
 import { ObservableInput } from "rxjs/internal/types";
 import { from } from "rxjs/internal/observable/from";
 import { finalize } from "rxjs/internal/operators/finalize";
-import { createRandomGroupingNodeKey, createRandomECInstancesNodeKey, createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomGroupingNodeKey, createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { CheckBoxState } from "@bentley/ui-core";
 import {
-  TreeModelSource, TreeModel, TreeSelectionModificationEvent, MutableTreeModelNode, TreeNodeItem,
-  TreeSelectionReplacementEvent, TreeModelChanges, ITreeNodeLoader, AbstractTreeNodeLoaderWithProvider,
+  TreeModelSource, TreeModel, TreeSelectionModificationEventArgs, MutableTreeModelNode, TreeNodeItem,
+  TreeSelectionReplacementEventArgs, TreeModelChanges, AbstractTreeNodeLoaderWithProvider,
 } from "@bentley/ui-components";
 import { KeySet, NodeKey, Keys } from "@bentley/presentation-common";
 import {
-  SelectionHandler, SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider, SelectionHelper,
+  SelectionHandler, SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider,
+  SelectionHelper, SelectionManager, Presentation,
 } from "@bentley/presentation-frontend";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionEventHandler } from "../../../presentation-components";
+import { IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, useUnifiedSelectionTreeEventHandler } from "../../../presentation-components";
 import { PRESENTATION_TREE_NODE_KEY } from "../../../presentation-components/tree/Utils";
+import { UnifiedSelectionTreeEventHandlerParams } from "../../../presentation-components/tree/controlled/UseUnifiedSelection";
 
 const awaitableObservable = <T extends unknown>(input: ObservableInput<T>) => {
   const promise = new ResolvablePromise<void>();
@@ -36,7 +38,7 @@ const awaitableObservable = <T extends unknown>(input: ObservableInput<T>) => {
 describe("UnifiedSelectionEventHandler", () => {
   let unifiedEventHandler: UnifiedSelectionTreeEventHandler;
   const treeModelSourceMock = moq.Mock.ofType<TreeModelSource>();
-  const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();
+  const nodeLoaderMock = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
   const treeModelMock = moq.Mock.ofType<TreeModel>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
@@ -50,15 +52,16 @@ describe("UnifiedSelectionEventHandler", () => {
     treeModelMock.reset();
     treeModelSourceMock.reset();
     selectionHandlerMock.reset();
+    nodeLoaderMock.reset();
 
     onModelChangeEvent = new BeUiEvent<[TreeModel, TreeModelChanges]>();
     treeModelSourceMock.setup((x) => x.onModelChanged).returns(() => onModelChangeEvent);
+    nodeLoaderMock.setup((x) => x.dataProvider).returns(() => dataProviderMock.object);
+    nodeLoaderMock.setup((x) => x.modelSource).returns(() => treeModelSourceMock.object);
 
     selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([]));
     unifiedEventHandler = new UnifiedSelectionTreeEventHandler({
-      modelSource: treeModelSourceMock.object,
       nodeLoader: nodeLoaderMock.object,
-      dataProvider: dataProviderMock.object,
       name: "Tree_Test",
       selectionHandler: selectionHandlerMock.object,
     });
@@ -110,7 +113,7 @@ describe("UnifiedSelectionEventHandler", () => {
       treeModelMock.setup((x) => x.getNode(node2.item.id)).returns(() => node2);
 
       const { observable, waitForCompletion } = awaitableObservable([{ selectedNodeItems: [node1.item, node2.item], deselectedNodeItems: [] }]);
-      const event: TreeSelectionModificationEvent = {
+      const event: TreeSelectionModificationEventArgs = {
         modifications: observable,
       };
       unifiedEventHandler.onSelectionModified(event);
@@ -133,7 +136,7 @@ describe("UnifiedSelectionEventHandler", () => {
       treeModelMock.setup((x) => x.getNode(node2.item.id)).returns(() => node2);
 
       const { observable, waitForCompletion } = awaitableObservable([{ selectedNodeItems: [], deselectedNodeItems: [node1.item, node2.item] }]);
-      const event: TreeSelectionModificationEvent = {
+      const event: TreeSelectionModificationEventArgs = {
         modifications: observable,
       };
       unifiedEventHandler.onSelectionModified(event);
@@ -160,7 +163,7 @@ describe("UnifiedSelectionEventHandler", () => {
         });
 
       const { observable, waitForCompletion } = awaitableObservable([{ selectedNodeItems: [nodes[0].item], deselectedNodeItems: [] }]);
-      const event: TreeSelectionModificationEvent = {
+      const event: TreeSelectionModificationEventArgs = {
         modifications: observable,
       };
       unifiedEventHandler.onSelectionModified(event);
@@ -187,7 +190,7 @@ describe("UnifiedSelectionEventHandler", () => {
       treeModelMock.setup((x) => x.getNode(node2.item.id)).returns(() => node2);
 
       const { observable, waitForCompletion } = awaitableObservable([{ selectedNodeItems: [node1.item, node2.item] }]);
-      const event: TreeSelectionReplacementEvent = {
+      const event: TreeSelectionReplacementEventArgs = {
         replacements: observable,
       };
       unifiedEventHandler.onSelectionReplaced(event);
@@ -205,7 +208,7 @@ describe("UnifiedSelectionEventHandler", () => {
       treeModelMock.setup((x) => x.getNode(node2.item.id)).returns(() => node2);
 
       const { observable, waitForCompletion } = awaitableObservable([{ selectedNodeItems: [node1.item] }, { selectedNodeItems: [node2.item] }]);
-      const event: TreeSelectionReplacementEvent = {
+      const event: TreeSelectionReplacementEventArgs = {
         replacements: observable,
       };
       unifiedEventHandler.onSelectionReplaced(event);
@@ -219,7 +222,7 @@ describe("UnifiedSelectionEventHandler", () => {
       treeModelSourceMock.setup((x) => x.getModel()).returns(() => treeModelMock.object);
 
       const { observable, waitForCompletion } = awaitableObservable([{ selectedNodeItems: [] }]);
-      const event: TreeSelectionReplacementEvent = {
+      const event: TreeSelectionReplacementEventArgs = {
         replacements: observable,
       };
       unifiedEventHandler.onSelectionReplaced(event);
@@ -245,7 +248,7 @@ describe("UnifiedSelectionEventHandler", () => {
         });
 
       const { observable, waitForCompletion } = awaitableObservable([{ selectedNodeItems: [nodes[0].item] }]);
-      const event: TreeSelectionReplacementEvent = {
+      const event: TreeSelectionReplacementEventArgs = {
         replacements: observable,
       };
       unifiedEventHandler.onSelectionReplaced(event);
@@ -323,7 +326,7 @@ describe("UnifiedSelectionEventHandler", () => {
 
     it("selects nodes according unified selection", () => {
       const nodes: MutableTreeModelNode[] = [
-        createNode(createRandomECInstanceNodeKey),
+        createNode(createRandomECInstancesNodeKey),
         createNode(createRandomECInstancesNodeKey),
         createNode(createRandomGroupingNodeKey),
       ];
@@ -374,22 +377,31 @@ describe("UnifiedSelectionEventHandler", () => {
 
 });
 
-describe("useUnifiedSelectionEventHandler", () => {
-  interface HookProps {
-    modelSource: TreeModelSource;
-    nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
-  }
-
+describe("useUnifiedSelectionTreeEventHandler", () => {
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
   const nodeLoaderMock = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-  nodeLoaderMock.setup((x) => x.getDataProvider()).returns(() => dataProviderMock.object);
-  modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<[TreeModel, TreeModelChanges]>());
+
+  beforeEach(() => {
+    sinon.stub(Presentation, "selection").get(() => moq.Mock.ofType<SelectionManager>().object);
+    modelSourceMock.reset();
+    nodeLoaderMock.reset();
+    dataProviderMock.reset();
+    modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<[TreeModel, TreeModelChanges]>());
+    nodeLoaderMock.setup((x) => x.dataProvider).returns(() => dataProviderMock.object);
+    nodeLoaderMock.setup((x) => x.modelSource).returns(() => modelSourceMock.object);
+  });
+
+  afterEach(() => {
+    sinon.restore();
+  });
 
   it("creates and disposes UnifiedSelectionTreeEventHandler", () => {
+    const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
+
     const { result, unmount } = renderHook(
-      (props: HookProps) => useUnifiedSelectionEventHandler(props.modelSource, props.nodeLoader),
-      { initialProps: { modelSource: modelSourceMock.object, nodeLoader: nodeLoaderMock.object } },
+      (props: UnifiedSelectionTreeEventHandlerParams) => useUnifiedSelectionTreeEventHandler(props),
+      { initialProps: { nodeLoader: nodeLoaderMock.object, selectionHandler: selectionHandlerMock.object } },
     );
 
     expect(result.current).to.not.be.undefined;

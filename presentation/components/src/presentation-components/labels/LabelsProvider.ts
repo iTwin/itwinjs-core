@@ -6,7 +6,7 @@
  * @module DisplayLabels
  */
 
-import * as _ from "lodash";
+import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -29,47 +29,67 @@ export interface IPresentationLabelsProvider {
 }
 
 /**
+ * Properties for creating a `LabelsProvider` instance.
+ * @public
+ */
+export interface PresentationLabelsProviderProps {
+  /** IModel to pull data from. */
+  imodel: IModelConnection;
+}
+
+/**
  * Presentation Rules-driven labels provider implementation.
  * @public
  */
-export class LabelsProvider implements IPresentationLabelsProvider {
+export class PresentationLabelsProvider implements IPresentationLabelsProvider {
 
   public readonly imodel: IModelConnection;
 
   /** Constructor. */
-  constructor(imodel: IModelConnection) {
-    this.imodel = imodel;
+  constructor(props: PresentationLabelsProviderProps) {
+    this.imodel = props.imodel;
   }
 
   private async getLabelInternal(key: InstanceKey) {
-    return Presentation.presentation.getDisplayLabel({ imodel: this.imodel }, key);
+    return (await Presentation.presentation.getDisplayLabelDefinition({ imodel: this.imodel }, key)).displayValue; // WIP
   }
 
   // tslint:disable-next-line:naming-convention
-  private getMemoizedLabel = _.memoize(this.getLabelInternal, (k) => JSON.stringify(k));
+  private getMemoizedLabel = memoize(this.getLabelInternal, { isMatchingKey: MemoizationHelpers.areLabelRequestsEqual as any });
 
   /**
-   * Returns label for the specified instance key
+   * Returns label for the specified instance key. Memoizes *the last* response.
    * @param key Key of instance to get label for
-   * @param memoize Should the result the memoized by the provider.
    */
-  public async getLabel(key: InstanceKey, memoize = false): Promise<string> {
-    return memoize ? this.getMemoizedLabel(key) : this.getLabelInternal(key);
+  public async getLabel(key: InstanceKey): Promise<string> {
+    return this.getMemoizedLabel(key);
   }
 
   private async getLabelsInternal(keys: InstanceKey[]) {
-    return Presentation.presentation.getDisplayLabels({ imodel: this.imodel }, keys);
+    return (await Presentation.presentation.getDisplayLabelDefinitions({ imodel: this.imodel }, keys)).map((def) => def.displayValue); // WIP;
   }
 
   // tslint:disable-next-line:naming-convention
-  private getMemoizedLabels = _.memoize(this.getLabelsInternal, (k) => JSON.stringify(k));
+  private getMemoizedLabels = memoize(this.getLabelsInternal, { isMatchingKey: MemoizationHelpers.areLabelsRequestsEqual as any });
 
   /**
-   * Returns labels for the specified instance keys.
+   * Returns labels for the specified instance keys. Memoizes *the last* response.
    * @param keys Keys of instances to get labels for
-   * @param memoize Should the result be memoized by the provider.
    */
-  public async getLabels(keys: InstanceKey[], memoize = false): Promise<string[]> {
-    return memoize ? this.getMemoizedLabels(keys) : this.getLabelsInternal(keys);
+  public async getLabels(keys: InstanceKey[]): Promise<string[]> {
+    return this.getMemoizedLabels(keys);
+  }
+}
+
+class MemoizationHelpers {
+  private static areInstanceKeysEqual(lhs: InstanceKey, rhs: InstanceKey) {
+    return (lhs.className === rhs.className && lhs.id === rhs.id);
+  }
+  public static areLabelRequestsEqual(lhsArgs: [InstanceKey], rhsArgs: [InstanceKey]): boolean {
+    return MemoizationHelpers.areInstanceKeysEqual(lhsArgs[0], rhsArgs[0]);
+  }
+  public static areLabelsRequestsEqual(lhsArgs: [InstanceKey[]], rhsArgs: [InstanceKey[]]): boolean {
+    return lhsArgs[0].length === rhsArgs[0].length
+      && lhsArgs[0].every((key, index) => MemoizationHelpers.areInstanceKeysEqual(key, rhsArgs[0][index]));
   }
 }

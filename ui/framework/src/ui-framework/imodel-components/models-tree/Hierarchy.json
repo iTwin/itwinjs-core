@@ -1,0 +1,324 @@
+{
+  "$schema": "../../../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "id": "ui-framework/ModelsTree",
+  "supportedSchemas": {
+    "schemaNames": [
+      "BisCore"
+    ]
+  },
+  "rules": [
+    {
+      "ruleType": "RootNodes",
+      "autoExpand": true,
+      "specifications": [
+        {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": [
+            {
+              "schemaName": "BisCore",
+              "classNames": [
+                "Subject"
+              ]
+            }
+          ],
+          "instanceFilter": "this.Parent = NULL",
+          "arePolymorphic": false,
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "isSubject": "true"
+          }
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"Subject\", \"BisCore\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "SubjectOwnsSubjects"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Subject"
+            ]
+          },
+          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") <> NULL OR ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") = \"Hierarchy\" AND this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Element\")",
+          "hideNodesInHierarchy": true,
+          "groupByClass": false,
+          "groupByLabel": false
+        },
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "SubjectOwnsSubjects"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Subject"
+            ]
+          },
+          "instanceFilter": "json_extract(this.JsonProperties, \"$.Subject.Job.Bridge\") = NULL AND ifnull(json_extract(this.JsonProperties, \"$.Subject.Model.Type\"), \"\") <> \"Hierarchy\" AND this.HasRelatedInstance(\"BisCore:ElementOwnsChildElements\", \"Forward\", \"BisCore:Element\")",
+          "hideIfNoChildren": true,
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "isSubject": "true"
+          }
+        },
+        {
+          "ruleType": "Grouping",
+          "class": {
+            "schemaName": "BisCore",
+            "className": "Subject"
+          },
+          "groups": [
+            {
+              "specType": "SameLabelInstance",
+              "applicationStage": "PostProcess"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"Subject\", \"BisCore\")",
+      "specifications": [
+        {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "GeometricModel3d"
+            ]
+          },
+          "arePolymorphic": true,
+          "relatedInstances": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ModelModelsElement"
+              },
+              "requiredDirection": "Forward",
+              "class": {
+                "schemaName": "BisCore",
+                "className": "InformationPartitionElement"
+              },
+              "alias": "partition",
+              "isRequired": true
+            }
+          ],
+          "instanceFilter": "partition.Parent.Id = parent.ECInstanceId AND NOT this.IsPrivate AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") = NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "hasChildren": "Always",
+          "groupByClass": false,
+          "groupByLabel": false
+        },
+        {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "GeometricModel3d"
+            ]
+          },
+          "arePolymorphic": true,
+          "relatedInstances": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ModelModelsElement"
+              },
+              "requiredDirection": "Forward",
+              "class": {
+                "schemaName": "BisCore",
+                "className": "InformationPartitionElement"
+              },
+              "alias": "partition",
+              "isRequired": true
+            }
+          ],
+          "instanceFilter": "partition.Parent.Id = parent.ECInstanceId AND NOT this.IsPrivate AND json_extract(partition.JsonProperties, \"$.PhysicalPartition.Model.Content\") <> NULL AND this.HasRelatedInstance(\"BisCore:ModelContainsElements\", \"Forward\", \"BisCore:Element\")",
+          "hideNodesInHierarchy": true,
+          "hasChildren": "Always",
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "isModel": "true"
+          }
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"GeometricModel3d\", \"BisCore\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ModelContainsElements",
+              "GeometricElement3dIsInCategory"
+            ]
+          },
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "SpatialCategory"
+            ]
+          },
+          "skipRelatedLevel": 1,
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "isCategory": "true",
+            "modelId": "ParentNode.InstanceId"
+          }
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"SpatialCategory\", \"BisCore\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "GeometricElement3dIsInCategory"
+            ]
+          },
+          "requiredDirection": "Backward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "GeometricElement3d"
+            ]
+          },
+          "instanceFilter": "this.Model.Id = parent.parent.ECInstanceId ANDALSO this.Parent = NULL",
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "modelId": "this.Model.Id",
+            "categoryId": "this.Category.Id"
+          }
+        }
+      ]
+    },
+    {
+      "ruleType": "ChildNodes",
+      "condition": "ParentNode.IsOfClass(\"GeometricElement3d\", \"BisCore\")",
+      "specifications": [
+        {
+          "specType": "RelatedInstanceNodes",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementOwnsChildElements"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "GeometricElement3d"
+            ]
+          },
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ],
+      "customizationRules": [
+        {
+          "ruleType": "ExtendedData",
+          "items": {
+            "modelId": "this.Model.Id",
+            "categoryId": "this.Category.Id"
+          }
+        }
+      ]
+    },
+    {
+      "ruleType": "ImageIdOverride",
+      "condition": "ThisNode.IsOfClass(\"Subject\", \"BisCore\")",
+      "imageIdExpression": "IIF(this.Parent.Id = NULL, \"icon-imodel-hollow-2\", \"icon-folder\")"
+    },
+    {
+      "ruleType": "ImageIdOverride",
+      "condition": "ThisNode.IsOfClass(\"Model\", \"BisCore\")",
+      "imageIdExpression": "\"icon-model\""
+    },
+    {
+      "ruleType": "ImageIdOverride",
+      "condition": "ThisNode.IsOfClass(\"Category\", \"BisCore\")",
+      "imageIdExpression": "\"icon-layers\""
+    },
+    {
+      "ruleType": "ImageIdOverride",
+      "condition": "ThisNode.IsOfClass(\"Element\", \"BisCore\")",
+      "imageIdExpression": "\"icon-item\""
+    },
+    {
+      "ruleType": "Content",
+      "condition": "ContentDisplayType = \"AssemblyElementsRequest\"",
+      "specifications": [
+        {
+          "specType": "ContentRelatedInstances",
+          "relationships": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "ElementOwnsChildElements"
+            ]
+          },
+          "requiredDirection": "Forward",
+          "relatedClasses": {
+            "schemaName": "BisCore",
+            "classNames": [
+              "Element"
+            ]
+          },
+          "isRecursive": true
+        }
+      ]
+    }
+  ]
+}

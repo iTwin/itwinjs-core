@@ -67,7 +67,7 @@ beta;ColorSwatch: React.FunctionComponent
 beta;ColorSwatchProps 
 public;ColumnDescription
 alpha;ColumnFilterDescriptor 
-beta;CompletionObserver
+public;CompletionObserver
 alpha;CompositeFilterDescriptor 
 alpha;CompositeFilterDescriptorCollection
 public;CompositeTypeConverter 
@@ -88,6 +88,8 @@ public;DateTimeTypeConverter
 public;class DateTimeTypeConverterBase 
 alpha;DayPicker 
 public;DelayLoadedTreeNodeItem 
+public;DEPRECATED_Tree 
+beta;DEPRECATED_withTreeDragDrop
 alpha;DistinctValueCollection
 alpha;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
@@ -111,7 +113,7 @@ beta;EnumEditor
 beta;EnumPropertyButtonGroupEditor 
 beta;EnumPropertyEditor 
 public;EnumTypeConverter 
-beta;ErrorObserver
+public;ErrorObserver
 public;EventsMuteContext 
 beta;ExtendedTreeNodeRendererProps 
 alpha;FieldFilterDescriptor 
@@ -126,7 +128,7 @@ public;FilteringInputProps
 alpha;FilterOperator
 alpha;FilterRenderer
 public;FloatTypeConverter 
-beta;from
+public;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getLabelString(label: string | PropertyRecord): string
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
@@ -190,7 +192,7 @@ beta;MutableTreeModel
 beta;MutableTreeModelNode 
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
-beta;NextObserver
+public;NextObserver
 public;NodeCheckboxProps 
 internal;NodeRenderer = (item: BeInspireTreeNode
 internal;NodesDeselectedCallback = OnItemsDeselectedCallback
@@ -202,8 +204,8 @@ public;NonPrimitivePropertyRendererProps
 public;NullableOperatorProcessor
 alpha;NumericRangeData
 public;class NumericTypeConverterBase 
-beta;Observable
-beta;Observer
+public;Observable
+public;Observer
 public;OnItemsDeselectedCallback
 public;OnItemsSelectedCallback
 public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
@@ -289,8 +291,8 @@ beta;StandardTypeConverterTypeNames
 public;StringOperatorProcessor
 public;StringTypeConverter 
 public;StructPropertyValueRenderer 
-beta;Subscribable
-beta;Subscription 
+public;Subscribable
+public;Subscription 
 public;Table 
 public;TableArrayValueRenderer 
 beta;TableCellContextMenuArgs
@@ -324,10 +326,9 @@ beta;ToggleEditor
 beta;TogglePropertyEditor 
 internal;toNode: 
 internal;toNodes: 
-public;Tree 
 beta;TreeActions
 beta;TreeCellUpdatedArgs
-beta;TreeCheckboxStateChangeEvent
+beta;TreeCheckboxStateChangeEventArgs
 public;TreeDataChangesListener = (nodes: Array
 public;TreeDataProvider = TreeDataProviderRaw | TreeDataProviderPromise | TreeDataProviderMethod | ITreeDataProvider
 public;TreeDataProviderMethod = (node?: TreeNodeItem) => Promise
@@ -352,7 +353,7 @@ beta;TreeModelNodeType = TreeModelNode | TreeModelNodePlaceholder | TreeModelRoo
 beta;TreeModelRootNode
 beta;TreeModelSource
 public;TreeNode 
-beta;TreeNodeEvent
+beta;TreeNodeEventArgs
 public;TreeNodeIcon: React.FunctionComponent
 public;TreeNodeIconProps 
 public;TreeNodeItem
@@ -367,19 +368,19 @@ beta;TreeRenderer: React.FC
 beta;TreeRendererContext
 beta;TreeRendererProps
 beta;TreeSelectionChange
-beta;TreeSelectionModificationEvent
-beta;TreeSelectionReplacementEvent
-internal;TreeTest
+beta;TreeSelectionModificationEventArgs
+beta;TreeSelectionReplacementEventArgs
 public;class TypeConverter 
 public;TypeConverterManager
 beta;TypeEditor
 public;UiComponents
 alpha;UITooltipRenderer
-beta;Unsubscribable
+public;Unsubscribable
 beta;useAsyncValue: 
-beta;useModelSource(dataProvider: TreeDataProvider): TreeModelSource
-beta;useNodeLoader
-beta;usePagedNodeLoader
+beta;usePagedTreeNodeLoader
+beta;useTreeEventsHandler
+beta;useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSource
+beta;useTreeNodeLoader
 beta;useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes
 public;ViewClassFullNameChangedEvent 
 public;ViewClassFullNameChangedEventArgs
@@ -402,4 +403,3 @@ beta;WithDragSourceProps
 beta;withDropTarget: 
 beta;WithDropTargetProps
 beta;withTableDragDrop
-beta;withTreeDragDrop

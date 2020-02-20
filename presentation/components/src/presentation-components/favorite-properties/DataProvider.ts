@@ -6,13 +6,13 @@
  * @module FavoriteProperties
  */
 
-import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { CategoryDescription } from "@bentley/presentation-common";
+import { CategoryDescription, Ruleset } from "@bentley/presentation-common";
 import { IElementPropertyDataProvider, PropertyData } from "@bentley/ui-components";
 import { Presentation, getScopeId } from "@bentley/presentation-frontend";
 import { translate } from "../common/Utils";
 import { PresentationPropertyDataProvider } from "../propertygrid/DataProvider";
+import { using } from "@bentley/bentleyjs-core";
 
 /** @internal */
 export const FAVORITES_CATEGORY_NAME = "Favorite";
@@ -30,8 +30,14 @@ export const getFavoritesCategory = (): CategoryDescription => {
 
 /** @beta */
 export interface FavoritePropertiesDataProviderProps {
+  /**
+   * Id of the ruleset to use when requesting properties or a ruleset itself. If not
+   * set, default presentation rules are used which return content for the selected elements.
+   */
+  ruleset?: Ruleset | string;
+
   /** @internal */
-  propertyDataProviderFactory?: (imodel: IModelConnection, rulesetId?: string) => PresentationPropertyDataProvider;
+  propertyDataProviderFactory?: (imodel: IModelConnection, ruleset?: Ruleset | string) => PresentationPropertyDataProvider;
 }
 
 /**
@@ -39,6 +45,9 @@ export interface FavoritePropertiesDataProviderProps {
  * @beta
  */
 export class FavoritePropertiesDataProvider implements IElementPropertyDataProvider {
+
+  private _customRuleset?: Ruleset | string;
+  private _propertyDataProviderFactory: (imodel: IModelConnection, ruleset?: Ruleset | string) => PresentationPropertyDataProvider;
 
   /**
    * Should fields with no values be included in the property list. No value means:
@@ -56,20 +65,14 @@ export class FavoritePropertiesDataProvider implements IElementPropertyDataProvi
    */
   public includeFieldsWithCompositeValues: boolean;
 
-  /**
-   * ID of a custom ruleset to use when requesting properties.
-   */
-  public customRulesetId: string | undefined;
-
-  private _propertyDataProviderFactory: (imodel: IModelConnection, rulesetId?: string) => PresentationPropertyDataProvider;
-
   /** Constructor. */
   constructor(props?: FavoritePropertiesDataProviderProps) {
     this.includeFieldsWithNoValues = true;
     this.includeFieldsWithCompositeValues = true;
+    this._customRuleset = /* istanbul ignore next */ props?.ruleset;
     this._propertyDataProviderFactory = props && props.propertyDataProviderFactory ?
       props.propertyDataProviderFactory : /* istanbul ignore next */
-      (imodel: IModelConnection, rulesetId?: string) => new PresentationPropertyDataProvider(imodel, rulesetId);
+      (imodel: IModelConnection, ruleset?: Ruleset | string) => new PresentationPropertyDataProvider({ imodel, ruleset });
   }
 
   /**
@@ -82,18 +85,18 @@ export class FavoritePropertiesDataProvider implements IElementPropertyDataProvi
       elementId,
       getScopeId(Presentation.selection.scopes.activeScope));
 
-    const propertyDataProvider = this._propertyDataProviderFactory(imodel, this.customRulesetId);
-    propertyDataProvider.keys = key;
-    propertyDataProvider.includeFieldsWithNoValues = this.includeFieldsWithNoValues;
-    propertyDataProvider.includeFieldsWithCompositeValues = this.includeFieldsWithCompositeValues;
-    const propertyData = await propertyDataProvider.getData();
+    return using(this._propertyDataProviderFactory(imodel, this._customRuleset), async (propertyDataProvider) => {
+      propertyDataProvider.keys = key;
+      propertyDataProvider.includeFieldsWithNoValues = this.includeFieldsWithNoValues;
+      propertyDataProvider.includeFieldsWithCompositeValues = this.includeFieldsWithCompositeValues;
+      const propertyData = await propertyDataProvider.getData();
 
-    // leave only favorite properties
-    const favoritesCategory = getFavoritesCategory();
-    propertyData.categories = propertyData.categories.filter((c) => c.name === favoritesCategory.name);
-    propertyData.records = propertyData.records.hasOwnProperty(favoritesCategory.name) ?
-      { [favoritesCategory.name]: propertyData.records[favoritesCategory.name] } : {};
-
-    return propertyData;
+      // leave only favorite properties
+      const favoritesCategory = getFavoritesCategory();
+      propertyData.categories = propertyData.categories.filter((c) => c.name === favoritesCategory.name);
+      propertyData.records = propertyData.records.hasOwnProperty(favoritesCategory.name) ?
+        { [favoritesCategory.name]: propertyData.records[favoritesCategory.name] } : {};
+      return propertyData;
+    });
   }
 }

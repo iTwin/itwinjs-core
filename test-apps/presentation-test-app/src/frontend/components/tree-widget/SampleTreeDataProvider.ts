@@ -23,9 +23,9 @@ export function useDataProvider(imodel: IModelConnection, rulesetId: string): Sa
 export class SampleDataProvider implements IPresentationTreeDataProvider {
   private _wrapped: PresentationTreeDataProvider;
   public constructor(imodel: IModelConnection, rulesetId: string) {
-    this._wrapped = new PresentationTreeDataProvider(imodel, rulesetId);
-    this._wrapped.pagingSize = PAGING_SIZE;
+    this._wrapped = new PresentationTreeDataProvider({ imodel, ruleset: rulesetId, pagingSize: PAGING_SIZE });
   }
+  public dispose() { this._wrapped.dispose(); }
   public get imodel() { return this._wrapped.imodel; }
   public get rulesetId() { return this._wrapped.rulesetId; }
   public async getNodesCount(parentNode?: TreeNodeItem) {

@@ -62,9 +62,10 @@ alpha;CardContainerProps
 alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
-alpha;CategoryTree: React.FC
-alpha;CategoryTreeProps
-alpha;CategoryTreeState
+internal;Category
+public;CategoryTree: React.FC
+public;CategoryTreeProps
+internal;CategoryVisibilityHandler
 internal;ChangeSetInfo
 beta;ClearEmphasisStatusField: React.FC
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
@@ -174,7 +175,6 @@ beta;ExpandableSectionProps
 beta;ExtensibleToolbarProps
 internal;FaceCell 
 internal;FaceCellProps 
-alpha;FilterInfo
 public;FooterModeField 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
@@ -238,10 +238,10 @@ beta;IModelConnectedCategoryTree: any
 beta;IModelConnectedCubeNavigationAid: any
 alpha;IModelConnectedModelsTree: any
 beta;IModelConnectedNavigationWidget: any
+beta;IModelConnectedSpatialContainmentTree: any
 beta;IModelConnectedViewport: any
 beta;IModelConnectedViewSelector: any
 beta;IModelConnectedVisibilityComponent: any
-beta;IModelConnectedVisibilityTree: any
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -320,9 +320,9 @@ public;ModelessDialogProps
 public;ModelessDialogRenderer 
 internal;ModelSelectorWidget 
 internal;ModelSelectorWidgetControl 
-alpha;ModelsTree: React.FC
+public;ModelsTree: React.FC
 alpha;ModelsTreeNodeType
-alpha;ModelsTreeProps
+public;ModelsTreeProps
 alpha;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
@@ -380,6 +380,9 @@ beta;ReducerRegistryInstance: ReducerRegistry
 beta;ReviewToolWidget 
 beta;ReviewToolWidgetProps
 internal;RotationData
+internal;RULESET_CATEGORIES: Ruleset
+internal;RULESET_MODELS: Ruleset
+internal;RULESET_SPATIAL_BREAKDOWN: Ruleset
 alpha;SafeAreaContext: React.Context
 beta;SavedView
 beta;SavedViewLayout
@@ -413,9 +416,8 @@ public;SignInProps
 public;SignOutModalFrontstage 
 public;SnapModeField: any
 alpha;SolarTimelineDataProvider 
-alpha;SpatialContainmentTree: React.FC
-alpha;SpatialContainmentTreeProps
-alpha;SpatialContainmentTreeState
+public;SpatialContainmentTree: React.FC
+public;SpatialContainmentTreeProps
 public;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
@@ -552,8 +554,6 @@ alpha;VisibilityComponentProps
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps
 internal;VisibilityStatus
-public;VisibilityTree 
-public;VisibilityTreeProps
 alpha;VisibilityWidget 
 public;Widget 
 beta;WIDGET_OPACITY_DEFAULT = 0.9

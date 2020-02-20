@@ -9,27 +9,17 @@
 import * as React from "react";
 import { IDisposable, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { SelectionInfo, KeySet, Ruleset, AsyncTasksTracker } from "@bentley/presentation-common";
+import { SelectionInfo, KeySet, AsyncTasksTracker } from "@bentley/presentation-common";
 import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
-import { HILITE_RULESET } from "@bentley/presentation-frontend/lib/presentation-frontend/selection/HiliteSetProvider"; // tslint:disable-line: no-direct-imports
 
 /**
  * Props that are injected to the ViewWithUnifiedSelection HOC component.
  * @public
  */
 export interface ViewWithUnifiedSelectionProps {
-  /**
-   * Ruleset or its ID to use when determining viewport selection.
-   * @alpha
-   * @deprecated This prop has been deprecated. The component expects a very
-   * specific ruleset to be used and thus supplying a custom one is not an option
-   * anymore. The prop is not used if supplied.
-   */
-  ruleset?: Ruleset | string;
-
   /** @internal */
   selectionHandler?: ViewportSelectionHandler;
 }
@@ -60,11 +50,9 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 
     public get imodel() { return this.props.imodel; }
 
-    public get rulesetId() { return HILITE_RULESET.id; }
-
     public componentDidMount() {
       this.viewportSelectionHandler = this.props.selectionHandler
-        ? this.props.selectionHandler : new ViewportSelectionHandler(this.props.imodel);
+        ? this.props.selectionHandler : new ViewportSelectionHandler({ imodel: this.props.imodel });
     }
 
     public componentWillUnmount() {
@@ -93,6 +81,11 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
   };
 }
 
+/** @internal */
+export interface ViewportSelectionHandlerProps {
+  imodel: IModelConnection;
+}
+
 /**
  * A handler that syncs selection between unified selection
  * manager (`Presentation.selection`) and a viewport (`imodel.hilited`).
@@ -109,17 +102,21 @@ export class ViewportSelectionHandler implements IDisposable {
   private _lastPendingSelectionChange?: { info: SelectionInfo, selection: Readonly<KeySet> };
   private _asyncsTracker = new AsyncTasksTracker();
 
-  public constructor(imodel: IModelConnection) {
-    this._imodel = imodel;
+  public constructor(props: ViewportSelectionHandlerProps) {
+    this._imodel = props.imodel;
 
     // handles changing and listening to unified selection
-    this._selectionHandler = new SelectionHandler(Presentation.selection,
-      `Viewport_${counter++}`, imodel, undefined, this.onUnifiedSelectionChanged);
-    this._selectionHandler.manager.setSyncWithIModelToolSelection(imodel, true);
+    this._selectionHandler = new SelectionHandler({
+      manager: Presentation.selection,
+      name: `Viewport_${counter++}`,
+      imodel: props.imodel,
+      onSelect: this.onUnifiedSelectionChanged,
+    });
+    this._selectionHandler.manager.setSyncWithIModelToolSelection(props.imodel, true);
 
     // stop imodel from syncing tool selection with hilited list - we want
     // to override that behavior
-    imodel.hilited.wantSyncWithSelectionSet = false;
+    props.imodel.hilited.wantSyncWithSelectionSet = false;
   }
 
   public dispose() {

@@ -14,15 +14,14 @@ export {
   PropertyInfo, RelatedClassInfo, RelationshipPath,
 } from "./presentation-common/EC";
 export { PresentationError, PresentationStatus } from "./presentation-common/Error";
-export { KeySet, KeySetJSON, Keys, Key, DEFAULT_KEYS_BATCH_SIZE } from "./presentation-common/KeySet";
-export { PersistentKeysContainer } from "./presentation-common/PersistentKeysContainer";
-export { RulesetVariablesState, RulesetVariable, VariableValueTypes, VariableValue } from "./presentation-common/RulesetVariables";
-export { RegisteredRuleset, RulesetManagerState } from "./presentation-common/RegisteredRuleset";
+export { KeySet, KeySetJSON, Keys, Key } from "./presentation-common/KeySet";
+export { RulesetVariable, VariableValueTypes, VariableValue } from "./presentation-common/RulesetVariables";
+export { RegisteredRuleset } from "./presentation-common/RegisteredRuleset";
 export { RulesetsFactory } from "./presentation-common/RulesetsFactory";
 export { LoggingNamespaces } from "./presentation-common/Logging";
 export {
   Omit, Subtract, ValuesDictionary,
-  getInstancesCount, LOCALES_DIRECTORY,
+  getInstancesCount, LOCALES_DIRECTORY, DEFAULT_KEYS_BATCH_SIZE,
 } from "./presentation-common/Utils";
 export { AsyncTasksTracker } from "./presentation-common/AsyncTasks";
 export {
@@ -41,7 +40,7 @@ export { LabelDefinition, LabelRawValue, LabelCompositeValue } from "./presentat
  */
 export {
   PresentationRpcInterface, PresentationRpcRequestOptions,
-  LabelRpcRequestOptions, ClientStateSyncRequestOptions, ContentRpcRequestOptions,
+  LabelRpcRequestOptions, ContentRpcRequestOptions,
   HierarchyRpcRequestOptions, SelectionScopeRpcRequestOptions,
   PresentationRpcResponse,
 } from "./presentation-common/PresentationRpcInterface";
@@ -91,9 +90,9 @@ export {
  */
 export {
   NodeKey, NodeKeyPath, StandardNodeTypes,
-  BaseNodeKey, ECInstanceNodeKey, ECInstancesNodeKey, GroupingNodeKey,
+  BaseNodeKey, ECInstancesNodeKey, GroupingNodeKey,
   ECClassGroupingNodeKey, ECPropertyGroupingNodeKey, LabelGroupingNodeKey,
-  ECInstanceNodeKeyJSON, ECInstancesNodeKeyJSON, NodeKeyJSON,
+  ECInstancesNodeKeyJSON, NodeKeyJSON,
 } from "./presentation-common/hierarchy/Key";
 export { Node } from "./presentation-common/hierarchy/Node";
 export { NodePathElement, NodePathFilteringData } from "./presentation-common/hierarchy/NodePathElement";

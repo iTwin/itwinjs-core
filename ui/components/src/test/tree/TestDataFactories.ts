@@ -3,7 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ResolvablePromise } from "../test-helpers/misc";
-import { ITreeDataProvider, DelayLoadedTreeNodeItem, TreeNodeItem, PageOptions, BeInspireTree, Tree } from "../../ui-components";
+import {
+  ITreeDataProvider, DelayLoadedTreeNodeItem, TreeNodeItem,
+  PageOptions, BeInspireTree, DEPRECATED_Tree as Tree,
+} from "../../ui-components";
+
+// tslint:disable:deprecation
 
 // tslint:disable:deprecation
 

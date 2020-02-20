@@ -2014,10 +2014,10 @@ export interface UnderlinedButtonProps {
     title?: string;
 }
 
-// @beta
+// @public
 export function useDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable): TDisposable;
 
-// @alpha
+// @public
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 
 // @public

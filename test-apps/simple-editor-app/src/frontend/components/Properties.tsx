@@ -41,7 +41,7 @@ export default class SimplePropertiesComponent extends React.PureComponent<Props
       return providerProps.dataProvider;
     } else {
       const imodelProps = props as IModelConnectionProps;
-      return new PresentationPropertyDataProvider(imodelProps.imodel, imodelProps.rulesetId);
+      return new PresentationPropertyDataProvider({ imodel: imodelProps.imodel, ruleset: imodelProps.rulesetId });
     }
   }
 

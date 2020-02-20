@@ -16,6 +16,7 @@ import "../WithFilteringSupport.scss";
 /**
  * Props that are injected to the ControlledTreeWithFilteringSupport HOC component.
  * @beta
+ * @deprecated Use hooks. Will be removed in iModel.js 3.0
  */
 export interface ControlledTreeWithFilteringSupportProps {
   /** Node loader used to load nodes for tree. */
@@ -36,19 +37,20 @@ export interface ControlledTreeWithFilteringSupportProps {
  * A HOC component that adds filtering functionality to the supplied
  * controlled tree component.
  *
- * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]] and
- * wrap supplied tree component in [[controlledTreeWithVisibleNodes]] HOC
+ * @note It's required for the tree to use [[PresentationTreeDataProvider]] and
+ * wrap supplied tree component in [[DEPRECATED_controlledTreeWithVisibleNodes]] HOC
  *
  * @beta
+ * @deprecated Use hooks. Will be removed in iModel.js 3.0
  */
-// tslint:disable-next-line: variable-name naming-convention
-export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>) {
+// tslint:disable-next-line: variable-name naming-convention deprecation
+export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>) {
 
-  type CombinedProps = P & ControlledTreeWithFilteringSupportProps;
+  type CombinedProps = P & ControlledTreeWithFilteringSupportProps; // tslint:disable-line:deprecation
   type TreeWithFilteringSupportProps = Omit<CombinedProps, "visibleNodes">;
 
   // tslint:disable-next-line: variable-name naming-convention
-  const treeWithFilteringSupport: React.FC<TreeWithFilteringSupportProps> = (props: TreeWithFilteringSupportProps) => {
+  const TreeWithFilteringSupport: React.FC<TreeWithFilteringSupportProps> = (props: TreeWithFilteringSupportProps) => {
     const {
       nodeLoader, filter, activeMatchIndex, onFilterApplied,
       onMatchesCounted, onNodeLoaderChanged, ...strippedProps } = props;
@@ -68,12 +70,12 @@ export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithV
       if (onMatchesCounted && matchesCount !== undefined) {
         onMatchesCounted(matchesCount);
       }
-    }, [filterApplied, matchesCount]);
+    }, [onFilterApplied, filterApplied, onMatchesCounted, matchesCount]);
 
     React.useEffect(() => {
       if (onNodeLoaderChanged)
         onNodeLoaderChanged(filteredNodeLoader);
-    }, [filteredNodeLoader]);
+    }, [onNodeLoaderChanged, filteredNodeLoader]);
 
     const overlay = (isFiltering) ? <div className="filteredTreeOverlay" /> : undefined;
 
@@ -89,5 +91,5 @@ export function controlledTreeWithFilteringSupport<P extends ControlledTreeWithV
     );
   };
 
-  return treeWithFilteringSupport;
+  return TreeWithFilteringSupport;
 }

@@ -3,9 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Tree, TreeNodeItem, SelectionMode, ITreeDataProvider, DelayLoadedTreeNodeItem } from "@bentley/ui-components";
+import { useMemo, useCallback } from "react"; // tslint:disable-line: no-duplicate-imports
+import {
+  ControlledTree, TreeNodeItem, SelectionMode, ITreeDataProvider, DelayLoadedTreeNodeItem,
+  useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes, TreeEventHandler, useTreeEventsHandler,
+  AbstractTreeNodeLoaderWithProvider, TreeCheckboxStateChangeEventArgs, TreeSelectionReplacementEventArgs,
+  TreeSelectionModificationEventArgs, Subscription, TreeModel, TreeModelChanges, TreeModelNode, MutableTreeModel,
+} from "@bentley/ui-components";
 import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
-import { CheckBoxInfo, CheckBoxState } from "@bentley/ui-core";
+import { CheckBoxState } from "@bentley/ui-core";
 
 export class TreeSelectionDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -14,104 +20,138 @@ export class TreeSelectionDemoWidgetControl extends WidgetControl {
   }
 }
 
-interface State {
-  dataProvider: ITreeDataProvider;
-  selectedNodes: string[];
-  checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo;
+function TreeSelectionDemoWidget() {
+  const dataProvider = useMemo(createDataProvider, []);
+  const modelSource = useTreeModelSource(dataProvider);
+  const nodeLoader = useTreeNodeLoader(dataProvider, modelSource);
+  const visibleNodes = useVisibleTreeNodes(modelSource);
+  const eventsHandler = useTreeEventsHandler(useCallback(() => new DemoTreeEventsHandler(nodeLoader), [nodeLoader]));
+  return (
+    <div style={{ height: "100%" }}>
+      <ControlledTree
+        nodeLoader={nodeLoader}
+        visibleNodes={visibleNodes}
+        treeEvents={eventsHandler}
+        selectionMode={SelectionMode.Extended}
+      />
+    </div>
+  );
 }
 
-class TreeSelectionDemoWidget extends React.PureComponent<{}, State> {
-  constructor(props: {}) {
-    super(props);
-    this.state = {
-      dataProvider: createDataProvider(),
-      selectedNodes: [],
-      checkboxInfo: this.createCheckboxInfoCallback(),
-    };
-  }
-  private createCheckboxInfoCallback() {
-    return (node: TreeNodeItem): CheckBoxInfo => ({
-      isVisible: true,
-      state: (this.state.selectedNodes.indexOf(node.id) !== -1) ? CheckBoxState.On : CheckBoxState.Off,
-    });
-  }
-  private async getAllNodes(nodes: TreeNodeItem[]): Promise<TreeNodeItem[]> {
-    const childPromises = nodes.map((parentNode) => this.state.dataProvider.getNodes(parentNode));
-    if (childPromises.length === 0)
-      return nodes;
+class DemoTreeEventsHandler extends TreeEventHandler {
 
-    const allImmediateChildren = new Array<TreeNodeItem>();
-    (await Promise.all(childPromises)).forEach((children) => allImmediateChildren.push(...children));
-    const allChildren = await this.getAllNodes(allImmediateChildren);
-    return [...nodes, ...allChildren];
-  }
-  private async addToSelection(nodes: TreeNodeItem[], replace: boolean) {
-    const toAdd = await this.getAllNodes(nodes);
-    this.setState((prev) => {
-      const selection = replace ? [] : [...prev.selectedNodes];
-      toAdd.forEach((node) => selection.push(node.id));
-      return {
-        selectedNodes: selection,
-        checkboxInfo: this.createCheckboxInfoCallback(),
-      };
-    });
-  }
-  private async removeFromSelection(nodes: TreeNodeItem[]) {
-    const toRemove = await this.getAllNodes(nodes);
-    this.setState((prev) => {
-      const selection = prev.selectedNodes.filter((id) => -1 === toRemove.findIndex((node) => node.id === id));
-      return {
-        selectedNodes: selection,
-        checkboxInfo: this.createCheckboxInfoCallback(),
-      };
-    });
-  }
-  // tslint:disable-next-line: naming-convention
-  private onNodesSelected = (nodes: TreeNodeItem[], replace: boolean) => {
-    // tslint:disable-next-line: no-floating-promises
-    this.addToSelection(nodes, replace);
-  }
-  // tslint:disable-next-line: naming-convention
-  private onNodesDeselected = (nodes: TreeNodeItem[]) => {
-    // tslint:disable-next-line: no-floating-promises
-    this.removeFromSelection(nodes);
-  }
-  // tslint:disable-next-line: naming-convention
-  private onCheckboxClick = (stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) => {
-    const selectedNodes: TreeNodeItem[] = [];
-    const deselectedNodes: TreeNodeItem[] = [];
-    for (const { node, newState } of stateChanges) {
-      switch (newState) {
-        case CheckBoxState.On:
-          selectedNodes.push(node);
-          break;
+  private _removeModelChangedListener: () => void;
 
-        case CheckBoxState.Off:
-          deselectedNodes.push(node);
-          break;
-      }
+  constructor(nodeLoader: AbstractTreeNodeLoaderWithProvider<ITreeDataProvider>) {
+    super({ modelSource: nodeLoader.modelSource, nodeLoader });
+    this._removeModelChangedListener = this.modelSource.onModelChanged.addListener(this.onModelChanged);
+  }
+
+  public dispose() {
+    this._removeModelChangedListener();
+    super.dispose();
+  }
+
+  public onModelChanged = (args: [TreeModel, TreeModelChanges]) => {
+    this.modelSource.modifyModel((model) => {
+      const addedNodes = args[1].addedNodeIds.map((id) => model.getNode(id));
+      addedNodes.forEach((node) => {
+        if (!node)
+          return;
+
+        const parent = node.parentId ? model.getNode(node.parentId) : undefined;
+        if (!parent)
+          return;
+
+        // for added nodes we want to make sure their selection/checkbox state matches their parent
+        node.isSelected = parent.isSelected;
+        node.checkbox.state = parent.isSelected ? CheckBoxState.On : CheckBoxState.Off;
+      });
+    });
+  }
+
+  private static carryDownSelectionState(model: MutableTreeModel, parent: TreeModelNode) {
+    for (const node of model.iterateTreeModelNodes(parent.id)) {
+      node.checkbox.state = parent.checkbox.state;
+      node.isSelected = parent.isSelected;
     }
+  }
 
-    // tslint:disable-next-line: no-floating-promises
-    this.addToSelection(selectedNodes, false);
-    // tslint:disable-next-line: no-floating-promises
-    this.removeFromSelection(deselectedNodes);
+  public onSelectionModified({ modifications }: TreeSelectionModificationEventArgs): Subscription | undefined {
+    // call base to handle selection
+    const baseHandling = super.onSelectionModified({ modifications });
+    // additionally handle checkboxes
+    const checkboxHandling = modifications.subscribe({
+      next: ({ selectedNodeItems, deselectedNodeItems }) => {
+        this.modelSource.modifyModel((model) => {
+          selectedNodeItems.forEach((item) => {
+            const node = model.getNode(item.id)!;
+            node.checkbox.state = CheckBoxState.On;
+            DemoTreeEventsHandler.carryDownSelectionState(model, node);
+          });
+          deselectedNodeItems.forEach((item) => {
+            const node = model.getNode(item.id)!;
+            node.checkbox.state = CheckBoxState.Off;
+            DemoTreeEventsHandler.carryDownSelectionState(model, node);
+          });
+        });
+      },
+    });
+    // we want checkbox handling to be canceled if base handling is canceled (e.g. due to selection change)
+    baseHandling?.add(checkboxHandling);
+    return baseHandling;
   }
-  public render() {
-    return (
-      <div style={{ height: "100%" }}>
-        <Tree
-          dataProvider={this.state.dataProvider}
-          selectionMode={SelectionMode.Extended}
-          selectedNodes={this.state.selectedNodes}
-          checkboxInfo={this.state.checkboxInfo}
-          onNodesSelected={this.onNodesSelected}
-          onNodesDeselected={this.onNodesDeselected}
-          onCheckboxClick={this.onCheckboxClick}
-        />
-      </div>
-    );
+
+  /** Replaces currently selected nodes until event is handled, handler is disposed or another selection replaced event occurs. */
+  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): Subscription | undefined {
+    // call base to handle selection
+    const baseHandling = super.onSelectionReplaced({ replacements });
+    // additionally handle checkboxes
+    let firstEmission = true;
+    const checkboxHandling = replacements.subscribe({
+      next: ({ selectedNodeItems }) => {
+        this.modelSource.modifyModel((model) => {
+          // uncheck all model nodes on first emission
+          if (firstEmission) {
+            for (const node of model.iterateTreeModelNodes())
+              node.checkbox.state = CheckBoxState.Off;
+            firstEmission = false;
+          }
+          // check selected nodes
+          selectedNodeItems.forEach((item) => {
+            const node = model.getNode(item.id)!;
+            node.checkbox.state = CheckBoxState.On;
+            DemoTreeEventsHandler.carryDownSelectionState(model, node);
+          });
+        });
+      },
+    });
+    // we want checkbox handling to be canceled if base handling is canceled (e.g. due to selection change)
+    baseHandling?.add(checkboxHandling);
+    return baseHandling;
   }
+
+  /** Changes nodes checkbox states. */
+  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs): Subscription | undefined {
+    // call base to handle checkboxes
+    const baseHandling = super.onCheckboxStateChanged({ stateChanges });
+    // additionally handle selection
+    const selectionHandling = stateChanges.subscribe({
+      next: (changes) => {
+        this.modelSource.modifyModel((model) => {
+          changes.forEach((change) => {
+            const node = model.getNode(change.nodeItem.id)!;
+            node.isSelected = (change.newState === CheckBoxState.On);
+            DemoTreeEventsHandler.carryDownSelectionState(model, node);
+          });
+        });
+      },
+    });
+    // we want selection handling to be canceled if base handling is canceled (e.g. due to selection change)
+    baseHandling?.add(selectionHandling);
+    return baseHandling;
+  }
+
 }
 
 const createDataProvider = (): ITreeDataProvider => ({
@@ -140,5 +180,6 @@ const createDataProvider = (): ITreeDataProvider => ({
 const createTreeNode = (id: string, hasChildren?: boolean): DelayLoadedTreeNodeItem => ({
   id,
   label: id,
+  isCheckboxVisible: true,
   hasChildren,
 });

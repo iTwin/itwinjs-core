@@ -6,18 +6,19 @@
  * @module Core
  */
 
-import * as _ from "lodash";
-import { IDisposable, Logger } from "@bentley/bentleyjs-core";
+import memoize from "micro-memoize";
+import { Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   KeySet, DEFAULT_KEYS_BATCH_SIZE, PageOptions, SelectionInfo,
   ContentRequestOptions, Content, Descriptor, Field,
-  Ruleset, RegisteredRuleset, DescriptorOverrides,
+  Ruleset, DescriptorOverrides,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
 import { findField } from "./Utils";
+import { RulesetRegistrationHelper } from "./RulesetRegistrationHelper";
 
 /**
  * Properties for invalidating content cache.
@@ -56,7 +57,7 @@ export interface CacheInvalidationProps {
   content?: boolean;
 }
 /** @public */
-namespace CacheInvalidationProps {
+export namespace CacheInvalidationProps {
   /**
    * Create CacheInvalidationProps to fully invalidate all caches.
    */
@@ -67,7 +68,7 @@ namespace CacheInvalidationProps {
  * Interface for all presentation-driven content providers.
  * @public
  */
-export interface IContentDataProvider extends IPresentationDataProvider, IDisposable {
+export interface IContentDataProvider extends IPresentationDataProvider {
   /** Display type used to format content */
   readonly displayType: string;
   /** Keys defining what to request content for */
@@ -93,67 +94,18 @@ export interface IContentDataProvider extends IPresentationDataProvider, IDispos
 }
 
 /**
- * Base class for all presentation-driven content providers.
+ * Properties for creating a `ContentDataProvider` instance.
  * @public
  */
-export class ContentDataProvider implements IContentDataProvider {
-  private _imodel: IModelConnection;
-  private _rulesetId: string;
-  private _displayType: string;
-  private _keys: KeySet;
-  private _previousKeysGuid: string;
-  private _selectionInfo?: SelectionInfo;
-  private _registeredRuleset?: RegisteredRuleset;
-  private _isDisposed?: boolean;
-  private _pagingSize?: number;
-
+export interface ContentDataProviderProps {
+  /** IModel to pull data from. */
+  imodel: IModelConnection;
+  /** Id of the ruleset to use when requesting content or a ruleset itself. */
+  ruleset: string | Ruleset;
+  /** The content display type which this provider is going to load data for. */
+  displayType: string;
   /**
-   * Constructor.
-   * @param imodel IModel to pull data from.
-   * @param ruleset Id of the ruleset to use when requesting content or a ruleset itself.
-   * @param displayType The content display type which this provider is going to
-   * load data for.
-   */
-  constructor(imodel: IModelConnection, ruleset: string | Ruleset, displayType: string) {
-    this._rulesetId = (typeof ruleset === "string") ? ruleset : ruleset.id;
-    this._displayType = displayType;
-    this._imodel = imodel;
-    this._keys = new KeySet();
-    this._previousKeysGuid = this._keys.guid;
-    this.invalidateCache(CacheInvalidationProps.full());
-    if (typeof ruleset === "object") {
-      this.registerRuleset(ruleset); // tslint:disable-line: no-floating-promises
-    }
-  }
-
-  /** Destructor. Must be called to clean up.  */
-  public dispose() {
-    this._isDisposed = true;
-    this.disposeRegisteredRuleset();
-  }
-
-  private disposeRegisteredRuleset() {
-    if (!this._registeredRuleset)
-      return;
-
-    this._registeredRuleset.dispose();
-    this._registeredRuleset = undefined;
-  }
-
-  private async registerRuleset(ruleset: Ruleset) {
-    this._registeredRuleset = await Presentation.presentation.rulesets().add(ruleset);
-    if (this._isDisposed) {
-      // ensure we don't keep a hanging registered ruleset if the data provider
-      // gets destroyed before the ruleset finishes registration
-      this.disposeRegisteredRuleset();
-    }
-  }
-
-  /** Display type used to format content */
-  public get displayType(): string { return this._displayType; }
-
-  /**
-   * Paging options for obtaining content.
+   * Paging size for obtaining content records.
    *
    * Presentation data providers, when used with paging, have ability to save one backend request for size / count. That
    * can only be achieved when `pagingSize` property is set on the data provider and it's value matches size which is used when
@@ -163,13 +115,50 @@ export class ContentDataProvider implements IContentDataProvider {
    * ```
    * To fix the issue, developers should make sure the page size used for requesting data is also set for the data provider:
    * ```TS
-   * const pageSize = 10;
-   * const provider = new ContentDataProvider(imodel, rulesetId, displayType);
-   * provider.pagingSize = pageSize;
+   * const pagingSize = 10;
+   * const provider = new ContentDataProvider({ imodel, ruleset, displayType, pagingSize});
    * // only one backend request is made for the two following requests:
    * provider.getContentSetSize();
-   * provider.getContent({ start: 0, size: pageSize });
+   * provider.getContent({ start: 0, size: pagingSize });
    * ```
+   */
+  pagingSize?: number;
+}
+
+/**
+ * Base class for all presentation-driven content providers.
+ * @public
+ */
+export class ContentDataProvider implements IContentDataProvider {
+  private _imodel: IModelConnection;
+  private _rulesetRegistration: RulesetRegistrationHelper;
+  private _displayType: string;
+  private _keys: KeySet;
+  private _previousKeysGuid: string;
+  private _selectionInfo?: SelectionInfo;
+  private _pagingSize?: number;
+
+  /** Constructor. */
+  constructor(props: ContentDataProviderProps) {
+    this._rulesetRegistration = new RulesetRegistrationHelper(props.ruleset);
+    this._displayType = props.displayType;
+    this._imodel = props.imodel;
+    this._keys = new KeySet();
+    this._previousKeysGuid = this._keys.guid;
+    this.invalidateCache(CacheInvalidationProps.full());
+  }
+
+  /** Destructor. Must be called to clean up.  */
+  public dispose() {
+    this._rulesetRegistration.dispose();
+  }
+
+  /** Display type used to format content */
+  public get displayType(): string { return this._displayType; }
+
+  /**
+   * Paging options for obtaining content.
+   * @see `ContentDataProviderProps.pagingSize`
    */
   public get pagingSize(): number | undefined { return this._pagingSize; }
   public set pagingSize(value: number | undefined) { this._pagingSize = value; }
@@ -185,12 +174,12 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   /** Id of the ruleset to use when requesting content */
-  public get rulesetId(): string { return this._rulesetId; }
+  public get rulesetId(): string { return this._rulesetRegistration.rulesetId; }
   public set rulesetId(value: string) {
-    if (this._rulesetId === value)
+    if (this.rulesetId === value)
       return;
 
-    this._rulesetId = value;
+    this._rulesetRegistration = new RulesetRegistrationHelper(value);
     this.invalidateCache(CacheInvalidationProps.full());
   }
 
@@ -219,18 +208,24 @@ export class ContentDataProvider implements IContentDataProvider {
    * Invalidates cached content.
    */
   protected invalidateCache(props: CacheInvalidationProps): void {
-    if (props.descriptor && this.getDefaultContentDescriptor)
-      this.getDefaultContentDescriptor.cache.clear!();
-    if (props.descriptorConfiguration && this.getContentDescriptor)
-      this.getContentDescriptor.cache.clear!();
-    if ((props.content || props.size) && this._getContentAndSize)
-      this._getContentAndSize.cache.clear!();
+    if (props.descriptor && this.getDefaultContentDescriptor) {
+      this.getDefaultContentDescriptor.cache.keys.length = 0;
+      this.getDefaultContentDescriptor.cache.values.length = 0;
+    }
+    if (props.descriptorConfiguration && this.getContentDescriptor) {
+      this.getContentDescriptor.cache.keys.length = 0;
+      this.getContentDescriptor.cache.values.length = 0;
+    }
+    if ((props.content || props.size) && this._getContentAndSize) {
+      this._getContentAndSize.cache.keys.length = 0;
+      this._getContentAndSize.cache.values.length = 0;
+    }
   }
 
   private createRequestOptions(): ContentRequestOptions<IModelConnection> {
     return {
       imodel: this._imodel,
-      rulesetId: this._rulesetId,
+      rulesetOrId: this._rulesetRegistration.rulesetId,
     };
   }
 
@@ -290,7 +285,7 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   // tslint:disable-next-line:naming-convention
-  private getDefaultContentDescriptor = _.memoize(async (): Promise<Descriptor | undefined> => {
+  private getDefaultContentDescriptor = memoize(async (): Promise<Descriptor | undefined> => {
     // istanbul ignore if
     if (this.keys.size > DEFAULT_KEYS_BATCH_SIZE) {
       const msg = `ContentDataProvider.getContentDescriptor requesting descriptor with ${this.keys.size} keys which
@@ -304,7 +299,7 @@ export class ContentDataProvider implements IContentDataProvider {
   /**
    * Get the content descriptor.
    */
-  public getContentDescriptor = _.memoize(async (): Promise<Descriptor | undefined> => {
+  public getContentDescriptor = memoize(async (): Promise<Descriptor | undefined> => {
     if (!this.shouldRequestContentForEmptyKeyset() && this.keys.isEmpty)
       return undefined;
 
@@ -321,9 +316,7 @@ export class ContentDataProvider implements IContentDataProvider {
   public async getContentSetSize(): Promise<number> {
     const paging = undefined !== this.pagingSize ? { start: 0, size: this.pagingSize } : undefined;
     const contentAndSize = await this._getContentAndSize(paging);
-    if (undefined !== contentAndSize)
-      return contentAndSize.size!;
-    return 0;
+    return contentAndSize?.size ?? 0;
   }
 
   /**
@@ -337,9 +330,7 @@ export class ContentDataProvider implements IContentDataProvider {
       Logger.logWarning("Presentation.Components", msg);
     }
     const contentAndSize = await this._getContentAndSize(pageOptions);
-    if (undefined !== contentAndSize)
-      return contentAndSize.content;
-    return undefined;
+    return contentAndSize?.content;
   }
 
   /**
@@ -350,7 +341,7 @@ export class ContentDataProvider implements IContentDataProvider {
     return descriptor ? findField(descriptor, propertyRecord.property.name) : undefined;
   }
 
-  private _getContentAndSize = _.memoize(async (pageOptions?: PageOptions) => {
+  private _getContentAndSize = memoize(async (pageOptions?: PageOptions): Promise<{ content: Content, size: number } | undefined> => {
     if (!this.shouldRequestContentForEmptyKeyset() && this.keys.isEmpty)
       return undefined;
 
@@ -376,16 +367,18 @@ export class ContentDataProvider implements IContentDataProvider {
       return Presentation.presentation.getContentAndSize(options, descriptorOrOverrides, this.keys);
 
     const content = await Presentation.presentation.getContent(options, descriptorOrOverrides, this.keys);
-    if (!content)
-      return undefined;
-
-    const size = (undefined === pageOptions || undefined === pageOptions.size) ? content.contentSet.length : undefined;
-    return { content, size };
-  }, createKeyForPageOptions);
+    return content ? { content, size: content.contentSet.length } : undefined;
+  }, { isMatchingKey: MemoizationHelpers.areContentRequestsEqual as any });
 }
 
-const createKeyForPageOptions = (pageOptions?: PageOptions) => {
-  if (!pageOptions)
-    return "0/0";
-  return `${(pageOptions.start) ? pageOptions.start : 0}/${(pageOptions.size) ? pageOptions.size : 0}`;
-};
+class MemoizationHelpers {
+  public static areContentRequestsEqual(lhsArgs: [PageOptions?], rhsArgs: [PageOptions?]): boolean {
+    // istanbul ignore next
+    if ((lhsArgs[0]?.start ?? 0) !== (rhsArgs[0]?.start ?? 0))
+      return false;
+    // istanbul ignore next
+    if ((lhsArgs[0]?.size ?? 0) !== (rhsArgs[0]?.size ?? 0))
+      return false;
+    return true;
+  }
+}

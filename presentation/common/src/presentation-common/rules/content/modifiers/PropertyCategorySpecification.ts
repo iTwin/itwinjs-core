@@ -8,7 +8,7 @@
 
 /**
  * Specification to define a custom property category.
- * @beta
+ * @public
  */
 export interface PropertyCategorySpecification {
   /** Category identifier which has to be unique at the scope of it's definition */

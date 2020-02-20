@@ -7,13 +7,13 @@ import {
   ConfigurableUiManager,
   ConfigurableCreateInfo,
   WidgetControl,
-  IModelConnectedVisibilityTree,
+  IModelConnectedModelsTree,
 } from "@bentley/ui-framework";
 
 export class VisibilityTreeWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <IModelConnectedVisibilityTree />;
+    this.reactElement = <IModelConnectedModelsTree />;
   }
 }
 

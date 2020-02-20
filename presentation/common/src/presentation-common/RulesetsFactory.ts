@@ -64,24 +64,10 @@ export class RulesetsFactory {
    * same ECClass and have the same property value as the provided `record`.
    * @param field A field identifying which property of the record we should use
    * @param record A record whose similar instances should be found
-   * @deprecated Use `createSimilarInstancesRulesetAsync` instead
-   */
-  public createSimilarInstancesRuleset(field: Field, record: Item): { ruleset: Ruleset, description: string } {
-    const info = this.createSimilarInstancesRulesetInfo(field, record);
-    const description = createDescription(record, info.relatedClasses, field, info.propertyValue.display);
-    return { ruleset: info.ruleset, description };
-  }
-
-  /**
-   * Create a ruleset with content rules for getting instances are of the
-   * same ECClass and have the same property value as the provided `record`.
-   * @param field A field identifying which property of the record we should use
-   * @param record A record whose similar instances should be found
    * @param computeDisplayValue Optional callback function to calculate display value that's
    * used in ruleset's description. If not provided, display value from record is used instead.
-   * @note Will be renamed to `createSimilarInstancesRuleset` on next major version change.
    */
-  public async createSimilarInstancesRulesetAsync(field: Field, record: Item, computeDisplayValue?: ComputeDisplayValueCallback): Promise<{ ruleset: Ruleset, description: string }> {
+  public async createSimilarInstancesRuleset(field: Field, record: Item, computeDisplayValue?: ComputeDisplayValueCallback): Promise<{ ruleset: Ruleset, description: string }> {
     const info = this.createSimilarInstancesRulesetInfo(field, record);
     const description = await createDescriptionAsync(record, info.relatedClasses, field, info.propertyValue, computeDisplayValue);
     return { ruleset: info.ruleset, description };

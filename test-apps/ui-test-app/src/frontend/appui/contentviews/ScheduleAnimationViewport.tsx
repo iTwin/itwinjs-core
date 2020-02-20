@@ -173,7 +173,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
           }
           {this.state.viewId &&
             <UnifiedSelectionViewport viewportRef={this.props.viewportRef}
-              viewDefinitionId={this.state.viewId} imodel={this.props.iModelConnection} ruleset="Default" />
+              viewDefinitionId={this.state.viewId} imodel={this.props.iModelConnection} />
           }
         </div>
         {this.state.dataProvider &&

@@ -6,7 +6,7 @@
  * @module Table
  */
 
-import * as _ from "lodash";
+import memoize from "micro-memoize";
 import { SortDirection as UiSortDirection } from "@bentley/ui-core";
 import {
   TableDataProvider as ITableDataProvider, TableDataChangeEvent,
@@ -66,7 +66,7 @@ export interface PresentationTableDataProviderProps {
   /** Number of pages cached in the data provider. Defaults to [[TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT]] */
   cachedPagesCount?: number;
 
-  /** Display type to use when requesting data from the backend. Defaults to [[DefaultContentDisplayTypes.GRID]] */
+  /** Display type to use when requesting data from the backend. Defaults to [[DefaultContentDisplayTypes.Grid]] */
   displayType?: string;
 }
 
@@ -84,10 +84,14 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
 
   /** Constructor. */
   constructor(props: PresentationTableDataProviderProps) {
-    super(props.imodel, props.ruleset, props.displayType || DefaultContentDisplayTypes.Grid);
+    super({
+      imodel: props.imodel,
+      ruleset: props.ruleset,
+      displayType: props.displayType || DefaultContentDisplayTypes.Grid,
+      pagingSize: props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
+    });
     this._pages = new PageContainer(props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE,
       props.cachedPagesCount || TABLE_DATA_PROVIDER_DEFAULT_CACHED_PAGES_COUNT);
-    this.pagingSize = props.pageSize || TABLE_DATA_PROVIDER_DEFAULT_PAGE_SIZE;
   }
 
   /** Get key of ECInstance that's represented by the supplied row */
@@ -154,8 +158,10 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     }
 
     if (props.descriptor || props.descriptorConfiguration) {
-      if (this.getColumns)
-        this.getColumns.cache.clear!();
+      if (this.getColumns) {
+        this.getColumns.cache.keys.length = 0;
+        this.getColumns.cache.values.length = 0;
+      }
       if (this.onColumnsChanged)
         this.onColumnsChanged.raiseEvent();
     }
@@ -191,7 +197,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
   /**
    * Returns column definitions.
    */
-  public getColumns = _.memoize(async (): Promise<ColumnDescription[]> => {
+  public getColumns = memoize(async (): Promise<ColumnDescription[]> => {
     const descriptor = await this.getContentDescriptor();
     return createColumns(descriptor);
   });
@@ -286,7 +292,7 @@ const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>): RowI
       key,
       cells: [{
         key: DISPLAY_LABEL_COLUMN_KEY,
-        record: createLabelRecord(item.labelDefinition, "content_item_label"),
+        record: createLabelRecord(item.label, "content_item_label"),
       }],
     };
   }

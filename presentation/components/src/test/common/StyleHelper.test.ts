@@ -6,15 +6,15 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { Node } from "@bentley/presentation-common";
-import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { Node, LabelDefinition } from "@bentley/presentation-common";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { StyleHelper } from "../../presentation-components/common/StyleHelper";
 
 describe("StyleHelper", () => {
 
   const createNodeBase = (): Node => ({
-    label: faker.random.word(),
-    key: createRandomECInstanceNodeKey(),
+    label: LabelDefinition.fromLabelString(faker.random.word()),
+    key: createRandomECInstancesNodeKey(),
   });
 
   describe("isBold", () => {

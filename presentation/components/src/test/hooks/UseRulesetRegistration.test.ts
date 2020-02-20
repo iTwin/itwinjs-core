@@ -17,13 +17,21 @@ describe("useRulesetRegistration", () => {
     ruleset: { id: "test-ruleset", rules: [] },
   };
 
-  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-  const rulesetManagerMock = moq.Mock.ofType<RulesetManager>();
+  let presentationManagerMock: moq.IMock<PresentationManager>;
+  let rulesetManagerMock: moq.IMock<RulesetManager>;
+
+  beforeEach(() => {
+    presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+    Presentation.presentation = presentationManagerMock.object;
+    rulesetManagerMock = moq.Mock.ofType<RulesetManager>();
+    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
+  });
+
+  afterEach(() => {
+    Presentation.terminate();
+  });
 
   it("registers and un-registers ruleset", async () => {
-    Presentation.presentation = presentationManagerMock.object;
-    presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
-
     const registeredRulesetPromise = new ResolvablePromise<RegisteredRuleset>();
     rulesetManagerMock.setup((x) => x.add(initialProps.ruleset)).returns(async () => registeredRulesetPromise);
     const { unmount } = renderHook(
@@ -31,13 +39,33 @@ describe("useRulesetRegistration", () => {
       { initialProps },
     );
 
-    const registered = new RegisteredRuleset(initialProps.ruleset, "testId", () => { });
+    const registered = new RegisteredRuleset(initialProps.ruleset, "testId", (r) => Presentation.presentation.rulesets().remove(r));
     await registeredRulesetPromise.resolve(registered);
 
     rulesetManagerMock.verify((x) => x.add(initialProps.ruleset), moq.Times.once());
-    rulesetManagerMock.verify((x) => x.remove(moq.It.isAny()), moq.Times.exactly(0));
+    rulesetManagerMock.verify((x) => x.remove(moq.It.isAny()), moq.Times.never());
 
     unmount();
+    rulesetManagerMock.verify((x) => x.remove(registered), moq.Times.once());
+  });
+
+  it("unregisters ruleset if registration happens after unmount", async () => {
+    const registeredRulesetPromise = new ResolvablePromise<RegisteredRuleset>();
+    rulesetManagerMock.setup((x) => x.add(initialProps.ruleset)).returns(async () => registeredRulesetPromise);
+    const { unmount } = renderHook(
+      (props: HookProps) => useRulesetRegistration(props.ruleset),
+      { initialProps },
+    );
+
+    const registered = new RegisteredRuleset(initialProps.ruleset, "testId", (r) => Presentation.presentation.rulesets().remove(r));
+    unmount();
+
+    rulesetManagerMock.verify((x) => x.add(initialProps.ruleset), moq.Times.once());
+    rulesetManagerMock.verify((x) => x.remove(moq.It.isAny()), moq.Times.never());
+
+    await registeredRulesetPromise.resolve(registered);
+
+    rulesetManagerMock.verify((x) => x.add(initialProps.ruleset), moq.Times.once());
     rulesetManagerMock.verify((x) => x.remove(registered), moq.Times.once());
   });
 

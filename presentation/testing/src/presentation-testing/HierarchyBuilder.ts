@@ -54,6 +54,21 @@ export const defaultNodeMappingFunc: NodeMappingFunc = (node: TreeNodeItem) => {
 };
 
 /**
+ * Properties for creating a `HierarchyBuilder` instance.
+ * @public
+ */
+export interface HierarchyBuilderProps {
+  /** The iModel to pull data from */
+  imodel: IModelConnection;
+  /**
+   * A function that maps node to something that the user of
+   * this API is interested in. E.g. custom implementation may skip some unimportant
+   * node properties to make resulting object smaller and easier to read.
+   */
+  nodeMappingFunc?: NodeMappingFunc;
+}
+
+/**
  * A class that constructs simple node hierarchy from specified
  * imodel and ruleset.
  *
@@ -63,16 +78,10 @@ export class HierarchyBuilder {
   private readonly _iModel: IModelConnection;
   private readonly _nodeMappingFunc: NodeMappingFunc;
 
-  /**
-   * Constructor
-   * @param iModel The iModel to pull data from
-   * @param nodeMappingFunc A function that maps node to something that the user of
-   * this API is interested in. E.g. custom implementation may skip some unimportant
-   * node properties to make resulting object smaller and easier to read.
-   */
-  constructor(iModel: IModelConnection, nodeMappingFunc: NodeMappingFunc = defaultNodeMappingFunc) {
-    this._iModel = iModel;
-    this._nodeMappingFunc = nodeMappingFunc;
+  /** Constructor */
+  constructor(props: HierarchyBuilderProps) {
+    this._iModel = props.imodel;
+    this._nodeMappingFunc = props.nodeMappingFunc ?? defaultNodeMappingFunc;
   }
 
   private async createSubHierarchy(nodes: TreeNodeItem[], dataProvider: PresentationTreeDataProvider) {
@@ -89,7 +98,7 @@ export class HierarchyBuilder {
   }
 
   private async doCreateHierarchy(rulesetId: string): Promise<HierarchyNode[]> {
-    const dataProvider = new PresentationTreeDataProvider(this._iModel, rulesetId);
+    const dataProvider = new PresentationTreeDataProvider({ imodel: this._iModel, ruleset: rulesetId });
     const rootNodes = await dataProvider.getNodes();
     return this.createSubHierarchy(rootNodes, dataProvider);
   }

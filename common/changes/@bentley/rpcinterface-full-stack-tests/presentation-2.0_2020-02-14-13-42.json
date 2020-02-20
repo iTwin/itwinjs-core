@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/rpcinterface-full-stack-tests",
+      "comment": "React to changes in presentation APIs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/rpcinterface-full-stack-tests",
+  "email": "grigas.petraitis@bentley.com"
+}

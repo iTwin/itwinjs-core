@@ -178,7 +178,7 @@ describe("ContentBuilder", () => {
     });
 
     it("returns empty records when there is no content returned from presentation", async () => {
-      const builder = new ContentBuilder(imodelMock.object);
+      const builder = new ContentBuilder({ imodel: imodelMock.object });
       let content = await builder.createContent("1", []);
       expect(content).to.be.empty;
 
@@ -192,14 +192,14 @@ describe("ContentBuilder", () => {
     });
 
     it("returns empty records when there is no content in the supplied data provider", async () => {
-      const builder = new ContentBuilder(imodelMock.object, new EmptyDataProvider());
+      const builder = new ContentBuilder({ imodel: imodelMock.object, dataProvider: new EmptyDataProvider() });
       const content = await builder.createContent("1", []);
       expect(content).to.be.empty;
     });
 
     it("returns correct records when there is content in the supplied data provider", async () => {
       const dataProvider = new DataProvider();
-      const builder = new ContentBuilder(imodelMock.object, dataProvider);
+      const builder = new ContentBuilder({ imodel: imodelMock.object, dataProvider });
       const content = await builder.createContent("1", []);
       expect(content.length).to.equal(dataProvider.values.length * dataProvider.descriptor.fields.length);
     });
@@ -228,9 +228,10 @@ describe("ContentBuilder", () => {
     it("returns all required instances with empty records", async () => {
       const verificationSpy = sinon.spy();
 
-      const builder = new ContentBuilder(
-        imodelMock.object,
-        new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)));
+      const builder = new ContentBuilder({
+        imodel: imodelMock.object,
+        dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
+      });
 
       const content = await builder.createContentForAllInstances("1");
 
@@ -267,9 +268,10 @@ describe("ContentBuilder", () => {
 
         const verificationSpy = sinon.spy();
 
-        const builder = new ContentBuilder(
-          imodelMock.object,
-          new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)));
+        const builder = new ContentBuilder({
+          imodel: imodelMock.object,
+          dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
+        });
 
         const content = await builder.createContentForInstancePerClass("1");
 
@@ -290,9 +292,10 @@ describe("ContentBuilder", () => {
 
         const verificationSpy = sinon.spy();
 
-        const builder = new ContentBuilder(
-          imodelMock.object,
-          new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)));
+        const builder = new ContentBuilder({
+          imodel: imodelMock.object,
+          dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
+        });
 
         await expect(builder.createContentForInstancePerClass("1")).to.be.rejectedWith("Test error");
       });
@@ -309,9 +312,10 @@ describe("ContentBuilder", () => {
       it("returns an empty list", async () => {
         const verificationSpy = sinon.spy();
 
-        const builder = new ContentBuilder(
-          imodelMock.object,
-          new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)));
+        const builder = new ContentBuilder({
+          imodel: imodelMock.object,
+          dataProvider: new EmptyDataProvider((keyset: KeySet) => verifyKeyset(keyset, testInstances, verificationSpy)),
+        });
 
         const content = await builder.createContentForInstancePerClass("1");
 

@@ -236,5 +236,5 @@ class AutoExpandingPropertyDataProvider extends PresentationPropertyDataProvider
 }
 
 function createDataProvider(imodel: IModelConnection, rulesetId: string): PresentationPropertyDataProvider {
-  return new AutoExpandingPropertyDataProvider(imodel, rulesetId);
+  return new AutoExpandingPropertyDataProvider({ imodel, ruleset: rulesetId });
 }

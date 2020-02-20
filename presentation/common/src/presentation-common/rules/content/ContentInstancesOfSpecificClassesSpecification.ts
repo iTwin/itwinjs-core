@@ -28,7 +28,7 @@ export interface ContentInstancesOfSpecificClassesSpecification extends ContentS
 
   /**
    * Should all [[classes]] be treated polymorphically.
-   * @deprecated Use `handleInstancesPolymorphically`
+   * @deprecated Use `handleInstancesPolymorphically`. Will be removed in iModel.js 3.0
    */
   arePolymorphic?: boolean;
 

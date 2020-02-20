@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as _ from "lodash";
+import { isEqual } from "lodash";
 import { TreeProps, ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
@@ -17,9 +17,12 @@ import { AsyncTasksTracker } from "@bentley/presentation-common";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
+// tslint:disable:deprecation
+
 /**
  * Props that are injected to the TreeWithFilteringSupport HOC component.
  * @public
+ * @deprecated Use `useControlledTreeFiltering` instead. Will be removed in iModel.js 3.0
  */
 export interface TreeWithFilteringSupportProps {
   /** The text to search for */
@@ -41,9 +44,10 @@ export interface TreeWithFilteringSupportProps {
  * **Note:** it is required for the tree to use [[IPresentationTreeDataProvider]]
  *
  * @public
+ * @deprecated Use `useControlledTreeFiltering` instead. Will be removed in iModel.js 3.0
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps> {
+export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps> {
 
   type CombinedProps = P & TreeWithFilteringSupportProps;
 
@@ -95,7 +99,7 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
 
       const currFilter = getActiveFilterKey(this.state);
       const candidateFilter = createFilterKey(this.props.dataProvider, this.props.filter);
-      if (!_.isEqual(currFilter, candidateFilter)) {
+      if (!isEqual(currFilter, candidateFilter)) {
         this.setState({ inProgress: candidateFilter }, () => {
           // tslint:disable-next-line:no-floating-promises
           this.loadDataProvider(candidateFilter.filter);
@@ -127,7 +131,7 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
       });
 
       const currFilter = createFilterKey(this.props.dataProvider, this.props.filter);
-      if (!_.isEqual(currFilter, filterBeingApplied)) {
+      if (!isEqual(currFilter, filterBeingApplied)) {
         if (currFilter.filter) {
           // the filter has changed while we were waiting for `getFilteredNodePaths` result - need
           // to restart the load
@@ -139,7 +143,11 @@ export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: Rea
         return;
       }
 
-      const filteredDataProvider = new FilteredPresentationTreeDataProvider(this.props.dataProvider, filter, nodePaths);
+      const filteredDataProvider = new FilteredPresentationTreeDataProvider({
+        parentDataProvider: this.props.dataProvider,
+        filter,
+        paths: nodePaths,
+      });
       this.setState({ inProgress: undefined, filteredDataProvider }, () => {
         // istanbul ignore else
         if (this.props.onFilterApplied)

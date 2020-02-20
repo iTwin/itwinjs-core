@@ -77,11 +77,10 @@ export class FavoritePropertiesManager {
 
   /**
    * Initialize favorite properties for the provided IModelConnection.
-   * @internal
    */
-  public initializeConnection = async (imodelConnection: IModelConnection) => {
-    const imodelId = imodelConnection.iModelToken.iModelId!;
-    const projectId = imodelConnection.iModelToken.contextId!;
+  public initializeConnection = async (imodel: IModelConnection) => {
+    const imodelId = imodel.iModelToken.iModelId!;
+    const projectId = imodel.iModelToken.contextId!;
 
     if (this._globalProperties === undefined)
       this._globalProperties = await this._storage.loadProperties() || new Set<PropertyFullName>();
@@ -157,6 +156,7 @@ export class FavoritePropertiesManager {
    * @param field Field that contains properties. If field contains multiple properties, all of them will be favorited.
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to put the favorite properties into.
+   * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
   public async add(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
 
@@ -235,6 +235,7 @@ export class FavoritePropertiesManager {
    * @param field Field that contains properties. If field contains multiple properties, all of them will be un-favorited.
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to remove the favorite properties from. It also removes from more general scopes.
+   * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
   public async remove(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
 
@@ -339,6 +340,7 @@ export class FavoritePropertiesManager {
    * Removes all favorite properties from a certain scope.
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to remove the favorite properties from.
+   * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
   public async clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
 
@@ -410,6 +412,7 @@ export class FavoritePropertiesManager {
    * @param field Field that contains properties.
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to check for favorite properties. It also checks the more general scopes.
+   * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
   public has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean;
 
@@ -445,6 +448,7 @@ export class FavoritePropertiesManager {
    * Non-favorited fields get sorted by their default priority and always have lower priority than favorited fields.
    * @param imodel IModelConnection.
    * @param fields Array of Field's that needs to be sorted.
+   * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
   public sortFields = (imodel: IModelConnection, fields: Field[]): Field[] => {
     this.validateInitialization(imodel);
@@ -516,6 +520,7 @@ export class FavoritePropertiesManager {
    * @param field Field that priority is being changed.
    * @param afterField Field that goes before the moved field. If undefined the moving field is changed to the highest priority (to the top).
    * @param visibleFields Array of fields to move the field in.
+   * @note `initializeConnection` must be called with the `imodel` before calling this function.
    */
   public async changeFieldPriority(imodel: IModelConnection, field: Field, afterField: Field | undefined, visibleFields: Field[]) {
     /**

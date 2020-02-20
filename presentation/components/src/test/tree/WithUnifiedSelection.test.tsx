@@ -11,7 +11,7 @@ import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
-import { createRandomECInstancesNodeKey, createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -21,11 +21,13 @@ import {
   SelectionHandler, SelectionManager, SelectionChangeEvent,
   ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType, SelectionHelper,
 } from "@bentley/presentation-frontend";
-import { Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
+import { DEPRECATED_Tree as Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent } from "../../presentation-components/common/IUnifiedSelectionComponent";
 import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
-import { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "../../presentation-components/tree/WithUnifiedSelection";
+import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "../../presentation-components/tree/WithUnifiedSelection";
 import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
+
+// tslint:disable:deprecation
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTree = treeWithUnifiedSelection(Tree);
@@ -83,14 +85,12 @@ describe("Tree withUnifiedSelection", () => {
     />);
   });
 
-  it("uses data provider's imodel and rulesetId", () => {
+  it("uses data provider's imodel", () => {
     const component = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />).dive().instance() as any as IUnifiedSelectionComponent;
-
     expect(component.imodel).to.equal(imodelMock.object);
-    expect(component.rulesetId).to.equal(testRulesetId);
   });
 
   it("creates default implementation for selection handler when not provided through props", () => {
@@ -181,21 +181,6 @@ describe("Tree withUnifiedSelection", () => {
         const nodeKey = createRandomECInstancesNodeKey();
         const node = createRandomTreeNodeItem(nodeKey);
         selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([nodeKey]));
-
-        const tree = shallow(<PresentationTree
-          dataProvider={dataProviderMock.object}
-          selectionHandler={selectionHandlerMock.object}
-        />).dive();
-
-        const propCallback = tree.find(Tree).prop("selectedNodes") as ((node: TreeNodeItem) => boolean);
-        const result = propCallback(node);
-        expect(result).to.be.true;
-      });
-
-      it("returns true when ECInstance key of ECInstance node is in selection", () => {
-        const nodeKey = createRandomECInstanceNodeKey();
-        const node = createRandomTreeNodeItem(nodeKey);
-        selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([nodeKey.instanceKey]));
 
         const tree = shallow(<PresentationTree
           dataProvider={dataProviderMock.object}

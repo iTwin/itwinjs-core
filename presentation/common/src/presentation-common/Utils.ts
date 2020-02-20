@@ -51,14 +51,22 @@ export interface ValuesDictionary<T> {
 export const getInstancesCount = (keys: Readonly<KeySet>): number => {
   let count = keys.instanceKeysCount;
   keys.nodeKeys.forEach((key: NodeKey) => {
-    if (NodeKey.isInstanceNodeKey(key)) {
-      count++;
+    if (NodeKey.isInstancesNodeKey(key)) {
+      count += key.instanceKeys.length;
     } else if (NodeKey.isGroupingNodeKey(key)) {
       count += key.groupedInstancesCount;
     }
   });
   return count;
 };
+
+/**
+ * Default (recommended) keyset batch size for cases when it needs to be sent
+ * over HTTP. Sending keys in batches helps avoid HTTP413 error.
+ *
+ * @public
+ */
+export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
 /** @internal */
 export const LOCALES_DIRECTORY = path.join(__dirname, "assets", "locales");

@@ -18,17 +18,15 @@ import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import RulesetSelector from "../ruleset-selector/RulesetSelector";
 import SelectionScopePicker from "../selection-scope-picker/SelectionScopePicker";
 import ViewportContentControl from "../viewport/ViewportContentControl";
+import { TreeWidget } from "../tree-widget/TreeWidget";
 
 import "./App.css";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
-import { TreeSelector, TreeType } from "../tree-selector/TreeSelector";
-import { TreeWidget } from "../tree-widget/TreeWidget";
 
 export interface State {
   imodel?: IModelConnection;
   currentRulesetId?: string;
   currentViewDefinitionId?: Id64String;
-  currentTreeType?: TreeType;
   rightPaneRatio: number;
   rightPaneHeight?: number;
   contentRatio: number;
@@ -68,18 +66,13 @@ export default class App extends React.Component<{}, State> {
     this.setState({ currentRulesetId: rulesetId });
   }
 
-  // tslint:disable-next-line:naming-convention
-  private onTreeTypeSelected = (treeType: TreeType) => {
-    this.setState({ currentTreeType: treeType });
-  }
-
   private tryPreloadHierarchy(imodel: IModelConnection | undefined, rulesetId: string | undefined) {
     if (!imodel || !rulesetId)
       return;
 
     // no need to wait on this - we just want to queue a request and forget it
     // tslint:disable-next-line:no-floating-promises
-    Presentation.presentation.loadHierarchy({ imodel, rulesetId });
+    Presentation.presentation.loadHierarchy({ imodel, rulesetOrId: rulesetId });
   }
 
   private async getFirstViewDefinitionId(imodel: IModelConnection): Promise<Id64String> {
@@ -153,7 +146,7 @@ export default class App extends React.Component<{}, State> {
     }
   }
 
-  private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64String, treeType: TreeType) {
+  private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64String) {
     return (
       <div
         className="app-content"
@@ -190,7 +183,7 @@ export default class App extends React.Component<{}, State> {
           style={{
             gridTemplateRows: `${this.state.rightPaneRatio * 100}% 30px calc(${(1 - this.state.rightPaneRatio) * 100}% - 30px)`,
           }}>
-          <TreeWidget treeType={treeType} imodel={imodel} rulesetId={rulesetId} />
+          <TreeWidget imodel={imodel} rulesetId={rulesetId} />
           <div className="app-content-right-separator">
             <hr />
             <ElementSeparator
@@ -233,8 +226,8 @@ export default class App extends React.Component<{}, State> {
 
   public render() {
     let imodelComponents = null;
-    if (this.state.imodel && this.state.currentRulesetId && this.state.currentViewDefinitionId && this.state.currentTreeType !== undefined)
-      imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId, this.state.currentViewDefinitionId, this.state.currentTreeType);
+    if (this.state.imodel && this.state.currentRulesetId && this.state.currentViewDefinitionId)
+      imodelComponents = this.renderIModelComponents(this.state.imodel, this.state.currentRulesetId, this.state.currentViewDefinitionId);
 
     return (
       <div className="app">
@@ -243,7 +236,6 @@ export default class App extends React.Component<{}, State> {
         </div>
         <IModelSelector onIModelSelected={this.onIModelSelected} />
         <RulesetSelector onRulesetSelected={this.onRulesetSelected} />
-        <TreeSelector onTreeTypeSelected={this.onTreeTypeSelected} />
         {imodelComponents}
       </div>
     );

@@ -9,8 +9,8 @@
 import { RuleBase, RuleTypes } from "../../Rule";
 import { SingleSchemaClassSpecification } from "../../ClassSpecifications";
 import { CalculatedPropertiesSpecification } from "./CalculatedPropertiesSpecification";
-import { PropertiesDisplaySpecification } from "./PropertiesDisplaySpecification";
-import { PropertyEditorsSpecification } from "./PropertyEditorsSpecification";
+import { DEPRECATED_PropertiesDisplaySpecification } from "./PropertiesDisplaySpecification";
+import { DEPRECATED_PropertyEditorsSpecification } from "./PropertyEditorsSpecification";
 import { RelatedPropertiesSpecification } from "./RelatedPropertiesSpecification";
 import { PropertySpecification } from "../PropertySpecification";
 import { PropertyCategorySpecification } from "./PropertyCategorySpecification";
@@ -31,29 +31,24 @@ export interface ContentModifiersList {
 
   /**
    * Specifications for customizing property display by hiding / showing them
-   * @deprecated Use `propertyOverrides` attribute instead.
+   * @deprecated Use `propertyOverrides` attribute instead. Will be removed in iModel.js 3.0
    */
-  propertiesDisplay?: PropertiesDisplaySpecification[];
+  propertiesDisplay?: DEPRECATED_PropertiesDisplaySpecification[]; // tslint:disable-line:deprecation
 
   /**
    * Specifications for assigning property editors
-   * @deprecated Use `propertyOverrides` attribute instead.
+   * @deprecated Use `propertyOverrides` attribute instead. Will be removed in iModel.js 3.0
    */
-  propertyEditors?: PropertyEditorsSpecification[];
+  propertyEditors?: DEPRECATED_PropertyEditorsSpecification[]; // tslint:disable-line:deprecation
 
   /**
    * Specifications for custom categories. Simply defining the categories does
    * nothing - they have to be referenced from `PropertySpecification` defined in
    * `propertyOverrides` by `id`.
-   *
-   * @beta
    */
   propertyCategories?: PropertyCategorySpecification[];
 
-  /**
-   * Specifications for various property overrides.
-   * @beta
-   */
+  /** Specifications for various property overrides. */
   propertyOverrides?: PropertySpecification[];
 }
 

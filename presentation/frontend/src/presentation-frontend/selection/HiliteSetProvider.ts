@@ -20,14 +20,14 @@ import { Presentation } from "../Presentation";
 // tslint:disable-next-line: no-var-requires
 export const HILITE_RULESET: Ruleset = require("./HiliteRules.json");
 
-/** The function registers HILITE_RULESET the first time it's called and does nothing on other calls */
+/** The function registers `HILITE_RULESET` the first time it's called and does nothing on other calls */
 const registerRuleset = once(async () => Presentation.presentation.rulesets().add(HILITE_RULESET));
 
 /**
  * A set of model, subcategory and element ids that can be used for specifying
  * viewport hilite.
  *
- * @alpha
+ * @public
  */
 export interface HiliteSet {
   models?: Id64String[];
@@ -36,29 +36,37 @@ export interface HiliteSet {
 }
 
 /**
+ * Properties for creating a `HiliteSetProvider` instance.
+ * @public
+ */
+export interface HiliteSetProviderProps {
+  imodel: IModelConnection;
+}
+
+/**
  * Presentation-based provider which uses presentation ruleset to determine
  * what `HiliteSet` should be hilited in the graphics viewport based on the
  * supplied `KeySet`.
  *
- * @alpha
+ * @public
  */
 export class HiliteSetProvider {
   private _imodel: IModelConnection;
   private _cached: undefined | { keysGuid: string, result: HiliteSet };
 
-  private constructor(imodel: IModelConnection) {
-    this._imodel = imodel;
+  private constructor(props: HiliteSetProviderProps) {
+    this._imodel = props.imodel;
   }
 
   /**
    * Create a hilite set provider for the specified iModel.
    */
-  public static create(imodel: IModelConnection) { return new HiliteSetProvider(imodel); }
+  public static create(props: HiliteSetProviderProps) { return new HiliteSetProvider(props); }
 
   private async getRecords(keys: KeySet): Promise<Item[]> {
     const options: ContentRequestOptions<IModelConnection> = {
       imodel: this._imodel,
-      rulesetId: HILITE_RULESET.id,
+      rulesetOrId: HILITE_RULESET.id,
     };
     const descriptor: DescriptorOverrides = {
       displayType: DefaultContentDisplayTypes.Viewport,

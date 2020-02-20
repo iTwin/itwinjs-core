@@ -6,48 +6,63 @@
  * @module Tree
  */
 
-import { useMemo } from "react";
+import { useCallback } from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { usePagedNodeLoader, useModelSource } from "@bentley/ui-components";
+import { useDisposable } from "@bentley/ui-core";
+import { usePagedTreeNodeLoader, useTreeModelSource, PagedTreeNodeLoader } from "@bentley/ui-components";
+import { Ruleset } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "../DataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 
-/** Properties for [[usePresentationNodeLoader]] hook.
+/**
+ * Properties for [[usePresentationTreeNodeLoader]] hook.
  * @beta
  */
-export interface PresentationNodeLoaderProps {
+export interface PresentationTreeNodeLoaderProps {
+  /** IModelConnection to use for creating the hierarchy */
   imodel: IModelConnection;
-  rulesetId: string;
+  /** Presentation ruleset or it's ID to use for creating the hierarchy */
+  ruleset: Ruleset | string;
+  /**
+   * Number of nodes in a single page. The created loader always requests at least
+   * a page nodes, so it should be optimized for usability vs performance (using
+   * smaller pages gives better responsiveness, but makes overall performance
+   * slightly worse).
+   */
   pageSize: number;
+  /**
+   * Should node loader initiate loading of the whole hierarchy as soon as it's created.
+   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
+   */
   preloadingEnabled?: boolean;
-  /** Used for testing
+  /**
+   * Used for testing
    * @internal
    */
   dataProvider?: IPresentationTreeDataProvider;
 }
 
-/** Custom hooks which creates PagedTreeNodeLoader with PresentationTreeDataProvider using
- * supplied imodel and ruleset id.
+/**
+ * Custom hooks which creates PagedTreeNodeLoader with PresentationTreeDataProvider using
+ * supplied imodel and ruleset.
  *
  * @beta
  */
-export function usePresentationNodeLoader(props: PresentationNodeLoaderProps) {
-  const dataProvider = useMemo(
+export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader<IPresentationTreeDataProvider> {
+  const dataProvider = useDisposable(useCallback(
     () => createDataProvider(props),
-    [props.imodel, props.rulesetId, props.pageSize, props.preloadingEnabled, props.dataProvider],
-  );
-  const modelSource = useModelSource(dataProvider);
-  return usePagedNodeLoader(dataProvider, props.pageSize, modelSource);
+    Object.values(props), /* eslint-disable-line react-hooks/exhaustive-deps */ /* re-create the data-provider whenever any prop changes */
+  ));
+  const modelSource = useTreeModelSource(dataProvider);
+  return usePagedTreeNodeLoader(dataProvider, props.pageSize, modelSource);
 }
 
-function createDataProvider(props: PresentationNodeLoaderProps) {
+function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentationTreeDataProvider {
   let dataProvider: IPresentationTreeDataProvider;
   if (props.dataProvider) {
     dataProvider = props.dataProvider;
   } else {
-    const provider = new PresentationTreeDataProvider(props.imodel, props.rulesetId);
-    provider.pagingSize = props.pageSize;
-    dataProvider = provider;
+    dataProvider = new PresentationTreeDataProvider({ imodel: props.imodel, ruleset: props.ruleset, pagingSize: props.pageSize });
   }
   if (props.preloadingEnabled && dataProvider.loadHierarchy) {
     dataProvider.loadHierarchy(); // tslint:disable-line:no-floating-promises

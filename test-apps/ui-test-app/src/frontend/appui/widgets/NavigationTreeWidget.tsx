@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { usePresentationNodeLoader, useUnifiedSelectionEventHandler } from "@bentley/presentation-components";
+import { usePresentationTreeNodeLoader, useUnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
 import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@bentley/ui-framework";
 import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
 
@@ -95,16 +95,14 @@ interface NavigationTreeProps {
 
 // tslint:disable-next-line: variable-name
 const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProps) => {
-  const nodeLoader = usePresentationNodeLoader({
+  const nodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModelConnection,
-    rulesetId: props.rulesetId,
+    ruleset: props.rulesetId,
     pageSize: 20,
   });
   const modelSource = nodeLoader.modelSource;
-  const eventHandler = useUnifiedSelectionEventHandler(modelSource, nodeLoader, true);
-
+  const eventHandler = useUnifiedSelectionTreeEventHandler({ nodeLoader, collapsedChildrenDisposalEnabled: true });
   const visibleNodes = useVisibleTreeNodes(modelSource);
-
   return (
     <ControlledTree
       visibleNodes={visibleNodes}

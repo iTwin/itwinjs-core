@@ -145,7 +145,8 @@ export * from "./ui-core/utils/shallowDiffers";
 export * from "./ui-core/utils/typeUtils";
 export * from "./ui-core/utils/isPromiseLike";
 export * from "./ui-core/utils/ScrollPositionMaintainer";
-export * from "./ui-core/utils/CustomHooks";
+export * from "./ui-core/utils/hooks/useDisposable";
+export * from "./ui-core/utils/hooks/useEffectSkipFirst";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

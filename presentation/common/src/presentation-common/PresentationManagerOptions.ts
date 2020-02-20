@@ -11,7 +11,7 @@ import { RulesetVariable } from "./RulesetVariables";
 
 /**
  * Enumeration of standard request priorities.
- * @beta
+ * @public
  */
 export enum RequestPriority {
   /** Priority for pre-loading requests */
@@ -38,8 +38,6 @@ export interface RequestOptions<TIModel> {
   /**
    * Optional request priority. Higher priority requests are handled first.
    * Defaults to [[RequestPriority.Normal]]
-   *
-   * @beta
    */
   priority?: number;
 }
@@ -51,18 +49,10 @@ export interface RequestOptions<TIModel> {
  * @public
  */
 export interface RequestOptionsWithRuleset<TIModel> extends RequestOptions<TIModel> {
-  /**
-   * Id of the ruleset to use when requesting data
-   * @deprecated Use rulesetOrId instead
-   */
-  rulesetId?: string;
-
   /** Ruleset or id of the ruleset to use when requesting data */
-  rulesetOrId?: Ruleset | string;
+  rulesetOrId: Ruleset | string;
 
-  /** Ruleset variables to use when requesting data
-   * @beta
-   */
+  /** Ruleset variables to use when requesting data */
   rulesetVariables?: RulesetVariable[];
 }
 

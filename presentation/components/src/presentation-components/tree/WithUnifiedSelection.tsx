@@ -14,9 +14,12 @@ import { getDisplayName } from "../common/Utils";
 import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 
+// tslint:disable:deprecation
+
 /**
  * Props that are injected to the TreeWithUnifiedSelection HOC component.
  * @public
+ * @deprecated Use `useControlledTreeFiltering` instead. Will be removed in iModel.js 3.0
  */
 export interface TreeWithUnifiedSelectionProps {
   /** The data provider used by the tree. */
@@ -45,9 +48,10 @@ export interface TreeWithUnifiedSelectionProps {
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]]
  *
  * @public
+ * @deprecated Use `useUnifiedSelectionEventHandler` instead. Will be removed in iModel.js 3.0.
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>) {
+export function DEPRECATED_treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentClass<P>) {
 
   type TreeComponentInstance = InstanceType<typeof TreeComponent>;
   type CombinedProps = P & TreeWithUnifiedSelectionProps;
@@ -78,14 +82,12 @@ export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: Rea
 
     public get imodel() { return this.props.dataProvider.imodel; }
 
-    public get rulesetId() { return this.props.dataProvider.rulesetId; }
-
     public componentDidMount() {
       const name = `Tree_${counter++}`;
       const imodel = this.props.dataProvider.imodel;
       const rulesetId = this.props.dataProvider.rulesetId;
       this._selectionHandler = this.props.selectionHandler
-        ? this.props.selectionHandler : new SelectionHandler(Presentation.selection, name, imodel, rulesetId);
+        ? this.props.selectionHandler : new SelectionHandler({ manager: Presentation.selection, name, imodel, rulesetId });
       this._selectionHandler!.onSelect = this.onSelectionChanged;
     }
 
@@ -118,10 +120,6 @@ export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: Rea
 
       // ... or if it's an ECInstances node and any of instance keys is in selection
       if (NodeKey.isInstancesNodeKey(nodeKey) && nodeKey.instanceKeys.some((instanceKey) => selection.has(instanceKey)))
-        return true;
-
-      // ... or if it's an ECInstance node and instance key is in selection
-      if (NodeKey.isInstanceNodeKey(nodeKey) && selection.has(nodeKey.instanceKey))
         return true;
 
       return false;

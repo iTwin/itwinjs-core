@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
-import { KeySet, Ruleset, RuleTypes, ContentSpecificationTypes, RegisteredRuleset, Field } from "@bentley/presentation-common";
+import { KeySet, Field } from "@bentley/presentation-common";
 import { Presentation, IModelAppFavoritePropertiesStorage, FavoritePropertiesScope, PropertyFullName } from "@bentley/presentation-frontend";
 import { PropertyData } from "@bentley/ui-components";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
+import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider"; // tslint:disable-line: no-direct-imports
 
 const favoritesCategoryName = "Favorite";
 describe("Favorite properties", () => {
@@ -27,25 +27,11 @@ describe("Favorite properties", () => {
     terminate();
   });
 
-  let propertiesRuleset: RegisteredRuleset;
   let propertiesDataProvider: PresentationPropertyDataProvider;
-  let ruleset: Ruleset;
 
   beforeEach(async () => {
-    ruleset = {
-      id: faker.random.uuid(),
-      rules: [{
-        ruleType: RuleTypes.Content,
-        specifications: [{
-          specType: ContentSpecificationTypes.SelectedNodeInstances,
-        }],
-      }],
-    };
-    propertiesRuleset = await Presentation.presentation.rulesets().add(ruleset);
-    propertiesDataProvider = new PresentationPropertyDataProvider(imodel, propertiesRuleset.id);
-
-    propertiesDataProvider.keys = new KeySet([{ className: "PCJ_TestSchema:TestClass", id: "0x65" }]);
-    await propertiesDataProvider.getData(); // to initialize imodelConnection in FavoritePropertiesManager
+    propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
+    await Presentation.favoriteProperties.initializeConnection(imodel);
     await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Global);
     await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.Project);
     await Presentation.favoriteProperties.clear(imodel, FavoritePropertiesScope.IModel);
@@ -174,8 +160,7 @@ describe("Favorite properties", () => {
       // refresh Presentation
       Presentation.terminate();
       await Presentation.initialize();
-      propertiesRuleset = await Presentation.presentation.rulesets().add(ruleset);
-      propertiesDataProvider = new PresentationPropertyDataProvider(imodel, propertiesRuleset.id);
+      propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
       propertiesDataProvider.keys = new KeySet([{ className: "Generic:PhysicalObject", id: "0x74" }]);
 
       // verify the property is still in favorites group

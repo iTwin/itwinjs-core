@@ -13,7 +13,9 @@ import {
 } from "@bentley/ui-components";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
-import { controlledTreeWithVisibleNodes } from "../../../presentation-components/tree/controlled/WithVisibleNodes";
+import { DEPRECATED_controlledTreeWithVisibleNodes as controlledTreeWithVisibleNodes } from "../../../presentation-components/tree/controlled/WithVisibleNodes";
+
+// tslint:disable:deprecation
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTree = controlledTreeWithVisibleNodes(ControlledTree);

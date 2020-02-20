@@ -10,7 +10,7 @@ import { CheckBoxState, LoadingSpinner, Checkbox } from "@bentley/ui-core";
 import { CheckListBox, CheckListBoxItem } from "./CheckListBox";
 import { Presentation } from "@bentley/presentation-frontend";
 import { RegisteredRuleset, NodeKey } from "@bentley/presentation-common";
-import { Tree, TreeNodeItem, DelayLoadedTreeNodeItem } from "@bentley/ui-components";
+import { DEPRECATED_Tree, TreeNodeItem, DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { UiFramework } from "@bentley/ui-framework";
 import "./ModelsTab.scss";
@@ -174,7 +174,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
         if (!this._isMounted)
           return;
         this._ruleset = ruleset;
-        const dataProvider = new PresentationTreeDataProvider(this.props.iModelConnection, this._ruleset.id);
+        const dataProvider = new PresentationTreeDataProvider({ imodel: this.props.iModelConnection, ruleset: this._ruleset.id });
         this.enableCheckboxes(dataProvider); // tslint:disable-line:no-floating-promises
         this._dataProvider = dataProvider;
       });
@@ -471,8 +471,8 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     const ids: string[] = [];
     for (const node of this.state.selectedNodes) {
       const key = this._dataProvider!.getNodeKey(node);
-      if (NodeKey.isInstanceNodeKey(key)) {
-        ids.push(key.instanceKey.id);
+      if (NodeKey.isInstancesNodeKey(key)) {
+        ids.push(...key.instanceKeys.map((k) => k.id));
       }
     }
 
@@ -573,7 +573,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     } else {
       return (
         <div className="models-tree-container">
-          {<Tree selectedNodes={this._getSelectedNodes()} dataProvider={this._dataProvider} onCheckboxClick={this._onCheckboxClick} />}
+          {<DEPRECATED_Tree selectedNodes={this._getSelectedNodes()} dataProvider={this._dataProvider} onCheckboxClick={this._onCheckboxClick} />}
         </div>
       );
     }

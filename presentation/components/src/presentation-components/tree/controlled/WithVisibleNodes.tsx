@@ -13,6 +13,7 @@ import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider"
 /**
  * Props that are injected to the ControlledTreeWithModelSource HOC component.
  * @beta
+ * @deprecated Use hooks. Will be removed in iModel.js 3.0
  */
 export interface ControlledTreeWithVisibleNodesProps extends Omit<ControlledTreeProps, "visibleNodes"> {
   /** Model source used by ControlledTree. */
@@ -24,17 +25,17 @@ export interface ControlledTreeWithVisibleNodesProps extends Omit<ControlledTree
  * from AbstractTreeNodeLoader to produce visible nodes.
  *
  * @beta
+ * @deprecated Use hooks. Will be removed in iModel.js 3.0
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>) {
+export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>) {
 
-  type CombinedProps = P & ControlledTreeWithVisibleNodesProps;
+  type CombinedProps = P & ControlledTreeWithVisibleNodesProps; // tslint:disable-line:deprecation
   type TreeWithVisibleNodesProps = Omit<CombinedProps, "visibleNodes">;
 
   // tslint:disable-next-line: variable-name naming-convention
-  const treeWithModelSource: React.FC<TreeWithVisibleNodesProps> = (props: TreeWithVisibleNodesProps) => {
+  const TreeWithModelSource: React.FC<TreeWithVisibleNodesProps> = (props: TreeWithVisibleNodesProps) => {
     const visibleNodes = useVisibleTreeNodes(props.nodeLoader.modelSource);
-
     return (
       <TreeComponent
         visibleNodes={visibleNodes}
@@ -43,5 +44,5 @@ export function controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(Tr
     );
   };
 
-  return treeWithModelSource;
+  return TreeWithModelSource;
 }

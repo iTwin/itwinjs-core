@@ -47,7 +47,7 @@ export enum RelatedPropertiesSpecialValues {
  * Sub-specification to include additional related instance properties
  * @public
  */
-export type RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew;
+export type RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecification | RelatedPropertiesSpecificationNew; // tslint:disable-line:deprecation
 
 /**
  * Sub-specification to include additional related instance properties.
@@ -106,7 +106,6 @@ export interface DEPRECATED_RelatedPropertiesSpecification { // tslint:disable-l
   /**
    * A list of property names or specifications that should be included in the content. All
    * properties are included if this attribute is not specified.
-   * @beta
    */
   properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
 

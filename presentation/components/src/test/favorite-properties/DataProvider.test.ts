@@ -14,7 +14,7 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
-import { KeySet } from "@bentley/presentation-common";
+import { KeySet, Ruleset } from "@bentley/presentation-common";
 import { FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager } from "@bentley/presentation-frontend";
 import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
@@ -29,7 +29,7 @@ describe("FavoritePropertiesDataProvider", () => {
   const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
   const presentationPropertyDataProviderMock = moq.Mock.ofType<PresentationPropertyDataProvider>();
   const favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
-  const factoryMock = moq.Mock.ofType<(imodel: IModelConnection, ruleSet?: string) => PresentationPropertyDataProvider>();
+  const factoryMock = moq.Mock.ofType<(imodel: IModelConnection, ruleset?: Ruleset | string) => PresentationPropertyDataProvider>();
 
   before(() => {
     elementId = faker.random.uuid();
@@ -39,6 +39,10 @@ describe("FavoritePropertiesDataProvider", () => {
     Presentation.i18n = new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     });
+  });
+
+  after(() => {
+    Presentation.terminate();
   });
 
   beforeEach(() => {
@@ -51,10 +55,6 @@ describe("FavoritePropertiesDataProvider", () => {
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
     factoryMock.setup((x) => x(moq.It.isAny(), moq.It.isAny())).returns(() => presentationPropertyDataProviderMock.object);
     provider = new FavoritePropertiesDataProvider({ propertyDataProviderFactory: factoryMock.object });
-  });
-
-  after(() => {
-    Presentation.terminate();
   });
 
   describe("constructor", () => {
@@ -85,7 +85,7 @@ describe("FavoritePropertiesDataProvider", () => {
       }));
 
       const customRulesetId = faker.random.word();
-      provider.customRulesetId = customRulesetId;
+      provider = new FavoritePropertiesDataProvider({ propertyDataProviderFactory: factoryMock.object, ruleset: customRulesetId });
 
       await provider.getData(imodelMock.object, elementId);
       factoryMock.verify((x) => x(imodelMock.object, customRulesetId), moq.Times.once());

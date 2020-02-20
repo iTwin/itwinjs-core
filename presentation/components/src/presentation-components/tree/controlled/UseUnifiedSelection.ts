@@ -18,21 +18,32 @@ import {
   SelectionChangeType, SelectionHelper,
 } from "@bentley/presentation-frontend";
 import {
-  TreeNodeItem, TreeModelSource, MutableTreeModel, TreeSelectionModificationEvent, TreeSelectionReplacementEvent,
-  TreeModelChanges, MutableTreeModelNode, TreeEventHandler, TreeEventHandlerParams, AbstractTreeNodeLoaderWithProvider,
+  TreeNodeItem, TreeModelSource, MutableTreeModel, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
+  TreeModelChanges, MutableTreeModelNode, TreeEventHandler, AbstractTreeNodeLoaderWithProvider, TreeEditingParams,
 } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
 import { useDisposable } from "@bentley/ui-core";
 
-/** Data structure that describes parameters for UnifiedSelectionTreeEventHandler
+/**
+ * Data structure that describes parameters for UnifiedSelectionTreeEventHandler
  * @beta
  */
-export interface UnifiedSelectionTreeEventHandlerParams extends TreeEventHandlerParams {
-  dataProvider: IPresentationTreeDataProvider;
-  /** Unique name for SelectionHandler to avoid handling events raised by itself.
-   * Unique name is created if not provided.
+export interface UnifiedSelectionTreeEventHandlerParams {
+  /** Node loader used to load children when node is expanded. */
+  nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
+
+  /**
+   * Unique name for SelectionHandler to avoid handling events raised by itself. The
+   * name is created if not provided.
    */
   name?: string;
+
+  /** Specifies whether children should be disposed when parent node is collapsed or not. */
+  collapsedChildrenDisposalEnabled?: boolean;
+
+  /** Parameters used for node editing. */
+  editingParams?: TreeEditingParams;
+
   /** @internal used for testing */
   selectionHandler?: SelectionHandler;
 }
@@ -45,26 +56,30 @@ export interface UnifiedSelectionTreeEventHandlerParams extends TreeEventHandler
  *
  * **Note:** conditions used to determine if node is selected and nodes that should be added to
  * unified selection can be controlled by overriding 'shouldSelectNode' and 'createKeysForSelection' methods.
+ *
  * @beta
  */
 export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implements IDisposable {
   private _selectionHandler: SelectionHandler;
   private _dataProvider: IPresentationTreeDataProvider;
   private _modelSource: TreeModelSource;
-  private _dispose: () => void;
+  private _unregisterModelChangedListener: () => void;
 
   private _cancelled = new Subject<void>();
 
   constructor(params: UnifiedSelectionTreeEventHandlerParams) {
-    super(params);
-    this._dataProvider = params.dataProvider;
-    this._modelSource = params.modelSource;
-    const name = params.name ?? `Tree_${params.dataProvider.rulesetId}_${Guid.createValue()}`;
+    super({
+      ...params,
+      modelSource: params.nodeLoader.modelSource,
+    });
+    this._dataProvider = params.nodeLoader.dataProvider;
+    this._modelSource = params.nodeLoader.modelSource;
+    const name = params.name ?? `Tree_${this._dataProvider.rulesetId}_${Guid.createValue()}`;
     this._selectionHandler = params.selectionHandler
-      ? params.selectionHandler
-      : new SelectionHandler(Presentation.selection, name, params.dataProvider.imodel, params.dataProvider.rulesetId);
+      ? params.selectionHandler // istanbul ignore next
+      : new SelectionHandler({ manager: Presentation.selection, name, imodel: this._dataProvider.imodel, rulesetId: this._dataProvider.rulesetId });
     this._selectionHandler.onSelect = this.onSelect.bind(this);
-    this._dispose = this._modelSource.onModelChanged.addListener((args) => this.selectNodes(args[1]));
+    this._unregisterModelChangedListener = this._modelSource.onModelChanged.addListener((args) => this.selectNodes(args[1]));
     this.selectNodes();
   }
 
@@ -74,10 +89,10 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
     super.dispose();
     this._cancelled.next();
     this._selectionHandler.dispose();
-    this._dispose();
+    this._unregisterModelChangedListener();
   }
 
-  public onSelectionModified({ modifications }: TreeSelectionModificationEvent) {
+  public onSelectionModified({ modifications }: TreeSelectionModificationEventArgs) {
     const withUnifiedSelection = from(modifications).pipe(
       takeUntil(this._cancelled),
       tap({
@@ -96,7 +111,7 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
     return super.onSelectionModified({ modifications: withUnifiedSelection });
   }
 
-  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent) {
+  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs) {
     let firstEmission = true;
     const withUnifiedSelection = from(replacements).pipe(
       takeUntil(this._cancelled),
@@ -150,10 +165,6 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
 
     // ... or if it's an ECInstances node and any of instance keys is in selection
     if (NodeKey.isInstancesNodeKey(nodeKey) && nodeKey.instanceKeys.some((instanceKey) => selection.has(instanceKey)))
-      return true;
-
-    // ... or if it's an ECInstance node and instance key is in selection
-    if (NodeKey.isInstanceNodeKey(nodeKey) && selection.has(nodeKey.instanceKey))
       return true;
 
     return false;
@@ -217,16 +228,13 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
   }
 }
 
-/** Hooks which creates and disposes UnifiedSelectionTreeEventHandler
+/**
+ * A custom hook which creates and disposes `UnifiedSelectionTreeEventHandler`
  * @beta
  */
-export function useUnifiedSelectionEventHandler(modelSource: TreeModelSource, nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, disposeCollapsedNodes?: boolean, name?: string) {
-  const createHandler = useCallback(() => new UnifiedSelectionTreeEventHandler({
-    modelSource,
-    nodeLoader,
-    dataProvider: nodeLoader.getDataProvider(),
-    collapsedChildrenDisposalEnabled: disposeCollapsedNodes,
-    name,
-  }), [modelSource, nodeLoader, disposeCollapsedNodes, name]);
-  return useDisposable(createHandler);
+export function useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams) {
+  return useDisposable(useCallback(
+    () => new UnifiedSelectionTreeEventHandler(props),
+    Object.values(props), /* eslint-disable-line react-hooks/exhaustive-deps */ /* want to re-create the handler whenever any prop changes */
+  ));
 }

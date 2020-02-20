@@ -3,18 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as faker from "faker";
 import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { KeySet, Ruleset, RuleTypes, ContentSpecificationTypes, RegisteredRuleset, InstanceKey } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { KeySet, InstanceKey } from "@bentley/presentation-common";
 import {
   PresentationPropertyDataProvider, IPresentationPropertyDataProvider,
   DataProvidersFactory, IPresentationTableDataProvider,
 } from "@bentley/presentation-components";
 import { PropertyData, RowItem } from "@bentley/ui-components";
 import { initialize, terminate } from "../IntegrationTests";
+import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider"; // tslint:disable-line: no-direct-imports
 
 describe("Find Similar", () => {
 
@@ -32,27 +31,12 @@ describe("Find Similar", () => {
     terminate();
   });
 
-  let propertiesRuleset: RegisteredRuleset;
   let propertiesDataProvider: IPresentationPropertyDataProvider;
   let factory: DataProvidersFactory;
 
   beforeEach(async () => {
-    const ruleset: Ruleset = {
-      id: faker.random.uuid(),
-      rules: [{
-        ruleType: RuleTypes.Content,
-        specifications: [{
-          specType: ContentSpecificationTypes.SelectedNodeInstances,
-        }],
-      }],
-    };
-    propertiesRuleset = await Presentation.presentation.rulesets().add(ruleset);
-    propertiesDataProvider = new PresentationPropertyDataProvider(imodel, propertiesRuleset.id);
+    propertiesDataProvider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
     factory = new DataProvidersFactory();
-  });
-
-  afterEach(async () => {
-    await Presentation.presentation.rulesets().remove(propertiesRuleset);
   });
 
   const getPropertyRecordByLabel = (props: PropertyData, label: string): PropertyRecord | undefined => {

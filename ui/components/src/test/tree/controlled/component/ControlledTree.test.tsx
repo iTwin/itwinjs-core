@@ -27,6 +27,15 @@ describe("ControlledTree", () => {
 
   before(async () => {
     await TestUtils.initializeUiComponents();
+    // note: this is needed for AutoSizer used by the Tree to
+    // have non-zero size and render the virtualized list
+    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
+    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+    sinon.restore();
   });
 
   beforeEach(() => {

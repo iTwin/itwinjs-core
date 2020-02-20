@@ -41,17 +41,3 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
   public get vars(): VariablesGroup[] | undefined { return this._ruleset.vars; }
   public toJSON(): Ruleset { return this._ruleset; }
 }
-
-/**
- * @internal
- * @deprecated Will be dropped in 2.0.0
- */
-export type RulesetManagerState = Ruleset[];
-
-/**
- * @internal
- * @deprecated Will be dropped in 2.0.0
- */
-export namespace RulesetManagerState {
-  export const STATE_ID = "rulesets";
-}

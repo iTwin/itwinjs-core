@@ -20,11 +20,17 @@ import { TreeNodeItem } from '@bentley/ui-components';
 
 // @public
 export class ContentBuilder {
-    constructor(iModel: IModelConnection, dataProvider?: IContentBuilderDataProvider);
+    constructor(props: ContentBuilderProps);
     createContent(rulesetOrId: Ruleset | string, instanceKeys: InstanceKey[], displayType?: string): Promise<PropertyRecord[]>;
     createContentForAllInstances(rulesetOrId: Ruleset | string, displayType?: string): Promise<ContentBuilderResult[]>;
     createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType?: string): Promise<ContentBuilderResult[]>;
     }
+
+// @public
+export interface ContentBuilderProps {
+    dataProvider?: IContentBuilderDataProvider;
+    imodel: IModelConnection;
+}
 
 // @public
 export interface ContentBuilderResult {
@@ -34,9 +40,15 @@ export interface ContentBuilderResult {
 
 // @public
 export class HierarchyBuilder {
-    constructor(iModel: IModelConnection, nodeMappingFunc?: NodeMappingFunc);
+    constructor(props: HierarchyBuilderProps);
     createHierarchy(rulesetOrId: Ruleset | string): Promise<HierarchyNode[]>;
     }
+
+// @public
+export interface HierarchyBuilderProps {
+    imodel: IModelConnection;
+    nodeMappingFunc?: NodeMappingFunc;
+}
 
 // @public
 export interface HierarchyNode extends Omit<MappedNode, "children"> {
@@ -51,7 +63,7 @@ export interface IContentBuilderDataProvider {
 }
 
 // @public
-export const initializeAsync: (props?: PresentationTestingInitProps | undefined) => Promise<void>;
+export const initialize: (props?: PresentationTestingInitProps | undefined) => Promise<void>;
 
 // @public
 export interface MappedNode {

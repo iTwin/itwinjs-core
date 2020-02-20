@@ -106,14 +106,13 @@ export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
   /**
    * Stage of hierarchy creation at which the rule is applied.
    * Defaults to [[SameLabelInstanceGroupApplicationStage.Query]].
-   * @beta
    */
   applicationStage?: SameLabelInstanceGroupApplicationStage;
 }
 
 /**
  * Specifies hierarchy creation stages used to apply [[SameLabelInstanceGroup]] grouping.
- * @beta
+ * @public
  */
 export enum SameLabelInstanceGroupApplicationStage {
   /** Apply grouping at query stage. */

@@ -5,18 +5,18 @@
 import { expect } from "chai";
 import { initialize, terminate } from "../../IntegrationTests";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { LabelsProvider } from "@bentley/presentation-components";
+import { PresentationLabelsProvider } from "@bentley/presentation-components";
 
 describe("LabelsProvider", async () => {
 
   let imodel: IModelConnection;
-  let provider: LabelsProvider;
+  let provider: PresentationLabelsProvider;
 
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openSnapshot(testIModelName);
-    provider = new LabelsProvider(imodel);
+    provider = new PresentationLabelsProvider({ imodel });
   });
 
   after(async () => {

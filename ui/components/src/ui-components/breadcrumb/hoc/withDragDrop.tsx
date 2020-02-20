@@ -12,7 +12,7 @@ import { getDisplayName } from "@bentley/ui-core";
 import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../dragdrop/DragDropDef";
 import { BreadcrumbProps, BreadcrumbNode, BreadcrumbNodeProps } from "../Breadcrumb";
 import { TreeNodeItem } from "../../tree/TreeDataProvider";
-import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
+import { TreeDragDropType } from "../../tree/deprecated/hocs/withDragDrop";
 import { DragDropBreadcrumbNode } from "./DragDropBreadcrumbNode";
 
 // tslint:disable:deprecation

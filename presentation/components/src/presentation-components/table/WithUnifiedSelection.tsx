@@ -38,6 +38,8 @@ export interface TableWithUnifiedSelectionProps {
    *   - selection change happens at level `2` or higher - nothing happens.
    *
    * Defaults to `1`.
+   *
+   * @see [Selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level).
    */
   selectionLevel?: number;
 
@@ -78,8 +80,6 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
 
     public get imodel() { return this.props.dataProvider.imodel; }
 
-    public get rulesetId() { return this.props.dataProvider.rulesetId; }
-
     // tslint:disable-next-line:naming-convention
     private get baseProps(): TableProps { return this.props; }
 
@@ -88,7 +88,7 @@ export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: 
       const imodel = this.props.dataProvider.imodel;
       const rulesetId = this.props.dataProvider.rulesetId;
       this._selectionHandler = this.props.selectionHandler
-        ? this.props.selectionHandler : new SelectionHandler(Presentation.selection, name, imodel, rulesetId);
+        ? this.props.selectionHandler : new SelectionHandler({ manager: Presentation.selection, name, imodel, rulesetId });
       this._selectionHandler!.onSelect = this.onSelectionChanged;
       this.displaySelection();
     }

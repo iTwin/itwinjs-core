@@ -13,11 +13,13 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { waitForPendingAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Tree, ActiveMatchInfo } from "@bentley/ui-components";
+import { DEPRECATED_Tree as Tree, ActiveMatchInfo } from "@bentley/ui-components";
 import { NodePathElement } from "@bentley/presentation-common";
-import { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "../../presentation-components/tree/WithFilteringSupport";
+import { DEPRECATED_treeWithFilteringSupport as treeWithFilteringSupport, TreeWithFilteringSupportProps } from "../../presentation-components/tree/WithFilteringSupport";
 import { FilteredPresentationTreeDataProvider } from "../../presentation-components/tree/FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../../presentation-components/tree/IPresentationTreeDataProvider";
+
+// tslint:disable:deprecation
 
 // tslint:disable-next-line:variable-name naming-convention
 const FilteredTree = treeWithFilteringSupport(Tree);

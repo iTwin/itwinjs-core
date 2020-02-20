@@ -30,17 +30,23 @@ describe("Table withUnifiedSelection", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const dataProviderMock = moq.Mock.ofType(PresentationTableDataProvider, undefined, undefined, imodelMock.object, "ruleset_id");
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
+
   before(() => {
     // https://github.com/Microsoft/TypeScript/issues/14151#issuecomment-280812617
     // tslint:disable-next-line:no-string-literal
     if (Symbol["asyncIterator"] === undefined) ((Symbol as any)["asyncIterator"]) = Symbol.for("asyncIterator");
   });
+
   beforeEach(() => {
     testRulesetId = faker.random.word();
     selectionHandlerMock.reset();
     selectionHandlerMock.setup((x) => x.getSelectionLevels()).returns(() => []);
     selectionHandlerMock.setup((x) => x.getSelection(moq.It.isAnyNumber())).returns(() => new KeySet());
     setupDataProvider();
+  });
+
+  afterEach(() => {
+    Presentation.terminate();
   });
 
   const setupDataProvider = (providerMock?: moq.IMock<PresentationTableDataProvider>, imodel?: IModelConnection, rulesetId?: string, columns?: ColumnDescription[], rows?: RowItem[]) => {
@@ -91,14 +97,12 @@ describe("Table withUnifiedSelection", () => {
     />);
   });
 
-  it("uses data provider's imodel and rulesetId", () => {
+  it("uses data provider's imodel", () => {
     const component = shallow(<PresentationTable
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />).instance() as any as IUnifiedSelectionComponent;
-
     expect(component.imodel).to.equal(imodelMock.object);
-    expect(component.rulesetId).to.equal(testRulesetId);
   });
 
   it("creates default implementation for selection handler when not provided through props", () => {

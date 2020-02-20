@@ -26,7 +26,6 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ButtonProps } from '@bentley/ui-core';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
-import { CheckBoxInfo } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommandHandler } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';
@@ -695,35 +694,50 @@ export interface CardSelectedEventArgs {
     index: number;
 }
 
-// @alpha
+// @internal (undocumented)
+export interface Category {
+    // (undocumented)
+    children?: string[];
+    // (undocumented)
+    key: string;
+}
+
+// @public
 export const CategoryTree: React.FC<CategoryTreeProps>;
 
-// @alpha
+// @public
 export interface CategoryTreeProps {
     activeView?: Viewport;
     allViewports?: boolean;
-    clearAll?: boolean;
     // @internal
+    categoryVisibilityHandler?: CategoryVisibilityHandler;
+    clearAll?: boolean;
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     iModel: IModelConnection;
     selectAll?: boolean;
     showSearchBox?: boolean;
-    useControlledTree?: boolean;
 }
 
-// @alpha @deprecated
-export interface CategoryTreeState {
+// @internal (undocumented)
+export class CategoryVisibilityHandler {
+    constructor(imodel: IModelConnection, categories: Category[], filteredProvider?: IPresentationTreeDataProvider, allViewports?: boolean);
     // (undocumented)
-    activeView?: Viewport;
+    allViewports?: boolean;
     // (undocumented)
     categories: Category[];
+    enableCategory(ids: string[], enabled: boolean, enableAllSubCategories?: boolean): void;
+    enableSubCategory(key: string, enabled: boolean): void;
     // (undocumented)
-    checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
+    filteredProvider?: IPresentationTreeDataProvider;
     // (undocumented)
-    dataProvider?: IPresentationTreeDataProvider;
+    getParent(key: string): Category | undefined;
     // (undocumented)
-    filterInfo?: FilterInfo;
+    isCategoryVisible(id: string, activeView?: Viewport): boolean;
+    // (undocumented)
+    isSubCategoryVisible(id: string, activeView?: Viewport): boolean;
+    // (undocumented)
+    setEnableAll(enable: boolean): Promise<void>;
 }
 
 // @internal
@@ -1821,18 +1835,6 @@ export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
     vector: Vector3d;
 }
 
-// @alpha @deprecated
-export interface FilterInfo {
-    // (undocumented)
-    activeMatchIndex?: number;
-    // (undocumented)
-    filter?: string;
-    // (undocumented)
-    filtering?: boolean;
-    // (undocumented)
-    matchesCount?: number;
-}
-
 // @public
 export class FooterModeField extends React.PureComponent<StatusFieldProps> {
     // (undocumented)
@@ -2565,6 +2567,9 @@ export const IModelConnectedModelsTree: any;
 export const IModelConnectedNavigationWidget: any;
 
 // @beta
+export const IModelConnectedSpatialContainmentTree: any;
+
+// @beta
 export const IModelConnectedViewport: any;
 
 // @beta
@@ -2572,9 +2577,6 @@ export const IModelConnectedViewSelector: any;
 
 // @beta
 export const IModelConnectedVisibilityComponent: any;
-
-// @beta @deprecated
-export const IModelConnectedVisibilityTree: any;
 
 // @internal
 export interface IModelInfo {
@@ -3374,7 +3376,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
 }
 
-// @alpha
+// @public
 export const ModelsTree: React.FC<ModelsTreeProps>;
 
 // @alpha
@@ -3391,7 +3393,7 @@ export enum ModelsTreeNodeType {
     Unknown = 0
 }
 
-// @alpha
+// @public
 export interface ModelsTreeProps {
     activeView?: Viewport;
     // @internal
@@ -3400,8 +3402,8 @@ export interface ModelsTreeProps {
     imodel: IModelConnection;
     rootElementRef?: React.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
+    // @alpha
     selectionPredicate?: ModelsTreeSelectionPredicate;
-    useControlledTree?: boolean;
     // @internal
     visibilityHandler?: VisibilityHandler;
 }
@@ -3862,6 +3864,15 @@ export interface RotationData {
     label: string;
 }
 
+// @internal
+export const RULESET_CATEGORIES: Ruleset;
+
+// @internal
+export const RULESET_MODELS: Ruleset;
+
+// @internal
+export const RULESET_SPATIAL_BREAKDOWN: Ruleset;
+
 // @alpha
 export const SafeAreaContext: React.Context<SafeAreaInsets>;
 
@@ -4214,23 +4225,15 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     protected _viewState: ViewState;
 }
 
-// @alpha
+// @public
 export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps>;
 
-// @alpha
+// @public
 export interface SpatialContainmentTreeProps {
-    // @internal
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     // (undocumented)
     iModel: IModelConnection;
-    useControlledTree?: boolean;
-}
-
-// @alpha @deprecated
-export interface SpatialContainmentTreeState {
-    // (undocumented)
-    dataProvider?: IPresentationTreeDataProvider;
 }
 
 // @public
@@ -5431,7 +5434,7 @@ export class ViewUtilities {
 }
 
 // @alpha
-export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState_2> {
+export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
     constructor(props: any);
     // (undocumented)
     componentDidMount(): Promise<void>;
@@ -5466,7 +5469,6 @@ export interface VisibilityComponentProps {
     config?: VisibilityComponentConfig;
     enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
     iModelConnection: IModelConnection;
-    useControlledTree?: boolean;
 }
 
 // @internal (undocumented)
@@ -5501,36 +5503,6 @@ export interface VisibilityStatus {
     isDisplayed: boolean;
     // (undocumented)
     tooltip?: string;
-}
-
-// @public @deprecated
-export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
-    constructor(props: VisibilityTreeProps);
-    // (undocumented)
-    componentDidUpdate(prevProps: VisibilityTreeProps, _prevState: VisibilityTreeState): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null;
-    // (undocumented)
-    render(): JSX.Element;
-    // @internal
-    static readonly RULESET: Ruleset;
-    }
-
-// @public @deprecated
-export interface VisibilityTreeProps {
-    activeView?: Viewport;
-    // @internal
-    dataProvider?: IPresentationTreeDataProvider;
-    // @alpha
-    enablePreloading?: boolean;
-    imodel: IModelConnection;
-    // @alpha
-    rootElementRef?: React.Ref<HTMLDivElement>;
-    selectionMode?: SelectionMode;
-    // @internal
-    visibilityHandler?: VisibilityHandler;
 }
 
 // @alpha

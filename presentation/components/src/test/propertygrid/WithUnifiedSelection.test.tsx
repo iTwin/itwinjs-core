@@ -40,6 +40,10 @@ describe("PropertyGrid withUnifiedSelection", () => {
     await initializeLocalization();
   });
 
+  after(() => {
+    Presentation.terminate();
+  });
+
   let testRulesetId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const dataProviderMock = moq.Mock.ofType<IPresentationPropertyDataProvider>();
@@ -82,15 +86,13 @@ describe("PropertyGrid withUnifiedSelection", () => {
       selectionHandler={selectionHandlerMock.object} />);
   });
 
-  it("uses data provider's imodel and rulesetId", () => {
+  it("uses data provider's imodel", () => {
     const component = shallow(<PresentationPropertyGrid
       orientation={Orientation.Horizontal}
       dataProvider={dataProviderMock.object}
       selectionHandler={selectionHandlerMock.object}
     />).instance() as any as IUnifiedSelectionComponent;
-
     expect(component.imodel).to.equal(imodelMock.object);
-    expect(component.rulesetId).to.equal(testRulesetId);
   });
 
   it("creates default implementation for selection handler when not provided through props", () => {

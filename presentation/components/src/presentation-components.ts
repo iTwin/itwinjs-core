@@ -14,7 +14,7 @@ import { initializeLocalization } from "./presentation-components/common/Utils";
 export { IPresentationDataProvider } from "./presentation-components/common/IPresentationDataProvider";
 export { IUnifiedSelectionComponent } from "./presentation-components/common/IUnifiedSelectionComponent";
 export { ContentBuilder } from "./presentation-components/common/ContentBuilder";
-export { IContentDataProvider, ContentDataProvider, CacheInvalidationProps } from "./presentation-components/common/ContentDataProvider";
+export { IContentDataProvider, ContentDataProvider, ContentDataProviderProps, CacheInvalidationProps } from "./presentation-components/common/ContentDataProvider";
 export { DataProvidersFactory, DataProvidersFactoryProps } from "./presentation-components/DataProvidersFactory";
 export { useRulesetRegistration } from "./presentation-components/hooks/UseRulesetRegistration";
 
@@ -24,7 +24,7 @@ export { useRulesetRegistration } from "./presentation-components/hooks/UseRules
  * @docs-group-description PropertyGrid
  * Types related to `PropertyGrid` component in `@bentley/ui-components` package.
  */
-export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider } from "./presentation-components/propertygrid/DataProvider";
+export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider, PresentationPropertyDataProviderProps } from "./presentation-components/propertygrid/DataProvider";
 export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./presentation-components/propertygrid/WithUnifiedSelection";
 
 /**
@@ -50,15 +50,15 @@ export { tableWithUnifiedSelection, TableWithUnifiedSelectionProps } from "./pre
  * @docs-group-description Tree
  * Types related to `Tree` component in `@bentley/ui-components` package.
  */
-export { PresentationTreeDataProvider } from "./presentation-components/tree/DataProvider";
+export { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "./presentation-components/tree/DataProvider";
 export { IPresentationTreeDataProvider } from "./presentation-components/tree/IPresentationTreeDataProvider";
-export { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./presentation-components/tree/WithUnifiedSelection";
-export { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./presentation-components/tree/WithFilteringSupport";
-export { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams, useUnifiedSelectionEventHandler } from "./presentation-components/tree/controlled/UseUnifiedSelection";
-export { useControlledTreeFiltering } from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
-export { controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./presentation-components/tree/controlled/WithFilteringSupport";
-export { controlledTreeWithVisibleNodes, ControlledTreeWithVisibleNodesProps } from "./presentation-components/tree/controlled/WithVisibleNodes";
-export { usePresentationNodeLoader, PresentationNodeLoaderProps } from "./presentation-components/tree/controlled/TreeHooks";
+export { DEPRECATED_treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./presentation-components/tree/WithUnifiedSelection";
+export { DEPRECATED_treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./presentation-components/tree/WithFilteringSupport";
+export { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams, useUnifiedSelectionTreeEventHandler } from "./presentation-components/tree/controlled/UseUnifiedSelection";
+export { useControlledTreeFiltering, ControlledTreeFilteringProps } from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
+export { DEPRECATED_controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./presentation-components/tree/controlled/WithFilteringSupport";
+export { DEPRECATED_controlledTreeWithVisibleNodes, ControlledTreeWithVisibleNodesProps } from "./presentation-components/tree/controlled/WithVisibleNodes";
+export { usePresentationTreeNodeLoader, PresentationTreeNodeLoaderProps } from "./presentation-components/tree/controlled/TreeHooks";
 
 /**
  * @module Viewport
@@ -74,7 +74,7 @@ export { viewWithUnifiedSelection, ViewWithUnifiedSelectionProps } from "./prese
  * @docs-group-description DisplayLabels
  * Types related to display labels
  */
-export { IPresentationLabelsProvider, LabelsProvider } from "./presentation-components/labels/LabelsProvider";
+export { IPresentationLabelsProvider, PresentationLabelsProvider, PresentationLabelsProviderProps } from "./presentation-components/labels/LabelsProvider";
 
 Presentation.registerInitializationHandler(initializeLocalization);
 

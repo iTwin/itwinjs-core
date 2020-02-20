@@ -80,6 +80,7 @@ export type TreeDataProviderMethod = (node?: TreeNodeItem) => Promise<DelayLoade
  * @public
  */
 export interface ITreeDataProvider {
+  /** @deprecated */
   onTreeNodeChanged?: BeEvent<TreeDataChangesListener>;
   getNodesCount(parent?: TreeNodeItem): Promise<number>;
   getNodes(parent?: TreeNodeItem, page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]>;

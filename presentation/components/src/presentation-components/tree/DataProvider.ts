@@ -6,42 +6,27 @@
  * @module Tree
  */
 
-import * as _ from "lodash";
+import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Logger } from "@bentley/bentleyjs-core";
-import { NodeKey, NodePathElement, HierarchyRequestOptions } from "@bentley/presentation-common";
+import { Logger, IDisposable } from "@bentley/bentleyjs-core";
+import { NodeKey, NodePathElement, HierarchyRequestOptions, Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, TreeNodeItem, PageOptions } from "@bentley/ui-components";
 import { PRESENTATION_TREE_NODE_KEY, createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 
 /**
- * Presentation Rules-driven tree data provider.
+ * Properties for creating a `PresentationTreeDataProvider` instance.
  * @public
  */
-export class PresentationTreeDataProvider implements IPresentationTreeDataProvider {
-  private _rulesetId: string;
-  private _imodel: IModelConnection;
-  private _pagingSize?: number;
-
+export interface PresentationTreeDataProviderProps {
+  /** IModel to pull data from. */
+  imodel: IModelConnection;
+  /** Id of the ruleset to use when requesting content or a ruleset itself. */
+  ruleset: string | Ruleset;
   /**
-   * Constructor.
-   * @param imodel Connection to an imodel to pull data from.
-   * @param rulesetId Id of the ruleset used by this data provider.
-   */
-  public constructor(imodel: IModelConnection, rulesetId: string) {
-    this._rulesetId = rulesetId;
-    this._imodel = imodel;
-  }
-
-  /** Id of the ruleset used by this data provider */
-  public get rulesetId(): string { return this._rulesetId; }
-
-  /** [[IModelConnection]] used by this data provider */
-  public get imodel(): IModelConnection { return this._imodel; }
-
-  /**
-   * Paging options for obtaining nodes.
+   * Paging size for obtaining nodes.
    *
    * Presentation data providers, when used with paging, have ability to save one backend request for size / count. That
    * can only be achieved when `pagingSize` property is set on the data provider and it's value matches size which is used when
@@ -51,13 +36,46 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
    * ```
    * To fix the issue, developers should make sure the page size used for requesting data is also set for the data provider:
    * ```TS
-   * const pageSize = 10;
-   * const provider = new TreeDataProvider(imodel, rulesetId);
-   * provider.pagingSize = pageSize;
+   * const pagingSize = 10;
+   * const provider = new TreeDataProvider({imodel, ruleset, pagingSize});
    * // only one backend request is made for the two following requests:
    * provider.getNodesCount();
-   * provider.getNodes({ start: 0, size: pageSize });
+   * provider.getNodes({ start: 0, size: pagingSize });
    * ```
+   */
+  pagingSize?: number;
+}
+
+/**
+ * Presentation Rules-driven tree data provider.
+ * @public
+ */
+export class PresentationTreeDataProvider implements IPresentationTreeDataProvider, IDisposable {
+  private _imodel: IModelConnection;
+  private _rulesetRegistration: RulesetRegistrationHelper;
+  private _pagingSize?: number;
+
+  /** Constructor. */
+  public constructor(props: PresentationTreeDataProviderProps) {
+    this._rulesetRegistration = new RulesetRegistrationHelper(props.ruleset);
+    this._imodel = props.imodel;
+    this._pagingSize = props.pagingSize;
+  }
+
+  /** Destructor. Must be called to clean up.  */
+  public dispose() {
+    this._rulesetRegistration.dispose();
+  }
+
+  /** Id of the ruleset used by this data provider */
+  public get rulesetId(): string { return this._rulesetRegistration.rulesetId; }
+
+  /** [[IModelConnection]] used by this data provider */
+  public get imodel(): IModelConnection { return this._imodel; }
+
+  /**
+   * Paging options for obtaining nodes.
+   * @see `PresentationTreeDataProviderProps.pagingSize`
    */
   public get pagingSize(): number | undefined { return this._pagingSize; }
   public set pagingSize(value: number | undefined) { this._pagingSize = value; }
@@ -66,7 +84,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private createRequestOptions(): HierarchyRequestOptions<IModelConnection> {
     return {
       imodel: this._imodel,
-      rulesetId: this._rulesetId,
+      rulesetOrId: this._rulesetRegistration.rulesetId,
     };
   }
 
@@ -90,9 +108,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
       Logger.logWarning("Presentation.Components", msg);
     }
 
-    if (parentNode)
-      return (await this._getNodesAndCount(parentNode, pageOptions)).nodes;
-    return (await this._getNodesAndCount(undefined, pageOptions)).nodes;
+    return (await this._getNodesAndCount(parentNode, pageOptions)).nodes;
   }
 
   /**
@@ -101,10 +117,10 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
    */
   public async getNodesCount(parentNode?: TreeNodeItem): Promise<number> {
     const pageOptions = undefined !== this.pagingSize ? { start: 0, size: this.pagingSize } : undefined;
-    return (await this._getNodesAndCount(parentNode, pageOptions)).count!;
+    return (await this._getNodesAndCount(parentNode, pageOptions)).count;
   }
 
-  private _getNodesAndCount = _.memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions) => {
+  private _getNodesAndCount = memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<{ nodes: TreeNodeItem[], count: number }> => {
     const requestCount = undefined !== pageOptions && 0 === pageOptions.start && undefined !== pageOptions.size;
     const parentKey = parentNode ? this.getNodeKey(parentNode) : undefined;
 
@@ -115,7 +131,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
 
     const nodesResponse = await Presentation.presentation.getNodesAndCount({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
     return { nodes: parentNode ? createTreeNodeItems(nodesResponse.nodes, parentNode.id) : createTreeNodeItems(nodesResponse.nodes), count: nodesResponse.count };
-  }, MemoizationHelpers.getNodesKeyResolver);
+  }, { isMatchingKey: MemoizationHelpers.areNodesRequestsEqual as any });
 
   /**
    * Returns filtered node paths.
@@ -127,7 +143,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
 
   /**
    * Loads the hierarchy so on-demand requests and filtering works quicker
-   * @alpha
+   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
    */
   public async loadHierarchy() {
     return Presentation.presentation.loadHierarchy(this.createRequestOptions());
@@ -136,13 +152,13 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
 }
 
 class MemoizationHelpers {
-  public static createKeyForPageOptions(pageOptions?: PageOptions) {
-    if (!pageOptions)
-      return "0/0";
-    return `${(pageOptions.start) ? pageOptions.start : 0}/${(pageOptions.size) ? pageOptions.size : 0}`;
-  }
-  public static createKeyForTreeNodeItem(item?: TreeNodeItem) { return item ? item.id : ""; }
-  public static getNodesKeyResolver(parent?: TreeNodeItem, pageOptions?: PageOptions) {
-    return `${MemoizationHelpers.createKeyForTreeNodeItem(parent)}/${MemoizationHelpers.createKeyForPageOptions(pageOptions)}`;
+  public static areNodesRequestsEqual(lhsArgs: [TreeNodeItem?, PageOptions?], rhsArgs: [TreeNodeItem?, PageOptions?]): boolean {
+    if (lhsArgs[0]?.id !== rhsArgs[0]?.id)
+      return false;
+    if ((lhsArgs[1]?.start ?? 0) !== (rhsArgs[1]?.start ?? 0))
+      return false;
+    if ((lhsArgs[1]?.size ?? 0) !== (rhsArgs[1]?.size ?? 0))
+      return false;
+    return true;
   }
 }

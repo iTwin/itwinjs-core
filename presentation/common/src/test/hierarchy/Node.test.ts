@@ -4,24 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  createRandomECInstanceNode, createRandomECInstanceNodeKey,
-  createRandomECInstanceKeyJSON,
-  createRandomLabelDefinitionJSON,
+  createRandomECInstancesNode, createRandomECInstancesNodeKeyJSON, createRandomLabelDefinitionJSON,
 } from "../_helpers/random";
 import { Node, NodeJSON } from "../../presentation-common/hierarchy/Node";
-import { ECInstanceNodeKeyJSON } from "../../presentation-common/hierarchy/Key";
-
-const createRandomECInstanceNodeKeyJSON = (): ECInstanceNodeKeyJSON => {
-  return {
-    ...createRandomECInstanceNodeKey(),
-    instanceKey: createRandomECInstanceKeyJSON(),
-  };
-};
 
 const createRandomNodeJSON = (): NodeJSON => {
   return {
-    ...createRandomECInstanceNode(),
-    key: createRandomECInstanceNodeKeyJSON(),
+    ...createRandomECInstancesNode(),
+    key: createRandomECInstancesNodeKeyJSON(),
     labelDefinition: createRandomLabelDefinitionJSON(),
   };
 };
@@ -31,14 +21,7 @@ describe("Node", () => {
   describe("toJSON", () => {
 
     it("serializes Node", () => {
-      const node = createRandomECInstanceNode();
-      const json = Node.toJSON(node);
-      expect(json).to.matchSnapshot();
-    });
-
-    it("serializes Node without labelDefinition", () => {
-      const node = createRandomECInstanceNode();
-      node.labelDefinition = undefined;
+      const node = createRandomECInstancesNode();
       const json = Node.toJSON(node);
       expect(json).to.matchSnapshot();
     });

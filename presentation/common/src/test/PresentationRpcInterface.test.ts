@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "./_helpers/Mocks";
-import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "./_helpers/random";
+import { createRandomDescriptor, createRandomECInstancesNodeKey, createRandomECInstanceKey } from "./_helpers/random";
 import { using, Id64String } from "@bentley/bentleyjs-core";
 import { RpcRegistry, RpcOperation, RpcRequest, RpcSerializedValue, IModelTokenProps } from "@bentley/imodeljs-common";
 import {
@@ -13,7 +13,7 @@ import {
   KeySet, Paged,
   PresentationRpcRequestOptions, LabelRpcRequestOptions,
   HierarchyRpcRequestOptions, ContentRpcRequestOptions,
-  ClientStateSyncRequestOptions, SelectionScopeRpcRequestOptions,
+  SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
 
 describe("PresentationRpcInterface", () => {
@@ -27,7 +27,7 @@ describe("PresentationRpcInterface", () => {
     const token: IModelTokenProps = { iModelId: "test", contextId: "test" };
     const parameters = [
       token,
-      { rulesetId: faker.random.word() },
+      { rulesetOrId: faker.random.word() },
     ];
     RpcRegistry.instance.initializeRpcInterface(PresentationRpcInterface);
     const client = RpcRegistry.instance.getClientForInterface(PresentationRpcInterface);
@@ -64,7 +64,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getNodesAndCount call", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       await rpcInterface.getNodesAndCount(token, options);
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
@@ -73,7 +73,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getNodes call for root nodes", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       await rpcInterface.getNodes(token, options);
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
@@ -82,9 +82,9 @@ describe("PresentationRpcInterface", () => {
     it("forwards getNodes call for child nodes", async () => {
       const options: Paged<HierarchyRpcRequestOptions> = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
-      const parentKey = createRandomECInstanceNodeKey();
+      const parentKey = createRandomECInstancesNodeKey();
       await rpcInterface.getNodes(token, options, parentKey);
       mock.verify(async (x) => x(toArguments(token, options, parentKey)), moq.Times.once());
     });
@@ -92,7 +92,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getNodesCount call for root nodes", async () => {
       const options: HierarchyRpcRequestOptions = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       await rpcInterface.getNodesCount(token, options);
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
@@ -101,9 +101,9 @@ describe("PresentationRpcInterface", () => {
     it("forwards getNodesCount call for child nodes", async () => {
       const options: HierarchyRpcRequestOptions = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
-      const parentKey = createRandomECInstanceNodeKey();
+      const parentKey = createRandomECInstancesNodeKey();
       await rpcInterface.getNodesCount(token, options, parentKey);
       mock.verify(async (x) => x(toArguments(token, options, parentKey)), moq.Times.once());
     });
@@ -111,7 +111,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getFilteredNodePaths call", async () => {
       const options: HierarchyRpcRequestOptions = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       await rpcInterface.getFilteredNodePaths(token, options, "filter");
       mock.verify(async (x) => x(toArguments(token, options, "filter")), moq.Times.once());
@@ -120,7 +120,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getNodePaths call", async () => {
       const options: HierarchyRpcRequestOptions = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       const keys = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
       await rpcInterface.getNodePaths(token, options, keys, 1);
@@ -130,7 +130,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards loadHierarchy call", async () => {
       const options: HierarchyRpcRequestOptions = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       await rpcInterface.loadHierarchy(token, options);
       mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
@@ -139,7 +139,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getContentDescriptor call", async () => {
       const options: ContentRpcRequestOptions = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       const keys = new KeySet().toJSON();
       await rpcInterface.getContentDescriptor(token, options, "test", keys, undefined);
@@ -149,7 +149,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getContentSetSize call", async () => {
       const options: ContentRpcRequestOptions = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
       const keys = new KeySet().toJSON();
@@ -160,7 +160,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getContent call", async () => {
       const options: Paged<ContentRpcRequestOptions> = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
       const keys = new KeySet().toJSON();
@@ -171,7 +171,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getContentAndSize call", async () => {
       const options: Paged<ContentRpcRequestOptions> = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
       const keys = new KeySet().toJSON();
@@ -182,7 +182,7 @@ describe("PresentationRpcInterface", () => {
     it("forwards getDistinctValues call", async () => {
       const options: ContentRpcRequestOptions = {
         ...defaultRpcOptions,
-        rulesetId: faker.random.word(),
+        rulesetOrId: faker.random.word(),
       };
       const descriptor = createRandomDescriptor();
       const fieldName = faker.random.word();
@@ -190,24 +190,6 @@ describe("PresentationRpcInterface", () => {
       const keys = new KeySet().toJSON();
       await rpcInterface.getDistinctValues(token, options, descriptor, keys, fieldName, maximumValueCount);
       mock.verify(async (x) => x(toArguments(token, options, descriptor, keys, fieldName, maximumValueCount)), moq.Times.once());
-    });
-
-    it("forwards getDisplayLabel call", async () => {
-      const key = createRandomECInstanceKey();
-      const options: LabelRpcRequestOptions = {
-        ...defaultRpcOptions,
-      };
-      await rpcInterface.getDisplayLabel(token, options, key);
-      mock.verify(async (x) => x(toArguments(token, options, key)), moq.Times.once());
-    });
-
-    it("forwards getDisplayLabels call", async () => {
-      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
-      const options: LabelRpcRequestOptions = {
-        ...defaultRpcOptions,
-      };
-      await rpcInterface.getDisplayLabels(token, options, keys);
-      mock.verify(async (x) => x(toArguments(token, options, keys)), moq.Times.once());
     });
 
     it("forwards getDisplayLabelDefinition call", async () => {
@@ -219,12 +201,12 @@ describe("PresentationRpcInterface", () => {
       mock.verify(async (x) => x(toArguments(token, options, key)), moq.Times.once());
     });
 
-    it("forwards getDisplayLabelsDefinitions call", async () => {
+    it("forwards getDisplayLabelDefinitions call", async () => {
       const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
       const options: LabelRpcRequestOptions = {
         ...defaultRpcOptions,
       };
-      await rpcInterface.getDisplayLabelsDefinitions(token, options, keys);
+      await rpcInterface.getDisplayLabelDefinitions(token, options, keys);
       mock.verify(async (x) => x(toArguments(token, options, keys)), moq.Times.once());
     });
 
@@ -244,15 +226,6 @@ describe("PresentationRpcInterface", () => {
       const scopeId = faker.random.uuid();
       await rpcInterface.computeSelection(token, options, ids, scopeId);
       mock.verify(async (x) => x(toArguments(token, options, ids, scopeId)), moq.Times.once());
-    });
-
-    it("forwards syncClientState call", async () => {
-      const options: ClientStateSyncRequestOptions = {
-        ...defaultRpcOptions,
-        state: {},
-      };
-      await rpcInterface.syncClientState(token, options);
-      mock.verify(async (x) => x(toArguments(token, options)), moq.Times.once());
     });
 
   });

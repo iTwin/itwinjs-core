@@ -6,7 +6,7 @@
 
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { createRandomECInstanceNode, createRandomLabelDefinition, createRandomDescriptor, createRandomLabelCompositeValue } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { createRandomECInstancesNode, createRandomLabelDefinition, createRandomDescriptor, createRandomLabelCompositeValue } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { Item, Content, LabelDefinition } from "@bentley/presentation-common";
 import { Presentation } from "../presentation-frontend/Presentation";
@@ -50,11 +50,11 @@ describe("LocalizationHelper", () => {
   describe("getLocalizedNodes", () => {
 
     it("translates labelDefinition", () => {
-      const node = createRandomECInstanceNode();
-      node.labelDefinition!.rawValue = "NotLocalized";
+      const node = createRandomECInstancesNode();
+      node.label.rawValue = "NotLocalized";
       i18nMock.setup((x) => x.translate("NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       localizationHelper.getLocalizedNodes([node]);
-      expect(node.labelDefinition!.rawValue).to.be.eq("LocalizedValue");
+      expect(node.label.rawValue).to.be.eq("LocalizedValue");
     });
 
   });
@@ -63,11 +63,11 @@ describe("LocalizationHelper", () => {
 
     it("translates contentItem labelDefinitions", () => {
       const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
-      contentItem.labelDefinition!.rawValue = "NotLocalized";
+      contentItem.label.rawValue = "NotLocalized";
       const content = new Content(createRandomDescriptor(), [contentItem]);
       i18nMock.setup((x) => x.translate("NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       localizationHelper.getLocalizedContent(content);
-      expect(content.contentSet[0]!.labelDefinition!.rawValue).to.be.eq("LocalizedValue");
+      expect(content.contentSet[0]!.label.rawValue).to.be.eq("LocalizedValue");
     });
 
   });

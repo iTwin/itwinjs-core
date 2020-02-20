@@ -6,7 +6,8 @@
  * @module PropertyGrid
  */
 
-import * as _ from "lodash";
+import { once } from "lodash";
+import memoize from "micro-memoize";
 import {
   PropertyData, PropertyDataChangeEvent, IPropertyDataProvider, PropertyCategory,
 } from "@bentley/ui-components";
@@ -31,13 +32,27 @@ import { getFavoritesCategory, FAVORITES_CATEGORY_NAME } from "../favorite-prope
 export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset = require("./DefaultPropertyGridRules.json");
 
 /** The function registers DEFAULT_PROPERTY_GRID_RULESET the first time it's called and does nothing on other calls */
-const registerDefaultRuleset = _.once(async () => Presentation.presentation.rulesets().add(DEFAULT_PROPERTY_GRID_RULESET));
+const registerDefaultRuleset = once(async () => Presentation.presentation.rulesets().add(DEFAULT_PROPERTY_GRID_RULESET));
 
 /**
  * Interface for presentation rules-driven property data provider.
  * @public
  */
 export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
+
+/**
+ * Properties for creating a `LabelsProvider` instance.
+ * @public
+ */
+export interface PresentationPropertyDataProviderProps {
+  /** IModelConnection to use for requesting property data. */
+  imodel: IModelConnection;
+  /**
+   * Id of the ruleset to use when requesting properties or a ruleset itself. If not
+   * set, default presentation rules are used which return content for the selected elements.
+   */
+  ruleset?: string | Ruleset;
+}
 
 /**
  * Presentation Rules-driven property data provider implementation.
@@ -52,13 +67,14 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
 
   /**
    * Constructor
-   * @param imodel IModelConnection to use for requesting property data
-   * @param rulesetId Optional ID of a custom ruleset to use. If not set, default presentation rules are used which return
-   * content for the selected elements.
    */
-  constructor(imodel: IModelConnection, rulesetId?: string) {
-    super(imodel, rulesetId ? rulesetId : DEFAULT_PROPERTY_GRID_RULESET.id, DefaultContentDisplayTypes.PropertyPane);
-    this._useDefaultRuleset = !rulesetId;
+  constructor(props: PresentationPropertyDataProviderProps) {
+    super({
+      imodel: props.imodel,
+      ruleset: props.ruleset ? props.ruleset : DEFAULT_PROPERTY_GRID_RULESET.id,
+      displayType: DefaultContentDisplayTypes.PropertyPane,
+    });
+    this._useDefaultRuleset = !props.ruleset;
     this._includeFieldsWithNoValues = true;
     this._includeFieldsWithCompositeValues = true;
     this._onFavoritesChangedRemoveListener = Presentation.favoriteProperties.onFavoritesChanged.addListener(() => this.invalidateCache({}));
@@ -77,8 +93,10 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    */
   protected invalidateCache(props: CacheInvalidationProps): void {
     super.invalidateCache(props);
-    if (this.getMemoizedData)
-      this.getMemoizedData.cache.clear!();
+    if (this.getMemoizedData) {
+      this.getMemoizedData.cache.keys.length = 0;
+      this.getMemoizedData.cache.values.length = 0;
+    }
     if (this.onDataChanged)
       this.onDataChanged.raiseEvent();
   }
@@ -135,6 +153,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   }
 
   /** Should the specified field be included in the favorites category. */
+  // tslint:disable-next-line: naming-convention
   protected isFieldFavorite = (field: Field): boolean => (Presentation.favoriteProperties.has(field, this.imodel, FavoritePropertiesScope.IModel));
 
   /**
@@ -149,6 +168,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * Sorts the specified list of fields by priority. May be overriden
    * to supply a different sorting algorithm.
    */
+  // tslint:disable-next-line: naming-convention
   protected sortFields = (category: CategoryDescription, fields: Field[]) => {
     if (category.name === FAVORITES_CATEGORY_NAME)
       Presentation.favoriteProperties.sortFields(this.imodel, fields);
@@ -160,7 +180,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * Returns property data.
    */
   // tslint:disable-next-line:naming-convention
-  protected getMemoizedData = _.memoize(async (): Promise<PropertyData> => {
+  protected getMemoizedData = memoize(async (): Promise<PropertyData> => {
     if (this._useDefaultRuleset)
       await registerDefaultRuleset();
 
@@ -233,8 +253,8 @@ class PropertyDataBuilder {
     const records = this.createCategorizedRecords(fields);
     return {
       ...records,
-      label: this._contentItem.label,
-      labelDefinition: createLabelRecord(this._contentItem.labelDefinition, "content_item_name"),
+      label: this._contentItem.label.displayValue,
+      labelDefinition: createLabelRecord(this._contentItem.label, "content_item_name"),
       description: this._contentItem.classInfo ? this._contentItem.classInfo.label : undefined,
     } as PropertyData;
   }

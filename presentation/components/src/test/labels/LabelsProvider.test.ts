@@ -11,19 +11,25 @@ import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import { LabelsProvider } from "../../presentation-components/labels/LabelsProvider";
+import { PresentationLabelsProvider } from "../../presentation-components/labels/LabelsProvider";
 
-describe("LabelsProvider", () => {
+describe("PresentationLabelsProvider", () => {
 
-  let provider: LabelsProvider;
+  let provider: PresentationLabelsProvider;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
+
   before(() => {
     Presentation.presentation = presentationManagerMock.object;
   });
+
+  after(() => {
+    Presentation.terminate();
+  });
+
   beforeEach(() => {
     presentationManagerMock.reset();
-    provider = new LabelsProvider(imodelMock.object);
+    provider = new PresentationLabelsProvider({ imodel: imodelMock.object });
   });
 
   describe("getLabel", () => {
@@ -32,41 +38,40 @@ describe("LabelsProvider", () => {
       const key = createRandomECInstanceKey();
       const result = faker.random.word();
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabel(moq.It.isObjectWith({ imodel: imodelMock.object }), key))
-        .returns(async () => result)
-        .verifiable(moq.Times.exactly(2));
-      expect(await provider.getLabel(key)).to.eq(result);
+        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object }), key))
+        .returns(async () => ({ displayValue: result, rawValue: result, typeName: "string" }))
+        .verifiable(moq.Times.exactly(1));
       expect(await provider.getLabel(key)).to.eq(result);
       presentationManagerMock.verifyAll();
     });
 
-    it("calls manager only once for the same key when memoizing", async () => {
+    it("calls manager only once for the same key", async () => {
       const key = createRandomECInstanceKey();
       const result = faker.random.word();
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabel(moq.It.isObjectWith({ imodel: imodelMock.object }), key))
-        .returns(async () => result)
+        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object }), key))
+        .returns(async () => ({ displayValue: result, rawValue: result, typeName: "string" }))
         .verifiable(moq.Times.exactly(1));
-      expect(await provider.getLabel(key, true)).to.eq(result);
-      expect(await provider.getLabel(key, true)).to.eq(result);
+      expect(await provider.getLabel(key)).to.eq(result);
+      expect(await provider.getLabel(key)).to.eq(result);
       presentationManagerMock.verifyAll();
     });
 
-    it("calls manager for every different key when memoizing", async () => {
+    it("calls manager for every different key", async () => {
       const key1 = createRandomECInstanceKey();
       const key2 = createRandomECInstanceKey();
       const result1 = faker.random.word();
       const result2 = faker.random.word();
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabel(moq.It.isObjectWith({ imodel: imodelMock.object }), key1))
-        .returns(async () => result1)
+        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object }), key1))
+        .returns(async () => ({ displayValue: result1, rawValue: result1, typeName: "string" }))
         .verifiable(moq.Times.exactly(1));
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabel(moq.It.isObjectWith({ imodel: imodelMock.object }), key2))
-        .returns(async () => result2)
+        .setup(async (x) => x.getDisplayLabelDefinition(moq.It.isObjectWith({ imodel: imodelMock.object }), key2))
+        .returns(async () => ({ displayValue: result2, rawValue: result2, typeName: "string" }))
         .verifiable(moq.Times.exactly(1));
-      expect(await provider.getLabel(key1, true)).to.eq(result1);
-      expect(await provider.getLabel(key2, true)).to.eq(result2);
+      expect(await provider.getLabel(key1)).to.eq(result1);
+      expect(await provider.getLabel(key2)).to.eq(result2);
       presentationManagerMock.verifyAll();
     });
 
@@ -78,41 +83,40 @@ describe("LabelsProvider", () => {
       const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
       const result = [faker.random.word(), faker.random.word()];
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabels(moq.It.isObjectWith({ imodel: imodelMock.object }), keys))
-        .returns(async () => result)
-        .verifiable(moq.Times.exactly(2));
-      expect(await provider.getLabels(keys)).to.eq(result);
-      expect(await provider.getLabels(keys)).to.eq(result);
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object }), keys))
+        .returns(async () => result.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
+        .verifiable(moq.Times.exactly(1));
+      expect(await provider.getLabels(keys)).to.deep.eq(result);
       presentationManagerMock.verifyAll();
     });
 
-    it("calls manager only once for the same key when memoizing", async () => {
+    it("calls manager only once for the same key", async () => {
       const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
       const result = [faker.random.word(), faker.random.word()];
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabels(moq.It.isObjectWith({ imodel: imodelMock.object }), keys))
-        .returns(async () => result)
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object }), keys))
+        .returns(async () => result.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
         .verifiable(moq.Times.exactly(1));
-      expect(await provider.getLabels(keys, true)).to.eq(result);
-      expect(await provider.getLabels(keys, true)).to.eq(result);
+      expect(await provider.getLabels(keys)).to.deep.eq(result);
+      expect(await provider.getLabels(keys)).to.deep.eq(result);
       presentationManagerMock.verifyAll();
     });
 
-    it("calls manager for every different list of keys when memoizing", async () => {
+    it("calls manager for every different list of keys", async () => {
       const keys1 = [createRandomECInstanceKey(), createRandomECInstanceKey()];
       const keys2 = [createRandomECInstanceKey(), createRandomECInstanceKey()];
       const result1 = [faker.random.word(), faker.random.word()];
       const result2 = [faker.random.word(), faker.random.word()];
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabels(moq.It.isObjectWith({ imodel: imodelMock.object }), keys1))
-        .returns(async () => result1)
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object }), keys1))
+        .returns(async () => result1.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
         .verifiable(moq.Times.exactly(1));
       presentationManagerMock
-        .setup(async (x) => x.getDisplayLabels(moq.It.isObjectWith({ imodel: imodelMock.object }), keys2))
-        .returns(async () => result2)
+        .setup(async (x) => x.getDisplayLabelDefinitions(moq.It.isObjectWith({ imodel: imodelMock.object }), keys2))
+        .returns(async () => result2.map((value) => ({ rawValue: value, displayValue: value, typeName: "string" })))
         .verifiable(moq.Times.exactly(1));
-      expect(await provider.getLabels(keys1, true)).to.eq(result1);
-      expect(await provider.getLabels(keys2, true)).to.eq(result2);
+      expect(await provider.getLabels(keys1)).to.deep.eq(result1);
+      expect(await provider.getLabels(keys2)).to.deep.eq(result2);
       presentationManagerMock.verifyAll();
     });
 

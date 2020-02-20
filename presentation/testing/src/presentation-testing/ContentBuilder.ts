@@ -37,6 +37,17 @@ export interface ContentBuilderResult {
 }
 
 /**
+ * Properties for creating a `ContentBuilder` instance.
+ * @public
+ */
+export interface ContentBuilderProps {
+  /** The iModel to pull data from */
+  imodel: IModelConnection;
+  /** Custom data provider that allows mocking data ContentBuilder receives */
+  dataProvider?: IContentBuilderDataProvider;
+}
+
+/**
  * A class that constructs content from specified imodel and ruleset.
  * @public
  */
@@ -46,16 +57,16 @@ export class ContentBuilder {
 
   /**
    * Constructor
-   * @param iModel The iModel to pull data from
-   * @param dataProvider Custom data provider that allows mocking, what data ContentBuilder receives
+   * @param iModel
+   * @param dataProvider
    */
-  constructor(iModel: IModelConnection, dataProvider?: IContentBuilderDataProvider) {
-    this._iModel = iModel;
-    this._dataProvider = dataProvider;
+  constructor(props: ContentBuilderProps) {
+    this._iModel = props.imodel;
+    this._dataProvider = props.dataProvider;
   }
 
   private async doCreateContent(rulesetId: string, instanceKeys: InstanceKey[], displayType: string): Promise<PropertyRecord[]> {
-    const dataProvider = this._dataProvider ? this._dataProvider : new ContentDataProvider(this._iModel, rulesetId, displayType);
+    const dataProvider = this._dataProvider ? this._dataProvider : new ContentDataProvider({ imodel: this._iModel, ruleset: rulesetId, displayType });
     dataProvider.keys = new KeySet(instanceKeys);
 
     const content = await dataProvider.getContent();

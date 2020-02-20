@@ -14,6 +14,32 @@ import { SelectionManager } from "./SelectionManager";
 import { ISelectionProvider } from "./ISelectionProvider";
 
 /**
+ * Properties for creating a `SelectionHandler` instance.
+ * @public
+ */
+export interface SelectionHandlerProps {
+  /** SelectionManager used to store overall selection. */
+  manager: SelectionManager;
+  /** iModel connection the selection changes will be associated with. */
+  imodel: IModelConnection;
+  /**
+   * Name of the selection handler. This is an identifier of what caused the
+   * selection to change, set as `SelectionChangeEventArgs.source` when firing
+   * selection change events. `SelectionHandler.shouldHandle` uses `name` to filter
+   * events that it doesn't need to handle.
+   */
+  name: string;
+  /**
+   * ID of presentation ruleset used by the component using this handler. The ID is set as
+   * `SelectionChangeEventArgs.rulesetId` when making selection changes and event
+   * listeners can use or ignore this information.
+   */
+  rulesetId?: string;
+  /** Callback function called when selection changes. */
+  onSelect?: SelectionChangesListener;
+}
+
+/**
  * A class that handles selection changes and helps to change
  * internal the selection state.
  *
@@ -30,9 +56,8 @@ export class SelectionHandler implements IDisposable {
   /** iModel whose selection is being handled */
   public imodel: IModelConnection;
   /**
-   * ID of presentation ruleset used by the component using this handler. The ID is set as
-   * `SelectionChangeEventArgs.rulesetId` when making selection changes and event
-   * listeners can use or ignore this information.
+   * Id of a ruleset selection changes will be associated with.
+   * @see `SelectionHandlerProps.rulesetId`
    */
   public rulesetId?: string;
   /** Callback function called when selection changes */
@@ -40,20 +65,15 @@ export class SelectionHandler implements IDisposable {
 
   /**
    * Constructor.
-   * @param manager SelectionManager used to store overall selection.
-   * @param name The name of the selection handler.
-   * @param rulesetId Id of a ruleset selection changes will be associated.
-   * @param imodel iModel connection with which the selection changes will be associated with.
-   * @param onSelect Callback function called when selection changes.
    */
-  constructor(manager: SelectionManager, name: string, imodel: IModelConnection, rulesetId?: string, onSelect?: SelectionChangesListener) {
+  constructor(props: SelectionHandlerProps) {
     this._inSelect = false;
-    this.manager = manager;
+    this.manager = props.manager;
     this._disposables = new DisposableList();
-    this.name = name;
-    this.rulesetId = rulesetId;
-    this.imodel = imodel;
-    this.onSelect = onSelect;
+    this.name = props.name;
+    this.rulesetId = props.rulesetId;
+    this.imodel = props.imodel;
+    this.onSelect = props.onSelect;
     this._disposables.add(this.manager.selectionChange.addListener(this.onSelectionChanged));
   }
 
@@ -69,6 +89,7 @@ export class SelectionHandler implements IDisposable {
    * Called when the selection changes. Handles this callback by first checking whether
    * the event should be handled at all (using the `shouldHandle` method) and then calling `onSelect`
    */
+  // tslint:disable-next-line: naming-convention
   protected onSelectionChanged = (evt: SelectionChangeEventArgs, provider: ISelectionProvider): void => {
     if (!this.onSelect || !this.shouldHandle(evt))
       return;

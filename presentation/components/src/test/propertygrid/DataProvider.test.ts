@@ -60,15 +60,10 @@ class Provider extends PresentationPropertyDataProvider {
   }
 }
 
-interface MemoizedCacheSpies {
-  getData: any;
-}
-
 describe("PropertyDataProvider", () => {
 
   let rulesetId: string;
   let provider: Provider;
-  let memoizedCacheSpies: MemoizedCacheSpies;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
   const favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
@@ -84,20 +79,17 @@ describe("PropertyDataProvider", () => {
     await initializeLocalization();
   });
 
+  after(() => {
+    Presentation.terminate();
+  });
+
   beforeEach(() => {
     presentationManagerMock.reset();
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
     favoritePropertiesManagerMock.reset();
     favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => moq.Mock.ofType<BeEvent<() => void>>().object);
-    provider = new Provider(imodelMock.object, rulesetId);
-    resetMemoizedCacheSpies();
+    provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
   });
-
-  const resetMemoizedCacheSpies = () => {
-    memoizedCacheSpies = {
-      getData: sinon.spy((provider as any).getMemoizedData.cache, "clear"),
-    };
-  };
 
   describe("constructor", () => {
 
@@ -112,7 +104,7 @@ describe("PropertyDataProvider", () => {
     it("subscribes to `Presentation.favoriteProperties.onFavoritesChanged` to invalidate cache", () => {
       const onFavoritesChanged = new BeEvent<() => void>();
       favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => onFavoritesChanged);
-      provider = new Provider(imodelMock.object, rulesetId);
+      provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
 
       const s = sinon.spy(provider, "invalidateCache");
       onFavoritesChanged.raiseEvent();
@@ -126,7 +118,7 @@ describe("PropertyDataProvider", () => {
     it("unsubscribes from `Presentation.favoriteProperties.onFavoritesChanged` event", () => {
       const onFavoritesChanged = new BeEvent<() => void>();
       favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => onFavoritesChanged);
-      provider = new Provider(imodelMock.object, rulesetId);
+      provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
 
       expect(onFavoritesChanged.numberOfListeners).to.eq(1);
       provider.dispose();
@@ -136,11 +128,6 @@ describe("PropertyDataProvider", () => {
   });
 
   describe("invalidateCache", () => {
-
-    it("resets memoized data", () => {
-      provider.invalidateCache({});
-      expect(memoizedCacheSpies.getData).to.be.calledOnce;
-    });
 
     it("raises onDataChanged event", () => {
       const s = sinon.spy(provider.onDataChanged, "raiseEvent");
@@ -220,7 +207,7 @@ describe("PropertyDataProvider", () => {
     });
 
     it("calls FavoritePropertiesManager", () => {
-      provider = new Provider(imodelMock.object, rulesetId);
+      provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
 
       const field = createRandomPropertiesField();
       provider.isFieldFavorite(field);
@@ -306,7 +293,7 @@ describe("PropertyDataProvider", () => {
     };
 
     it("registers default ruleset once if `rulesetId` not specified when creating the provider", async () => {
-      provider = new Provider(imodelMock.object, undefined);
+      provider = new Provider({ imodel: imodelMock.object });
       rulesetsManagerMock.setup((x) => x.add(moq.It.isAny())).returns(async (x) => new RegisteredRuleset(x, Guid.createValue(), () => { }));
 
       // verify ruleset is registered on first call
@@ -318,7 +305,7 @@ describe("PropertyDataProvider", () => {
       rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
 
       // verify ruleset is not registered on subsequent calls on different providers
-      const provider2 = new Provider(imodelMock.object, undefined);
+      const provider2 = new Provider({ imodel: imodelMock.object });
       await provider2.getData();
       rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
     });

@@ -15,7 +15,7 @@ import { Table, TableProps } from "../../table/component/Table";
 import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
 import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, getLabelString } from "../../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
-import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/component/BeInspireTree";
+import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/deprecated/component/BeInspireTree";
 import { UiComponents } from "../../UiComponents";
 import { CommonProps } from "@bentley/ui-core";
 

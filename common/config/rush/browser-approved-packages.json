@@ -184,7 +184,7 @@
     },
     {
       "name": "@typescript-eslint/parser",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "@ungap/url-search-params",
@@ -364,11 +364,11 @@
     },
     {
       "name": "eslint",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "eslint-plugin-react-hooks",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "event-stream",
@@ -533,6 +533,10 @@
     {
       "name": "merge-json",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "micro-memoize",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "mini-css-extract-plugin",

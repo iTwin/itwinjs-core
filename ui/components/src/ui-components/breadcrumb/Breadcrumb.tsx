@@ -15,9 +15,10 @@ import { using } from "@bentley/bentleyjs-core";
 import { SplitButton, withOnOutsideClick, MessageSeverity, DialogButtonType, MessageBox, ContextMenu, ContextMenuItem, CommonProps } from "@bentley/ui-core";
 import { TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, getLabelString } from "../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
-import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";
+import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/deprecated/component/BeInspireTree";
 import { UiComponents } from "../UiComponents";
 
+// tslint:disable:deprecation
 // cspell:ignore itree autocompleting
 // tslint:disable:deprecation
 

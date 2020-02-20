@@ -7,8 +7,8 @@
  */
 
 import { ChildNodeRule } from "./ChildNodeRule";
-import { AllInstanceNodesSpecification } from "./AllInstanceNodesSpecification";
-import { AllRelatedInstanceNodesSpecification } from "./AllRelatedInstanceNodesSpecification";
+import { DEPRECATED_AllInstanceNodesSpecification } from "./AllInstanceNodesSpecification";
+import { DEPRECATED_AllRelatedInstanceNodesSpecification } from "./AllRelatedInstanceNodesSpecification";
 import { CustomNodeSpecification } from "./CustomNodeSpecification";
 import { InstanceNodesOfSpecificClassesSpecification } from "./InstanceNodesOfSpecificClassesSpecification";
 import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecification";
@@ -21,8 +21,8 @@ import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
  */
 export enum ChildNodeSpecificationTypes {
   // hierarchy specifications
-  AllInstanceNodes = "AllInstanceNodes",
-  AllRelatedInstanceNodes = "AllRelatedInstanceNodes",
+  DEPRECATED_AllInstanceNodes = "AllInstanceNodes", // tslint:disable-line: naming-convention
+  DEPRECATED_AllRelatedInstanceNodes = "AllRelatedInstanceNodes", // tslint:disable-line: naming-convention
   RelatedInstanceNodes = "RelatedInstanceNodes",
   InstanceNodesOfSpecificClasses = "InstanceNodesOfSpecificClasses",
   CustomQueryInstanceNodes = "CustomQueryInstanceNodes",
@@ -73,8 +73,6 @@ export interface ChildNodeSpecificationBase {
    * @note While the attribute provides much flexibility, it also has performance implications - it's
    * strongly suggested to first consider using `instanceFilter`, `hideNodesInHierarchy` or `hideIfNoChildren`
    * and only use `hideExpression` if none of them are sufficient.
-   *
-   * @beta
    */
   hideExpression?: string;
 
@@ -110,8 +108,8 @@ export interface DefaultGroupingPropertiesContainer {
  * Navigation rule specifications that define what content the rule results in.
  * @public
  */
-export type ChildNodeSpecification = AllInstanceNodesSpecification |
-  AllRelatedInstanceNodesSpecification |
+export type ChildNodeSpecification = DEPRECATED_AllInstanceNodesSpecification | // tslint:disable-line:deprecation
+  DEPRECATED_AllRelatedInstanceNodesSpecification | // tslint:disable-line:deprecation
   CustomNodeSpecification |
   InstanceNodesOfSpecificClassesSpecification |
   RelatedInstanceNodesSpecification |

@@ -342,7 +342,7 @@ class SimpleEditorUI extends React.PureComponent<SimpleEditorUIProps> {
     const appContent = (
       <div key="app-content" className="app-content">
         <div className="top-left">
-          <ViewportContentControl imodel={AppState.iModelConnection} rulesetId={rulesetId} viewDefinitionId={this.props.viewDefinitionId} />
+          <ViewportContentControl imodel={AppState.iModelConnection} viewDefinitionId={this.props.viewDefinitionId} />
         </div>
         <div className="right">
           <div className="top">

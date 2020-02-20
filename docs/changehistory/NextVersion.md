@@ -75,6 +75,194 @@ function tryTransformGeometry(entry: GeometryStreamIteratorEntry, transform: Tra
 }
 ```
 
+### API changes in `ui-components` package
+
+#### Hard-Deprecation
+
+A couple of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
+* `Tree` to `DEPRECATED_Tree`
+* `withTreeDragDrop` to `DEPRECATED_withTreeDragDrop`
+
+As a short term solution consumers can simply do a rename when importing the module, e.g.:
+```ts
+import { DEPRECATED_Tree as Tree } from "@bentley/ui-components";
+```
+
+#### Removals and Changes
+
+* Renamed `ITreeNodeLoaderWithProvider.getDataProvider()` to `ITreeNodeLoaderWithProvider.dataProvider`.
+* Renamed `PagedTreeNodeLoader.getPageSize()` to `PagedTreeNodeLoader.pageSize`.
+* Renamed `TreeCheckboxStateChangeEvent` to `TreeCheckboxStateChangeEventArgs`.
+* Renamed `TreeNodeEvent` to `TreeNodeEventArgs`.
+* Renamed `TreeSelectionModificationEvent` to `TreeSelectionModificationEventArgs`.
+* Renamed `TreeSelectionReplacementEvent` to `TreeSelectionReplacementEventArgs`.
+* Renamed `useModelSource` to `useTreeModelSource`.
+* Renamed `useNodeLoader` to `useTreeNodeLoader`.
+* Renamed `usePagedNodeLoader` to `usePagedTreeNodeLoader`.
+* Changed `IPropertyValueRenderer.render` to only be allowed to return `ReactNode` (do not allow `Promise<ReactNode>` anymore). This makes the calling code much simpler at the cost of a few more complex renderers. To help handle async rendering, a helper `useAsyncValue` hook has been added. Example usage:
+  ```ts
+  import { useAsyncValue } from "@bentley/ui-components";
+  const MyComponent = (props: { asyncValue : Promise<string> }) => {
+    const value = useAsyncValue(props.asyncValue);
+    return value ?? "Loading...";
+  };
+  ```
+
+### API changes in `ui-framework` package
+
+#### Renames
+
+A couple of types were renamed to better match their intention:
+* `VisibilityTree` to `ModelsTree`
+* `IModelConnectedVisibilityTree` to `IModelConnectedModelsTree`
+
+#### Other changes
+
+* Removed `useControlledTree` flag from the following *Prop* types:
+  * `CategoryTreeProps`
+  * `ModelsTreeProps`
+  * `SpatialContainmentTreeProps`
+  * `VisibilityComponentProps`
+
+  The components now always use controlled tree as the internal tree implementation.
+
+### API changes in `presentation-common` package
+
+#### RPC Changes
+
+The following endpoints have been either changed or removed:
+* `PresentationRpcInterface.getDisplayLabel` removed in favor of `PresentationRpcInterface.getDisplayLabelDefinition`.
+* `PresentationRpcInterface.getDisplayLabels` removed in favor of `PresentationRpcInterface.getDisplayLabelDefinitions`.
+* `PresentationRpcInterface.getDisplayLabelsDefinitions` renamed to `PresentationRpcInterface.getDisplayLabelDefinitions`.
+* `RequestOptionsWithRuleset` required either `rulesetId` or `rulesetOrId` (both optional). Now it only has a required attribute `rulesetOrId`.
+
+In addition, support for stateful backed was removed.
+
+Because of the above breaking `PresentationRpcInterface` changes its version was changed to `2.0`.
+
+#### Hard-Deprecation
+
+Some of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
+* `AllInstanceNodesSpecification` to `DEPRECATED_AllInstanceNodesSpecification`
+* `AllRelatedInstanceNodesSpecification` to `DEPRECATED_AllRelatedInstanceNodesSpecification`
+* `ChildNodeSpecificationTypes.AllInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes`
+* `ChildNodeSpecificationTypes.AllRelatedInstanceNodes` to `ChildNodeSpecificationTypes.DEPRECATED_AllRelatedInstanceNodes`
+* `PropertiesDisplaySpecification` to `DEPRECATED_PropertiesDisplaySpecification`
+* `PropertyEditorsSpecification` to `DEPRECATED_PropertyEditorsSpecification`
+* `PropertiesDisplaySpecification` to `DEPRECATED_PropertiesDisplaySpecification`
+* `PropertyEditorsSpecification` to `DEPRECATED_PropertyEditorsSpecification`
+
+As a short term solution consumers can simply do a rename when importing the module, e.g.:
+```ts
+import { DEPRECATED_PropertiesDisplaySpecification as PropertiesDisplaySpecification } from "@bentley/presentation-common";
+```
+
+#### Removals and Changes
+
+* Removed `@deprecated` APIs: `ECInstanceNodeKey`, `ECInstanceNodeKeyJSON`, `ECInstancesNodeKey.instanceKey`, `NodeKey.isInstanceNodeKey`, `StandardNodeTypes.ECInstanceNode`. Instead, the multi-ECInstance type of node should be used, since ECInstance nodes may be created off of more than one ECInstance. Matching APIs: `ECInstancesNodeKey`, `ECInstancesNodeKeyJSON`, `ECInstancesNodeKey.instanceKeys`, `NodeKey.isInstancesNodeKey`, `StandardNodeTypes.ECInstancesNode`.
+* Removed `Item.labelDefinition` and `Node.labelDefinition`. Instead, `Item.label` and `Node.label` should be used, whose type has been changed from `string` to `LabelDefinition`. The `LabelDefinition` type has not only display value, but also raw value and type information which allows localizing and formatting raw value.
+* Removed `PersistentKeysContainer`. Instead, `KeySetJSON` should be used.
+* Changed `RulesetsFactory.createSimilarInstancesRuleset` to async. Removed `RulesetsFactory.createSimilarInstancesRulesetAsync`.
+
+### API changes in `presentation-backend` package
+
+#### Removals and Changes
+
+* `PresentationManager.getDisplayLabel` was removed in favor of `PresentationManager.getDisplayLabelDefinition`
+* `PresentationManager.getDisplayLabels` was removed in favor of `PresentationManager.getDisplayLabelDefinitions`
+* `PresentationManager.getDisplayLabelsDefinitions` was renamed to `PresentationManager.getDisplayLabelDefinitions`
+* `RulesetEmbedder` now takes a "props" object instead of arguments' list in its constructor. Example fix:
+  ```ts
+  const embedder = new RulesetEmbedder({ imodel });
+  ```
+  instead of:
+  ```ts
+  const embedder = new RulesetEmbedder(imodel);
+  ```
+
+### API changes in `presentation-frontend` package
+
+#### Removals and Changes
+
+* `Presentation.initialize` is now async.
+* `PresentationManager.getDisplayLabel` was removed in favor of `PresentationManager.getDisplayLabelDefinition`
+* `PresentationManager.getDisplayLabels` was removed in favor of `PresentationManager.getDisplayLabelDefinitions`
+* `PresentationManager.getDisplayLabelsDefinitions` was renamed to `PresentationManager.getDisplayLabelDefinitions`
+* `PersistenceHelper` was removed in favor of `KeySet` and its `toJSON` and `fromJSON` functions.
+* `HiliteSetProvider` and `SelectionHandler` now take a "props" object instead of arguments' list in constructor. Example fix:
+  ```ts
+  const provider = new HiliteSetProvider({ imodel });
+  ```
+  instead of:
+  ```ts
+  const provider = new HiliteSetProvider(imodel);
+  ```
+
+### API changes in `presentation-components` package
+
+#### Hard-Deprecation
+
+Some of already `@deprecated` APIs are now being hard-deprecated by adding a `DEPRECATED_` prefix to increase consumers' awareness about future removal of the APIs:
+* `controlledTreeWithFilteringSupport` renamed to `DEPRECATED_controlledTreeWithFilteringSupport`.
+* `controlledTreeWithVisibleNodes` renamed to `DEPRECATED_controlledTreeWithVisibleNodes`.
+* `treeWithFilteringSupport` renamed to `DEPRECATED_treeWithFilteringSupport`.
+* `treeWithUnifiedSelection` renamed to `DEPRECATED_treeWithUnifiedSelection`.
+
+As a short term solution consumers can simply do a rename when importing the module, e.g.:
+```ts
+import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from "@bentley/presentation-components";
+```
+
+#### Removals and Changes
+
+* All presentation data providers that used to memoize all requests now only memoize the last one to preserve consumed memory.
+* All presentation data providers are now `IDisposable`. This means their `dispose()` method has to be called whenever they're stopped being used. In the context of a hooks-based React component this can be done like this:
+  ```ts
+  import { useDisposable } from "@bentley/ui-core";
+  import { IPresentationDataProvider } from "@bentley/presentation-components";
+  const MyComponent = () => {
+    const dataProvider = useDisposable(useCallback(() => createSomeDataProvider(), []));
+    // can use `dataProvider` here - it'll be disposed as needed
+  };
+  ```
+  In a class based React component the providers have to be disposed in either `componentWillUnmount` or `componentDidUpdate` callbacks, whenever the provider becomes unnecessary.
+* APIs that now take a "props" object instead of arguments' list:
+  * `ContentDataProvider`
+  * `PresentationLabelsProvider`
+  * `PresentationPropertyDataProvider`
+  * `PresentationTreeDataProvider`
+  * `useControlledTreeFiltering`
+  * `useUnifiedSelectionTreeEventHandler`
+  Example fix:
+  ```ts
+  const provider = new PresentationLabelsProvider({ imodel });
+  ```
+  instead of:
+  ```ts
+  const provider = new PresentationLabelsProvider(imodel);
+  ```
+* Removed `FavoritePropertiesDataProvider.customRulesetId`. Now it can be supplied when constructing the provider through `FavoritePropertiesDataProviderProps.ruleset`.
+* Renamed `LabelsProvider` to `PresentationLabelsProvider`.
+* Renamed `PresentationNodeLoaderProps` to `PresentationTreeNodeLoaderProps`.
+* Renamed `PresentationTreeNodeLoaderProps.rulesetId` to `PresentationTreeNodeLoaderProps.ruleset`.
+* Renamed `usePresentationNodeLoader` to `usePresentationTreeNodeLoader`.
+* Renamed `useUnifiedSelectionEventHandler` to `useUnifiedSelectionTreeEventHandler`.
+* Removed attributes from `UnifiedSelectionTreeEventHandlerParams`: `dataProvider`, `modelSource`. They're now taken from `nodeLoader`.
+
+### API changes in `presentation-testing` package
+
+#### Removals and Changes
+
+* `initialize` helper function is now async.
+* `ContentBuilder` and `HierarchyBuilder` now take a "props" object instead of arguments' list. Example fix:
+  ```ts
+  const builder = new ContentBuilder({ imodel, dataProvider });
+  ```
+  instead of:
+  ```ts
+  const builder = new ContentBuilder(imodel, dataProvider);
+  ```
+
 ## Geometry
 
 ### Bug fixes

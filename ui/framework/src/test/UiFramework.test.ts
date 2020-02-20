@@ -7,7 +7,7 @@ import * as moq from "typemoq";
 import { Presentation } from "@bentley/presentation-frontend";
 import { IModelApp, IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
 import TestUtils, { MockAccessToken } from "./TestUtils";
 import { UiFramework, ColorTheme, CursorMenuData } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";

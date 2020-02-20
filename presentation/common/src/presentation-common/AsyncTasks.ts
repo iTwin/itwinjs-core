@@ -15,6 +15,10 @@ import { Guid, IDisposable, GuidString } from "@bentley/bentleyjs-core";
  *   await doSomethingAsync();
  * });
  * ```
+ *
+ * Can be used with `waitForPendingAsyncs` in test helpers to wait for all
+ * async tasks to complete.
+ *
  * @internal
  */
 export class AsyncTasksTracker {

@@ -17,11 +17,11 @@ import { SchemasSpecification } from "../SchemasSpecification";
  * no immediate parent instance node it will go up until it finds one.
  *
  * @public
- * @deprecated Use `RelatedInstanceNodesSpecification`
+ * @deprecated Use `RelatedInstanceNodesSpecification`. Will be removed in iModel.js 3.0
  */
-export interface AllRelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
+export interface DEPRECATED_AllRelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer { // tslint:disable-line: naming-convention class-name
   /** Used for serializing to JSON. */
-  specType: ChildNodeSpecificationTypes.AllRelatedInstanceNodes;
+  specType: ChildNodeSpecificationTypes.DEPRECATED_AllRelatedInstanceNodes;
 
   /**
    * Specification of schemas whose instances should be returned.

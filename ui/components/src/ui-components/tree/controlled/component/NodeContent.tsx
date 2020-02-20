@@ -17,8 +17,8 @@ import { HighlightingEngine, HighlightableTreeNodeProps } from "../../Highlighti
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../properties/ValueRendererManager";
 import { UiComponents } from "../../../UiComponents";
 import { ItemStyleProvider, ItemStyle } from "../../../properties/ItemStyle";
-import "../../component/NodeContent.scss";
 import { TreeNodeEditorRenderer, TreeNodeEditor } from "./TreeNodeEditor";
+import "./NodeContent.scss";
 
 /** Properties for [[TreeNodeContent]] component
  * @internal

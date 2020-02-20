@@ -3,22 +3,29 @@
 exports[`Utils createTreeNodeItem creates tree node 1`] = `
 Object {
   "__presentation-components/key": Object {
-    "instanceKey": Object {
-      "className": "Fantastic Rubber Towels",
-      "id": "0x44780000014325",
-    },
-    "pathFromRoot": Array [
-      "2a046127-f623-4128-9848-8bc1c9d119fb",
-      "96ab449d-f282-409d-8ff6-91955c55e9e3",
+    "instanceKeys": Array [
+      Object {
+        "className": "Indian Rupee Ngultrum",
+        "id": "0x62b00000129a9",
+      },
+      Object {
+        "className": "Tuna",
+        "id": "0x77870000000460",
+      },
     ],
-    "type": "ECInstanceNode",
+    "pathFromRoot": Array [
+      "6127f623-1285-4848-8bc1-c9d119fb96ab",
+      "449df282-09dc-4ff6-9195-5c55e9e31699",
+    ],
+    "type": "ECInstancesNode",
   },
-  "autoExpand": true,
-  "icon": "AGP",
-  "id": "96ab449d-f282-409d-8ff6-91955c55e9e3/2a046127-f623-4128-9848-8bc1c9d119fb",
+  "checkBoxState": 1,
+  "hasChildren": true,
+  "icon": "Knolls",
+  "id": "449df282-09dc-4ff6-9195-5c55e9e31699/6127f623-1285-4848-8bc1-c9d119fb96ab",
   "isCheckboxDisabled": true,
   "isCheckboxVisible": true,
-  "label": "Indian Rupee Ngultrum",
+  "label": "hacking",
   "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -26,15 +33,15 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Indian Rupee Ngultrum",
-      "value": "back up",
+      "displayValue": "hacking",
+      "value": "Burundi",
       "valueFormat": 0,
     },
   },
   "style": Object {
     "colorOverrides": Object {
-      "backgroundColor": -920212993,
-      "color": 1737639167,
+      "backgroundColor": -1456493057,
+      "color": -1841005313,
     },
   },
 }
@@ -43,23 +50,28 @@ Object {
 exports[`Utils createTreeNodeItem creates tree node with custom label styles 1`] = `
 Object {
   "__presentation-components/key": Object {
-    "instanceKey": Object {
-      "className": "Missouri",
-      "id": "0x1ab100000013b4",
-    },
-    "pathFromRoot": Array [
-      "dc48ca2b-1044-4800-bce7-a4f6d779f7dd",
-      "0ef0a772-c3d3-403a-80a8-4a6a8c62fda6",
+    "instanceKeys": Array [
+      Object {
+        "className": "Mews",
+        "id": "0x1321b00000066ff",
+      },
+      Object {
+        "className": "PNG",
+        "id": "0xd08e000000759d",
+      },
     ],
-    "type": "ECInstanceNode",
+    "pathFromRoot": Array [
+      "ca2b1044-8007-4ce7-a4f6-d779f7dd0ef0",
+      "a772c3d3-03a4-40a8-8a6a-8c62fda69701",
+    ],
+    "type": "ECInstancesNode",
   },
-  "checkBoxState": 1,
+  "autoExpand": true,
+  "description": "Consequuntur eum quaerat atque doloribus eum.",
   "hasChildren": true,
-  "icon": "ADP",
-  "id": "0ef0a772-c3d3-403a-80a8-4a6a8c62fda6/dc48ca2b-1044-4800-bce7-a4f6d779f7dd",
-  "isCheckboxDisabled": true,
-  "isCheckboxVisible": true,
-  "label": "Mews",
+  "icon": "Cambridgeshire",
+  "id": "a772c3d3-03a4-40a8-8a6a-8c62fda69701/ca2b1044-8007-4ce7-a4f6-d779f7dd0ef0",
+  "label": "Iowa",
   "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -67,15 +79,14 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "Mews",
-      "value": "regional",
+      "displayValue": "Iowa",
+      "value": "ADP",
       "valueFormat": 0,
     },
   },
   "style": Object {
     "colorOverrides": Object {
-      "backgroundColor": 461301503,
-      "color": 1658093567,
+      "backgroundColor": -1829999873,
     },
     "isBold": true,
     "isItalic": true,
@@ -86,21 +97,26 @@ Object {
 exports[`Utils createTreeNodeItem creates tree node with parent id 1`] = `
 Object {
   "__presentation-components/key": Object {
-    "instanceKey": Object {
-      "className": "Shoes",
-      "id": "0x1091d0000016b29",
-    },
-    "pathFromRoot": Array [
-      "559da389-bc4e-4ef0-a5d0-cb8b62e60b80",
-      "175c270d-a1a3-4ba3-94ef-8866c2a100d7",
+    "instanceKeys": Array [
+      Object {
+        "className": "JBOD",
+        "id": "0x13af9000000df54",
+      },
+      Object {
+        "className": "extranet",
+        "id": "0x15060000000e479",
+      },
     ],
-    "type": "ECInstanceNode",
+    "pathFromRoot": Array [
+      "a389bc4e-ef0a-45d0-8b8b-62e60b80175c",
+      "270da1a3-ba31-44ef-8866-c2a100d70bea",
+    ],
+    "type": "ECInstancesNode",
   },
-  "description": "Omnis quam est minima voluptas et velit aperiam.",
-  "hasChildren": true,
-  "icon": "Automotive",
-  "id": "175c270d-a1a3-4ba3-94ef-8866c2a100d7/559da389-bc4e-4ef0-a5d0-cb8b62e60b80",
-  "label": "JBOD",
+  "icon": "moderator",
+  "id": "270da1a3-ba31-44ef-8866-c2a100d70bea/a389bc4e-ef0a-45d0-8b8b-62e60b80175c",
+  "isCheckboxVisible": true,
+  "label": "cross-platform",
   "labelDefinition": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
@@ -108,31 +124,43 @@ Object {
       "typename": "string",
     },
     "value": Object {
-      "displayValue": "JBOD",
-      "value": "South Dakota",
+      "displayValue": "cross-platform",
+      "value": "Iraq",
       "valueFormat": 0,
     },
   },
-  "parentId": "deposit",
+  "parentId": "Organic",
+  "style": Object {
+    "colorOverrides": Object {
+      "color": 17731327,
+    },
+  },
 }
 `;
 
 exports[`Utils createTreeNodeItem creates tree node without labelDefinition 1`] = `
 Object {
   "__presentation-components/key": Object {
-    "instanceKey": Object {
-      "className": "value-added",
-      "id": "0xdb590000003706",
-    },
-    "pathFromRoot": Array [
-      "c7ea16a7-b57b-4973-b341-ed11dd8506c2",
-      "9d2bd13d-baba-48d5-a16f-11a6bebd4508",
+    "instanceKeys": Array [
+      Object {
+        "className": "connect",
+        "id": "0x10bf900000157a6",
+      },
+      Object {
+        "className": "Cotton",
+        "id": "0xbd9e000001010f",
+      },
     ],
-    "type": "ECInstanceNode",
+    "pathFromRoot": Array [
+      "b57b973f-341e-4d11-9d85-06c29d2bd13d",
+      "baba8d5a-16f1-41a6-bebd-45084f282f50",
+    ],
+    "type": "ECInstancesNode",
   },
-  "description": "Commodi quae explicabo hic aut quod rem odit odio saepe.",
-  "icon": "Direct",
-  "id": "9d2bd13d-baba-48d5-a16f-11a6bebd4508/c7ea16a7-b57b-4973-b341-ed11dd8506c2",
+  "autoExpand": true,
+  "description": "Aut quod rem odit odio saepe nesciunt necessitatibus sed fuga.",
+  "hasChildren": true,
+  "id": "baba8d5a-16f1-41a6-bebd-45084f282f50/b57b973f-341e-4d11-9d85-06c29d2bd13d",
   "label": "calculate",
   "labelDefinition": PropertyRecord {
     "property": Object {
@@ -146,6 +174,11 @@ Object {
       "valueFormat": 0,
     },
   },
+  "style": Object {
+    "colorOverrides": Object {
+      "color": 143987199,
+    },
+  },
 }
 `;
 
@@ -153,24 +186,29 @@ exports[`Utils createTreeNodeItems creates tree nodes 1`] = `
 Array [
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "e-tailers",
-        "id": "0x17b9c000000d4fc",
-      },
-      "pathFromRoot": Array [
-        "61ac32e0-9daf-4f7d-a66e-d5ccf6b5e845",
-        "ce78d049-0790-4e52-8185-2841f2ddecb9",
+      "instanceKeys": Array [
+        Object {
+          "className": "systematic",
+          "id": "0x118650000013a42",
+        },
+        Object {
+          "className": "infrastructures",
+          "id": "0x12cd5000000ff83",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "32e09daf-f7de-466e-95cc-f6b5e845ce78",
+        "d0490790-e52c-4185-a841-f2ddecb9648f",
+      ],
+      "type": "ECInstancesNode",
     },
     "autoExpand": true,
-    "description": "Beatae necessitatibus eum ab harum.",
+    "description": "Harum aut sit.",
     "hasChildren": true,
-    "icon": "Automotive",
-    "id": "ce78d049-0790-4e52-8185-2841f2ddecb9/61ac32e0-9daf-4f7d-a66e-d5ccf6b5e845",
+    "id": "d0490790-e52c-4185-a841-f2ddecb9648f/32e09daf-f7de-466e-95cc-f6b5e845ce78",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "systematic",
+    "label": "Fantastic",
     "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -178,8 +216,8 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "systematic",
-        "value": "wireless",
+        "displayValue": "Fantastic",
+        "value": "Unbranded",
         "valueFormat": 0,
       },
     },
@@ -191,19 +229,28 @@ Array [
   },
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "invoice",
-        "id": "0x159ee000000b364",
-      },
-      "pathFromRoot": Array [
-        "62600815-3750-4f3d-aeab-b1421892b75e",
-        "f471908f-cd9c-4af2-9d63-3b21a81337a8",
+      "instanceKeys": Array [
+        Object {
+          "className": "Assurance",
+          "id": "0x7afe00000109f3",
+        },
+        Object {
+          "className": "initiatives",
+          "id": "0x4000000009ab0",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "08153750-f3da-4eab-b142-1892b75ef471",
+        "908fcd9c-af25-4d63-bb21-a81337a8ad7e",
+      ],
+      "type": "ECInstancesNode",
     },
-    "hasChildren": true,
-    "id": "f471908f-cd9c-4af2-9d63-3b21a81337a8/62600815-3750-4f3d-aeab-b1421892b75e",
-    "label": "Assurance",
+    "autoExpand": true,
+    "checkBoxState": 1,
+    "id": "908fcd9c-af25-4d63-bb21-a81337a8ad7e/08153750-f3da-4eab-b142-1892b75ef471",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
+    "label": "Communications",
     "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -211,15 +258,14 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "Assurance",
-        "value": "Hong Kong Dollar",
+        "displayValue": "Communications",
+        "value": "Plastic",
         "valueFormat": 0,
       },
     },
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": -2105862145,
-        "color": 1250650111,
+        "backgroundColor": 2086765311,
       },
     },
   },
@@ -230,20 +276,27 @@ exports[`Utils createTreeNodeItems creates tree nodes with parentId 1`] = `
 Array [
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "Granite",
-        "id": "0x9ece000000928e",
-      },
-      "pathFromRoot": Array [
-        "a72a9ca8-debb-43f2-90e0-38b00330fde0",
-        "7d2ec992-c8d5-4f77-a6e2-d57cff276d24",
+      "instanceKeys": Array [
+        Object {
+          "className": "Harbors",
+          "id": "0x5315000000a7dd",
+        },
+        Object {
+          "className": "withdrawal",
+          "id": "0x109c70000003fd5",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "9ca8debb-3f29-40e0-b8b0-0330fde07d2e",
+        "c992c8d5-f776-46e2-957c-ff276d241866",
+      ],
+      "type": "ECInstancesNode",
     },
-    "checkBoxState": 1,
-    "id": "7d2ec992-c8d5-4f77-a6e2-d57cff276d24/a72a9ca8-debb-43f2-90e0-38b00330fde0",
-    "isCheckboxVisible": true,
-    "label": "Harbors",
+    "autoExpand": true,
+    "description": "Ratione debitis sequi totam aut est nemo aut.",
+    "hasChildren": true,
+    "id": "c992c8d5-f776-46e2-957c-ff276d241866/9ca8debb-3f29-40e0-b8b0-0330fde07d2e",
+    "label": "Facilitator",
     "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -251,39 +304,42 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "Harbors",
-        "value": "eyeballs",
+        "displayValue": "Facilitator",
+        "value": "bifurcated",
         "valueFormat": 0,
       },
     },
-    "parentId": "one-to-one",
+    "parentId": "Cuban Peso Peso Convertible",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 479940351,
-        "color": 615703295,
+        "backgroundColor": -785933057,
+        "color": -2116120833,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "exuding",
-        "id": "0x17679000001797b",
-      },
-      "pathFromRoot": Array [
-        "29db17a7-2702-4f3a-b980-5abe6ed9fcd7",
-        "bda1c500-d4d5-4d63-809e-4f2bdad7ba2e",
+      "instanceKeys": Array [
+        Object {
+          "className": "synergies",
+          "id": "0x185150000003682",
+        },
+        Object {
+          "className": "Progressive",
+          "id": "0xe6180000005197",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "805abe6e-d9fc-4d7b-9a1c-500d4d5d63c0",
+        "9e4f2bda-d7ba-42e4-affe-37f852bc8f5d",
+      ],
+      "type": "ECInstancesNode",
     },
-    "autoExpand": true,
-    "checkBoxState": 1,
-    "hasChildren": true,
-    "icon": "methodologies",
-    "id": "bda1c500-d4d5-4d63-809e-4f2bdad7ba2e/29db17a7-2702-4f3a-b980-5abe6ed9fcd7",
-    "isCheckboxDisabled": true,
+    "description": "Aliquam rem ab quia consequatur magnam debitis.",
+    "icon": "Unbranded Steel Keyboard",
+    "id": "9e4f2bda-d7ba-42e4-affe-37f852bc8f5d/805abe6e-d9fc-4d7b-9a1c-500d4d5d63c0",
     "isCheckboxVisible": true,
-    "label": "Cambridgeshire",
+    "label": "Tuvalu",
     "labelDefinition": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -291,17 +347,12 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "Cambridgeshire",
-        "value": "Sharable",
+        "displayValue": "Tuvalu",
+        "value": "action-items",
         "valueFormat": 0,
       },
     },
-    "parentId": "one-to-one",
-    "style": Object {
-      "colorOverrides": Object {
-        "backgroundColor": 632996863,
-      },
-    },
+    "parentId": "Cuban Peso Peso Convertible",
   },
 ]
 `;

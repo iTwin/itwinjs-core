@@ -49,7 +49,7 @@ export interface SelectionChangeEventArgs {
   /** The name of the selection source which caused the selection change. */
   source: string;
 
-  /** Level of the selection. */
+  /** Level of the selection. See [selection levels]($docs/learning/presentation/Unified-Selection/Terminology#selection-level). */
   level: number;
 
   /** The selection change type. */
@@ -64,6 +64,6 @@ export interface SelectionChangeEventArgs {
   /** The timestamp of when the selection change happened */
   timestamp: Date;
 
-  /** Ruleset Id. */
+  /** Id of the ruleset associated with the selection change. */
   rulesetId?: string;
 }
