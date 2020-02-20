@@ -125,7 +125,7 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
 
     // when handling model change event only need to update newly added nodes
     if (modelChange)
-      this.updateAddedNodes(selection, modelChange.addedNodeIds);
+      this.updateAffectedNodes(selection, modelChange);
     else
       this.updateAllNodes(selection);
   }
@@ -190,12 +190,13 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
     });
   }
 
-  private updateAddedNodes(selection: Readonly<KeySet>, addedNodeIds: string[]) {
-    if (addedNodeIds.length === 0)
+  private updateAffectedNodes(selection: Readonly<KeySet>, modelChange: TreeModelChanges) {
+    const affectedNodeIds = [...modelChange.addedNodeIds, ...modelChange.modifiedNodeIds];
+    if (affectedNodeIds.length === 0)
       return;
 
     this._modelSource.modifyModel((model: MutableTreeModel) => {
-      for (const nodeId of addedNodeIds) {
+      for (const nodeId of affectedNodeIds) {
         const node = model.getNode(nodeId);
         // istanbul ignore if
         if (!node)

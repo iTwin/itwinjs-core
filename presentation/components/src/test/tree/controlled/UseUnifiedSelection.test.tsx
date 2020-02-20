@@ -269,6 +269,16 @@ describe("UnifiedSelectionEventHandler", () => {
       expect(node.isSelected).to.be.true;
     });
 
+    it("applies unified selection for modified nodes", () => {
+      const node = createNode();
+      selectionHandlerMock.setup((x) => x.getSelection()).returns(() => new KeySet([dataProviderMock.target.getNodeKey(node.item)]));
+      treeModelSourceMock.setup((x) => x.modifyModel(moq.It.isAny())).callback((action) => action(treeModelMock.object));
+      treeModelMock.setup((x) => x.getNode(node.id)).returns(() => node);
+
+      onModelChangeEvent.emit([treeModelMock.object, { addedNodeIds: [], modifiedNodeIds: [node.id], removedNodeIds: [] }]);
+      expect(node.isSelected).to.be.true;
+    });
+
     it("deselects added node without key", () => {
       const node = createNode();
       node.isSelected = true;
