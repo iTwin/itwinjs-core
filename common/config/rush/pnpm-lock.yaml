@@ -2,7 +2,7 @@ dependencies:
   '@azure/storage-blob': 10.4.0
   '@bentley/icons-generic': 1.0.0
   '@bentley/icons-generic-webfont': 1.0.0
-  '@bentley/imodeljs-native': 2.0.1
+  '@bentley/imodeljs-native': 2.0.2
   '@microsoft/api-extractor': 7.7.3
   '@openid/appauth': 1.2.6
   '@rush-temp/backend-webpack-tools': 'file:projects/backend-webpack-tools.tgz'
@@ -174,7 +174,7 @@ dependencies:
   detect-port: 1.3.0
   dotenv: 8.2.0
   dotenv-expand: 5.1.0
-  electron: 6.1.7
+  electron: 6.1.8
   electron-chromedriver: 2.0.0
   enzyme: 3.11.0
   enzyme-adapter-react-16: 1.12.1_3302d41cb01481e7edfc8c11c26d98df
@@ -456,11 +456,11 @@ packages:
     dev: false
     resolution:
       integrity: sha1-ettkqbQDf1VxT1HPtLqWxQfP5Kc=
-  /@bentley/imodeljs-native/2.0.1:
+  /@bentley/imodeljs-native/2.0.2:
     dev: false
     requiresBuild: true
     resolution:
-      integrity: sha1-DUCnAzS0VwzO16anf2iGS0Ygui4=
+      integrity: sha1-Pah1x2M9NKQbeJB/nPycjmVPhrg=
   /@fimbul/bifrost/0.21.0_tslint@5.20.1+typescript@3.7.5:
     dependencies:
       '@fimbul/ymir': 0.21.0_tsutils@3.17.1+typescript@3.7.5
@@ -1252,12 +1252,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-C2j2FWgQkF1ru12SjZJyMaTPxs/f6n90+5G5qNakBxKXjTBc/YTSelHh4Pz1HUDwxFXD9WvpQhOGCDC+/Y4mIQ==
-  /@types/webdriverio/4.13.3:
-    dependencies:
-      '@types/node': 10.14.1
-    dev: false
-    resolution:
-      integrity: sha512-AfSQM1xTO9Ax+u9uSQPDuw69DQ0qA2RMoKHn86jCgWNcwKVUjGMSP4sfSl3JOfcZN8X/gWvn7znVPp2/g9zcJA==
   /@types/webpack-dev-server/3.10.0:
     dependencies:
       '@types/connect-history-api-fallback': 1.3.3
@@ -4376,7 +4370,7 @@ packages:
     dev: false
     resolution:
       integrity: sha512-qW4YHMfOFjvx0jkSK2vjaHoLjk1+uJIV5tqtLDo7P5y3/kM8KQP23YBU0Y5fCSW4jIbDvEzeHDaY4+4vEaqqOw==
-  /electron/6.1.7:
+  /electron/6.1.8:
     dependencies:
       '@types/node': 10.14.1
       electron-download: 4.1.1
@@ -4387,7 +4381,7 @@ packages:
     hasBin: true
     requiresBuild: true
     resolution:
-      integrity: sha512-QhBA/fcYJit2XJGkD2xEfxlWTtTaWYu7qkKVohtVWXpELFqkpel2DCDxet5BTo0qs8ukuZHxlQPnIonODnl2bw==
+      integrity: sha512-crrWUBTfGbNYh7riijx+SYLOj6j6R1M+OnP0p5tGhb4bUFBt3Xaf2oATTLIeJlCRD8CRRMUgxwsVkHVqBKmP2Q==
   /elliptic/6.5.2:
     dependencies:
       bn.js: 4.11.8
@@ -4568,15 +4562,6 @@ packages:
     dev: false
     resolution:
       integrity: sha512-D9f7V0JSRwIxlRI2mjMqufDrRDnx8p+eEOz7aUM9SuvF8gsBzra0/6tbjl1m8eQHrZlYj6PxqE00hZ1SAIKPLw==
-  /env-cmd/8.0.2:
-    dependencies:
-      cross-spawn: 6.0.5
-    dev: false
-    engines:
-      node: '>=4.0.0'
-    hasBin: true
-    resolution:
-      integrity: sha512-gHX8MnQXw1iS7dc2KeJdBdxca7spIkxkNwIuORLwm8kDg6xHh5wWnv1Yv3pc64nLZR6kufQSCmwTz16sRmd/rg==
   /env-paths/1.0.0:
     dev: false
     engines:
@@ -5732,12 +5717,6 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-uWjGsKBDhDJJAui/Gl3zJXmkUP4=
-  /get-stdin/5.0.1:
-    dev: false
-    engines:
-      node: '>=0.12.0'
-    resolution:
-      integrity: sha1-Ei4WFZHiH/TFJTAwVpPyDmOTo5g=
   /get-stream/3.0.0:
     dev: false
     engines:
@@ -9921,13 +9900,6 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-T2ZUsdZFHgA3u4e5PfPbjd7HDDpxPnQb5jN0SrDsjNSuVXHJqtwTnWqG0B1jZrgmJ/7lj1EmVIByWt1gxGkWvg==
-  /path/0.12.7:
-    dependencies:
-      process: 0.11.10
-      util: 0.10.4
-    dev: false
-    resolution:
-      integrity: sha1-1NwqUGxM4hl+tIHr/NWzbAFAsQ8=
   /pathval/1.1.0:
     dev: false
     resolution:
@@ -12820,17 +12792,6 @@ packages:
     hasBin: true
     resolution:
       integrity: sha1-DHlipq3vp7vUrDZkYKY4VSrhoKI=
-  /strip-json-comments-cli/1.0.1:
-    dependencies:
-      get-stdin: 5.0.1
-      meow: 3.7.0
-      strip-json-comments: 2.0.1
-    dev: false
-    engines:
-      node: '>=4'
-    hasBin: true
-    resolution:
-      integrity: sha1-Rdlzwkv7Z4i8Pmrp5t/LwL+uviE=
   /strip-json-comments/2.0.1:
     dev: false
     engines:
@@ -13495,16 +13456,6 @@ packages:
       tslint: '>=4.0.0'
     resolution:
       integrity: sha512-Me9Qf/87BOfCY8uJJw+J7VMF4U8WiMXKLhKKKugMydF0xMhMOt9wo2mjYTNhwbF9H7SHh8PAIwRG8roisTNekQ==
-  /tslint-react-hooks/2.2.1_tslint@5.20.1+typescript@3.7.5:
-    dependencies:
-      tslint: 5.20.1_typescript@3.7.5
-      typescript: 3.7.5
-    dev: false
-    peerDependencies:
-      tslint: ^5.1.0
-      typescript: '>=2.1.0'
-    resolution:
-      integrity: sha512-bqIg2uZe+quJMfSOGc4OOZ4awo6TP1ejGDGS6IKg2WIrS0XnWfhUJ99i3B8rUpnZhuD4vRSvyYIbXPUmEqQxxQ==
   /tslint/5.20.1_typescript@3.7.5:
     dependencies:
       '@babel/code-frame': 7.8.3
@@ -14037,12 +13988,6 @@ packages:
     dev: false
     resolution:
       integrity: sha1-evsa/lCAUkZInj23/g7TeTNqwPk=
-  /util/0.10.4:
-    dependencies:
-      inherits: 2.0.3
-    dev: false
-    resolution:
-      integrity: sha512-0Pm9hTQ3se5ll1XihRic3FDIku70C+iHUdT/W926rSgHV5QgXsYbKZN8MSC3tJtSkhuROzvsQjAaFENRXr+19A==
   /util/0.11.1:
     dependencies:
       inherits: 2.0.3
@@ -14942,7 +14887,7 @@ packages:
       '@types/yargs': 12.0.16
       cpx: 1.5.0
       detect-port: 1.3.0
-      electron: 6.1.7
+      electron: 6.1.8
       express: 4.17.1
       jsonc-parser: 2.0.3
       lodash: 4.17.15
@@ -14986,7 +14931,7 @@ packages:
       '@types/node': 10.14.1
       chai: 4.2.0
       cpx: 1.5.0
-      electron: 6.1.7
+      electron: 6.1.8
       fs-extra: 6.0.1
       glob: 7.1.6
       istanbul-instrumenter-loader: 3.0.1_webpack@4.41.6
@@ -15012,7 +14957,7 @@ packages:
       body-parser: 1.19.0
       child_process: 1.0.2
       chrome-launcher: 0.10.7
-      electron: 6.1.7
+      electron: 6.1.8
       express: 4.17.1
       npm-run-all: 4.1.5
       null-loader: 0.1.1
@@ -15038,7 +14983,7 @@ packages:
       body-parser: 1.19.0
       child_process: 1.0.2
       cpx: 1.5.0
-      electron: 6.1.7
+      electron: 6.1.8
       express: 4.17.1
       fs-extra: 6.0.1
       npm-run-all: 4.1.5
@@ -15142,7 +15087,7 @@ packages:
   'file:projects/electron-manager.tgz':
     dependencies:
       '@types/node': 10.14.1
-      electron: 6.1.7
+      electron: 6.1.8
       rimraf: 2.7.1
       tslint: 5.20.1_typescript@3.7.5
       tslint-etc: 1.10.0_tslint@5.20.1+typescript@3.7.5
@@ -15168,7 +15113,7 @@ packages:
       chai: 4.2.0
       commander: 2.20.3
       cpx: 1.5.0
-      electron: 6.1.7
+      electron: 6.1.8
       express: 4.17.1
       fs-extra: 6.0.1
       fuse.js: 3.4.6
@@ -15207,7 +15152,7 @@ packages:
       chai: 4.2.0
       commander: 2.20.3
       cpx: 1.5.0
-      electron: 6.1.7
+      electron: 6.1.8
       express: 4.17.1
       fs-extra: 6.0.1
       fuse.js: 3.4.6
@@ -15426,7 +15371,7 @@ packages:
   'file:projects/imodeljs-backend.tgz':
     dependencies:
       '@azure/storage-blob': 10.4.0
-      '@bentley/imodeljs-native': 2.0.1
+      '@bentley/imodeljs-native': 2.0.2
       '@openid/appauth': 1.2.6
       '@types/chai': 4.2.9
       '@types/deep-assign': 0.1.1
@@ -15465,7 +15410,7 @@ packages:
     dev: false
     name: '@rush-temp/imodeljs-backend'
     resolution:
-      integrity: sha512-aHphItoyekKztGIf6gTbKz8K1T1yFeBQf0QCFRERUbOj/nK5gf3XygE6QhW79kS487SK7++vnliQJzZ9oIFxhg==
+      integrity: sha512-Tdgr0NexnBCxyZfzWrMqL5cQAmmntyoB+lkWqna+GbQUWTYCB1nJQteZ0MLekArj/2enFa2pxmsOxQloNyUSfg==
       tarball: 'file:projects/imodeljs-backend.tgz'
     version: 0.0.0
   'file:projects/imodeljs-clients-backend.tgz':
@@ -15730,7 +15675,7 @@ packages:
       '@types/node': 10.14.1
       chai: 4.2.0
       cpx: 1.5.0
-      electron: 6.1.7
+      electron: 6.1.8
       fs-extra: 6.0.1
       glob: 7.1.6
       istanbul-instrumenter-loader: 3.0.1_webpack@4.41.6
@@ -16009,7 +15954,7 @@ packages:
       '@types/react': 16.9.21
       '@types/react-dom': 16.9.5
       autoprefixer: 8.6.5
-      electron: 6.1.7
+      electron: 6.1.8
       electron-chromedriver: 2.0.0
       npm-run-all: 4.1.5
       postcss-flexbugs-fixes: 3.3.1
@@ -16074,7 +16019,7 @@ packages:
       '@types/spdy': 3.4.4
       chai: 4.2.0
       cpx: 1.5.0
-      electron: 6.1.7
+      electron: 6.1.8
       express: 4.17.1
       glob: 7.1.6
       null-loader: 0.1.1
@@ -16126,66 +16071,34 @@ packages:
     dependencies:
       '@bentley/icons-generic': 1.0.0
       '@bentley/icons-generic-webfont': 1.0.0
-      '@testing-library/dom': 5.6.1
-      '@testing-library/react': 8.0.9_react-dom@16.12.0+react@16.12.0
-      '@types/bunyan': 1.8.6
-      '@types/chai': 4.2.9
       '@types/classnames': 2.2.9
-      '@types/express': 4.17.2
-      '@types/jsdom': 12.2.4
       '@types/lorem-ipsum': 1.0.2
-      '@types/mocha': 5.2.7
       '@types/node': 10.14.1
       '@types/react': 16.9.21
       '@types/react-dom': 16.9.5
       '@types/react-redux': 7.1.7
       '@types/semver': 5.5.0
-      '@types/webdriverio': 4.13.3
-      body-parser: 1.19.0
-      bunyan: 1.8.12
-      chai: 4.2.0
       classnames: 2.2.6
       cpx: 1.5.0
-      electron: 6.1.7
+      electron: 6.1.8
       electron-chromedriver: 2.0.0
-      env-cmd: 8.0.2
-      express: 4.17.1
-      file-loader: 4.3.0_webpack@4.41.6
-      ignore-styles: 5.0.1
-      immutable: 3.8.2
-      inspire-tree: 5.0.2
-      jsdom: 11.12.0
-      jsdom-global: 3.0.2_jsdom@11.12.0
-      lodash: 4.17.15
       lorem-ipsum: 2.0.3
       mobx: 5.15.4
       mobx-react: 5.4.4_mobx@5.15.4+react@16.12.0
-      mocha: 5.2.0
-      nodemon: 1.19.4
       npm-run-all: 4.1.5
-      path: 0.12.7
       react: 16.12.0
       react-async-hook: 3.6.1_react@16.12.0
       react-compound-slider: 1.2.2_react@16.12.0
-      react-dnd: 5.0.0_react@16.12.0
-      react-dnd-html5-backend: 5.0.1
       react-dom: 16.12.0_react@16.12.0
-      react-redux: 5.1.2_react@16.12.0+redux@4.0.5
       redux: 4.0.5
       rimraf: 2.7.1
       semver: 5.7.1
-      strip-json-comments-cli: 1.0.1
       svg-baker-runtime: 1.4.3
       svg-sprite-loader: 3.9.2
-      ts-node: 7.0.1
       tslint: 5.20.1_typescript@3.7.5
       tslint-etc: 1.10.0_tslint@5.20.1+typescript@3.7.5
-      tslint-react-hooks: 2.2.1_tslint@5.20.1+typescript@3.7.5
-      typemoq: 2.1.0
       typescript: 3.7.5
       webpack: 4.41.6_webpack@4.41.6
-      webpack-cli: 3.3.11_webpack@4.41.6
-      xmlhttprequest: 1.8.0
     dev: false
     name: '@rush-temp/simple-editor-app'
     resolution:
@@ -16615,7 +16528,7 @@ packages:
       '@types/semver': 5.5.0
       classnames: 2.2.6
       cpx: 1.5.0
-      electron: 6.1.7
+      electron: 6.1.8
       electron-chromedriver: 2.0.0
       lorem-ipsum: 2.0.3
       mobx: 5.15.4
@@ -16773,12 +16686,11 @@ packages:
       integrity: sha512-9dGLVnIhFWhLLLbDc2ZiRuew0hGXYKoYT1pvd/fUKLZMPMLvKFzL+uA8kd9QYJdlD0Vee8gvSdouUwWgICTl5Q==
       tarball: 'file:projects/wms-plugin-example.tgz'
     version: 0.0.0
-registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@bentley/icons-generic': ^1.0.0
   '@bentley/icons-generic-webfont': ^1.0.0
-  '@bentley/imodeljs-native': 2.0.1
+  '@bentley/imodeljs-native': 2.0.2
   '@microsoft/api-extractor': 7.7.3
   '@openid/appauth': ^1.2.6
   '@rush-temp/backend-webpack-tools': 'file:./projects/backend-webpack-tools.tgz'

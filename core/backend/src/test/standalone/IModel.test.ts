@@ -1922,4 +1922,21 @@ describe("iModel", () => {
     });
     iModel.closeSnapshot();
   });
+
+  it("containsClass", () => {
+    assert.isTrue(imodel1.containsClass(Element.classFullName));
+    assert.isTrue(imodel1.containsClass("BisCore:Element"));
+    assert.isTrue(imodel1.containsClass("BisCore.Element"));
+    assert.isTrue(imodel1.containsClass("biscore:element"));
+    assert.isTrue(imodel1.containsClass("biscore.element"));
+    assert.isTrue(imodel1.containsClass("bis:Element"));
+    assert.isTrue(imodel1.containsClass("bis.Element"));
+    assert.isTrue(imodel1.containsClass("bis:element"));
+    assert.isTrue(imodel1.containsClass("bis.element"));
+    assert.isFalse(imodel1.containsClass("BisCore:Element:InvalidExtra"));
+    assert.isFalse(imodel1.containsClass("BisCore"));
+    assert.isFalse(imodel1.containsClass(":Element"));
+    assert.isFalse(imodel1.containsClass("BisCore:InvalidClassName"));
+    assert.isFalse(imodel1.containsClass("InvalidSchemaName:Element"));
+  });
 });

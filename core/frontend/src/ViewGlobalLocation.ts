@@ -61,7 +61,7 @@ export async function queryTerrainElevationOffset(viewport: ScreenViewport, cart
   if (viewport && viewport.view instanceof ViewState3d && viewport.iModel.isGeoLocated) {
     const view3d = viewport.view as ViewState3d;
     if (view3d.displayStyle.displayTerrain) {
-      const elevationOffset = await bingElevationProvider.getHeight(carto, view3d.globeMode === GlobeMode.ThreeD);
+      const elevationOffset = await bingElevationProvider.getHeight(carto, view3d.globeMode === GlobeMode.Ellipsoid);
       if (elevationOffset !== undefined)
         return elevationOffset;
     }
