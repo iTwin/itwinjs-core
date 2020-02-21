@@ -13,6 +13,7 @@ import {
   Logger,
   LogLevel,
   GetMetaDataFunction,
+  GuidString,
 } from "@bentley/bentleyjs-core";
 import {
   Angle,
@@ -42,7 +43,7 @@ import {
   DictionaryModel, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext,
+  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, BriefcaseId,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -1785,6 +1786,35 @@ describe("iModel", () => {
     // tslint:disable-next-line:no-console
     console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
 
+  });
+
+  it("Snapshot iModel properties", () => {
+    const snapshotRootSubjectName = "Snapshot";
+    const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
+    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
+    const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
+    const snapshotDb1: IModelDb = IModelDb.createSnapshot(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName } });
+    const snapshotDb2: IModelDb = snapshotDb1.createSnapshot(snapshotFile2);
+    const snapshotDb3: IModelDb = imodel1.createSnapshot(snapshotFile3);
+    assert.equal(snapshotDb1.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    assert.equal(snapshotDb2.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    assert.equal(snapshotDb3.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    assert.equal(imodel1.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    const iModelGuid1: GuidString = snapshotDb1.getGuid();
+    const iModelGuid2: GuidString = snapshotDb2.getGuid();
+    const iModelGuid3: GuidString = snapshotDb3.getGuid();
+    assert.notEqual(iModelGuid1, iModelGuid2, "Expect different iModel GUIDs for each snapshot");
+    assert.notEqual(iModelGuid2, iModelGuid3, "Expect different iModel GUIDs for each snapshot");
+    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.getValue();
+    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.getValue();
+    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.getValue();
+    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.getValue();
+    assert.equal(rootSubjectName1, snapshotRootSubjectName);
+    assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
+    assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
+    snapshotDb1.closeSnapshot();
+    snapshotDb2.closeSnapshot();
+    snapshotDb3.closeSnapshot();
   });
 
   it("Run plain SQL", () => {
