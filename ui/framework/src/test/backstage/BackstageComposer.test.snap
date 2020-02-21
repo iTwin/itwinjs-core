@@ -21,10 +21,7 @@ exports[`BackstageComposer should render backstage separators 1`] = `
       Object {
         "groupPriority": 100,
         "id": "Stage",
-        "isEnabled": true,
-        "isVisible": true,
         "itemPriority": 50,
-        "itemType": 2,
         "label": "Custom Label",
         "stageId": "stage-1",
         "type": 2,
@@ -39,10 +36,7 @@ exports[`BackstageComposer should render backstage separators 1`] = `
         "execute": [Function],
         "groupPriority": 200,
         "id": "Action",
-        "isEnabled": true,
-        "isVisible": true,
         "itemPriority": 50,
-        "itemType": 1,
         "label": "Custom Label",
         "type": 1,
       }
@@ -73,10 +67,7 @@ exports[`BackstageComposerItem BackstageComposerItem should render action item 1
       "execute": [Function],
       "groupPriority": 100,
       "id": "Action",
-      "isEnabled": true,
-      "isVisible": true,
       "itemPriority": 50,
-      "itemType": 1,
       "label": "Custom Label",
       "type": 1,
     }
@@ -90,10 +81,7 @@ exports[`BackstageComposerItem BackstageComposerItem should render stage launche
     Object {
       "groupPriority": 100,
       "id": "Stage",
-      "isEnabled": true,
-      "isVisible": true,
       "itemPriority": 50,
-      "itemType": 2,
       "label": "Custom Label",
       "stageId": "stage-1",
       "type": 2,

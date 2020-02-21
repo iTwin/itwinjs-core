@@ -1,0 +1,29 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+@import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
+
+.uifw-statusFields-displayStyle {
+  $font-size-medium: $uicore-font-size-small;
+  $font-size-small: $uicore-font-size-smaller;
+  overflow: hidden;
+  padding-right: 0px;
+
+  @include for-tablet-portrait-down {
+    font-size: $font-size-medium;
+
+    .uicore-inputs-select {
+      font-size: $font-size-medium;
+    }
+  }
+
+  @include for-phone-only {
+    font-size: $font-size-small;
+
+    .uicore-inputs-select {
+      font-size: $font-size-small;
+    }
+  }
+}

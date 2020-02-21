@@ -6,6 +6,7 @@
 
 import { BadgeType } from '@bentley/ui-abstract';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
+import { ConditionalStringValue } from '@bentley/ui-abstract';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
@@ -538,6 +539,9 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     y?: number;
 }
 
+// @public
+export const DisabledText: React.FunctionComponent<TextProps>;
+
 // @internal
 export class Div extends React.PureComponent<DivProps> {
     // (undocumented)
@@ -860,7 +864,7 @@ export interface IconProps {
 }
 
 // @public
-export type IconSpec = string | React.ReactNode;
+export type IconSpec = string | ConditionalStringValue | React.ReactNode;
 
 // @beta
 export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
@@ -1588,6 +1592,35 @@ export interface SizeProps {
     readonly width: number;
 }
 
+// @alpha
+export const Slider: React.FC<SliderProps>;
+
+// @alpha
+export interface SliderProps extends CommonProps {
+    disabled?: boolean;
+    formatTick?: (tick: number) => string;
+    formatTooltip?: (value: number) => string;
+    getTickCount?: () => number;
+    getTickValues?: () => number[];
+    includeTicksInWidth?: boolean;
+    max: number;
+    maxImage?: React.ReactNode;
+    min: number;
+    minImage?: React.ReactNode;
+    mode?: number;
+    onChange?: (values: ReadonlyArray<number>) => void;
+    onSlideEnd?: (values: ReadonlyArray<number>) => void;
+    onSlideStart?: (values: ReadonlyArray<number>) => void;
+    onUpdate?: (values: ReadonlyArray<number>) => void;
+    reversed?: boolean;
+    showMinMax?: boolean;
+    showTickLabels?: boolean;
+    showTicks?: boolean;
+    showTooltip?: boolean;
+    step?: number;
+    values: number[];
+}
+
 // @public
 export const SmallText: React.FunctionComponent<TextProps>;
 
@@ -1981,10 +2014,10 @@ export interface UnderlinedButtonProps {
     title?: string;
 }
 
-// @beta
+// @public
 export function useDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable): TDisposable;
 
-// @alpha
+// @public
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 
 // @public

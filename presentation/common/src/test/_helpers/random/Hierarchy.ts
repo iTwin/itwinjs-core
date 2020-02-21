@@ -3,16 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { ECInstanceNodeKey, ECInstancesNodeKey, StandardNodeTypes, Node, NodePathElement } from "../../../presentation-common";
 import {
-  ECInstanceNodeKeyJSON, ECInstancesNodeKeyJSON, ECClassGroupingNodeKey, ECPropertyGroupingNodeKey,
+  ECInstancesNodeKey, StandardNodeTypes, Node, NodePathElement,
+  ECClassGroupingNodeKey, ECPropertyGroupingNodeKey,
   LabelGroupingNodeKey, GroupingNodeKey, BaseNodeKey,
-} from "../../../hierarchy/Key";
-import { NodeJSON } from "../../../hierarchy/Node";
-import { NodePathElementJSON } from "../../../hierarchy/NodePathElement";
+} from "../../../presentation-common";
+import { ECInstancesNodeKeyJSON } from "../../../presentation-common/hierarchy/Key";
+import { NodeJSON } from "../../../presentation-common/hierarchy/Node";
+import { NodePathElementJSON } from "../../../presentation-common/hierarchy/NodePathElement";
 import { nullable, createRandomHexColor, createRandomRgbColor } from "./Misc";
 import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "./EC";
 import { createRandomLabelDefinitionJSON, createRandomLabelDefinition } from "./LabelDefinition";
+import { InstanceKeyJSON, InstanceKey } from "../../../presentation-common/EC";
 
 export const createRandomBaseNodeKey = (): BaseNodeKey => {
   return {
@@ -21,39 +23,20 @@ export const createRandomBaseNodeKey = (): BaseNodeKey => {
   };
 };
 
-/** @deprecated */
-export const createRandomECInstanceNodeKey = (): ECInstanceNodeKey => {
-  return {
-    type: StandardNodeTypes.ECInstanceNode,
-    pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
-    instanceKey: createRandomECInstanceKey(),
-  };
-};
-
-/** @deprecated */
-export const createRandomECInstanceNodeKeyJSON = (): ECInstanceNodeKeyJSON => {
-  return {
-    type: StandardNodeTypes.ECInstanceNode,
-    pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
-    instanceKey: createRandomECInstanceKeyJSON(),
-  };
-};
-
-export const createRandomECInstancesNodeKey = (): ECInstancesNodeKey => {
-  const instanceKeys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
+export const createRandomECInstancesNodeKey = (instanceKeys?: InstanceKey[]): ECInstancesNodeKey => {
+  instanceKeys = instanceKeys ?? [createRandomECInstanceKey(), createRandomECInstanceKey()];
   return {
     type: StandardNodeTypes.ECInstancesNode,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
     instanceKeys,
-    instanceKey: instanceKeys[0],
   };
 };
 
-export const createRandomECInstancesNodeKeyJSON = (): ECInstancesNodeKeyJSON => {
+export const createRandomECInstancesNodeKeyJSON = (instanceKeys?: InstanceKeyJSON[]): ECInstancesNodeKeyJSON => {
   return {
     type: StandardNodeTypes.ECInstancesNode,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
-    instanceKeys: [createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()],
+    instanceKeys: instanceKeys ?? [createRandomECInstanceKeyJSON(), createRandomECInstanceKeyJSON()],
   };
 };
 
@@ -94,12 +77,10 @@ export const createRandomGroupingNodeKey = (groupedInstancesCount?: number): Gro
   throw Error();
 };
 
-export const createRandomECInstanceNode = (): Node => {
-  const labelDefinition = createRandomLabelDefinition();
+export const createRandomECInstancesNode = (): Node => {
   return {
-    key: createRandomECInstanceNodeKey(),
-    label: labelDefinition.displayValue,
-    labelDefinition,
+    key: createRandomECInstancesNodeKey(),
+    label: createRandomLabelDefinition(),
     description: nullable<string>(faker.lorem.sentence),
     imageId: nullable<string>(faker.random.word),
     foreColor: nullable<string>(createRandomHexColor),
@@ -114,10 +95,9 @@ export const createRandomECInstanceNode = (): Node => {
   };
 };
 
-export const createRandomECInstanceNodeJSON = (): NodeJSON => {
+export const createRandomECInstancesNodeJSON = (): NodeJSON => {
   return {
-    key: createRandomECInstanceNodeKeyJSON(),
-    label: faker.random.words(),
+    key: createRandomECInstancesNodeKeyJSON(),
     labelDefinition: createRandomLabelDefinitionJSON(),
     description: nullable<string>(faker.lorem.sentence),
     foreColor: nullable<string>(createRandomHexColor),
@@ -134,7 +114,7 @@ export const createRandomECInstanceNodeJSON = (): NodeJSON => {
 
 export const createRandomNodePathElement = (depth: number = 1): NodePathElement => {
   const el: NodePathElement = {
-    node: createRandomECInstanceNode(),
+    node: createRandomECInstancesNode(),
     index: faker.random.number(999),
     children: [],
   };
@@ -145,7 +125,7 @@ export const createRandomNodePathElement = (depth: number = 1): NodePathElement 
     el.filteringData = {
       matchesCount: faker.random.number(),
       childMatchesCount: faker.random.number(),
-    }
+    };
   }
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });
@@ -157,7 +137,7 @@ export const createRandomNodePathElement = (depth: number = 1): NodePathElement 
 
 export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElementJSON => {
   const el: NodePathElementJSON = {
-    node: createRandomECInstanceNodeJSON(),
+    node: createRandomECInstancesNodeJSON(),
     index: faker.random.number(999),
     children: [],
   };
@@ -168,7 +148,7 @@ export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElem
     el.filteringData = {
       occurances: faker.random.number(),
       childrenOccurances: faker.random.number(),
-    }
+    };
   }
   if (depth > 1) {
     let childrenCount = faker.random.number({ min: 1, max: 5 });

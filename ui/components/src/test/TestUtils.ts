@@ -12,7 +12,7 @@ import {
   CustomFormattedNumberParams,
   BasePropertyEditorParams,
   PropertyEditorInfo,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 import {
   UiComponents, ColumnDescription, FilterableTable, CompositeFilterDescriptorCollection,
 } from "../ui-components";

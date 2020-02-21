@@ -113,7 +113,7 @@ export class PopBatchCommand {
 export class PushBatchCommand {
   public readonly opcode = "pushBatch";
 
-  public constructor (public readonly batch: Batch) { }
+  public constructor(public readonly batch: Batch) { }
 
   public execute(exec: ShaderProgramExecutor): void {
     exec.target.pushBatch(this.batch);
@@ -210,7 +210,7 @@ export class PrimitiveCommand {
       return;
 
     const target = exec.target;
-    const shadowable = techniqueId === TechniqueId.Surface && target.solarShadowMap.isReady && target.currentViewFlags.shadows;
+    const shadowable = (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.TerrainMesh) && target.solarShadowMap.isReady && target.currentViewFlags.shadows;
     const isShadowable = shadowable ? IsShadowable.Yes : IsShadowable.No;
     const isClassified = (undefined !== target.currentPlanarClassifierOrDrape || undefined !== target.activeVolumeClassifierTexture) ? IsClassified.Yes : IsClassified.No;
     const isInstanced = this.primitive.isInstanced ? IsInstanced.Yes : IsInstanced.No;

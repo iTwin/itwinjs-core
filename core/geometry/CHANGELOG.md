@@ -1,6 +1,21 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Implement generic boolean tree of `Clipper` objects (for Feature 269514)
+- Arc3d precise range; BSpline1dNd interval recursion bug; BooleanClip unit tests
+- MomentData quantity sign controls principal direction orientation.
+- BooleanClipFactory enhancements
+- New method ellipsoide.silhouette (eyePoint: Point4d):Arc3d
+- Correct extended geometry handling in LineString3d.closestPoint
+- (a) Control Triangulation of area booleans, (b) methods to find and purge duplicate facets
+- Improve error handling for triangulation and merge of bad input"
+- iModel write API development
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

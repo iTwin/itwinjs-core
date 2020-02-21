@@ -75,13 +75,9 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    if (params.anisotropicFilter) {
-      const ext = System.instance.capabilities.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic");
-      if (undefined !== ext) {
-        const max = Math.min(params.anisotropicFilter, gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT));
-        gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, max);
-      }
-    }
+
+    if (params.anisotropicFilter)
+      System.instance.setMaxAnisotropy(params.anisotropicFilter);
   } else {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, params.interpolate ? gl.LINEAR : gl.NEAREST);

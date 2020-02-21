@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import ResizeObserver from "resize-observer-polyfill";
 import { render, act, fireEvent, queryByText } from "@testing-library/react";
 import { DockedToolSettings, getOverflown, DockedToolSetting } from "../../ui-ninezone";
+import * as ResizeObserverModule from "../../ui-ninezone/base/ResizeObserverPolyfill";
 import { createDOMRect, ResizeObserverMock } from "../Utils";
 
 describe("DockedToolSettings", () => {
@@ -149,7 +149,8 @@ describe("DockedToolSettings", () => {
 
     let resizeObserver: ResizeObserverMock | undefined;
     let target: Element | undefined;
-    sandbox.stub(ResizeObserver.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
+    sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       if (element.classList.contains("nz-toolSettings-docked")) {
         resizeObserver = this;
         target = element;
@@ -190,7 +191,8 @@ describe("DockedToolSettings", () => {
     });
     let resizeObserver: ResizeObserverMock | undefined;
     let target: Element | undefined;
-    sandbox.stub(ResizeObserver.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
+    sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
+    sandbox.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       if (element instanceof HTMLElement && queryByText(element, "Entry 1")) {
         resizeObserver = this;
         target = element;

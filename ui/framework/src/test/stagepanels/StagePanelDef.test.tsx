@@ -32,7 +32,7 @@ describe("StagePanelDef", () => {
   it("applicationData", () => {
     const panelDef = new StagePanelDef();
     panelDef.panelState = StagePanelState.Open;
-    panelDef.applicationData = "AppData";
+    panelDef.initializeFromProps({ resizable: false, applicationData: "AppData" });
     expect(panelDef.applicationData).to.eq("AppData");
   });
 

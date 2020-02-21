@@ -25,6 +25,7 @@ describe("TreeModelSource", () => {
     mutableTreeModelMock.reset();
 
     onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
+    // tslint:disable-next-line:deprecation
     dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => onTreeNodeChanged);
     modelSource = new TreeModelSource();
   });

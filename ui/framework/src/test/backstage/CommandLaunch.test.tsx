@@ -33,9 +33,9 @@ describe("Backstage", () => {
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
       let stateFuncRun = false;
-      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => {
+      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => { // tslint:disable-line:deprecation
         stateFuncRun = true;
-        return { ...state, isEnabled: false } as BackstageItemState;
+        return { ...state, isEnabled: false } as BackstageItemState; // tslint:disable-line:deprecation
       };
       const wrapper = mount(
         <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label"

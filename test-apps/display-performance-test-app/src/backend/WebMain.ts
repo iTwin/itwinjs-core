@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import * as express from "express";
-import * as bodyParser from "body-parser";
 import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
 import { IModelJsFs } from "@bentley/imodeljs-backend";
@@ -82,7 +81,7 @@ if (serverConfig === undefined) {
 const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-performance-test-app", version: "v1.0" } }, getRpcInterfaces());
 
 const app = express();
-app.use(bodyParser.text({ limit: "50mb" }));
+app.use(express.text({ limit: "50mb" }));
 
 // Enable CORS for all apis
 app.all("/*", (_req, res, next) => {

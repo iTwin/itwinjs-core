@@ -443,10 +443,10 @@ describe("CubeNavigationAid", () => {
     };
 
     it("CubeNavigationAidControl creates CubeNavigationAid", () => {
-      const widgetDef = new NavigationWidgetDef(widgetProps);
-      expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
+      const widgetDef = new NavigationWidgetDef(widgetProps); // tslint:disable-line:deprecation
+      expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // tslint:disable-line:deprecation
 
-      const navigationWidgetDef = widgetDef as NavigationWidgetDef;
+      const navigationWidgetDef = widgetDef as NavigationWidgetDef; // tslint:disable-line:deprecation
 
       const reactElement = navigationWidgetDef.reactElement;
       expect(reactElement).to.not.be.undefined;

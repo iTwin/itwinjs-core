@@ -12,9 +12,12 @@ import * as React from "react";
 import classnames from "classnames";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes,
-  InputEditorSizeParams, CustomFormattedNumberParams, IModelApp, NotifyMessageDetails, OutputMessagePriority, IconEditorParams,
+  IModelApp, NotifyMessageDetails, OutputMessagePriority,
 } from "@bentley/imodeljs-frontend";
+import {
+  PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes,
+  InputEditorSizeParams, CustomFormattedNumberParams, IconEditorParams,
+} from "@bentley/ui-abstract";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { UiComponents } from "../UiComponents";
@@ -58,9 +61,9 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
-      const parseResults = (this._formatParams as CustomFormattedNumberParams).parseFunction(this.state.inputValue, record.property.quantityType);
+      const parseResults = (this._formatParams as CustomFormattedNumberParams).parseFunction(this.state.inputValue);
       if (!parseResults.parseError && parseResults.value) {
-        const newDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(parseResults.value as number, record.property!.quantityType);
+        const newDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(parseResults.value as number);
         propertyValue = {
           valueFormat: PropertyValueFormat.Primitive,
           value: parseResults.value,
@@ -77,7 +80,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         // istanbul ignore next
         if (IModelApp.notifications)
           IModelApp.notifications.outputMessage(msg);
-        const displayValue = (record.value.displayValue && record.value.displayValue.length > 0) ? record.value.displayValue : (this._formatParams as CustomFormattedNumberParams).formatFunction(record.value.value as number, record.property!.quantityType);
+        const displayValue = (record.value.displayValue && record.value.displayValue.length > 0) ? record.value.displayValue : (this._formatParams as CustomFormattedNumberParams).formatFunction(record.value.value as number);
         propertyValue = {
           valueFormat: PropertyValueFormat.Primitive,
           value: record.value.value,
@@ -167,7 +170,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       if (primitiveValue.displayValue)
         initialDisplayValue = primitiveValue.displayValue;
       else
-        initialDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(numberValue, record.property!.quantityType);
+        initialDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(numberValue);
     }
 
     let size: number | undefined;
@@ -211,7 +214,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         if (primitiveValue.displayValue)
           initialDisplayValue = primitiveValue.displayValue;
         else
-          initialDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(numberValue, record.property!.quantityType);
+          initialDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(numberValue);
       }
     }
 

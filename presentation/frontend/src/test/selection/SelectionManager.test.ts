@@ -14,10 +14,8 @@ import { waitForPendingAsyncs } from "@bentley/presentation-common/lib/test/_hel
 import { Id64String, Id64, Id64Arg, using } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectionSet, IModelApp, SelectionSetEventType } from "@bentley/imodeljs-frontend";
 import { KeySet, InstanceKey, SelectionScope } from "@bentley/presentation-common";
-import { SelectionManager } from "../../presentation-frontend";
-import { SelectionScopesManager } from "../../selection/SelectionScopesManager";
-import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../selection/SelectionManager";
-import { HiliteSetProvider } from "../../../lib/selection/HiliteSetProvider";
+import { SelectionManager, SelectionScopesManager, HiliteSetProvider } from "../../presentation-frontend";
+import { ToolSelectionSyncHandler, TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
 
 const generateSelection = (): InstanceKey[] => {
   return [
@@ -780,7 +778,7 @@ describe("SelectionManager", () => {
 
   describe("getHiliteSet", () => {
 
-    let factory: sinon.SinonStub<[IModelConnection], HiliteSetProvider>;
+    let factory: sinon.SinonStub<[{ imodel: IModelConnection }], HiliteSetProvider>;
 
     beforeEach(() => {
       const providerMock = moq.Mock.ofType<HiliteSetProvider>();
@@ -798,7 +796,7 @@ describe("SelectionManager", () => {
 
       // call for the first with an imodel should create a provider
       await selectionManager.getHiliteSet(imodelMock1.object);
-      expect(factory).to.be.calledOnceWith(imodelMock1.object);
+      expect(factory).to.be.calledOnceWith({ imodel: imodelMock1.object });
       factory.resetHistory();
 
       // second call with same imodel shouldn't create a new provider
@@ -807,7 +805,7 @@ describe("SelectionManager", () => {
 
       // another imodel - new provider
       await selectionManager.getHiliteSet(imodelMock2.object);
-      expect(factory).to.be.calledOnceWith(imodelMock2.object);
+      expect(factory).to.be.calledOnceWith({ imodel: imodelMock2.object });
       factory.resetHistory();
 
       // make sure we still have provider for the first imodel

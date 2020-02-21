@@ -237,7 +237,8 @@ const isSurfaceBitSet = `
 bool isSurfaceBitSet(float flag) { return 0.0 != extractSurfaceBit(flag); }
 `;
 
-function addSurfaceFlagsLookup(builder: ShaderBuilder) {
+/** @internal */
+export function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceBit_HasTexture", VariableType.Float, "0.0");
   builder.addConstant("kSurfaceBit_ApplyLighting", VariableType.Float, "1.0");
   builder.addConstant("kSurfaceBit_HasNormals", VariableType.Float, "2.0");
@@ -381,12 +382,14 @@ const computeBaseColor = `
   return mix(surfaceColor, texColor, extractSurfaceBit(kSurfaceBit_HasTexture) * floor(mat_texture_weight));
 `;
 
-function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean, withFeatureColor: boolean) {
+/** @internal */
+export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean, withFeatureColor: boolean) {
   const compute = withFeatureOverrides ? (withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags) : getSurfaceFlags;
   builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", compute);
 
   addSurfaceFlagsLookup(builder.vert);
   addSurfaceFlagsLookup(builder.frag);
+
   builder.addUniform("u_surfaceFlags", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_surfaceFlags", (uniform, params) => {
       assert(undefined !== params.geometry.asSurface);

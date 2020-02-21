@@ -33,10 +33,12 @@ describe("ZoneDef", () => {
 
   it("applicationData, allowsMerging, mergeWithZone", () => {
     const zoneDef = new ZoneDef();
-    zoneDef.zoneState = ZoneState.Open;
-    zoneDef.allowsMerging = true;
-    zoneDef.applicationData = "AppData";
-    zoneDef.mergeWithZone = ZoneLocation.CenterRight;
+    zoneDef.initializeFromProps({
+      defaultState: ZoneState.Open,
+      allowsMerging: true,
+      applicationData: "AppData",
+      mergeWithZone: ZoneLocation.CenterRight,
+    });
 
     zoneDef.addWidgetDef(new WidgetDef({
       classId: "Test",
@@ -53,9 +55,11 @@ describe("ZoneDef", () => {
 
   it("addWidgetDef, widgetDefs & getSingleWidgetDef", () => {
     const zoneDef = new ZoneDef();
-    zoneDef.zoneState = ZoneState.Open;
-    zoneDef.allowsMerging = false;
-    zoneDef.applicationData = "AppData";
+    zoneDef.initializeFromProps({
+      defaultState: ZoneState.Open,
+      allowsMerging: false,
+      applicationData: "AppData",
+    });
 
     zoneDef.addWidgetDef(new WidgetDef({
       classId: "Test",

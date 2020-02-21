@@ -35,6 +35,10 @@ describe("ContentControl", () => {
     ConfigurableUiManager.registerControl("TestContentControl", TestContentControl);
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("activated", async () => {
     const myContentGroup: ContentGroup = new ContentGroup({
       id: "myContentGroup",

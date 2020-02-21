@@ -6,6 +6,7 @@
  * @module Views
  */
 import { ContextRealityModelProps, CartographicRange } from "@bentley/imodeljs-common";
+import { Angle } from "@bentley/geometry-core";
 import { IModelConnection } from "./IModelConnection";
 import { IModelApp } from "./IModelApp";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
@@ -132,7 +133,10 @@ export async function findAvailableUnattachedRealityModels(projectid: string, iM
   let realityData: RealityData[];
   if (modelCartographicRange) {
     const iModelRange = modelCartographicRange.getLongitudeLatitudeBoundingBox();
-    realityData = await client.getRealityDataInProjectOverlapping(requestContext, projectid, iModelRange);
+    realityData = await client.getRealityDataInProjectOverlapping(requestContext, projectid, Angle.radiansToDegrees(iModelRange.low.x),
+      Angle.radiansToDegrees(iModelRange.high.x),
+      Angle.radiansToDegrees(iModelRange.low.y),
+      Angle.radiansToDegrees(iModelRange.high.y));
   } else {
     realityData = await client.getRealityDataInProject(requestContext, projectid);
   }

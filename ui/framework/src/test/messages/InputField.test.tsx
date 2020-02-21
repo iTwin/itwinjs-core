@@ -15,6 +15,10 @@ describe("InputFieldMessage", () => {
     KeyboardShortcutManager.closeShortcutsMenu();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should render correctly", () => {
     const sut = enzyme.shallow(
       <InputFieldMessage />,

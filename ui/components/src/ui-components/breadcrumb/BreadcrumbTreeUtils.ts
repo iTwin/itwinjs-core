@@ -7,7 +7,7 @@
  */
 import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren, getLabelString } from "../tree/TreeDataProvider";
 import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table/TableDataProvider";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";
 
 /**

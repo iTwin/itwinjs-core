@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { compareStrings, Dictionary, SortedArray } from "../bentleyjs-core";
+import { compareWithTolerance, compareStringsOrUndefined, compareNumbersOrUndefined, compareBooleans, compareNumbers } from "../Compare";
 
 class Thing {
   public constructor(public readonly first: number, public readonly second: number) { }
@@ -101,12 +102,55 @@ describe("SortedArray", () => {
     expect(found!.compare(id)).to.equal(0);
     list.insert(id);
     expect(list.length).to.equal(2);
-
+    const lengthA = list.length;
     const ids = ["x", "w", "z", "a", "a", "z", "w", "p", "a", "x", "y", "e", "r", "w", "q"];
     for (const toInsert of ids)
       list.insert(new Id(toInsert));
-
+    expect(list.length, "length of protected array").to.equal(ids.length + lengthA);
     expectSorted(list.extractArray(), ids.length + 2, true, (lhs: Id, rhs: Id) => lhs.compare(rhs));
+
+  });
+
+  it("Number array", () => {
+    const listA = new SortedArray<number>(compareNumbers, false);
+    const listB = new SortedArray<number>(compareNumbers, true);
+    expect(listA.isEmpty, "isEmpty").to.be.true;
+    const numbers = [1, 3, 3, 2, 5, 2, 4, 7, 2, 9, 5];
+    let sumAll = 0;
+    let sumBInsert = 0;
+    for (const toInsert of numbers) {
+      listA.insert(toInsert);
+      listB.insert(toInsert, (a: number) => sumBInsert += a);
+      expect(listA.findEqual(toInsert)).is.gte(0);
+      sumAll += toInsert;
+    }
+
+    expect(listA.findEqual(sumAll)).to.be.undefined;   // sum of positives is larger
+
+    expect(sumBInsert).to.equal(sumAll);
+    let sumA = 0;
+    let sumB = 0;
+    listA.forEach((value: number) => sumA += value);
+    listB.forEach((value: number) => sumB += value);
+    expect(sumB).to.equal(sumAll);
+    expect(sumA).to.be.lt(sumAll);
+    const numDuplicates = listB.length - listA.length;
+    expect(listA.length).to.be.lte(listB.length);
+    expect(listA.isEmpty, "isEmpty").to.be.false;
+    let numDuplicatesDuringRemoval = 0;
+    for (const a of numbers) {
+      expect(listB.contains(a)).to.be.true;
+      const removeA = listA.remove(a);
+      expect(listA.contains(a)).to.be.false;
+      const removeB = listB.remove(a);
+      expect(removeB, "listB should have all original entries with duplicates").is.gte(0);
+      if (removeA === -1)   // this must be removal of a dup.
+        numDuplicatesDuringRemoval++;
+    }
+    expect(numDuplicates).to.be.equal(numDuplicatesDuringRemoval);
+    listA.clear();
+    expect(listA.isEmpty).to.be.true;
+
   });
 
   it("Should support iteration", () => {
@@ -124,7 +168,7 @@ describe("SortedArray", () => {
 
     countEntries();
 
-    const contents = [ 6, 5, 1, 3, 2, 4, 4, 6, 5, 5, 5 ];
+    const contents = [6, 5, 1, 3, 2, 4, 4, 6, 5, 5, 5];
     for (const content of contents)
       list.insert(content);
 
@@ -145,6 +189,42 @@ describe("SortedArray", () => {
     }
 
     expect(iter.next().done).to.be.true;
+  });
+});
+
+describe("SortFunctions", () => {
+  it("single Calls", () => {
+    expect(compareStrings("c", "b")).to.equal(1);
+    expect(compareStrings("b", "c")).to.equal(-1);
+    expect(compareStrings("olaf", "olaf")).to.equal(0);
+
+    expect(compareWithTolerance(10, 20, 2)).to.equal(-1);
+    expect(compareWithTolerance(20, 10, 2)).to.equal(1);
+
+    expect(compareWithTolerance(10, 11, 2)).to.equal(0);
+    expect(compareWithTolerance(11, 10, 2)).to.equal(0);
+    expect(compareWithTolerance(10, 10, 2)).to.equal(0);
+    // undefined precedes anything ..
+    expect(compareStringsOrUndefined("a", undefined)).to.equal(1);
+    expect(compareStringsOrUndefined(undefined, "a")).to.equal(-1);
+    expect(compareStringsOrUndefined(undefined, undefined)).to.equal(0);
+    expect(compareStringsOrUndefined("c", "b")).to.equal(1);
+    expect(compareStringsOrUndefined("b", "c")).to.equal(-1);
+    expect(compareStringsOrUndefined("olaf", "olaf")).to.equal(0);
+
+    // !!! number comparison is b-a, rather than strict -1,0,1
+    expect(compareNumbersOrUndefined(1, 2)).to.equal(-1);
+    expect(compareNumbersOrUndefined(5, 2)).to.equal(3);
+    expect(compareNumbersOrUndefined(undefined, undefined)).to.equal(0);
+    expect(compareNumbersOrUndefined(undefined, 2)).to.equal(-1);
+    expect(compareNumbersOrUndefined(5, undefined)).to.equal(1);
+    for (const b0 of [false, true]) {
+      const number0 = b0 ? 1 : 0;
+      for (const b1 of [false, true]) {
+        const number1 = b1 ? 1 : 0;
+        expect(compareBooleans(b0, b1)).to.equal(compareNumbers(number0, number1));
+      }
+    }
   });
 });
 
@@ -192,7 +272,7 @@ describe("Dictionary", () => {
 
     countEntries();
 
-    const sorted = [ ["four", 4], ["one", 1], ["three", 3], ["two", 2] ];
+    const sorted = [["four", 4], ["one", 1], ["three", 3], ["two", 2]];
     let index = 0;
     for (const kvp of dict) {
       expect(kvp.key).to.equal(sorted[index][0]);

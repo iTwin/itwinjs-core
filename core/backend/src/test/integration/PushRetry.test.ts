@@ -85,22 +85,22 @@ describe("PushRetry", () => {
         const instanceChange: any = ChangeSummaryManager.queryInstanceChange(testIModel, Id64.fromJSON(row.id));
         switch (instanceChange.opCode) {
           case ChangeOpCode.Insert: {
-            const rows: any[] = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.AfterInsert));
+            const rows: any[] = IModelTestUtils.executeQuery(testIModel, ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.AfterInsert));
             assert.equal(rows.length, 1);
             instanceChange.after = rows[0];
             break;
           }
           case ChangeOpCode.Update: {
-            let rows: any[] = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.BeforeUpdate));
+            let rows: any[] = IModelTestUtils.executeQuery(testIModel, ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.BeforeUpdate));
             assert.equal(rows.length, 1);
             instanceChange.before = rows[0];
-            rows = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.AfterUpdate));
+            rows = IModelTestUtils.executeQuery(testIModel, ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.AfterUpdate));
             assert.equal(rows.length, 1);
             instanceChange.after = rows[0];
             break;
           }
           case ChangeOpCode.Delete: {
-            const rows: any[] = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.BeforeDelete));
+            const rows: any[] = IModelTestUtils.executeQuery(testIModel, ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.BeforeDelete));
             assert.equal(rows.length, 1);
             instanceChange.before = rows[0];
             break;

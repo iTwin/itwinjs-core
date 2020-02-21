@@ -5,6 +5,8 @@
 import * as React from "react";
 import { mount, shallow } from "enzyme";
 import * as moq from "typemoq";
+
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import {
   StagePanel as NZ_StagePanel,
   StagePanelTarget,
@@ -12,7 +14,6 @@ import {
 import {
   FrameworkStagePanel,
   FrameworkStagePanelProps,
-  StagePanelLocation,
   SplitterPaneTarget,
 } from "../../ui-framework";
 

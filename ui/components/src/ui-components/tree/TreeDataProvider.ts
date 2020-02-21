@@ -10,7 +10,7 @@ import { CheckBoxState } from "@bentley/ui-core";
 import { PageOptions } from "../common/PageOptions";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { ItemStyle } from "../properties/ItemStyle";
-import { PrimitiveValue, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue, PropertyRecord } from "@bentley/ui-abstract";
 
 /**
  * A node item which can be displayed in a tree.
@@ -80,6 +80,7 @@ export type TreeDataProviderMethod = (node?: TreeNodeItem) => Promise<DelayLoade
  * @public
  */
 export interface ITreeDataProvider {
+  /** @deprecated */
   onTreeNodeChanged?: BeEvent<TreeDataChangesListener>;
   getNodesCount(parent?: TreeNodeItem): Promise<number>;
   getNodes(parent?: TreeNodeItem, page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]>;

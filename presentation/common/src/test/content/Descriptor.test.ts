@@ -6,10 +6,10 @@ import { expect } from "chai";
 import * as faker from "faker";
 import {
   createRandomDescriptorJSON, createRandomDescriptor, createRandomPrimitiveField, createRandomCategory,
-  createRandomECClassInfo, createRandomRelationshipPath, createRandomNestedFieldJSON, createRandomPrimitiveFieldJSON
+  createRandomECClassInfo, createRandomRelationshipPath, createRandomNestedFieldJSON, createRandomPrimitiveFieldJSON,
 } from "../_helpers/random";
 import { Descriptor, Field, NestedContentField, StructTypeDescription, PropertyValueFormat } from "../../presentation-common";
-import { DescriptorJSON, DescriptorSource } from "../../content/Descriptor";
+import { DescriptorJSON, DescriptorSource } from "../../presentation-common/content/Descriptor";
 
 describe("Descriptor", () => {
 

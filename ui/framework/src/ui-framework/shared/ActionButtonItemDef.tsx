@@ -68,8 +68,9 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     return key;
   }
 
+  /** @internal */
   public toolbarReactNode(index?: number): React.ReactNode {
-    if (!this.isVisible)
+    if (!this.isVisible) // tslint:disable-line:deprecation
       return null;
 
     const key = this.getKey(index);

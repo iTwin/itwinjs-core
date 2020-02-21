@@ -6,6 +6,10 @@
  * @module Measure
  */
 
+import {
+  ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
+  PrimitiveValue, PropertyDescription,
+} from "@bentley/ui-abstract";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Point3d, XYAndZ, XAndY, Vector3d, Matrix3d, PointString3d, AxisOrder, Point2d, IModelJson, Plane3dByOriginAndUnitNormal, PolygonOps } from "@bentley/geometry-core";
@@ -25,13 +29,6 @@ import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
 import { Id64String, Id64Array, Id64 } from "@bentley/bentleyjs-core";
 import { ToolAssistance, ToolAssistanceSection, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod } from "./ToolAssistance";
 import { EditManipulator } from "./EditManipulator";
-import {
-  ToolSettingsPropertyRecord,
-  ToolSettingsPropertySyncItem,
-  ToolSettingsValue,
-} from "../properties/ToolSettingsValue";
-import { PrimitiveValue } from "../properties/Value";
-import { PropertyDescription } from "../properties/Description";
 
 function translateBold(key: string) { return "<b>" + CoreTools.translate("Measure.Labels." + key) + ":</b> "; }
 

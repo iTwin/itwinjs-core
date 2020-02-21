@@ -10,7 +10,7 @@ import sinon from "sinon";
 import { BooleanEditor } from "../../ui-components/editors/BooleanEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue } from "@bentley/ui-abstract";
 
 describe("<BooleanEditor />", () => {
   it("should render", () => {

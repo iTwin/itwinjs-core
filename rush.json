@@ -271,6 +271,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/geonames-plugin",
+      "projectFolder": "plugins/geonames",
+      "reviewCategory": "plugins",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/geo-photo-plugin",
       "projectFolder": "plugins/geo-photo",
       "reviewCategory": "plugins",
@@ -389,6 +396,12 @@
     {
       "packageName": "core-full-stack-tests",
       "projectFolder": "full-stack-tests/core",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "native-app-full-stack-tests",
+      "projectFolder": "full-stack-tests/native-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

@@ -6,12 +6,15 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
-import { render, cleanup, fireEvent } from "@testing-library/react";
+import { render, cleanup } from "@testing-library/react";
+
+import {
+  WidgetState,
+} from "@bentley/ui-abstract";
 
 import TestUtils from "../TestUtils";
 import {
   AnyWidgetProps,
-  WidgetState,
   ToolWidgetDef,
   ToolButton,
   GroupButton,
@@ -22,142 +25,10 @@ import {
   ItemList,
   FrontstageManager,
   GroupItemDef,
-  ConditionalItemDef,
-  BaseItemState,
   ToolbarDragInteractionContext,
 } from "../../ui-framework";
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { PluginUiProvider, PluginUiManager, ActionItemInsertSpec, GroupItemInsertSpec, ToolbarItemInsertSpec, ToolbarItemType, ConditionalDisplayType } from "@bentley/ui-abstract";
-
-import { SyncUiEventDispatcher } from "../../ui-framework/syncui/SyncUiEventDispatcher";
-
-let showConditionalTool = true;
-// cSpell:ignore toolwidgettest visibilitytoggled
-const testEventId = "toolwidgettest.visibilitytoggled";
-const toggleToolTitle = "plugin-conditional1";
-
-class TestUiProvider implements PluginUiProvider {
-  public readonly id = "TestUiProvider";
-  public provideToolbarItems(toolBarId: string): ToolbarItemInsertSpec[] {
-    if (toolBarId.includes("ToolWidget-horizontal")) {
-      const firstActionSpec: ActionItemInsertSpec = {
-        itemType: ToolbarItemType.ActionButton,
-        itemId: "plugin-action1",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "plugin-action1",
-      };
-      const conditionalActionSpec: ActionItemInsertSpec = {
-        itemType: ToolbarItemType.ActionButton,
-        itemId: "plugin-conditional1",
-        condition: {
-          type: ConditionalDisplayType.Visibility,
-          testFunc: (): boolean => {
-            return true === showConditionalTool;
-          },
-          syncEventIds: [testEventId],
-        },
-        execute: (): void => {
-          showConditionalTool = !showConditionalTool;
-          SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
-        },
-        icon: "icon-developer",
-        label: toggleToolTitle,
-      };
-
-      const hGroupTool1ActionSpec: ActionItemInsertSpec = {
-        itemType: ToolbarItemType.ActionButton,
-        itemId: "plugin-group1-entry1",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "plugin-group1-entry1",
-      };
-
-      const hGroupTool2ActionSpec: ActionItemInsertSpec = {
-        itemType: ToolbarItemType.ActionButton,
-        itemId: "plugin-group1-entry2",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "plugin-group1-entry2",
-      };
-
-      const horizontalToolbarGroupSpec: GroupItemInsertSpec = {
-        itemType: ToolbarItemType.GroupButton,
-        itemId: "plugin-group1",
-        icon: "icon-developer",
-        label: "plugin-group1",
-        condition: {
-          type: ConditionalDisplayType.EnableState,
-          testFunc: (): boolean => {
-            return true === showConditionalTool;
-          },
-          syncEventIds: [testEventId],
-        },
-        items: [hGroupTool1ActionSpec, hGroupTool2ActionSpec],
-      };
-
-      return [conditionalActionSpec, firstActionSpec, horizontalToolbarGroupSpec];
-    }
-
-    if (toolBarId.includes("ToolWidget-vertical")) {
-      const nestedVerticalActionSpec: ActionItemInsertSpec = {
-        itemType: ToolbarItemType.ActionButton,
-        parentToolGroupId: "test:GroupByDef",
-        itemId: "plugin-vertical-nested-action",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "plugin-vertical-nested-action",
-      };
-
-      const groupChild1Spec: ActionItemInsertSpec = {
-        itemType: ToolbarItemType.ActionButton,
-        itemId: "plugin-vertical-group1-action1",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "plugin-vertical-group1-action1",
-      };
-
-      const groupChild2Spec: ActionItemInsertSpec = {
-        itemType: ToolbarItemType.ActionButton,
-        itemId: "plugin-vertical-group1-action2",
-        execute: (): void => {
-          // tslint:disable-next-line: no-console
-          console.log("Got Here!");
-        },
-        icon: "icon-developer",
-        label: "plugin-vertical-group1-action2",
-      };
-
-      const groupActionSpec: GroupItemInsertSpec = {
-        itemType: ToolbarItemType.GroupButton,
-        itemId: "plugin-vertical-group1",
-        icon: "icon-developer",
-        label: "plugin-vertical-group1",
-        items: [groupChild1Spec, groupChild2Spec],
-      };
-
-      return [nestedVerticalActionSpec, groupActionSpec];
-    }
-
-    return [];
-  }
-}
 
 const testCallback = sinon.stub();
 
@@ -244,10 +115,10 @@ describe("ToolWidget", () => {
 
     it("ToolWidgetDef from WidgetProps", () => {
 
-      const widgetDef = new ToolWidgetDef(widgetProps);
-      expect(widgetDef).to.be.instanceof(ToolWidgetDef);
+      const widgetDef = new ToolWidgetDef(widgetProps); // tslint:disable-line:deprecation
+      expect(widgetDef).to.be.instanceof(ToolWidgetDef); // tslint:disable-line:deprecation
 
-      const toolWidgetDef = widgetDef as ToolWidgetDef;
+      const toolWidgetDef = widgetDef as ToolWidgetDef; // tslint:disable-line:deprecation
       backstageToggleCommand.execute();
       expect(testCallback.calledOnce).to.be.true;
 
@@ -260,7 +131,7 @@ describe("ToolWidget", () => {
 
     it("ToolWidget should render", () => {
       const wrapper = mount(
-        <ToolWidget
+        <ToolWidget // tslint:disable-line:deprecation
           appButton={backstageToggleCommand}
           horizontalToolbar={horizontalToolbar}
           verticalToolbar={verticalToolbar}
@@ -271,7 +142,7 @@ describe("ToolWidget", () => {
 
     it("ToolWidget should render correctly", () => {
       shallow(
-        <ToolWidget
+        <ToolWidget // tslint:disable-line:deprecation
           id="toolWidget"
           appButton={backstageToggleCommand}
           horizontalToolbar={horizontalToolbar}
@@ -282,7 +153,7 @@ describe("ToolWidget", () => {
 
     it("ToolWidget should support update", () => {
       const wrapper = mount(
-        <ToolWidget
+        <ToolWidget // tslint:disable-line:deprecation
           button={<button />}
           horizontalToolbar={horizontalToolbar}
           verticalToolbar={verticalToolbar}
@@ -299,7 +170,7 @@ describe("ToolWidget", () => {
 
     it("ToolWidget should tool activated", () => {
       const wrapper = mount(
-        <ToolWidget
+        <ToolWidget // tslint:disable-line:deprecation
           button={<button />}
           horizontalToolbar={horizontalToolbar}
           verticalToolbar={verticalToolbar}
@@ -345,7 +216,7 @@ describe("ToolWidget", () => {
       position: `absolute`,
     };
 
-    it("Render Plugin items to Dom", async () => {
+    it("Render items to Dom", async () => {
       const group1 = new GroupItemDef({
         groupId: "test:GroupByDef",
         label: "Tool Group (from def)",
@@ -353,14 +224,6 @@ describe("ToolWidget", () => {
         items: [CoreTools.walkViewCommand, CoreTools.windowAreaCommand],
         itemsInColumn: 4,
       });
-
-      const testItemEventId = "test-conditional-event";
-      const testItemStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        returnState.isEnabled = true;
-        returnState.isVisible = true;
-        return returnState;
-      };
 
       const testH1Def = new CommandItemDef({
         commandId: "test-h1-tool",
@@ -376,29 +239,14 @@ describe("ToolWidget", () => {
         label: "test-v1-tool",
       });
 
-      const testC1Def = new CommandItemDef({
-        commandId: "test-c1-tool",
-        execute: (): void => { },
-        iconSpec: "icon-developer",
-        label: "test-c1-tool",
-      });
-
-      const conditionItemDef = new ConditionalItemDef({
-        items: [testC1Def],
-        stateSyncIds: [testItemEventId],
-        stateFunc: testItemStateFunc,
-      });
-
-      const hItemList = new ItemList([testH1Def, conditionItemDef]);
+      const hItemList = new ItemList([testH1Def]);
       const vItemList = new ItemList([testV1Def, group1]);
-
-      showConditionalTool = true;
 
       const component = render(
         <div style={parentDivStyle}>
           <div style={toolWidgetDivStyle} className="nz-zones-zone">
             <ToolbarDragInteractionContext.Provider value={true}>
-              <ToolWidget
+              <ToolWidget // tslint:disable-line:deprecation
                 appButton={backstageToggleCommand}
                 horizontalItems={hItemList}
                 verticalItems={vItemList}
@@ -410,24 +258,6 @@ describe("ToolWidget", () => {
 
       expect(component).not.to.be.null;
       // tslint:disable-next-line: no-console
-
-      const testUiProvider = new TestUiProvider();
-      PluginUiManager.register(testUiProvider);
-      await TestUtils.flushAsyncOperations();
-
-      expect(showConditionalTool).to.be.true;
-      let toggleButton = component.queryByTitle(toggleToolTitle) as HTMLButtonElement;
-      expect(toggleButton).not.to.be.null;
-
-      fireEvent.click(toggleButton);
-      expect(showConditionalTool).to.be.false;
-      toggleButton = component.queryByTitle(toggleToolTitle) as HTMLButtonElement;
-      expect(toggleButton).to.be.null;
-
-      // component.debug();
-      const insertedItem = component.queryAllByTitle("plugin-vertical-group1-action1");
-      expect(insertedItem.length).to.eq(1);
-      PluginUiManager.unregister(testUiProvider.id);
     });
   });
 });

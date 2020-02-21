@@ -6,11 +6,12 @@ import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
 
+import { WidgetState } from "@bentley/ui-abstract";
+
 import TestUtils from "../TestUtils";
 import {
   ActivityCenterField,
   StatusBarWidgetControl,
-  WidgetState,
   ConfigurableUiControlType,
   WidgetDef,
   ConfigurableCreateInfo,

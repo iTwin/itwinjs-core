@@ -1,0 +1,22 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.uifw-widgetPanels-toolbars {
+  display: grid;
+  height: 100%;
+  width: 100%;
+  padding: 0.75em;
+  box-sizing: border-box;
+  grid-auto-columns: 1fr 1fr;
+
+  .nz-widget-tools {
+    grid-column: 1;
+
+    &.nz-navigation {
+      grid-column: 2;
+    }
+  }
+}

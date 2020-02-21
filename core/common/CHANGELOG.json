@@ -2,6 +2,42 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "1.12.0",
+      "tag": "@bentley/imodeljs-common_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump tile format version."
+          },
+          {
+            "comment": "iModel write API development"
+          },
+          {
+            "comment": "Fix issue with constructing the tile cache URL() on Safari."
+          },
+          {
+            "comment": "Prevent reuse of cached tiles after project extents change."
+          },
+          {
+            "comment": "VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. "
+          },
+          {
+            "comment": "Define ViewDetails for manipulating optional detail settings of ViewDefinition and ViewState."
+          },
+          {
+            "comment": "Add support for plan projection models with 3d display priority."
+          },
+          {
+            "comment": "Add settings to control display of plan projection models."
+          },
+          {
+            "comment": "Add PlanProjectionSettings.enforceDisplayPriority."
+          }
+        ]
+      }
+    },
+    {
       "version": "1.11.0",
       "tag": "@bentley/imodeljs-common_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",

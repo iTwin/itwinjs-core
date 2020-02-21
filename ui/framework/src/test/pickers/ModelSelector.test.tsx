@@ -6,7 +6,7 @@ import * as React from "react";
 import { expect } from "chai";
 import { render, cleanup } from "@testing-library/react";
 
-import { HierarchyBuilder, initializeAsync, terminate } from "@bentley/presentation-testing";
+import { HierarchyBuilder, initialize, terminate } from "@bentley/presentation-testing";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -23,7 +23,7 @@ describe("ModelSelector", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    await initializeAsync();
+    await initialize();
   });
 
   after(() => {
@@ -33,7 +33,7 @@ describe("ModelSelector", () => {
 
   beforeEach(async () => {
     imodel = await IModelConnection.openSnapshot(testIModelPath);
-    hierarchyBuilder = new HierarchyBuilder(imodel);
+    hierarchyBuilder = new HierarchyBuilder({ imodel });
   });
 
   afterEach(async () => {
@@ -49,7 +49,7 @@ describe("ModelSelector", () => {
     });
 
     it("generates correct models' hierarchy", async () => {
-      const builder = new HierarchyBuilder(imodel);
+      const builder = new HierarchyBuilder({ imodel });
       const hierarchy = await builder.createHierarchy(ruleset);
       expect(hierarchy).to.matchSnapshot();
     });
@@ -87,7 +87,7 @@ describe("ModelSelector", () => {
     afterEach(cleanup);
 
     it("should render", async () => {
-      const component = render(<ModelSelectorWidget iModelConnection={imodel} />);
+      const component = render(<ModelSelectorWidget iModelConnection={imodel} />); // tslint:disable-line:deprecation
       const widget = component.getByTestId("model-selector-widget");
       expect(widget).to.exist;
     });

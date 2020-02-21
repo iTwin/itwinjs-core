@@ -6,6 +6,7 @@
  * @module Tools
  */
 
+import { ToolSettingsPropertySyncItem, ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/ui-abstract";
 import { BeEvent, AbandonedError, Logger, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter, Easing } from "@bentley/imodeljs-common";
@@ -13,7 +14,6 @@ import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { LocateOptions } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { ToolSettingsPropertySyncItem, ToolSettingsPropertyItem, ToolSettingsValue } from "../properties/ToolSettingsValue";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
@@ -385,17 +385,30 @@ export class ToolAdmin {
 
   private static readonly _removals: VoidFunction[] = [];
 
-  /** Handler that wants to process synching latest tool setting properties with UI.
+  /** The registered handler method that will update the UI with any property value changes.
    *  @internal
    */
   private _toolSettingsChangeHandler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined = undefined;
 
-  /** Set by object that will be provide UI for tool settings properties.
+  /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool.
    * @internal
    */
   public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
   public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined) {
     this._toolSettingsChangeHandler = handler;
+  }
+
+  /** The registered handler method that will trigger UI Sync processing.
+   *  @internal
+   */
+  private _toolSyncUiEventDispatcher: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined = undefined;
+
+  /** Returns the handler registered by the UI layer that will trigger UiSyncEvent processing that informs UI component to refresh their state.
+   * @internal
+   */
+  public get toolSyncUiEventDispatcher() { return this._toolSyncUiEventDispatcher; }
+  public set toolSyncUiEventDispatcher(handler: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined) {
+    this._toolSyncUiEventDispatcher = handler;
   }
 
   /** Handler for keyboard events. */
@@ -1381,6 +1394,44 @@ export class ToolAdmin {
       this.toolSettingsChangeHandler(toolId, syncProperties);
   }
 
+  /** Method used by interactive tools to inform one or more UI components to refresh. This is typically used to update labels or icons associated with a specific tool.
+   * This method should be used when the caller wants the UI layer to process the sync event immediately. Use dispatchUiSyncEvent when the event may be triggered while other
+   * more important user interaction processing is required.
+   * @param specificSyncEventId Optional sync event id. If not specified then "tool-admin-refresh-ui" is used.
+   * @param toolId Optional, will be used if specificSyncEventId is not specified. If used, the resulting sync event Id will be created using `tool-admin-refresh-ui-${toolId}`.toLowerCase()
+   * @beta
+   */
+  public dispatchImmediateUiSyncEvent(specificSyncEventId?: string, toolId?: string): void {
+    const defaultRefreshEventId = "tool-admin-refresh-ui";
+    if (this.toolSyncUiEventDispatcher) {
+      if (specificSyncEventId)
+        this.toolSyncUiEventDispatcher(specificSyncEventId.toLowerCase(), true);
+      else if (toolId)
+        this.toolSyncUiEventDispatcher(`${defaultRefreshEventId}-${toolId}`.toLowerCase(), true);
+      else
+        this.toolSyncUiEventDispatcher(defaultRefreshEventId, true);
+    }
+  }
+
+  /** Method used by interactive tools to inform one or more UI components to refresh. This is typically used to update labels or icons associated with a specific tool.
+   * This method should be used when the caller wants the UI layer to process the sync event on a timer, waiting a few 100 ms, allowing other events that may require a UI refresh
+   * to be processed together.
+   * @param specificSyncEventId Optional sync event id. If not specified then "tool-admin-refresh-ui" is used.
+   * @param toolId Optional, will be used if specificSyncEventId is not specified. If used, the resulting sync event Id will be created using `tool-admin-refresh-ui-${toolId}`.toLowerCase()
+   * @beta
+   */
+  public dispatchUiSyncEvent(specificSyncEventId?: string, toolId?: string): void {
+    const defaultRefreshEventId = "tool-admin-refresh-ui";
+    if (this.toolSyncUiEventDispatcher) {
+      if (specificSyncEventId)
+        this.toolSyncUiEventDispatcher(specificSyncEventId.toLowerCase());
+      else if (toolId)
+        this.toolSyncUiEventDispatcher(`${defaultRefreshEventId}-${toolId}`.toLowerCase());
+      else
+        this.toolSyncUiEventDispatcher(defaultRefreshEventId);
+    }
+  }
+
   /**
    * Starts the default tool, if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
    * @note The default tool is expected to be a subclass of [[PrimitiveTool]]. A call to startDefaultTool is required to terminate
@@ -1644,8 +1695,10 @@ export class WheelEventProcessor {
       const zDir = view.getZVector();
       target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
 
-      status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens);
-      vp.synchWithView(animationOptions);
+      if (ViewStatus.Success === (status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens)))
+        vp.synchWithView(animationOptions);
+      else
+        vp.view.showFrustumErrorMessage(status);
     } else {
       const targetNpc = vp.worldToNpc(target);
       const trans = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1));

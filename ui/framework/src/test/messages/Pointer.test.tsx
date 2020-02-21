@@ -18,6 +18,10 @@ describe("PointerMessage", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   afterEach(() => {
     sandbox.restore();
   });

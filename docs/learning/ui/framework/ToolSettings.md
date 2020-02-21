@@ -16,16 +16,16 @@ If the 'Active' Tool updates a property that is being displayed by a type editor
 
 ### Classes and Interfaces used the the Default Tool Settings Provider
 
-The following classes defined within the imodeljs-frontend package are used by the Default Tool Settings Provider.
+The following classes defined within the ui-abstract package are used by the Default Tool Settings Provider.
 
-* [ToolSettingsPropertyRecord]($imodeljs-frontend)
-* [PropertyRecord]($imodeljs-frontend)
-* [PropertyDescription]($imodeljs-frontend)
-* [ToolSettingsValue]($imodeljs-frontend)
-* [ToolSettingsPropertySyncItem]($imodeljs-frontend)
-* [EditorPosition]($imodeljs-frontend)
-* [PropertyEditorParamTypes]($imodeljs-frontend)
-* [PropertyValue]($imodeljs-frontend)
+* [ToolSettingsPropertyRecord]($ui-abstract)
+* [PropertyRecord]($ui-abstract)
+* [PropertyDescription]($ui-abstract)
+* [ToolSettingsValue]($ui-abstract)
+* [ToolSettingsPropertySyncItem]($ui-abstract)
+* [EditorPosition]($ui-abstract)
+* [PropertyEditorParamTypes]($ui-abstract)
+* [PropertyValue]($ui-abstract)
 
 ## API Reference
 

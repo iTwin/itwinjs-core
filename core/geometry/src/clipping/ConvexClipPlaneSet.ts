@@ -352,7 +352,7 @@ export class ConvexClipPlaneSet implements Clipper {
     for (const plane of this._planes) {
       const hA = - plane.altitude(pointA);
       const hB = - plane.altitude(pointB);
-      fraction = Geometry.safeDivideFraction(-hA, (hB - hA), 0.0);
+      fraction = Geometry.conditionalDivideFraction(-hA, (hB - hA));
       if (fraction === undefined) {
         // LIne parallel to the plane.  If positive, it is all OUT
         if (hA > 0.0)

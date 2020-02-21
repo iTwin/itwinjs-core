@@ -9,7 +9,7 @@
 import * as React from "react";
 
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { StringGetter } from "@bentley/ui-abstract";
+import { StringGetter, ConditionalStringValue } from "@bentley/ui-abstract";
 import { CommonProps, Icon, BadgeUtilities } from "@bentley/ui-core";
 import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
 
@@ -19,6 +19,7 @@ import { BaseItemState } from "../shared/ItemDefBase";
 import { UiFramework } from "../UiFramework";
 import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { ToolItemProps } from "../shared/ItemProps";
+import { PropsHelper } from "../utils/PropsHelper";
 
 /** Properties for the [[ToolButton]] React Component.
  * @public
@@ -30,7 +31,7 @@ export interface ToolButtonProps extends ToolItemProps, CommonProps { }
  */
 export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> {
   private _componentUnmounting = false;
-  private _label: string | StringGetter = "";
+  private _label: string | StringGetter | ConditionalStringValue = "";
 
   /** @internal */
   public readonly state: Readonly<BaseItemState>;
@@ -44,8 +45,8 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
       this._label = UiFramework.i18n.translate(props.labelKey);
 
     this.state = {
-      isVisible: undefined !== props.isVisible ? props.isVisible : true,
-      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true,
+      isVisible: undefined !== props.isVisible ? props.isVisible : true, // tslint:disable-line:deprecation
+      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true, // tslint:disable-line:deprecation
       isActive: undefined !== props.isActive ? props.isActive : false,
       isPressed: undefined !== props.isPressed ? props.isPressed : false,
     };
@@ -64,12 +65,12 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
       refreshState = true;
     }
 
-    if (!refreshState && this.props.stateSyncIds && this.props.stateSyncIds.length > 0)
-      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+    if (!refreshState && this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // tslint:disable-line:deprecation
+      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // tslint:disable-line:deprecation
 
     if (refreshState) {
-      if (this.props.stateFunc)
-        newState = this.props.stateFunc(newState);
+      if (this.props.stateFunc) // tslint:disable-line:deprecation
+        newState = this.props.stateFunc(newState); // tslint:disable-line:deprecation
 
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         this.setState({
@@ -109,12 +110,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
   }
 
   public get label(): string {
-    let label = "";
-    if (typeof this._label === "string")
-      label = this._label;
-    else
-      label = this._label();
-    return label;
+    return PropsHelper.getStringFromSpec(this._label);
   }
 
   public render(): React.ReactNode {

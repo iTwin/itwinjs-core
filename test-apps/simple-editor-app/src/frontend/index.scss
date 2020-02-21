@@ -1,0 +1,17 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+@import "@bentley/ui-core/lib/ui-core/index";
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: $uicore-sans;
+  color: $buic-foreground-body;
+}
+
+.red-text {
+  color: red;
+}

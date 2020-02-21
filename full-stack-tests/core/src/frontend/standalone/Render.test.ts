@@ -133,14 +133,11 @@ describe("Render mirukuru with VAOs disabled", () => {
   });
 });
 
-describe("Properly create on-screen viewport with directScreenRendering enabled", () => {
+describe("Properly render on- or off-screen", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    const renderSysOpts: RenderSystem.Options = {};
-    renderSysOpts.directScreenRendering = true;
-
-    IModelApp.startup({ renderSys: renderSysOpts });
+    IModelApp.startup();
     const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
     imodel = await IModelConnection.openSnapshot(imodelLocation);
   });

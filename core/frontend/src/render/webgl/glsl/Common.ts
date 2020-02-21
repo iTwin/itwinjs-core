@@ -12,7 +12,6 @@ import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
 import { ShaderFlags } from "../ShaderProgram";
 import { System, RenderType } from "../System";
-import { assert } from "@bentley/bentleyjs-core";
 
 const extractShaderBit = `
   float extractShaderBit(float flag) { return extractNthBit(floor(u_shaderFlags + 0.5), flag); }
@@ -34,13 +33,14 @@ function addShaderFlagsLookup(shader: ShaderBuilder) {
 }
 
 function setShaderFlags(uniform: UniformHandle, params: DrawParams) {
-  assert(params.geometry.asLUT !== undefined);
-  const geom = params.geometry.asLUT!;
   let flags = params.target.currentShaderFlags;
-
-  const color = geom.getColor(params.target);
-  if (color.isNonUniform)
-    flags |= ShaderFlags.NonUniformColor;
+  const geom = params.geometry.asLUT;
+  if (undefined !== geom) {
+    // Could also be TerrainMeshGeometry, so only detect non-uniform color if explicitly LUTGeometry.
+    const color = geom.getColor(params.target);
+    if (color.isNonUniform)
+      flags |= ShaderFlags.NonUniformColor;
+  }
 
   // Certain textures render in the translucent pass but we actually want to maintain true opacity for opaque pixels.
   // For these, use a constant Z to calculate alpha weight.  Otherwise, the opaque things in the texture are weighted by their Z due

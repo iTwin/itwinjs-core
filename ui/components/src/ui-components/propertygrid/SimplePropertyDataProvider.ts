@@ -6,7 +6,7 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { IPropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChangeEvent } from "./PropertyDataProvider";
 
 /**

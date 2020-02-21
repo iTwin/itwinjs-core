@@ -62,6 +62,7 @@ export class StatusBarZone extends React.PureComponent<StatusBarZoneProps> {
             <Zone
               bounds={this.props.zoneProps.bounds}
               id={this.props.zoneProps.id}
+              isInFooterMode={this.props.isInFooterMode}
               safeAreaInsets={safeAreaInsets}
             >
               <ZoneTargets

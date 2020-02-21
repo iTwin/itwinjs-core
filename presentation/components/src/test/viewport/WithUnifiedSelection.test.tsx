@@ -22,10 +22,9 @@ import {
   Presentation, SelectionManager, SelectionChangeEvent,
   SelectionChangeEventArgs, SelectionChangeType, HiliteSet, SelectionScopesManager,
 } from "@bentley/presentation-frontend";
-import { HILITE_RULESET } from "@bentley/presentation-frontend/lib/selection/HiliteSetProvider";
 import { ViewportComponent } from "@bentley/ui-components";
-import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
-import { viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
+import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";
+import { ViewportSelectionHandler } from "../../presentation-components/viewport/WithUnifiedSelection";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
@@ -77,15 +76,6 @@ describe("Viewport withUnifiedSelection", () => {
       selectionHandler={selectionHandlerMock.object}
     />).instance() as any as IUnifiedSelectionComponent;
     expect(component.imodel).to.equal(imodelMock.object);
-  });
-
-  it("uses HILITE_RULESET id", () => {
-    const component = shallow(<PresentationViewport
-      imodel={imodelMock.object}
-      viewDefinitionId={viewDefinitionId}
-      selectionHandler={selectionHandlerMock.object}
-    />).instance() as any as IUnifiedSelectionComponent;
-    expect(component.rulesetId).to.equal(HILITE_RULESET.id);
   });
 
   it("renders correctly", () => {
@@ -184,7 +174,7 @@ describe("ViewportSelectionHandler", () => {
 
   beforeEach(() => {
     mockIModel(imodelMock);
-    handler = new ViewportSelectionHandler(imodelMock.object);
+    handler = new ViewportSelectionHandler({ imodel: imodelMock.object });
   });
 
   afterEach(() => {
@@ -226,7 +216,7 @@ describe("ViewportSelectionHandler", () => {
       emptyAll: sinon.SinonSpy<[], void>;
       replace: sinon.SinonSpy<[Id64Arg], void>;
       onChanged: sinon.SinonSpy<any[], any>;
-    };
+    }
 
     let hiliteSpies: HiliteSpies;
     let selectionSetSpies: SelectionSetSpies;

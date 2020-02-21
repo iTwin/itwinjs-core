@@ -130,6 +130,7 @@ describe("SavedViewLayout", () => {
 
   after(() => {
     MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
   });
 
   class TestViewportContentControl extends ViewportContentControl {
@@ -175,7 +176,7 @@ describe("SavedViewLayout", () => {
 
           topRight={
             <Zone widgets={[
-              <Widget isFreeform={true} element={<NavigationWidget />} />,
+              <Widget isFreeform={true} element={<NavigationWidget />} />, // tslint:disable-line:deprecation
             ]} />
           }
         />

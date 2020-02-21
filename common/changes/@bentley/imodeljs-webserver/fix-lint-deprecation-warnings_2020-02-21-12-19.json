@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-webserver",
+      "comment": "Remove dependency on deprecated bodyParser.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-webserver",
+  "email": "Paul.Connelly@bentley.com"
+}

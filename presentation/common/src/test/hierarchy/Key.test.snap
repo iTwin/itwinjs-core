@@ -21,26 +21,8 @@ Object {
 }
 `;
 
-exports[`NodeKey fromJSON creates ECInstanceNodeKey 1`] = `
-Object {
-  "instanceKey": Object {
-    "className": "Tasty Steel Cheese",
-    "id": "0x92f2000001815f",
-  },
-  "pathFromRoot": Array [
-    "000df554-2edd-4edd-8b22-be522c878f31",
-    "3042f32f-2716-4f35-b54f-69452b44b52a",
-  ],
-  "type": "ECInstanceNode",
-}
-`;
-
 exports[`NodeKey fromJSON creates ECInstancesNodeKey 1`] = `
 Object {
-  "instanceKey": Object {
-    "className": "challenge",
-    "id": "0x279b0000018393",
-  },
   "instanceKeys": Array [
     Object {
       "className": "challenge",
@@ -104,26 +86,8 @@ Object {
 }
 `;
 
-exports[`NodeKey toJSON serializes ECInstanceNodeKey 1`] = `
-Object {
-  "instanceKey": Object {
-    "className": "Books",
-    "id": "0x17b7800000025f8",
-  },
-  "pathFromRoot": Array [
-    "270a1514-1263-4847-bf49-80742bfcb7ec",
-    "2d1e20e7-bd06-4db3-993f-498713b28b45",
-  ],
-  "type": "ECInstanceNode",
-}
-`;
-
 exports[`NodeKey toJSON serializes ECInstancesNodeKey 1`] = `
 Object {
-  "instanceKey": Object {
-    "className": "Delaware",
-    "id": "0xc509000000f76f",
-  },
   "instanceKeys": Array [
     Object {
       "className": "Delaware",

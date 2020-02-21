@@ -27,7 +27,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 /** Properties for a [[CommandLaunchBackstageItem]] component
  * @public
  */
-export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler {
+export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler { // tslint:disable-line:deprecation
   /** Unique Id for this backstage item. */
   commandId: string;
 }
@@ -35,10 +35,10 @@ export interface CommandLaunchBackstageItemProps extends BackstageItemProps, Com
 /** Backstage item that launches a Command
  * @public
  */
-export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> {
+export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunchBackstageItemProps, BackstageItemState> { // tslint:disable-line:deprecation
 
   /** @internal */
-  public readonly state: Readonly<BackstageItemState>;
+  public readonly state: Readonly<BackstageItemState>; // tslint:disable-line:deprecation
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
 
@@ -73,8 +73,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
       /* istanbul ignore else */
       if (this.props.stateFunc) {
         const newState = this.props.stateFunc(this.state);
-        /* istanbul ignore else */
-
+        /* istanbul ignore next */
         if (!PropsHelper.isShallowEqual(newState, this.state))
           this.setState((_prevState) => newState);
       }
@@ -82,7 +81,7 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
   }
 
   public execute = (): void => {
-    Backstage.hide();
+    Backstage.hide(); // tslint:disable-line:deprecation
 
     if (this.props.execute) {
       if (this.props.getCommandArgs)
@@ -93,6 +92,8 @@ export class CommandLaunchBackstageItem extends React.PureComponent<CommandLaunc
       Logger.logError(UiFramework.loggerCategory(this), `'${this.props.commandId}' has no execute() function`);
   }
 
+  // deprecated class
+  // istanbul ignore next
   public componentDidUpdate(_prevProps: CommandLaunchBackstageItemProps) {
     const updatedState = BackstageItemUtilities.getBackstageItemStateFromProps(this.props);
     if (!PropsHelper.isShallowEqual(updatedState, this.state))

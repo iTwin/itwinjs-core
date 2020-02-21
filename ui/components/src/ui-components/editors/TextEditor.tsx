@@ -11,7 +11,7 @@ import classnames from "classnames";
 import {
   PropertyValueFormat, PropertyValue, PrimitiveValue,
   PropertyEditorParams, PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 

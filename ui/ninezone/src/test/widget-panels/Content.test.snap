@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetPanelContent should render 1`] = `
+<div
+  class="nz-widgetPanels-content"
+/>
+`;
+
+exports[`WidgetPanelContent should render pinned bottom 1`] = `
+<div
+  class="nz-widgetPanels-content nz-pinned-bottom"
+/>
+`;
+
+exports[`WidgetPanelContent should render pinned left 1`] = `
+<div
+  class="nz-widgetPanels-content nz-pinned-left"
+/>
+`;
+
+exports[`WidgetPanelContent should render pinned right 1`] = `
+<div
+  class="nz-widgetPanels-content nz-pinned-right"
+/>
+`;
+
+exports[`WidgetPanelContent should render pinned top 1`] = `
+<div
+  class="nz-widgetPanels-content nz-pinned-top"
+/>
+`;

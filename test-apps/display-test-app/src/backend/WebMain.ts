@@ -5,7 +5,6 @@
 import * as path from "path";
 import * as express from "express";
 import * as https from "https";
-import * as bodyParser from "body-parser";
 import * as fs from "fs";
 
 import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
@@ -57,7 +56,7 @@ Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces("browser"));
 
 const app = express();
-app.use(bodyParser.text());
+app.use(express.text());
 
 // Enable CORS for all apis
 app.all("/*", (_req, res, next) => {

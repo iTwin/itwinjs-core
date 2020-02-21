@@ -11,7 +11,7 @@ import * as React from "react";
 import { IModelApp, SelectedViewportChangedArgs, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import { Position, ScrollPositionMaintainer } from "@bentley/ui-core";
-import { SelectionMode, ContextMenu, ContextMenuItem } from "@bentley/ui-components";
+import { ContextMenu, ContextMenuItem, SelectionMode } from "@bentley/ui-components";
 import { connectIModelConnection } from "../redux/connectIModel";
 
 import { CategoryTree } from "../imodel-components/category-tree/CategoriesTree";
@@ -23,7 +23,7 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import "./VisibilityWidget.scss";
 
 import widgetIconSvg from "@bentley/icons-generic/icons/hierarchy-tree.svg";
-import { ModelsTree } from "../imodel-components/visibility-tree/ModelsTree";
+import { ModelsTree, ModelsTreeSelectionPredicate } from "../imodel-components/models-tree/ModelsTree";
 
 /**
  * Types of hierarchies displayed in the `VisibilityComponent`
@@ -33,6 +33,17 @@ export enum VisibilityComponentHierarchy {
   Models = "models",
   Categories = "categories",
   SpatialContainment = "spatial-containment",
+}
+
+/**
+ * Data structure that describes visibility component configuration
+ * @alpha
+ */
+export interface VisibilityComponentConfig {
+  modelsTree?: {
+    selectionMode?: SelectionMode;
+    selectionPredicate?: ModelsTreeSelectionPredicate;
+  };
 }
 
 /**
@@ -48,10 +59,8 @@ export interface VisibilityComponentProps {
   activeTreeRef?: React.Ref<HTMLDivElement>;
   /** Start pre-loading specified hierarchies as soon as user picks one for display. */
   enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
-  /** Use controlled tree as underlying tree implementation
-   * @alpha Temporary property
-   */
-  useControlledTree?: boolean;
+  /** Configuration parameters */
+  config?: VisibilityComponentConfig;
 }
 
 interface VisibilityTreeState {
@@ -131,15 +140,15 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
   }
 
   private _renderTree() {
-    const { iModelConnection, useControlledTree } = this.props;
+    const { iModelConnection, config } = this.props;
     const { activeTree, showSearchBox, viewport, selectAll, clearAll } = this.state;
     return (<div className="uifw-visibility-tree-wrapper">
-      {activeTree === VisibilityComponentHierarchy.Models && <ModelsTree imodel={iModelConnection} activeView={viewport} selectionMode={SelectionMode.None}
-        rootElementRef={this.props.activeTreeRef} enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.Models)} useControlledTree={useControlledTree} />}
+      {activeTree === VisibilityComponentHierarchy.Models && <ModelsTree imodel={iModelConnection} activeView={viewport}
+        rootElementRef={this.props.activeTreeRef} enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.Models)} {...config?.modelsTree} />}
       {activeTree === VisibilityComponentHierarchy.Categories && <CategoryTree iModel={iModelConnection} activeView={viewport} showSearchBox={showSearchBox}
-        selectAll={selectAll} clearAll={clearAll} enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.Categories)} useControlledTree={useControlledTree} />}
+        selectAll={selectAll} clearAll={clearAll} enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.Categories)} />}
       {activeTree === VisibilityComponentHierarchy.SpatialContainment && <SpatialContainmentTree iModel={iModelConnection}
-        enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.SpatialContainment)} useControlledTree={useControlledTree} />}
+        enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.SpatialContainment)} />}
     </div>);
   }
 
@@ -198,9 +207,9 @@ export class VisibilityWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
     if (options && options.iModelConnection)
-      this.reactElement = <VisibilityComponent iModelConnection={options.iModelConnection} activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} useControlledTree={options.useControlledTree} />;
+      this.reactElement = <VisibilityComponent iModelConnection={options.iModelConnection} activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} config={options.config} />;
     else  // use the connection from redux
-      this.reactElement = <IModelConnectedVisibilityComponent activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} useControlledTree={options.useControlledTree} />;
+      this.reactElement = <IModelConnectedVisibilityComponent activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} config={options.config} />;
   }
 
   public saveTransientState(): void {

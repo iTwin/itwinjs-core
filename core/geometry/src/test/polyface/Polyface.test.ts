@@ -36,6 +36,8 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { MomentData } from "../../geometry4d/MomentData";
 import { Geometry } from "../../Geometry";
 import { TorusPipe } from "../../solid/TorusPipe";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Path } from "../../curve/Path";
 /* tslint:disable:no-console */
 
 // @param longEdgeIsHidden true if any edge longer than1/3 of face perimeter is expected to be hidden
@@ -1015,6 +1017,20 @@ it("AddTriangleFan", () => {
   expect(ck.getNumErrors()).equals(0);
 });
 
+it("AddSweptLineStrings", () => {
+  const ck = new Checker();
+  const path = Path.create();
+  path.tryAddChild(LineString3d.create([[0, 0, 0], [0, 1, 0], [1, 1, 0]]));
+  path.tryAddChild(LineString3d.create([[1, 1, 0], [0, 1, 0], [0, 2, 0]]));
+  const builder = PolyfaceBuilder.create();
+  builder.addLinearSweepLineStringsXYZOnly(path, Vector3d.create(0, 0, 1));
+  const mesh = builder.claimPolyface();
+  ck.testExactNumber(4, mesh.facetCount);
+
+  builder.applyStrokeCountsToCurvePrimitives(path);
+  expect(ck.getNumErrors()).equals(0);
+});
+
 it("AddTriangles", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -1022,6 +1038,7 @@ it("AddTriangles", () => {
   options.needNormals = true;
   options.needParams = true;
   const builder = PolyfaceBuilder.create(options);
+  builder.addTriangleFacet([Point3d.create(0, 1, 2)]);
   const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0))!;
   const strokes = LineString3d.create();
   arc.emitStrokes(strokes, options);
@@ -1036,6 +1053,7 @@ it("AddTriangles", () => {
   //  const params = [];
   //  const normals = [];
   const du = 1.0 / strokes.numPoints();
+  const pointA = new GrowableXYZArray();
   for (let i = 1; i < strokes.numPoints(); i++) {
     points.length = 0;
     points.push(coneA);
@@ -1052,12 +1070,12 @@ it("AddTriangles", () => {
     normals.push(normalA);
     builder.addTriangleFacet(points, params, normals);
 
-    // build lower half without params.
-    points.length = 0;
-    points.push(coneB);
-    points.push(strokes.pointAt(i)!);
-    points.push(strokes.pointAt(i - 1)!);
-    builder.addTriangleFacet(points);
+    // build lower half without params, use GrowableArray for coverage . ..
+    pointA.length = 0;
+    pointA.push(coneB);
+    pointA.push(strokes.pointAt(i)!);
+    pointA.push(strokes.pointAt(i - 1)!);
+    builder.addTriangleFacet(pointA);
 
   }
 

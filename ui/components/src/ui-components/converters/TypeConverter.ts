@@ -12,13 +12,15 @@ import {
   OutputMessagePriority,
   OutputMessageType,
   OutputMessageAlert,
+} from "@bentley/imodeljs-frontend";
+import {
   PropertyDescription,
   PropertyRecord,
   Primitives,
   PropertyValue,
   PropertyValueFormat,
   PrimitiveValue,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 
 import { ConvertedPrimitives } from "./valuetypes/ConvertedTypes";
 

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
+import { DbResult, IModelStatus, Logger, OpenMode, Id64, Id64String, IDisposable, BeEvent, LogLevel, BentleyLoggerCategory } from "@bentley/bentleyjs-core";
 import { Config, ChangeSet, AuthorizedClientRequestContext, ClientsLoggerCategory } from "@bentley/imodeljs-clients";
-import { Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
+import { IModelError, Code, ElementProps, RpcManager, GeometricElement3dProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
@@ -345,6 +345,22 @@ export class IModelTestUtils {
 
   public static resetDebugLogLevels() {
     IModelTestUtils.initDebugLogLevels(true);
+  }
+
+  public static executeQuery(db: IModelDb, ecsql: string, bindings?: any[] | object): any[] {
+    return db.withPreparedStatement(ecsql, (stmt) => {
+      if (bindings)
+        stmt.bindValues(bindings);
+
+      const rows: any[] = [];
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        rows.push(stmt.getRow());
+        if (rows.length > IModelDb.maxLimit)
+          throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement");
+      }
+
+      return rows;
+    });
   }
 }
 

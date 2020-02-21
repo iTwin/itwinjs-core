@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetOverflow should open panel 1`] = `
+<div
+  class="nz-widget-overflow"
+>
+  <div
+    class="nz-button"
+  >
+    <div
+      class="nz-icon"
+    />
+  </div>
+  <div
+    class="nz-widget-menu nz-left"
+  >
+    <div>
+      A
+    </div>
+    <div>
+      B
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WidgetOverflow should render 1`] = `
+<div
+  class="nz-widget-overflow"
+>
+  <div
+    class="nz-button"
+  >
+    <div
+      class="nz-icon"
+    />
+  </div>
+</div>
+`;

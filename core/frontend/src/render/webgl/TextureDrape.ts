@@ -6,7 +6,8 @@
  * @module WebGL
  */
 import { dispose } from "@bentley/bentleyjs-core";
-import { RenderMemory, RenderTextureDrape } from "../RenderSystem";
+import { RenderMemory } from "../RenderMemory";
+import { RenderTextureDrape } from "../RenderSystem";
 import { Texture } from "./Texture";
 import { Target } from "./Target";
 import { Matrix4d } from "@bentley/geometry-core";

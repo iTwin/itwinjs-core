@@ -28,10 +28,15 @@ export class CustomAttributeClass extends ECClass {
     this.schemaItemType = SchemaItemType.CustomAttributeClass;
   }
 
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+  /**
+   * Save this CustomAttributeClasses properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): CustomAttributeClassProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.appliesTo = containerTypeToString(this.containerType);
-    return schemaJson;
+    return schemaJson as CustomAttributeClassProps;
   }
 
   /** @internal */
@@ -41,14 +46,15 @@ export class CustomAttributeClass extends ECClass {
     return itemElement;
   }
 
-  public deserializeSync(customAttributeProps: CustomAttributeClassProps) {
-    super.deserializeSync(customAttributeProps);
+  public fromJSONSync(customAttributeProps: CustomAttributeClassProps) {
+    super.fromJSONSync(customAttributeProps);
     const containerType = parseCustomAttributeContainerType(customAttributeProps.appliesTo);
     if (undefined === containerType)
       throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${containerType} is not a valid CustomAttributeContainerType.`);
     this._containerType = containerType;
   }
-  public async deserialize(customAttributeProps: CustomAttributeClassProps) {
-    this.deserializeSync(customAttributeProps);
+
+  public async fromJSON(customAttributeProps: CustomAttributeClassProps) {
+    this.fromJSONSync(customAttributeProps);
   }
 }

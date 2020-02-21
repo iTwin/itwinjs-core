@@ -19,6 +19,9 @@ export * from "./ui-core/base/FillCentered";
 export * from "./ui-core/base/ScrollView";
 export * from "./ui-core/base/FlexWrapContainer";
 
+export * from "./ui-core/button/Button";
+export * from "./ui-core/button/UnderlinedButton";
+
 export * from "./ui-core/checklistbox/CheckListBox";
 
 export * from "./ui-core/contextmenu/ContextMenu";
@@ -41,6 +44,9 @@ export * from "./ui-core/expandable/ExpandableBlock";
 
 export * from "./ui-core/focustrap/FocusTrap";
 
+export * from "./ui-core/form/Field";
+export * from "./ui-core/form/Form";
+
 export * from "./ui-core/hocs/withIsPressed";
 export * from "./ui-core/hocs/withOnOutsideClick";
 export * from "./ui-core/hocs/withTimeout";
@@ -49,6 +55,28 @@ export * from "./ui-core/icons/IconComponent";
 export * from "./ui-core/icons/SvgPath";
 export * from "./ui-core/icons/SvgSprite";
 export * from "./ui-core/icons/WebFontIcon";
+
+export * from "./ui-core/inputs/autosuggest/AutoSuggest";
+export * from "./ui-core/inputs/checkbox/Checkbox";
+export * from "./ui-core/inputs/Input";
+export * from "./ui-core/inputs/InputLabel";
+export * from "./ui-core/inputs/InputStatus";
+export * from "./ui-core/inputs/iconinput/IconInput";
+export * from "./ui-core/inputs/LabeledComponentProps";
+export * from "./ui-core/inputs/LabeledInput";
+export * from "./ui-core/inputs/LabeledSelect";
+export * from "./ui-core/inputs/LabeledTextarea";
+export * from "./ui-core/inputs/numericinput/NumericInput";
+export * from "./ui-core/inputs/numericinput/ReactNumericInput";
+export * from "./ui-core/inputs/Radio";
+export * from "./ui-core/inputs/Select";
+export * from "./ui-core/inputs/Textarea";
+
+export * from "./ui-core/loading/LoadingBar";
+export * from "./ui-core/loading/LoadingPrompt";
+export * from "./ui-core/loading/LoadingSpinner";
+export * from "./ui-core/loading/LoadingStatus";
+export * from "./ui-core/loading/Spinner";
 
 export * from "./ui-core/messagebox/MessageBox";
 
@@ -61,13 +89,33 @@ export * from "./ui-core/imagecheckbox/ImageCheckBox";
 
 export * from "./ui-core/searchbox/SearchBox";
 
+export * from "./ui-core/slider/Slider";
+
 export * from "./ui-core/splitbutton/SplitButton";
 
-export * from "./ui-core/loading/LoadingBar";
-export * from "./ui-core/loading/LoadingPrompt";
-export * from "./ui-core/loading/LoadingSpinner";
-export * from "./ui-core/loading/LoadingStatus";
-export * from "./ui-core/loading/Spinner";
+export * from "./ui-core/tabs/HorizontalTabs";
+export * from "./ui-core/tabs/VerticalTabs";
+export * from "./ui-core/tabs/Tabs";
+
+export * from "./ui-core/text/BodyText";
+export * from "./ui-core/text/BlockText";
+export * from "./ui-core/text/DisabledText";
+export * from "./ui-core/text/Headline";
+export * from "./ui-core/text/LeadingText";
+export * from "./ui-core/text/LeadingText2";
+export * from "./ui-core/text/MutedText";
+export * from "./ui-core/text/SmallText";
+export * from "./ui-core/text/Subheading";
+export * from "./ui-core/text/Subheading2";
+export * from "./ui-core/text/StyledText";
+export * from "./ui-core/text/TextProps";
+export * from "./ui-core/text/Title";
+export * from "./ui-core/text/Title2";
+
+export * from "./ui-core/tiles/FeaturedTile";
+export * from "./ui-core/tiles/MinimalFeaturedTile";
+export * from "./ui-core/tiles/MinimalTile";
+export * from "./ui-core/tiles/Tile";
 
 export * from "./ui-core/toggle/Toggle";
 export * from "./ui-core/toggle/LabeledToggle";
@@ -97,52 +145,8 @@ export * from "./ui-core/utils/shallowDiffers";
 export * from "./ui-core/utils/typeUtils";
 export * from "./ui-core/utils/isPromiseLike";
 export * from "./ui-core/utils/ScrollPositionMaintainer";
-export * from "./ui-core/utils/CustomHooks";
-
-export * from "./ui-core/button/Button";
-export * from "./ui-core/button/UnderlinedButton";
-
-export * from "./ui-core/inputs/autosuggest/AutoSuggest";
-export * from "./ui-core/inputs/checkbox/Checkbox";
-export * from "./ui-core/inputs/Input";
-export * from "./ui-core/inputs/InputLabel";
-export * from "./ui-core/inputs/InputStatus";
-export * from "./ui-core/inputs/iconinput/IconInput";
-export * from "./ui-core/inputs/LabeledComponentProps";
-export * from "./ui-core/inputs/LabeledInput";
-export * from "./ui-core/inputs/LabeledSelect";
-export * from "./ui-core/inputs/LabeledTextarea";
-export * from "./ui-core/inputs/numericinput/NumericInput";
-export * from "./ui-core/inputs/numericinput/ReactNumericInput";
-export * from "./ui-core/inputs/Radio";
-export * from "./ui-core/inputs/Select";
-export * from "./ui-core/inputs/Textarea";
-
-export * from "./ui-core/form/Field";
-export * from "./ui-core/form/Form";
-
-export * from "./ui-core/tabs/HorizontalTabs";
-export * from "./ui-core/tabs/VerticalTabs";
-export * from "./ui-core/tabs/Tabs";
-
-export * from "./ui-core/text/BodyText";
-export * from "./ui-core/text/BlockText";
-export * from "./ui-core/text/Headline";
-export * from "./ui-core/text/LeadingText";
-export * from "./ui-core/text/LeadingText2";
-export * from "./ui-core/text/MutedText";
-export * from "./ui-core/text/SmallText";
-export * from "./ui-core/text/Subheading";
-export * from "./ui-core/text/Subheading2";
-export * from "./ui-core/text/StyledText";
-export * from "./ui-core/text/TextProps";
-export * from "./ui-core/text/Title";
-export * from "./ui-core/text/Title2";
-
-export * from "./ui-core/tiles/FeaturedTile";
-export * from "./ui-core/tiles/MinimalFeaturedTile";
-export * from "./ui-core/tiles/MinimalTile";
-export * from "./ui-core/tiles/Tile";
+export * from "./ui-core/utils/hooks/useDisposable";
+export * from "./ui-core/utils/hooks/useEffectSkipFirst";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;
@@ -198,7 +202,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Inputs
- * Classes for working with input controls, such as Input, Radio, Checkbox, Select and Toggle.
+ * Classes for working with input controls, such as Input, Radio, Checkbox, Select, Slider and Toggle.
  */
 /**
  * @docs-group-description Loading

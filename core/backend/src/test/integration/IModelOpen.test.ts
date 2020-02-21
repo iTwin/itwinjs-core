@@ -16,7 +16,7 @@ describe("IModelOpen (#integration)", () => {
 
   let requestContext: AuthorizedBackendRequestContext;
   let badRequestContext: AuthorizedBackendRequestContext;
-  const testProjectName = "Design Review ATP";
+  const testProjectName = "iModelJsIntegrationTest";
   const testIModelName = "Stadium Dataset 1";
   let testIModelId: GuidString;
   let testProjectId: GuidString;
@@ -42,7 +42,7 @@ describe("IModelOpen (#integration)", () => {
 
   const deleteTestIModelCache = () => {
     const path = (BriefcaseManager as any).getIModelPath(testIModelId);
-    (BriefcaseManager as any).deleteFolderRecursive(path);
+    (BriefcaseManager as any).deleteFolderAndContents(path);
   };
 
   it("Unauthorized requests should cause an obvious error", async () => {
@@ -171,6 +171,6 @@ describe("IModelOpen (#integration)", () => {
     for (const iModel of iModels) {
       await iModel.close(requestContext, KeepBriefcase.Yes);
     }
-  });
+  }).timeout(1000000);
 
 });

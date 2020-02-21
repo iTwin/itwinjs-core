@@ -31,6 +31,8 @@ export class TreeModelMutator {
     this._collapsedChildrenDisposalEnabled = collapsedChildrenDisposalEnabled;
   }
 
+  public get modelSource() { return this._modelSource; }
+
   public expandNode(nodeId: string): Observable<TreeNodeLoadResult> {
     let needToLoadChildren = false;
     this._modelSource.modifyModel((model) => {

@@ -52,7 +52,7 @@
     },
     {
       "name": "@bentley/icons-generic",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/icons-generic-webfont",
@@ -132,7 +132,7 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/ui-components",
@@ -184,7 +184,7 @@
     },
     {
       "name": "@typescript-eslint/parser",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "@ungap/url-search-params",
@@ -200,7 +200,7 @@
     },
     {
       "name": "body-parser",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "bunyan",
@@ -364,11 +364,11 @@
     },
     {
       "name": "eslint",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "eslint-plugin-react-hooks",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "event-stream",
@@ -533,6 +533,10 @@
     {
       "name": "merge-json",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "micro-memoize",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "mini-css-extract-plugin",

@@ -8,7 +8,7 @@ exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders c
     />
   }
   isActive={true}
-  isDisabled={false}
+  isDisabled={true}
   key="ExampleWorkflow:Task1"
   onClick={[Function]}
 >
@@ -24,7 +24,7 @@ exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders c
     />
   }
   isActive={false}
-  isDisabled={false}
+  isDisabled={true}
   key="ExampleWorkflow:Task1"
   onClick={[Function]}
 >

@@ -16,7 +16,7 @@ import {
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import {
   Presentation, FavoritePropertiesManager,
-  IFavoritePropertiesStorage, FavoriteProperties,
+  IFavoritePropertiesStorage, FavoritePropertiesOrderInfo, PropertyFullName,
 } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
 import { UiCore } from "@bentley/ui-core";
@@ -60,8 +60,15 @@ export class SampleApp {
 
     setCustomFavoritePropertiesManager();
 
+    readyPromises.push(this.initializePresentation());
+    readyPromises.push(UiCore.initialize(IModelApp.i18n));
+    readyPromises.push(UiComponents.initialize(IModelApp.i18n));
+    this._ready = Promise.all(readyPromises).then(() => { });
+  }
+
+  private static async initializePresentation() {
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
-    Presentation.initialize({
+    await Presentation.initialize({
       // specify `clientId` so Presentation framework can share caches
       // between sessions for the same clients
       clientId: MyAppFrontend.getClientId(),
@@ -74,10 +81,6 @@ export class SampleApp {
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.SetSelectionScope
     Presentation.selection.scopes.activeScope = "top-assembly";
     // __PUBLISH_EXTRACT_END__
-
-    readyPromises.push(UiCore.initialize(IModelApp.i18n));
-    readyPromises.push(UiComponents.initialize(IModelApp.i18n));
-    this._ready = Promise.all(readyPromises).then(() => { });
   }
 
   public static get ready(): Promise<void> { return this._ready; }
@@ -85,12 +88,11 @@ export class SampleApp {
 
 const setCustomFavoritePropertiesManager = () => {
   const storage: IFavoritePropertiesStorage = {
-    loadProperties: async (_?: string, __?: string) => ({
-      nestedContentInfos: new Set<string>(),
-      propertyInfos: new Set<string>(),
-      baseFieldInfos: new Set<string>(),
-    }),
-    async saveProperties(_: FavoriteProperties, __?: string, ___?: string) { },
+    loadProperties: async (_?: string, __?: string) => new Set<string>(),
+    async saveProperties(_: Set<PropertyFullName>, __?: string, ___?: string) { },
+    loadPropertiesOrder: async (_: string | undefined, __: string) => ([]),
+    async savePropertiesOrder(_: FavoritePropertiesOrderInfo[], __: string | undefined, ___: string) { },
+
   };
   Presentation.favoriteProperties = new FavoritePropertiesManager({ storage });
 };

@@ -13,7 +13,7 @@ import { Point2d } from "./Point2dVector2d";
 import { XYAndZ, XAndY } from "./XYZProps";
 import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Transform } from "./Transform";
-import { MultiLineStringDataVariant, LineStringDataVariant } from "../topology/Triangulation";
+import { MultiLineStringDataVariant } from "../topology/Triangulation";
 
 import { Point4d } from "../geometry4d/Point4d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
@@ -710,124 +710,6 @@ export class Point3dArray {
    * @param data
    */
   public static createRange(data: MultiLineStringDataVariant): Range3d { return Range3d.createFromVariantData(data); }
-  private static _workPoint?: Point3d;
-  /**
-   * `Point3dArray.streamXYZ` is deprecated -- use `VariantPointStream.streamXYZ (handler)`
-   * @deprecated - use VariantPointStream.streamXYZ (handler)
-   * Invoke a callback with each x,y,z from an array of points in variant forms.
-   * @param startChainCallback called to announce the beginning of points (or recursion)
-   * @param pointCallback (index, x,y,z) = function to receive point coordinates one by one
-   * @param endChainCallback called to announce the end of handling of an array.
-   */
-  public static streamXYZ(data: MultiLineStringDataVariant,
-    startChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined,
-    pointCallback: (x: number, y: number, z: number) => void,
-    endChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined) {
-    let numPoint = 0;
-    if (Array.isArray(data)) {
-      // If the first entry is a point, expect the entire array to be points.
-      // otherwise recurse to each member of this array.
-      if (data.length > 0 && Point3d.isAnyImmediatePointType(data[0])) {
-        if (startChainCallback)
-          startChainCallback(data, true);
-        for (const p of data) {
-          const x = Point3d.accessX(p);
-          const y = Point3d.accessY(p);
-          const z = Point3d.accessZ(p, 0) as number;
-          if (x !== undefined && y !== undefined)
-            pointCallback(x, y, z);
-          numPoint++;
-        }
-        if (endChainCallback)
-          endChainCallback(data, true);
-      } else {
-        // This is an array that does not immediately have points.
-        if (startChainCallback)
-          startChainCallback(data, false);
-        for (const child of data) {
-          // tslint:disable-next-line: deprecation
-          numPoint += this.streamXYZ((child as unknown) as LineStringDataVariant, startChainCallback, pointCallback, endChainCallback);
-        }
-        if (endChainCallback)
-          endChainCallback(data, false);
-      }
-    } else if (data instanceof IndexedXYZCollection) {
-      if (startChainCallback)
-        startChainCallback(data, true);
-      const q = Point3dArray._workPoint = Point3d.create(0, 0, 0, Point3dArray._workPoint);
-      for (let i = 0; i < data.length; i++) {
-        data.getPoint3dAtCheckedPointIndex(i, q);
-        numPoint++;
-        pointCallback(q.x, q.y, q.z);
-      }
-      if (endChainCallback)
-        endChainCallback(data, true);
-    }
-    return numPoint;
-  }
-  /**
-     * `Point3dArray.streamXYZXYZ` is deprecated -- use `VariantPointStream.streamXYZXYZ (handler)`
-   * @deprecated - use VariantPointStream.streamXYZXYZ (handler)
-   * Invoke a callback with each x,y,z from an array of points in variant forms.
-   * @param startChainCallback callback of the form `startChainCallback (source, isLeaf)` to be called with the source array at each level.
-   * @param segmentCallback callback of the form `segmentCallback (index0, x0,y0,z0, index1, x1,y1,z1)`
-   * @param endChainCallback callback of the form `endChainCallback (source, isLeaf)` to be called with the source array at each level.
-  */
-  public static streamXYZXYZ(data: MultiLineStringDataVariant,
-    startChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined,
-    segmentCallback: (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) => void,
-    endChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined): number {
-    let x0 = 0, y0 = 0, z0 = 0, x1, y1, z1;
-    let point0Known = false;
-    let numSegment = 0;
-    if (Array.isArray(data)) {
-      if (data.length > 0 && Point3d.isAnyImmediatePointType(data[0])) {
-        if (startChainCallback)
-          startChainCallback(data, true);
-        for (const p of data) {
-          x1 = Point3d.accessX(p);
-          y1 = Point3d.accessY(p);
-          z1 = Point3d.accessZ(p, 0) as number;
-          if (x1 !== undefined && y1 !== undefined) {
-            if (point0Known) {
-              segmentCallback(x0, y0, z0, x1, y1, z1);
-              numSegment++;
-            }
-            point0Known = true; x0 = x1; y0 = y1; z0 = z1;
-          }
-        }
-        if (endChainCallback)
-          endChainCallback(data, true);
-      } else {
-        // This is an array that does not immediately have points.
-        if (startChainCallback)
-          startChainCallback(data, false);
-        for (const child of data) {
-          // tslint:disable-next-line: deprecation
-          numSegment += this.streamXYZXYZ((child as unknown) as LineStringDataVariant, startChainCallback, segmentCallback, endChainCallback);
-        }
-        if (endChainCallback)
-          endChainCallback(data, false);
-      }
-    } else if (data instanceof IndexedXYZCollection) {
-      if (startChainCallback)
-        startChainCallback(data, true);
-      const q = Point3dArray._workPoint = Point3d.create(0, 0, 0, Point3dArray._workPoint);
-      for (let i = 0; i < data.length; i++) {
-        data.getPoint3dAtCheckedPointIndex(i, q);
-        if (i > 0) {
-          numSegment++;
-          segmentCallback(x0, y0, z0, q.x, q.y, q.z);
-        }
-        x0 = q.x;
-        y0 = q.y;
-        z0 = q.z;
-      }
-      if (endChainCallback)
-        endChainCallback(data, true);
-    }
-    return numSegment;
-  }
 
   /** Computes the hull of the XY projection of points.
    * * Returns the hull as an array of Point3d

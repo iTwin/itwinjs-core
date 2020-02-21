@@ -74,6 +74,7 @@ describe("TreeNodeLoader", () => {
     dataProviderMock.reset();
     modelSourceMock.reset();
 
+    // tslint:disable-next-line:deprecation
     dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
     treeNodeLoader = new TreeNodeLoader(dataProviderMock.object, modelSourceMock.object);
   });
@@ -81,7 +82,7 @@ describe("TreeNodeLoader", () => {
   describe("getDataProvider", () => {
 
     it("returns data provider", () => {
-      expect(treeNodeLoader.getDataProvider()).to.be.eq(dataProviderMock.object);
+      expect(treeNodeLoader.dataProvider).to.be.eq(dataProviderMock.object);
     });
 
   });
@@ -148,23 +149,24 @@ describe("PagedTreeNodeLoader", () => {
     dataProviderMock.reset();
     modelSourceMock.reset();
 
+    // tslint:disable-next-line:deprecation
     dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
 
     pagedTreeNodeLoader = new PagedTreeNodeLoader(dataProviderMock.object, modelSourceMock.object, pageSize);
   });
 
-  describe("getPageSize", () => {
+  describe("[get] pageSize", () => {
 
     it("returns page size", () => {
-      expect(pagedTreeNodeLoader.getPageSize()).to.be.eq(pageSize);
+      expect(pagedTreeNodeLoader.pageSize).to.be.eq(pageSize);
     });
 
   });
 
-  describe("getDataProvider", () => {
+  describe("[get] dataProvider", () => {
 
     it("return data provider", () => {
-      expect(pagedTreeNodeLoader.getDataProvider()).to.be.eq(dataProviderMock.object);
+      expect(pagedTreeNodeLoader.dataProvider).to.be.eq(dataProviderMock.object);
     });
 
   });
@@ -252,6 +254,7 @@ describe("TreeDataSource", () => {
     it("handles dataProvider onTreeNodeChanged event", () => {
       const onTreeNodeChangedEvent = new BeEvent<TreeDataChangesListener>();
       const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
+      // tslint:disable-next-line:deprecation
       dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => onTreeNodeChangedEvent);
 
       const treeDataSource = new TreeDataSource(dataProviderMock.object);
@@ -268,6 +271,7 @@ describe("TreeDataSource", () => {
       const onTreeNodeChangedEvent = new BeEvent<TreeDataChangesListener>();
       const spy = sinon.spy(onTreeNodeChangedEvent, "removeListener");
       const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
+      // tslint:disable-next-line:deprecation
       dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => onTreeNodeChangedEvent);
 
       const treeDataSource = new TreeDataSource(dataProviderMock.object);

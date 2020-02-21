@@ -760,10 +760,14 @@ export class IndexedXYZCollectionPolygonOps {
       let a1;
       let index0 = xyz.length - 1;
       let a0 = s * xyz.evaluateUncheckedIndexPlaneAltitude(index0, plane);
+      if (Math.abs(a0) < tolerance)
+        a0 = 0;
       //    if (a0 >= 0.0)
       //      work.push_back (xyz0);
       for (let index1 = 0; index1 < n; a0 = a1, index0 = index1++) {
         a1 = s * xyz.evaluateUncheckedIndexPlaneAltitude(index1, plane);
+        if (Math.abs(a1) < tolerance)
+          a1 = 0;
         if (a1 < 0)
           numNegative++;
         if (a0 * a1 < 0.0) {

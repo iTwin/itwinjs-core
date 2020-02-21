@@ -15,7 +15,7 @@ import { PropertyValueRendererManager } from "../../../properties/ValueRendererM
 import { HighlightableTreeNodeProps } from "../../HighlightingEngine";
 import { ITreeImageLoader } from "../../ImageLoader";
 import { ImageRenderer } from "../../../common/ImageRenderer";
-import { TreeTest } from "../../component/Tree";
+import { TreeComponentTestId } from "../../TreeComponentTestId";
 import { TreeNodeEditorRenderer } from "./TreeNodeEditor";
 
 /**
@@ -25,10 +25,12 @@ import { TreeNodeEditorRenderer } from "./TreeNodeEditor";
 export interface TreeNodeRendererProps extends CommonProps {
   node: TreeModelNode;
   treeActions: TreeActions;
+
   /** Properties used to highlight matches when tree is filtered. */
   nodeHighlightProps?: HighlightableTreeNodeProps;
 
-  /** Callback used to detect when label is rendered. It is used by TreeRenderer for scrolling to active match.
+  /**
+   * Callback used to detect when label is rendered. It is used by TreeRenderer for scrolling to active match.
    * @internal
    */
   onLabelRendered?: (node: TreeModelNode) => void;
@@ -53,8 +55,7 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
  * Default component for rendering tree node.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps) => {
+export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps) => { // tslint:disable-line: variable-name
   const label = (
     <TreeNodeContent
       key={props.node.id}
@@ -68,13 +69,10 @@ export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps
   );
 
   function onExpansionToggle() {
-    if (props.node.isExpanded) {
+    if (props.node.isExpanded)
       props.treeActions.onNodeCollapsed(props.node.id);
-
-      return;
-    }
-
-    props.treeActions.onNodeExpanded(props.node.id);
+    else
+      props.treeActions.onNodeExpanded(props.node.id);
   }
 
   const createCheckboxProps = (checkboxInfo: CheckBoxInfo): NodeCheckboxProps => ({
@@ -86,7 +84,7 @@ export const TreeNodeRenderer = React.memo((props: ExtendedTreeNodeRendererProps
 
   return (
     <TreeNode
-      data-testid={TreeTest.TestId.Node}
+      data-testid={TreeComponentTestId.Node}
       className={props.className}
       checkboxProps={props.node.checkbox.isVisible ? createCheckboxProps(props.node.checkbox) : undefined}
       style={props.style}

@@ -17,6 +17,10 @@ describe("AppNotificationManager", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   let notifications: AppNotificationManager;
 
   beforeEach(() => {

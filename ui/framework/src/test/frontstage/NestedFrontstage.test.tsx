@@ -85,7 +85,7 @@ class TestNestedFrontstage extends FrontstageProvider {
 class FrontstageToolWidget extends React.Component {
   public render() {
     return (
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         appButton={NestedFrontstage.backToPreviousFrontstageCommand}
       />
     );
@@ -102,6 +102,10 @@ describe("NestedFrontstage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     FrontstageManager.clearFrontstageDefs();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   it("activeNestedFrontstage should return undefined if none active", () => {

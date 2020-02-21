@@ -214,7 +214,7 @@ function getTileProps(): string {
 
 function getBackgroundMapProps(): string {
   let bmPropsStr = "";
-  const bmProps = activeViewState.viewState!.displayStyle.backgroundMap.settings;
+  const bmProps = activeViewState.viewState!.displayStyle.settings.backgroundMap;
   switch (bmProps.providerName) {
     case "BingProvider":
       break;
@@ -940,8 +940,8 @@ async function loadIModel(testConfig: DefaultConfigs): Promise<boolean> {
     }
     if (undefined !== testConfig.backgroundMap) {
       // Use the testConfig.backgroundMap data for each property in Background if it exists; otherwise, keep using the viewState's ViewFlags info
-      const bmSettings = activeViewState.viewState.displayStyle.backgroundMap.settings;
-      activeViewState.viewState.displayStyle.backgroundMap.settings = bmSettings.clone(testConfig.backgroundMap);
+      const bmSettings = activeViewState.viewState.displayStyle.settings.backgroundMap;
+      activeViewState.viewState.displayStyle.changeBackgroundMapProps(bmSettings.clone(testConfig.backgroundMap));
     }
   }
 

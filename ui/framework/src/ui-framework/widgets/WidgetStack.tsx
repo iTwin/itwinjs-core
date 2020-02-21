@@ -8,8 +8,8 @@
 
 import * as React from "react";
 
-import { BadgeType } from "@bentley/ui-abstract";
-import { CommonProps, PointProps, RectangleProps, Rectangle, Icon, BadgeUtilities } from "@bentley/ui-core";
+import { BadgeType, ConditionalStringValue } from "@bentley/ui-abstract";
+import { CommonProps, PointProps, RectangleProps, Rectangle, BadgeUtilities } from "@bentley/ui-core";
 import {
   Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, TabSeparator,
   WidgetZoneId, TabMode, HandleMode, DraggedWidgetManagerProps, VerticalAnchorHelpers, DisabledResizeHandles,
@@ -17,6 +17,7 @@ import {
 
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
+import { IconHelper } from "../shared/IconHelper";
 
 // cSpell:ignore Timedout
 
@@ -24,7 +25,7 @@ import { UiShowHideManager } from "../utils/UiShowHideManager";
  * @internal
  */
 export interface WidgetTab {
-  readonly iconSpec?: string | React.ReactNode;
+  readonly iconSpec?: string | ConditionalStringValue | React.ReactNode;
   readonly title: string;
   readonly badgeType?: BadgeType;
 }
@@ -292,7 +293,7 @@ export class WidgetStackTabGroup extends React.PureComponent<WidgetStackTabGroup
  */
 export interface WidgetStackTabProps {
   horizontalAnchor: HorizontalAnchor;
-  iconSpec?: string | React.ReactNode;
+  iconSpec?: string | ConditionalStringValue | React.ReactNode;
   index: number;
   badgeType?: BadgeType;
   isCollapsed: boolean;
@@ -329,7 +330,7 @@ export class WidgetStackTab extends React.PureComponent<WidgetStackTabProps> {
         title={this.props.title}
         verticalAnchor={this.props.verticalAnchor}
       >
-        <Icon iconSpec={this.props.iconSpec} />
+        {IconHelper.getIconReactNode(this.props.iconSpec)}
       </Tab>
     );
   }

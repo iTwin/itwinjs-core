@@ -50,7 +50,12 @@
     pointer-events: none;
   }
 
-  > .nz-icon {
+  div.nz-icon {
+    display: flex;
+    .core-icons-svgSprite {
+      width: 1rem;
+      height: 1rem;
+    }
     padding-left: $nz-backstage-icon-spacing-left;
     padding-right: $nz-backstage-icon-spacing-right;
   }

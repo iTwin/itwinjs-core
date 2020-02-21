@@ -341,29 +341,29 @@ export class ViewFlags {
 export namespace ViewFlag {
   /** @alpha */
   export const enum PresenceFlag { // tslint:disable-line:no-const-enum
-    kRenderMode,
-    kText,
-    kDimensions,
-    kPatterns,
-    kWeights,
-    kStyles,
-    kTransparency,
-    kUnused,
-    kFill,
-    kTextures,
-    kMaterials,
-    kVisibleEdges,
-    kHiddenEdges,
-    kLighting,
-    kShadows,
-    kClipVolume,
-    kConstructions,
-    kMonochrome,
-    kGeometryMap,
-    kHlineMaterialColors,
-    kEdgeMask,
-    kBackgroundMap,
-    kForceSurfaceDiscard,
+    RenderMode,
+    Text,
+    Dimensions,
+    Patterns,
+    Weights,
+    Styles,
+    Transparency,
+    Unused,
+    Fill,
+    Textures,
+    Materials,
+    VisibleEdges,
+    HiddenEdges,
+    Lighting,
+    Shadows,
+    ClipVolume,
+    Constructions,
+    Monochrome,
+    GeometryMap,
+    HlineMaterialColors,
+    EdgeMask,
+    BackgroundMap,
+    ForceSurfaceDiscard,
   }
 
   /** Overrides a subset of ViewFlags.
@@ -398,38 +398,38 @@ export namespace ViewFlag {
       this._present = other._present;
     }
 
-    public setShowDimensions(val: boolean) { this._values.dimensions = val; this.setPresent(PresenceFlag.kDimensions); }
-    public setShowPatterns(val: boolean) { this._values.patterns = val; this.setPresent(PresenceFlag.kPatterns); }
-    public setShowWeights(val: boolean) { this._values.weights = val; this.setPresent(PresenceFlag.kWeights); }
-    public setShowStyles(val: boolean) { this._values.styles = val; this.setPresent(PresenceFlag.kStyles); }
-    public setShowTransparency(val: boolean) { this._values.transparency = val; this.setPresent(PresenceFlag.kTransparency); }
-    public setShowFill(val: boolean) { this._values.fill = val; this.setPresent(PresenceFlag.kFill); }
-    public setShowTextures(val: boolean) { this._values.textures = val; this.setPresent(PresenceFlag.kTextures); }
-    public setShowMaterials(val: boolean) { this._values.materials = val; this.setPresent(PresenceFlag.kMaterials); }
-    public setApplyLighting(val: boolean) { this._values.lighting = val; this.setPresent(PresenceFlag.kLighting); }
-    public setShowVisibleEdges(val: boolean) { this._values.visibleEdges = val; this.setPresent(PresenceFlag.kVisibleEdges); }
-    public setShowHiddenEdges(val: boolean) { this._values.hiddenEdges = val; this.setPresent(PresenceFlag.kHiddenEdges); }
-    public setShowShadows(val: boolean) { this._values.shadows = val; this.setPresent(PresenceFlag.kShadows); }
-    public setShowClipVolume(val: boolean) { this._values.clipVolume = val; this.setPresent(PresenceFlag.kClipVolume); }
-    public setShowConstructions(val: boolean) { this._values.constructions = val; this.setPresent(PresenceFlag.kConstructions); }
-    public setMonochrome(val: boolean) { this._values.monochrome = val; this.setPresent(PresenceFlag.kMonochrome); }
-    public setIgnoreGeometryMap(val: boolean) { this._values.noGeometryMap = val; this.setPresent(PresenceFlag.kGeometryMap); }
-    public setShowBackgroundMap(val: boolean) { this._values.backgroundMap = val; this.setPresent(PresenceFlag.kBackgroundMap); }
-    public setUseHlineMaterialColors(val: boolean) { this._values.hLineMaterialColors = val; this.setPresent(PresenceFlag.kHlineMaterialColors); }
-    public setForceSurfaceDiscard(val: boolean) { this._values.forceSurfaceDiscard = val; this.setPresent(PresenceFlag.kForceSurfaceDiscard); }
-    public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(PresenceFlag.kEdgeMask); }
-    public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(PresenceFlag.kRenderMode); }
+    public setShowDimensions(val: boolean) { this._values.dimensions = val; this.setPresent(PresenceFlag.Dimensions); }
+    public setShowPatterns(val: boolean) { this._values.patterns = val; this.setPresent(PresenceFlag.Patterns); }
+    public setShowWeights(val: boolean) { this._values.weights = val; this.setPresent(PresenceFlag.Weights); }
+    public setShowStyles(val: boolean) { this._values.styles = val; this.setPresent(PresenceFlag.Styles); }
+    public setShowTransparency(val: boolean) { this._values.transparency = val; this.setPresent(PresenceFlag.Transparency); }
+    public setShowFill(val: boolean) { this._values.fill = val; this.setPresent(PresenceFlag.Fill); }
+    public setShowTextures(val: boolean) { this._values.textures = val; this.setPresent(PresenceFlag.Textures); }
+    public setShowMaterials(val: boolean) { this._values.materials = val; this.setPresent(PresenceFlag.Materials); }
+    public setApplyLighting(val: boolean) { this._values.lighting = val; this.setPresent(PresenceFlag.Lighting); }
+    public setShowVisibleEdges(val: boolean) { this._values.visibleEdges = val; this.setPresent(PresenceFlag.VisibleEdges); }
+    public setShowHiddenEdges(val: boolean) { this._values.hiddenEdges = val; this.setPresent(PresenceFlag.HiddenEdges); }
+    public setShowShadows(val: boolean) { this._values.shadows = val; this.setPresent(PresenceFlag.Shadows); }
+    public setShowClipVolume(val: boolean) { this._values.clipVolume = val; this.setPresent(PresenceFlag.ClipVolume); }
+    public setShowConstructions(val: boolean) { this._values.constructions = val; this.setPresent(PresenceFlag.Constructions); }
+    public setMonochrome(val: boolean) { this._values.monochrome = val; this.setPresent(PresenceFlag.Monochrome); }
+    public setIgnoreGeometryMap(val: boolean) { this._values.noGeometryMap = val; this.setPresent(PresenceFlag.GeometryMap); }
+    public setShowBackgroundMap(val: boolean) { this._values.backgroundMap = val; this.setPresent(PresenceFlag.BackgroundMap); }
+    public setUseHlineMaterialColors(val: boolean) { this._values.hLineMaterialColors = val; this.setPresent(PresenceFlag.HlineMaterialColors); }
+    public setForceSurfaceDiscard(val: boolean) { this._values.forceSurfaceDiscard = val; this.setPresent(PresenceFlag.ForceSurfaceDiscard); }
+    public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(PresenceFlag.EdgeMask); }
+    public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(PresenceFlag.RenderMode); }
 
     public anyOverridden() { return 0 !== this._present; }
 
     public clear() { this._present = 0; }
-    public clearClipVolume() { this.clearPresent(PresenceFlag.kClipVolume); }
+    public clearClipVolume() { this.clearPresent(PresenceFlag.ClipVolume); }
 
     /** If ViewFlags.clipVolume is overridden, return the override value; else return undefined.
      * @internal
      */
     public get clipVolumeOverride(): boolean | undefined {
-      return this.isPresent(PresenceFlag.kClipVolume) ? this._values.clipVolume : undefined;
+      return this.isPresent(PresenceFlag.ClipVolume) ? this._values.clipVolume : undefined;
     }
 
     /** Apply these overrides to the supplied ViewFlags */
@@ -437,27 +437,27 @@ export namespace ViewFlag {
       if (!this.anyOverridden())
         return base;
 
-      if (this.isPresent(PresenceFlag.kDimensions)) base.dimensions = this._values.dimensions;
-      if (this.isPresent(PresenceFlag.kPatterns)) base.patterns = this._values.patterns;
-      if (this.isPresent(PresenceFlag.kWeights)) base.weights = this._values.weights;
-      if (this.isPresent(PresenceFlag.kStyles)) base.styles = this._values.styles;
-      if (this.isPresent(PresenceFlag.kTransparency)) base.transparency = this._values.transparency;
-      if (this.isPresent(PresenceFlag.kFill)) base.fill = this._values.fill;
-      if (this.isPresent(PresenceFlag.kTextures)) base.textures = this._values.textures;
-      if (this.isPresent(PresenceFlag.kMaterials)) base.materials = this._values.materials;
-      if (this.isPresent(PresenceFlag.kLighting)) base.lighting = this._values.lighting;
-      if (this.isPresent(PresenceFlag.kVisibleEdges)) base.visibleEdges = this._values.visibleEdges;
-      if (this.isPresent(PresenceFlag.kHiddenEdges)) base.hiddenEdges = this._values.hiddenEdges;
-      if (this.isPresent(PresenceFlag.kShadows)) base.shadows = this._values.shadows;
-      if (this.isPresent(PresenceFlag.kClipVolume)) base.clipVolume = this._values.clipVolume;
-      if (this.isPresent(PresenceFlag.kConstructions)) base.constructions = this._values.constructions;
-      if (this.isPresent(PresenceFlag.kMonochrome)) base.monochrome = this._values.monochrome;
-      if (this.isPresent(PresenceFlag.kGeometryMap)) base.noGeometryMap = this._values.noGeometryMap;
-      if (this.isPresent(PresenceFlag.kBackgroundMap)) base.backgroundMap = this._values.backgroundMap;
-      if (this.isPresent(PresenceFlag.kHlineMaterialColors)) base.hLineMaterialColors = this._values.hLineMaterialColors;
-      if (this.isPresent(PresenceFlag.kForceSurfaceDiscard)) base.forceSurfaceDiscard = this._values.forceSurfaceDiscard;
-      if (this.isPresent(PresenceFlag.kEdgeMask)) base.edgeMask = this._values.edgeMask;
-      if (this.isPresent(PresenceFlag.kRenderMode)) base.renderMode = this._values.renderMode;
+      if (this.isPresent(PresenceFlag.Dimensions)) base.dimensions = this._values.dimensions;
+      if (this.isPresent(PresenceFlag.Patterns)) base.patterns = this._values.patterns;
+      if (this.isPresent(PresenceFlag.Weights)) base.weights = this._values.weights;
+      if (this.isPresent(PresenceFlag.Styles)) base.styles = this._values.styles;
+      if (this.isPresent(PresenceFlag.Transparency)) base.transparency = this._values.transparency;
+      if (this.isPresent(PresenceFlag.Fill)) base.fill = this._values.fill;
+      if (this.isPresent(PresenceFlag.Textures)) base.textures = this._values.textures;
+      if (this.isPresent(PresenceFlag.Materials)) base.materials = this._values.materials;
+      if (this.isPresent(PresenceFlag.Lighting)) base.lighting = this._values.lighting;
+      if (this.isPresent(PresenceFlag.VisibleEdges)) base.visibleEdges = this._values.visibleEdges;
+      if (this.isPresent(PresenceFlag.HiddenEdges)) base.hiddenEdges = this._values.hiddenEdges;
+      if (this.isPresent(PresenceFlag.Shadows)) base.shadows = this._values.shadows;
+      if (this.isPresent(PresenceFlag.ClipVolume)) base.clipVolume = this._values.clipVolume;
+      if (this.isPresent(PresenceFlag.Constructions)) base.constructions = this._values.constructions;
+      if (this.isPresent(PresenceFlag.Monochrome)) base.monochrome = this._values.monochrome;
+      if (this.isPresent(PresenceFlag.GeometryMap)) base.noGeometryMap = this._values.noGeometryMap;
+      if (this.isPresent(PresenceFlag.BackgroundMap)) base.backgroundMap = this._values.backgroundMap;
+      if (this.isPresent(PresenceFlag.HlineMaterialColors)) base.hLineMaterialColors = this._values.hLineMaterialColors;
+      if (this.isPresent(PresenceFlag.ForceSurfaceDiscard)) base.forceSurfaceDiscard = this._values.forceSurfaceDiscard;
+      if (this.isPresent(PresenceFlag.EdgeMask)) base.edgeMask = this._values.edgeMask;
+      if (this.isPresent(PresenceFlag.RenderMode)) base.renderMode = this._values.renderMode;
       return base;
     }
   }

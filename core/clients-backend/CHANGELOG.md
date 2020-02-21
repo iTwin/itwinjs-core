@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-clients-backend
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Add support for bridge properties to iModelHub client.
+- Consolidated sign-in for integration tests
+- iModel write API development
+- Fix broken links
+- Storage service client
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

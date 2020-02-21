@@ -5,14 +5,14 @@
 import faker from "faker";
 import fs from "fs";
 import { expect } from "chai";
+import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation, RulesetEmbedder, DuplicateRulesetHandlingStrategy, PresentationManagerMode } from "@bentley/presentation-backend";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/NativePlatform";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
 import { tweakRuleset } from "./Helpers";
 import { initialize, terminate } from "../IntegrationTests";
-import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
 
 describe("RulesEmbedding", () => {
   let imodel: IModelDb;
@@ -63,7 +63,7 @@ describe("RulesEmbedding", () => {
   });
 
   beforeEach(async () => {
-    embedder = new RulesetEmbedder(imodel);
+    embedder = new RulesetEmbedder({ imodel });
     ruleset = await createRandomRuleset();
   });
 
@@ -118,7 +118,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    const rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    const rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: rulesetToLocate.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
@@ -129,14 +129,14 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    let rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    let rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: rulesetToLocate.id });
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", faker.random.uuid());
     imodel.elements.updateElement(rulesetElement);
 
-    rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetId: rulesetToLocate.id });
+    rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: rulesetToLocate.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 

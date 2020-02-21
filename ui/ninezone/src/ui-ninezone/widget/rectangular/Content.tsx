@@ -15,7 +15,7 @@ import "./Content.scss";
 /** Properties of [[WidgetContent]] component.
  * @alpha
  */
-export interface WidgetContentProps extends CommonProps, NoChildrenProps {
+export interface WidgetContentProps extends CommonProps, NoChildrenProps { // tslint:disable-line: class-name
   /** Describes to which side the widget of this content is anchored. */
   anchor: HorizontalAnchor;
   /** Content container ref. */

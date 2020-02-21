@@ -232,7 +232,8 @@ describe("Unit", () => {
       assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidOffsetJson), new SchemaContext()), ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'offset' attribute. It should be of type 'number'.`);
     });
   });
-  describe("toJson", () => {
+
+  describe("toJSON", () => {
     const fullyDefinedUnit = createSchemaJson({
       label: "Millimeter",
       description: "A unit defining the millimeter metric unit of length",
@@ -248,7 +249,7 @@ describe("Unit", () => {
       const ecSchema = await Schema.fromJson(fullyDefinedUnit, new SchemaContext());
       const unit = await ecSchema.getItem<Unit>("TestUnit");
       assert.isDefined(unit);
-      const unitSerialization = unit!.toJson(true, true);
+      const unitSerialization = unit!.toJSON(true, true);
 
       expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
@@ -262,7 +263,37 @@ describe("Unit", () => {
       const ecSchema = Schema.fromJsonSync(fullyDefinedUnit, new SchemaContext());
       const unit = ecSchema.getItemSync<Unit>("TestUnit");
       assert.isDefined(unit);
-      const unitSerialization = unit!.toJson(true, true);
+      const unitSerialization = unit!.toJSON(true, true);
+
+      expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
+      expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
+      expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
+      expect(unitSerialization.denominator).to.equal(1);
+      expect(unitSerialization.numerator).to.equal(5);
+      expect(unitSerialization.offset).to.equal(4);
+    });
+
+    it("async - JSON stringify serialization, should succeed with fully defined", async () => {
+      const ecSchema = await Schema.fromJson(fullyDefinedUnit, new SchemaContext());
+      const unit = await ecSchema.getItem<Unit>("TestUnit");
+      assert.isDefined(unit);
+      const json = JSON.stringify(unit);
+      const unitSerialization = JSON.parse(json);
+
+      expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
+      expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
+      expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
+      expect(unitSerialization.denominator).to.equal(1);
+      expect(unitSerialization.numerator).to.equal(5);
+      expect(unitSerialization.offset).to.equal(4);
+    });
+
+    it("sync - JSON stringify serialization, should succeed with fully defined", () => {
+      const ecSchema = Schema.fromJsonSync(fullyDefinedUnit, new SchemaContext());
+      const unit = ecSchema.getItemSync<Unit>("TestUnit");
+      assert.isDefined(unit);
+      const json = JSON.stringify(unit);
+      const unitSerialization = JSON.parse(json);
 
       expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
@@ -295,7 +326,7 @@ describe("Unit", () => {
       assert.isDefined(ecSchema);
       const unit = await ecSchema.getItem<Unit>("M");
       assert.isDefined(unit);
-      const unitSerialization = unit!.toJson(true, true);
+      const unitSerialization = unit!.toJSON(true, true);
 
       expect(unitSerialization.phenomenon).to.eql("TestSchema.Length");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.Metric");
@@ -307,7 +338,7 @@ describe("Unit", () => {
       assert.isDefined(ecSchema);
       const unit = ecSchema.getItemSync<Unit>("M");
       assert.isDefined(unit);
-      const unitSerialization = unit!.toJson(true, true);
+      const unitSerialization = unit!.toJSON(true, true);
 
       expect(unitSerialization.phenomenon).to.eql("TestSchema.Length");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.Metric");

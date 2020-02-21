@@ -43,9 +43,13 @@ describe("MarkupToolDefinitions", () => {
       />;
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("ToolWidget should render with Markup Tool Definitions", () => {
     const wrapper = mount(
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         horizontalToolbar={horizontalToolbar}
       />,
     );
@@ -54,7 +58,7 @@ describe("MarkupToolDefinitions", () => {
 
   it("ToolWidget should render correctly with Markup Tool Definitions", () => {
     shallow(
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         id="toolWidget"
         horizontalToolbar={horizontalToolbar}
       />,

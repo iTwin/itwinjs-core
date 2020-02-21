@@ -206,6 +206,27 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     return undefined;
   }
 
+  /**
+   * Attempts to get a Schema from the context's cache.
+   * @param schemaKey The SchemaKey to identify the Schema.
+   * @param matchType The SchemaMatch type to use. Default is SchemaMatchType.Latest.
+   * @internal
+   */
+  public async getCachedSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
+    return this.getCachedSchemaSync(schemaKey, matchType) as T;
+  }
+
+  /**
+   * Attempts to get a Schema from the context's cache.
+   * @param schemaKey The SchemaKey to identify the Schema.
+   * @param matchType The SchemaMatch type to use. Default is SchemaMatchType.Latest.
+   * @internal
+   */
+  public getCachedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Schema | undefined {
+    const schema = this._knownSchemas.getSchemaSync(schemaKey, matchType);
+    return schema as T;
+  }
+
   public async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined> {
     const schema = await this.getSchema(schemaItemKey.schemaKey, SchemaMatchType.Latest);
     if (undefined === schema)

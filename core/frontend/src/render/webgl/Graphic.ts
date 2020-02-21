@@ -19,7 +19,7 @@ import {
   GraphicBranch,
   GraphicBranchOptions,
 } from "../GraphicBranch";
-import { RenderMemory } from "../RenderSystem";
+import { RenderMemory } from "../RenderMemory";
 import { RenderCommands } from "./RenderCommands";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { FeatureOverrides } from "./FeatureOverrides";

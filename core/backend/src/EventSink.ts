@@ -11,9 +11,21 @@ import { NativeAppRpcInterface, QueuedEvent, RpcRegistry } from "@bentley/imodel
 import { Logger } from "@bentley/bentleyjs-core";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
-
+/** EmitStrategy determine how events are added to queue
+ * @internal
+ */
+export enum EmitStrategy {
+  None,
+  PurgeOlderEvents, // this cocmpare namespace and eventName
+  NoDuplicateEvents, // this compare namespace, eventName and its args
+}
+/** EmitOptions provided when emitting a event.
+ * @internal
+ */
+export interface EmitOptions {
+  strategy: EmitStrategy;
+}
 const loggingCategory: string = BackendLoggerCategory.EventSink;
-
 /** Maintains a queue of events to be sent to the frontend.
  * @internal
  */
@@ -53,12 +65,21 @@ export class EventSink {
     this._eventQueues = purgedEventList;
   }
 
-  public emit(namespace: string, eventName: string, data: any): void {
+  public emit(namespace: string, eventName: string, data: any, options: EmitOptions = { strategy: EmitStrategy.None }): void {
     if (!RpcRegistry.instance.isRpcInterfaceInitialized(NativeAppRpcInterface)) {
       Logger.logError(loggingCategory, "EventSource is disabled. Interface 'NativeAppRpcInterface' is not registered");
       return;
     }
-
+    if (options.strategy === EmitStrategy.PurgeOlderEvents) {
+      this._eventQueues = this._eventQueues.filter((value: QueuedEvent) => {
+        return !(value.eventName === eventName && value.namespace === namespace);
+      });
+    }
+    if (options.strategy === EmitStrategy.NoDuplicateEvents) {
+      const errMsg = "Event emit strategy 'NoDuplicate' is not supported";
+      Logger.logError(loggingCategory, errMsg);
+      throw Error(errMsg);
+    }
     const maxQueueSize = IModelHost.configuration!.eventSinkOptions.maxQueueSize;
     if (this._eventQueues.length > maxQueueSize) {
       Logger.logInfo(loggingCategory, "EventQueue has reached its maximum allowed size. Oldest event will be removed from the queue");

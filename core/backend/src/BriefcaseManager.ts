@@ -15,9 +15,9 @@ import { IModelBankClient } from "@bentley/imodeljs-clients/lib/imodelbank/IMode
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
-  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
+  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration, Guid,
 } from "@bentley/bentleyjs-core";
-import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps, MobileRpcConfiguration } from "@bentley/imodeljs-common";
+import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps, MobileRpcConfiguration, BriefcaseProps } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb, OpenParams, SyncMode } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -176,7 +176,7 @@ export class BriefcaseEntry {
 
   /** Gets the path key to be used in the cache and iModelToken */
   public getKey(): string {
-    if (this.openParams.isStandalone)
+    if (this.openParams.isSnapshot)
       return this.pathname;
 
     if (this.openParams.syncMode === SyncMode.FixedVersion)
@@ -314,6 +314,29 @@ class BriefcaseCache {
     return filteredBriefcases;
   }
 
+  /**
+   * Gets briefcases properties for native app use case.
+   * @returns briefcase props
+   * @note This only return briefcases and not standalone or snapshot models.
+   * @internal
+   */
+  public getBriefcases(): BriefcaseProps[] {
+    const briefcases = new Array<BriefcaseProps>();
+    this._briefcases.forEach((value: BriefcaseEntry) => {
+      if (value.openParams.isBriefcase) {
+        briefcases.push({
+          key: value.getKey(),
+          contextId: value.contextId,
+          iModelId: value.iModelId,
+          changeSetId: value.currentChangeSetId,
+          openMode: value.openParams.openMode,
+          downloading: value.isPending ? true : false,
+          isOpen: value.isOpen,
+        });
+      }
+    });
+    return briefcases;
+  }
   /** Checks if the cache is empty */
   public get isEmpty(): boolean { return this._briefcases.size === 0; }
 
@@ -356,6 +379,36 @@ export class BriefcaseManager {
   public static getChangeSetsPath(iModelId: GuidString): string { return path.join(BriefcaseManager.getIModelPath(iModelId), "csets"); }
   public static getChangeCachePathName(iModelId: GuidString): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
   public static getChangedElementsPathName(iModelId: GuidString): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
+
+  private static initializeDiskCache(requestContext: AuthorizedClientRequestContext) {
+    if (this._initializedDiskCache)
+      return;
+    const imodelDirs = IModelJsFs.readdirSync(BriefcaseManager.cacheDir);
+    for (const imodelDir of imodelDirs) {
+      const fullPath = path.join(BriefcaseManager.cacheDir, imodelDir);
+      const isDir = IModelJsFs.lstatSync(fullPath)?.isDirectory;
+      if (isDir) {
+        if (Guid.isGuid(imodelDir)) {
+          const fixedVersions = BriefcaseManager.getFixedVersionBriefcasePath(imodelDir);
+          const fixedVersionChangesetDirs = IModelJsFs.readdirSync(fixedVersions);
+          for (const changesetDir of fixedVersionChangesetDirs) {
+            if (!BriefcaseManager._cache.findFixedVersionBriefcase(imodelDir, changesetDir)) {
+              this.initializeFixedVersionBriefcaseOnDisk(requestContext, "", imodelDir, changesetDir);
+            }
+          }
+          // const pullPushVersions = BriefcaseManager.getPullAndPushBriefcasePath(imodelDir);
+          // const pullPushBriefcaseIds = IModelJsFs.readdirSync(pullPushVersions);
+          // for (const briefcaseIdStr of pullPushBriefcaseIds) {
+          //   const briefcaseId = Number(briefcaseIdStr);
+          //   if (!BriefcaseManager._cache.findPullAndPushBriefcase(imodelDir, briefcaseId)) {
+          //     // not handled
+          //   }
+          // }
+        }
+      }
+    }
+    this._initializedDiskCache = true;
+  }
 
   private static getFixedVersionBriefcasePath(iModelId: GuidString) {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "bc", "FixedVersion");
@@ -419,6 +472,11 @@ export class BriefcaseManager {
 
   private static _initialized?: boolean;
 
+  /**
+   * Required for native apps only in order to read model that is stored in cache
+   */
+  private static _initializedDiskCache: boolean;
+
   private static setupDefaultIModelClient() {
     if (MobileRpcConfiguration.isMobileBackend)
       this._imodelClient = new IModelHubClient(new IOSAzureFileHandler());
@@ -452,13 +510,13 @@ export class BriefcaseManager {
     BriefcaseManager._initialized = false;
   }
 
-  /** Create a directory, recursively setting up the path as necessary */
-  private static makeDirectoryRecursive(dirPath: string) {
+  /** Create a folder, recursively setting up the path as necessary */
+  private static createFolder(dirPath: string) {
     if (IModelJsFs.existsSync(dirPath))
       return;
     const parentPath = path.dirname(dirPath);
     if (parentPath !== dirPath)
-      BriefcaseManager.makeDirectoryRecursive(parentPath);
+      BriefcaseManager.createFolder(parentPath);
     IModelJsFs.mkdirSync(dirPath);
   }
 
@@ -496,14 +554,15 @@ export class BriefcaseManager {
 
     if (!cacheSubDirOnDisk) {
       // For now, just recreate the entire cache if the directory for the major version is not found
-      BriefcaseManager.deleteFolderRecursive(cacheRootDir);
+      // Note: This will not work if there are multiple iModel.js instances sharing the same cacheRoot directory, but are running different cache major versions
+      BriefcaseManager.deleteFolderContents(cacheRootDir);
     } else if (cacheSubDirOnDisk !== cacheSubDir) {
       const cacheDirOnDisk = path.join(cacheRootDir, cacheSubDirOnDisk);
-      BriefcaseManager.deleteFolderRecursive(cacheDirOnDisk);
+      BriefcaseManager.deleteFolderAndContents(cacheDirOnDisk);
     }
 
     if (!IModelJsFs.existsSync(cacheDir))
-      BriefcaseManager.makeDirectoryRecursive(cacheDir);
+      BriefcaseManager.createFolder(cacheDir);
 
     BriefcaseManager._cacheDir = cacheDir;
   }
@@ -528,10 +587,7 @@ export class BriefcaseManager {
   private static _asyncMutex = new AsyncMutex();
 
   /** Open a briefcase */
-  public static async download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
-    requestContext.enter();
-
-    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, BriefcaseManager.imodelClient);
+  public static async download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry> {
     requestContext.enter();
 
     if (openParams.openMode === OpenMode.Readonly)
@@ -545,7 +601,10 @@ export class BriefcaseManager {
       unlock();
     }
   }
-
+  public static getBriefcases(requestContext: AuthorizedClientRequestContext): BriefcaseProps[] {
+    this.initializeDiskCache(requestContext);
+    return BriefcaseManager._cache.getBriefcases();
+  }
   /** Open a downloaded briefcase */
   public static openBriefcase(briefcase: BriefcaseEntry) {
     const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openParams.openMode);
@@ -717,6 +776,7 @@ export class BriefcaseManager {
       Logger.logError(loggerCategory, "Initializing a briefcase fails. Deleting it to allow retries", () => briefcase.getDebugInfo());
       await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
       requestContext.enter();
+      throw error;
     }
   }
 
@@ -843,7 +903,7 @@ export class BriefcaseManager {
   /** Close a briefcase, and delete from the hub if necessary */
   public static async close(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void> {
     requestContext.enter();
-    assert(!briefcase.openParams.isStandalone, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
+    assert(!briefcase.openParams.isSnapshot, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
     BriefcaseManager.closeBriefcase(briefcase, true);
     if (keepBriefcase === KeepBriefcase.No) {
       await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
@@ -884,14 +944,14 @@ export class BriefcaseManager {
       return;
     }
     const dirName = path.dirname(briefcase.pathname);
-    if (BriefcaseManager.deleteFolderRecursive(dirName))
+    if (BriefcaseManager.deleteFolderAndContents(dirName))
       Logger.logTrace(loggerCategory, "Deleted briefcase from local disk", () => briefcase.getDebugInfo());
   }
 
   /** Deletes change sets of an iModel from local disk */
   private static deleteChangeSetsFromLocalDisk(iModelId: string) {
     const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
-    if (BriefcaseManager.deleteFolderRecursive(changeSetsPath))
+    if (BriefcaseManager.deleteFolderAndContents(changeSetsPath))
       Logger.logTrace(loggerCategory, "Deleted change sets from local disk", () => ({ iModelId, changeSetsPath }));
   }
 
@@ -1082,44 +1142,74 @@ export class BriefcaseManager {
 
   /** Close the standalone briefcase */
   public static closeStandalone(briefcase: BriefcaseEntry) {
-    assert(briefcase.openParams.isStandalone, "Can use IModelDb.closeStandalone() only to close a standalone iModel. Use IModelDb.close() instead");
+    assert(briefcase.openParams.isSnapshot, "Can use IModelDb.closeStandalone() only to close a snapshot iModel. Use IModelDb.close() instead");
     BriefcaseManager.closeBriefcase(briefcase, true);
     if (BriefcaseManager._cache.findBriefcase(briefcase))
       BriefcaseManager._cache.deleteBriefcase(briefcase);
   }
 
-  /** Deletes a folder on disk. Does not throw any errors, but returns true
-   * if the delete was successful.
+  /** Deletes a file
+   *  - Does not throw any error, but logs it instead
+   *  - Returns true if the delete was successful
    */
-  private static deleteFolderRecursive(folderPath: string): boolean {
-    if (!IModelJsFs.existsSync(folderPath))
+  private static deleteFile(pathname: string): boolean {
+    try {
+      IModelJsFs.unlinkSync(pathname);
+    } catch (error) {
+      Logger.logError(loggerCategory, `Cannot delete file ${pathname}`);
+      return false;
+    }
+    return true;
+  }
+
+  /** Deletes a folder that's assumed to be empty
+   *  - Does not throw any error, but logs it instead
+   *  - Returns true if the delete was successful
+   */
+  private static deleteFolder(folderPathname: string): boolean {
+    try {
+      IModelJsFs.rmdirSync(folderPathname);
+    } catch (error) {
+      Logger.logError(loggerCategory, `Cannot delete folder: ${folderPathname}`);
+      return false;
+    }
+    return true;
+  }
+
+  /** Deletes the contents of a folder, but not the folder itself
+   *  - Does not throw any errors, but logs them.
+   *  - returns true if the delete was successful.
+   */
+  private static deleteFolderContents(folderPathname: string): boolean {
+    if (!IModelJsFs.existsSync(folderPathname))
+      return false;
+
+    let status = true;
+    const files = IModelJsFs.readdirSync(folderPathname);
+    for (const file of files) {
+      const curPath = path.join(folderPathname, file);
+      const locStatus = (IModelJsFs.lstatSync(curPath)!.isDirectory) ? BriefcaseManager.deleteFolderAndContents(curPath) : BriefcaseManager.deleteFile(curPath);
+      if (!locStatus)
+        status = false;
+    }
+    return status;
+  }
+
+  /** Deletes a folder and all it's contents.
+   *  - Does not throw any errors, but logs them.
+   *  - returns true if the delete was successful.
+   */
+  private static deleteFolderAndContents(folderPathname: string): boolean {
+    if (!IModelJsFs.existsSync(folderPathname))
       return true;
 
-    try {
-      const files = IModelJsFs.readdirSync(folderPath);
-      for (const file of files) {
-        const curPath = path.join(folderPath, file);
-        if (IModelJsFs.lstatSync(curPath)!.isDirectory) {
-          BriefcaseManager.deleteFolderRecursive(curPath);
-        } else {
-          try {
-            IModelJsFs.unlinkSync(curPath);
-          } catch (error) {
-            Logger.logError(loggerCategory, `Cannot delete file ${curPath}`);
-            throw error;
-          }
-        }
-      }
-      try {
-        IModelJsFs.rmdirSync(folderPath);
-      } catch (error) {
-        Logger.logError(loggerCategory, `Cannot delete folder: ${folderPath}`);
-        throw error;
-      }
-    } catch (error) {
-    }
+    let status = false;
+    status = BriefcaseManager.deleteFolderContents(folderPathname);
+    if (!status)
+      return false;
 
-    return !IModelJsFs.existsSync(folderPath);
+    status = BriefcaseManager.deleteFolder(folderPathname);
+    return status;
   }
 
   /** Purges the in-memory and disk caches -
@@ -1145,14 +1235,14 @@ export class BriefcaseManager {
       for (const csetId of IModelJsFs.readdirSync(fixedVersionPath)) {
         const briefcaseDir = path.join(fixedVersionPath, csetId);
         try {
-          this.deleteFolderRecursive(briefcaseDir);
+          this.deleteFolderAndContents(briefcaseDir);
         } catch (_error) {
           deletedFixedVersionBriefcases = false;
           continue;
         }
       }
       if (deletedFixedVersionBriefcases)
-        this.deleteFolderRecursive(fixedVersionPath);
+        this.deleteFolderAndContents(fixedVersionPath);
     }
 
     const pullAndPushPath = this.getPullAndPushBriefcasePath(iModelId);
@@ -1171,7 +1261,7 @@ export class BriefcaseManager {
         }
       }
       if (deletedPullAndPushBriefcases)
-        this.deleteFolderRecursive(pullAndPushPath);
+        this.deleteFolderAndContents(pullAndPushPath);
     }
 
     if (!deletedFixedVersionBriefcases || !deletedPullAndPushBriefcases)
@@ -1179,7 +1269,7 @@ export class BriefcaseManager {
 
     const iModelPath = this.getIModelPath(iModelId);
     try {
-      this.deleteFolderRecursive(iModelPath);
+      this.deleteFolderAndContents(iModelPath);
     } catch (error) {
       return false;
     }
@@ -1196,7 +1286,7 @@ export class BriefcaseManager {
         deletedAllCacheDirs = false;
     }
     if (deletedAllCacheDirs) {
-      this.deleteFolderRecursive(this._cacheRootDir!);
+      this.deleteFolderAndContents(this._cacheRootDir!);
     }
     return deletedAllCacheDirs;
   }
@@ -1255,8 +1345,8 @@ export class BriefcaseManager {
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open to process change sets", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
     if (briefcase.openParams.openMode !== OpenMode.ReadWrite)
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
-    if (briefcase.openParams.isStandalone)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a standalone file", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
+    if (briefcase.openParams.isSnapshot)
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a snapshot file", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
     assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.parentChangeSetId, "Mismatch between briefcase and the native Db");
 
     // Determine the reinstates, reversals or merges required
@@ -1629,8 +1719,8 @@ export class BriefcaseManager {
    * @internal
    */
   public static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
-    if (!briefcase.openParams.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot call createStandaloneChangeSet() when the briefcase is not standalone", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+    if (!briefcase.openParams.isSnapshot)
+      throw new IModelError(BentleyStatus.ERROR, "Cannot call createStandaloneChangeSet() when the briefcase is not a snapshot", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
 
     const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(briefcase);
     BriefcaseManager.finishCreateChangeSet(briefcase);
@@ -1642,8 +1732,8 @@ export class BriefcaseManager {
    * @internal
    */
   public static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus {
-    if (!briefcase.openParams.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot call applyStandaloneChangeSets() when the briefcase is not standalone", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+    if (!briefcase.openParams.isSnapshot)
+      throw new IModelError(BentleyStatus.ERROR, "Cannot call applyStandaloneChangeSets() when the briefcase is not a snapshot", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
 
     // Apply the changes one by one for debugging
     for (const changeSetToken of changeSetTokens) {

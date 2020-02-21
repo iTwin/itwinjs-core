@@ -17,6 +17,7 @@ describe("FrontstageDef", () => {
 
   after(() => {
     MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
   });
 
   class BadLayoutFrontstage extends FrontstageProvider {

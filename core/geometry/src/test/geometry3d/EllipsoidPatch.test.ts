@@ -819,6 +819,7 @@ describe("Ellipsoid", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "SilhouetteA");
   });
+
   it("SegmentClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

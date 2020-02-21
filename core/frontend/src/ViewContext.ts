@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d } from "@bentley/geometry-core";
+import { ConvexClipPlaneSet, Geometry, Matrix3d, Point2d, Point3d, Transform, Vector2d, Vector3d, XAndY, Plane3dByOriginAndUnitNormal, ClipUtilities, ClipPlane, Loop, LineString3d, Range3d, GrowableXYZArray, Ray3d, Range1d } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { CanvasDecoration } from "./render/CanvasDecoration";
@@ -513,7 +513,7 @@ export class SceneContext extends RenderContext {
     return undefined === classifierId ? undefined : this.planarClassifiers.get(classifierId);
   }
 
-  public addBackgroundDrapedModel(drapedTreeRef: TileTreeReference): RenderTextureDrape | undefined {
+  public addBackgroundDrapedModel(drapedTreeRef: TileTreeReference, _heightRange: Range1d | undefined): RenderTextureDrape | undefined {
     const drapedTree = drapedTreeRef.treeOwner.tileTree;
     if (undefined === drapedTree)
       return undefined;
@@ -537,22 +537,13 @@ export class SceneContext extends RenderContext {
     return this.textureDrapes.get(modelId);
   }
 
-  public withGraphicTypeAndPlane(type: TileGraphicType, plane: Plane3dByOriginAndUnitNormal | undefined, func: () => void): void {
-    const frust = undefined !== plane ? ViewingSpace.createFromViewportAndPlane(this.viewport, plane) : undefined;
-    this.withGraphicTypeAndFrustum(type, frust, func);
-  }
-
-  public withGraphicTypeAndFrustum(type: TileGraphicType, frustum: ViewingSpace | undefined, func: () => void): void {
+  public withGraphicType(type: TileGraphicType, func: () => void): void {
     const prevType = this._graphicType;
-    const prevFrust = this._viewingSpace;
-
     this._graphicType = type;
-    this._viewingSpace = frustum;
 
     func();
 
     this._graphicType = prevType;
-    this._viewingSpace = prevFrust;
   }
 
   public get graphics() { return this.scene.foreground; }

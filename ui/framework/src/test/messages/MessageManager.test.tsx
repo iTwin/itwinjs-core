@@ -14,6 +14,10 @@ describe("MessageManager", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("maxCachedMessages handled correctly", () => {
     MessageManager.clearMessages();
     expect(MessageManager.messages.length).to.eq(0);

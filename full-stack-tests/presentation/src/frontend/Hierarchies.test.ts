@@ -9,7 +9,7 @@ import { Id64, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   InstanceKey, Ruleset, RuleTypes, ChildNodeSpecificationTypes,
-  KeySet, ECInstanceNodeKey, getInstancesCount, RegisteredRuleset,
+  KeySet, ECInstancesNodeKey, getInstancesCount, RegisteredRuleset,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 
@@ -45,7 +45,7 @@ describe("Hierarchies", () => {
         filter ch6
       */
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
-        const result = await Presentation.presentation.getFilteredNodePaths({ imodel, rulesetId: ruleset.id }, "filter");
+        const result = await Presentation.presentation.getFilteredNodePaths({ imodel, rulesetOrId: ruleset.id }, "filter");
         expect(result).to.matchSnapshot();
       });
     });
@@ -67,7 +67,7 @@ describe("Hierarchies", () => {
         const key4: InstanceKey = { id: Id64.fromString("0xe"), className: "BisCore:LinkPartition" };
         const keys: InstanceKey[][] = [[key1, key2, key3], [key1, key2, key4]];
 
-        const result = await Presentation.presentation.getNodePaths({ imodel, rulesetId: ruleset.id }, keys, 1);
+        const result = await Presentation.presentation.getNodePaths({ imodel, rulesetOrId: ruleset.id }, keys, 1);
         expect(result).to.matchSnapshot();
       });
 
@@ -92,7 +92,7 @@ describe("Hierarchies", () => {
         }],
       };
       await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
-        const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetId: ruleset.id });
+        const rootNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset.id });
         expect(rootNodes).to.matchSnapshot();
         /*
         The result should look like this (all grouping nodes):
@@ -113,13 +113,13 @@ describe("Hierarchies", () => {
         */
 
         const definitionModelNodes = await Presentation.presentation.getNodes(
-          { imodel, rulesetId: ruleset.id }, rootNodes[0].key);
+          { imodel, rulesetOrId: ruleset.id }, rootNodes[0].key);
         const dictionaryModelNodes = await Presentation.presentation.getNodes(
-          { imodel, rulesetId: ruleset.id }, rootNodes[1].key);
+          { imodel, rulesetOrId: ruleset.id }, rootNodes[1].key);
 
         const keys = new KeySet([
           definitionModelNodes[0].key,
-          (dictionaryModelNodes[0].key as ECInstanceNodeKey).instanceKey,
+          ...(dictionaryModelNodes[0].key as ECInstancesNodeKey).instanceKeys,
           rootNodes[2].key,
         ]);
         const instancesCount = getInstancesCount(keys);

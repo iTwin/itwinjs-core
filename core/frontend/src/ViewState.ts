@@ -22,9 +22,12 @@ import {
   AnalysisStyle,
   AxisAlignedBox3d,
   Camera,
+  Cartographic,
   ColorDef,
   Frustum,
+  GlobeMode,
   GraphicParams,
+  GridOrientationType,
   Npc,
   RenderMaterial,
   SpatialViewDefinitionProps,
@@ -53,24 +56,8 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { TileTreeReference, TileTreeLoadStatus, TileTreeSet } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
+import { GlobalLocation, areaToEyeHeight } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-
-/** Describes the orientation of the grid displayed within a [[Viewport]].
- * @public
- * @deprecated use GridOrientationType from imodeljs-common.
- */
-export enum GridOrientationType {
-  /** Oriented with the view. */
-  View = 0,
-  /** Top */
-  WorldXY = 1,
-  /** Right */
-  WorldYZ = 2,
-  /** Front */
-  WorldXZ = 3,
-  /** Oriented by the [[AuxCoordSystem]] */
-  AuxCoord = 4,
-}
 
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
  * @public
@@ -265,6 +252,12 @@ export abstract class ViewState extends ElementState {
    * @internal
    */
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this.displayStyle.scheduleScript; }
+
+  /**
+   * Get the globe projection mode.
+   * @internal
+   */
+  public get globeMode(): GlobeMode { return this.displayStyle.globeMode; }
 
   /** Determine whether this ViewState exactly matches another. */
   public equals(other: this): boolean { return super.equals(other) && this.categorySelector.equals(other.categorySelector) && this.displayStyle.equals(other.displayStyle); }
@@ -658,9 +651,6 @@ export abstract class ViewState extends ElementState {
 
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
 
-  /** @deprecated Use the type-safe ViewState.details API instead. */
-  public getDetails(): any { return this.details.getJSON(); }
-
   /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
    */
@@ -710,9 +700,8 @@ export abstract class ViewState extends ElementState {
       return v;
     };
 
-    delta.x = limitWindowSize(delta.x, false);
-    delta.y = limitWindowSize(delta.y, false);
-    delta.z = limitWindowSize(delta.z, true);   // We ignore z error messages for the sake of 2d views
+    limitWindowSize(delta.x, false); // Just set error, don't clamp delta...
+    limitWindowSize(delta.y, false);
 
     if (messageNeeded && error !== ViewStatus.Success)
       this.showFrustumErrorMessage(error);
@@ -1009,6 +998,17 @@ export abstract class ViewState extends ElementState {
     });
     return allowView; // Accept if this view shares a model in common with target.
   }
+
+  public getUpVector(point: Point3d): Vector3d {
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.ThreeD)
+      return Vector3d.unitZ();
+
+    const earthCenter = this.iModel.ecefLocation!.getTransform().inverse()!.origin;
+    const normal = Vector3d.createStartEnd(earthCenter, point);
+    normal.normalizeInPlace();
+
+    return normal;
+  }
 }
 
 /** Defines the state of a view of 3d models.
@@ -1089,6 +1089,105 @@ export abstract class ViewState3d extends ViewState {
   }
 
   public get isCameraOn(): boolean { return this._cameraOn; }
+
+  private static _minGlobeEyeHeight = Constant.earthRadiusWGS84.equator / 4;  // View as globe if more than a quarter of earth radius from surface.
+  private static _scratchGlobeCarto = Cartographic.fromRadians(0, 0, 0);
+
+  public get isGlobalView() {
+    if (undefined === this.iModel.ecefLocation)
+      return false;
+
+    if (this.isCameraOn)
+      return this.isEyePointGlobalView(this.getEyePoint());
+    else
+      return this.extents.magnitudeXY() > Constant.earthRadiusWGS84.equator;
+  }
+
+  public globalViewTransition(): number {
+    if (undefined === this.iModel.ecefLocation)
+      return 0.0;
+
+    let h = 0.0;
+    if (this.isCameraOn) {
+      const carto = this.rootToCartographic(this.getEyePoint(), ViewState3d._scratchGlobeCarto);
+      h = (undefined === carto ? 0.0 : carto.height);
+    } else
+      h = this.extents.magnitudeXY();
+
+    const startTransition = 0.33333 * ViewState3d._minGlobeEyeHeight;
+    if (h > ViewState3d._minGlobeEyeHeight)
+      return 1.0;
+    else if (h < startTransition)
+      return 0.0;
+    else
+      return (h - startTransition) / (ViewState3d._minGlobeEyeHeight - startTransition);
+  }
+
+  public isEyePointGlobalView(eyePoint: XYAndZ) {
+    const ecefLocation = this.iModel.ecefLocation;
+    if (undefined === ecefLocation)
+      return false;
+
+    const carto = this.rootToCartographic(eyePoint, ViewState3d._scratchGlobeCarto);
+    return carto !== undefined && carto.height > ViewState3d._minGlobeEyeHeight;
+  }
+
+  /** Look at a global location, placing the camera's eye at the specified eye height above a viewed location.
+   *  If location is defined, its center position will be viewed using the specified eye height.
+   *  If location also has an area specified, the eye height will be adjusted to view the specified location based on that area.
+   *  Otherwise, this function views a point on the earth as if the current eye point was placed on the earth. If the eyePoint parameter is defined, instead this point will be placed on the earth and viewed.
+   *  Specify pitchAngleRadians to tilt the final view; this defaults to 0.
+   *  Returns the distance from original eye point to new eye point.
+   *  @alpha
+   */
+  public lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians = 0, location?: GlobalLocation, eyePoint?: Point3d): number {
+    if (!this.iModel.isGeoLocated)
+      return 0;
+
+    if (location !== undefined && location.area !== undefined)
+      eyeHeight = areaToEyeHeight(this, location.area, location.center.height);
+
+    const origEyePoint = eyePoint !== undefined ? eyePoint.clone() : this.getEyePoint().clone();
+
+    let targetPoint = origEyePoint;
+    const targetPointCartographic = location !== undefined ? location.center.clone() : this.rootToCartographic(targetPoint)!;
+    targetPointCartographic.height = 0.0;
+    targetPoint = this.cartographicToRoot(targetPointCartographic)!;
+
+    targetPointCartographic.height = eyeHeight;
+    let lEyePoint = this.cartographicToRoot(targetPointCartographic)!;
+
+    targetPointCartographic.latitude += 10.0;
+    const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
+    let upVector = northOfEyePoint.unitVectorTo(lEyePoint)!;
+    if (this.globeMode === GlobeMode.Columbus)
+      upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
+
+    if (0 !== pitchAngleRadians) {
+      const pitchAxis = upVector.unitCrossProduct(Vector3d.createStartEnd(targetPoint, lEyePoint));
+      if (undefined !== pitchAxis) {
+        const pitchMatrix = Matrix3d.createRotationAroundVector(pitchAxis!, Angle.createRadians(pitchAngleRadians))!;
+        const pitchTransform = Transform.createFixedPointAndMatrix(targetPoint, pitchMatrix);
+        lEyePoint = pitchTransform.multiplyPoint3d(lEyePoint);
+        pitchMatrix.multiplyVector(upVector, upVector);
+      }
+    }
+
+    this.lookAtUsingLensAngle(lEyePoint, targetPoint, upVector, this.camera.getLensAngle());
+
+    return lEyePoint.distance(origEyePoint);
+  }
+
+  public rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined {
+    const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
+    return backgroundMapGeometry ? backgroundMapGeometry.dbToCartographic(root, result) : undefined;
+  }
+
+  public cartographicToRoot(cartographic: Cartographic, result?: Point3d): Point3d | undefined {
+    const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
+    return backgroundMapGeometry ? backgroundMapGeometry.cartographicToDb(cartographic, result) : undefined;
+  }
+
   public setupFromFrustum(frustum: Frustum): ViewStatus {
     const stat = super.setupFromFrustum(frustum);
     if (ViewStatus.Success !== stat)
@@ -1219,8 +1318,10 @@ export abstract class ViewState3d extends ViewState {
 
     const delta = newExtents ? new Vector3d(Math.abs(newExtents.x), Math.abs(newExtents.y), this.extents.z) : this.extents.clone();
 
-    frontDistance = Math.max(frontDistance!, (.5 * Constant.oneMeter));
-    backDistance = Math.max(backDistance!, focusDist + (.5 * Constant.oneMeter));
+    // The front/back distance are relatively arbitrary -- the frustum will be adjusted to include geometry.
+    // Set them here to reasonable in front of eye and just beyond target.
+    frontDistance = Math.min(frontDistance!, (.5 * Constant.oneMeter));
+    backDistance = Math.min(backDistance!, focusDist + (.5 * Constant.oneMeter));
 
     if (backDistance < focusDist) // make sure focus distance is in front of back distance.
       backDistance = focusDist + Constant.oneMillimeter;
@@ -1233,8 +1334,7 @@ export abstract class ViewState3d extends ViewState {
 
     delta.z = (backDistance - frontDistance);
 
-    const frontDelta = delta.scale(frontDistance / focusDist);
-    const stat = this.validateViewDelta(frontDelta, false); // validate window size on front (smallest) plane
+    const stat = this.validateViewDelta(delta, false); // validate window size on focus plane
     if (ViewStatus.Success !== stat)
       return stat;
 
@@ -1691,7 +1791,7 @@ export class SpatialViewState extends ViewState3d {
   public equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
   public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
-  public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth }; }
+  public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: 3 * Constant.diameterOfEarth }; } // Increased max by 3X to support globe mode.
 
   /** @internal */
   public markModelSelectorChanged(): void {

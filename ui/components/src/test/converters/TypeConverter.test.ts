@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { PropertyDescription, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PropertyDescription, PrimitiveValue } from "@bentley/ui-abstract";
 import { TypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
 

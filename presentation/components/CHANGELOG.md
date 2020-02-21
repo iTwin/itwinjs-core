@@ -1,6 +1,18 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Fix nested content records being duplicated if all nested fields have their own category definitions
+- PresentationTableDataProvider should create column for display label when display type is 'List'
+- Ignore barrel file on docs processing
+- Added nodeLoadHandler to usePresentationNodeLoader props
+- Avoid handling whole tree model when handling model change event in UnifiedSelectionTreeEventHandler
+- Set label and labelDefinition when creating PropertyData and TreeNodeItem
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

@@ -113,7 +113,7 @@ export class PannellumRenderer {
     this._pose = undefined;
 
     if (!this._gl)
-      this._gl = this._canvas.getContext("experimental-webgl", { alpha: false, depth: false }) as WebGLRenderingContext | null;
+      this._gl = this._canvas.getContext("experimental-webgl", { alpha: false, depth: false, powerPreference: "high-performance" }) as WebGLRenderingContext | null;
     if (this._gl && this._gl.getError() === 1286)
       this.handleWebGLError1286();
 

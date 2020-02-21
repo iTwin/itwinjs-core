@@ -2,6 +2,42 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "1.12.0",
+      "tag": "@bentley/geometry-core_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement generic boolean tree of `Clipper` objects (for Feature 269514)"
+          },
+          {
+            "comment": "Arc3d precise range; BSpline1dNd interval recursion bug; BooleanClip unit tests"
+          },
+          {
+            "comment": "MomentData quantity sign controls principal direction orientation."
+          },
+          {
+            "comment": "BooleanClipFactory enhancements"
+          },
+          {
+            "comment": "New method ellipsoide.silhouette (eyePoint: Point4d):Arc3d"
+          },
+          {
+            "comment": "Correct extended geometry handling in LineString3d.closestPoint"
+          },
+          {
+            "comment": "(a) Control Triangulation of area booleans, (b) methods to find and purge duplicate facets"
+          },
+          {
+            "comment": "Improve error handling for triangulation and merge of bad input\""
+          },
+          {
+            "comment": "iModel write API development"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.11.0",
       "tag": "@bentley/geometry-core_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",

@@ -46,7 +46,7 @@ export class CustomItemDef extends ActionButtonItemDef {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
-    if (!this.isVisible)
+    if (!this.isVisible) // tslint:disable-line:deprecation
       return null;
 
     let clone: React.ReactNode;

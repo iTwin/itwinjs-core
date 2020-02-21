@@ -59,8 +59,7 @@ export interface ControlledTreeProps extends CommonProps {
  * React tree component which rendering is fully controlled from outside.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledTreeProps) => {
+export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledTreeProps) => { // tslint:disable-line: variable-name
   const nodeHeight = useNodeHeight(!!props.descriptionsEnabled);
   const imageLoader = useMemo(() => new TreeImageLoader(), []);
   const nodeRenderer = useCallback((nodeProps: TreeNodeRendererProps) => (

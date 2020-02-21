@@ -20,10 +20,8 @@ import { RenderGraphic } from "./RenderGraphic";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
-import {
-  RenderMemory,
-  RenderTextureDrape,
-} from "./RenderSystem";
+import { RenderMemory } from "./RenderMemory";
+import { RenderTextureDrape } from "./RenderSystem";
 
 /**
  * A node in a scene graph. The branch itself is not renderable. Instead it contains a list of RenderGraphics,

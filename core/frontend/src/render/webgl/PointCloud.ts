@@ -15,7 +15,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { dispose, assert } from "@bentley/bentleyjs-core";
 import { FeatureIndexType } from "@bentley/imodeljs-common";
-import { RenderMemory } from "../RenderSystem";
+import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
 
 /** @internal */

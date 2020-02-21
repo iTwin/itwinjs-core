@@ -44,6 +44,7 @@ export * from "./domains/AnalyticalRelationships";
 export * from "@bentley/imodeljs-native/IModelJsNative";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
+export * from "./NativeAppBackend";
 export * from "./IModelExporter";
 export * from "./IModelImporter";
 export * from "./IModelTransformer";

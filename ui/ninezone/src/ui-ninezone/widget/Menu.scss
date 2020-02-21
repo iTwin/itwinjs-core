@@ -1,0 +1,23 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.nz-widget-menu {
+  position: absolute;
+  top: 100%;
+  border: 1px solid $buic-background-5;
+  background: $buic-background-1;
+  padding: 0.75em;
+  z-index: 10;
+  @include uicore-z-index(toolbar-panels);
+
+  &.nz-left {
+    right: 0;
+  }
+
+  &.nz-right {
+    left: 0;
+  }
+}

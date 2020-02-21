@@ -14,11 +14,11 @@ import { BackstageItemProps } from "./BackstageItemProps";
 /** Separator Backstage item.
  * @public
  */
-export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
+export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> { // tslint:disable-line:deprecation
   private static _sSeparatorBackstageItemKey: number;
   private _key: number;
 
-  constructor(separatorBackstageItemDef: BackstageItemProps) {
+  constructor(separatorBackstageItemDef: BackstageItemProps) { // tslint:disable-line:deprecation
     super(separatorBackstageItemDef);
 
     SeparatorBackstageItem._sSeparatorBackstageItemKey++;

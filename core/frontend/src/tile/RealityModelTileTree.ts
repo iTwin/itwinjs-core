@@ -22,6 +22,9 @@ import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson, Realit
 import {
   BatchedTileIdMap,
   ContextTileLoader,
+  createClassifierTileTreeReference,
+  RealityTileTree,
+  SpatialClassifierTileTreeReference,
   Tile,
   TileLoadPriority,
   TileParams,
@@ -37,9 +40,8 @@ import { IModelApp } from "../IModelApp";
 import { AuthorizedFrontendRequestContext, FrontendRequestContext } from "../FrontendRequestContext";
 import { HitDetail } from "../HitDetail";
 import { SpatialClassifiers } from "../SpatialClassifiers";
-import { SpatialClassifierTileTreeReference, createClassifierTileTreeReference } from "./ClassifierTileTree";
 import { SceneContext } from "../ViewContext";
-import { RenderMemory } from "../render/RenderSystem";
+import { RenderMemory } from "../render/RenderMemory";
 import { ViewState } from "../ViewState";
 import { DisplayStyleState } from "../DisplayStyleState";
 
@@ -222,7 +224,6 @@ realityModelViewFlagOverrides.clearClipVolume();
 class RealityModelTileLoader extends ContextTileLoader {
   private readonly _tree: RealityModelTileTreeProps;
   private readonly _batchedIdMap?: BatchedTileIdMap;
-  public get drawAsRealityTiles(): boolean { return true; }
 
   public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap) {
     super();
@@ -341,7 +342,7 @@ export namespace RealityModelTileTree {
     const props = await getTileTreeProps(url, tilesetToDb, iModel);
     const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel));
     const params = tileTreeParamsFromJSON(props, iModel, true, loader, modelId);
-    return new TileTree(params);
+    return new RealityTileTree(params);
   }
 
   async function getAccessToken(): Promise<AccessToken | undefined> {
@@ -427,8 +428,8 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
     const tree = this.treeOwner.tileTree;
     if (undefined !== tree && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
       // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
-      this._mapDrapeTree = context.viewport.displayStyle.backgroundMap;
-      context.addBackgroundDrapedModel(this);
+      this._mapDrapeTree = context.viewport.displayStyle.backgroundDrapeMap;
+      context.addBackgroundDrapedModel(this, undefined);
     }
 
     super.addToScene(context);

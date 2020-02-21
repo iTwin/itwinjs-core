@@ -4,19 +4,26 @@ exports[`FilteredTreeDataProvider getNodes returns child nodes 1`] = `
 Array [
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "Auto Loan Account",
-        "id": "0xb1d8000000de35",
-      },
-      "pathFromRoot": Array [
-        "66dcb686-2502-41e0-a1c3-9b08a0214f59",
-        "43142b23-f95f-40db-b473-9fde2c0a107d",
+      "instanceKeys": Array [
+        Object {
+          "className": "proactive",
+          "id": "0x2f660000003be5",
+        },
+        Object {
+          "className": "Program",
+          "id": "0x29fd00000165f8",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "c39b08a0-214f-4594-b142-b23f95f0db34",
+        "739fde2c-0a10-47d9-8975-8f1926883bea",
+      ],
+      "type": "ECInstancesNode",
     },
-    "description": "Doloribus aut culpa ratione vel molestias omnis.",
-    "icon": "reboot",
-    "id": "43142b23-f95f-40db-b473-9fde2c0a107d/66dcb686-2502-41e0-a1c3-9b08a0214f59",
+    "checkBoxState": 1,
+    "icon": "orchid",
+    "id": "739fde2c-0a10-47d9-8975-8f1926883bea/c39b08a0-214f-4594-b142-b23f95f0db34",
+    "isCheckboxVisible": true,
     "label": "A-2-1",
     "labelDefinition": PropertyRecord {
       "property": Object {
@@ -25,37 +32,40 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "Realigned",
-        "value": "bluetooth",
+        "displayValue": "A-2-1",
+        "value": "A-2-1",
         "valueFormat": 0,
       },
     },
-    "parentId": "680c80a2-8cf0-49ee-8272-ec6682ae559c/e412801a-e3e4-4479-8999-2f94b3186fb7",
+    "parentId": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
     "style": Object {
       "colorOverrides": Object {
-        "backgroundColor": 1126240511,
+        "backgroundColor": 416163071,
+        "color": 834803199,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "Village",
-        "id": "0x143170000017783",
-      },
-      "pathFromRoot": Array [
-        "23ea98de-9451-4bb8-8be2-ea063b9cf6fe",
-        "83e0ae64-7290-487e-8e56-9f025212b800",
+      "instanceKeys": Array [
+        Object {
+          "className": "Handmade Soft Hat",
+          "id": "0x11fd10000012da1",
+        },
+        Object {
+          "className": "Corporate",
+          "id": "0x10c610000016c0d",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "063b9cf6-fe83-4e0a-a647-29087ece569f",
+        "025212b8-007f-4fd5-8721-582ec854f59e",
+      ],
+      "type": "ECInstancesNode",
     },
     "autoExpand": true,
-    "checkBoxState": 1,
-    "description": "Rem quia odit.",
     "hasChildren": true,
-    "icon": "Avon",
-    "id": "83e0ae64-7290-487e-8e56-9f025212b800/23ea98de-9451-4bb8-8be2-ea063b9cf6fe",
-    "isCheckboxVisible": true,
+    "id": "025212b8-007f-4fd5-8721-582ec854f59e/063b9cf6-fe83-4e0a-a647-29087ece569f",
     "label": "A-2-2",
     "labelDefinition": PropertyRecord {
       "property": Object {
@@ -64,12 +74,18 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "end-to-end",
-        "value": "Licensed",
+        "displayValue": "A-2-2",
+        "value": "A-2-2",
         "valueFormat": 0,
       },
     },
-    "parentId": "680c80a2-8cf0-49ee-8272-ec6682ae559c/e412801a-e3e4-4479-8999-2f94b3186fb7",
+    "parentId": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": 2113116671,
+        "color": 1750897919,
+      },
+    },
   },
 ]
 `;
@@ -78,23 +94,26 @@ exports[`FilteredTreeDataProvider getNodes returns root nodes 1`] = `
 Array [
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "Congo",
-        "id": "0x71220000010e43",
-      },
-      "pathFromRoot": Array [
-        "024f2316-265a-46e8-965a-837e308ae678",
-        "62f3ccbf-c51b-48ed-ad1d-0420ea196af6",
+      "instanceKeys": Array [
+        Object {
+          "className": "methodologies",
+          "id": "0x16c470000011960",
+        },
+        Object {
+          "className": "Music",
+          "id": "0x186400000007619",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "2316265a-6e8d-465a-837e-308ae67862f3",
+        "ccbfc51b-8ede-4d1d-8420-ea196af683b4",
+      ],
+      "type": "ECInstancesNode",
     },
     "autoExpand": true,
-    "description": "Nobis repellendus fugiat velit.",
     "hasChildren": true,
-    "icon": "Shoes",
-    "id": "62f3ccbf-c51b-48ed-ad1d-0420ea196af6/024f2316-265a-46e8-965a-837e308ae678",
-    "isCheckboxDisabled": true,
-    "isCheckboxVisible": true,
+    "icon": "Books",
+    "id": "ccbfc51b-8ede-4d1d-8420-ea196af683b4/2316265a-6e8d-465a-837e-308ae67862f3",
     "label": "A-1",
     "labelDefinition": PropertyRecord {
       "property": Object {
@@ -103,28 +122,34 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "methodologies",
-        "value": "capacitor",
+        "displayValue": "A-1",
+        "value": "A-1",
         "valueFormat": 0,
       },
     },
   },
   Object {
     "__presentation-components/key": Object {
-      "instanceKey": Object {
-        "className": "payment",
-        "id": "0x1590a0000003157",
-      },
-      "pathFromRoot": Array [
-        "e412801a-e3e4-4479-8999-2f94b3186fb7",
-        "680c80a2-8cf0-49ee-8272-ec6682ae559c",
+      "instanceKeys": Array [
+        Object {
+          "className": "Loop",
+          "id": "0x259100000162eb",
+        },
+        Object {
+          "className": "transitional",
+          "id": "0x2ead0000007069",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "2801ae3e-4479-4099-92f9-4b3186fb7680",
+        "c80a28cf-09ee-4827-aec6-682ae559cab2",
+      ],
+      "type": "ECInstancesNode",
     },
     "autoExpand": true,
     "hasChildren": true,
-    "id": "680c80a2-8cf0-49ee-8272-ec6682ae559c/e412801a-e3e4-4479-8999-2f94b3186fb7",
-    "isCheckboxVisible": true,
+    "icon": "enterprise",
+    "id": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
     "label": "A-2",
     "labelDefinition": PropertyRecord {
       "property": Object {
@@ -133,9 +158,15 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "Union",
-        "value": "Gorgeous",
+        "displayValue": "A-2",
+        "value": "A-2",
         "valueFormat": 0,
+      },
+    },
+    "style": Object {
+      "colorOverrides": Object {
+        "backgroundColor": -1451253761,
+        "color": 1590095871,
       },
     },
   },

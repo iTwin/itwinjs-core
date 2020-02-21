@@ -37,10 +37,10 @@ import {
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderGraphic } from "../render/RenderGraphic";
-import { RenderMemory } from "../render/RenderSystem";
+import { RenderMemory } from "../render/RenderMemory";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
-import { TileRequest, TileLoader, TileParams, tileParamsFromJSON, TileContent, TileDrawArgs, TileTree, TileTreeLoadStatus, TraversalSelectionContext, TraversalDetails } from "./internal";
+import { TileRequest, TileLoader, TileParams, tileParamsFromJSON, TileContent, TileDrawArgs, TileTree, TileTreeLoadStatus } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
 
@@ -91,7 +91,6 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   protected _transformToRoot?: Transform;
   protected _emptySubRangeMask?: number;
   private _state: TileState;
-  private static _loadedRealityChildren = new Array<Tile>();
 
   public constructor(props: TileParams) {
     this.root = props.root;
@@ -118,13 +117,17 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     this.center = this.range.low.interpolate(0.5, this.range.high);
     this.radius = 0.5 * this.range.low.distance(this.range.high);
 
-    this._childrenLoadStatus = this.hasChildren && this.depth < this.root.loader.maxDepth ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.Loaded;
+    this._childrenLoadStatus = this.hasChildren && this.depth < this.root.maxDepth ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.Loaded;
   }
-
-  public dispose() {
+  public disposeContents() {
     this._graphic = dispose(this._graphic);
     this._rangeGraphic = dispose(this._rangeGraphic);
     this._rangeGraphicType = TileBoundingBoxes.None;
+    this._state = TileState.NotReady;
+  }
+
+  public dispose() {
+    this.disposeContents();
 
     if (this._children)
       for (const child of this._children)
@@ -348,94 +351,12 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     return this._childrenLoadStatus === TileTreeLoadStatus.NotFound;
   }
 
-  protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
-    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
-    if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-      args.markChildrenLoading();
-      this._childrenLastUsed = args.now;
-      traversalDetails.childrenLoading = true;
-      return;
-    }
-
-    if (undefined !== this.children) {
-      const traversalChildren = this.root.getTraversalChildren(this.depth);
-      traversalChildren.initialize();
-      for (let i = 0; i < this.children!.length; i++)
-        this.children[i].selectRealityTiles(context, args, traversalChildren.getChildDetail(i));
-
-      traversalChildren.combine(traversalDetails);
-    }
-  }
-  public addBoundingRectangle(builder: GraphicBuilder, color: ColorDef) {
-    builder.setSymbology(color, color, 3);
-    builder.addRangeBox(this.range);
-  }
-
-  public allChildrenIncluded(tiles: Tile[]) {
-    if (this.children === undefined || tiles.length !== this.children.length)
-      return false;
-    for (const tile of tiles)
-      if (tile.parent !== this)
-        return false;
-    return true;
-  }
-  protected getLoadedRealityChildren(args: TileDrawArgs): boolean {
-    if (this._childrenLoadStatus !== TileTreeLoadStatus.Loaded || this._children === undefined)
-      return false;
-
-    for (const child of this._children) {
-      if (child.isReady && TileVisibility.Visible === child.computeVisibility(args)) {
-        this._childrenLastUsed = args.now;
-        Tile._loadedRealityChildren.push(child);
-      } else if (!child.getLoadedRealityChildren(args))
-        return false;
-    }
-    return true;
-  }
-
-  public selectRealityTiles(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
-    const vis = this.computeVisibility(args);
-    if (TileVisibility.OutsideFrustum === vis) {
-      // Note -- Can't unload children here because this tile tree may be used by more than one viewport.
-      return;
-    }
-    if (this.root.loader.forceTileLoad(this) && !this.isReady) {
-      context.selectOrQueue(this, traversalDetails);    // Force loading if loader requires this tile. (cesium terrain visibility).
-      return;
-    }
-
-    if (this.isDisplayable && (vis === TileVisibility.Visible || this.isLeaf || this._anyChildNotFound)) {
-      context.selectOrQueue(this, traversalDetails);
-      const preloadSkip = this.root.loader.preloadRealityParentSkip;
-      let preloadCount = this.root.loader.preloadRealityParentDepth + preloadSkip;
-      let parentDepth = 0;
-      for (let parent = this.parent; preloadCount > 0 && parent !== undefined; parent = parent.parent) {
-        if (parent.children!.length > 1 && ++parentDepth > preloadSkip) {
-          context.preload(parent);
-          preloadCount--;
-        }
-
-        if (!this.isReady) {      // This tile is visible but not loaded - Use higher resolution children if present
-          if (this.getLoadedRealityChildren(args))
-            context.select(Tile._loadedRealityChildren);
-          Tile._loadedRealityChildren.length = 0;
-        }
-      }
-    } else {
-      this.selectRealityChildren(context, args, traversalDetails);
-      if (this.isDisplayable && this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
-        context.selectOrQueue(this, traversalDetails);
-      }
-    }
-  }
-
   public selectTiles(selected: Tile[], args: TileDrawArgs, numSkipped: number = 0): SelectParent {
     const vis = this.computeVisibility(args);
     if (TileVisibility.OutsideFrustum === vis) {
       this.unloadChildren(args.purgeOlderThan);
       return SelectParent.No;
     }
-
     if (TileVisibility.Visible === vis) {
       // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
       if (!this.isReady)
@@ -619,7 +540,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
           // Note, the children usually *have* no content at this point, so content range == tile range.
           const parentRange = (this.hasContentRange || undefined !== this.root.contentRange) ? undefined : new Range3d();
           for (const prop of props) {
-            const child = new Tile(tileParamsFromJSON(prop, this.root, this));
+            const child = this.root.createTile(tileParamsFromJSON(prop, this.root, this));
 
             this._children.push(child);
             if (undefined !== parentRange && !child.isEmpty)
@@ -719,11 +640,11 @@ export const enum SelectParent {
  */
 export const enum TileLoadPriority {
   /** Background map tiles. */
-  Map = 1,
+  Map = 15,
   /** Typically, tiles generated from the contents of geometric models. */
   Primary = 20,
   /** Terrain -- requires background/map tiles for drape. */
-  Terrain = 30,
+  Terrain = 10,
   /** Typically, context reality models. */
   Context = 40,
   /** Supplementary tiles used to classify the contents of geometric or reality models. */
@@ -754,7 +675,6 @@ export const enum TileBoundingBoxes {
   /** Display bounding sphere. */
   Sphere,
 }
-
 // TileLoadStatus is computed from the combination of Tile._state and, if Tile.request is defined, Tile.request.state.
 const enum TileState {
   NotReady = TileLoadStatus.NotLoaded, // Tile requires loading, but no request has yet completed.

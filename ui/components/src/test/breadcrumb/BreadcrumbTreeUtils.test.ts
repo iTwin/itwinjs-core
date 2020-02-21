@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { BreadcrumbTreeUtils } from "../../ui-components/breadcrumb/BreadcrumbTreeUtils";
 import { TreeDataProvider, ImmediatelyLoadedTreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
 import { RowItem, CellItem } from "../../ui-components/table/TableDataProvider";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import TestUtils from "../TestUtils";
 import { mockInterfaceTreeDataProvider } from "./mockTreeDataProvider";
 

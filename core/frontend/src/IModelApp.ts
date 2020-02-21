@@ -185,6 +185,7 @@ export class IModelApp {
   private static _tileTreePurgeTime?: BeTimePoint;
   private static _tileTreePurgeInterval?: BeDuration;
   private static _features: FeatureTrackingManager;
+  private static _nativeApp: boolean = false;
   private static _featureToggles: FeatureToggleClient;
 
   // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
@@ -204,6 +205,10 @@ export class IModelApp {
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
   public static get viewManager(): ViewManager { return this._viewManager; }
+  /** Check if native app or not
+   * @internal
+   */
+  public static get isNativeApp(): boolean { return this._nativeApp; }
   /** The [[NotificationManager]] for this session. */
   public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session.

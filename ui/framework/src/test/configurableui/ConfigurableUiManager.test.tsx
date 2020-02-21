@@ -39,6 +39,7 @@ describe("ConfigurableUiManager", () => {
 
   after(() => {
     MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
   });
 
   it("findFrontstageDef passed no argument", async () => {

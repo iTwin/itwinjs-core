@@ -23,6 +23,10 @@ describe("ZoneTargets", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   describe("DropTarget.Merge", () => {
     it("should render", () => {
       mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />);

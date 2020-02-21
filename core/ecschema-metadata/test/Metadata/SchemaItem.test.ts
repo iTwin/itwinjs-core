@@ -11,7 +11,7 @@ import { SchemaContext } from "../../src/Context";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 
 describe("SchemaItem", () => {
-  describe("toJson", () => {
+  describe("toJSON", () => {
     let baseClass: any;
     let schema;
 
@@ -31,8 +31,8 @@ describe("SchemaItem", () => {
         label: "ExampleEntity",
         description: "An example entity class.",
       };
-      await (baseClass as EntityClass).deserialize(propertyJson);
-      const testClass = await (baseClass as EntityClass).toJson(true, true);
+      await (baseClass as EntityClass).fromJSON(propertyJson);
+      const testClass = (baseClass as EntityClass).toJSON(true, true);
       expect(testClass).to.exist;
       assert.strictEqual(testClass.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
       assert.strictEqual(testClass.schema, "ExampleSchema");
@@ -59,11 +59,69 @@ describe("SchemaItem", () => {
       const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
       const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
       assert.isDefined(testEntity);
-      const testClass = await testEntity!.toJson(true, true);
+      const testClass = testEntity!.toJSON(true, true);
       expect(testClass).to.exist;
+      assert.strictEqual(testClass.$schema, "https://dev.bentley.com/json_schemas/ec/32/schemaitem");
+      assert.strictEqual(testClass.schemaVersion, "01.00.00");
       assert.strictEqual(testClass.schemaItemType, "EntityClass");
       assert.strictEqual(testClass.name, "ExampleEntity");
+      assert.strictEqual(testClass.label, "ExampleEntity");
       assert.strictEqual(testClass.description, "An example entity class.");
+    });
+    it("Serialize SchemaItem, standalone false", async () => {
+      const schemaItemJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ExampleSchema",
+        version: "1.0.0",
+        alias: "ex",
+        items: {
+          ExampleEntity: {
+            schemaItemType: "EntityClass",
+            label: "ExampleEntity",
+            description: "An example entity class.",
+          },
+        },
+      };
+      const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
+      const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
+      assert.isDefined(testEntity);
+      const testClass = testEntity!.toJSON();
+      expect(testClass).to.exist;
+      assert.strictEqual(testClass.schemaItemType, "EntityClass");
+      assert.strictEqual(testClass.label, "ExampleEntity");
+      assert.strictEqual(testClass.description, "An example entity class.");
+      assert.strictEqual(testClass.name, undefined);
+      assert.strictEqual(testClass.$schema, undefined);
+      assert.strictEqual(testClass.schema, undefined);
+      assert.strictEqual(testClass.schemaVersion, undefined);
+    });
+    it("Serialize SchemaItem, JSON stringify", async () => {
+      const schemaItemJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ExampleSchema",
+        version: "1.0.0",
+        alias: "ex",
+        items: {
+          ExampleEntity: {
+            schemaItemType: "EntityClass",
+            label: "ExampleEntity",
+            description: "An example entity class.",
+          },
+        },
+      };
+      const ecschema = await Schema.fromJson(schemaItemJson, new SchemaContext());
+      const testEntity = await ecschema.getItem<EntityClass>("ExampleEntity");
+      assert.isDefined(testEntity);
+      const testClassString = JSON.stringify(testEntity);
+      const testClass = JSON.parse(testClassString);
+      expect(testClass).to.exist;
+      assert.strictEqual(testClass.schemaItemType, "EntityClass");
+      assert.strictEqual(testClass.label, "ExampleEntity");
+      assert.strictEqual(testClass.description, "An example entity class.");
+      assert.strictEqual(testClass.name, undefined);
+      assert.strictEqual(testClass.$schema, undefined);
+      assert.strictEqual(testClass.schema, undefined);
+      assert.strictEqual(testClass.schemaVersion, undefined);
     });
   });
 
@@ -91,7 +149,7 @@ describe("SchemaItem", () => {
         label: "ExampleEntity",
         description: "An example entity class.",
       };
-      await baseClass.deserialize(propertyJson);
+      await baseClass.fromJSON(propertyJson);
       const testClass = await baseClass.toXml(newDom);
       expect(testClass.nodeName).to.eql("ECEntityClass");
       expect(testClass.getAttribute("typeName")).to.eql("ExampleEntity");

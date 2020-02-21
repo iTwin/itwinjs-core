@@ -27,13 +27,10 @@ describe("useActiveIModelConnection", () => {
 
   after(() => {
     MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
   });
 
   afterEach(cleanup);
-
-  after(() => {
-    TestUtils.terminateUiFramework();
-  });
 
   describe("useActiveIModelConnection Hook", () => {
     const imodelMock = moq.Mock.ofType<IModelConnection>();

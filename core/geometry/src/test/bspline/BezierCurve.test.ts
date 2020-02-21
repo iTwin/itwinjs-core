@@ -120,6 +120,21 @@ describe("BsplineCurve", () => {
     ck.testExactNumber(1.0, basis[0]);
     ck.testExactNumber(0.0, basis1[0]);
     ck.testFalse(knotVector1.isIndexOfRealSpan(-1));
+    const base2A = Bezier1dNd.create([Point2d.create(1, 2), Point2d.create(2, 2), Point2d.create(3, 1)])!;
+    const base2B = Bezier1dNd.create([Point2d.create(1, 2), Point2d.create(2, 2), Point2d.create(3, 1)])!;
+    ck.testTrue(base2A.subdivideToIntervalInPlace(0.25, 0.5));
+    ck.testTrue(base2B.subdivideToIntervalInPlace(0.5, 0.25));
+    for (const f of [0, 0.1, 0.4, 0.3]) {
+      const valueA = base2A.evaluate(f);
+      const valueB = base2B.evaluate(1 - f);
+      ck.testFalse(base2A.isAlmostEqual(base2B));
+      for (let i = 0; i < 2; i++) {
+        ck.testCoordinate(valueA[i], valueB[i]);
+      }
+    }
+    ck.testFalse(base2A.subdivideToIntervalInPlace(0.25, 0.25));
+    ck.testFalse(base2A.subdivideInPlaceKeepLeft(0.0));
+    ck.testFalse(base2A.subdivideInPlaceKeepRight(1.0));
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -264,7 +279,7 @@ describe("BsplineCurve", () => {
       // these exercise obscure code .. no test for values ...
       bspline.evaluateBasisFunctionsInSpan(-1, 0.5, f);
       bspline.evaluateBasisFunctionsInSpan(29, 0.5, f);
-      ck.testFalse (bspline.testCloseablePolygon ());
+      ck.testFalse(bspline.testCloseablePolygon());
     }
     expect(ck.getNumErrors()).equals(0);
   });

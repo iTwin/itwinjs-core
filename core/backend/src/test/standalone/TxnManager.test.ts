@@ -2,18 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelStatus, OpenMode, BeDuration } from "@bentley/bentleyjs-core";
-import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance, GeometryStreamBuilder } from "@bentley/imodeljs-common";
-import { Point3d, YawPitchRollAngles, LineSegment3d } from "@bentley/geometry-core";
+import { BeDuration, DbResult, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Code, ColorByName, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { IModelDb, IModelJsFs, PhysicalModel, SpatialCategory, TxnAction, BackendRequestContext } from "../../imodeljs-backend";
+import { BackendRequestContext, IModelDb, IModelHost, IModelJsFs, IModelJsNative, PhysicalModel, SpatialCategory, TxnAction, UpdateModelOptions } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
-import { UpdateModelOptions } from "../../IModelDb";
 
 describe("TxnManager", () => {
   let imodel: IModelDb;
   let props: TestPhysicalObjectProps;
   const requestContext = new BackendRequestContext();
+
+  const performUpgrade = (pathname: string): DbResult => {
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeOptions.Upgrade);
+    if (DbResult.BE_SQLITE_OK === res)
+      nativeDb.closeIModel();
+    return res;
+  };
 
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
@@ -21,7 +28,7 @@ describe("TxnManager", () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
-    assert.equal(IModelDb.performUpgrade(testFileName), 0);
+    assert.equal(performUpgrade(testFileName), 0);
     imodel = IModelDb.openStandalone(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
 

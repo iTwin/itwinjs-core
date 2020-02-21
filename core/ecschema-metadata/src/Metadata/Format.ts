@@ -23,7 +23,7 @@ import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils"
 export class Format extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Format; // tslint:disable-line
   protected _roundFactor: number;
-  protected _type: FormatType; // required; options are decimal, frational, scientific, station
+  protected _type: FormatType; // required; options are decimal, fractional, scientific, station
   protected _precision: number; // required
   protected _showSignOption: ShowSignOption; // options: noSign, onlyNegative, signAlways, negativeParentheses
   protected _decimalSeparator: string; // optional; default is based on current locale.... TODO: Default is based on current locale
@@ -196,8 +196,8 @@ export class Format extends SchemaItem {
     }
   }
 
-  public deserializeSync(formatProps: FormatProps) {
-    super.deserializeSync(formatProps);
+  public fromJSONSync(formatProps: FormatProps) {
+    super.fromJSONSync(formatProps);
     this.typecheck(formatProps);
     if (undefined === formatProps.composite)
       return;
@@ -211,8 +211,8 @@ export class Format extends SchemaItem {
     }
   }
 
-  public async deserialize(formatProps: FormatProps) {
-    await super.deserialize(formatProps);
+  public async fromJSON(formatProps: FormatProps) {
+    await super.fromJSON(formatProps);
     this.typecheck(formatProps);
     if (undefined === formatProps.composite)
       return;
@@ -226,8 +226,13 @@ export class Format extends SchemaItem {
     }
   }
 
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+  /**
+   * Save this Format's properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): FormatProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.type = formatTypeToString(this.type!);
     schemaJson.precision = this.precision;
 

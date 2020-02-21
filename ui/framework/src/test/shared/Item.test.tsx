@@ -14,6 +14,7 @@ import { ToolItemDef } from "../../ui-framework/shared/ToolItemDef";
 import { ActionButtonItemDef } from "../../ui-framework/shared/ActionButtonItemDef";
 import { Tool1 } from "../tools/Tool1";
 import { ItemProps } from "../../ui-framework/shared/ItemProps";
+import { ConditionalStringValue } from "@bentley/ui-abstract";
 
 describe("Item", () => {
 
@@ -43,7 +44,8 @@ describe("Item", () => {
 
   it("CommandItemDef that is visible should render", () => {
     const commandItem = new CommandItemDef({
-      iconSpec: "icon-placeholder",
+      iconSpec: new ConditionalStringValue(() => "icon-placeholder", ["dummy"]),
+      label: new ConditionalStringValue(() => "test-command", ["dummy"]),
       isVisible: true,
     });
     expect(commandItem.toolbarReactNode()).to.not.be.null;

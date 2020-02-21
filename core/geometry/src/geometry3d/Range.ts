@@ -1505,5 +1505,15 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       this.low.x - delta, this.low.y - delta,
       this.high.x + delta, this.high.y + delta, true);
   }
-
+  /** Return fractional coordinates of point within the range.
+   * * returns undefined if the range is null.
+   * * returns undefined if any direction (x,y) has zero length
+   */
+  public worldToLocal(point: Point2d, result?: Point2d): Point2d | undefined {
+    const ax = RangeBase.npcScaleFactor(this.low.x, this.high.x);
+    const ay = RangeBase.npcScaleFactor(this.low.y, this.high.y);
+    if (ax === 0.0 || ay === 0.0)
+      return undefined;
+    return Point2d.create((point.x - this.low.x) * ax, (point.y - this.low.y) * ay, result);
+  }
 }

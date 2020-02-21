@@ -2,6 +2,18 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "1.12.0",
+      "tag": "@bentley/webpack-tools_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "increased maxBuffer of child process running webpack from buildIModelJsModule"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.11.0",
       "tag": "@bentley/webpack-tools_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",

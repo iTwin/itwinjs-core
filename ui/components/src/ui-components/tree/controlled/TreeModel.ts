@@ -6,6 +6,7 @@
  * @module Tree
  */
 
+import _ from "lodash";
 import { immerable } from "immer";
 import { CheckBoxState } from "@bentley/ui-core";
 import { SparseTree, SparseArray } from "./internal/SparseTree";
@@ -43,7 +44,6 @@ export interface TreeModelNode {
 export interface CheckBoxInfo {
   readonly state: CheckBoxState;
   readonly tooltip?: string;
-
   readonly isDisabled: boolean;
   readonly isVisible: boolean;
 }
@@ -84,7 +84,6 @@ export interface TreeModelNodeEditingInfo {
 export interface MutableCheckBoxInfo extends CheckBoxInfo {
   state: CheckBoxState;
   tooltip?: string;
-
   isDisabled: boolean;
   isVisible: boolean;
 }
@@ -106,7 +105,6 @@ export interface TreeModelNodePlaceholder {
 export interface TreeModelRootNode {
   readonly depth: -1;
   readonly id: undefined;
-
   readonly numChildren: number | undefined;
 }
 
@@ -390,7 +388,7 @@ export class MutableTreeModel implements TreeModel {
         isVisible: !!input.item.isCheckboxVisible,
       },
 
-      item: input.item,
+      item: _.cloneDeep(input.item),
     };
   }
 

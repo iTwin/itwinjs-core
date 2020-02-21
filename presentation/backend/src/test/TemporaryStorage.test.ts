@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as lolex from "lolex";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { using } from "@bentley/bentleyjs-core";
-import { TemporaryStorage } from "../TemporaryStorage";
+import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("TemporaryStorage", () => {
 
@@ -69,6 +69,21 @@ describe("TemporaryStorage", () => {
       values.forEach((v) => cleanupHandlerMock.verify((x) => x(v), moq.Times.once()));
     });
 
+    it("calls `onDisposedAll` callback", () => {
+      const spy = sinon.spy();
+      const storage = new TemporaryStorage<string>({
+        factory: (id: string) => id,
+        onDisposedAll: spy,
+      });
+
+      const values = ["a", "b", "c"];
+      values.forEach((v) => storage.getValue(v));
+
+      storage.dispose();
+
+      expect(spy).to.be.calledOnce;
+    });
+
   });
 
   describe("getValue", () => {
@@ -76,24 +91,36 @@ describe("TemporaryStorage", () => {
     it("creates value if not exists", () => {
       const factoryMock = moq.Mock.ofType<(id: string) => string>();
       factoryMock.setup((x) => x(moq.It.isAnyString())).returns((id: string) => id);
+      const onCreatedSpy = sinon.spy();
       const storage = new TemporaryStorage<string>({
         factory: factoryMock.object,
+        onCreated: onCreatedSpy,
       });
+
       const value = storage.getValue("a");
       expect(value).to.eq("a");
       factoryMock.verify((x) => x("a"), moq.Times.once());
+      expect(onCreatedSpy).to.be.calledOnceWith("a");
     });
 
     it("doesn't create value if already exists", () => {
       const factoryMock = moq.Mock.ofType<(id: string) => string>();
       factoryMock.setup((x) => x(moq.It.isAnyString())).returns((id: string) => id);
+      const onCreatedSpy = sinon.spy();
       const storage = new TemporaryStorage<string>({
         factory: factoryMock.object,
+        onCreated: onCreatedSpy,
       });
+
       const value1 = storage.getValue("a");
       expect(value1).to.eq("a");
+      expect(onCreatedSpy).to.be.calledOnceWith("a");
+      onCreatedSpy.resetHistory();
+
       const value2 = storage.getValue("a");
       expect(value2).to.eq("a");
+      expect(onCreatedSpy).to.not.be.called;
+
       factoryMock.verify((x) => x("a"), moq.Times.once());
     });
 
@@ -160,6 +187,21 @@ describe("TemporaryStorage", () => {
       storage.disposeOutdatedValues();
       expect(storage.values.length).to.eq(0);
       cleanupHandlerMock.verify((x) => x("a"), moq.Times.once());
+    });
+
+    it("calls `onDisposedSingle` for disposed values", () => {
+      const spy = sinon.spy();
+      const storage = new TemporaryStorage<string>({
+        factory: (id: string) => id,
+        onDisposedSingle: spy,
+      });
+      storage.getValue("a");
+      storage.getValue("b");
+      storage.disposeOutdatedValues();
+      expect(storage.values.length).to.eq(0);
+      expect(spy).to.be.calledTwice;
+      expect(spy).to.be.calledWith("a");
+      expect(spy).to.be.calledWith("b");
     });
 
   });

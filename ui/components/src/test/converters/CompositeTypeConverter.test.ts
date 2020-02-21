@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import { CompositeTypeConverter } from "../../ui-components/converters/CompositeTypeConverter";
-import { Primitives } from "@bentley/imodeljs-frontend";
+import { Primitives } from "@bentley/ui-abstract";
 
 describe("CompositeTypeConverter", () => {
 

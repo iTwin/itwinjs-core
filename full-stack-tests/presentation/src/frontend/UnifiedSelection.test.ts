@@ -10,9 +10,9 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { createRandomTransientId, createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/selection/SelectionManager";
 import { waitForAllAsyncs } from "@bentley/presentation-common/lib/test/_helpers/PendingAsyncsHelper";
-import { ViewportSelectionHandler } from "@bentley/presentation-components/lib/viewport/WithUnifiedSelection";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@bentley/presentation-frontend/lib/presentation-frontend/selection/SelectionManager";
+import { ViewportSelectionHandler } from "@bentley/presentation-components/lib/presentation-components/viewport/WithUnifiedSelection";
 
 describe("Unified Selection", () => {
 
@@ -64,7 +64,7 @@ describe("Unified Selection", () => {
 
     beforeEach(() => {
       Presentation.selection.clearSelection("", imodel);
-      handler = new ViewportSelectionHandler(imodel);
+      handler = new ViewportSelectionHandler({ imodel });
 
       // add something to selection set so we can check later
       // if the contents changed

@@ -10,7 +10,7 @@ import * as React from "react";
 import classnames = require("classnames");
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { BadgeType, StringGetter, AbstractGroupItemProps, OnItemExecutedFunc } from "@bentley/ui-abstract";
+import { BadgeType, StringGetter, OnItemExecutedFunc, ConditionalStringValue } from "@bentley/ui-abstract";
 import { withOnOutsideClick, CommonProps, SizeProps, IconSpec, Icon, BadgeUtilities } from "@bentley/ui-core";
 import {
   Item, ExpandableItem, GroupColumn, GroupTool, GroupToolExpander, Group as ToolGroupComponent,
@@ -26,7 +26,6 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../UiFramework";
 import { AnyItemDef } from "../shared/AnyItemDef";
 import { GroupItemProps } from "../shared/GroupItemProps";
-import { ItemDefFactory } from "../shared/ItemDefFactory";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
@@ -61,7 +60,7 @@ export class GroupItemDef extends ActionButtonItemDef {
 
   private _itemList!: ItemList;
   private _itemMap!: ItemMap;
-  private _panelLabel: string | StringGetter = "";
+  private _panelLabel: string | StringGetter | ConditionalStringValue = "";
 
   constructor(groupItemProps: GroupItemProps, onItemExecuted?: OnItemExecutedFunc) {
     super(groupItemProps, onItemExecuted);
@@ -77,23 +76,9 @@ export class GroupItemDef extends ActionButtonItemDef {
     this.directionExplicit = (groupItemProps.direction !== undefined);
     this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
     this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
-    this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.paneLabelKey); // tslint:disable-line: deprecation
+    this._panelLabel = PropsHelper.getStringSpec(groupItemProps.panelLabel, groupItemProps.panelLabelKey); // tslint:disable-line: deprecation
     this.items = groupItemProps.items;
     this.defaultActiveItemId = groupItemProps.defaultActiveItemId;
-  }
-
-  /** @internal */
-  public static constructFromAbstractItemProps(itemProps: AbstractGroupItemProps, onItemExecuted?: OnItemExecutedFunc): GroupItemDef {
-    const groupItemDef: GroupItemProps = {
-      groupId: itemProps.groupId,
-      items: ItemDefFactory.createItemListForGroupItem(itemProps.items, onItemExecuted),
-      direction: itemProps.direction as number,
-      itemsInColumn: itemProps.itemsInColumn,
-      panelLabel: itemProps.panelLabel,
-      paneLabelKey: itemProps.paneLabelKey,
-    };
-
-    return new GroupItemDef(groupItemDef);
   }
 
   public get id(): string {
@@ -108,7 +93,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   /** Set the panelLabel.
    * @param v A string or a function to get the string.
    */
-  public setPanelLabel(v: string | StringGetter) {
+  public setPanelLabel(v: string | StringGetter | ConditionalStringValue) {
     this._panelLabel = v;
   }
 
@@ -218,10 +203,10 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     if (props.groupItemDef && props.groupItemDef.items.length > 0) {
       props.groupItemDef.items.forEach((itemDef: AnyItemDef) => {
         const item: ItemDefBase | undefined = itemDef;
-        if (item.stateSyncIds.length > 0) {
+        if (item.stateSyncIds.length > 0) { // tslint:disable-line:deprecation
           if (undefined === this._childSyncIds)
             this._childSyncIds = new Set<string>();
-          item.stateSyncIds.forEach((value) => this._childSyncIds!.add(value));
+          item.stateSyncIds.forEach((value) => this._childSyncIds!.add(value)); // tslint:disable-line:deprecation
         }
       });
     }
@@ -236,11 +221,11 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value)))
         this._childRefreshRequired = true;  // this is cleared when render occurs
     let newState: GroupItemState = { ...this.state };
-    if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0)
-      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+    if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0) // tslint:disable-line:deprecation
+      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // tslint:disable-line:deprecation
     if (refreshState || this._childRefreshRequired) {
-      if (this.props.groupItemDef.stateFunc)
-        newState = this.props.groupItemDef.stateFunc(newState) as GroupItemState;
+      if (this.props.groupItemDef.stateFunc) // tslint:disable-line:deprecation
+        newState = this.props.groupItemDef.stateFunc(newState) as GroupItemState; // tslint:disable-line:deprecation
       // istanbul ignore else
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)
         || this._childRefreshRequired) {
@@ -289,9 +274,9 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     return {
       activeToolId: FrontstageManager.activeToolId,
       groupItemDef,
-      isEnabled: groupItemDef.isEnabled,
+      isEnabled: groupItemDef.isEnabled, // tslint:disable-line:deprecation
       isPressed: groupItemDef.isPressed,
-      isVisible: groupItemDef.isVisible,
+      isVisible: groupItemDef.isVisible, // tslint:disable-line:deprecation
       trayId,
       backTrays: [],
       trays,
@@ -338,6 +323,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
   public componentDidUpdate(prevProps: GroupItemComponentProps, _prevState: GroupItemState) {
     if (this.props !== prevProps) {
+      // istanbul ignore next
       if (this.props.groupItemDef !== prevProps.groupItemDef)
         Logger.logTrace(UiFramework.loggerCategory(this), `Different GroupItemDef for same groupId of ${this.state.groupItemDef.groupId}`);
       this.setState((_, props) => this.getGroupItemState(props));
@@ -564,10 +550,10 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
                 const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
 
                 if (item instanceof ItemDefBase) {
-                  isVisible = item.isVisible;
-                  isEnabled = item.isEnabled;
-                  if (item.stateFunc) {
-                    const newState = item.stateFunc({ isVisible, isActive, isEnabled });
+                  isVisible = item.isVisible; // tslint:disable-line:deprecation
+                  isEnabled = item.isEnabled; // tslint:disable-line:deprecation
+                  if (item.stateFunc) { // tslint:disable-line:deprecation
+                    const newState = item.stateFunc({ isVisible, isActive, isEnabled }); // tslint:disable-line:deprecation
                     isVisible = undefined !== newState.isVisible ? newState.isVisible : isVisible;
                     isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : isEnabled;
                     isActive = undefined !== newState.isActive ? newState.isActive : isActive;

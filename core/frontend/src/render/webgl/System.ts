@@ -47,13 +47,15 @@ import {
 import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderTarget } from "../RenderTarget";
+import { RenderMemory } from "../RenderMemory";
 import {
   GLTimerResultCallback,
   RenderDiagnostics,
-  RenderMemory,
   RenderSystem,
   RenderSystemDebugControl,
   WebGLExtensionName,
+  RenderTerrainMeshGeometry,
+  TerrainTexture,
 } from "../RenderSystem";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -62,6 +64,7 @@ import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { PointStringParams, MeshParams, PolylineParams } from "../primitives/VertexTable";
 import { MeshArgs } from "../primitives/mesh/MeshPrimitives";
+import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import {
   Batch,
   Branch,
@@ -90,6 +93,7 @@ import { PolylineGeometry } from "./Polyline";
 import { PointStringGeometry } from "./PointString";
 import { MeshGraphic } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
+import { TerrainMeshGeometry } from "./TerrainMesh";
 import { LineCode } from "./EdgeOverrides";
 import { Material } from "./Material";
 import { CachedGeometry, SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
@@ -236,6 +240,7 @@ export class Capabilities {
   private _maxVaryingVectors: number = 0;
   private _maxFragUniformVectors: number = 0;
   private _canRenderDepthWithoutColor: boolean = false;
+  private _maxAnisotropy?: number;
 
   private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
   private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
@@ -486,6 +491,18 @@ export class Capabilities {
     gl.getError(); // clear any errors
 
     return fbStatus === gl.FRAMEBUFFER_COMPLETE;
+  }
+
+  public setMaxAnisotropy(desiredMax: number | undefined, gl: WebGLRenderingContext | WebGL2RenderingContext): void {
+    const ext = this.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic");
+    if (undefined === ext)
+      return;
+
+    if (undefined === this._maxAnisotropy)
+      this._maxAnisotropy = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number;
+
+    const max = (undefined !== desiredMax) ? Math.min(desiredMax, this._maxAnisotropy) : this._maxAnisotropy;
+    gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, max);
   }
 
   private debugPrint(gl: WebGLRenderingContext | WebGL2RenderingContext, missingRequiredFeatures: WebGLFeature[], _missingOptionalFeatures: WebGLFeature[]) {
@@ -746,7 +763,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public setDrawBuffers(attachments: GLenum[]): void { this._extensions.setDrawBuffers(attachments); }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
-  public static createContext(canvas: HTMLCanvasElement, contextAttributes?: WebGLContextAttributes, useWebGL2?: boolean): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+  public static createContext(canvas: HTMLCanvasElement, inputContextAttributes?: WebGLContextAttributes, useWebGL2?: boolean): WebGLRenderingContext | WebGL2RenderingContext | undefined {
+    let contextAttributes: WebGLContextAttributes = { powerPreference: "high-performance" };
+    if (undefined !== inputContextAttributes)
+      contextAttributes = { ...inputContextAttributes, ...contextAttributes };
+
     let context = null;
     if (useWebGL2) // optionally first try using a WebGL2 context
       context = canvas.getContext("webgl2", contextAttributes);
@@ -868,6 +889,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder { return new PrimitiveBuilder(this, type, viewport, placement, pickableId); }
 
   public createMesh(params: MeshParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return MeshGraphic.create(params, instances); }
+  public createTerrainMeshGeometry(terrainMesh: TerrainMeshPrimitive, transform: Transform): RenderTerrainMeshGeometry | undefined {
+    return TerrainMeshGeometry.createGeometry(terrainMesh, transform);
+  }
+  public createTerrainMeshGraphic(terrainGeometry: RenderTerrainMeshGeometry, featureTable: PackedFeatureTable, textures?: TerrainTexture[]): RenderGraphic | undefined {
+    return TerrainMeshGeometry.createGraphic(this, terrainGeometry as TerrainMeshGeometry, featureTable, textures);
+  }
   public createPolyline(params: PolylineParams, instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined {
     return createPrimitive((viOrigin) => PolylineGeometry.create(params, viOrigin), instances);
   }
@@ -1300,5 +1327,9 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
     for (const idMap of this.resourceCache.values())
       idMap.collectStatistics(stats);
+  }
+
+  public setMaxAnisotropy(max: number | undefined): void {
+    this.capabilities.setMaxAnisotropy(max, this.context);
   }
 }

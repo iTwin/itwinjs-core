@@ -1,0 +1,14 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetPanels should render 1`] = `
+<div
+  class="nz-widgetPanels-panels"
+>
+  <div
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom"
+  />
+  <div
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom"
+  />
+</div>
+`;

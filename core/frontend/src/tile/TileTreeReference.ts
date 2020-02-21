@@ -9,7 +9,7 @@
 import { BeTimePoint } from "@bentley/bentleyjs-core";
 import {
   Matrix4d,
-  Plane3dByOriginAndUnitNormal,
+  Range1d,
   Range3d,
   Transform,
 } from "@bentley/geometry-core";
@@ -21,7 +21,7 @@ import {
 import { HitDetail } from "../HitDetail";
 import { Viewport } from "../Viewport";
 import { RenderClipVolume } from "../render/RenderClipVolume";
-import { RenderMemory } from "../render/RenderSystem";
+import { RenderMemory } from "../render/RenderMemory";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import {
   TileDrawArgs,
@@ -174,5 +174,5 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
     tree.accumulateTransformedRange(range, matrix, location, frustumPlanes);
   }
 
-  public addPlanes(_planes: Plane3dByOriginAndUnitNormal[]): void { }
+  public getTerrainHeight(_terrainHeights: Range1d): void { }
 }

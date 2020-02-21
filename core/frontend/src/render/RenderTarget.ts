@@ -25,8 +25,8 @@ import { Viewport } from "../Viewport";
 import { SceneContext } from "../ViewContext";
 import { HiliteSet } from "../SelectionSet";
 import { CanvasDecoration } from "./CanvasDecoration";
+import { RenderMemory } from "./RenderMemory";
 import {
-  RenderMemory,
   RenderSystem,
   RenderTextureDrape,
 } from "./RenderSystem";

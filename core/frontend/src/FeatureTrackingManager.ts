@@ -22,7 +22,7 @@ export class FeatureTrackingManager {
   protected _hostFallbackName = "imodeljs-frontend";
   /** Current Ulas usage type
    * See also
-   *  - [[UsageLogEntry]], [[FeatureLogEntry]]
+   *  - [[UsageLogEntry]]
    */
   protected _usageType = UsageType.Beta;
 
@@ -32,7 +32,7 @@ export class FeatureTrackingManager {
   }
 
   /** Basic tracking function to be overridden by an app. By default, iModelApp does not know the context to log track features.  */
-  public track ( _iModelConnection: IModelConnection, _featureId: string, _featureName?: string) {
+  public track(_iModelConnection: IModelConnection, _featureId: string, _featureName?: string) {
     return;
   }
 }

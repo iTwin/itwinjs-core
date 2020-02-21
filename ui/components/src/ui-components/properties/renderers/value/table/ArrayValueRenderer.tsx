@@ -9,7 +9,7 @@
 import * as React from "react";
 import { TableNonPrimitiveValueRenderer as TableValueRenderer, TableSpecificValueRendererProps } from "./NonPrimitiveValueRenderer";
 import { NonPrimitivePropertyRenderer } from "../../NonPrimitivePropertyRenderer";
-import { ArrayValue } from "@bentley/imodeljs-frontend";
+import { ArrayValue } from "@bentley/ui-abstract";
 
 /** A react component which renders array property value as a button with text
  * @public

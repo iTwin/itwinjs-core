@@ -24,7 +24,7 @@ describe("Phenomenon tests", () => {
         label: "Area",
         definition: "Units.LENGTH(2)",
       };
-      await testPhenomenon.deserialize(json);
+      await testPhenomenon.fromJSON(json);
       assert.strictEqual(testPhenomenon.label, "Area");
       assert.strictEqual(testPhenomenon.definition, "Units.LENGTH(2)");
     });
@@ -42,12 +42,13 @@ describe("Phenomenon tests", () => {
         label: "Area",
         definition: "Units.LENGTH(2)",
       };
-      testPhenomenon.deserializeSync(json);
+      testPhenomenon.fromJSONSync(json);
       assert.strictEqual(testPhenomenon.label, "Area");
       assert.strictEqual(testPhenomenon.definition, "Units.LENGTH(2)");
     });
   });
-  describe("toJson", () => {
+
+  describe("toJSON", () => {
     beforeEach(() => {
       const schema = new Schema(new SchemaContext(), "ExampleSchema", "es", 1, 0, 0);
       testPhenomenon = new Phenomenon(schema, "AREA");
@@ -59,8 +60,8 @@ describe("Phenomenon tests", () => {
         name: "AREA",
         definition: "Units.LENGTH(2)",
       };
-      await testPhenomenon.deserialize(json);
-      const phenomSerialization = testPhenomenon.toJson(true, true);
+      await testPhenomenon.fromJSON(json);
+      const phenomSerialization = testPhenomenon.toJSON(true, true);
       assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
     });
     it("sync - Basic test", () => {
@@ -70,8 +71,32 @@ describe("Phenomenon tests", () => {
         name: "AREA",
         definition: "Units.LENGTH(2)",
       };
-      testPhenomenon.deserializeSync(json);
-      const phenomSerialization = testPhenomenon.toJson(true, true);
+      testPhenomenon.fromJSONSync(json);
+      const phenomSerialization = testPhenomenon.toJSON(true, true);
+      assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
+    });
+    it("async - JSON stringify serialization", async () => {
+      const phenomJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        schemaItemType: "Phenomenon",
+        name: "AREA",
+        definition: "Units.LENGTH(2)",
+      };
+      await testPhenomenon.fromJSON(phenomJson);
+      const json = JSON.stringify(testPhenomenon);
+      const phenomSerialization = JSON.parse(json);
+      assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
+    });
+    it("sync - JSON stringify serialization", () => {
+      const phenomJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        schemaItemType: "Phenomenon",
+        name: "AREA",
+        definition: "Units.LENGTH(2)",
+      };
+      testPhenomenon.fromJSONSync(phenomJson);
+      const json = JSON.stringify(testPhenomenon);
+      const phenomSerialization = JSON.parse(json);
       assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
     });
   });
@@ -91,7 +116,7 @@ describe("Phenomenon tests", () => {
     });
 
     it("should properly serialize", async () => {
-      await testPhenomenon.deserialize(schemaJson);
+      await testPhenomenon.fromJSON(schemaJson);
       const serialized = await testPhenomenon.toXml(newDom);
       expect(serialized.nodeName).to.eql("Phenomenon");
       expect(serialized.getAttribute("typeName")).to.eql("AREA");

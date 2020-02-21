@@ -30,7 +30,7 @@ describe("Multiple backends for one frontend", async () => {
     });
 
     it("Gets child nodes after backend is reset", async () => {
-      const props = { imodel, rulesetId: "SimpleHierarchy" };
+      const props = { imodel, rulesetOrId: "SimpleHierarchy" };
 
       const rootNodes = await frontend.getNodes(props);
       expect(rootNodes.length).to.eq(1);

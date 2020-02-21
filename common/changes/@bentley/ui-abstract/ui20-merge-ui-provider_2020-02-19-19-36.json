@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Moved Property classes and interface from frontend package. Added generic \"DialogItemManager\" to generate UI based on data from an app.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "Nancy.McCall@Bentley.com"
+}

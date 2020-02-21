@@ -11,9 +11,11 @@ import {
   ControlledTree, TreeModelSource, TreeEvents, SelectionMode, TreeModel, TreeModelChanges,
   VisibleTreeNodes, MutableTreeModel, AbstractTreeNodeLoaderWithProvider,
 } from "@bentley/ui-components";
-import { BeUiEvent, BeEvent } from "@bentley/bentleyjs-core";
-import { IPresentationTreeDataProvider } from "../../../tree/IPresentationTreeDataProvider";
-import { controlledTreeWithVisibleNodes } from "../../../tree/controlled/WithVisibleNodes";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
+import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
+import { DEPRECATED_controlledTreeWithVisibleNodes as controlledTreeWithVisibleNodes } from "../../../presentation-components/tree/controlled/WithVisibleNodes";
+
+// tslint:disable:deprecation
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTree = controlledTreeWithVisibleNodes(ControlledTree);

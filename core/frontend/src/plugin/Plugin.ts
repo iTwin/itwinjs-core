@@ -853,28 +853,6 @@ export class PluginAdmin {
     }
   }
 
-  /**
-   * Registers a Plugin with the PluginAdmin. This method is called by the Plugin when it is first loaded.
-   * This method verifies that the required versions of the iModel.js system modules are loaded. If those
-   * requirements are met, then the onLoad and onExecute methods of the Plugin will be called (@see [[Plugin]]).
-   * If not, no further action is taken and the Plugin is not active.
-   * @param plugin a newly instantiated subclass of Plugin.
-   * @returns an array of error messages. The array will be empty if the load is successful, otherwise it is a list of one or more problems.
-   * @deprecated call IModelApp.pluginAdmin.register instead.  Will be removed in iModel.js 2.0.
-   */
-  public static register(plugin: Plugin) {
-    IModelApp.pluginAdmin.register(plugin);
-  }
-
-  /** Load a Plugin
-   * @param pluginRoot the root name of the Plugin to be loaded from the web server.
-   * @param args arguments that will be passed to the Plugin.onLoaded and Plugin.onExecute methods. If the first argument is not the plugin name, the plugin name will be prepended to the args array.
-   * @deprecated call IModelApp.pluginAdmin.loadPlugin instead.  Will be removed in iModel.js 2.0.
-   */
-  public static async loadPlugin(pluginSpec: string, args?: string[]): Promise<PluginLoadResults> {
-    return IModelApp.pluginAdmin.loadPlugin(pluginSpec, args);
-  }
-
   /** @internal */
   public static detailsFromPluginLoadResults(pluginName: string, results: PluginLoadResults, reportSuccess: boolean): { detailHTML: HTMLElement | undefined; detailStrings: string[] | undefined } {
     let problems: undefined | string[];

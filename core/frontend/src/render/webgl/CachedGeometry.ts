@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Frustum, Npc, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
+import { QPoint3dList, QParams3d, RenderTexture, RenderMode, Npc, QPoint2dList, QParams2d } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, dispose } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Vector2d, Point2d } from "@bentley/geometry-core";
+import { Point3d, Range3d, Vector2d, Point2d, Vector3d, Angle } from "@bentley/geometry-core";
 import { BufferHandle, QBufferHandle3d, BuffersContainer, BufferParameters, QBufferHandle2d } from "./Handle";
 import { Target } from "./Target";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -18,7 +18,7 @@ import { RenderPass, RenderOrder, CompositeFlags, FlashMode } from "./RenderFlag
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { System } from "./System";
-import { RenderMemory } from "../RenderSystem";
+import { RenderMemory } from "../RenderMemory";
 import { ColorInfo } from "./ColorInfo";
 import { VertexLUT } from "./VertexLUT";
 import { TextureHandle } from "./Texture";
@@ -26,8 +26,18 @@ import { MaterialInfo } from "./Material";
 import { SkyBox } from "../../DisplayStyleState";
 import { InstancedGeometry } from "./InstancedGeometry";
 import { SurfaceGeometry, MeshGeometry, EdgeGeometry, SilhouetteEdgeGeometry } from "./Mesh";
+import { TerrainMeshGeometry } from "./TerrainMesh";
 import { AttributeMap } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";
+import { fromSumOf, FrustumUniformType } from "./FrustumUniforms";
+
+const scratchVec3a = new Vector3d();
+const scratchVec3b = new Vector3d();
+const scratchVec3c = new Vector3d();
+const scratchPoint3a = new Point3d();
+const scratchPoint3b = new Point3d();
+const scratchPoint3c = new Point3d();
+const scratchPoint3d = new Point3d();
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering.
  * @internal
@@ -44,6 +54,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asSurface(): SurfaceGeometry | undefined { return undefined; }
   public get asMesh(): MeshGeometry | undefined { return undefined; }
   public get asEdge(): EdgeGeometry | undefined { return undefined; }
+  public get asTerrainMesh(): TerrainMeshGeometry | undefined { return undefined; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
   public get isInstanced() { return undefined !== this.asInstanced; }
@@ -542,31 +553,91 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
       return;
 
     this._isWorldPosSet = true;
-    this._setPointsFromFrustum(target.planFrustum);
+    this._setPointsFromFrustum(target);
     this._worldPosBuff.bindData(this.worldPos, GL.Buffer.Usage.StreamDraw);
     const attrWorldPos = AttributeMap.findAttribute("a_worldPos", TechniqueId.SkySphereGradient, false);
     assert(attrWorldPos !== undefined);
     this._params.buffers.addBuffer(this._worldPosBuff, [BufferParameters.create(attrWorldPos!.location, 3, GL.DataType.Float, false, 0, 0, false)]);
   }
 
-  private _setPointsFromFrustum(frustum: Frustum) {
+  private _setPointsFromFrustum(target: Target) {
+    const frustum = target.planFrustum;
     const wp = this.worldPos;
-    let mid = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront));
-    wp[0] = mid.x;
-    wp[1] = mid.y;
-    wp[2] = mid.z;
-    mid = frustum.getCorner(Npc.RightBottomRear).interpolate(0.5, frustum.getCorner(Npc.RightBottomFront));
-    wp[3] = mid.x;
-    wp[4] = mid.y;
-    wp[5] = mid.z;
-    mid = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront));
-    wp[6] = mid.x;
-    wp[7] = mid.y;
-    wp[8] = mid.z;
-    mid = frustum.getCorner(Npc.LeftTopRear).interpolate(0.5, frustum.getCorner(Npc.LeftTopFront));
-    wp[9] = mid.x;
-    wp[10] = mid.y;
-    wp[11] = mid.z;
+
+    const lb = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
+    const rb = frustum.getCorner(Npc.RightBottomRear).interpolate(0.5, frustum.getCorner(Npc.RightBottomFront), scratchPoint3b);
+    const rt = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront), scratchPoint3c);
+    if (!target.plan.backgroundMapOn || !target.plan.isGlobeMode3D) {
+      wp[0] = lb.x;
+      wp[1] = lb.y;
+      wp[2] = lb.z;
+      wp[3] = rb.x;
+      wp[4] = rb.y;
+      wp[5] = rb.z;
+      wp[6] = rt.x;
+      wp[7] = rt.y;
+      wp[8] = rt.z;
+      const lt = frustum.getCorner(Npc.LeftTopRear).interpolate(0.5, frustum.getCorner(Npc.LeftTopFront), scratchPoint3d);
+      wp[9] = lt.x;
+      wp[10] = lt.y;
+      wp[11] = lt.z;
+    } else {
+      // Need to fake a different frustum to orient the 4 corners properly.
+      // First find true frustum center & size.
+      const fCenter = lb.interpolate(0.5, rt, scratchPoint3d);
+      const upScreen = Vector3d.createStartEnd(rb, rt, scratchVec3a);
+      let rightScreen = Vector3d.createStartEnd(lb, rb, scratchVec3b);
+      const halfWidth = upScreen.magnitude() * 0.5;
+      const halfHeight = rightScreen.magnitude() * 0.5;
+      // Find the projection of the globe up onto the frustum plane.
+      upScreen.normalizeInPlace();
+      rightScreen.normalizeInPlace();
+      const projUp = target.plan.upVector.dotProduct(upScreen);
+      const projRt = target.plan.upVector.dotProduct(rightScreen);
+      // Find camera position (create one for ortho).
+      let camPos: Point3d;
+      if (FrustumUniformType.Perspective === target.uniforms.frustum.type) {
+        const farLowerLeft = frustum.getCorner(Npc.LeftBottomRear);
+        const nearLowerLeft = frustum.getCorner(Npc.LeftBottomFront);
+        const scale = 1.0 / (1.0 - target.planFraction);
+        const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, scratchVec3c);
+        camPos = fromSumOf(farLowerLeft, zVec, scale, scratchPoint3a);
+      } else {
+        const delta = Vector3d.createStartEnd(frustum.getCorner(Npc.LeftBottomRear), frustum.getCorner(Npc.LeftBottomFront), scratchVec3c);
+        const pseudoCameraHalfAngle = 22.5;
+        const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
+        const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Angle.radiansPerDegree));
+        let zScale = focalLength / delta.magnitude();
+        if (zScale < 1.000001)
+          zScale = 1.000001; // prevent worldEye front being on or inside the frustum front plane
+        camPos = Point3d.createAdd3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, zScale, scratchPoint3a);
+      }
+      // Compute the distance from the camera to the frustum center.
+      const camDist = camPos.distance(fCenter);
+      // Now use a fixed camera direction and compute a new frustum center.
+      const camDir = Vector3d.create(0.0, 1.0, 0.0, scratchVec3c);
+      fCenter.setFromPoint3d(camPos);
+      fCenter.addScaledInPlace(camDir, camDist);
+      // Create an up vector that mimics the projection of the globl up onto the real frustum.
+      upScreen.set(projRt, 0.0, projUp);
+      upScreen.normalizeInPlace();
+      // Compute a new right vector and then compute the 4 points for the sky.
+      rightScreen = upScreen.crossProduct(camDir, scratchVec3b);
+      upScreen.scaleInPlace(halfHeight);
+      rightScreen.scaleInPlace(halfWidth);
+      wp[0] = fCenter.x - rightScreen.x - upScreen.x; // left bottom
+      wp[1] = fCenter.y - rightScreen.y - upScreen.y;
+      wp[2] = fCenter.z - rightScreen.z - upScreen.z;
+      wp[3] = fCenter.x + rightScreen.x - upScreen.x; // right bottom
+      wp[4] = fCenter.y + rightScreen.y - upScreen.y;
+      wp[5] = fCenter.z + rightScreen.z - upScreen.z;
+      wp[6] = fCenter.x + rightScreen.x + upScreen.x; // right top
+      wp[7] = fCenter.y + rightScreen.y + upScreen.y;
+      wp[8] = fCenter.z + rightScreen.z + upScreen.z;
+      wp[9] = fCenter.x - rightScreen.x + upScreen.x; // left top
+      wp[10] = fCenter.y - rightScreen.y + upScreen.y;
+      wp[11] = fCenter.z - rightScreen.z + upScreen.z;
+    }
   }
 
   protected constructor(params: IndexedGeometryParams, skybox: SkyBox.CreateParams, techniqueId: TechniqueId) {

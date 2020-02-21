@@ -12,7 +12,6 @@ import { URL } from "url";
 import { request, RequestOptions, RequestQueryOptions } from "./Request";
 import { Config } from "./Config";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
-import { Angle, Range2d } from "@bentley/geometry-core";
 
 /** RealityData
  * This class implements a Reality Data stored in ProjectWise Context Share (Reality Data Service)
@@ -436,17 +435,13 @@ export class RealityDataServicesClient extends WsgClient {
    * as public, enterprise data, private or accessible through context RBAC rights attributed to user.
    * @param requestContext The client request context.
    * @param projectId id of associated connect project
-   * @param range The range to search for given as a range 2d where X represents the longitude in radians and Y the latitude in radians
-   * longitude can be in the range -2P to 2PI but the minimum value must be smaller numerically to the maximum.
-   * Note that the longitudes are usually by convention in the range of -PI to PI except
-   * for ranges that overlap the -PI/+PI frontier in which case either representation is acceptable.
+   * @param minLongDeg The minimum longitude in degrees of a 2d range to search.
+   * @param maxLongDeg The maximum longitude in degrees of a 2d range to search.
+   * @param minLatDeg The minimum latitude in degrees of a 2d range to search.
+   * @param maxLatDeg The maximum longitude in degrees of a 2d range to search.
    * @returns an array of RealityData
    */
-  public async getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, range: Range2d, type?: string): Promise<RealityData[]> {
-    const minLongDeg = Angle.radiansToDegrees(range.low.x);
-    const maxLongDeg = Angle.radiansToDegrees(range.high.x);
-    const minLatDeg = Angle.radiansToDegrees(range.low.y);
-    const maxLatDeg = Angle.radiansToDegrees(range.high.y);
+  public async getRealityDataInProjectOverlapping(requestContext: AuthorizedClientRequestContext, projectId: string, minLongDeg: number, maxLongDeg: number, minLatDeg: number, maxLatDeg: number, type?: string): Promise<RealityData[]> {
     const polygonString = `{\"points\":[[${minLongDeg},${minLatDeg}],[${maxLongDeg},${minLatDeg}],[${maxLongDeg},${maxLatDeg}],[${minLongDeg},${maxLatDeg}],[${minLongDeg},${minLatDeg}]], \"coordinate_system\":\"4326\"}`;
 
     if (!type)

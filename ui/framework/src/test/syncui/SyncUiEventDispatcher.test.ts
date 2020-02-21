@@ -211,7 +211,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    Backstage.onBackstageEvent.emit({} as BackstageEventArgs);
+    Backstage.onBackstageEvent.emit({} as BackstageEventArgs); // tslint:disable-line:deprecation
     await TestUtils.tick(timeToWaitForUiSyncCallback);
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 

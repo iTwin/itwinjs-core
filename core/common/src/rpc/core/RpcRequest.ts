@@ -185,9 +185,11 @@ export abstract class RpcRequest<TResponse = any> {
   /** Finds the first parameter of a given structural type if present. */
   public findParameterOfType<T>(requiredProperties: { [index: string]: string }): T | undefined {
     for (const param of this.parameters) {
-      for (const prop of Object.getOwnPropertyNames(requiredProperties)) {
-        if (param.hasOwnProperty(prop) && typeof (param[prop]) === requiredProperties[prop]) {
-          return param;
+      if (typeof (param) === "object" && param !== null) {
+        for (const prop of Object.getOwnPropertyNames(requiredProperties)) {
+          if (param.hasOwnProperty(prop) && typeof (param[prop]) === requiredProperties[prop]) {
+            return param;
+          }
         }
       }
     }

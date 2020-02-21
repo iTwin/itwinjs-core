@@ -10,7 +10,7 @@ import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
 import { Orientation } from "@bentley/ui-core";
 import { ActionButtonRenderer, ActionButtonRendererProps } from "./ActionButtonRenderer";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import "./ActionButtonList.scss";
 
 /** Properties of [[ActionButtonList]] React component

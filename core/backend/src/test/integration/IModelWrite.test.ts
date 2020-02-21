@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { DbOpcode, DbResult, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { CodeState, HubCode, HubIModel, IModelQuery, Lock, LockLevel, LockType, MultiCode, IModelHubError } from "@bentley/imodeljs-clients";
+import { CodeState, HubCode, HubIModel, IModelQuery, Lock, LockLevel, LockType, MultiCode, IModelHubError, LockQuery } from "@bentley/imodeljs-clients";
 import { CodeScopeSpec, CodeSpec, IModel, IModelVersion, SubCategoryAppearance, IModelError } from "@bentley/imodeljs-common";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
@@ -37,6 +37,17 @@ export async function createNewModelAndCategory(requestContext: AuthorizedBacken
   }
 
   return { modelId, spatialCategoryId };
+}
+
+function toHubLock(props: ConcurrencyControl.LockProps, briefcaseId: number): Lock {
+  const lock = new Lock();
+  lock.briefcaseId = briefcaseId;
+  lock.lockLevel = props.level;
+  lock.lockType = props.type;
+  lock.objectId = props.objectId;
+  // lock.releasedWithChangeSet =
+  // lock.seedFileId = concurrencyControl.iModel.briefcase.fileId!;
+  return lock;
 }
 
 describe("IModelWriteTest (#integration)", () => {
@@ -73,7 +84,7 @@ describe("IModelWriteTest (#integration)", () => {
     await BriefcaseManager.imodelClient.iModels.create(managerRequestContext, testProjectId, readWriteTestIModelName, { description: "TestSubject" });
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(managerRequestContext, testProjectId, readWriteTestIModelName);
 
-    writeTestProjectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsTest");
+    writeTestProjectId = await HubUtility.queryProjectIdByName(managerRequestContext, "iModelJsIntegrationTest");
 
     // Purge briefcases that are close to reaching the acquire limit
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
@@ -119,6 +130,41 @@ describe("IModelWriteTest (#integration)", () => {
     assert.equal(locks.length, 1);
     model.insertCodeSpec(codeSpec1);
     await model.close(superRequestContext, KeepBriefcase.No);
+  });
+
+  it("should verify that briefcase A can acquire Schema lock while briefcase B holds an element lock", async () => {
+    const bcA = await BriefcaseManager.imodelClient.briefcases.create(managerRequestContext, readWriteTestIModel.id);
+    const bcB = await BriefcaseManager.imodelClient.briefcases.create(managerRequestContext, readWriteTestIModel.id);
+    assert.notEqual(bcA.briefcaseId, bcB.briefcaseId);
+    assert.isTrue(bcA.briefcaseId !== undefined);
+    assert.isTrue(bcB.briefcaseId !== undefined);
+    const bcALockReq = toHubLock(ConcurrencyControl.Request.schemaLock, bcA.briefcaseId!);
+    const bcBLockReq = toHubLock(ConcurrencyControl.Request.getElementLock("0x1", LockLevel.Exclusive), bcB.briefcaseId!);
+    // First, B acquires element lock
+    const bcBLocksAcquired = await BriefcaseManager.imodelClient.locks.update(managerRequestContext, readWriteTestIModel.id, [bcBLockReq]);
+    // Next, A acquires schema lock
+    const bcALocksAcquired = await BriefcaseManager.imodelClient.locks.update(managerRequestContext, readWriteTestIModel.id, [bcALockReq]);
+
+    assert.isTrue(bcALocksAcquired.length !== 0);
+    assert.equal(bcALocksAcquired[0].briefcaseId, bcA.briefcaseId);
+    assert.equal(bcALocksAcquired[0].lockType, bcALockReq.lockType);
+
+    assert.isTrue(bcBLocksAcquired.length !== 0);
+    assert.equal(bcBLocksAcquired[0].briefcaseId, bcB.briefcaseId);
+    assert.equal(bcBLocksAcquired[0].lockType, bcBLockReq.lockType);
+
+    const bcALocksQueryResults = await BriefcaseManager.imodelClient.locks.get(managerRequestContext, readWriteTestIModel.id, new LockQuery().byBriefcaseId(bcA.briefcaseId!));
+    const bcBLocksQueryResults = await BriefcaseManager.imodelClient.locks.get(managerRequestContext, readWriteTestIModel.id, new LockQuery().byBriefcaseId(bcB.briefcaseId!));
+    assert.deepEqual(bcALocksAcquired, bcALocksQueryResults);
+    assert.deepEqual(bcBLocksAcquired, bcBLocksQueryResults);
+
+    bcBLockReq.lockLevel = LockLevel.None;
+    await BriefcaseManager.imodelClient.locks.update(managerRequestContext, readWriteTestIModel.id, [bcBLockReq]);
+    bcALockReq.lockLevel = LockLevel.None;
+    await BriefcaseManager.imodelClient.locks.update(managerRequestContext, readWriteTestIModel.id, [bcALockReq]);
+
+    await BriefcaseManager.imodelClient.briefcases.delete(managerRequestContext, readWriteTestIModel.id, bcA.briefcaseId!);
+    await BriefcaseManager.imodelClient.briefcases.delete(managerRequestContext, readWriteTestIModel.id, bcB.briefcaseId!);
   });
 
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
@@ -369,6 +415,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isUndefined(rwIModel.elements.tryGetElement(newCategoryCode2));
 
     rwIModel.concurrencyControl.startBulkMode();
+    // rwIModel.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
 
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests);
 

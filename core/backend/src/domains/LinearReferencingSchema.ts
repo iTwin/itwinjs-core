@@ -39,13 +39,13 @@ export class LinearReferencingSchema extends Schema {
   public static async importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) {
     // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     requestContext.enter();
-    if (!iModelDb.isStandalone) {
+    if (!iModelDb.isSnapshot) {
       if (!(requestContext instanceof AuthorizedClientRequestContext))
         throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
       await iModelDb.concurrencyControl.lockSchema(requestContext);
       requestContext.enter();
     }
 
-    await iModelDb.importSchema(requestContext, this.schemaFilePath);
+    await iModelDb.importSchemas(requestContext, [this.schemaFilePath]);
   }
 }

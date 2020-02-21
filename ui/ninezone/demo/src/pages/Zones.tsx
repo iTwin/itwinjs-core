@@ -1497,9 +1497,6 @@ class WidgetContentExample extends React.PureComponent<WidgetContentExampleProps
     container.classList.add("nzdemo-measure");
     const measurerBounds = measurer.getBoundingClientRect();
     container.classList.remove("nzdemo-measure");
-
-    // tslint:disable-next-line: no-console
-    console.log("ToolSettings content width: ", measurerBounds.width);
   }
 }
 

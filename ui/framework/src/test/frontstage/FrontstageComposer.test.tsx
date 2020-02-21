@@ -7,14 +7,18 @@ import * as sinon from "sinon";
 import { mount } from "enzyme";
 import { expect } from "chai";
 
+import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { Logger } from "@bentley/bentleyjs-core";
 import { NineZoneManagerProps, getDefaultZonesManagerProps, getDefaultNineZoneStagePanelsManagerProps, StagePanelsManager } from "@bentley/ui-ninezone";
 
 import TestUtils from "../TestUtils";
-import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer, WidgetState, ContentLayoutDef, ContentGroup, StagePanelDef } from "../../ui-framework";
+import {
+  ModalFrontstageInfo, FrontstageManager, FrontstageComposer,
+  ContentLayoutDef, ContentGroup, StagePanelDef, CoreTools,
+} from "../../ui-framework";
 import { TestFrontstage, TestContentControl } from "./FrontstageTestUtils";
 import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
-import { StagePanelLocation, getNestedStagePanelKey } from "../../ui-framework/stagepanels/StagePanel";
+import { getNestedStagePanelKey } from "../../ui-framework/stagepanels/StagePanel";
 import { StagePanelState } from "../../ui-framework/stagepanels/StagePanelDef";
 import { isCollapsedToPanelState } from "../../ui-framework/frontstage/FrontstageComposer";
 
@@ -39,6 +43,10 @@ describe("FrontstageComposer", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
   });
 
   beforeEach(() => {
@@ -153,24 +161,27 @@ describe("FrontstageComposer", () => {
 
   it("should log error if FrontstageDef has no provider", async () => {
     const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
-    const frontstageDef: FrontstageDef = new FrontstageDef();
-    frontstageDef.contentGroup = new ContentGroup(
-      {
-        contents: [
-          {
-            classId: TestContentControl,
-            applicationData: { label: "Content 1a", bgColor: "black" },
-          },
-        ],
-      },
-    );
-    frontstageDef.defaultLayout = new ContentLayoutDef(
-      {
-        id: "SingleContent",
-        descriptionKey: "App:ContentLayoutDef.SingleContent",
-        priority: 100,
-      },
-    );
+    const frontstageDef: FrontstageDef = new FrontstageDef({
+      id: "test",
+      defaultTool: CoreTools.selectElementCommand,
+      contentGroup: new ContentGroup(
+        {
+          contents: [
+            {
+              classId: TestContentControl,
+              applicationData: { label: "Content 1a", bgColor: "black" },
+            },
+          ],
+        },
+      ),
+      defaultLayout: new ContentLayoutDef(
+        {
+          id: "SingleContent",
+          descriptionKey: "App:ContentLayoutDef.SingleContent",
+          priority: 100,
+        },
+      ),
+    });
 
     const spyMethod = sinon.spy(Logger, "logError");
 

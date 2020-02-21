@@ -7,7 +7,8 @@
  */
 
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
-import { PropertyRecord, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 /**
  * Contains metadata about a group of Properties.

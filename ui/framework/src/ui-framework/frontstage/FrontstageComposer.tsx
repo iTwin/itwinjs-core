@@ -7,6 +7,7 @@
  */
 
 import * as React from "react";
+import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, PointProps, Rectangle, RectangleProps, BadgeUtilities } from "@bentley/ui-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
@@ -14,8 +15,8 @@ import {
   ResizeHandle, NineZoneManagerProps, WidgetZoneId, ZoneTargetType, getDefaultZonesManagerProps,
   getDefaultNineZoneStagePanelsManagerProps, StagePanelType, widgetZoneIds, StagePanelsManager,
 } from "@bentley/ui-ninezone";
-import { StagePanelLocation, getNestedStagePanelKey, stagePanelLocations } from "../stagepanels/StagePanel";
-import { WidgetDef, WidgetState } from "../widgets/WidgetDef";
+import { getNestedStagePanelKey } from "../stagepanels/StagePanel";
+import { WidgetDef } from "../widgets/WidgetDef";
 import { ZoneDef, ZoneState } from "../zones/ZoneDef";
 import { FrontstageDef } from "./FrontstageDef";
 import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
@@ -106,6 +107,15 @@ const getDefaultWidgetTabs = (): WidgetTabs => ({
   [8]: [],
   [9]: [],
 });
+
+const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
+  StagePanelLocation.Top,
+  StagePanelLocation.TopMost,
+  StagePanelLocation.Left,
+  StagePanelLocation.Right,
+  StagePanelLocation.Bottom,
+  StagePanelLocation.BottomMost,
+];
 
 /** FrontstageComposer React component.
  * @public
@@ -370,6 +380,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
     FrontstageManager.onModalFrontstageChangedEvent.removeListener(this._handleModalFrontstageChangedEvent);
     FrontstageManager.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
+    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+    FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
 
   private _handleWindowResize = () => {

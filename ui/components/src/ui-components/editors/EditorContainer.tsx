@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { PropertyRecord, PropertyValue } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 import "./EditorContainer.scss";

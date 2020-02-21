@@ -2,6 +2,84 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "1.12.0",
+      "tag": "@bentley/imodeljs-frontend_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "#269169 Cancel drag operations when button is released outside of view. Suspend view tool animation when cursor moves out of view."
+          },
+          {
+            "comment": "Option to omit area patterns from tiles."
+          },
+          {
+            "comment": "Ignore ReadPixels calls when using GpuProfiler"
+          },
+          {
+            "comment": "iModel write API development"
+          },
+          {
+            "comment": "Fix broken links"
+          },
+          {
+            "comment": "Fix regression causing background map to be affected by view's symbology overrides."
+          },
+          {
+            "comment": "Added support for backward slashes in erroneous URLs of Reality Data in PW Context Share"
+          },
+          {
+            "comment": "Prevent reuse of cached tiles after project extents change."
+          },
+          {
+            "comment": "VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. "
+          },
+          {
+            "comment": "Fix incorrect aspect ratio for 3d view attachments."
+          },
+          {
+            "comment": "Overriding transparency of a textured surface or raster text multiplies the texture alpha by the override rather than replacing it."
+          },
+          {
+            "comment": "Better documentation of OidcDesktopClient/IOidcFrontendClient"
+          },
+          {
+            "comment": "Consolidate ViewState code shared with backend's ViewDefinition using ViewDetails."
+          },
+          {
+            "comment": "Add support for plan projection models with 3d display priority."
+          },
+          {
+            "comment": "Customizable display of plan projection models."
+          },
+          {
+            "comment": "Break up System.ts into modular files."
+          },
+          {
+            "comment": "Fix setAuxiliaryCoordinateSystem"
+          },
+          {
+            "comment": "Reduced the number of tiles that must be loaded before a zoomed-in view is complete."
+          },
+          {
+            "comment": "Resolve circular dependencies between tile-related types."
+          },
+          {
+            "comment": "Support for TypeDoc 0.16.8"
+          },
+          {
+            "comment": "Mark as deprecated classes and interfaces that have moved to bentley/ui-abstract."
+          },
+          {
+            "comment": "Change feature tracking API for plugins as requested by Design Review. "
+          },
+          {
+            "comment": "EN: #124601 - Initial implementation of WebGL2"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.11.0",
       "tag": "@bentley/imodeljs-frontend_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",

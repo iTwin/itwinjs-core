@@ -7,7 +7,7 @@ import { mount } from "enzyme";
 import * as faker from "faker";
 import * as React from "react";
 import { PropertyCategory, PropertyData } from "../../ui-components/propertygrid/PropertyDataProvider";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import TestUtils from "../TestUtils";
 import { Tooltip } from "../../ui-components/tooltip/Tooltip";
 

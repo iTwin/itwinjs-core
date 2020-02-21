@@ -65,9 +65,7 @@ exports[`WidgetStackTab should render with beta badge 1`] = `
   onDragStart={[Function]}
   title=""
   verticalAnchor={0}
->
-  <Component />
-</Tab>
+/>
 `;
 
 exports[`WidgetStackTabGroup should render with HandleMode.Hovered 1`] = `

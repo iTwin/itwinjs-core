@@ -11,7 +11,7 @@ import ReactResizeDetector from "react-resize-detector";
 
 import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { Orientation, Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat, ArrayValue, StructValue } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, ArrayValue, StructValue } from "@bentley/ui-abstract";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
@@ -59,7 +59,12 @@ export interface PropertyGridProps extends CommonProps {
   /** The minimum width before the auto-switch to Vertical when the width is too narrow. Defaults to 300. @beta */
   horizontalOrientationMinWidth?: number;
 
-  /** Array of action button renderers for each property record @beta */
+  /**
+   * Array of action button renderers. Each renderer is called for each property and can decide
+   * to render an action button for the property or not.
+   *
+   * @beta
+   */
   actionButtonRenderers?: ActionButtonRenderer[];
 }
 

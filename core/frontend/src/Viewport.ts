@@ -8,12 +8,54 @@
 
 import { assert, BeDuration, BeEvent, BeTimePoint, compareStrings, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, SortedArray, StopWatch } from "@bentley/bentleyjs-core";
 import {
-  Angle, AngleSweep, Arc3d, LowAndHighXY, LowAndHighXYZ, Map4d,
-  Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ, Geometry,
+  Angle,
+  AngleSweep,
+  Arc3d,
+  Geometry,
+  LowAndHighXY,
+  LowAndHighXYZ,
+  Map4d,
+  Matrix3d,
+  Plane3dByOriginAndUnitNormal,
+  Point2d,
+  Point3d,
+  Point4d,
+  Range1d,
+  Range3d,
+  Ray3d,
+  SmoothTransformBetweenFrusta,
+  Transform,
+  Vector3d,
+  XAndY,
+  XYAndZ,
+  XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, NpcCenter,
-  Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SubCategoryAppearance, SubCategoryOverride, ViewFlags, Tweens, EasingFunction, Interpolation, Easing,
+  AnalysisStyle,
+  BackgroundMapProps,
+  BackgroundMapSettings,
+  Camera,
+  Cartographic,
+  ColorDef,
+  Easing,
+  EasingFunction,
+  ElementProps,
+  Frustum,
+  GlobeMode,
+  GridOrientationType,
+  Hilite,
+  ImageBuffer,
+  Interpolation,
+  NpcCenter,
+  Placement2d,
+  Placement2dProps,
+  Placement3d,
+  Placement3dProps,
+  PlacementProps,
+  SubCategoryAppearance,
+  SubCategoryOverride,
+  Tweens,
+  ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { DisplayStyleState } from "./DisplayStyleState";
@@ -29,16 +71,18 @@ import { RenderPlan } from "./render/RenderPlan";
 import { Pixel } from "./render/Pixel";
 import { Decorations } from "./render/Decorations";
 import { RenderTarget } from "./render/RenderTarget";
-import { RenderMemory } from "./render/RenderSystem";
+import { RenderMemory } from "./render/RenderMemory";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { TileTreeReference, TileTreeSet, TileBoundingBoxes } from "./tile/internal";
+import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewPose, ViewState2d, ViewPose3d, ViewState3d } from "./ViewState";
+import { MarginPercent, ViewState, ViewStatus, ViewState3d, ViewState2d, ViewPose, ViewPose3d } from "./ViewState";
 import { ViewRect } from "./ViewRect";
 import { ViewingSpace } from "./ViewingSpace";
 import { ToolSettings } from "./tools/ToolSettings";
+import { GlobalLocation, eyeToCartographicOnGlobe, metersToRange, ViewGlobalLocationConstants, areaToEyeHeight } from "./ViewGlobalLocation";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -235,6 +279,175 @@ export interface ViewChangeOptions extends ViewAnimationOptions {
   animateFrustumChange?: boolean;
   /** The percentage of the view to leave blank around the edges. */
   marginPercent?: MarginPercent;
+}
+
+/** Object to animate a Frustum transition of a viewport moving across the earth. The [[Viewport]] will show as many frames as necessary. The animation will last a variable length of time depending on the distance traversed.
+ * This operates on the previous frustum and a destination cartographic coordinate, flying along an earth ellipsoid or flat plane.
+ * @internal
+ */
+class GlobalLocationAnimator implements Animator {
+  private _flightTweens = new Tweens();
+  private _viewport: ScreenViewport;
+  private _startCartographic?: Cartographic;
+  private _ellipsoidArc?: Arc3d;
+  private _columbusLine: Point3d[] = [];
+  private _flightLength = 0;
+  private _endLocation: GlobalLocation;
+  private _endHeight?: number;
+  private _midHeight?: number;
+  private _startHeight?: number;
+  private _fixTakeoffInterpolator?: SmoothTransformBetweenFrusta;
+  private _fixTakeoffFraction?: number;
+  private _fixLandingInterpolator?: SmoothTransformBetweenFrusta;
+  private readonly _fixLandingFraction: number = 0.9;
+  private readonly _scratchFrustum = new Frustum();
+
+  private _moveFlightToFraction(fraction: number): boolean {
+    if (!(this._viewport.view instanceof ViewState3d) || !this._viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
+      return true;
+
+    const vp = this._viewport;
+    const view3d = vp.view as ViewState3d;
+
+    // If we're done, set the final state directly
+    if (fraction >= 1.0) {
+      view3d.lookAtGlobalLocation(this._endHeight!, ViewGlobalLocationConstants.birdPitchAngleRadians, this._endLocation);
+      vp.synchWithView();
+      return true;
+    }
+
+    // Possibly smooth the takeoff
+    if (fraction < this._fixTakeoffFraction! && this._fixTakeoffInterpolator !== undefined) {
+      this._moveFixToFraction((1.0 / this._fixTakeoffFraction!) * fraction, this._fixTakeoffInterpolator);
+      return false;
+    }
+
+    // Possibly smooth the landing
+    if (fraction >= this._fixLandingFraction && fraction < 1.0) {
+      if (this._fixLandingInterpolator === undefined) {
+        const beforeLanding = vp.getWorldFrustum();
+        view3d.lookAtGlobalLocation(this._endHeight!, ViewGlobalLocationConstants.birdPitchAngleRadians, this._endLocation);
+        vp.setupFromView();
+        const afterLanding = vp.getWorldFrustum();
+        this._fixLandingInterpolator = SmoothTransformBetweenFrusta.create(beforeLanding.points, afterLanding.points);
+      }
+      this._moveFixToFraction((1.0 / (1.0 - this._fixLandingFraction)) * (fraction - this._fixLandingFraction), this._fixLandingInterpolator!);
+      return false;
+    }
+
+    // Set the camera based on a fraction along the flight arc
+    const height: number = Interpolation.Bezier([this._startHeight, this._midHeight, this._endHeight], fraction);
+    let targetPoint: Point3d;
+    if (view3d.globeMode === GlobeMode.Columbus)
+      targetPoint = this._columbusLine[0].interpolate(fraction, this._columbusLine[1]);
+    else
+      targetPoint = this._ellipsoidArc!.fractionToPoint(fraction);
+    view3d.lookAtGlobalLocation(height, ViewGlobalLocationConstants.birdPitchAngleRadians, undefined, targetPoint);
+    vp.setupFromView();
+
+    return false;
+  }
+
+  // Apply a SmoothTransformBetweenFrusta interpolator to the view based on a fraction.
+  private _moveFixToFraction(fraction: number, interpolator: SmoothTransformBetweenFrusta): boolean {
+    let fract = fraction;
+    let status = false;
+    const vp = this._viewport;
+
+    if (fract >= 1.0) {
+      fract = 1.0;
+      status = true;
+    }
+
+    interpolator.fractionToWorldCorners(Math.max(fract, 0), this._scratchFrustum.points);
+    vp.setupViewFromFrustum(this._scratchFrustum);
+    return status;
+  }
+
+  public constructor(viewport: ScreenViewport, destination: GlobalLocation) {
+    this._viewport = viewport;
+    this._endLocation = destination;
+
+    if (!(viewport.view instanceof ViewState3d) || !viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
+      return;
+
+    // Calculate start height as the height of the current eye above the earth.
+    // Calculate end height from the destination area (if specified); otherwise, use a constant value.
+    const view3d = viewport.view as ViewState3d;
+    const backgroundMapGeometry = view3d.displayStyle.getBackgroundMapGeometry();
+    if (undefined === backgroundMapGeometry)
+      return;
+
+    this._startHeight = eyeToCartographicOnGlobe(this._viewport, true)!.height;
+    this._endHeight = destination.area !== undefined ? areaToEyeHeight(view3d, destination.area, destination.center.height) : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
+
+    // Starting cartographic position is the eye projected onto the globe.
+    let startCartographic = eyeToCartographicOnGlobe(viewport);
+    if (startCartographic === undefined) {
+      startCartographic = Cartographic.fromDegrees(0, 0, 0);
+    }
+    this._startCartographic = startCartographic;
+
+    let maxFlightDuration: number;
+
+    if (view3d.globeMode === GlobeMode.Columbus) {
+      // Calculate a line segment going from the starting cartographic coordinate to the ending cartographic coordinate
+      this._columbusLine.push(view3d.cartographicToRoot(startCartographic)!);
+      this._columbusLine.push(view3d.cartographicToRoot(this._endLocation.center)!);
+      this._flightLength = this._columbusLine[0].distance(this._columbusLine[1]);
+      // Set a shorter flight duration in Columbus mode
+      maxFlightDuration = 7000.0;
+    } else {
+      // Calculate a flight arc from the ellipsoid of the Earth and the starting and ending cartographic coordinates.
+      const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
+      this._ellipsoidArc = earthEllipsoid.radiansPairToGreatArc(this._startCartographic.longitude, this._startCartographic.latitude, this._endLocation.center.longitude, this._endLocation.center.latitude)!;
+      if (this._ellipsoidArc !== undefined)
+        this._flightLength = this._ellipsoidArc.curveLength();
+      // Set a longer flight duration in 3D mode
+      maxFlightDuration = 13000.0;
+    }
+
+    if (Geometry.isSmallMetricDistance(this._flightLength))
+      return;
+
+    // The peak of the flight varies based on total distance to travel. The larger the distance, the higher the peak of the flight will be.
+    this._midHeight = metersToRange(this._flightLength,
+      ViewGlobalLocationConstants.birdHeightAboveEarthInMeters,
+      ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters * 4,
+      ViewGlobalLocationConstants.largestEarthArc);
+
+    // We will "fix" the initial frustum so it smoothly transitions to some point along the travel arc depending on the starting height.
+    // Alternatively, if the distance to travel is small enough, we will _only_ do a frustum transition to the destination location - ignoring the flight arc.
+    const beforeTakeoff = viewport.getWorldFrustum();
+    this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive ? 1.0 : metersToRange(this._startHeight!, 0.1, 0.4, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters);
+    this._moveFlightToFraction(this._fixTakeoffFraction!);
+    const afterTakeoff = viewport.getWorldFrustum();
+    this._fixTakeoffInterpolator = SmoothTransformBetweenFrusta.create(beforeTakeoff.points, afterTakeoff.points);
+
+    // The duration of the animation will increase the larger the distance to travel.
+    const flightDurationInMilliseconds = metersToRange(this._flightLength, 1000, maxFlightDuration, ViewGlobalLocationConstants.largestEarthArc);
+
+    // Specify the tweening behavior for this animation.
+    this._flightTweens.create({ fraction: 0.0 }, {
+      to: { fraction: 1.0 },
+      duration: flightDurationInMilliseconds,
+      easing: Easing.Cubic.InOut,
+      start: true,
+      onUpdate: (obj: any) => this._moveFlightToFraction(obj.fraction),
+    });
+  }
+
+  public animate() {
+    if (this._flightLength <= 0) {
+      this._moveFlightToFraction(1.0); // Skip to final frustum
+      return true;
+    }
+    return !this._flightTweens.update();
+  }
+
+  public interrupt() {
+    this._moveFlightToFraction(1.0); // Skip to final frustum
+  }
 }
 
 /** Object to animate a Frustum transition of a viewport. The [[Viewport]] will show as many frames as necessary during the supplied duration.
@@ -839,6 +1052,17 @@ export abstract class Viewport implements IDisposable {
     this.invalidateRenderPlan();
   }
 
+  /** return true if viewing globe (globeMode is 3D and eye location is far above globe
+   * @alpha
+   */
+  public get viewingGlobe() {
+    const view = this.view;
+    if (!view.is3d())
+      return false;
+
+    return this.displayStyle.globeMode === GlobeMode.ThreeD && view.isGlobalView;
+  }
+
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.
    * @param id The Id of the subcategory.
    * @see [[overrideSubCategory]]
@@ -1203,7 +1427,7 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public get pixelsPerInch() { /* ###TODO: This is apparently unobtainable information in a browser... */ return 96; }
   /** @internal */
-  public get backgroundMapPlane() { return this.view.displayStyle.backgroundMapPlane; }
+  public get backgroundMapGeometry(): BackgroundMapGeometry | undefined { return this.view.displayStyle.getBackgroundMapGeometry(); }
 
   /** Ids of a set of elements which should not be rendered within this view.
    * @note Do not modify this set directly - use [[setNeverDrawn]] or [[clearNeverDrawn]] instead.
@@ -1342,10 +1566,10 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @internal */
-  public getDisplayedPlanes(): Plane3dByOriginAndUnitNormal[] {
-    const planes: Plane3dByOriginAndUnitNormal[] = [];
-    this.forEachTileTreeRef((ref) => ref.addPlanes(planes));
-    return planes;
+  public getTerrainHeightRange(): Range1d {
+    const heightRange = Range1d.createNull();
+    this.forEachTileTreeRef((ref) => ref.getTerrainHeight(heightRange));
+    return heightRange;
   }
 
   /** @internal */
@@ -2512,7 +2736,21 @@ export class ScreenViewport extends Viewport {
    */
   public pickNearestVisibleGeometry(pickPoint: Point3d, radius?: number, allowNonLocatable = true, out?: Point3d): Point3d | undefined {
     const depthResult = this.pickDepthPoint(pickPoint, radius, { excludeNonLocatable: !allowNonLocatable });
-    if (DepthPointSource.TargetPoint === depthResult.source)
+    let isValidDepth = false;
+    switch (depthResult.source) {
+      case DepthPointSource.Geometry:
+      case DepthPointSource.Model:
+        isValidDepth = true;
+        break;
+      case DepthPointSource.BackgroundMap:
+      case DepthPointSource.GroundPlane:
+      case DepthPointSource.Grid:
+      case DepthPointSource.ACS:
+        const npcPt = this.worldToNpc(depthResult.plane.getOriginRef());
+        isValidDepth = !(npcPt.z < 0.0 || npcPt.z > 1.0);
+        break;
+    }
+    if (!isValidDepth)
       return undefined;
     const result = undefined !== out ? out : new Point3d();
     result.setFrom(depthResult.plane.getOriginRef());
@@ -2543,7 +2781,7 @@ export class ScreenViewport extends Viewport {
 
     if (0 !== picker.doPick(this, pickPoint, radius, locateOpts)) {
       const hitDetail = picker.getHit(0)!;
-      const geomPlane = Plane3dByOriginAndUnitNormal.create(hitDetail.getPoint(), this.view.getZVector())!;
+      const geomPlane = Plane3dByOriginAndUnitNormal.create(hitDetail.getPoint(), hitDetail.isModelHit ? this.view.getUpVector(hitDetail.getPoint()) : this.view.getZVector())!;
       return { plane: geomPlane, source: (hitDetail.isModelHit ? DepthPointSource.Model : DepthPointSource.Geometry), sourceId: hitDetail.sourceId };
     }
 
@@ -2554,21 +2792,29 @@ export class ScreenViewport extends Viewport {
       const xyzEye = direction.scale(aa);
       direction.setFrom(pickPoint.vectorTo(xyzEye));
     }
+
     direction.scaleToLength(-1.0, direction);
-    const boresite = Ray3d.create(pickPoint, direction);
+    const boresiteIntersectRay = Ray3d.create(pickPoint, direction);
     const projectedPt = Point3d.createZero();
 
+    const backgroundMapGeometry = this.backgroundMapGeometry;
+    if (undefined !== backgroundMapGeometry) {
+      const intersect = backgroundMapGeometry.getRayIntersection(boresiteIntersectRay, false);
+
+      if (undefined !== intersect) {
+        const npcPt = this.worldToNpc(intersect.origin);
+        if (npcPt.z < 1)    // Only if in front of eye.
+          return { plane: Plane3dByOriginAndUnitNormal.create(intersect.origin, intersect.direction)!, source: DepthPointSource.BackgroundMap };
+      }
+    }
     // returns true if there's an intersection that isn't behind the front plane
     const boresiteIntersect = (plane: Plane3dByOriginAndUnitNormal) => {
-      const dist = boresite.intersectionWithPlane(plane, projectedPt);
+      const dist = boresiteIntersectRay.intersectionWithPlane(plane, projectedPt);
       if (undefined === dist)
         return false;
       const npcPt = this.worldToNpc(projectedPt);
       return npcPt.z < 1.0;
     };
-
-    if (undefined !== this.backgroundMapPlane && boresiteIntersect(this.backgroundMapPlane))
-      return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.backgroundMapPlane.getNormalRef())!, source: DepthPointSource.BackgroundMap };
 
     if (this.view.getDisplayStyle3d().environment.ground.display) {
       const groundPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this.view.getGroundElevation()), Vector3d.unitZ());
@@ -2592,6 +2838,27 @@ export class ScreenViewport extends Viewport {
   public animateFrustumChange(options?: ViewAnimationOptions) {
     if (this._lastPose && this._currentBaseline)
       this.setAnimator(new FrustumAnimator(options ? options : {}, this, this._lastPose, this.view.savePose()));
+  }
+  /** Animate the view frustum from a starting frustum to the current view frustum. In other words,
+   * save a starting frustum (presumably what the user is currently looking at), then adjust the view to
+   * a different location and call synchWithView, then call this method. After the animation the viewport
+   * frustum will be restored to its current location.
+   * @internal
+   */
+  public animateToCurrent(_start: Frustum, options?: ViewAnimationOptions) {
+    options = options ? options : {};
+    this.animateFrustumChange(/* start, this.getFrustum(), */ options);
+  }
+
+  /** Animate the view frustum to a destination location the earth from the current frustum.
+   * @internal
+   */
+  public animateFlyoverToGlobalLocation(destination: GlobalLocation) {
+    if (!this.isCameraOn) {
+      this.turnCameraOn();
+      this.setupFromView();
+    }
+    this.setAnimator(new GlobalLocationAnimator(this, destination));
   }
 
   /** @internal */

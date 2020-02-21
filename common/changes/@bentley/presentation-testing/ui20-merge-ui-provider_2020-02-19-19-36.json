@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-testing",
+      "comment": "Moved Property classes and interfaces to ui-abstract package.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-testing",
+  "email": "Nancy.McCall@Bentley.com"
+}

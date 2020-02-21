@@ -9,7 +9,6 @@ import * as path from "path";
 import * as kill from "tree-kill";
 import * as fs from "fs";
 import * as tar from "tar";
-import * as bodyParser from "body-parser";
 import * as crypto from "crypto";
 
 // tslint:disable:no-console
@@ -291,7 +290,7 @@ class WebServer {
     this._app.use(cors());
 
     // post json passed to plugin post.
-    const jsonBodyParser = bodyParser.json();
+    const jsonBodyParser = express.json();
 
     // when we get the plugin nurl, untar the plugin so we can deliver its contents in subsequent requests.
     this._app.post("/pluginTarSupport", jsonBodyParser, this._replyToTarSupport.bind(this));

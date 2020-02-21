@@ -9,7 +9,7 @@
 import { UiComponents } from "../UiComponents";
 import { TypeConverter, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Primitives } from "@bentley/imodeljs-frontend";
+import { Primitives } from "@bentley/ui-abstract";
 
 /** Boolean Type Converter.
  * @public

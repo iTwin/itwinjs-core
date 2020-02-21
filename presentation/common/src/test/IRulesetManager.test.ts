@@ -5,8 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "./_helpers/Mocks";
-import { RegisteredRuleset } from "../RegisteredRuleset";
-import { Ruleset, RuleTypes } from "../presentation-common";
+import { RegisteredRuleset, Ruleset, RuleTypes } from "../presentation-common";
 
 describe("RegisteredRuleset", () => {
 
@@ -38,7 +37,7 @@ describe("RegisteredRuleset", () => {
           vars: [],
         }],
       };
-      registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (ruleset: RegisteredRuleset) => managerMock.object(ruleset));
+      registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (r: RegisteredRuleset) => managerMock.object(r));
     });
 
     it("returns wrapper ruleset properties", () => {
@@ -60,7 +59,7 @@ describe("RegisteredRuleset", () => {
         id: faker.random.uuid(),
         rules: [],
       };
-      const registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (ruleset: RegisteredRuleset) => managerMock.object(ruleset));
+      const registered = new RegisteredRuleset(ruleset, uniqueIdentifier, (r: RegisteredRuleset) => managerMock.object(r));
       registered.dispose();
       managerMock.verify((x) => x(registered), moq.Times.once());
     });

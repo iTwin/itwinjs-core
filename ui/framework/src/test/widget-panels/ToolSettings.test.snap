@@ -1,0 +1,5 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetPanelsToolSettings should not render w/o tool settings top center zone 1`] = `""`;
+
+exports[`WidgetPanelsToolSettings should render 1`] = `<DockedToolSettings />`;

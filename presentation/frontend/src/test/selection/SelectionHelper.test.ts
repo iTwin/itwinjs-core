@@ -5,19 +5,12 @@
 /* tslint:disable:no-direct-imports */
 
 import { expect } from "chai";
+import { createRandomECInstancesNodeKey, createRandomBaseNodeKey, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { SelectionHelper } from "../../presentation-frontend";
-import { createRandomECInstanceNodeKey, createRandomECInstancesNodeKey, createRandomBaseNodeKey, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 
 describe("SelectionHelper", () => {
 
   describe("getKeysForSelection", () => {
-
-    it("returns ECInstance key when ECInstance node key is provided", () => {
-      const nodeKey = createRandomECInstanceNodeKey();
-      const selectionKeys = SelectionHelper.getKeysForSelection([nodeKey]);
-      expect(selectionKeys.length).to.eq(1);
-      expect(selectionKeys[0]).to.deep.eq(nodeKey.instanceKey);
-    });
 
     it("returns all ECInstance keys when ECInstances node key is provided", () => {
       const nodeKey = createRandomECInstancesNodeKey();

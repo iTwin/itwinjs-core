@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Moved Property classes and interfaces to ui-abstract package. Created a \"DefaultReactDisplay\" to turn specifications from abstract DialogItems UI into React components. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Nancy.McCall@Bentley.com"
+}

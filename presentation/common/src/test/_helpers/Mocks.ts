@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { KeySet, Keys } from "../../KeySet";
 import * as moq from "typemoq";
 export * from "typemoq";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
+import { KeySet, Keys } from "../../presentation-common";
 
 /**
  * Should be called if mock.object is used to resolve a Promise. Otherwise

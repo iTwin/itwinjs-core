@@ -3,23 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { KeySet } from "../KeySet";
-import { getInstancesCount } from "../Utils";
 import {
-  createRandomECInstanceKey, createRandomECInstanceNodeKey,
+  createRandomECInstanceKey, createRandomECInstancesNodeKey,
   createRandomGroupingNodeKey, createRandomBaseNodeKey,
 } from "./_helpers/random";
+import { KeySet, getInstancesCount } from "../presentation-common";
 
 describe("getInstancesCount", () => {
 
   it("calculates correct count with instance keys, instance node keys and grouping node keys", () => {
     const keys = new KeySet([
-      createRandomECInstanceKey(),
-      createRandomECInstanceNodeKey(),
-      createRandomGroupingNodeKey(5),
+      createRandomECInstanceKey(), // 1
+      createRandomECInstancesNodeKey([createRandomECInstanceKey(), createRandomECInstanceKey()]), // 2
+      createRandomGroupingNodeKey(5), // 5
       createRandomBaseNodeKey(),
     ]);
-    expect(getInstancesCount(keys)).to.eq(7);
+    expect(getInstancesCount(keys)).to.eq(8);
   });
 
 });

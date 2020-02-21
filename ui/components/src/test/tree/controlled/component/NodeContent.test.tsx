@@ -6,14 +6,14 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { render, waitForElement } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { CheckBoxState } from "@bentley/ui-core";
 import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
 import { TreeNodeContent } from "../../../../ui-components/tree/controlled/component/NodeContent";
 import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
 import { HighlightableTreeNodeProps, HighlightingEngine } from "../../../../ui-components/tree/HighlightingEngine";
 import { TestUtils } from "../../../TestUtils";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 describe("NodeContent", () => {
   const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();
@@ -55,47 +55,6 @@ describe("NodeContent", () => {
       />);
 
     renderedNode.getByText("Test label");
-  });
-
-  it("renders label with asynchronous function", async () => {
-    rendererManagerMock.reset();
-    rendererManagerMock.setup((m) => m.render(moq.It.isAny(), moq.It.isAny())).returns(async () => "Test label");
-
-    const renderedNode = render(
-      <TreeNodeContent
-        node={node}
-        valueRendererManager={rendererManagerMock.object}
-      />);
-
-    renderedNode.getByTestId("node-label-placeholder");
-
-    await waitForElement(() => renderedNode.getByText("Test label"));
-  });
-
-  it("rerenders label with asynchronous function", async () => {
-    const renderedNode = render(
-      <TreeNodeContent
-        node={node}
-        valueRendererManager={rendererManagerMock.object}
-      />,
-    );
-
-    renderedNode.getByText("Test label");
-
-    rendererManagerMock.reset();
-    rendererManagerMock.setup((m) => m.render(moq.It.isAny(), moq.It.isAny())).returns(async () => "Async label");
-    const newNode = { ...node };
-
-    renderedNode.rerender(
-      <TreeNodeContent
-        node={newNode}
-        valueRendererManager={rendererManagerMock.object}
-      />,
-    );
-
-    renderedNode.getByText("Test label");
-
-    await waitForElement(() => renderedNode.getByText("Async label"));
   });
 
   it("uses label record from item node", () => {

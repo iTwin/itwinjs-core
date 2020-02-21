@@ -9,7 +9,6 @@ import {
   GroupButton,
   ToolButton,
   ToolWidget,
-  ZoneState,
   WidgetState,
   NavigationWidget,
   ContentGroup,
@@ -20,7 +19,10 @@ import {
   Widget,
   CoreTools,
   CommandItemDef,
+  StagePanel,
+  StagePanelState,
 } from "@bentley/ui-framework";
+import {  DialogItemsManager } from "@bentley/ui-abstract";
 
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
@@ -30,9 +32,9 @@ import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
 
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
-
 import { TestModalDialog } from "../dialogs/TestModalDialog";
 import { TestModalDialog2 } from "../dialogs/TestModalDialog2";
+import { TestUiProviderDialog } from "../dialogs/TestUiProviderDialog";
 import { PopupTestDialog } from "../dialogs/PopupTest";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -81,29 +83,30 @@ export class Frontstage4 extends FrontstageProvider {
             ]}
           />
         }
-        centerRight={
-          <Zone defaultState={ZoneState.Minimized} allowsMerging={false}
-            widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeDemo" control={TreeDemoWidgetControl} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeSelectionDemo" control={TreeSelectionDemoWidgetControl} />,
-            ]}
-          />
-        }
+        rightPanel={<StagePanel
+          defaultState={StagePanelState.Minimized}
+          panelZones={{
+            start: {
+              widgets: [
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeDemo" control={TreeDemoWidgetControl} />,
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeSelectionDemo" control={TreeSelectionDemoWidgetControl} />,
+              ],
+            },
+            end: {
+              widgets: [
+                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+                <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+                <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TableDemo" control={TableDemoWidgetControl} />,
+              ],
+            },
+          }}
+        />}
         bottomCenter={
           <Zone
             widgets={[
               <Widget isStatusBar={true} classId="SmallStatusBar" />,
-            ]}
-          />
-        }
-        bottomRight={
-          <Zone defaultState={ZoneState.Open} allowsMerging={false}
-            widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TableDemo" control={TableDemoWidgetControl} />,
             ]}
           />
         }
@@ -200,6 +203,12 @@ export class Frontstage4 extends FrontstageProvider {
     });
   }
 
+  private testUiProviderDialog(): React.ReactNode {
+    return (
+      <TestUiProviderDialog
+        opened={true} itemsManager={new DialogItemsManager()} />
+    );
+  }
   /** Define a NavigationWidget with Buttons to display in the TopRight zone.
    */
   private getNavigationWidget(): React.ReactNode {
@@ -215,6 +224,7 @@ export class Frontstage4 extends FrontstageProvider {
             <ToolButton toolId="openDialog2" label="open modal 2" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.modalDialog2())} />
             <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.radialMenu())} />
             <ToolButton toolId="popupTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.testPopup())} />
+            <ToolButton toolId="uiProviderModalTest" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openDialog(this.testUiProviderDialog())} />
           </>
         }
       />;

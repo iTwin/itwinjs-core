@@ -5,15 +5,16 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { Id64, ClientRequestContext, Id64String, DbOpcode, assert, Id64Array } from "@bentley/bentleyjs-core";
+import { Id64, ClientRequestContext, Id64String, DbOpcode, assert, Id64Array, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, LockLevel, LockType } from "@bentley/imodeljs-clients";
-import { RpcInterface, RpcManager, IModelProps, IModelToken, IModelTokenProps, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps, CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { RpcInterface, RpcManager, IModelProps, IModelToken, IModelTokenProps, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps, CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance, Code } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams } from "../IModelDb";
 import { Range3d } from "@bentley/geometry-core";
 import { ConcurrencyControl, AuthorizedBackendRequestContext, PhysicalPartition, SubjectOwnsPartitionElements, PhysicalModel, SpatialCategory, Element } from "../imodeljs-backend";
 
 class EditingFunctions {
   public static async createAndInsertPartition(rqctx: AuthorizedBackendRequestContext, iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
+    assert(Code.isValid(newModelCode));
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
@@ -122,13 +123,15 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     return iModelDb.concurrencyControl.syncCache(requestContext);
   }
 
-  public async pullMergePush(tokenProps: IModelTokenProps, comment: string, doPush: boolean): Promise<void> {
+  public async pullMergePush(tokenProps: IModelTokenProps, comment: string, doPush: boolean): Promise<GuidString> {
     const iModelDb = IModelDb.find(IModelToken.fromJSON(tokenProps));
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     await iModelDb.pullAndMergeChanges(requestContext);
     requestContext.enter();
+    const parentChangeSetId = iModelDb.briefcase.parentChangeSetId;
     if (doPush)
-      return iModelDb.pushChanges(requestContext, () => comment);
+      await iModelDb.pushChanges(requestContext, () => comment);
+    return parentChangeSetId;
   }
 
   public async doConcurrencyControlRequest(tokenProps: IModelTokenProps): Promise<void> {

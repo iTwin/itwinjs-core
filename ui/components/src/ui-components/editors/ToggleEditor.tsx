@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/imodeljs-frontend";
+import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/ui-abstract";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { Toggle } from "@bentley/ui-core";

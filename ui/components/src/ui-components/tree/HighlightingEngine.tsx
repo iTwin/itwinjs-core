@@ -10,7 +10,8 @@ import Highlighter from "react-highlight-words";
 import * as React from "react";
 import "./HighlightingEngine.scss";
 
-/** Active match info for highlightable [[Tree]]
+/**
+ * Active match info for highlightable [[Tree]]
  * @beta
  */
 export interface ActiveMatchInfo {
@@ -18,7 +19,8 @@ export interface ActiveMatchInfo {
   matchIndex: number;
 }
 
-/** Properties for the [[HighlightingEngine]]
+/**
+ * Properties for the [[HighlightingEngine]]
  * @beta
  */
 export interface HighlightableTreeProps {
@@ -26,7 +28,8 @@ export interface HighlightableTreeProps {
   activeMatch?: ActiveMatchInfo;
 }
 
-/** Properties for a highlightable [[TreeNode]]
+/**
+ * Properties for a highlightable [[TreeNode]]
  * @beta
  */
 export interface HighlightableTreeNodeProps {
@@ -34,9 +37,8 @@ export interface HighlightableTreeNodeProps {
   activeMatchIndex?: number;
 }
 
-// cSpell:ignore activehighlight
-
-/** Tree highlighting engine
+/**
+ * Tree highlighting engine
  * @beta
  */
 export class HighlightingEngine {

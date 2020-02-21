@@ -126,7 +126,7 @@ export class Workflow extends ItemDefBase {
     for (const key of this._tasks.keys()) {
       const task: Task | undefined = this._tasks.get(key);
       // istanbul ignore else
-      if (task && task.isVisible)
+      if (task && task.isVisible) // tslint:disable-line:deprecation
         sortedTasks.push(task);
     }
 
