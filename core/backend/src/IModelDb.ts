@@ -1818,14 +1818,15 @@ export namespace IModelDb {
     /** Query for aspects of a particular class (polymorphically) associated with this element.
      * @throws [[IModelError]]
      */
-    private _queryAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
-      const sql = `SELECT * FROM ${aspectClassName} WHERE Element.Id=:elementId`;
+    private _queryAspects(elementId: Id64String, fromClassFullName: string): ElementAspect[] {
+      const sql = `SELECT ECInstanceId,ECClassId FROM ${fromClassFullName} WHERE Element.Id=:elementId`;
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
         statement.bindId("elementId", elementId);
         const aspects: ElementAspect[] = [];
         while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const row: any = statement.getRow();
-          aspects.push(this._queryAspect(row.id, row.className.replace(".", ":")));
+          const aspectInstanceId: Id64String = statement.getValue(0).getId();
+          const aspectClassFullName: string = statement.getValue(1).getClassNameForClassId().replace(".", ":");
+          aspects.push(this._queryAspect(aspectInstanceId, aspectClassFullName));
         }
         return aspects;
       });
@@ -1856,10 +1857,10 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public getAspect(aspectInstanceId: Id64String): ElementAspect {
-      const sql = `SELECT * FROM ${ElementAspect.classFullName} WHERE ECInstanceId=:aspectInstanceId`;
+      const sql = `SELECT ECClassId FROM ${ElementAspect.classFullName} WHERE ECInstanceId=:aspectInstanceId`;
       const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
         statement.bindId("aspectInstanceId", aspectInstanceId);
-        return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getRow().className.replace(".", ":") : undefined;
+        return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getClassNameForClassId().replace(".", ":") : undefined;
       });
       if (undefined === aspectClassFullName) {
         throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggerCategory, () => ({ aspectInstanceId }));
