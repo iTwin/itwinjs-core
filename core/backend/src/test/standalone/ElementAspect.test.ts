@@ -37,6 +37,13 @@ describe("ElementAspect", () => {
     assert.equal(aspect1.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
     assert.equal(aspect1.asAny.testUniqueAspectProperty, "Aspect1-Updated");
     assert.equal(aspect1.asAny.length, 1);
+    // cross-check getAspects against getAspect
+    const aspect1X: ElementAspect = iModel.elements.getAspect(aspect1.id);
+    assert.exists(aspect1X);
+    assert.isTrue(aspect1X instanceof ElementUniqueAspect);
+    assert.equal(aspect1X.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
+    assert.equal(aspect1X.asAny.testUniqueAspectProperty, "Aspect1-Updated");
+    assert.equal(aspect1X.asAny.length, 1);
 
     const aspect2: ElementAspect = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestUniqueAspect")[0];
     assert.exists(aspect2);
@@ -44,11 +51,23 @@ describe("ElementAspect", () => {
     assert.equal(aspect2.classFullName, "DgnPlatformTest:TestUniqueAspect");
     assert.equal(aspect2.asAny.testUniqueAspectProperty, "Aspect2-Updated");
     assert.isUndefined(aspect2.asAny.length);
+    // cross-check getAspects against getAspect
+    const aspect2X: ElementAspect = iModel.elements.getAspect(aspect2.id);
+    assert.exists(aspect2X);
+    assert.isTrue(aspect2X instanceof ElementUniqueAspect);
+    assert.equal(aspect2X.classFullName, "DgnPlatformTest:TestUniqueAspect");
+    assert.equal(aspect2X.asAny.testUniqueAspectProperty, "Aspect2-Updated");
+    assert.isUndefined(aspect2X.asAny.length);
 
     const uniqueAspects: ElementUniqueAspect[] = iModel.elements.getAspects(element.id, ElementUniqueAspect.classFullName);
     assert.equal(uniqueAspects.length, 2);
     uniqueAspects.forEach((aspect) => {
       assert.isTrue(aspect.classFullName === aspect1.classFullName || aspect.classFullName === aspect2.classFullName);
+      // cross-check against getting the aspects individually
+      const aspectX: ElementAspect = iModel.elements.getAspect(aspect.id);
+      assert.exists(aspectX);
+      assert.equal(aspectX.schemaName, aspect.schemaName);
+      assert.equal(aspectX.className, aspect.className);
     });
 
     const multiAspectsA: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestMultiAspectNoHandler");
@@ -60,6 +79,13 @@ describe("ElementAspect", () => {
       assert.equal(aspect.schemaName, "DgnPlatformTest");
       assert.equal(aspect.className, "TestMultiAspectNoHandler");
       assert.exists(aspect.asAny.testMultiAspectProperty);
+      // cross-check against getting the aspects individually
+      const aspectX: ElementAspect = iModel.elements.getAspect(aspect.id);
+      assert.exists(aspectX);
+      assert.equal(aspectX.schemaName, aspect.schemaName);
+      assert.equal(aspectX.className, aspect.className);
+      assert.exists(aspectX.asAny.testMultiAspectProperty);
+      assert.equal(aspectX.asAny.testMultiAspectProperty, aspect.asAny.testMultiAspectProperty);
     });
 
     const multiAspectsB: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestMultiAspect");
@@ -71,12 +97,23 @@ describe("ElementAspect", () => {
       assert.equal(aspect.schemaName, "DgnPlatformTest");
       assert.equal(aspect.className, "TestMultiAspect");
       assert.exists(aspect.asAny.testMultiAspectProperty);
+      // cross-check against getting the aspects individually
+      const aspectX: ElementAspect = iModel.elements.getAspect(aspect.id);
+      assert.isTrue(aspectX instanceof ElementMultiAspect);
+      assert.equal(aspectX.schemaName, "DgnPlatformTest");
+      assert.equal(aspectX.className, "TestMultiAspect");
+      assert.exists(aspectX.asAny.testMultiAspectProperty);
     });
 
     const multiAspects: ElementAspect[] = iModel.elements.getAspects(element.id, ElementMultiAspect.classFullName);
     assert.equal(multiAspects.length, 4);
     multiAspects.forEach((aspect) => {
       assert.isTrue(aspect.classFullName === multiAspectsA[0].classFullName || aspect.classFullName === multiAspectsB[0].classFullName);
+      // cross-check against getting the aspects individually
+      const aspectX: ElementAspect = iModel.elements.getAspect(aspect.id);
+      assert.exists(aspectX);
+      assert.equal(aspectX.schemaName, aspect.schemaName);
+      assert.equal(aspectX.className, aspect.className);
     });
 
     const rootSubject = iModel.elements.getRootSubject();

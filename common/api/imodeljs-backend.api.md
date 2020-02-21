@@ -2344,6 +2344,7 @@ export namespace IModelDb {
         createElement<T extends Element>(elProps: ElementProps): T;
         deleteAspect(aspectInstanceIds: Id64Arg): void;
         deleteElement(ids: Id64Arg): void;
+        getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
         getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
         // @internal

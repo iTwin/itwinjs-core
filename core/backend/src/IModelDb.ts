@@ -1852,6 +1852,21 @@ export namespace IModelDb {
       return this._iModel.constructEntity<ElementAspect>(aspect);
     }
 
+    /** Get a single ElementAspect by its instance Id.
+     * @throws [[IModelError]]
+     */
+    public getAspect(aspectInstanceId: Id64String): ElementAspect {
+      const sql = `SELECT * FROM ${ElementAspect.classFullName} WHERE ECInstanceId=:aspectInstanceId`;
+      const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
+        statement.bindId("aspectInstanceId", aspectInstanceId);
+        return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getRow().className.replace(".", ":") : undefined;
+      });
+      if (undefined === aspectClassFullName) {
+        throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggerCategory, () => ({ aspectInstanceId }));
+      }
+      return this._queryAspect(aspectInstanceId, aspectClassFullName);
+    }
+
     /** Get the ElementAspect instances that are owned by the specified element.
      * @param elementId Get ElementAspects associated with this Element
      * @param aspectClassFullName Optionally filter ElementAspects polymorphically by this class name
