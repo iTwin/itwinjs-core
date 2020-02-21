@@ -13,16 +13,15 @@ const loggerCategory: string = ClientsLoggerCategory.UlasClient;
  * @internal
  * Defines a base set of additional properties that might be useful to attach to feature logs
  */
-interface AdditionalFeatureData {
-  iModelId?: GuidString,
-  startTime: Date,
-  endTime: Date,
+export interface AdditionalFeatureData {
+  iModelId?: GuidString;
+  iModelJsVersion?: string;
 }
 
 /** @internal */
 export class UlasUtilities {
 
-  public static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: string, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement {
+  public static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement {
     return IModelHost.platform.NativeUlasClient.checkEntitlement(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
       requestContext.applicationVersion,
@@ -33,7 +32,7 @@ export class UlasUtilities {
       Guid.createValue());
   }
 
-  public static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus {
+  public static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus {
     return IModelHost.platform.NativeUlasClient.trackUsage(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
       requestContext.applicationVersion,
@@ -45,9 +44,22 @@ export class UlasUtilities {
       UlasUtilities.getSessionId(requestContext));
   }
 
-  public static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: string, additionalData: AdditionalFeatureData): BentleyStatus {
+  /**
+   * Attempts to send a feature tracking request to the Bentley Usage Logging and Analysis Service
+   * @param requestContext The client request context
+   * @param featureId The unique id of the feature to be tracked
+   * @param authType The authentication mechanism used to authorize the request
+   * @param hostName The name of the machine which utilized the feature
+   * @param usageType The type of usage which occurred on the client.
+   * @param contextId The context in which the feature was used (i.e. a specific projectId). When omitted, the Guid 99999999-9999-9999-9999-999999999999 is substituted internally.
+   * @param startTimeZ The time at which feature usage began
+   * @param endTimeZ The time at which feature usage was completed
+   * @param additionalData A collection of arbitrary data that will be attached to the feature usage log
+   * @throws [[TypeError]] when an invalid property is given, [[Error]] when logging fails due to internal issues.
+   */
+  public static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): BentleyStatus {
     const featureUserData: IModelJsNative.FeatureUserDataKeyValuePair[] = [];
-    for (const propName in additionalData) {
+    for (const propName in additionalData) { // tslint:disable-line: forin
       featureUserData.push({
         key: propName,
         value: (additionalData as any)[propName],
@@ -60,13 +72,16 @@ export class UlasUtilities {
         featureId,
         versionStr: requestContext.applicationVersion,
         projectId: contextId,
-        featureUserData: featureUserData,
+        featureUserData,
+        startDateZ: startDateZ ? startDateZ.toISOString() : "foo",
+        endDateZ: endDateZ ? endDateZ.toISOString() : "foo",
       },
       authType,
       UlasUtilities.getApplicationId(requestContext),
       UlasUtilities.prepareMachineName(hostName),
       usageType,
-      UlasUtilities.getSessionId(requestContext));
+      UlasUtilities.getSessionId(requestContext),
+    );
   }
 
   /**

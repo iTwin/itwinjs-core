@@ -20,7 +20,6 @@ import { getTestOidcToken, TestOidcConfiguration, TestUsers } from "@bentley/oid
 
 describe.only("UlasUtilities - OIDC Token (#integration)", () => {
   const imodelJsProductId = 2686;
-  const OIDC_TYPE = 2;
   let requestContext: AuthorizedBackendRequestContext;
 
   before(async () => {
@@ -34,7 +33,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
   });
 
   it("Check Entitlements (#integration)", async function (this: Mocha.Context) {
-    const status: IModelJsNative.Entitlement = UlasUtilities.checkEntitlement(requestContext, Guid.createValue(), OIDC_TYPE, imodelJsProductId, "localhost");
+    const status: IModelJsNative.Entitlement = UlasUtilities.checkEntitlement(requestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, imodelJsProductId, "localhost");
 
     assert.equal(status.allowed, true);
     assert.equal(status.usageType, "Production");
@@ -43,7 +42,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
   it("Invalid project id check entitlements (#integration)", async function (this: Mocha.Context) {
     let exceptionThrown = false;
     try {
-      UlasUtilities.checkEntitlement(requestContext, "", OIDC_TYPE, imodelJsProductId, "localhost");
+      UlasUtilities.checkEntitlement(requestContext, "", IModelJsNative.AuthType.OIDC, imodelJsProductId, "localhost");
     } catch (error) {
       exceptionThrown = true;
     }
@@ -53,7 +52,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
   it("Invalid app version check entitlements (#integration)", async function (this: Mocha.Context) {
     let exceptionThrown = false;
     try {
-      UlasUtilities.checkEntitlement(requestContext, "", OIDC_TYPE, imodelJsProductId, "localhost");
+      UlasUtilities.checkEntitlement(requestContext, "", IModelJsNative.AuthType.OIDC, imodelJsProductId, "localhost");
     } catch (error) {
       exceptionThrown = true;
     }
@@ -62,13 +61,13 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
 
   it("Post usage log (#integration)", async function (this: Mocha.Context) {
     for (const usageType of [IModelJsNative.UsageType.Beta, IModelJsNative.UsageType.HomeUse, IModelJsNative.UsageType.PreActivation, IModelJsNative.UsageType.Production, IModelJsNative.UsageType.Trial]) {
-      const status: BentleyStatus = UlasUtilities.trackUsage(requestContext, Guid.createValue(), OIDC_TYPE, os.hostname(), usageType);
+      const status: BentleyStatus = UlasUtilities.trackUsage(requestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), usageType);
       assert.equal(status, BentleyStatus.SUCCESS);
     }
   });
 
   it("Post usage log with session id (#integration)", async function (this: Mocha.Context) {
-    const status: BentleyStatus = UlasUtilities.trackUsage(requestContext, Guid.createValue(), OIDC_TYPE, os.hostname(), IModelJsNative.UsageType.Trial);
+    const status: BentleyStatus = UlasUtilities.trackUsage(requestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
     assert.equal(status, BentleyStatus.SUCCESS);
   });
 
@@ -76,7 +75,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
     let exceptionThrown = false;
     try {
       const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43");
-      UlasUtilities.trackUsage(localRequestContext, Guid.createValue(), OIDC_TYPE, os.hostname(), IModelJsNative.UsageType.Trial);
+      UlasUtilities.trackUsage(localRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
     } catch (error) {
       exceptionThrown = true;
     }
@@ -90,7 +89,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
       "127.0.0.1",
       "localhost",
     ]) {
-      const status: BentleyStatus = UlasUtilities.trackUsage(localRequestContext, Guid.createValue(), OIDC_TYPE, hostName, IModelJsNative.UsageType.Beta);
+      const status: BentleyStatus = UlasUtilities.trackUsage(localRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, hostName, IModelJsNative.UsageType.Beta);
 
       assert.equal(status, BentleyStatus.SUCCESS);
     }
@@ -100,7 +99,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
     let exceptionThrown = false;
     try {
       const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.5.101");
-      UlasUtilities.trackUsage(localRequestContext, Guid.createValue(), OIDC_TYPE, os.hostname(), 100 as IModelJsNative.UsageType);
+      UlasUtilities.trackUsage(localRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), 100 as IModelJsNative.UsageType);
     } catch (error) {
       exceptionThrown = true;
     }
@@ -144,7 +143,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
       let tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.5.101");
       let exceptionThrown = false;
       try {
-        UlasUtilities.trackUsage(tempRequestContext, Guid.createValue(), OIDC_TYPE, os.hostname(), IModelJsNative.UsageType.Production);
+        UlasUtilities.trackUsage(tempRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Production);
       } catch (err) {
         exceptionThrown = true;
       }
@@ -152,7 +151,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
 
       tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.99");
       try {
-        UlasUtilities.markFeature(tempRequestContext, Guid.createValue(), OIDC_TYPE, os.hostname(), IModelJsNative.UsageType.Trial);
+        UlasUtilities.markFeature(tempRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial);
       } catch (error) {
         exceptionThrown = true;
       }
@@ -162,7 +161,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
 
   it("Post feature log (#integration)", async function (this: Mocha.Context) {
     for (const usageType of [IModelJsNative.UsageType.Beta, IModelJsNative.UsageType.HomeUse, IModelJsNative.UsageType.PreActivation, IModelJsNative.UsageType.Production, IModelJsNative.UsageType.Trial]) {
-      const status = UlasUtilities.markFeature(requestContext, Guid.createValue(), OIDC_TYPE, os.hostname(), usageType);
+      const status = UlasUtilities.markFeature(requestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), usageType);
 
       assert.equal(status, BentleyStatus.SUCCESS);
     }
@@ -170,14 +169,14 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
 
   it("Post feature log with project id (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
-    const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), OIDC_TYPE, os.hostname(), IModelJsNative.UsageType.Production, Guid.createValue());
+    const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Production, Guid.createValue());
 
     assert.equal(status, BentleyStatus.SUCCESS);
   });
 
   it("Post feature log without product version (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43");
-    const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), OIDC_TYPE, os.hostname(), IModelJsNative.UsageType.Production);
+    const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Production);
     assert.equal(status, BentleyStatus.SUCCESS);
   });
 
@@ -187,8 +186,17 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
       "127.0.0.1",
       "localhost",
     ]) {
-      const status = UlasUtilities.markFeature(requestContext, Guid.createValue(), OIDC_TYPE, hostName, IModelJsNative.UsageType.Production);
+      const status = UlasUtilities.markFeature(requestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, hostName, IModelJsNative.UsageType.Production);
       assert.equal(status, BentleyStatus.SUCCESS);
     }
+  });
+
+  it("Post feature log - with startDate and endDate (#integration)", async function (this: Mocha.Context) {
+    const startDate = new Date();
+    const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
+    const endDate = new Date();
+    const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate, endDate);
+
+    assert.equal(status, BentleyStatus.SUCCESS);
   });
 });
