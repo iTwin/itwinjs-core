@@ -330,8 +330,8 @@ export class ViewAttributes {
       name: "Globe: ",
       id: "viewAttr_globeMode",
       entries: [
-        { name: "3D", value: GlobeMode.ThreeD },
-        { name: "Columbus", value: GlobeMode.Columbus },
+        { name: "Ellipsoid", value: GlobeMode.Ellipsoid },
+        { name: "Plane", value: GlobeMode.Plane },
       ],
       handler: (select) => this.updateBackgroundMap({ globeMode: Number.parseInt(select.value, 10) }),
     }).select;

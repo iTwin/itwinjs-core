@@ -1000,7 +1000,7 @@ export abstract class ViewState extends ElementState {
   }
 
   public getUpVector(point: Point3d): Vector3d {
-    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.ThreeD)
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)
       return Vector3d.unitZ();
 
     const earthCenter = this.iModel.ecefLocation!.getTransform().inverse()!.origin;
@@ -1160,7 +1160,7 @@ export abstract class ViewState3d extends ViewState {
     targetPointCartographic.latitude += 10.0;
     const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
     let upVector = northOfEyePoint.unitVectorTo(lEyePoint)!;
-    if (this.globeMode === GlobeMode.Columbus)
+    if (this.globeMode === GlobeMode.Plane)
       upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
 
     if (0 !== pitchAngleRadians) {

@@ -6,16 +6,16 @@ ignore: true
 ## 3D Globe Background Map Display
 
 The background map can now be displayed as either a plane or a three-dimensional globe. This is controlled by the [GlobeMode]($common) property of the [DisplayStyleSettings.backgroundMap]($common) associated with a [DisplayStyleState]($frontend) or [DisplayStyle]($backend).
-  * [GlobeMode.Columbus]($common) projects the map onto the XY plane.
-  * [GlobeMode.ThreeD]($common) - the default mode - projects the map onto the [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) ellipsoid when sufficiently zoomed-out.
+  * [GlobeMode.Plane]($common) projects the map onto the XY plane.
+  * [GlobeMode.Ellipsoid]($common) - the default mode - projects the map onto the [WGS84](https://en.wikipedia.org/wiki/World_Geodetic_System) ellipsoid when sufficiently zoomed-out.
 
-In Columbus mode, or in 3d mode when sufficiently zoomed-in on the iModel, the iModel's [geographic coordinate system](https://www.imodeljs.org/learning/geolocation/#the-geographic-coordinate-system) is used to transform the map into the iModel's coordinate space.
+In Plane mode, or in 3d mode when sufficiently zoomed-in on the iModel, the iModel's [geographic coordinate system](https://www.imodeljs.org/learning/geolocation/#the-geographic-coordinate-system) is used to transform the map into the iModel's coordinate space.
 
-![Columbus mode](assets/ColumbusMapProjection.png)
-<p align="center">Columbus mode</p>
+![Plane mode](assets/ColumbusMapProjection.png)
+<p align="center">Plane mode</p>
 
 ![Globe mode](assets/3DMapProjection.png)
-<p align="center">Globe mode</p>
+<p align="center">Ellipsoid mode</p>
 
 ### Globe View Tools
 The following are view tools that allow a user to navigate a plane or three-dimensional globe. All of these tools operate on the selected view.

@@ -2351,8 +2351,8 @@ export { GetMetaDataFunction }
 
 // @public
 export enum GlobeMode {
-    Columbus = 1,
-    ThreeD = 0
+    Ellipsoid = 0,
+    Plane = 1
 }
 
 // @internal
@@ -5761,11 +5761,8 @@ export interface SubjectProps extends ElementProps {
 
 // @alpha
 export enum TerrainHeightOriginMode {
-    // (undocumented)
     Geodetic = 0,
-    // (undocumented)
     Geoid = 1,
-    // (undocumented)
     Ground = 2
 }
 

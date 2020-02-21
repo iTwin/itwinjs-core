@@ -126,7 +126,7 @@ export class WebMapTileLoader extends MapTileLoaderBase {
       this._imageryProvider.geometryAttributionProvider = provider;
   }
 
-  public get parentsAndChildrenExclusive(): boolean { return this._globeMode !== GlobeMode.Columbus; }     // Allow map tiles to draw both parent and children if in planar/columbus -- this will cause these to be displayed with parents first.
+  public get parentsAndChildrenExclusive(): boolean { return this._globeMode !== GlobeMode.Plane; } // Allow map tiles to draw both parent and children if in planar/columbus -- this will cause these to be displayed with parents first.
   public get imageryProvider(): ImageryProvider {
     return this._imageryProvider;
   }
