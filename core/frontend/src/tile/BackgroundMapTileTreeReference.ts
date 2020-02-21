@@ -45,7 +45,7 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
     const id = {
       providerName: this.settings.providerName,
       mapType: this.settings.mapType,
-      globeMode: this._forPlanarDrape ? GlobeMode.Columbus : this.settings.globeMode,
+      globeMode: this._forPlanarDrape ? GlobeMode.Plane : this.settings.globeMode,
       groundBias: this.settings.groundBias,
       forDrape: this._forCartoDrape,
       filterTextures: this._filterTextures,
@@ -56,7 +56,7 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
 
   protected get _groundBias() { return this.settings.groundBias; }
   protected get _graphicType() {
-    return (this.settings.useDepthBuffer || GlobeMode.ThreeD === this.settings.globeMode) ? TileGraphicType.Scene : TileGraphicType.BackgroundMap;
+    return (this.settings.useDepthBuffer || GlobeMode.Ellipsoid === this.settings.globeMode) ? TileGraphicType.Scene : TileGraphicType.BackgroundMap;
   }
 
   protected get _transparency(): number | undefined {

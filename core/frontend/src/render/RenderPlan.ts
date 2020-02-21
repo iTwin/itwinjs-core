@@ -82,7 +82,7 @@ export class RenderPlan {
       this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
       this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
       this.analysisStyle = style.analysisStyle;
-      this.isGlobeMode3D = (GlobeMode.ThreeD === view.globeMode);
+      this.isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
       if (this.isGlobeMode3D) {
         const lb = this.frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, this.frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
         const rt = this.frustum.getCorner(Npc.RightTopRear).interpolate(0.5, this.frustum.getCorner(Npc.RightTopFront), scratchPoint3b);

@@ -28,10 +28,10 @@ export enum BackgroundMapType {
  * @public
  */
 export enum GlobeMode {
-  /** Display earth as 3D ellippsoid */
-  ThreeD = 0,
+  /** Display Earth as 3d ellipsoid */
+  Ellipsoid = 0,
   /** Display Earth as plane. */
-  Columbus = 1,
+  Plane = 1,
 }
 
 /** JSON representation of the settings associated with a background map displayed by a [[DisplayStyle]].
@@ -61,7 +61,7 @@ export interface BackgroundMapProps {
    * @alpha
    */
   terrainSettings?: TerrainProps;
-  /** Globe Mode. Default value: GlobeMode.ThreeD
+  /** Globe Mode. Default value: GlobeMode.Ellipsoid
    * @beta
    */
   globeMode?: GlobeMode;
@@ -100,7 +100,7 @@ export class BackgroundMapSettings {
   /** If transparency is overridden, the transparency to apply; otherwise, undefined. */
   public get transparencyOverride(): number | undefined { return false !== this.transparency ? this.transparency : undefined; }
 
-  private constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias = 0, useDepthBuffer = false, transparency: number | false = false, applyTerrain = false, terrainSettings?: TerrainProps, globeMode = GlobeMode.ThreeD) {
+  private constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias = 0, useDepthBuffer = false, transparency: number | false = false, applyTerrain = false, terrainSettings?: TerrainProps, globeMode = GlobeMode.Ellipsoid) {
     this.groundBias = groundBias;
     this.providerName = providerName;
     this.useDepthBuffer = useDepthBuffer;
@@ -125,7 +125,7 @@ export class BackgroundMapSettings {
 
     const providerName = ("MapBoxProvider" === json.providerName) ? "MapBoxProvider" : "BingProvider";
     const mapType = (undefined !== json.providerData) ? json.providerData.mapType : BackgroundMapType.Hybrid;
-    const globeMode = (undefined !== json.globeMode) ? json.globeMode : GlobeMode.ThreeD;
+    const globeMode = (undefined !== json.globeMode) ? json.globeMode : GlobeMode.Ellipsoid;
     return new BackgroundMapSettings(providerName, mapType, json.groundBias, json.useDepthBuffer, json.transparency, json.applyTerrain, json.terrainSettings, globeMode);
   }
 

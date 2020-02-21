@@ -38,7 +38,7 @@ const scratchEyePoint = Point3d.createZero();
 const scratchViewRotation = Matrix3d.createIdentity();
 const scratchSilhouetteNormal = Vector3d.create();
 
-/** Geometry of background map. An ellipsoid if GlobeMode is 3D.   A plane if GlobeMode is Columbus.
+/** Geometry of background map - either an ellipsoid or a plane as defined by GlobeMode.
  * @internal
  */
 export class BackgroundMapGeometry {
@@ -70,7 +70,7 @@ export class BackgroundMapGeometry {
     const halfChordAngle = Angle.piOver2Radians / MapTile.globeMeshDimension;
     this.maxGeometryChordHeight = (1 - Math.cos(halfChordAngle)) * earthRadius;
     this.cartesianPlane = this.getPlane();
-    this.geometry = (globeMode === GlobeMode.ThreeD) ? this.getEarthEllipsoid() : this.cartesianPlane;
+    this.geometry = (globeMode === GlobeMode.Ellipsoid) ? this.getEarthEllipsoid() : this.cartesianPlane;
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
     this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(_ecefToDb, _bimElevationBias, iModel);
   }
@@ -84,7 +84,7 @@ export class BackgroundMapGeometry {
     if (undefined === result)
       result = Cartographic.fromRadians(0, 0, 0);
 
-    if (this.globeMode === GlobeMode.Columbus) {
+    if (this.globeMode === GlobeMode.Plane) {
       const mercatorFraction = this._mercatorFractionToDb.multiplyInversePoint3d(db)!;
       return this._mercatorTilingScheme.fractionToCartographic(mercatorFraction.x, mercatorFraction.y, result, mercatorFraction.z);
     } else {
@@ -94,7 +94,7 @@ export class BackgroundMapGeometry {
   }
 
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
-    if (this.globeMode === GlobeMode.Columbus) {
+    if (this.globeMode === GlobeMode.Plane) {
       const fraction = Point2d.create(0, 0);
       this._mercatorTilingScheme.cartographicToFraction(cartographic.latitude, cartographic.longitude, fraction);
       return this._mercatorFractionToDb.multiplyXYZ(fraction.x, fraction.y, cartographic.height, result);
@@ -113,7 +113,7 @@ export class BackgroundMapGeometry {
 
   public getRayIntersection(ray: Ray3d, positiveOnly: boolean): Ray3d | undefined {
     let intersect;
-    if (this.globeMode === GlobeMode.ThreeD) {
+    if (this.globeMode === GlobeMode.Ellipsoid) {
       const ellipsoid = this.geometry as Ellipsoid;
       BackgroundMapGeometry._scratchRayAngles.length = 0;
       BackgroundMapGeometry._scratchRayFractions.length = 0;
@@ -147,7 +147,7 @@ export class BackgroundMapGeometry {
     return intersect;
   }
   public getPointHeight(point: Point3d): number | undefined {
-    if (this.globeMode === GlobeMode.ThreeD) {
+    if (this.globeMode === GlobeMode.Ellipsoid) {
       const ellipsoid = this.geometry as Ellipsoid;
       const projected = ellipsoid.projectPointToSurface(point);
       if (undefined === projected)

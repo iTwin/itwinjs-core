@@ -150,7 +150,7 @@ export abstract class MapTile extends RealityTile {
   public getContentClip(): ClipVector | undefined {
     const cornerRays = this._cornerRays!;
     const points = [cornerRays[0].origin, cornerRays[1].origin, cornerRays[3].origin, cornerRays[2].origin];
-    if (this.mapTree.globeMode === GlobeMode.ThreeD) {
+    if (this.mapTree.globeMode === GlobeMode.Ellipsoid) {
       const globeOrigin = this.mapTree.globeOrigin;
       const clipPlanes = [];
       for (let i = 0; i < 4; i++) {
@@ -192,7 +192,7 @@ export abstract class MapTile extends RealityTile {
    * @internal
    */
   public get isDisplayable() {
-    return this.mapTree.globeMode === GlobeMode.ThreeD ? (this.depth >= MapTileTree.minDisplayableDepth) : super.isDisplayable;
+    return this.mapTree.globeMode === GlobeMode.Ellipsoid ? (this.depth >= MapTileTree.minDisplayableDepth) : super.isDisplayable;
   }
   public setReprojectedCorners(reprojectedCorners: Point3d[]): void {
     const cartesianRange = this.mapTree.cartesianRange;
@@ -211,7 +211,7 @@ export abstract class MapTile extends RealityTile {
   }
 
   public isOccluded(viewingSpace: ViewingSpace): boolean {
-    if (undefined === this._cornerRays || this.mapTree.globeMode !== GlobeMode.ThreeD)
+    if (undefined === this._cornerRays || this.mapTree.globeMode !== GlobeMode.Ellipsoid)
       return false;
 
     if (viewingSpace.eyePoint !== undefined) {
@@ -311,7 +311,7 @@ export abstract class MapTile extends RealityTile {
         normal.normalizeInPlace();
         const heightRange = this.mapTree.getChildHeightRange(quadId, rectangle, this);
         const diagonal = Math.max(corners[0].distance(corners[3]), corners[1].distance(corners[2])) / 2.0;
-        const chordHeight = globeMode === GlobeMode.ThreeD ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
+        const chordHeight = globeMode === GlobeMode.Ellipsoid ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
         const range = Range3d.createArray(PlanarMapTile.computeRangeCorners(corners, normal!, chordHeight, scratchCorners, heightRange));
         this._children.push(this.mapTree.createPlanarChild({ root: mapTree, contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal!, rectangle, chordHeight, heightRange));
       }
@@ -667,7 +667,7 @@ export class MapTileTree extends RealityTileTree {
 
     const rootPatch = EllipsoidPatch.createCapture(this.maxEarthEllipsoid, AngleSweep.createStartSweepRadians(0, Angle.pi2Radians), AngleSweep.createStartSweepRadians(-Angle.piOver2Radians, Angle.piRadians));
     let range;
-    if (globeMode === GlobeMode.ThreeD) {
+    if (globeMode === GlobeMode.Ellipsoid) {
       range = rootPatch.range();
     } else {
       const corners = this.getFractionalTileCorners(quadId);
@@ -684,7 +684,7 @@ export class MapTileTree extends RealityTileTree {
   public getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined { return undefined; }
 
   public doCreateGlobeChildren(tile: Tile): boolean {
-    if (this.globeMode !== GlobeMode.ThreeD)
+    if (this.globeMode !== GlobeMode.Ellipsoid)
       return false;
 
     const childDepth = tile.depth + 1;
@@ -707,7 +707,7 @@ export class MapTileTree extends RealityTileTree {
 
   public getCornerRays(rectangle: MapCartoRectangle): Ray3d[] | undefined {
     const rays = new Array<Ray3d>();
-    if (this.globeMode === GlobeMode.ThreeD) {
+    if (this.globeMode === GlobeMode.Ellipsoid) {
       rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))!);
       rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))!);
       rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))!);
@@ -793,7 +793,7 @@ export class MapTileTree extends RealityTileTree {
     const gridPoints = this.getMercatorFractionChildGridPoints(tile, columnCount, rowCount);
     for (const gridPoint of gridPoints) {
       this._mercatorFractionToDb.multiplyPoint3d(gridPoint, scratchCorner);
-      if (this.globeMode !== GlobeMode.ThreeD || this.cartesianRange.containsPoint(scratchCorner)) {
+      if (this.globeMode !== GlobeMode.Ellipsoid || this.cartesianRange.containsPoint(scratchCorner)) {
         scratchCorner.clone(gridPoint);
       } else {
         this._mercatorTilingScheme.fractionToCartographic(gridPoint.x, gridPoint.y, MapTileTree._scratchCarto);
