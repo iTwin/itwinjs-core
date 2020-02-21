@@ -69,4 +69,4 @@ export const getInstancesCount = (keys: Readonly<KeySet>): number => {
 export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
 /** @internal */
-export const LOCALES_DIRECTORY = path.join(__dirname, "assets", "locales");
+export const LOCALES_DIRECTORY = path.join(__dirname, "..", "assets", "locales");

@@ -21,7 +21,7 @@
   "typings": "lib/presentation-common",
   "scripts": {
     "build": "npm run ruleset-json-schema && npm run build:assets && npm run extract && buildIModelJsModule",
-    "build:assets": "cpx \"./assets/**/*\" ./lib/presentation-common/assets && npm run pseudolocalize",
+    "build:assets": "cpx \"./assets/**/*\" ./lib/assets && npm run pseudolocalize",
     "build:watch": "npm run ruleset-json-schema && npm run build:assets && tsc -w",
     "clean": "rimraf lib .rush package-deps.json",
     "cover": "nyc npm test",
@@ -36,7 +36,7 @@
     "lint": "npm run tslint && npm run eslint",
     "eslint": "eslint src --ext .ts,.js",
     "tslint": "tslint --project . 1>&2",
-    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/presentation-common/assets/locales/en-PSEUDO",
+    "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./assets/locales/en --out ./lib/assets/locales/en-PSEUDO",
     "test": "mocha --opts ../mocha.opts \"./lib/test/**/*.test.js\"",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
