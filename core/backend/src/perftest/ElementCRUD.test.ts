@@ -137,7 +137,7 @@ describe("PerformanceElementsTests", () => {
         }
 
         seedIModel.saveChanges();
-        seedIModel.closeStandalone();
+        seedIModel.closeSnapshot();
       }
     }
   });
@@ -179,7 +179,7 @@ describe("PerformanceElementsTests", () => {
             const row = stmt.getRow();
             assert.equal(row.count, size + opCount);
           });
-          perfimodel.closeStandalone();
+          perfimodel.closeSnapshot();
         }
       }
     }
@@ -195,7 +195,7 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Delete_" + name + "_" + opCount + ".bim");
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(size / opCount);
           assert.equal((stat.maxId - stat.minId + 1), size);
           const startTime = new Date().getTime();
@@ -215,7 +215,7 @@ describe("PerformanceElementsTests", () => {
             const row = stmt.getRow();
             assert.equal(row.count, size - opCount);
           });
-          perfimodel.closeStandalone();
+          perfimodel.closeSnapshot();
         }
       }
     }
@@ -231,7 +231,7 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Read_" + name + "_" + opCount + ".bim");
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(size / opCount);
           assert.equal((stat.maxId - stat.minId + 1), size);
 
@@ -252,7 +252,7 @@ describe("PerformanceElementsTests", () => {
 
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsRead", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });
-          perfimodel.closeStandalone();
+          perfimodel.closeSnapshot();
         }
       }
     }
@@ -268,7 +268,7 @@ describe("PerformanceElementsTests", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", "IModelPerformance_Update_" + name + "_" + opCount + ".bim");
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+          const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
           const elementIdIncrement = Math.floor(size / opCount);
           // first construct modified elements
           // now lets update and record time
@@ -306,7 +306,7 @@ describe("PerformanceElementsTests", () => {
           }
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsUpdate", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });
-          perfimodel.closeStandalone();
+          perfimodel.closeSnapshot();
         }
       }
     }

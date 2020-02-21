@@ -163,7 +163,7 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
 }
 
 const getElementCount = (iModel: IModelDb): number => {
-  const rows: any[] = iModel.executeQuery("SELECT COUNT(*) AS cnt FROM bis.Element");
+  const rows: any[] = IModelTestUtils.executeQuery(iModel, "SELECT COUNT(*) AS cnt FROM bis.Element");
   const count = + rows[0].cnt;
   return count;
 };
@@ -172,7 +172,7 @@ async function executeQueryTime(requestContext: AuthorizedClientRequestContext, 
   const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
   assert.exists(imodeldb);
   const startTime = new Date().getTime();
-  const stat = imodeldb.executeQuery("SELECT * FROM BisCore.LineStyle");
+  const stat = IModelTestUtils.executeQuery(imodeldb, "SELECT * FROM BisCore.LineStyle");
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   assert.equal(7, stat.length);

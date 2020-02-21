@@ -526,11 +526,6 @@ export namespace RenderSystem {
      */
     dpiAwareViewports?: boolean;
 
-    /** @internal
-     * @deprecated This setting no longer has any effect.
-     */
-    directScreenRendering?: boolean;
-
     /** If true will attempt to create a WebGL2 context.
      *
      * Default value: false

@@ -38,22 +38,22 @@ function getChangeSummaryAsJson(iModel: IModelDb, changeSummaryId: string) {
       const instanceChange: any = ChangeSummaryManager.queryInstanceChange(iModel, Id64.fromJSON(row.id));
       switch (instanceChange.opCode) {
         case ChangeOpCode.Insert: {
-          const rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterInsert));
+          const rows: any[] = IModelTestUtils.executeQuery(iModel, ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterInsert));
           assert.equal(rows.length, 1);
           instanceChange.after = rows[0];
           break;
         }
         case ChangeOpCode.Update: {
-          let rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeUpdate));
+          let rows: any[] = IModelTestUtils.executeQuery(iModel, ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeUpdate));
           assert.equal(rows.length, 1);
           instanceChange.before = rows[0];
-          rows = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterUpdate));
+          rows = IModelTestUtils.executeQuery(iModel, ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterUpdate));
           assert.equal(rows.length, 1);
           instanceChange.after = rows[0];
           break;
         }
         case ChangeOpCode.Delete: {
-          const rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeDelete));
+          const rows: any[] = IModelTestUtils.executeQuery(iModel, ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeDelete));
           assert.equal(rows.length, 1);
           instanceChange.before = rows[0];
           break;
@@ -466,7 +466,7 @@ describe("ChangeSummary (#integration)", () => {
     iModel = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("test.bim"));
     assert.exists(iModel);
     assert.exists(iModel.briefcase);
-    assert.isTrue(iModel.isStandalone);
+    assert.isTrue(iModel.isSnapshot);
     try {
       await using(new DisableNativeAssertions(), async (_r) => {
         await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
@@ -522,22 +522,22 @@ describe("ChangeSummary (#integration)", () => {
             const instanceChange: any = ChangeSummaryManager.queryInstanceChange(iModel, Id64.fromJSON(row.id));
             switch (instanceChange.opCode) {
               case ChangeOpCode.Insert: {
-                const rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterInsert));
+                const rows: any[] = IModelTestUtils.executeQuery(iModel, ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.AfterInsert));
                 assert.equal(rows.length, 1);
                 instanceChange.after = rows[0];
                 break;
               }
               case ChangeOpCode.Update: {
-                let rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeUpdate));
+                let rows: any[] = IModelTestUtils.executeQuery(iModel, ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeUpdate));
                 assert.equal(rows.length, 1);
                 instanceChange.before = rows[0];
-                rows = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeUpdate));
+                rows = IModelTestUtils.executeQuery(iModel, ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeUpdate));
                 assert.equal(rows.length, 1);
                 instanceChange.after = rows[0];
                 break;
               }
               case ChangeOpCode.Delete: {
-                const rows: any[] = iModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeDelete));
+                const rows: any[] = IModelTestUtils.executeQuery(iModel, ChangeSummaryManager.buildPropertyValueChangesECSql(iModel, instanceChange, ChangedValueState.BeforeDelete));
                 assert.equal(rows.length, 1);
                 instanceChange.before = rows[0];
                 break;

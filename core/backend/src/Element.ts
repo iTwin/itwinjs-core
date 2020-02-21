@@ -743,6 +743,7 @@ export class Sheet extends Document implements SheetProps {
 /** An Information Carrier carries information, but is not the information itself. For example, the arrangement
  * of ink on paper or the sequence of electronic bits are information carriers.
  * @deprecated BisCore will focus on the information itself and not how it is carried.
+ * @note This TypeScript class should not be removed until the (deprecated) InformationCarrierElement class is removed from the BisCore schema.
  * @internal
  */
 export abstract class InformationCarrierElement extends Element {
@@ -754,9 +755,10 @@ export abstract class InformationCarrierElement extends Element {
 
 /** An Information Carrier that carries a Document. An electronic file is a good example.
  * @deprecated BisCore will focus on the information itself and not how it is carried.
+ * @note This TypeScript class should not be removed until the (deprecated) DocumentCarrier class is removed from the BisCore schema.
  * @internal
  */
-export abstract class DocumentCarrier extends InformationCarrierElement {
+export abstract class DocumentCarrier extends InformationCarrierElement {  // tslint:disable-line: deprecation
   /** @internal */
   public static get className(): string { return "DocumentCarrier"; }
   /** @internal */

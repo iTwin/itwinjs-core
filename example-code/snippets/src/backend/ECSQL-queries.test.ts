@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64String, Id64Set, DbResult, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String, Id64Set, DbResult } from "@bentley/bentleyjs-core";
 import { IModelDb, ECSqlStatement, Element, PhysicalPartition, Subject } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
@@ -12,11 +12,11 @@ describe("Useful ECSQL queries", () => {
   let iModel: IModelDb;
 
   before(async () => {
-    iModel = IModelTestUtils.openIModel("test.bim", { copyFilename: "ecsql-queries.bim", openMode: OpenMode.ReadWrite });
+    iModel = IModelTestUtils.openSnapshotFromSeed("test.bim", { copyFilename: "ecsql-queries.bim" });
   });
 
   after(() => {
-    iModel.closeStandalone();
+    iModel.closeSnapshot();
   });
 
   it("should select by code value", () => {

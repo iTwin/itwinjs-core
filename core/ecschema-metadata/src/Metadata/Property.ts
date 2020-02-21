@@ -91,11 +91,6 @@ export abstract class Property implements CustomAttributeContainerProps {
     return this.class.schema.lookupItemSync(this._kindOfQuantity);
   }
 
-  /** @deprecated */
-  public toJson() {
-    return this.toJSON() as any;
-  }
-
   /**
    * Save this Property's properties to an object for serializing to JSON.
    */
@@ -160,11 +155,6 @@ export abstract class Property implements CustomAttributeContainerProps {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(propertyProps: PropertyProps) {
-    this.fromJSONSync(propertyProps);
-  }
-
   public fromJSONSync(propertyProps: PropertyProps) {
     if (undefined !== propertyProps.label) {
       this._label = propertyProps.label;
@@ -207,11 +197,6 @@ export abstract class Property implements CustomAttributeContainerProps {
           return koq;
         });
     }
-  }
-
-  /** @deprecated */
-  public async deserialize(propertyProps: PropertyProps) {
-    await this.fromJSON(propertyProps);
   }
 
   public async fromJSON(propertyProps: PropertyProps) {
@@ -272,11 +257,6 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     super(ecClass, name, type);
   }
 
-  /** @deprecated */
-  public toJson() {
-    return this.toJSON();
-  }
-
   /**
    * Save this PrimitiveOrEnumPropertyBase's properties to an object for serializing to JSON.
    */
@@ -312,11 +292,6 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps) {
-    this.fromJSONSync(propertyBaseProps);
-  }
-
   public fromJSONSync(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps) {
     super.fromJSONSync(propertyBaseProps);
 
@@ -341,11 +316,6 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
     }
   }
 
-  /** @deprecated */
-  public async deserialize(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps) {
-    await this.fromJSON(propertyBaseProps);
-  }
-
   public async fromJSON(propertyBaseProps: PrimitiveOrEnumPropertyBaseProps) {
     this.fromJSONSync(propertyBaseProps);
   }
@@ -359,11 +329,6 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
     super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
   }
 
-  /** @deprecated */
-  public deserializeSync(primitivePropertyProps: PrimitivePropertyProps) {
-    this.fromJSONSync(primitivePropertyProps);
-  }
-
   public fromJSONSync(primitivePropertyProps: PrimitivePropertyProps) {
     super.fromJSONSync(primitivePropertyProps);
     if (undefined !== primitivePropertyProps.typeName) {
@@ -372,18 +337,8 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
     }
   }
 
-  /** @deprecated */
-  public async deserialize(primitivePropertyProps: PrimitivePropertyProps) {
-    await this.fromJSON(primitivePropertyProps);
-  }
-
   public async fromJSON(primitivePropertyProps: PrimitivePropertyProps) {
     this.fromJSONSync(primitivePropertyProps);
-  }
-
-  /** @deprecated */
-  public toJson() {
-    return this.toJSON();
   }
 
   /**
@@ -409,11 +364,6 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
 
   get enumeration(): LazyLoadedEnumeration | undefined { return this._enumeration; }
 
-  /** @deprecated */
-  public toJson() {
-    return this.toJSON();
-  }
-
   /**
    * Save this EnumerationProperty's properties to an object for serializing to JSON.
    */
@@ -427,11 +377,6 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     // TODO: Should we allow specifying the backing type?
     super(ecClass, name, PropertyType.Integer_Enumeration);
     this._enumeration = type;
-  }
-
-  /** @deprecated */
-  public deserializeSync(enumerationPropertyProps: EnumerationPropertyProps) {
-    this.fromJSONSync(enumerationPropertyProps);
   }
 
   public fromJSONSync(enumerationPropertyProps: EnumerationPropertyProps) {
@@ -459,11 +404,6 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
     return itemElement;
   }
 
-  /** @deprecated */
-  public async deserialize(enumerationPropertyProps: EnumerationPropertyProps) {
-    await this.fromJSON(enumerationPropertyProps);
-  }
-
   public async fromJSON(enumerationPropertyProps: EnumerationPropertyProps) {
     this.fromJSONSync(enumerationPropertyProps);
   }
@@ -479,11 +419,6 @@ export class StructProperty extends Property {
   constructor(ecClass: ECClass, name: string, type: StructClass) {
     super(ecClass, name, PropertyType.Struct);
     this._structClass = type;
-  }
-
-  /** @deprecated */
-  public toJson() {
-    return this.toJSON();
   }
 
   /**
@@ -503,22 +438,12 @@ export class StructProperty extends Property {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(structPropertyProps: StructPropertyProps) {
-    this.fromJSONSync(structPropertyProps);
-  }
-
   public fromJSONSync(structPropertyProps: StructPropertyProps) {
     super.fromJSONSync(structPropertyProps);
     if (undefined !== structPropertyProps.typeName) {
       if (!this.structClass.key.matchesFullName(structPropertyProps.typeName))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
-  }
-
-  /** @deprecated */
-  public async deserialize(structPropertyProps: StructPropertyProps) {
-    await this.fromJSON(structPropertyProps);
   }
 
   public async fromJSON(structPropertyProps: StructPropertyProps) {
@@ -541,11 +466,6 @@ export class NavigationProperty extends Property {
   }
 
   get direction() { return this._direction; }
-
-  /** @deprecated */
-  public toJson() {
-    return this.toJSON();
-  }
 
   /**
    * Save this NavigationProperty's properties to an object for serializing to JSON.
@@ -604,11 +524,6 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
       this._type = PropertyTypeUtils.asArray(this._type);
     }
 
-    /** @deprecated */
-    public deserializeSync(arrayPropertyProps: PrimitiveArrayPropertyProps) {
-      this.fromJSONSync(arrayPropertyProps);
-    }
-
     public fromJSONSync(arrayPropertyProps: PrimitiveArrayPropertyProps) {
       super.fromJSONSync(arrayPropertyProps);
       if (undefined !== arrayPropertyProps.minOccurs) {
@@ -620,18 +535,8 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
       }
     }
 
-    /** @deprecated */
-    public async deserialize(arrayPropertyProps: PrimitiveArrayPropertyProps) {
-      await this.fromJSON(arrayPropertyProps);
-    }
-
     public async fromJSON(arrayPropertyProps: PrimitiveArrayPropertyProps) {
       this.fromJSONSync(arrayPropertyProps);
-    }
-
-    /** @deprecated */
-    public toJson() {
-      return this.toJSON();
     }
 
     /**

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/express-server",
+      "comment": "Remove dependency on deprecated bodyParser.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/express-server",
+  "email": "Paul.Connelly@bentley.com"
+}

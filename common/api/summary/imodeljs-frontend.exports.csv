@@ -175,7 +175,6 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
-public;GridOrientationType
 internal;GroupMark
 internal;HilitedState
 internal;Hilites
@@ -299,7 +298,6 @@ internal;RealityModelTileTree
 internal;RealityModelTileUtils
 internal;RealityTile 
 internal;RealityTileTree 
-public;RelativePosition
 beta;class RenderClipVolume 
 public;RenderContext
 internal;enum RenderDiagnostics

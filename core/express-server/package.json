@@ -43,7 +43,6 @@
     "typescript": "~3.7.4"
   },
   "dependencies": {
-    "body-parser": "^1.18.2",
     "express": "^4.16.3"
   }
 }

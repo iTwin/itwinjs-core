@@ -87,6 +87,7 @@ import { GltfBufferView } from '@bentley/imodeljs-common';
 import { GltfDataType } from '@bentley/imodeljs-common';
 import { Gradient } from '@bentley/imodeljs-common';
 import { GraphicParams } from '@bentley/imodeljs-common';
+import { GridOrientationType } from '@bentley/imodeljs-common';
 import { GroundPlane } from '@bentley/imodeljs-common';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { HiddenLine } from '@bentley/imodeljs-common';
@@ -176,7 +177,7 @@ import { Range3d } from '@bentley/geometry-core';
 import { Range3dProps } from '@bentley/geometry-core';
 import { Ray3d } from '@bentley/geometry-core';
 import { RelatedElement } from '@bentley/imodeljs-common';
-import { RelativePosition as RelativePosition_2 } from '@bentley/ui-abstract';
+import { RelativePosition } from '@bentley/ui-abstract';
 import { RenderMaterial } from '@bentley/imodeljs-common';
 import { RenderSchedule } from '@bentley/imodeljs-common';
 import { RenderTexture } from '@bentley/imodeljs-common';
@@ -2680,8 +2681,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     // @internal (undocumented)
     get scheduleScript(): RenderScheduleState.Script | undefined;
     set scheduleScript(script: RenderScheduleState.Script | undefined);
-    // @deprecated
-    setBackgroundMap(mapProps: BackgroundMapProps): void;
     abstract get settings(): DisplayStyleSettings;
     get viewFlags(): ViewFlags;
     set viewFlags(flags: ViewFlags);
@@ -3432,8 +3431,6 @@ export enum FrontendLoggerCategory {
     FeatureToggle = "imodeljs-frontend.FeatureToggles",
     FrontendRequestContext = "imodeljs-frontend.FrontendRequestContext",
     IModelConnection = "imodeljs-frontend.IModelConnection",
-    // @deprecated
-    OidcBrowserClient = "imodeljs-frontend.OidcBrowserClient",
     OidcIOSClient = "imodeljs-frontend.OidcIOSClient",
     // (undocumented)
     Package = "imodeljs-frontend"
@@ -3821,15 +3818,6 @@ export enum GraphicType {
     ViewOverlay = 4,
     WorldDecoration = 2,
     WorldOverlay = 3
-}
-
-// @public @deprecated
-export enum GridOrientationType {
-    AuxCoord = 4,
-    View = 0,
-    WorldXY = 1,
-    WorldXZ = 3,
-    WorldYZ = 2
 }
 
 // @internal (undocumented)
@@ -5752,7 +5740,7 @@ export class NotificationManager {
     protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void;
     // (undocumented)
     readonly toolTipLocation: Point2d;
-    updatePointerMessage(_displayPoint: XAndY, _relativePosition?: RelativePosition_2): void;
+    updatePointerMessage(_displayPoint: XAndY, _relativePosition?: RelativePosition): void;
 }
 
 // @public
@@ -5775,9 +5763,9 @@ export class NotifyMessageDetails {
     // (undocumented)
     priority: OutputMessagePriority;
     // (undocumented)
-    relativePosition: RelativePosition_2;
+    relativePosition: RelativePosition;
     setInputFieldTypeDetails(inputField: HTMLElement): void;
-    setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition?: RelativePosition_2): void;
+    setPointerTypeDetails(viewport: HTMLElement, displayPoint: XAndY, relativePosition?: RelativePosition): void;
     // (undocumented)
     viewport?: HTMLElement;
 }
@@ -6460,26 +6448,6 @@ export class RealityTileTree extends TileTree {
     traversalChildrenByDepth: TraversalChildrenDetails[];
 }
 
-// @public @deprecated
-export enum RelativePosition {
-    // (undocumented)
-    Bottom = 3,
-    // (undocumented)
-    BottomLeft = 6,
-    // (undocumented)
-    BottomRight = 7,
-    // (undocumented)
-    Left = 0,
-    // (undocumented)
-    Right = 2,
-    // (undocumented)
-    Top = 1,
-    // (undocumented)
-    TopLeft = 4,
-    // (undocumented)
-    TopRight = 5
-}
-
 // @beta
 export abstract class RenderClipVolume implements IDisposable {
     protected constructor(clipVector: ClipVector);
@@ -6978,8 +6946,6 @@ export abstract class RenderSystem implements IDisposable {
 export namespace RenderSystem {
     // @beta
     export interface Options {
-        // @internal @deprecated (undocumented)
-        directScreenRendering?: boolean;
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
@@ -9489,9 +9455,6 @@ export class ToolRegistry {
 
 // @public
 export class ToolSettings {
-    // @deprecated (undocumented)
-    static get animationTime(): BeDuration;
-    static set animationTime(val: BeDuration);
     static doubleClickTimeout: BeDuration;
     static doubleClickToleranceInches: number;
     static doubleTapTimeout: BeDuration;
@@ -11071,8 +11034,6 @@ export abstract class ViewState extends ElementState {
     getAspectRatioSkew(): number;
     getAuxiliaryCoordinateSystemId(): Id64String;
     getCenter(result?: Point3d): Point3d;
-    // @deprecated (undocumented)
-    getDetails(): any;
     abstract getExtents(): Vector3d;
     getGridOrientation(): GridOrientationType;
     getGridSettings(vp: Viewport, origin: Point3d, rMatrix: Matrix3d, orientation: GridOrientationType): void;

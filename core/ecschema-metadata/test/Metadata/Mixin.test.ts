@@ -275,33 +275,6 @@ describe("Mixin", () => {
     });
   });
 
-  describe("toJson (deprecated)", () => {
-    it("should always omit modifier", async () => {
-      const testSchema = createSchemaJsonWithItems({
-        TestMixin: {
-          schemaItemType: "Mixin",
-          appliesTo: "TestSchema.TestEntity",
-        },
-        TestEntity: {
-          schemaItemType: "EntityClass",
-        },
-      });
-
-      const schemaA = await Schema.fromJson(testSchema, new SchemaContext());
-      assert.isDefined(schemaA);
-      const mixinA = await schemaA.getItem<Mixin>("TestMixin");
-      expect(mixinA).to.exist;
-      expect(mixinA!.toJson(true, true)).to.not.have.property("modifier");
-
-      testSchema.items.TestMixin.modifier = "Abstract";
-      const schemaB = await Schema.fromJson(testSchema, new SchemaContext());
-      assert.isDefined(schemaB);
-      const mixinB = await schemaB.getItem<Mixin>("TestMixin");
-      expect(mixinB).to.exist;
-      expect(mixinB!.toJson(true, true)).to.not.have.property("modifier");
-    });
-  });
-
   describe("toJSON", () => {
     it("should always omit modifier", async () => {
       const testSchema = createSchemaJsonWithItems({

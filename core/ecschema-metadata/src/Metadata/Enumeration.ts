@@ -106,11 +106,6 @@ export class Enumeration extends SchemaItem {
     this.enumerators.push(enumerator);
   }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this Enumeration's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -153,11 +148,6 @@ export class Enumeration extends SchemaItem {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(enumerationProps: EnumerationProps) {
-    this.fromJSONSync(enumerationProps);
-  }
-
   public fromJSONSync(enumerationProps: EnumerationProps) {
     super.fromJSONSync(enumerationProps);
     if (undefined === this._type) {
@@ -181,11 +171,6 @@ export class Enumeration extends SchemaItem {
         this.addEnumerator(this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description));
       });
     }
-  }
-
-  /** @deprecated */
-  public async deserialize(enumerationProps: EnumerationProps) {
-    await this.fromJSON(enumerationProps);
   }
 
   public async fromJSON(enumerationProps: EnumerationProps) {

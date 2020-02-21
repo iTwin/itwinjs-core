@@ -585,17 +585,17 @@ export class AccuSnap implements Decorator {
       return undefined;
 
     const worldToView = second.viewport.worldToViewMap.transform0;
-    const detail = CurveCurve.intersectionProjectedXY(worldToView, tpSegment, true, segment, true);
-    if (0 === detail.dataA.length)
+    const detail = CurveCurve.intersectionProjectedXYPairs(worldToView, tpSegment, true, segment, true);
+    if (0 === detail.length)
       return undefined;
 
     let closeIndex = 0;
-    if (detail.dataA.length > 1) {
+    if (detail.length > 1) {
       const snapPt = worldToView.multiplyPoint3d(HitGeomType.Point === tpSnap.geomType && HitGeomType.Point !== second.geomType ? second.getPoint() : tpSnap.getPoint(), 1); // Don't check distance from arc centers...
       let lastDist: number | undefined;
 
-      for (let i = 0; i < detail.dataA.length; i++) {
-        const testPt = worldToView.multiplyPoint3d(detail.dataA[i].point, 1);
+      for (let i = 0; i < detail.length; i++) {
+        const testPt = worldToView.multiplyPoint3d(detail[i].detailA.point, 1);
         const testDist = snapPt.realDistanceXY(testPt);
 
         if (undefined !== testDist && (undefined === lastDist || testDist < lastDist)) {
@@ -605,7 +605,7 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const intersect = new IntersectDetail(tpSnap, SnapHeat.InRange, detail.dataA[closeIndex].point, segment, second.sourceId); // Should be ok to share hit detail with tentative...
+    const intersect = new IntersectDetail(tpSnap, SnapHeat.InRange, detail[closeIndex].detailA.point, segment, second.sourceId); // Should be ok to share hit detail with tentative...
     intersect.primitive = tpSegment; // Just save single segment that was intersected for line strings/shapes...
 
     return intersect;

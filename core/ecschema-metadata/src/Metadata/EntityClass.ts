@@ -162,11 +162,6 @@ export class EntityClass extends ECClass {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean): any | void {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this EntityClass' properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -192,17 +187,7 @@ export class EntityClass extends ECClass {
     return itemElement;
   }
 
-  /** @deprecated */
-  public async deserialize(entityClassProps: EntityClassProps) {
-    await this.fromJSON(entityClassProps);
-  }
-
   public async fromJSON(entityClassProps: EntityClassProps) {
-    this.fromJSONSync(entityClassProps);
-  }
-
-  /** @deprecated */
-  public deserializeSync(entityClassProps: EntityClassProps) {
     this.fromJSONSync(entityClassProps);
   }
 

@@ -35,7 +35,6 @@ import { prettyPrint } from "../testFunctions";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 /* tslint:disable:no-console no-trailing-whitespace */
-/* tslint:disable:no-console deprecation */
 
 Checker.noisy.clipPlane = false;
 /**
@@ -78,8 +77,8 @@ function testConvexClipXY(x0: number, y0: number, ux: number, uy: number, xyz: P
     const normal: Vector3d = PolygonOps.areaNormal(xyz);
     const area = normal.magnitude();
     const work: Point3d[] = [];
-    clip0.convexPolygonClipInPlace(xyz0, work);
-    clip1.convexPolygonClipInPlace(xyz1, work);
+    Point3dArrayPolygonOps.convexPolygonClipInPlace(clip0, xyz0, work);
+    Point3dArrayPolygonOps.convexPolygonClipInPlace(clip1, xyz1, work);
     const normal0: Vector3d = PolygonOps.areaNormal(xyz0);
     const normal1: Vector3d = PolygonOps.areaNormal(xyz1);
     const area0 = normal0.magnitude();
@@ -133,11 +132,11 @@ describe("ClipPlane", () => {
     const h0 = 5.0;
     const testPoint = Point3d.create(2, 3, h0);
     ck.testCoordinate(h0, clip.dotProductPlaneNormalPoint(testPoint));
-    ck.testCoordinate(h0, clip.evaluatePoint(testPoint), "clip plane through origin");
+    ck.testCoordinate(h0, clip.altitude(testPoint), "clip plane through origin");
     const dh = 1.5;
     clip.offsetDistance(dh);
     ck.testCoordinate(h0, clip.dotProductPlaneNormalPoint(testPoint));
-    ck.testCoordinate(h0 - dh, clip.evaluatePoint(testPoint), "evaluate shifted plane");
+    ck.testCoordinate(h0 - dh, clip.altitude(testPoint), "evaluate shifted plane");
 
     ck.checkpoint("Offset");
     expect(ck.getNumErrors()).equals(0);
@@ -154,8 +153,8 @@ describe("ClipPlane", () => {
     const pointA = Point3d.create(4, 3, 100);
     const pointB = Point3d.create(2, 0, -57);
     const clipPlane = ClipPlane.createPlane(plane);
-    ck.testCoordinate(clipPlane.evaluatePoint(pointA), plane.altitude(pointA));
-    ck.testCoordinate(clipPlane.evaluatePoint(pointB), plane.altitude(pointB));
+    ck.testCoordinate(clipPlane.altitude(pointA), plane.altitude(pointA));
+    ck.testCoordinate(clipPlane.altitude(pointB), plane.altitude(pointB));
     // announced fractions are strictly increasing pair within what we send as start end fractions, so relation to ends is known ...
     clipPlane.announceClippedSegmentIntervals(0.2, 0.9, pointA, pointB,
       (f0: number, f1: number) => {
@@ -197,10 +196,6 @@ describe("ClipPlane", () => {
       Angle.createDegrees(45))!;
     ck.testTrue(tiltPlane.isPointInside(Point3d.create(1, 0, 0)));
     ck.testFalse(tiltPlane.isPointInside(Point3d.create(1, 0, 10)));
-    const planeA = ClipPlane.createNormalAndPointXYZXYZ(2, 3, 1, 5, 6, 3)!;
-    const vectorB = Vector3d.create(3, 2, 7);
-    ck.testExactNumber(planeA.dotProductVector(vectorB), planeA.velocityXYZ(vectorB.x, vectorB.y, vectorB.z),
-      " dot product variants.  maybe need tolerance?");
     expect(ck.getNumErrors()).equals(0);
   });
   // ---------------------------------------------------------------------------------------------------
@@ -229,7 +224,7 @@ describe("ClipPlane", () => {
 
         lastSign = z;
         array.push(Point3d.create(x, 0, z));
-        clip.polygonCrossings(array, crossings);
+        Point3dArrayPolygonOps.polygonPlaneCrossings(clip, array, crossings);
         // Point3dArrayPolygonOps.polygonPlaneCrossings(clip, array, crossings);
         if (Checker.noisy.clipPlane) {
           console.log("Points:");
@@ -799,7 +794,7 @@ describe("CurveClips", () => {
     const splitA: Point3d[] = [];
     const splitB: Point3d[] = [];
     const altitudeRange = Range1d.createNull();
-    plane.convexPolygonSplitInsideOutside(rectangle0, splitA, splitB, altitudeRange);
+    Point3dArrayPolygonOps.convexPolygonSplitInsideOutsidePlane(plane, rectangle0, splitA, splitB, altitudeRange);
     const area0 = PolygonOps.sumTriangleAreas(rectangle0);
     const areaA = PolygonOps.sumTriangleAreas(splitA);
     const areaB = PolygonOps.sumTriangleAreas(splitB);

@@ -27,7 +27,7 @@ import { Point4d } from "../../geometry4d/Point4d";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraph } from "../../topology/Graph";
 
-import { Triangulator, MultiLineStringDataVariant } from "../../topology/Triangulation";
+import { Triangulator } from "../../topology/Triangulation";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { Loop } from "../../curve/Loop";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -970,55 +970,6 @@ describe("PolygonAreas", () => {
       ck.testTrue(lsB.isAlmostEqual(linestringsABC0[1]), "pointB");
       ck.testTrue(lsC.isAlmostEqual(linestringsABC0[2]), "pointC");
     }
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  /**
-   * Exercise streaming functions that were deprecated in favor of object args instead of immediate function callbacks.
-   */
-  it("deprecatedStreamXYZ", () => {
-    const ck = new Checker();
-    // const allGeometry: GeometryQuery[] = [];
-    const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
-    const pointB = Sample.createRectangle(-2, 4, 5, 2);
-
-    const pointC = GrowableXYZArray.create([1, 2, 2, 4, 2, 1, 5, 2, 3]);
-    const dataABC = [pointA, pointB, pointC];
-    const rangeOld = Range3d.createNull();
-    Point3dArray.streamXYZ(dataABC,
-      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
-      (x: number, y: number, z: number) => { rangeOld.extendXYZ(x, y, z); },
-      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
-    );
-    const rangeNew = Range3d.createFromVariantData(dataABC);
-    ck.testRange3d(rangeNew, rangeOld);
-
-    expect(ck.getNumErrors()).equals(0);
-  });
-
-  /**
-   * Exercise streaming functions that were deprecated in favor of object args instead of immediate function callbacks.
-   */
-  it("deprecatedStreamXYZXYZ", () => {
-    const ck = new Checker();
-    // const allGeometry: GeometryQuery[] = [];
-    const pointA = Sample.createStar(1, 2, 3, 4, 6, 5, true);
-    const pointB = Sample.createRectangle(-2, 4, 5, 2);
-
-    const pointC = GrowableXYZArray.create([1, 2, 2, 4, 2, 1, 5, 2, 3]);
-    const dataABC = [pointA, pointB, pointC];
-    const rangeOld = Range3d.createNull();
-    Point3dArray.streamXYZXYZ(dataABC,
-      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
-      (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) => {
-        rangeOld.extendXYZ(x0, y0, z0);
-        rangeOld.extendXYZ(x1, y1, z1);
-      },
-      (_chainData: MultiLineStringDataVariant, _isLeaf: boolean) => { },
-    );
-    const rangeNew = Range3d.createFromVariantData(dataABC);
-    ck.testRange3d(rangeNew, rangeOld);
-
     expect(ck.getNumErrors()).equals(0);
   });
 

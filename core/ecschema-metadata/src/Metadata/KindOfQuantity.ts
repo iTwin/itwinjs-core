@@ -205,11 +205,6 @@ export class KindOfQuantity extends SchemaItem {
     }
   }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this KindOfQuantity's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -247,11 +242,6 @@ export class KindOfQuantity extends SchemaItem {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(kindOfQuantityProps: KindOfQuantityProps): void {
-    this.fromJSONSync(kindOfQuantityProps);
-  }
-
   public fromJSONSync(kindOfQuantityProps: KindOfQuantityProps): void {
     super.fromJSONSync(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
@@ -264,11 +254,6 @@ export class KindOfQuantity extends SchemaItem {
 
     if (undefined !== kindOfQuantityProps.presentationUnits)
       this.processPresentationUnitsSync(kindOfQuantityProps.presentationUnits);
-  }
-
-  /** @deprecated */
-  public async deserialize(kindOfQuantityProps: KindOfQuantityProps): Promise<void> {
-    await this.fromJSON(kindOfQuantityProps);
   }
 
   public async fromJSON(kindOfQuantityProps: KindOfQuantityProps): Promise<void> {

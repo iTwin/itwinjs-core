@@ -176,7 +176,7 @@ export class BriefcaseEntry {
 
   /** Gets the path key to be used in the cache and iModelToken */
   public getKey(): string {
-    if (this.openParams.isStandalone)
+    if (this.openParams.isSnapshot)
       return this.pathname;
 
     if (this.openParams.syncMode === SyncMode.FixedVersion)
@@ -903,7 +903,7 @@ export class BriefcaseManager {
   /** Close a briefcase, and delete from the hub if necessary */
   public static async close(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void> {
     requestContext.enter();
-    assert(!briefcase.openParams.isStandalone, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
+    assert(!briefcase.openParams.isSnapshot, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
     BriefcaseManager.closeBriefcase(briefcase, true);
     if (keepBriefcase === KeepBriefcase.No) {
       await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
@@ -1142,7 +1142,7 @@ export class BriefcaseManager {
 
   /** Close the standalone briefcase */
   public static closeStandalone(briefcase: BriefcaseEntry) {
-    assert(briefcase.openParams.isStandalone, "Can use IModelDb.closeStandalone() only to close a standalone iModel. Use IModelDb.close() instead");
+    assert(briefcase.openParams.isSnapshot, "Can use IModelDb.closeStandalone() only to close a snapshot iModel. Use IModelDb.close() instead");
     BriefcaseManager.closeBriefcase(briefcase, true);
     if (BriefcaseManager._cache.findBriefcase(briefcase))
       BriefcaseManager._cache.deleteBriefcase(briefcase);
@@ -1345,8 +1345,8 @@ export class BriefcaseManager {
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open to process change sets", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
     if (briefcase.openParams.openMode !== OpenMode.ReadWrite)
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
-    if (briefcase.openParams.isStandalone)
-      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a standalone file", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
+    if (briefcase.openParams.isSnapshot)
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a snapshot file", Logger.logError, loggerCategory, () => briefcase.getDebugInfo()));
     assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.parentChangeSetId, "Mismatch between briefcase and the native Db");
 
     // Determine the reinstates, reversals or merges required
@@ -1719,8 +1719,8 @@ export class BriefcaseManager {
    * @internal
    */
   public static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
-    if (!briefcase.openParams.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot call createStandaloneChangeSet() when the briefcase is not standalone", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+    if (!briefcase.openParams.isSnapshot)
+      throw new IModelError(BentleyStatus.ERROR, "Cannot call createStandaloneChangeSet() when the briefcase is not a snapshot", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
 
     const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(briefcase);
     BriefcaseManager.finishCreateChangeSet(briefcase);
@@ -1732,8 +1732,8 @@ export class BriefcaseManager {
    * @internal
    */
   public static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus {
-    if (!briefcase.openParams.isStandalone)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot call applyStandaloneChangeSets() when the briefcase is not standalone", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+    if (!briefcase.openParams.isSnapshot)
+      throw new IModelError(BentleyStatus.ERROR, "Cannot call applyStandaloneChangeSets() when the briefcase is not a snapshot", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
 
     // Apply the changes one by one for debugging
     for (const changeSetToken of changeSetTokens) {

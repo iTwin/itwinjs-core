@@ -2245,8 +2245,6 @@ export class IModelDb extends IModel {
     embedFont(prop: FontProps): FontProps;
     // @internal
     get eventSink(): EventSink | undefined;
-    // @deprecated
-    executeQuery(ecsql: string, bindings?: any[] | object): any[];
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static find(iModelToken: IModelToken): IModelDb;
@@ -2263,8 +2261,6 @@ export class IModelDb extends IModel {
     // @beta
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
-    // @deprecated
-    importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void>;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
@@ -2273,8 +2269,6 @@ export class IModelDb extends IModel {
     get isOpen(): boolean;
     get isReadonly(): boolean;
     get isSnapshot(): boolean;
-    // @deprecated
-    get isStandalone(): boolean;
     // (undocumented)
     static readonly maxLimit = 10000;
     // (undocumented)
@@ -2297,8 +2291,6 @@ export class IModelDb extends IModel {
     static openSnapshot(filePath: string): IModelDb;
     // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
-    // @internal @deprecated (undocumented)
-    static performUpgrade(pathname: string): DbResult;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
@@ -3245,8 +3237,6 @@ export class OpenParams {
     static fixedVersion(): OpenParams;
     get isBriefcase(): boolean;
     get isSnapshot(): boolean;
-    // @deprecated
-    get isStandalone(): boolean;
     readonly openMode: OpenMode;
     static pullAndPush(): OpenParams;
     // @deprecated

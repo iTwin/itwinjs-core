@@ -83,20 +83,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
-  /** Modify the background map display settings.
-   * @param mapProps JSON representation of the new settings.
-   * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
-   * @see [[DisplayStyleState.backgroundMapSettings]] and [[DisplayStyleState.changeBackgroundMapProps]] for a more convenient API, particularly when you want to change only a subset of the map settings.
-   * @note Currently the behavior of this method is not ideal.
-   *  - If this display style is associated with a Viewport, you must call Viewport.invalidateScene for the view to display the new map.
-   *  - Any properties omitted from `mapProps` will be reset to their defaults.
-   *  - All loaded tiles will be discarded and new ones will be requested, even if only changing the groundBias.
-   * @deprecated
-   */
-  public setBackgroundMap(mapProps: BackgroundMapProps): void {
-    this.changeBackgroundMapProps(BackgroundMapSettings.fromJSON(mapProps));
-  }
-
   /** @internal */
   public get displayTerrain() {
     return this.viewFlags.backgroundMap && this.settings.backgroundMap.applyTerrain;

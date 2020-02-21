@@ -196,11 +196,6 @@ export class Format extends SchemaItem {
     }
   }
 
-  /** @deprecated */
-  public deserializeSync(formatProps: FormatProps) {
-    this.fromJSONSync(formatProps);
-  }
-
   public fromJSONSync(formatProps: FormatProps) {
     super.fromJSONSync(formatProps);
     this.typecheck(formatProps);
@@ -216,11 +211,6 @@ export class Format extends SchemaItem {
     }
   }
 
-  /** @deprecated */
-  public async deserialize(formatProps: FormatProps) {
-    await this.fromJSON(formatProps);
-  }
-
   public async fromJSON(formatProps: FormatProps) {
     await super.fromJSON(formatProps);
     this.typecheck(formatProps);
@@ -234,11 +224,6 @@ export class Format extends SchemaItem {
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       this.addUnit(newUnit, unit.label);
     }
-  }
-
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
   }
 
   /**

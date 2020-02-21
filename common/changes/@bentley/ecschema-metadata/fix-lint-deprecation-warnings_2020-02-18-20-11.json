@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-metadata",
+      "comment": "Removing deprecated API. Please see NextVersion.md under the heading 'ecschema-metadata Package' for details.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Chris.Lawson@bentley.com"
+}

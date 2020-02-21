@@ -38,11 +38,6 @@ export class Constant extends SchemaItem {
   get numerator(): number { return this._numerator; }
   get denominator(): number { return this._denominator; }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this Constants properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -77,11 +72,6 @@ export class Constant extends SchemaItem {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(constantProps: ConstantProps) {
-    this.fromJSONSync(constantProps);
-  }
-
   public fromJSONSync(constantProps: ConstantProps) {
     super.fromJSONSync(constantProps);
 
@@ -110,11 +100,6 @@ export class Constant extends SchemaItem {
       if (constantProps.denominator !== this._denominator)
         this._denominator = constantProps.denominator;
     }
-  }
-
-  /** @deprecated */
-  public async deserialize(constantProps: ConstantProps) {
-    await this.fromJSON(constantProps);
   }
 
   public async fromJSON(constantProps: ConstantProps) {

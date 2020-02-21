@@ -265,5 +265,72 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
 
 ## Geometry
 
+### Remove deprecated methods
+
+* `CurveCurve` intersection methods which formerly returned a pair of arrays (with matched length and corresponding CurveLocationDetail entries) now return a single array whose entries each have the two corresponding CurveLocationDetails.
+  * The affected methods are
+    * For computing intersections among of the (simple xy projection of) curves:
+      * old `CurveCurve.intersectionXY (...) : CurveLocationDetailArrayPair`
+      * new `CurveCurve.intersectionXYPairs (...) : CurveLocationDetailPair[]`
+    * For computing intersections among projections of curves with 4d (i.e. perspective) projection:
+      * old `CurveCurve.intersectionProjectedXY (...) : CurveLocationDetailArrayPair`
+      * new `CurveCurve.intersectionProjectedXYPairs (...) : CurveLocationDetailPair[]`
+  * If `oldIntersections` is the old pair of arrays and `newIntersections` is the new array of pairs,
+     * change   `oldIntersections.dataA[i]`
+     * to `newIntersections[i].detailA`
+     * old `intersections.dataB[i]`
+     * to `newIntersections[i].detailB`
+  * The method `CurveCurveIntersectXY.grabResults()` is removed -- `grabPairedResults` is the modernized form.
+* `GrowableXYZArray` method `myArray.distance(i,j)` for distance between points identified by indices `(i,j)` is replaced by
+   * old:   `myArray.distance(i,j)`
+   * new:   `myArray.distanceIndexIndex(i,j)`
+   * this clarifies the difference among distance methods:
+      * `myArray.distanceIndexToPoint(i: number, point: Point3d)`
+      * `myArray.distanceSquaredIndexIndex(i: number, point: Point3d)`
+* In `PointHelpers`, the methods to parse variant XYZ data are removed.
+   * In the replacements, the original single callback is replaced by an callback object that can receive start-end callbacks in addition to the primary xyz or xyz pair callback.
+   * old `Point3dArray.streamXYZ (.. )` is removed.
+   * new `VariantPointDataStream.streamXYZ (..)`
+   * old `Point3dArray.streamXYZXYZ(..)` is removed.
+   * new `VariantPointDataStream.streamXYZXYZ (..)`
+* `PolyfaceBuilder`
+  * old method `findOrAddNormalnLineString` is removed. The properly spelled replacement is `findOrAddNormalInLineString` (note the added capital `I`)
+* `ClipPlane`
+  * `ClipPlane` supports the `PlaneAltitudeEvaluator` interface.
+  * This allows services previously seen as specific to `ClipPlane` to be supported with other plane types (especially `Plane3dByOriginAndNormal`)
+  * old instance method `myClipPlane.evaluatePoint(point)` is replaced by `myClipPlane.altitude (point)`
+  * old instance method `myClipPlane.dotProductVector(point)` is replaced by `myClipPlane.velocity (point)`
+  * old instance method `myClipPlane.convexPolygonClipInPlace (. . )` is replaced by (static) `Point3dArrayPolygonOps.convexPolygonClipInPlace`
+  * old instance method `myClipPlane.polygonCrossings(polygonPoints, crossings)` is replaced by (static) Point3dArrayPolygonOps.polygonPlaneCrossings (clipPlane, polygonPoints, crossings)`
+  * old static  method `myClipPlane.intersectRangeConvexPolygonInPlace (. . )` is replaced by (static) `IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace`
+
+  public static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray) {
+    return IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace(range, xyz);
+  }
+
+
+
+### BUGS
+ * Apply on-plane tolerances in mesh-plane clip. (https://bentleycs.visualstudio.com/iModelTechnologies/_workitems/edit/273249/)
+
 ### Bug fixes
  * Apply on-plane tolerances in mesh-plane clip. (https://bentleycs.visualstudio.com/iModelTechnologies/_workitems/edit/273249/)
+
+## ecschema-metadata Package
+
+### Remove deprecated API
+* Class `SchemaFileLocater` has been moved to the `ecschema-locaters` package.
+* Class `SchemaJsonFileLocater` has been moved to the `ecschema-locaters` package.
+* Class `SchemaFileLocater` has been moved to the `ecschema-locaters` package.
+* In `Schema`, the methods for (de)serializing to/from JSON have been renamed.
+  * `Schema.toJson()` renamed to `Schema.toJSON()`
+  * `Schema.deserialize(...)` renamed to `Schema.fromJSON(...)`
+  * `Schema.deserializeSync(...)` renamed to `Schema.fromJSONSync(...)`
+* In `Property` and all classes deriving from `Property`, the methods for (de)serializing to/from JSON have been renamed.
+  * `Property.toJson()` renamed to `Property.toJSON()`
+  * `Property.deserialize(...)` renamed to `Property.fromJSON(s...)`
+  * `Property.deserializeSync(...)` renamed to `Property.fromJSONSync(...)`
+* In `SchemaItem` and all classes deriving directly or indirectly from `SchemaItem`, the methods for (de)serializing to/from JSON have been renamed.
+  * `SchemaItem.toJson()` renamed to `SchemaItem.toJSON()`
+  * `SchemaItem.deserialize(...)` renamed to `SchemaItem.fromJSON(...)`
+  * `SchemaItem.deserializeSync(...)` renamed to `SchemaItem.fromJSONSync(...)`

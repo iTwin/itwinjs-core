@@ -48,35 +48,6 @@ describe("Phenomenon tests", () => {
     });
   });
 
-  describe("toJson (deprecated)", () => {
-    beforeEach(() => {
-      const schema = new Schema(new SchemaContext(), "ExampleSchema", "es", 1, 0, 0);
-      testPhenomenon = new Phenomenon(schema, "AREA");
-    });
-    it("async - Basic test", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        definition: "Units.LENGTH(2)",
-      };
-      await testPhenomenon.fromJSON(json);
-      const phenomSerialization = testPhenomenon.toJson(true, true);
-      assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
-    });
-    it("sync - Basic test", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        definition: "Units.LENGTH(2)",
-      };
-      testPhenomenon.fromJSONSync(json);
-      const phenomSerialization = testPhenomenon.toJson(true, true);
-      assert.strictEqual(phenomSerialization.definition, "Units.LENGTH(2)");
-    });
-  });
-
   describe("toJSON", () => {
     beforeEach(() => {
       const schema = new Schema(new SchemaContext(), "ExampleSchema", "es", 1, 0, 0);

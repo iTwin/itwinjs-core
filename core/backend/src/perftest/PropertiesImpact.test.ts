@@ -148,7 +148,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestPropsSchema:PropElement"), opCount + seedCount);
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
 
       reporter.addEntry("PropPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, properties: propCount });
     }
@@ -159,7 +159,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", "PropsPerf_Delete_" + propCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -174,7 +174,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestPropsSchema:PropElement"), seedCount - opCount);
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
 
       reporter.addEntry("PropPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
@@ -186,7 +186,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", "PropsPerf_Read_" + propCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -206,7 +206,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
       reporter.addEntry("PropPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
   });
@@ -216,7 +216,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("PropPerformance", "PropsPerf_Update_" + propCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
 
@@ -253,7 +253,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       }
 
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
       reporter.addEntry("PropPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
 
@@ -430,7 +430,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement"), opCount + seedCount);
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
 
       reporter.addEntry("IndexPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
@@ -458,7 +458,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement0"), opCount + seedCount);
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
 
       reporter.addEntry("IndexPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
@@ -469,7 +469,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_Delete_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -485,7 +485,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement"), seedCount - opCount);
 
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
 
       reporter.addEntry("IndexPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
@@ -495,7 +495,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_PerClass_Delete_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -511,7 +511,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement0"), seedCount - opCount);
 
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
 
       reporter.addEntry("IndexPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
@@ -522,7 +522,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_Read_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -542,7 +542,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
       reporter.addEntry("IndexPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
     // second round for per class
@@ -551,7 +551,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "IndexPerf_PerClass_Read_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const startTime = new Date().getTime();
@@ -571,7 +571,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
       reporter.addEntry("IndexPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
   });
@@ -581,7 +581,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "PropsPerf_Update_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM bis.PhysicalElement")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const geomArray: Arc3d[] = [
@@ -614,7 +614,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(elemFound.primProp1, "Updated Value");
       }
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
       reporter.addEntry("IndexPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
     // second round for per class
@@ -623,7 +623,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const testFileName = IModelTestUtils.prepareOutputFile("IndexPerformance", "PropsPerf_PerClassUpdate_" + indexCount + ".bim");
       const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
-      const stat = perfimodel.executeQuery("SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
+      const stat = IModelTestUtils.executeQuery(perfimodel, "SELECT MAX(ECInstanceId) maxId, MIN(ECInstanceId) minId FROM TestIndexSchema:PropElement0")[0];
       const elementIdIncrement = Math.floor(seedCount / opCount);
       assert.equal((stat.maxId - stat.minId + 1), seedCount);
       const geomArray: Arc3d[] = [
@@ -656,7 +656,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(elemFound.primProp1, "Updated Value");
       }
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
       reporter.addEntry("IndexPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
   });

@@ -725,7 +725,7 @@ describe("iModel", () => {
 
   // NOTE: this test can be removed when the deprecated executeQuery method is removed
   it("should produce an array of rows", () => {
-    const rows: any[] = imodel1.executeQuery(`SELECT * FROM ${Category.classFullName}`); // tslint:disable-line: deprecation
+    const rows: any[] = IModelTestUtils.executeQuery(imodel1, `SELECT * FROM ${Category.classFullName}`); // tslint:disable-line: deprecation
     assert.exists(rows);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);

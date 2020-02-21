@@ -42,6 +42,7 @@ import {
   ElementProps,
   Frustum,
   GlobeMode,
+  GridOrientationType,
   Hilite,
   ImageBuffer,
   Interpolation,
@@ -77,7 +78,7 @@ import { TileTreeReference, TileTreeSet, TileBoundingBoxes } from "./tile/intern
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { EventController } from "./tools/EventController";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { GridOrientationType, MarginPercent, ViewState, ViewStatus, ViewState3d, ViewState2d, ViewPose, ViewPose3d } from "./ViewState";
+import { MarginPercent, ViewState, ViewStatus, ViewState3d, ViewState2d, ViewPose, ViewPose3d } from "./ViewState";
 import { ViewRect } from "./ViewRect";
 import { ViewingSpace } from "./ViewingSpace";
 import { ToolSettings } from "./tools/ToolSettings";

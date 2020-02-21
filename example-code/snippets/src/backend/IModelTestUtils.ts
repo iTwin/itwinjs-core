@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core";
+import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { ConnectClient, Config } from "@bentley/imodeljs-clients";
 import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
@@ -16,8 +16,10 @@ RpcManager.initializeInterface(IModelReadRpcInterface);
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
+}
+
+export interface IModelTestUtilsOpenForWriteOptions extends IModelTestUtilsOpenOptions {
   enableTransactions?: boolean;
-  openMode?: OpenMode;
 }
 
 export class KnownTestLocations {
@@ -55,25 +57,34 @@ export class IModelTestUtils {
     return stat;
   }
 
-  public static openIModel(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
+  private static copyIModelForOpen(filename: string, opts: IModelTestUtilsOpenOptions): string {
     const destPath = KnownTestLocations.outputDir;
     if (!IModelJsFs.existsSync(destPath))
       IModelJsFs.mkdirSync(destPath);
-
-    if (opts === undefined)
-      opts = {};
 
     const srcName = path.join(KnownTestLocations.assetsDir, filename);
     const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
     const srcStat = IModelTestUtils.getStat(srcName);
     const destStat = IModelTestUtils.getStat(dbName);
-    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs) {
+    if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs)
       IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
-    }
 
-    const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
+    return dbName;
+  }
+
+  public static openSnapshotFromSeed(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
+    const dbName = IModelTestUtils.copyIModelForOpen(filename, opts || {});
+    const iModel: IModelDb = IModelDb.openSnapshot(dbName); // could throw Error
     assert.exists(iModel);
     return iModel!;
+  }
+
+  public static openIModelForWrite(filename: string, opts?: IModelTestUtilsOpenForWriteOptions): IModelDb {
+    opts = opts || {};
+    const dbName = IModelTestUtils.copyIModelForOpen(filename, opts);
+    const iModel = IModelDb.openStandalone(dbName, OpenMode.ReadWrite, opts.enableTransactions);
+    assert.exists(iModel);
+    return iModel;
   }
 
   // __PUBLISH_EXTRACT_START__ IModelHost.startup

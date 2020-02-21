@@ -131,24 +131,6 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     this._geometryB = geometryB;
     this._extendB = extendB;
   }
-  /**
-   * * Return the results structure for the intersection calculation, structured as two separate arrays of CurveLocationDetail.
-   * @deprecated use `CurveCurveIntersectXY.grabPairedResults` instead of `CurveCurveIntersectXY.grabResults`
-   * @param reinitialize if true, a new results structure is created for use by later calls.
-   *
-   */
-  public grabResults(reinitialize: boolean = false): CurveLocationDetailArrayPair {
-    const resultPairs = this._results;
-    if (reinitialize)
-      this.reinitialize();
-    const oldResult = new CurveLocationDetailArrayPair();
-    for (const pair of resultPairs) {
-      oldResult.dataA.push(pair.detailA);
-      oldResult.dataB.push(pair.detailB);
-    }
-    return oldResult;
-
-  }
 
   private static _workVector2dA = Vector2d.create();
 

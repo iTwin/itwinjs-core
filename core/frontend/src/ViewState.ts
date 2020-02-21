@@ -27,6 +27,7 @@ import {
   Frustum,
   GlobeMode,
   GraphicParams,
+  GridOrientationType,
   Npc,
   RenderMaterial,
   SpatialViewDefinitionProps,
@@ -57,23 +58,6 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
 import { GlobalLocation, areaToEyeHeight } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-
-/** Describes the orientation of the grid displayed within a [[Viewport]].
- * @public
- * @deprecated use GridOrientationType from imodeljs-common.
- */
-export enum GridOrientationType {
-  /** Oriented with the view. */
-  View = 0,
-  /** Top */
-  WorldXY = 1,
-  /** Right */
-  WorldYZ = 2,
-  /** Front */
-  WorldXZ = 3,
-  /** Oriented by the [[AuxCoordSystem]] */
-  AuxCoord = 4,
-}
 
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
  * @public
@@ -666,9 +650,6 @@ export abstract class ViewState extends ElementState {
   public abstract get defaultExtentLimits(): ExtentLimits;
 
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
-
-  /** @deprecated Use the type-safe ViewState.details API instead. */
-  public getDetails(): any { return this.details.getJSON(); }
 
   /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal

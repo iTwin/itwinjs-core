@@ -38,7 +38,7 @@ describe("BriefcaseManager (#integration)", () => {
   let managerRequestContext: AuthorizedBackendRequestContext;
 
   const getElementCount = (iModel: IModelDb): number => {
-    const rows: any[] = iModel.executeQuery("SELECT COUNT(*) AS cnt FROM bis.Element");
+    const rows: any[] = IModelTestUtils.executeQuery(iModel, "SELECT COUNT(*) AS cnt FROM bis.Element");
     const count = +(rows[0].cnt);
     return count;
   };

@@ -325,50 +325,6 @@ describe("KindOfQuantity", () => {
     testInvalidFormatStrings("should throw for presentationUnit having a non-existent unit as an override", "Formats.DefaultReal[Formats.NonexistentUnit]", "Unable to locate SchemaItem Formats.NonexistentUnit.");
   });
 
-  describe("toJson (deprecated)", () => {
-    let schema: Schema;
-    let context: SchemaContext;
-    beforeEach(() => {
-      context = new SchemaContext();
-      schema = new Schema(context, "TestSchema", "ts", 1, 2, 3);
-      context.addLocater(new TestSchemaLocater());
-    });
-
-    it("should successfully round-trip valid JSON", async () => {
-      const koqJson = {
-        ...baseJson,
-        relativeError: 1.234,
-        persistenceUnit: "Formats.DefaultReal",
-        presentationUnits: [
-          "Formats.IN",
-          "Formats.DefaultReal",
-        ],
-      };
-      schema = await Schema.fromJson(createSchemaJson(koqJson), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(koqJson.name);
-      const expectedJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
-        schema: "TestSchema",
-        schemaVersion: "01.02.03",
-        ...koqJson,
-      };
-      expect(testKoq).to.exist;
-      expect(testKoq!.toJson(true, true)).to.deep.equal(expectedJson);
-    });
-
-    it("should omit presentationUnits if empty", async () => {
-      const koqJson = {
-        ...baseJson,
-        relativeError: 1.234,
-        persistenceUnit: "Formats.DefaultReal",
-        presentationUnits: [],
-      };
-      schema = await Schema.fromJson(createSchemaJson(koqJson), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(koqJson.name);
-      expect(testKoq!.toJson(true, true)).to.not.have.property("presentationUnits");
-    });
-  });
-
   describe("toJSON", () => {
     let schema: Schema;
     let context: SchemaContext;

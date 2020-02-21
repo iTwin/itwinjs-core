@@ -28,11 +28,6 @@ export class CustomAttributeClass extends ECClass {
     this.schemaItemType = SchemaItemType.CustomAttributeClass;
   }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this CustomAttributeClasses properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -51,22 +46,12 @@ export class CustomAttributeClass extends ECClass {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(customAttributeProps: CustomAttributeClassProps) {
-    this.fromJSONSync(customAttributeProps);
-  }
-
   public fromJSONSync(customAttributeProps: CustomAttributeClassProps) {
     super.fromJSONSync(customAttributeProps);
     const containerType = parseCustomAttributeContainerType(customAttributeProps.appliesTo);
     if (undefined === containerType)
       throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${containerType} is not a valid CustomAttributeContainerType.`);
     this._containerType = containerType;
-  }
-
-  /** @deprecated */
-  public async deserialize(customAttributeProps: CustomAttributeClassProps) {
-    await this.fromJSON(customAttributeProps);
   }
 
   public async fromJSON(customAttributeProps: CustomAttributeClassProps) {
