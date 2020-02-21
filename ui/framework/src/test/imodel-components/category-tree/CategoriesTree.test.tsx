@@ -9,6 +9,7 @@ import * as sinon from "sinon";
 import { render, waitForElement, cleanup, fireEvent } from "@testing-library/react";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IModelConnection, Viewport, SpatialViewState, IModelApp, NoRenderApp, ViewManager, ScreenViewport, ViewState, SubCategoriesCache } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
 import { BeEvent, Id64String, BeUiEvent } from "@bentley/bentleyjs-core";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
@@ -101,7 +102,7 @@ describe("CategoryTree", () => {
   describe("<CategoryTree />", () => {
 
     it("should match snapshot", async () => {
-      setupDataProvider([{ id: "test", label: "test-node" }]);
+      setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       const result = render(
         <CategoryTree
           iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
@@ -132,7 +133,7 @@ describe("CategoryTree", () => {
     });
 
     it("enables all categories", async () => {
-      setupDataProvider([{ id: "test", label: "test-node" }]);
+      setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       visibilityHandler.setup((x) => x.setEnableAll(true)).verifiable();
       const result = render(
         <CategoryTree
@@ -144,7 +145,7 @@ describe("CategoryTree", () => {
     });
 
     it("disables all categories", async () => {
-      setupDataProvider([{ id: "test", label: "test-node" }]);
+      setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       visibilityHandler.setup((x) => x.setEnableAll(false)).verifiable();
       const result = render(
         <CategoryTree
@@ -156,7 +157,7 @@ describe("CategoryTree", () => {
     });
 
     it("renders checked checkbox if category is visible", async () => {
-      setupDataProvider([{ id: "test", label: "test-node" }]);
+      setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       visibilityHandler.setup((x) => x.isCategoryVisible(moq.It.isAny(), moq.It.isAny())).returns(() => true);
       const result = render(
         <CategoryTree
@@ -181,7 +182,7 @@ describe("CategoryTree", () => {
     describe("categories", () => {
 
       it("disables category when enabled category is selected", async () => {
-        setupDataProvider([{ id: "test", label: "test-node" }]);
+        setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
         visibilityHandler.setup((x) => x.isCategoryVisible(moq.It.isAny(), moq.It.isAny())).returns(() => true);
         const result = render(
           <CategoryTree
@@ -194,7 +195,7 @@ describe("CategoryTree", () => {
       });
 
       it("enabled category when disabled category is selected", async () => {
-        setupDataProvider([{ id: "test", label: "test-node" }]);
+        setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
         visibilityHandler.setup((x) => x.isCategoryVisible(moq.It.isAny(), moq.It.isAny())).returns(() => false);
         const result = render(
           <CategoryTree
@@ -207,7 +208,7 @@ describe("CategoryTree", () => {
       });
 
       it("disables category when enabled category checkbox is unchecked", async () => {
-        setupDataProvider([{ id: "test", label: "test-node" }]);
+        setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
         visibilityHandler.setup((x) => x.isCategoryVisible(moq.It.isAny(), moq.It.isAny())).returns(() => true);
         const result = render(
           <CategoryTree
@@ -221,7 +222,7 @@ describe("CategoryTree", () => {
       });
 
       it("enabled category when disabled category is selected", async () => {
-        setupDataProvider([{ id: "test", label: "test-node" }]);
+        setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
         visibilityHandler.setup((x) => x.isCategoryVisible(moq.It.isAny(), moq.It.isAny())).returns(() => false);
         const result = render(
           <CategoryTree
@@ -241,8 +242,8 @@ describe("CategoryTree", () => {
       let subcategoryNode: TreeNodeItem;
 
       beforeEach(() => {
-        categoryNode = { id: "categoryId", label: "category-node", autoExpand: true };
-        subcategoryNode = { id: "subcategoryId", label: "subcategory-node", parentId: "categoryId" };
+        categoryNode = { id: "categoryId", label: PropertyRecord.fromString("category-node"), autoExpand: true };
+        subcategoryNode = { id: "subcategoryId", label: PropertyRecord.fromString("subcategory-node"), parentId: "categoryId" };
         (categoryNode as any).__key = createKey(categoryNode.id);
         (subcategoryNode as any).__key = createKey(subcategoryNode.id);
 
@@ -406,7 +407,7 @@ describe("CategoryVisibilityHandler", () => {
 
         const node: TreeNodeItem = {
           id: "nodeId",
-          label: "nodeLabel",
+          label: PropertyRecord.fromString("nodeLabel"),
         };
         const instanceKey: InstanceKey = {
           className: "class name",

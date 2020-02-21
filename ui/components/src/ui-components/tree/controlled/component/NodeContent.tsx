@@ -11,11 +11,9 @@ import * as React from "react";
 import { useEffect, useMemo } from "react";
 import classnames from "classnames";
 import { CommonProps, TreeNodePlaceholder } from "@bentley/ui-core";
-import { PrimitiveValue, PropertyRecord, PropertyValueFormat, PropertyDescription } from "@bentley/ui-abstract";
 import { TreeModelNode } from "../TreeModel";
 import { HighlightingEngine, HighlightableTreeNodeProps } from "../../HighlightingEngine";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../properties/ValueRendererManager";
-import { UiComponents } from "../../../UiComponents";
 import { ItemStyleProvider, ItemStyle } from "../../../properties/ItemStyle";
 import { TreeNodeEditorRenderer, TreeNodeEditor } from "./TreeNodeEditor";
 import "./NodeContent.scss";
@@ -100,25 +98,9 @@ function getLabel(
     defaultValue: <TreeNodePlaceholder level={0} data-testid={"node-label-placeholder"} />,
   };
 
-  const nodeRecord = node.item.labelDefinition ? node.item.labelDefinition : nodeToPropertyRecord(node);
-  return valueRendererManager.render(nodeRecord, context);
+  return valueRendererManager.render(node.item.label, context);
 }
 
 function getStyle(style?: ItemStyle, isSelected?: boolean): React.CSSProperties {
   return ItemStyleProvider.createStyle(style ? style : {}, isSelected);
-}
-
-function nodeToPropertyRecord(node: TreeModelNode) {
-  const value: PrimitiveValue = {
-    displayValue: node.item.label as string,
-    value: node.item.label,
-    valueFormat: PropertyValueFormat.Primitive,
-  };
-  const property: PropertyDescription = {
-    displayLabel: UiComponents.translate("general.label"),
-    typename: node.item && node.item.typename ? node.item.typename : "string",
-    name: "node_label",
-  };
-
-  return new PropertyRecord(value, property);
 }

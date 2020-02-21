@@ -114,8 +114,7 @@ Array [
     "icon": "motivating",
     "id": "b5928504-ca89-4d67-9fe9-01f13624cefb/e5e66399-295a-454e-a1ab-590b334ae253",
     "isCheckboxVisible": true,
-    "label": "Multi-channelled",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -156,8 +155,7 @@ Array [
     "hasChildren": true,
     "icon": "Technician",
     "id": "baa5384c-065b-43f7-bfbe-9d55e79bfb1f/377376d7-efbb-4df5-a70a-4764c60c82ae",
-    "label": "Antigua and Barbuda",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -203,8 +201,7 @@ Array [
     "autoExpand": true,
     "icon": "Unbranded",
     "id": "8287e887-4294-40a6-b4fc-635a36a5784a/48ae5ef5-0f6e-4931-ba46-85cc14189a13",
-    "label": "payment",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -240,8 +237,7 @@ Array [
     "id": "6c7177b4-13aa-482a-9d6b-76624dbc4a02/3c15e225-8d91-4174-8f69-1c86639b762a",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "Manager",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

@@ -107,6 +107,21 @@ import { DEPRECATED_Tree as Tree } from "@bentley/ui-components";
     return value ?? "Loading...";
   };
   ```
+* Changed type of `label` attribute from `string` to `PropertyRecord` for these types:
+  * `BreadcrumbNodeProps`
+  * `TreeModelNode`
+  * `MutableTreeModelNode`
+  * `TreeModelNodeInput`
+
+  Also removed `labelDefinition` attribute in `PropertyData` and `TreeNodeItem` in favor of `label` whose type changed from `string` to `PropertyRecord`.
+
+  To render `PropertyRecords` we suggest using `PropertyValueRendererManager` API:
+  ```ts
+  import { PropertyValueRendererManager } from "@bentley/ui-components";
+  const MyComponent = (props: { label: PropertyRecord }) => {
+    return PropertyValueRendererManager.defaultManager.render(props.label);
+  };
+  ```
 
 ### API changes in `ui-framework` package
 

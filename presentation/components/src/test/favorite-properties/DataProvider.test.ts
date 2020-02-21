@@ -79,7 +79,7 @@ describe("FavoritePropertiesDataProvider", () => {
 
     it("passes `customRulesetId` to PropertyDataProvider if set", async () => {
       presentationPropertyDataProviderMock.setup((x) => x.getData()).returns(async () => ({
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         categories: [],
         records: {},
       }));
@@ -93,7 +93,7 @@ describe("FavoritePropertiesDataProvider", () => {
 
     it("returns empty property data when there is no favorite category", async () => {
       const dataToReturn: PropertyData = {
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         categories: [{ label: faker.random.word(), name: "test", expand: true }],
         records: {
           test: [
@@ -116,7 +116,7 @@ describe("FavoritePropertiesDataProvider", () => {
       const regularPropertyName = faker.random.word();
 
       const dataToReturn: PropertyData = {
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         categories: [favoritesCategory, { label: faker.random.word(), name: "test", expand: true }],
         records: {
           [favoritesCategory.name]: [

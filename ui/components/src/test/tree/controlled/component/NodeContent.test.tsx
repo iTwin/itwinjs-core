@@ -19,15 +19,17 @@ describe("NodeContent", () => {
   const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();
 
   let node: MutableTreeModelNode;
+  let nodeLabelRecord: PropertyRecord;
 
   before(async () => {
     await TestUtils.initializeUiComponents();
   });
 
   beforeEach(async () => {
+    nodeLabelRecord = PropertyRecord.fromString("label", "label");
     node = {
       id: "0",
-      label: "label",
+      label: nodeLabelRecord,
       checkbox: { isVisible: false, state: CheckBoxState.Off, isDisabled: false },
       depth: 0,
       description: "Test Node Description",
@@ -38,7 +40,7 @@ describe("NodeContent", () => {
       parentId: undefined,
       item: {
         id: "0",
-        label: "label",
+        label: nodeLabelRecord,
         description: "Test Node Description",
       },
     };
@@ -53,29 +55,8 @@ describe("NodeContent", () => {
         node={node}
         valueRendererManager={rendererManagerMock.object}
       />);
-
     renderedNode.getByText("Test label");
-  });
-
-  it("uses label record from item node", () => {
-    const customLabelRecord = TestUtils.createPrimitiveStringProperty("node_label_record", "Custom Label Record");
-    node.item.labelDefinition = customLabelRecord;
-
-    let recordFromRendererManager: PropertyRecord;
-    rendererManagerMock.reset();
-    rendererManagerMock.setup((x) => x.render(moq.It.isAny(), moq.It.isAny()))
-      .callback((record) => { recordFromRendererManager = record; })
-      .returns(() => "Label");
-
-    const renderedNode = render(
-      <TreeNodeContent
-        node={node}
-        valueRendererManager={rendererManagerMock.object}
-      />,
-    );
-
-    renderedNode.getByText("Label");
-    expect(recordFromRendererManager!).to.be.deep.eq(customLabelRecord);
+    rendererManagerMock.verify((x) => x.render(nodeLabelRecord, moq.It.isAny()), moq.Times.once());
   });
 
   it("passes highlight callback to values renderer", () => {
@@ -117,20 +98,6 @@ describe("NodeContent", () => {
       />);
 
     getByText("New label");
-  });
-
-  it("uses node typename", () => {
-    node.item.typename = "TestNodeType";
-
-    rendererManagerMock.setup((x) => x.render(moq.It.is((r) => r.property.typename === node.item.typename), moq.It.isAny())).verifiable(moq.Times.once());
-
-    render(
-      <TreeNodeContent
-        node={node}
-        valueRendererManager={rendererManagerMock.object}
-      />);
-
-    rendererManagerMock.verifyAll();
   });
 
   it("renders styled node", () => {

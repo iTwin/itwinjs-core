@@ -27,8 +27,7 @@ export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parent
 export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): DelayLoadedTreeNodeItem => {
   const item: DelayLoadedTreeNodeItem = {
     id: [...node.key.pathFromRoot].reverse().join("/"),
-    label: node.label.displayValue,
-    labelDefinition: createLabelRecord(node.label, "node_label"),
+    label: createLabelRecord(node.label, "node_label"),
   };
   (item as any)[PRESENTATION_TREE_NODE_KEY] = node.key;
 

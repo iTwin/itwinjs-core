@@ -8,6 +8,7 @@ import * as moq from "typemoq";
 import sinon from "sinon";
 import { render } from "@testing-library/react";
 import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { ControlledTree } from "../../../../ui-components/tree/controlled/component/ControlledTree";
 import { VisibleTreeNodes, MutableTreeModelNode, TreeModel } from "../../../../ui-components/tree/controlled/TreeModel";
 import { ITreeNodeLoader } from "../../../../ui-components/tree/controlled/TreeNodeLoader";
@@ -44,7 +45,7 @@ describe("ControlledTree", () => {
 
     node = {
       id: "0",
-      label: "label",
+      label: PropertyRecord.fromString("label", "label"),
       checkbox: { isVisible: false, state: CheckBoxState.Off, isDisabled: false },
       depth: 0,
       description: "Test Node Description",
@@ -55,7 +56,7 @@ describe("ControlledTree", () => {
       parentId: undefined,
       item: {
         id: "0",
-        label: "label",
+        label: PropertyRecord.fromString("label", "label"),
         description: "Test Node Description",
       },
     };
@@ -151,7 +152,7 @@ describe("ControlledTree", () => {
   it("renders highlighted node", () => {
     mockVisibleNode();
     const highlightProps: HighlightableTreeProps = {
-      searchText: node.label as string,
+      searchText: "label",
       activeMatch: {
         nodeId: node.id,
         matchIndex: 0,

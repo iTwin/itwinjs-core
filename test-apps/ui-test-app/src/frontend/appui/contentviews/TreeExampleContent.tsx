@@ -10,6 +10,7 @@ import {
   ControlledTree, TreeNodeItem, EditableTreeDataProvider, TreeModelNode,
   useTreeModelSource, useTreeNodeLoader, useVisibleTreeNodes, useTreeEventsHandler,
 } from "@bentley/ui-components";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 export class TreeExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -25,7 +26,7 @@ class EditableSimpleTreeDataProvider extends SimpleTreeDataProvider implements E
   }
 
   public updateLabel(nodeItem: TreeNodeItem, newLabel: string): void {
-    nodeItem.label = newLabel;
+    nodeItem.label = PropertyRecord.fromString(newLabel);
     this.onTreeNodeChanged.raiseEvent([nodeItem]);
   }
 }
@@ -65,8 +66,7 @@ function TreeExampleContent() {
     modelSource.modifyModel((model) => {
       const modelNode = model.getNode(node.id);
       if (modelNode) {
-        modelNode.item.label = newValue;
-        modelNode.label = newValue;
+        modelNode.label = modelNode.item.label = PropertyRecord.fromString(newValue);
       }
     });
   }, [modelSource]);
@@ -108,7 +108,7 @@ const createNodes = (n: number, label: string, levels: number, hierarchy: Simple
     const nodeLabel = label + "-" + i.toString();
     nodes[i] = {
       id: nodeLabel,
-      label: nodeLabel,
+      label: PropertyRecord.fromString(nodeLabel),
       hasChildren: levels > 1,
       description: nodeLabel + " description",
       parentId,

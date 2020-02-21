@@ -209,7 +209,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
 }
 
 const createDefaultPropertyData = (): PropertyData => ({
-  label: "",
+  label: PropertyRecord.fromString("", "label"),
   categories: [],
   records: {},
 });
@@ -253,8 +253,7 @@ class PropertyDataBuilder {
     const records = this.createCategorizedRecords(fields);
     return {
       ...records,
-      label: this._contentItem.label.displayValue,
-      labelDefinition: createLabelRecord(this._contentItem.label, "content_item_name"),
+      label: createLabelRecord(this._contentItem.label, "label"),
       description: this._contentItem.classInfo ? this._contentItem.classInfo.label : undefined,
     } as PropertyData;
   }

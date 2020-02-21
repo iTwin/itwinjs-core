@@ -7,7 +7,7 @@
  */
 
 import { PropertyDescription } from "./Description";
-import { PropertyValue } from "./Value";
+import { PropertyValue, PropertyValueFormat } from "./Value";
 
 /** Properties for the [[PropertyRecord]] with link info supplied
  * @beta
@@ -50,5 +50,29 @@ export class PropertyRecord {
   /** Creates a copy of this PropertyRecord with a new value */
   public copyWithNewValue(newValue: PropertyValue): PropertyRecord {
     return new PropertyRecord(newValue, this.property);
+  }
+
+  public static fromString(value: string, descriptionOrName?: PropertyDescription | string): PropertyRecord {
+    let description: PropertyDescription;
+    if (descriptionOrName && typeof descriptionOrName === "object") {
+      description = descriptionOrName;
+    } else if (descriptionOrName && typeof descriptionOrName === "string") {
+      description = {
+        name: descriptionOrName,
+        displayLabel: descriptionOrName,
+        typename: "string",
+      };
+    } else {
+      description = {
+        name: "string_value",
+        displayLabel: "String Value",
+        typename: "string",
+      };
+    }
+    return new PropertyRecord({
+      valueFormat: PropertyValueFormat.Primitive,
+      value,
+      displayValue: value,
+    }, description);
   }
 }

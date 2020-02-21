@@ -10,6 +10,7 @@ import { render, waitForElement, cleanup, fireEvent } from "@testing-library/rea
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { using, BeEvent, Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { IModelConnection, ViewState, PerModelCategoryVisibility, Viewport, ViewState3d, SpatialViewState } from "@bentley/imodeljs-frontend";
 import { isPromiseLike } from "@bentley/ui-core";
 import { TreeNodeItem, TreeDataChangesListener, SelectionMode } from "@bentley/ui-components";
@@ -92,7 +93,7 @@ describe("ModelsTree", () => {
     const createSubjectNode = (ids?: Id64String | Id64String[]) => ({
       __key: createKey("subject", ids ? ids : "subject_id"),
       id: "subject",
-      label: "subject",
+      label: PropertyRecord.fromString("subject"),
       extendedData: {
         isSubject: true,
       },
@@ -101,7 +102,7 @@ describe("ModelsTree", () => {
     const createModelNode = () => ({
       __key: createKey("model", "model_id"),
       id: "model",
-      label: "model",
+      label: PropertyRecord.fromString("model"),
       extendedData: {
         isModel: true,
       },
@@ -111,7 +112,7 @@ describe("ModelsTree", () => {
       __key: createKey("category", "category_id"),
       id: "category",
       parentId: "model",
-      label: "category",
+      label: PropertyRecord.fromString("category"),
       extendedData: {
         isCategory: true,
         modelId: parentModelKey ? parentModelKey.id : undefined,
@@ -121,7 +122,7 @@ describe("ModelsTree", () => {
     const createElementNode = (modelId?: Id64String, categoryId?: Id64String) => ({
       __key: createKey("element", "element_id"),
       id: "element",
-      label: "element",
+      label: PropertyRecord.fromString("element"),
       extendedData: {
         modelId,
         categoryId,
@@ -159,7 +160,7 @@ describe("ModelsTree", () => {
       };
 
       it("should match snapshot", async () => {
-        setupDataProvider([{ id: "test", label: "test-node", isCheckboxVisible: true }]);
+        setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node"), isCheckboxVisible: true }]);
         visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
         const result = render(<ModelsTree imodel={imodelMock.object} dataProvider={dataProvider} visibilityHandler={visibilityHandlerMock.object} />);
         await waitForElement(() => result.getByText("test-node"), { container: result.container });
@@ -520,7 +521,7 @@ describe("ModelsTree", () => {
               pathFromRoot: [],
             },
             id: "custom",
-            label: "custom",
+            label: PropertyRecord.fromString("custom"),
           };
 
           const vpMock = mockViewport();
@@ -983,7 +984,7 @@ describe("ModelsTree", () => {
               pathFromRoot: [],
             },
             id: "custom",
-            label: "custom",
+            label: PropertyRecord.fromString("custom"),
           };
 
           const vpMock = mockViewport();

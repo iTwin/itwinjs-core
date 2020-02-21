@@ -29,7 +29,7 @@ describe("Tooltip", () => {
     ];
 
     data = {
-      label: faker.random.word(),
+      label: PropertyRecord.fromString(faker.random.word()),
       description: faker.random.words(),
       categories,
       records: {

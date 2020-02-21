@@ -24,7 +24,7 @@ describe("BreadcrumbTreeUtils", () => {
     return undefined;
   };
   it("should flatten root nodes", async () => {
-    const treeDataProvider: TreeDataProvider = [{ id: "1", icon: "icon-placeholder", label: "Raw Node 1" }];
+    const treeDataProvider: TreeDataProvider = [{ id: "1", icon: "icon-placeholder", label: PropertyRecord.fromString("Raw Node 1") }];
     const columns = [{ key: "icon", label: "", icon: true }, { key: "label", label: "Name" }];
 
     const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(treeDataProvider, columns, treeDataProvider);
@@ -43,7 +43,7 @@ describe("BreadcrumbTreeUtils", () => {
   });
 
   it("should pass description through when used", async () => {
-    const treeDataProvider: TreeDataProvider = [{ label: "Raw Node 1", id: "1", description: "node 1 child" }];
+    const treeDataProvider: TreeDataProvider = [{ label: PropertyRecord.fromString("Raw Node 1"), id: "1", description: "node 1 child" }];
     const columns = [
       { key: "icon", label: "", icon: true },
       { key: "label", label: "Name" },
@@ -61,9 +61,9 @@ describe("BreadcrumbTreeUtils", () => {
   it("should add children to extendedData", async () => {
     const treeDataProvider: TreeDataProvider = [
       {
-        label: "Raw Node 1", id: "1", description: "node 1 child",
+        label: PropertyRecord.fromString("Raw Node 1"), id: "1", description: "node 1 child",
         children: [
-          { label: "Raw Node 1.1", id: "1.1", parentId: "1", description: "node 1.1 child" },
+          { label: PropertyRecord.fromString("Raw Node 1.1"), id: "1.1", parentId: "1", description: "node 1.1 child" },
         ] as ImmediatelyLoadedTreeNodeItem[],
       },
     ];
@@ -94,7 +94,7 @@ describe("BreadcrumbTreeUtils", () => {
   });
 
   it("should count rows with getRowsCount", async () => {
-    const treeDataProvider: TreeDataProvider = [{ label: "Raw Node 1", id: "1", description: "node 1 child" }];
+    const treeDataProvider: TreeDataProvider = [{ label: PropertyRecord.fromString("Raw Node 1"), id: "1", description: "node 1 child" }];
     const columns = [
       { key: "icon", label: "", icon: true },
       { key: "label", label: "Name" },
@@ -106,7 +106,7 @@ describe("BreadcrumbTreeUtils", () => {
   });
 
   it("should pass columns through to getColumns", async () => {
-    const treeDataProvider: TreeDataProvider = [{ label: "Raw Node 1", id: "1", description: "node 1 child" }];
+    const treeDataProvider: TreeDataProvider = [{ label: PropertyRecord.fromString("Raw Node 1"), id: "1", description: "node 1 child" }];
     const columns = [
       { key: "icon", label: "", icon: true },
       { key: "label", label: "Name" },
@@ -118,7 +118,7 @@ describe("BreadcrumbTreeUtils", () => {
   });
 
   it("should send blank row when getRow gets a rowIndex out of range", async () => {
-    const treeDataProvider: TreeDataProvider = [{ label: "Raw Node 1", id: "1", description: "node 1 child" }];
+    const treeDataProvider: TreeDataProvider = [{ label: PropertyRecord.fromString("Raw Node 1"), id: "1", description: "node 1 child" }];
     const columns = [
       { key: "icon", label: "", icon: true },
       { key: "label", label: "Name" },
@@ -137,7 +137,7 @@ describe("BreadcrumbTreeUtils", () => {
     const columns = [{ key: "icon", label: "", icon: true }, { key: "label", label: "Name" }, { key: "description", label: "Description" }];
     const treeDataProvider: TreeDataProvider = [
       {
-        id: "1", icon: "icon-placeholder", label: "Raw Node 1", description: "node 1 child", extendedData: {
+        id: "1", icon: "icon-placeholder", label: PropertyRecord.fromString("Raw Node 1"), description: "node 1 child", extendedData: {
           testProp: new PropertyRecord(
             { value: "test prop", valueFormat: PropertyValueFormat.Primitive, displayValue: "test prop" },
             { name: "test", displayLabel: "Test", typename: "text" }),

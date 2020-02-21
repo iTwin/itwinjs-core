@@ -17,11 +17,37 @@ const getPropertyDescription = (): PropertyDescription => {
   };
 };
 
-describe ("records", () => {
-  it("should have new value", () => {
-    const sut = new PropertyRecord (value1, getPropertyDescription());
-    const newRecord = sut.copyWithNewValue(value2);
+describe("PropertyRecord", () => {
 
-    expect(newRecord.value).to.eq(value2);
+  describe("copyWithNewValue", () => {
+
+    it("should have new value", () => {
+      const sut = new PropertyRecord(value1, getPropertyDescription());
+      const newRecord = sut.copyWithNewValue(value2);
+
+      expect(newRecord.value).to.eq(value2);
+    });
+
   });
+
+  describe("fromString", () => {
+
+    it("should create a valid PropertyRecord with provided description", () => {
+      const description = getPropertyDescription();
+      const record = PropertyRecord.fromString("test", description);
+      expect(record).to.matchSnapshot();
+    });
+
+    it("should create a valid PropertyRecord with provided description name", () => {
+      const record = PropertyRecord.fromString("test value", "test description");
+      expect(record).to.matchSnapshot();
+    });
+
+    it("should create a valid PropertyRecord without description", () => {
+      const record = PropertyRecord.fromString("test");
+      expect(record).to.matchSnapshot();
+    });
+
+  });
+
 });

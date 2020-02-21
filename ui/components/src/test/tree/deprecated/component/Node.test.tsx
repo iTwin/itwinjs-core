@@ -7,6 +7,7 @@ import * as sinon from "sinon";
 import { render, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import TestUtils from "../../../TestUtils";
 import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
 import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
@@ -15,8 +16,6 @@ import { ITreeImageLoader, TreeImageLoader } from "../../../../ui-components/tre
 import { DEPRECATED_Tree as Tree } from "../../../../ui-components/tree/deprecated/component/Tree";
 import { BeInspireTree, BeInspireTreeNode } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
 import { TreeNode, TreeNodeIcon } from "../../../../ui-components/tree/deprecated/component/Node";
-
-// tslint:disable:deprecation
 
 // tslint:disable:deprecation
 
@@ -35,7 +34,7 @@ describe("Node", () => {
 
   beforeEach(async () => {
     tree = new BeInspireTree<TreeNodeItem>({
-      dataProvider: [{ id: "0", label: "0" }],
+      dataProvider: [{ id: "0", label: PropertyRecord.fromString("0") }],
       mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
     });
     await tree.ready;
@@ -120,7 +119,7 @@ describe("TreeNodeIcon", () => {
 
   beforeEach(async () => {
     tree = new BeInspireTree<TreeNodeItem>({
-      dataProvider: [{ id: "0", label: "0", icon: "icon-test-image" }],
+      dataProvider: [{ id: "0", label: PropertyRecord.fromString("0"), icon: "icon-test-image" }],
       mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
     });
     await tree.ready;

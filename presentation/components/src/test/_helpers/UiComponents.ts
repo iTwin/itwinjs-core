@@ -15,7 +15,7 @@ export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): Dela
   const node = {
     id: faker.random.uuid(),
     parentId,
-    label: faker.random.word(),
+    label: PropertyRecord.fromString(faker.random.word()),
     description: faker.random.words(),
     hasChildren: faker.random.boolean(),
   };

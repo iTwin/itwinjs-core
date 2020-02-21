@@ -8,6 +8,7 @@ import * as sinon from "sinon";
 import { render, waitForElement, cleanup } from "@testing-library/react";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks"; // tslint:disable-line: no-direct-imports
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { Presentation, PresentationManager, RulesetManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { BeEvent } from "@bentley/bentleyjs-core";
@@ -60,7 +61,7 @@ describe("SpatialContainmentTree", () => {
         getFilteredNodePaths: async () => [],
         getNodeKey: (node: TreeNodeItem) => (node as any).__key,
         getNodesCount: async () => 1,
-        getNodes: async () => [{ __key: createKey("1"), label: "test-node", id: "1", isCheckboxVisible: true }],
+        getNodes: async () => [{ __key: createKey("1"), label: PropertyRecord.fromString("test-node"), id: "1", isCheckboxVisible: true }],
         loadHierarchy: async () => { },
       };
 

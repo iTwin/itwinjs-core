@@ -25,8 +25,7 @@ Object {
   "id": "449df282-09dc-4ff6-9195-5c55e9e31699/6127f623-1285-4848-8bc1-c9d119fb96ab",
   "isCheckboxDisabled": true,
   "isCheckboxVisible": true,
-  "label": "hacking",
-  "labelDefinition": PropertyRecord {
+  "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "node_label",
@@ -71,8 +70,7 @@ Object {
   "hasChildren": true,
   "icon": "Cambridgeshire",
   "id": "a772c3d3-03a4-40a8-8a6a-8c62fda69701/ca2b1044-8007-4ce7-a4f6-d779f7dd0ef0",
-  "label": "Iowa",
-  "labelDefinition": PropertyRecord {
+  "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "node_label",
@@ -116,8 +114,7 @@ Object {
   "icon": "moderator",
   "id": "270da1a3-ba31-44ef-8866-c2a100d70bea/a389bc4e-ef0a-45d0-8b8b-62e60b80175c",
   "isCheckboxVisible": true,
-  "label": "cross-platform",
-  "labelDefinition": PropertyRecord {
+  "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
       "name": "node_label",
@@ -208,8 +205,7 @@ Array [
     "id": "d0490790-e52c-4185-a841-f2ddecb9648f/32e09daf-f7de-466e-95cc-f6b5e845ce78",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "Fantastic",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -250,8 +246,7 @@ Array [
     "id": "908fcd9c-af25-4d63-bb21-a81337a8ad7e/08153750-f3da-4eab-b142-1892b75ef471",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "Communications",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -296,8 +291,7 @@ Array [
     "description": "Ratione debitis sequi totam aut est nemo aut.",
     "hasChildren": true,
     "id": "c992c8d5-f776-46e2-957c-ff276d241866/9ca8debb-3f29-40e0-b8b0-0330fde07d2e",
-    "label": "Facilitator",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -339,8 +333,7 @@ Array [
     "icon": "Unbranded Steel Keyboard",
     "id": "9e4f2bda-d7ba-42e4-affe-37f852bc8f5d/805abe6e-d9fc-4d7b-9a1c-500d4d5d63c0",
     "isCheckboxVisible": true,
-    "label": "Tuvalu",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

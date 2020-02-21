@@ -647,6 +647,8 @@ export class PropertyRecord {
         [key: string]: any;
     };
     // (undocumented)
+    static fromString(value: string, descriptionOrName?: PropertyDescription | string): PropertyRecord;
+    // (undocumented)
     isDisabled?: boolean;
     // (undocumented)
     isMerged?: boolean;

@@ -28,7 +28,7 @@ import {
 import {
   TreeDataProvider, TreeNodeItem,
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem,
-  isTreeDataProviderInterface, getLabelString,
+  isTreeDataProviderInterface,
 } from "../../TreeDataProvider";
 import { NodeEventManager } from "../NodeEventManager";
 import { NodeLoadingOrchestrator } from "../NodeLoadingOrchestrator";
@@ -46,6 +46,7 @@ import { HighlightingEngine, HighlightableTreeProps } from "../../HighlightingEn
 import { UiComponents } from "../../../UiComponents";
 import { CellEditingEngine, EditableTreeProps } from "../CellEditingEngine";
 import { ITreeImageLoader, TreeImageLoader } from "../../ImageLoader";
+import { getPropertyRecordAsString } from "../../../common/getPropertyRecordAsString";
 
 // css
 import "./Tree.scss";
@@ -731,7 +732,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     const node: BeInspireTreeNodeConfig = {
       ...base,
       id: item.id,
-      text: getLabelString(item.label),
+      text: getPropertyRecordAsString(item.label),
       itree: {
         ...base.itree,
         state: {

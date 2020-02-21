@@ -24,8 +24,7 @@ Array [
     "icon": "orchid",
     "id": "739fde2c-0a10-47d9-8975-8f1926883bea/c39b08a0-214f-4594-b142-b23f95f0db34",
     "isCheckboxVisible": true,
-    "label": "A-2-1",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -66,8 +65,7 @@ Array [
     "autoExpand": true,
     "hasChildren": true,
     "id": "025212b8-007f-4fd5-8721-582ec854f59e/063b9cf6-fe83-4e0a-a647-29087ece569f",
-    "label": "A-2-2",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -114,8 +112,7 @@ Array [
     "hasChildren": true,
     "icon": "Books",
     "id": "ccbfc51b-8ede-4d1d-8420-ea196af683b4/2316265a-6e8d-465a-837e-308ae67862f3",
-    "label": "A-1",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -150,8 +147,7 @@ Array [
     "hasChildren": true,
     "icon": "enterprise",
     "id": "c80a28cf-09ee-4827-aec6-682ae559cab2/2801ae3e-4479-4099-92f9-4b3186fb7680",
-    "label": "A-2",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

@@ -57,7 +57,8 @@ describe("TreeRenderer", () => {
   });
 
   it("renders with loaded node", () => {
-    const node = createRandomMutableTreeModelNode();
+    const label = "test node";
+    const node = createRandomMutableTreeModelNode(undefined, undefined, label);
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
     visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
@@ -69,7 +70,7 @@ describe("TreeRenderer", () => {
         nodeHeight={() => 50}
       />);
 
-    getByText(node.label as string);
+    getByText(label);
   });
 
   it("renders placeholder and starts loading root node", () => {
@@ -149,7 +150,8 @@ describe("TreeRenderer", () => {
   });
 
   it("rerenders with loaded node", () => {
-    const node = createRandomMutableTreeModelNode();
+    const label = "test node";
+    const node = createRandomMutableTreeModelNode(undefined, undefined, label);
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
     visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
@@ -161,9 +163,10 @@ describe("TreeRenderer", () => {
         nodeHeight={() => 50}
       />);
 
-    getByText(node.label as string);
+    getByText(label);
 
-    const newNode = createRandomMutableTreeModelNode();
+    const newLabel = "test node";
+    const newNode = createRandomMutableTreeModelNode(undefined, undefined, newLabel);
     const newVisibleNodesMock = moq.Mock.ofType<VisibleTreeNodes>();
     newVisibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
     newVisibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => newNode);
@@ -176,19 +179,20 @@ describe("TreeRenderer", () => {
         nodeHeight={() => 50}
       />);
 
-    getByText(newNode.label as string);
+    getByText(newLabel);
   });
 
   it("scrolls to highlighted node", () => {
+    const node2label = "Node 2";
     const node1 = createRandomMutableTreeModelNode();
-    const node2 = createRandomMutableTreeModelNode();
+    const node2 = createRandomMutableTreeModelNode(undefined, undefined, node2label);
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 2);
     visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node1);
     visibleNodesMock.setup((x) => x.getAtIndex(1)).returns(() => node2);
     visibleNodesMock.setup((x) => x[Symbol.iterator]()).returns(() => [node1, node2][Symbol.iterator]());
 
     const highlightProps: HighlightableTreeProps = {
-      searchText: node2.label as string,
+      searchText: node2label,
       activeMatch: {
         matchIndex: 0,
         nodeId: node2.id,

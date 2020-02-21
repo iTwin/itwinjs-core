@@ -7,13 +7,12 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { render, cleanup } from "@testing-library/react";
 import ReactTestUtils from "react-dom/test-utils";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { DEPRECATED_Tree as Tree } from "../../../../ui-components";
 import { TreeNodeItem } from "../../../../ui-components/tree/TreeDataProvider";
 import { DEPRECATED_withTreeDragDrop } from "../../../../ui-components/tree/deprecated/hocs/withDragDrop";
 import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../../ui-components/dragdrop/DragDropDef";
 import { BeInspireTree } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
-
-// tslint:disable:deprecation
 
 // tslint:disable:deprecation
 
@@ -24,7 +23,7 @@ describe("Tree withDragDrop HOC", () => {
   const DragDropTree = DEPRECATED_withTreeDragDrop(Tree); // tslint:disable-line:variable-name
 
   it("should render", () => {
-    const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+    const tree = [{ label: PropertyRecord.fromString("Raw Node", "label"), id: "1", description: "node description" }];
     render(<DragDropTree dataProvider={tree} />);
   });
   it("should render with drag/drop props", () => {
@@ -39,11 +38,11 @@ describe("Tree withDragDrop HOC", () => {
       canDropTargetDrop: () => true,
       objectTypes: ["test"],
     };
-    const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+    const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
     render(<DragDropTree dataProvider={tree} dragProps={dragProps} dropProps={dropProps} />);
   });
   it("should return DragDrop row when renderRow is called", async () => {
-    const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+    const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
     const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ objectType: "test" }} />) as any;
     const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
     await iTree.ready;
@@ -62,7 +61,7 @@ describe("Tree withDragDrop HOC", () => {
     });
     it("should forward extendedData from tree node into DragDrop dataObject", async () => {
       const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => args);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ onDragSourceBegin, objectType: "test" }} />) as any;
@@ -72,7 +71,7 @@ describe("Tree withDragDrop HOC", () => {
       expect(ret.dataObject).to.contain({ testData: true });
     });
     it("should forward extendedData from tree node without onDragSourceBegin input callback", async () => {
-      const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ objectType: "test" }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
@@ -85,7 +84,7 @@ describe("Tree withDragDrop HOC", () => {
         args.dataObject = { test: true };
         return args;
       };
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ onDragSourceBegin, objectType: "test" }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
@@ -96,7 +95,7 @@ describe("Tree withDragDrop HOC", () => {
     it("should set parentObject to dataProvider when on root node", async () => {
       const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => args);
       const onDragSourceEnd = sinon.spy();
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ onDragSourceBegin, onDragSourceEnd, objectType: "test" }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
@@ -111,8 +110,8 @@ describe("Tree withDragDrop HOC", () => {
       const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => args);
       const onDragSourceEnd = sinon.spy();
       const tree = [{
-        label: "Raw Node", id: "1", description: "node description", children: [
-          { label: "Raw Child Node", id: "1.1", description: "child node description" },
+        label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", children: [
+          { label: PropertyRecord.fromString("Raw Child Node"), id: "1.1", description: "child node description" },
         ],
       }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ onDragSourceBegin, onDragSourceEnd, objectType: "test" }} />) as any;
@@ -126,7 +125,7 @@ describe("Tree withDragDrop HOC", () => {
       expect(onDragSourceEnd).to.be.calledWithMatch({ parentObject: tree[0] });
     });
     it("should pass constant objectType through", async () => {
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ objectType: "test" }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
@@ -136,7 +135,7 @@ describe("Tree withDragDrop HOC", () => {
     });
     it("should pass data through for functional objectType", async () => {
       const objectType = sinon.spy((data: { testType: string } | any) => data.testType);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testType: "function-test" } }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testType: "function-test" } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dragProps={{ objectType }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
@@ -154,7 +153,7 @@ describe("Tree withDragDrop HOC", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createTreeDropProps() as DropTargetProps;
       const args = { dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } };
@@ -171,7 +170,7 @@ describe("Tree withDragDrop HOC", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
@@ -187,7 +186,7 @@ describe("Tree withDragDrop HOC", () => {
       expect(canDropTargetDrop).to.be.calledWithMatch({ dropLocation: tree[0] });
     });
     it("should add dropLocation as item to dropProps callback returns without input callback", async () => {
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
@@ -200,7 +199,7 @@ describe("Tree withDragDrop HOC", () => {
       expect(ret2).to.be.true;
     });
     it("should add dropLocation as dataProvider to dropProps callback returns without input callback", () => {
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ objectTypes: ["test"] }} />) as any;
       const callbacks = root.createTreeDropProps() as DropTargetProps;
       const args = { dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } };
@@ -214,7 +213,7 @@ describe("Tree withDragDrop HOC", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
@@ -236,7 +235,7 @@ describe("Tree withDragDrop HOC", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
@@ -258,7 +257,7 @@ describe("Tree withDragDrop HOC", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const iTree = new BeInspireTree<TreeNodeItem>({ dataProvider: tree, mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem });
       await iTree.ready;
@@ -278,8 +277,8 @@ describe("Tree withDragDrop HOC", () => {
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
       const tree = [{
-        label: "Raw Node", id: "1", description: "node description", children: [
-          { label: "Raw Child Node", id: "1.1", description: "child node description" },
+        label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", children: [
+          { label: PropertyRecord.fromString("Raw Child Node"), id: "1.1", description: "child node description" },
         ],
       }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
@@ -304,8 +303,8 @@ describe("Tree withDragDrop HOC", () => {
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
       const tree = [{
-        label: "Raw Node", id: "1", description: "node description", children: [
-          { label: "Raw Child Node", id: "1.1", description: "child node description" },
+        label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", children: [
+          { label: PropertyRecord.fromString("Raw Child Node"), id: "1.1", description: "child node description" },
         ],
       }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropTree dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;

@@ -130,7 +130,6 @@ alpha;FilterRenderer
 public;FloatTypeConverter 
 public;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
-internal;getLabelString(label: string | PropertyRecord): string
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean

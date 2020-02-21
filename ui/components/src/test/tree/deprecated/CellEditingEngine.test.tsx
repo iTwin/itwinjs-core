@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 import { CellEditingEngine, EditableTreeProps } from "../../../ui-components/tree/deprecated/CellEditingEngine";
 import { BeInspireTreeNode, BeInspireTree } from "../../../ui-components/tree/deprecated/component/BeInspireTree";
@@ -25,7 +26,7 @@ describe("CellEditingEngine", () => {
 
   beforeEach(() => {
     tree = new BeInspireTree<TreeNodeItem>({
-      dataProvider: [{ id: "0", label: "0" }, { id: "1", label: "1" }],
+      dataProvider: [{ id: "0", label: PropertyRecord.fromString("0") }, { id: "1", label: PropertyRecord.fromString("1") }],
       mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
     });
     node = tree.nodes()[0];
@@ -183,7 +184,7 @@ describe("CellEditingEngine", () => {
       const setStateWithArgs = sinon.spy();
 
       node.selected = () => true;
-      node.payload = { id: "a", label: "b", isEditable: true };
+      node.payload = { id: "a", label: PropertyRecord.fromString("b"), isEditable: true };
 
       const engine = new CellEditingEngine(props);
       engine.subscribe(() => undefined, setStateWithArgs);
@@ -197,7 +198,7 @@ describe("CellEditingEngine", () => {
       const setStateWithArgs = sinon.spy();
 
       node.selected = () => false;
-      node.payload = { id: "a", label: "b", isEditable: true };
+      node.payload = { id: "a", label: PropertyRecord.fromString("b"), isEditable: true };
 
       const engine = new CellEditingEngine(props);
       engine.subscribe(() => node, setStateWithArgs);

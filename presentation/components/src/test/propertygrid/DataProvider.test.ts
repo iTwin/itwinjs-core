@@ -313,7 +313,7 @@ describe("PropertyDataProvider", () => {
     it("returns empty data object when receives undefined content", async () => {
       (provider as any).getContent = async () => undefined;
       expect(await provider.getData()).to.deep.eq({
-        label: "",
+        label: PropertyRecord.fromString("", "label"),
         categories: [],
         records: {},
       });
@@ -322,7 +322,7 @@ describe("PropertyDataProvider", () => {
     it("returns empty data object when receives content with no values", async () => {
       (provider as any).getContent = async () => new Content(createRandomDescriptor(), []);
       expect(await provider.getData()).to.deep.eq({
-        label: "",
+        label: PropertyRecord.fromString("", "label"),
         categories: [],
         records: {},
       });

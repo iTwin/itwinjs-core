@@ -12,6 +12,7 @@ import {
 } from "@bentley/ui-components";
 import { ConfigurableCreateInfo, WidgetControl } from "@bentley/ui-framework";
 import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 export class TreeSelectionDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -179,7 +180,7 @@ const createDataProvider = (): ITreeDataProvider => ({
 
 const createTreeNode = (id: string, hasChildren?: boolean): DelayLoadedTreeNodeItem => ({
   id,
-  label: id,
+  label: PropertyRecord.fromString(id),
   isCheckboxVisible: true,
   hasChildren,
 });

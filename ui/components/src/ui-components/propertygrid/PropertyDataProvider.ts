@@ -25,9 +25,7 @@ export interface PropertyCategory {
  * @public
  */
 export interface PropertyData {
-  label: string;
-  /** @alpha temporary property */
-  labelDefinition?: PropertyRecord;
+  label: PropertyRecord;
   description?: string;
   categories: PropertyCategory[];
   records: { [categoryName: string]: PropertyRecord[] };

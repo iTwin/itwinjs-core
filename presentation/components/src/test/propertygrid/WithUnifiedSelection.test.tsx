@@ -19,6 +19,7 @@ import {
   Presentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, PresentationManager,
 } from "@bentley/presentation-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid, PropertyGridProps, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
 import {
@@ -65,7 +66,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
       rulesetId = testRulesetId;
     if (!propertyData) {
       propertyData = {
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         description: faker.random.words(),
         categories: [],
         records: {},

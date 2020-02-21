@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   TreeNodeItem,
   TreeDataChangesListener,
@@ -29,30 +30,30 @@ export interface DemoDragDropObject {
 
 export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [
   {
-    label: "Interface Node 1", id: "1", description: "First root node", icon: "icon-clipboard-cut", hasChildren: true,
+    label: PropertyRecord.fromString("Interface Node 1"), id: "1", description: "First root node", icon: "icon-clipboard-cut", hasChildren: true,
     extendedData: {
       type: TreeDragTypes.Root,
       children: [
-        { label: "Interface Node 1.1", id: "1.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to first root node.", parentId: "1", icon: "icon-parallel-move" },
-        { label: "Interface Node 1.2", id: "1.2", extendedData: { type: TreeDragTypes.Child }, description: "Fifth child node to first root node.", parentId: "1", icon: "icon-share" },
+        { label: PropertyRecord.fromString("Interface Node 1.1"), id: "1.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to first root node.", parentId: "1", icon: "icon-parallel-move" },
+        { label: PropertyRecord.fromString("Interface Node 1.2"), id: "1.2", extendedData: { type: TreeDragTypes.Child }, description: "Fifth child node to first root node.", parentId: "1", icon: "icon-share" },
       ],
     },
   }, {
-    label: "Interface Node 2", id: "2", description: "Second root node", icon: "icon-file-types-xls", hasChildren: true,
+    label: PropertyRecord.fromString("Interface Node 2"), id: "2", description: "Second root node", icon: "icon-file-types-xls", hasChildren: true,
     extendedData: {
       type: TreeDragTypes.Root,
       children: [
-        { label: "Interface Node 2.1", id: "2.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to second root node.", parentId: "2", icon: "icon-slice" },
+        { label: PropertyRecord.fromString("Interface Node 2.1"), id: "2.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to second root node.", parentId: "2", icon: "icon-slice" },
         {
-          label: "Interface Node 2.2", id: "2.2", description: "Third child node to second root node.", parentId: "2", icon: "icon-chat-2", hasChildren: true,
+          label: PropertyRecord.fromString("Interface Node 2.2"), id: "2.2", description: "Third child node to second root node.", parentId: "2", icon: "icon-chat-2", hasChildren: true,
           extendedData: {
             type: TreeDragTypes.Child,
             children: [
-              { label: "Interface Node 2.2.1", id: "2.2.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to second child node of second root node.", parentId: "2.2", icon: "icon-checkmark" },
+              { label: PropertyRecord.fromString("Interface Node 2.2.1"), id: "2.2.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to second child node of second root node.", parentId: "2.2", icon: "icon-checkmark" },
             ],
           },
         } as DelayLoadedTreeNodeItem,
-        { label: "Interface Node 2.5", id: "2.5", extendedData: { type: TreeDragTypes.Child }, description: "Fifth child node to second root node.", parentId: "2", icon: "icon-basket" },
+        { label: PropertyRecord.fromString("Interface Node 2.5"), id: "2.5", extendedData: { type: TreeDragTypes.Child }, description: "Fifth child node to second root node.", parentId: "2", icon: "icon-basket" },
       ],
     },
   },
@@ -222,36 +223,36 @@ export const mockInterfaceTreeDataProvider = new DemoITreeDataProvider(dataProvi
 export const mockMutableInterfaceTreeDataProvider = new DemoMutableITreeDataProvider(dataProviderRaw);
 
 export const mockRawTreeDataProvider: ImmediatelyLoadedTreeNodeItem[] = [
-  { label: "Raw Node 1", id: "1", description: "node 1 child" },
+  { label: PropertyRecord.fromString("Raw Node 1"), id: "1", description: "node 1 child" },
   {
-    label: "Raw Node 2", id: "2", description: "node 2 child",
+    label: PropertyRecord.fromString("Raw Node 2"), id: "2", description: "node 2 child",
     children: [
       {
-        label: "Raw Node 2.1", id: "2.1", parentId: "2", description: "node 2.1 child",
+        label: PropertyRecord.fromString("Raw Node 2.1"), id: "2.1", parentId: "2", description: "node 2.1 child",
         children: [
-          { label: "Raw Node 2.1.1", id: "2.1.1", parentId: "2.1", description: "node 2.1.1 child" },
+          { label: PropertyRecord.fromString("Raw Node 2.1.1"), id: "2.1.1", parentId: "2.1", description: "node 2.1.1 child" },
         ] as ImmediatelyLoadedTreeNodeItem[],
       },
-      { label: "Raw Node 2.2", id: "2.2", parentId: "2", description: "node 2.2 child" },
+      { label: PropertyRecord.fromString("Raw Node 2.2"), id: "2.2", parentId: "2", description: "node 2.2 child" },
     ] as ImmediatelyLoadedTreeNodeItem[],
   },
-  { label: "Raw Node 3", id: "3", description: "node 3 child" },
-  { label: "Raw Node 4", id: "4", description: "node 4 child" },
+  { label: PropertyRecord.fromString("Raw Node 3"), id: "3", description: "node 3 child" },
+  { label: PropertyRecord.fromString("Raw Node 4"), id: "4", description: "node 4 child" },
 ];
 
 export const mockRawTreeDataProvider2: ImmediatelyLoadedTreeNodeItem[] = [
-  { label: "Raw 2 Node 1", id: "1", description: "node 1 child" },
+  { label: PropertyRecord.fromString("Raw 2 Node 1"), id: "1", description: "node 1 child" },
   {
-    label: "Raw 2 Node 2", id: "2", description: "node 2 child",
+    label: PropertyRecord.fromString("Raw 2 Node 2"), id: "2", description: "node 2 child",
     children: [
       {
-        label: "Raw 2 Node 2.1", id: "2.1", parentId: "2", description: "node 2.1 child",
+        label: PropertyRecord.fromString("Raw 2 Node 2.1"), id: "2.1", parentId: "2", description: "node 2.1 child",
         children: [
-          { label: "Raw 2 Node 2.1.1", id: "2.1.1", description: "node 2.1.1 child" },
+          { label: PropertyRecord.fromString("Raw 2 Node 2.1.1"), id: "2.1.1", description: "node 2.1.1 child" },
         ] as ImmediatelyLoadedTreeNodeItem[],
       },
     ] as ImmediatelyLoadedTreeNodeItem[],
   },
-  { label: "Raw 2 Node 3", id: "3", description: "node 3 child" },
-  { label: "Raw 2 Node 4", id: "4", description: "node 4 child" },
+  { label: PropertyRecord.fromString("Raw 2 Node 3"), id: "3", description: "node 3 child" },
+  { label: PropertyRecord.fromString("Raw 2 Node 4"), id: "4", description: "node 4 child" },
 ];

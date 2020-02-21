@@ -14,7 +14,7 @@ import { IPropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChan
  * @public
  */
 export class SimplePropertyDataProvider implements IPropertyDataProvider, PropertyData {
-  public label: string = "";
+  public label: PropertyRecord = PropertyRecord.fromString("");
   public description?: string;
   public categories: PropertyCategory[] = [];
   public records: { [categoryName: string]: PropertyRecord[] } = {};

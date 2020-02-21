@@ -7,10 +7,10 @@
  */
 
 import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { PageOptions } from "../common/PageOptions";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { ItemStyle } from "../properties/ItemStyle";
-import { PrimitiveValue, PropertyRecord } from "@bentley/ui-abstract";
 
 /**
  * A node item which can be displayed in a tree.
@@ -19,9 +19,7 @@ import { PrimitiveValue, PropertyRecord } from "@bentley/ui-abstract";
 export interface TreeNodeItem {
   id: string;
   parentId?: string;
-  label: string;
-  /** @alpha temporary property */
-  labelDefinition?: PropertyRecord;
+  label: PropertyRecord;
   description?: string;
   autoExpand?: boolean;
   icon?: string;
@@ -29,22 +27,12 @@ export interface TreeNodeItem {
   isCheckboxDisabled?: boolean;
   checkBoxState?: CheckBoxState;
   isEditable?: boolean;
-  /** Primitive typename. See PropertyRecord.PropertyDescription */
-  typename?: string;
   style?: ItemStyle;
   /**
    * A key-value pairs data structure that can be used by data provider
    * to store some custom data for this node item.
    */
   extendedData?: { [key: string]: any };
-}
-
-/** @internal */
-export function getLabelString(label: string | PropertyRecord) {
-  if (typeof label === "string")
-    return label;
-
-  return (label.value as PrimitiveValue).displayValue || "";
 }
 
 /** A [[TreeNodeItem]] for immediately loaded trees

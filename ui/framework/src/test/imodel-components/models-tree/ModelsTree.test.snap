@@ -135,8 +135,7 @@ Array [
                           "modelId": "0x45",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2A]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -199,8 +198,7 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Floor",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -219,8 +217,7 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "Arch 1.dgn",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -243,8 +240,7 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3I]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -306,8 +302,7 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3J]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -369,8 +364,7 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3K]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -432,8 +426,7 @@ Array [
                           "modelId": "0x47",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3L]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -496,8 +489,7 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Walls",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -516,8 +508,7 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "Arch 2.dgn",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -540,8 +531,7 @@ Array [
                           "modelId": "0x49",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3O]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -604,8 +594,7 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Roof",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -626,8 +615,7 @@ Array [
                           "modelId": "0x49",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3M]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -689,8 +677,7 @@ Array [
                           "modelId": "0x49",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3N]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -753,8 +740,7 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Walls",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -773,8 +759,7 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "Arch 3.dgn",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -793,8 +778,7 @@ Array [
             },
             "hasChildren": true,
             "icon": "icon-folder",
-            "label": "Arch master.dgn",
-            "labelDefinition": PropertyRecord {
+            "label": PropertyRecord {
               "property": Object {
                 "displayLabel": "Label",
                 "name": "node_label",
@@ -819,8 +803,7 @@ Array [
                           "modelId": "0x4d",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3Q]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -883,8 +866,7 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "sewer",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -905,8 +887,7 @@ Array [
                           "modelId": "0x4d",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3P]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -969,8 +950,7 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "supply",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -989,8 +969,7 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "MEP 1.dgn",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -1009,8 +988,7 @@ Array [
             },
             "hasChildren": true,
             "icon": "icon-folder",
-            "label": "MEP master.dgn",
-            "labelDefinition": PropertyRecord {
+            "label": PropertyRecord {
               "property": Object {
                 "displayLabel": "Label",
                 "name": "node_label",
@@ -1035,8 +1013,7 @@ Array [
                           "modelId": "0x41",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2B]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1099,8 +1076,7 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Floor",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -1119,8 +1095,7 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "Struct 1.dgn",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -1143,8 +1118,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3C]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1206,8 +1180,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3D]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1269,8 +1242,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3E]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1332,8 +1304,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3F]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1395,8 +1366,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3G]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1458,8 +1428,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3H]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1522,8 +1491,7 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Beams",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -1544,8 +1512,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2C]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1607,8 +1574,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2D]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1670,8 +1636,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2E]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1733,8 +1698,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2F]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1796,8 +1760,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2G]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1859,8 +1822,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2H]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1922,8 +1884,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2I]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -1985,8 +1946,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2J]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2048,8 +2008,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2K]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2111,8 +2070,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2L]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2174,8 +2132,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2M]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2237,8 +2194,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2N]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2300,8 +2256,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2O]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2363,8 +2318,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2P]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2426,8 +2380,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2Q]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2489,8 +2442,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2R]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2552,8 +2504,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2S]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2615,8 +2566,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2T]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2678,8 +2628,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2U]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2741,8 +2690,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2V]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2804,8 +2752,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2W]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2867,8 +2814,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2X]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2930,8 +2876,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2Y]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -2993,8 +2938,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-2Z]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3056,8 +3000,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3A]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3119,8 +3062,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-3B]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3182,8 +3124,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-30]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3245,8 +3186,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-31]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3308,8 +3248,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-32]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3371,8 +3310,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-33]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3434,8 +3372,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-34]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3497,8 +3434,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-35]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3560,8 +3496,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-36]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3623,8 +3558,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-37]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3686,8 +3620,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-38]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3749,8 +3682,7 @@ Array [
                           "modelId": "0x3f",
                         },
                         "icon": "icon-item",
-                        "label": "Physical Object [0-39]",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3813,8 +3745,7 @@ Array [
                     },
                     "hasChildren": true,
                     "icon": "icon-layers",
-                    "label": "Columns",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -3833,8 +3764,7 @@ Array [
                 },
                 "hasChildren": true,
                 "icon": "icon-folder",
-                "label": "Struct 2.dgn",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -3853,8 +3783,7 @@ Array [
             },
             "hasChildren": true,
             "icon": "icon-folder",
-            "label": "Struct master.dgn",
-            "labelDefinition": PropertyRecord {
+            "label": PropertyRecord {
               "property": Object {
                 "displayLabel": "Label",
                 "name": "node_label",
@@ -3873,8 +3802,7 @@ Array [
         },
         "hasChildren": true,
         "icon": "icon-folder",
-        "label": "Joe's house",
-        "labelDefinition": PropertyRecord {
+        "label": PropertyRecord {
           "property": Object {
             "displayLabel": "Label",
             "name": "node_label",
@@ -3893,8 +3821,7 @@ Array [
     },
     "hasChildren": true,
     "icon": "icon-imodel-hollow-2",
-    "label": "Joe's house.bim",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

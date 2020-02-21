@@ -648,7 +648,7 @@ export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
 // @beta
 export interface BreadcrumbNodeProps {
     icon: string;
-    label: string;
+    label: PropertyRecord;
     // @internal (undocumented)
     onRender?: () => void;
 }
@@ -1533,9 +1533,6 @@ export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
 
 // @internal (undocumented)
-export function getLabelString(label: string | PropertyRecord): string;
-
-// @internal (undocumented)
 export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void;
 
 // @public
@@ -2003,7 +2000,7 @@ export interface MutableTreeModelNode extends TreeModelNode {
     // (undocumented)
     item: TreeNodeItem;
     // (undocumented)
-    label: string;
+    label: PropertyRecord;
 }
 
 // @public
@@ -2292,9 +2289,7 @@ export interface PropertyData {
     // (undocumented)
     description?: string;
     // (undocumented)
-    label: string;
-    // @alpha
-    labelDefinition?: PropertyRecord;
+    label: PropertyRecord;
     // (undocumented)
     records: {
         [categoryName: string]: PropertyRecord[];
@@ -2771,7 +2766,7 @@ export class SimplePropertyDataProvider implements IPropertyDataProvider, Proper
     // (undocumented)
     getData(): Promise<PropertyData>;
     // (undocumented)
-    label: string;
+    label: PropertyRecord;
     // (undocumented)
     onDataChanged: PropertyDataChangeEvent;
     // (undocumented)
@@ -3514,7 +3509,7 @@ export interface TreeModelNode {
     // (undocumented)
     readonly item: TreeNodeItem;
     // (undocumented)
-    readonly label: string;
+    readonly label: PropertyRecord;
     // (undocumented)
     readonly numChildren: number | undefined;
     // (undocumented)
@@ -3544,7 +3539,7 @@ export interface TreeModelNodeInput {
     // (undocumented)
     readonly item: TreeNodeItem;
     // (undocumented)
-    readonly label: string;
+    readonly label: PropertyRecord;
     // (undocumented)
     readonly numChildren?: number;
 }
@@ -3630,14 +3625,11 @@ export interface TreeNodeItem {
     // (undocumented)
     isEditable?: boolean;
     // (undocumented)
-    label: string;
-    // @alpha
-    labelDefinition?: PropertyRecord;
+    label: PropertyRecord;
     // (undocumented)
     parentId?: string;
     // (undocumented)
     style?: ItemStyle;
-    typename?: string;
 }
 
 // @beta

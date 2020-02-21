@@ -10,7 +10,6 @@ import { RenderResult, render, within, fireEvent, cleanup, waitForElement, wait 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../../ui-components/properties/ValueRendererManager";
 import {
   SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw,
   ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeCellUpdatedArgs,
@@ -28,8 +27,7 @@ import {
 } from "../../../../ui-components/tree/deprecated/component/Tree";
 import { BeInspireTreeNode, BeInspireTreeNodeConfig } from "../../../../ui-components/tree/deprecated/component/BeInspireTree";
 import { TreeNodeProps } from "../../../../ui-components/tree/deprecated/component/Node";
-
-// tslint:disable:deprecation
+import { getPropertyRecordAsString } from "../../../../ui-components/common/getPropertyRecordAsString";
 
 // tslint:disable:deprecation
 
@@ -80,12 +78,12 @@ describe("Tree", () => {
     return async (parent?: TreeNodeItem) => {
       if (!parent)
         return [
-          { id: "0", label: "0", hasChildren: true, autoExpand: isExpanded("0"), isEditable: true },
-          { id: "1", label: "1", hasChildren: true, autoExpand: isExpanded("1") },
+          { id: "0", label: PropertyRecord.fromString("0"), hasChildren: true, autoExpand: isExpanded("0"), isEditable: true },
+          { id: "1", label: PropertyRecord.fromString("1"), hasChildren: true, autoExpand: isExpanded("1") },
         ];
       return [
-        { id: parent.id + "-a", label: parent.label + "-a" },
-        { id: parent.id + "-b", label: parent.label + "-b" },
+        { id: parent.id + "-a", label: PropertyRecord.fromString(getPropertyRecordAsString(parent.label) + "-a") },
+        { id: parent.id + "-b", label: PropertyRecord.fromString(getPropertyRecordAsString(parent.label) + "-b") },
       ];
     };
   };
@@ -257,7 +255,7 @@ describe("Tree", () => {
 
       it("shift select nodes from node index 10 to 2", async () => {
         const nodeIds = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10"];
-        extendedSelectionProps.dataProvider = nodeIds.map((id) => ({ id, label: id }));
+        extendedSelectionProps.dataProvider = nodeIds.map((id) => ({ id, label: PropertyRecord.fromString(id) }));
 
         await createDefaultTreeForExtendedSelection();
 
@@ -801,10 +799,10 @@ describe("Tree", () => {
       it("selects nodes after expanding with immediately loading data provider", async () => {
         const dp: TreeDataProviderRaw = [{
           id: "0",
-          label: "0",
+          label: PropertyRecord.fromString("0"),
           children: [{
             id: "1",
-            label: "1",
+            label: PropertyRecord.fromString("1"),
           }],
         }];
 
@@ -888,7 +886,7 @@ describe("Tree", () => {
     it("renders checkboxes when attributes are supplied through TreeNodeItem", async () => {
       const dataProvider: TreeNodeItem[] = [{
         id: "0",
-        label: "0",
+        label: PropertyRecord.fromString("0"),
         isCheckboxVisible: true,
         isCheckboxDisabled: true,
         checkBoxState: CheckBoxState.On,
@@ -912,7 +910,7 @@ describe("Tree", () => {
     it("renders checkboxes using callback when attributes supplied through both TreeNodeItem and `checkboxInfo` callback", async () => {
       const dataProvider: TreeNodeItem[] = [{
         id: "0",
-        label: "0",
+        label: PropertyRecord.fromString("0"),
         isCheckboxVisible: true,
         isCheckboxDisabled: true,
         checkBoxState: CheckBoxState.On,
@@ -941,13 +939,13 @@ describe("Tree", () => {
     it("renders children checkboxes when parent is expanded with immediately-loading data provider", async () => {
       const dataProvider: ImmediatelyLoadedTreeNodeItem[] = [{
         id: "0",
-        label: "0",
+        label: PropertyRecord.fromString("0"),
         children: [{
           id: "0-a",
-          label: "0-a",
+          label: PropertyRecord.fromString("0-a"),
         }, {
           id: "0-b",
-          label: "0-b",
+          label: PropertyRecord.fromString("0-b"),
         }],
       }];
       const checkboxInfo = (n: TreeNodeItem) => ({ isVisible: (n.id === "0-a") });
@@ -1159,7 +1157,7 @@ describe("Tree", () => {
     it("renders checkbox state change", async () => {
       const nodes: TreeNodeItem[] = [{
         id: "0",
-        label: "0",
+        label: PropertyRecord.fromString("0"),
         isCheckboxVisible: true,
         checkBoxState: CheckBoxState.Off,
       }];
@@ -1210,12 +1208,12 @@ describe("Tree", () => {
     let dataProvider: TreeDataProviderMethod = async (parent?: TreeNodeItem) => {
       if (!parent)
         return [
-          { id: "0", label: "0", hasChildren: true },
-          { id: "1", label: "1", hasChildren: true },
+          { id: "0", label: PropertyRecord.fromString("0"), hasChildren: true },
+          { id: "1", label: PropertyRecord.fromString("1"), hasChildren: true },
         ];
       return [
-        { id: parent.id + "-a", label: parent.label + "-a" },
-        { id: parent.id + "-b", label: parent.label + "-b" },
+        { id: parent.id + "-a", label: PropertyRecord.fromString(parent.label + "-a") },
+        { id: parent.id + "-b", label: PropertyRecord.fromString(parent.label + "-b") },
       ];
     };
 
@@ -1317,24 +1315,24 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         renderedTree = render(<Tree
           {...defaultProps}
-          dataProvider={[{ id: "0", label: "0" }]}
+          dataProvider={[{ id: "0", label: PropertyRecord.fromString("0") }]}
         />);
       }, renderSpy, 2);
       await waitForUpdate(() => {
         renderedTree.rerender(<Tree
           {...defaultProps}
-          dataProvider={[{ id: "1", label: "1" }]}
+          dataProvider={[{ id: "1", label: PropertyRecord.fromString("1") }]}
         />);
       }, renderSpy, 2);
       expect(getNode("1")).to.not.be.undefined;
     });
 
     it("rerenders on data provider change without waiting for initial update with immediate data provider", async () => {
-      renderedTree = render(<Tree {...defaultProps} dataProvider={[{ id: "0", label: "0" }]} />);
+      renderedTree = render(<Tree {...defaultProps} dataProvider={[{ id: "0", label: PropertyRecord.fromString("0") }]} />);
       expect(renderedTree.queryAllByTestId(TreeComponentTestId.Node).length).to.eq(0);
 
       await waitForUpdate(() => {
-        renderedTree.rerender(<Tree {...defaultProps} dataProvider={[{ id: "1", label: "1" }]} />);
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={[{ id: "1", label: PropertyRecord.fromString("1") }]} />);
       }, renderSpy, 2);
       expect(getNode("1")).to.not.be.undefined;
     });
@@ -1352,11 +1350,11 @@ describe("Tree", () => {
       expect(renderedTree.queryAllByTestId(TreeComponentTestId.Node).length).to.eq(0);
       renderSpy.resetHistory();
 
-      await p1.resolve([{ id: "0", label: "0" }]);
+      await p1.resolve([{ id: "0", label: PropertyRecord.fromString("0") }]);
       expect(renderSpy).to.not.be.called;
       expect(renderedTree.queryAllByTestId(TreeComponentTestId.Node).length).to.eq(0);
 
-      await p2.resolve([{ id: "1", label: "1" }]);
+      await p2.resolve([{ id: "1", label: PropertyRecord.fromString("1") }]);
       expect(renderSpy).to.be.calledOnce;
       expect(getNode("1")).to.not.be.undefined;
     });
@@ -1366,7 +1364,7 @@ describe("Tree", () => {
         renderedTree = render(
           <Tree
             {...defaultProps}
-            dataProvider={[{ id: "0", label: "0", icon: "icon-placeholder" }]}
+            dataProvider={[{ id: "0", label: PropertyRecord.fromString("0"), icon: "icon-placeholder" }]}
             showIcons={true}
           />);
       }, renderSpy, 2);
@@ -1385,7 +1383,7 @@ describe("Tree", () => {
         renderedTree = render(
           <Tree
             {...defaultProps}
-            dataProvider={[{ id: "0", label: "0", icon: "icon-placeholder" }]}
+            dataProvider={[{ id: "0", label: PropertyRecord.fromString("0"), icon: "icon-placeholder" }]}
             showIcons={true}
             imageLoader={loader}
           />);
@@ -1401,7 +1399,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         renderedTree = render(<Tree
           {...defaultProps}
-          dataProvider={[{ id: "0", label: "0" }, { id: "1", label: "1" }]}
+          dataProvider={[{ id: "0", label: PropertyRecord.fromString("0") }, { id: "1", label: PropertyRecord.fromString("1") }]}
           renderOverrides={{ renderNode: renderMock.object }}
         />);
       }, renderSpy, 2);
@@ -1417,7 +1415,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         renderedTree = render(<Tree
           {...defaultProps}
-          dataProvider={[{ id: "0", label: "0", isCheckboxVisible: true }]}
+          dataProvider={[{ id: "0", label: PropertyRecord.fromString("0"), isCheckboxVisible: true }]}
           renderOverrides={{ renderCheckbox: checkboxRenderer }}
         />);
       }, renderSpy, 2);
@@ -1431,8 +1429,8 @@ describe("Tree", () => {
         getNodesCount: async () => 2,
         getNodes: async (_parent, page: PageOptions) => {
           if (page.start === 0)
-            return [{ id: "0", label: "0" }];
-          return [{ id: "1", label: "1" }];
+            return [{ id: "0", label: PropertyRecord.fromString("0") }];
+          return [{ id: "1", label: PropertyRecord.fromString("1") }];
         },
       };
 
@@ -1451,7 +1449,7 @@ describe("Tree", () => {
     it("renders rows with a different height when rowHeight prop is set to number", async () => {
       const provider: ITreeDataProvider = {
         getNodesCount: async () => 2,
-        getNodes: async () => [{ id: "0", label: "0" }],
+        getNodes: async () => [{ id: "0", label: PropertyRecord.fromString("0") }],
       };
 
       await waitForUpdate(() => {
@@ -1472,7 +1470,7 @@ describe("Tree", () => {
     it("renders rows with a different height when rowHeight prop is set to function", async () => {
       const provider: ITreeDataProvider = {
         getNodesCount: async () => 2,
-        getNodes: async () => [{ id: "0", label: "without-description" }, { id: "1", label: "with-description", description: "desc" }],
+        getNodes: async () => [{ id: "0", label: PropertyRecord.fromString("without-description") }, { id: "1", label: PropertyRecord.fromString("with-description"), description: "desc" }],
       };
 
       const rowHeight = (n?: TreeNodeItem) => n && n.description ? 40 : 20;
@@ -1500,7 +1498,7 @@ describe("Tree", () => {
     it("renders row heights with default function if rowHeight prop is not provided", async () => {
       const provider: ITreeDataProvider = {
         getNodesCount: async () => 2,
-        getNodes: async () => [{ id: "0", label: "without-description" }, { id: "1", label: "with-description", description: "desc" }],
+        getNodes: async () => [{ id: "0", label: PropertyRecord.fromString("without-description") }, { id: "1", label: PropertyRecord.fromString("with-description"), description: "desc" }],
       };
 
       await waitForUpdate(() => {
@@ -1531,7 +1529,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         renderedTree = render(<Tree
           {...defaultProps}
-          dataProvider={[{ id: "0", label: "0", icon: "test-icon" }]}
+          dataProvider={[{ id: "0", label: PropertyRecord.fromString("0"), icon: "test-icon" }]}
           nodeHighlightingProps={{ searchText: "test" }}
         />);
       }, renderSpy, 2);
@@ -1540,7 +1538,7 @@ describe("Tree", () => {
 
     it("rerenders without HighlightingEngine when nodeHighlightingProps are reset to undefined", async () => {
       const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
-      const dp: TreeDataProviderRaw = [{ id: "0", label: "0", icon: "test-icon", children: [] }];
+      const dp: TreeDataProviderRaw = [{ id: "0", label: PropertyRecord.fromString("0"), icon: "test-icon", children: [] }];
 
       await waitForUpdate(() => {
         renderedTree = render(<Tree
@@ -1560,38 +1558,8 @@ describe("Tree", () => {
       expect(renderLabelSpy.called).to.be.false;
     });
 
-    it("renders a node which primitive type is not a string", async () => {
-      const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();
-      let error: Error | undefined;
-
-      rendererManagerMock
-        .setup((manager) => manager.render(moq.It.isAny(), moq.It.isAny()))
-        .callback((record: PropertyRecord, context: PropertyValueRendererContext) => {
-          try {
-            expect(record.property.typename).to.equal("test_type");
-            expect(context).to.exist;
-            expect(context.containerType).to.equal(PropertyContainerType.Tree);
-          } catch (testFailure) { error = testFailure; }
-        })
-        .returns(() => "Custom renderer label")
-        .verifiable(moq.Times.atLeastOnce());
-
-      await waitForUpdate(() => {
-        renderedTree = render(<Tree
-          {...defaultProps}
-          dataProvider={[{ id: "0", label: "Test label", typename: "test_type" }]}
-          propertyValueRendererManager={rendererManagerMock.object}
-        />);
-      }, renderNodesSpy);
-
-      rendererManagerMock.verifyAll();
-      if (error)
-        throw error;
-      renderedTree.getByText("Custom renderer label");
-    });
-
     it("renders description when showDescriptions prop is set to true", async () => {
-      const dp: TreeDataProviderRaw = [{ id: "0", label: "0", icon: "test-icon", description: "Test label", children: [] }];
+      const dp: TreeDataProviderRaw = [{ id: "0", label: PropertyRecord.fromString("0"), icon: "test-icon", description: "Test label", children: [] }];
       const tree = render(
         <Tree
           {...defaultProps}
@@ -1603,7 +1571,7 @@ describe("Tree", () => {
     });
 
     it("does not render description when showDescriptions prop is set to false", async () => {
-      const dp: TreeDataProviderRaw = [{ id: "0", label: "0", icon: "test-icon", description: "Test label", children: [] }];
+      const dp: TreeDataProviderRaw = [{ id: "0", label: PropertyRecord.fromString("0"), icon: "test-icon", description: "Test label", children: [] }];
       const tree = render(
         <Tree
           {...defaultProps}
@@ -1648,7 +1616,7 @@ describe("Tree", () => {
 
       const node = (await interfaceProvider.getNodes())[1];
       await waitForUpdate(() => {
-        node.label = "test";
+        node.label = PropertyRecord.fromString("test");
         interfaceProvider.onTreeNodeChanged!.raiseEvent([node]);
       }, renderNodesSpy);
       expect(renderedTree.getByText("test")).to.not.be.undefined;
@@ -1667,7 +1635,7 @@ describe("Tree", () => {
 
       const node = (await interfaceProvider.getNodes())[0];
       await waitForUpdate(() => {
-        node.label = "test";
+        node.label = PropertyRecord.fromString("test");
         interfaceProvider.onTreeNodeChanged!.raiseEvent([node]);
       }, renderNodesSpy);
       expect(renderedTree.getByText("test")).to.not.be.undefined;
@@ -1704,7 +1672,7 @@ describe("Tree", () => {
 
       const node: TreeNodeItem = {
         id: "test",
-        label: "test",
+        label: PropertyRecord.fromString("test"),
       };
       interfaceProvider.onTreeNodeChanged!.raiseEvent(node);
       expect(renderedTree.getAllByTestId(TreeComponentTestId.Node as any).length).to.eq(4);
@@ -1768,7 +1736,7 @@ describe("Tree", () => {
     });
 
     it("scrolls to highlighted node when highlighting props change", async () => {
-      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
+      const dp = [{ id: "0", label: PropertyRecord.fromString("zero"), icon: "test-icon" }];
 
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
@@ -1790,7 +1758,7 @@ describe("Tree", () => {
     });
 
     it("does nothing when there's no active match", async () => {
-      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
+      const dp = [{ id: "0", label: PropertyRecord.fromString("zero"), icon: "test-icon" }];
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
       }, renderSpy, 2);
@@ -1805,7 +1773,7 @@ describe("Tree", () => {
     });
 
     it("does nothing when there's active match element is not found", async () => {
-      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
+      const dp = [{ id: "0", label: PropertyRecord.fromString("zero"), icon: "test-icon" }];
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
       }, renderSpy, 2);
@@ -1823,7 +1791,7 @@ describe("Tree", () => {
     });
 
     it("does nothing when unrelated props change", async () => {
-      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
+      const dp = [{ id: "0", label: PropertyRecord.fromString("zero"), icon: "test-icon" }];
       const highlightProps: HighlightableTreeProps = {
         searchText: "er",
         activeMatch: {
@@ -1945,7 +1913,7 @@ describe("Tree", () => {
 
   it("calls `onRootNodesLoaded` props callback", async () => {
     const spy = sinon.spy();
-    const data: TreeNodeItem[] = [{ id: "0", label: "0" }];
+    const data: TreeNodeItem[] = [{ id: "0", label: PropertyRecord.fromString("0") }];
     await waitForUpdate(() => {
       renderedTree = render(<Tree
         {...defaultProps}
@@ -1958,8 +1926,8 @@ describe("Tree", () => {
 
   it("calls `onChildrenLoaded` props callback", async () => {
     const spy = sinon.spy();
-    const rootNode: DelayLoadedTreeNodeItem = { id: "0", label: "0", autoExpand: true, hasChildren: true };
-    const childNode: DelayLoadedTreeNodeItem = { id: "1", label: "1" };
+    const rootNode: DelayLoadedTreeNodeItem = { id: "0", label: PropertyRecord.fromString("0"), autoExpand: true, hasChildren: true };
+    const childNode: DelayLoadedTreeNodeItem = { id: "1", label: PropertyRecord.fromString("1") };
     const data = async (parent?: TreeNodeItem) => parent ? [childNode] : [rootNode];
     await waitForUpdate(() => {
       renderedTree = render(<Tree
@@ -1973,7 +1941,7 @@ describe("Tree", () => {
 
   it("calls `onRootNodesLoaded` props callback once per page", async () => {
     const spy = sinon.spy();
-    const data: TreeNodeItem[] = [{ id: "0", label: "0" }, { id: "1", label: "1" }];
+    const data: TreeNodeItem[] = [{ id: "0", label: PropertyRecord.fromString("0") }, { id: "1", label: PropertyRecord.fromString("1") }];
     const provider: ITreeDataProvider = {
       getNodesCount: async () => 2,
       getNodes: async (_parent, page: PageOptions) => {
@@ -1994,8 +1962,8 @@ describe("Tree", () => {
 
   it("calls `onChildrenLoaded` props callback once per page", async () => {
     const spy = sinon.spy();
-    const rootNode: DelayLoadedTreeNodeItem = { id: "0", label: "0", autoExpand: true, hasChildren: true };
-    const childNodes: TreeNodeItem[] = [{ id: "1", label: "1" }, { id: "2", label: "2" }];
+    const rootNode: DelayLoadedTreeNodeItem = { id: "0", label: PropertyRecord.fromString("0"), autoExpand: true, hasChildren: true };
+    const childNodes: TreeNodeItem[] = [{ id: "1", label: PropertyRecord.fromString("1") }, { id: "2", label: PropertyRecord.fromString("2") }];
     const provider: ITreeDataProvider = {
       getNodesCount: async (parent?: TreeNodeItem) => (parent ? 2 : 1),
       getNodes: async (parent: TreeNodeItem | undefined, page: PageOptions) => {
@@ -2023,7 +1991,7 @@ describe("Tree", () => {
     beforeEach(async () => {
       item = {
         id: "0",
-        label: "0",
+        label: PropertyRecord.fromString("0"),
       };
 
       nodeConfig = {
