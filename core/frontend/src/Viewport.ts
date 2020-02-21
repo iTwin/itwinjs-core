@@ -338,7 +338,7 @@ class GlobalLocationAnimator implements Animator {
     // Set the camera based on a fraction along the flight arc
     const height: number = Interpolation.Bezier([this._startHeight, this._midHeight, this._endHeight], fraction);
     let targetPoint: Point3d;
-    if (view3d.globeMode === GlobeMode.Columbus)
+    if (view3d.globeMode === GlobeMode.Plane)
       targetPoint = this._columbusLine[0].interpolate(fraction, this._columbusLine[1]);
     else
       targetPoint = this._ellipsoidArc!.fractionToPoint(fraction);
@@ -390,12 +390,12 @@ class GlobalLocationAnimator implements Animator {
 
     let maxFlightDuration: number;
 
-    if (view3d.globeMode === GlobeMode.Columbus) {
+    if (view3d.globeMode === GlobeMode.Plane) {
       // Calculate a line segment going from the starting cartographic coordinate to the ending cartographic coordinate
       this._columbusLine.push(view3d.cartographicToRoot(startCartographic)!);
       this._columbusLine.push(view3d.cartographicToRoot(this._endLocation.center)!);
       this._flightLength = this._columbusLine[0].distance(this._columbusLine[1]);
-      // Set a shorter flight duration in Columbus mode
+      // Set a shorter flight duration in Plane mode
       maxFlightDuration = 7000.0;
     } else {
       // Calculate a flight arc from the ellipsoid of the Earth and the starting and ending cartographic coordinates.
@@ -1060,7 +1060,7 @@ export abstract class Viewport implements IDisposable {
     if (!view.is3d())
       return false;
 
-    return this.displayStyle.globeMode === GlobeMode.ThreeD && view.isGlobalView;
+    return this.displayStyle.globeMode === GlobeMode.Ellipsoid && view.isGlobalView;
   }
 
   /** Remove any [[SubCategoryOverride]] for the specified subcategory.

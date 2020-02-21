@@ -37,9 +37,12 @@ export interface TerrainProps {
  * @see [[TerrainProps]]
  */
 export enum TerrainHeightOriginMode {
-  Geodetic = 0,   // Height value indicates the geodetic height of the IModel origin (also referred to as ellipsoidal or GPS height)
-  Geoid = 1,      // Height value indicates the geoidal height of the IModel origin (commonly referred to as sea level).
-  Ground = 2,     // Height value indicates the height of the IModel origin relative to ground level at project center.
+  /** Height value indicates the geodetic height of the IModel origin (also referred to as ellipsoidal or GPS height) */
+  Geodetic = 0,
+  /** Height value indicates the geoidal height of the IModel origin (commonly referred to as sea level). */
+  Geoid = 1,
+  /** Height value indicates the height of the IModel origin relative to ground level at project center. */
+  Ground = 2,
 }
 
 /**  Normalized version of [[TerrainProps]] for which provider has been validated and default values of all members are used.
@@ -48,7 +51,7 @@ export enum TerrainHeightOriginMode {
 export class TerrainSettings {
   /** Identifies the provider currently only CesiumWorldTerrain supported. */
   public readonly providerName: TerrainProviderName;
-  /** A value greater than one will cause terrain height to be exaggerated/scaled.false (or 1.0) indicate no exaggeration.  Default value: 1.0 */
+  /** A value greater than one will cause terrain height to be exaggerated/scaled. 1.0 indicates no exaggeration. Default value: 1.0 */
   public readonly exaggeration: number;
   /**  Applying lighting can help to visualize subtle terrain variations. Default value: false */
   public readonly applyLighting: boolean;

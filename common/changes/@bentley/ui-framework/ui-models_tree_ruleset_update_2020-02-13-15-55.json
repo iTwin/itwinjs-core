@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Updated ModelTree ruleset to use RelationshipPathSpecification",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Saulius.Skliutas@bentley.com"
+}
