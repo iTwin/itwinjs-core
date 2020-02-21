@@ -17,18 +17,26 @@ import { NativeAppLogger } from "./NativeAppLogger";
  */
 export class NativeApp {
   private static _storages = new Map<string, Storage>();
+  private static _onOnline = async () => {
+    await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
+  }
+  private static _onOffline = async () => {
+    await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
+  }
   private constructor() {
     EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onMemoryWarning, () => { NativeApp.onMemoryWarning.raiseEvent(); });
     EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, (args: any) => { NativeApp.onInternetConnectivityChanged.raiseEvent(args.status); });
   }
-  private static hookBrowserInternetConnectivityEvents() {
-    if (typeof window !== undefined && window.ononline && window.onoffline) {
-      window.addEventListener("online", async () => {
-        await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
-      });
-      window.addEventListener("offline", async () => {
-        await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
-      });
+  private static hookBrowserConnectivityEvents() {
+    if (typeof window === "object" && window.ononline && window.onoffline) {
+      window.addEventListener("online", this._onOnline);
+      window.addEventListener("offline", this._onOffline);
+    }
+  }
+  private static unhookBrowserConnectivityEvents() {
+    if (typeof window === "object" && window.ononline && window.onoffline) {
+      window.removeEventListener("online", this._onOnline);
+      window.removeEventListener("offline", this._onOffline);
     }
   }
   public static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void> = new BeEvent<(status: InternetConnectivityStatus) => void>();
@@ -50,10 +58,15 @@ export class NativeApp {
     (IModelApp as any)._nativeApp = true;
     const backendConfig = await NativeAppRpcInterface.getClient().getConfig();
     Config.App.merge(backendConfig);
-    NativeApp.hookBrowserInternetConnectivityEvents();
+    NativeApp.hookBrowserConnectivityEvents();
+    // initialize current state.
+    if (typeof window === "object" && typeof window.navigator === "object" && window.navigator.onLine) {
+      await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
+    }
   }
 
   public static async shutdown() {
+    NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
     IModelApp.shutdown();
   }
