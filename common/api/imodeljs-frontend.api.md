@@ -4371,7 +4371,7 @@ export namespace IModelConnection {
         export class ConcurrencyControl {
             constructor(c: IModelConnection);
             lockModel(modelId: Id64String, level?: LockLevel): Promise<void>;
-            pullMergePush(comment: string, doPush?: boolean): Promise<void>;
+            pullMergePush(comment: string, doPush?: boolean): Promise<GuidString>;
             request(): Promise<void>;
             }
         export class ModelEditor {

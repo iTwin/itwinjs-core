@@ -61,7 +61,7 @@ export class Element extends Entity implements ElementProps {
    */
   constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
-    this.code = Code.fromJSON(props.code);
+    this.code = Code.fromJSON(props.code);  // TODO: Validate props.code - don't silently fail if it is the wrong type
     this.model = RelatedElement.idFromJson(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
     this.federationGuid = props.federationGuid;

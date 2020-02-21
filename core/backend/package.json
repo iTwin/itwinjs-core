@@ -70,6 +70,7 @@
     "@bentley/oidc-signin-tool": "2.0.0-dev.13",
     "@bentley/perf-tools": "2.0.0-dev.13",
     "@types/chai": "^4.1.4",
+    "@types/deep-assign": "^0.1.0",
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
@@ -97,6 +98,7 @@
   "dependencies": {
     "@bentley/imodeljs-native": "2.0.1",
     "@azure/storage-blob": "10.4.0",
+    "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",

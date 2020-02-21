@@ -901,6 +901,8 @@ export namespace ConcurrencyControl {
         // (undocumented)
         clear(): void;
         // (undocumented)
+        clone(): Request;
+        // (undocumented)
         get codes(): CodeProps[];
         // (undocumented)
         static get codeSpecsLock(): LockProps;

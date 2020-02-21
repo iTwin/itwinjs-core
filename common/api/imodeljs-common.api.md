@@ -3209,7 +3209,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     // (undocumented)
     openForWrite(_iModelToken: IModelTokenProps): Promise<IModelProps>;
     // (undocumented)
-    pullMergePush(_tokenProps: IModelTokenProps, _comment: string, _doPush: boolean): Promise<void>;
+    pullMergePush(_tokenProps: IModelTokenProps, _comment: string, _doPush: boolean): Promise<GuidString>;
     // (undocumented)
     requestResources(_tokenProps: IModelTokenProps, _elementIds: Id64Array, _modelIds: Id64Array, _opcode: DbOpcode): Promise<void>;
     // (undocumented)

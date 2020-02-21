@@ -1,31 +1,22 @@
 {
   "name": "simple-editor-app",
-  "description": "Simple Editor App",
-  "license": "MIT",
-  "author": {
-    "name": "Bentley Systems, Inc.",
-    "url": "http://www.bentley.com"
-  },
-  "os": [
-    "win32",
-    "linux"
-  ],
-  "engines": {
-    "node": ">=10.11.0 <11.0"
-  },
-  "version": "0.0.0",
+  "description": "UI Test Application",
   "private": true,
+  "license": "MIT",
+  "version": "0.0.0",
   "scripts": {
-    "build": "buildIModelJsModule",
+    "build": "cpx ./src/backend/web/BackendServer.config.json ./lib/backend/web && node ./node_modules/@bentley/webpack-tools/bin/buildIModelJsModule",
+    "lint": "tslint -p . 1>&2",
+    "electron": "electron ./lib/backend/main.js",
     "start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=3000 --resources=./lib/webresources/",
-    "start:backend": "node lib/backend/main.js",
-    "start:servers": "env-cmd ./lib/webresources/config.json run-p \"start:webserver\" \"start:backend\"",
-    "electron": "electron lib/backend/main.js",
-    "clean": "rimraf lib .rush",
-    "lint": "tslint --project . 1>&2",
-    "docs": "",
+    "start:backend": "node --max-http-header-size=16000 lib/backend/main.js",
+    "start:pluginserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=4000 --resources=./lib/pluginserver/",
+    "start:servers": "run-p \"start:webserver\" \"start:backend\"",
+    "start:threeservers": "run-p \"start:webserver\" \"start:backend\" \"start:pluginserver\"",
+    "clean": "rimraf lib .rush dist package-deps.json",
+    "test": "",
     "cover": "",
-    "test": ""
+    "docs": ""
   },
   "iModelJs": {
     "buildModule": {
@@ -36,15 +27,11 @@
           "dest": "./lib"
         },
         {
-          "source": "./src/**/*.css",
+          "source": "./src/**/*.svg",
           "dest": "./lib"
         },
         {
           "source": "./public/**/*",
-          "dest": "./lib/webresources"
-        },
-        {
-          "source": "./src/frontend/plugins/public/**/*",
           "dest": "./lib/webresources"
         },
         {
@@ -61,91 +48,87 @@
       },
       "makeConfig": {
         "dest": "./lib/webresources/config.json",
-        "sources": [
-          {
-            "file": "process.env",
-            "filter": "^(i|I)(m|M)(j|J)(s|S)_"
-          },
-          {
-            "file": "./src/common/config.json",
-            "filter": "^(i|I)(m|M)(j|J)(s|S)_"
-          }
-        ]
+        "filter": "^imjs_"
+      },
+      "pseudoLocalize": {
+        "source": "./lib/webresources/locales/en",
+        "dest": "./lib/webresources/locales/en-PSEUDO"
       }
     }
   },
+  "repository": {},
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "//devDependencies": [
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@bentley/config-loader": "2.0.0-dev.13",
+    "@bentley/logger-config": "2.0.0-dev.13",
+    "@bentley/webpack-tools": "2.0.0-dev.13",
+    "@bentley/build-tools": "2.0.0-dev.13",
+    "@bentley/imodeljs-markup": "2.0.0-dev.13",
+    "@bentley/imodeljs-webserver": "2.0.0-dev.13",
+    "@bentley/icons-generic-webfont": "^1.0.0",
+    "@bentley/icons-generic": "^1.0.0",
+    "@types/classnames": "^2.2.3",
+    "@types/lorem-ipsum": "^1.0.2",
+    "@types/node": "10.14.1",
+    "@types/react": "^16.8.0",
+    "@types/react-dom": "^16.8.0",
+    "@types/react-redux": "^7.0.1",
+    "@types/semver": "^5.5.0",
+    "electron": "^6.1.5",
+    "electron-chromedriver": "^2.0.0",
+    "npm-run-all": "^4.1.5",
+    "react-async-hook": "3.6.1",
+    "rimraf": "^2.6.2",
+    "svg-baker-runtime": "^1.4.2",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4",
+    "webpack": "^4.20.2"
+  },
   "dependencies": {
     "@bentley/bentleyjs-core": "2.0.0-dev.13",
-    "@bentley/config-loader": "2.0.0-dev.13",
     "@bentley/electron-manager": "2.0.0-dev.13",
     "@bentley/express-server": "2.0.0-dev.13",
     "@bentley/geometry-core": "2.0.0-dev.13",
-    "@bentley/icons-generic-webfont": "^1.0.0",
-    "@bentley/imodeljs-backend": "2.0.0-dev.13",
     "@bentley/imodeljs-clients": "2.0.0-dev.13",
     "@bentley/imodeljs-clients-backend": "2.0.0-dev.13",
     "@bentley/imodeljs-common": "2.0.0-dev.13",
-    "@bentley/imodeljs-frontend": "2.0.0-dev.13",
     "@bentley/imodeljs-i18n": "2.0.0-dev.13",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.13",
+    "@bentley/imodeljs-markup": "2.0.0-dev.13",
     "@bentley/imodeljs-quantity": "2.0.0-dev.13",
-    "@bentley/imodeljs-webserver": "2.0.0-dev.13",
+    "@bentley/imodeljs-backend": "2.0.0-dev.13",
     "@bentley/presentation-backend": "2.0.0-dev.13",
     "@bentley/presentation-common": "2.0.0-dev.13",
     "@bentley/presentation-components": "2.0.0-dev.13",
     "@bentley/presentation-frontend": "2.0.0-dev.13",
-    "@bentley/presentation-testing": "2.0.0-dev.13",
     "@bentley/ui-abstract": "2.0.0-dev.13",
-    "@bentley/ui-components": "2.0.0-dev.13",
     "@bentley/ui-core": "2.0.0-dev.13",
-    "body-parser": "^1.18.2",
-    "bunyan": "^1.8.12",
-    "express": "^4.16.3",
-    "inspire-tree": "^5.0.1",
-    "lodash": "^4.17.10",
+    "@bentley/ui-components": "2.0.0-dev.13",
+    "@bentley/ui-ninezone": "2.0.0-dev.13",
+    "@bentley/ui-framework": "2.0.0-dev.13",
+    "classnames": "^2.2.5",
+    "cpx": "^1.5.0",
+    "lorem-ipsum": "^2.0.3",
+    "mobx": "^5.8.0",
+    "mobx-react": "^5.4.3",
     "react": "^16.8.0",
-    "react-dnd": "^5.0.0",
-    "react-dnd-html5-backend": "^5.0.1",
+    "react-compound-slider": "^1.2.0",
     "react-dom": "^16.8.0",
-    "react-redux": "^5.0.7",
-    "redux": "^4.0.3"
+    "redux": "^4.0.3",
+    "semver": "^5.5.0",
+    "svg-sprite-loader": "^3.8.0"
   },
-  "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.13",
-    "@bentley/webpack-tools": "2.0.0-dev.13",
-    "@testing-library/react": "^8.0.1",
-    "@testing-library/dom": "^5.2.0",
-    "@types/bunyan": "^1.8.4",
-    "@types/chai": "^4.1.4",
-    "@types/express": "^4.16.1",
-    "@types/jsdom": "^12.2.0",
-    "@types/mocha": "^5.2.5",
-    "@types/node": "10.14.1",
-    "@types/react": "^16.8.0",
-    "@types/react-dom": "^16.8.0",
-    "@types/webdriverio": "^4.13.0",
-    "chai": "^4.1.2",
-    "electron": "^6.1.5",
-    "env-cmd": "^8.0.2",
-    "file-loader": "^4.2.0",
-    "ignore-styles": "^5.0.1",
-    "immutable": "^3.8.2",
-    "jsdom": "^11.12.0",
-    "jsdom-global": "3.0.2",
-    "mocha": "^5.2.0",
-    "nodemon": "^1.18.3",
-    "npm-run-all": "^4.1.5",
-    "path": "^0.12.7",
-    "rimraf": "^2.6.2",
-    "strip-json-comments-cli": "^1.0.1",
-    "tslint": "^5.11.0",
-    "tslint-react-hooks": "^2.2.1",
-    "ts-node": "^7.0.1",
-    "typemoq": "^2.1.0",
-    "typescript": "~3.7.4",
-    "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.0",
-    "xmlhttprequest": "^1.8.0"
-  },
-  "homepage": "http://localhost:3000/",
   "proxy": "http://localhost:5000"
 }
