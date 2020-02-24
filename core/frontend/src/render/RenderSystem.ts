@@ -350,7 +350,7 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a graphic that can contain [[GraphicLayer]]s.
    * @internal
    */
-  public createGraphicLayerContainer(graphic: RenderGraphic, _drawAsOverlay: boolean, _transparency: number): RenderGraphic { return graphic; }
+  public createGraphicLayerContainer(graphic: RenderGraphic, _drawAsOverlay: boolean, _transparency: number, _elevation: number): RenderGraphic { return graphic; }
 
   /** Find a previously-created [[RenderTexture]] by its ID.
    * @param _key The unique ID of the texture within the context of the IModelConnection. Typically an element ID.

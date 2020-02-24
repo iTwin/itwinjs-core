@@ -56,9 +56,9 @@ import { Primitive } from "./Primitive";
 import { MeshGraphic } from "./Mesh";
 import {
   Layer,
-  LayerCommandLists,
   LayerContainer,
 } from "./Layer";
+import { LayerCommandLists } from "./LayerCommands";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal

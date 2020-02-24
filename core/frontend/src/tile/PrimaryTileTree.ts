@@ -7,11 +7,15 @@
  */
 
 import {
+  assert,
   compareBooleans,
   compareStrings,
   Id64String,
 } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
+import {
+  Range3d,
+  Transform,
+} from "@bentley/geometry-core";
 import {
   BatchType,
   compareIModelTileTreeIds,
@@ -28,6 +32,7 @@ import {
   TileTreeOwner,
   TileTreeReference,
   TileTreeSupplier,
+  TileTreeParams,
   tileTreeParamsFromJSON,
 } from "./internal";
 import {
@@ -43,11 +48,22 @@ interface PrimaryTreeId {
   readonly modelId: Id64String;
   readonly is3d: boolean;
   readonly guid: string | undefined;
+  readonly isPlanProjection: boolean;
+}
+
+class PlanProjectionTileTree extends TileTree {
+  public readonly baseElevation: number;
+
+  public constructor(params: TileTreeParams, baseElevation: number) {
+    super(params);
+    this.baseElevation = baseElevation;
+  }
 }
 
 class PrimaryTreeSupplier implements TileTreeSupplier {
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
     // NB: We intentionally do not compare the guids. They are expected to be equal if the modelIds are equal.
+    // Similarly we don't compare isPlanProjection - it should always have the same value for a given modelId.
     let cmp = compareStrings(lhs.modelId, rhs.modelId);
     if (0 === cmp) {
       cmp = compareBooleans(lhs.is3d, rhs.is3d);
@@ -71,7 +87,24 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     props.rootTile.contentId = loader.rootContentId;
     props.maxTilesToSkip = IModelApp.tileAdmin.maximumLevelsToSkip;
     const params = tileTreeParamsFromJSON(props, iModel, id.is3d, loader, id.modelId);
-    return new TileTree(params);
+    if (!id.isPlanProjection)
+      return new TileTree(params);
+
+    let elevation = 0;
+    try {
+      const ranges = await iModel.models.queryModelRanges(id.modelId);
+      if (1 === ranges.length) {
+        const range = Range3d.fromJSON(ranges[0]);
+        const lo = range.low.z;
+        const hi = range.high.z;
+        if (lo <= hi)
+          elevation = (lo + hi) / 2;
+      }
+    } catch (_err) {
+      //
+    }
+
+    return new PlanProjectionTileTree(params, elevation);
   }
 
   public getOwner(id: PrimaryTreeId, iModel: IModelConnection): TileTreeOwner {
@@ -87,7 +120,7 @@ class PrimaryTreeReference extends TileTreeReference {
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
 
-  public constructor(view: ViewState, model: GeometricModelState) {
+  public constructor(view: ViewState, model: GeometricModelState, isPlanProjection: boolean) {
     super();
     this._view = view;
     this._model = model;
@@ -96,7 +129,9 @@ class PrimaryTreeReference extends TileTreeReference {
       is3d: model.is3d,
       treeId: this.createTreeId(view, model.id),
       guid: model.geometryGuid,
+      isPlanProjection,
     };
+
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
   }
 
@@ -108,6 +143,7 @@ class PrimaryTreeReference extends TileTreeReference {
         is3d: this._id.is3d,
         treeId: newId,
         guid: this._id.guid,
+        isPlanProjection: this._id.isPlanProjection,
       };
 
       this._owner = primaryTreeSupplier.getOwner(this._id, this._model.iModel);
@@ -126,11 +162,11 @@ class PrimaryTreeReference extends TileTreeReference {
 
 class PlanProjectionTreeReference extends PrimaryTreeReference {
   private get _view3d() { return this._view as ViewState3d; }
-  private _curTransform?: { transform: Transform, elevation?: number };
+  private _curTransform?: { transform: Transform, elevation: number };
   private readonly _viewFlagOverrides = new ViewFlag.Overrides();
 
   public constructor(view: ViewState3d, model: GeometricModelState) {
-    super(view, model);
+    super(view, model, true);
     this._viewFlagOverrides.setForceSurfaceDiscard(true);
   }
 
@@ -147,7 +183,9 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
           const settings = this.getSettings();
           const asOverlay = undefined !== settings && settings.overlay;
           const transparency = settings?.transparency || 0;
-          context.outputGraphic(context.target.renderSystem.createGraphicLayerContainer(graphics, asOverlay, transparency));
+
+          assert(undefined !== this._curTransform);
+          context.outputGraphic(context.target.renderSystem.createGraphicLayerContainer(graphics, asOverlay, transparency, this._curTransform.elevation));
         }
       };
     }
@@ -156,13 +194,14 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   }
 
   protected computeTransform(tree: TileTree): Transform {
+    assert(tree instanceof PlanProjectionTileTree);
     const settings = this.getSettings();
-    const elevation = undefined !== settings ? settings.elevation : undefined;
+    const elevation = settings?.elevation ?? (tree as PlanProjectionTileTree).baseElevation;
     if (undefined === this._curTransform) {
-      this._curTransform = { transform: tree.iModelTransform.clone() };
+      this._curTransform = { transform: tree.iModelTransform.clone(), elevation };
     } else if (this._curTransform.elevation !== elevation) {
       const transform = tree.iModelTransform.clone();
-      if (undefined !== elevation)
+      if (undefined !== settings?.elevation)
         transform.origin.z = elevation;
 
       this._curTransform.transform = transform;
@@ -202,5 +241,5 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
       return new PlanProjectionTreeReference(view as ViewState3d, model);
   }
 
-  return new PrimaryTreeReference(view, model);
+  return new PrimaryTreeReference(view, model, false);
 }
