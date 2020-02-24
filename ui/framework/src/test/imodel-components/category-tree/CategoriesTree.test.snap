@@ -4,7 +4,7 @@ exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
 <body>
   <div>
     <div
-      class="uifw-spatial-tree"
+      class="uifw-categories-tree"
     >
       <div
         class="filteredTree"

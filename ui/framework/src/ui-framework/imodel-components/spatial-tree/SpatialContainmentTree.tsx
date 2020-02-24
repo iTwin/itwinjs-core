@@ -17,6 +17,8 @@ import { ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-
 import { useDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../redux/connectIModel";
 
+import "./SpatialContainmentTree.scss";
+
 const PAGING_SIZE = 20;
 /** Presentation rules used by ControlledSpatialContainmentTree
  * @internal

@@ -22,6 +22,8 @@ import {
 import { NodeCheckboxRenderProps, ImageCheckBox, CheckBoxState, useEffectSkipFirst } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../redux/connectIModel";
 
+import "./CategoriesTree.scss";
+
 const PAGING_SIZE = 20;
 
 /** Presentation rules used by ControlledCategoriesTree
@@ -101,7 +103,7 @@ export const CategoryTree: React.FC<CategoryTreeProps> = (props: CategoryTreePro
   const treeRenderer = useTreeRenderer();
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
   return (
-    <div className="uifw-spatial-tree">
+    <div className="uifw-categories-tree">
       {props.showSearchBox &&
         <FilteringInput
           autoFocus={true}
