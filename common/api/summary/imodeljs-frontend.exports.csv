@@ -145,6 +145,10 @@ public;FitViewTool
 internal;Flags
 public;FlyViewTool 
 beta;class FormattedQuantityDescription 
+internal;FrameBeforeRenderData
+internal;FrameCameraFrustumData
+internal;FrameCameraViewData
+internal;FrameRenderData
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FuzzySearch
@@ -205,6 +209,7 @@ public;IModelConnection
 alpha;EditingFunctions
 alpha;EditingFunctions
 internal;Tiles
+internal;IModelFrameLifecycle
 internal;IModelTileLoader 
 public;class InputCollector 
 public;InputSource

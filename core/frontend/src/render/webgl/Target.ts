@@ -93,6 +93,8 @@ import { WebGLDisposable } from "./Disposable";
 import { TargetUniforms } from "./TargetUniforms";
 import { PerformanceMetrics } from "./PerformanceMetrics";
 import { desync, SyncTarget } from "./Sync";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
+import { Viewport } from "../../Viewport";
 
 /** Interface for 3d GPU clipping.
  * @internal
@@ -483,6 +485,14 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.activeVolumeClassifierProps = scene.volumeClassifier?.classifier;
     this.activeVolumeClassifierModelId = scene.volumeClassifier?.modelId;
+  }
+
+  public onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void) {
+    IModelFrameLifecycle.onBeforeRender.raiseEvent({
+      renderSystem: this.renderSystem,
+      viewport,
+      setSceneNeedRedraw,
+    });
   }
 
   private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<Id64String, T> | undefined, newMap: Map<Id64String, T> | undefined): void {

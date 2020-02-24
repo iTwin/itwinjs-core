@@ -3428,6 +3428,60 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
     protected parseString(userInput: string): ParseResults;
 }
 
+// @internal (undocumented)
+export interface FrameBeforeRenderData {
+    // (undocumented)
+    renderSystem: System;
+    // (undocumented)
+    setSceneNeedRedraw: (redraw: boolean) => void;
+    // (undocumented)
+    viewport: Viewport;
+}
+
+// @internal (undocumented)
+export interface FrameCameraFrustumData {
+    // (undocumented)
+    back: number;
+    // (undocumented)
+    bottom: number;
+    // (undocumented)
+    front: number;
+    // (undocumented)
+    left: number;
+    // (undocumented)
+    right: number;
+    // (undocumented)
+    top: number;
+    // (undocumented)
+    type: FrustumUniformType;
+}
+
+// @internal (undocumented)
+export interface FrameCameraViewData {
+    // (undocumented)
+    cameraPosition: Point3d;
+    // (undocumented)
+    viewX: Vector3d;
+    // (undocumented)
+    viewY: Vector3d;
+    // (undocumented)
+    viewZ: Vector3d;
+}
+
+// @internal (undocumented)
+export interface FrameRenderData {
+    // (undocumented)
+    commands: RenderCommands;
+    // (undocumented)
+    compositeFlags: CompositeFlags;
+    // (undocumented)
+    fbo: FrameBuffer;
+    // (undocumented)
+    frameBufferStack: FrameBufferStack;
+    // (undocumented)
+    needComposite: boolean;
+}
+
 // @public
 export enum FrontendLoggerCategory {
     Authorization = "imodeljs-frontend.Authorization",
@@ -4447,6 +4501,18 @@ export namespace IModelConnection {
         id: string;
         name: string;
     }
+}
+
+// @internal (undocumented)
+export class IModelFrameLifecycle {
+    // (undocumented)
+    static readonly onBeforeRender: BeEvent<(data: FrameBeforeRenderData) => void>;
+    // (undocumented)
+    static readonly onChangeCameraFrustum: BeEvent<(data: FrameCameraFrustumData) => void>;
+    // (undocumented)
+    static readonly onChangeCameraView: BeEvent<(data: FrameCameraViewData) => void>;
+    // (undocumented)
+    static readonly onRenderOpaque: BeEvent<(data: FrameRenderData) => void>;
 }
 
 // @internal
@@ -7037,6 +7103,8 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     // (undocumented)
     static get minDisplayPriority(): number;
     // (undocumented)
+    onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void;
+    // (undocumented)
     onResized(): void;
     // (undocumented)
     overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void;
@@ -8291,6 +8359,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     modelToView(modelPt: XYZ, result?: Point3d): Point3d;
     // (undocumented)
     onBatchDisposed(batch: Batch): void;
+    // (undocumented)
+    onBeforeRender(viewport: Viewport, setSceneNeedRedraw: (redraw: boolean) => void): void;
     // (undocumented)
     overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
     // (undocumented)

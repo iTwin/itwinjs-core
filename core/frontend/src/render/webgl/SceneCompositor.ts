@@ -48,6 +48,7 @@ import { SolarShadowMap } from "./SolarShadowMap";
 import { SceneContext } from "../../ViewContext";
 import { WebGLDisposable } from "./Disposable";
 import { Matrix4 } from "./Matrix";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
 
 function collectTextureStatistics(texture: TextureHandle | undefined, stats: RenderMemory.Statistics): void {
   if (undefined !== texture)
@@ -786,6 +787,15 @@ abstract class Compositor extends SceneCompositor {
     this.target.beginPerfMetricRecord("Render Opaque Layers");
     this.renderLayers(commands, needComposite, RenderPass.OpaqueLayers);
     this.target.endPerfMetricRecord();
+
+    // Render opaque geometry
+    IModelFrameLifecycle.onRenderOpaque.raiseEvent({
+      commands,
+      needComposite,
+      compositeFlags,
+      fbo: this.getBackgroundFbo(needComposite),
+      frameBufferStack: System.instance.frameBufferStack,
+    });
 
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");

@@ -73,6 +73,7 @@ export * from "./render/RenderSystem";
 export * from "./render/Scene";
 export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
+export * from "./render/webgl/IModelFrameLifecycle";
 export * from "./tools/AccuDrawTool";
 export * from "./tile/internal";
 export * from "./tools/ClipViewTool";

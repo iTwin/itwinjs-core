@@ -2337,6 +2337,10 @@ export abstract class Viewport implements IDisposable {
       requestNextAnimation = undefined !== this._flashedElem;
     }
 
+    target.onBeforeRender(this, (redraw: boolean) => {
+      isRedrawNeeded = isRedrawNeeded || redraw;
+    });
+
     timer.stop();
     if (isRedrawNeeded) {
       target.drawFrame(timer.elapsed.milliseconds);
