@@ -324,6 +324,17 @@ class BriefcaseCache {
     const briefcases = new Array<BriefcaseProps>();
     this._briefcases.forEach((value: BriefcaseEntry) => {
       if (value.openParams.isBriefcase) {
+        let fz: number | undefined;
+        if (!value.isPending && IModelJsFs.existsSync(value.pathname)) {
+          try {
+            const stat = IModelJsFs.lstatSync(value.pathname);
+            if (stat) {
+              fz = stat.size;
+            }
+          } catch {
+            Logger.logError(loggerCategory, "Failed to determine size of the file", () => value.getDebugInfo());
+          }
+        }
         briefcases.push({
           key: value.getKey(),
           contextId: value.contextId,
@@ -332,6 +343,7 @@ class BriefcaseCache {
           openMode: value.openParams.openMode,
           downloading: value.isPending ? true : false,
           isOpen: value.isOpen,
+          fileSize: fz,
         });
       }
     });
@@ -383,6 +395,10 @@ export class BriefcaseManager {
   private static initializeDiskCache(requestContext: AuthorizedClientRequestContext) {
     if (this._initializedDiskCache)
       return;
+
+    if (!IModelJsFs.existsSync(BriefcaseManager.cacheDir))
+      return;
+
     const imodelDirs = IModelJsFs.readdirSync(BriefcaseManager.cacheDir);
     for (const imodelDir of imodelDirs) {
       const fullPath = path.join(BriefcaseManager.cacheDir, imodelDir);
@@ -390,20 +406,23 @@ export class BriefcaseManager {
       if (isDir) {
         if (Guid.isGuid(imodelDir)) {
           const fixedVersions = BriefcaseManager.getFixedVersionBriefcasePath(imodelDir);
-          const fixedVersionChangesetDirs = IModelJsFs.readdirSync(fixedVersions);
-          for (const changesetDir of fixedVersionChangesetDirs) {
-            if (!BriefcaseManager._cache.findFixedVersionBriefcase(imodelDir, changesetDir)) {
-              this.initializeFixedVersionBriefcaseOnDisk(requestContext, "", imodelDir, changesetDir);
+          if (IModelJsFs.existsSync(fixedVersions)) {
+
+            const fixedVersionChangesetDirs = IModelJsFs.readdirSync(fixedVersions);
+            for (const changesetDir of fixedVersionChangesetDirs) {
+              if (!BriefcaseManager._cache.findFixedVersionBriefcase(imodelDir, changesetDir)) {
+                this.initializeFixedVersionBriefcaseOnDisk(requestContext, "", imodelDir, changesetDir);
+              }
             }
+            // const pullPushVersions = BriefcaseManager.getPullAndPushBriefcasePath(imodelDir);
+            // const pullPushBriefcaseIds = IModelJsFs.readdirSync(pullPushVersions);
+            // for (const briefcaseIdStr of pullPushBriefcaseIds) {
+            //   const briefcaseId = Number(briefcaseIdStr);
+            //   if (!BriefcaseManager._cache.findPullAndPushBriefcase(imodelDir, briefcaseId)) {
+            //     // not handled
+            //   }
+            // }
           }
-          // const pullPushVersions = BriefcaseManager.getPullAndPushBriefcasePath(imodelDir);
-          // const pullPushBriefcaseIds = IModelJsFs.readdirSync(pullPushVersions);
-          // for (const briefcaseIdStr of pullPushBriefcaseIds) {
-          //   const briefcaseId = Number(briefcaseIdStr);
-          //   if (!BriefcaseManager._cache.findPullAndPushBriefcase(imodelDir, briefcaseId)) {
-          //     // not handled
-          //   }
-          // }
         }
       }
     }

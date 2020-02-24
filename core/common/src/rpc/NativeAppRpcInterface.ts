@@ -44,6 +44,7 @@ export namespace Events {
 export interface BriefcaseProps extends IModelTokenProps {
   downloading?: boolean;
   isOpen?: boolean;
+  fileSize?: number;
 }
 
 /** Identifies a list of tile content Ids belonging to a single tile tree.

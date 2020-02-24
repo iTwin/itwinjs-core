@@ -44,6 +44,8 @@ describe("NativeApp (#integration)", () => {
     const briefcases = await NativeApp.getBriefcases();
     const rs = briefcases.filter((_: BriefcaseProps) => _.iModelId === testIModelId);
     assert(rs.length === 1);
+    assert.isNumber(rs[0].fileSize);
+    assert(rs[0].fileSize! > 0);
     const conn = await NativeApp.openBriefcase("", rs[0].iModelId!, OpenMode.Readonly);
     const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
     // tslint:disable-next-line:no-console

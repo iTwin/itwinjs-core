@@ -522,6 +522,8 @@ export interface BriefcaseProps extends IModelTokenProps {
     // (undocumented)
     downloading?: boolean;
     // (undocumented)
+    fileSize?: number;
+    // (undocumented)
     isOpen?: boolean;
 }
 
