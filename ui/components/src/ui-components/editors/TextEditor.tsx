@@ -124,7 +124,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
 
   /** @internal */
   public render(): React.ReactNode {
-    const className = classnames("cell", "components-cell-editor", "components-text-editor", this.props.className);
+    const className = classnames("components-cell-editor", "components-text-editor", this.props.className);
 
     const inputProps: InputProps = {
       type: "text",

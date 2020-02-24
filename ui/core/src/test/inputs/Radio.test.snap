@@ -8,7 +8,7 @@ exports[`<Radio /> renders correctly 1`] = `
     type="radio"
   />
   <span
-    className="label"
+    className="uicore-label"
   >
      
     radio test
@@ -19,14 +19,14 @@ exports[`<Radio /> renders correctly 1`] = `
 
 exports[`<Radio /> renders disabled correctly 1`] = `
 <label
-  className="uicore-inputs-radio disabled"
+  className="uicore-inputs-radio uicore-disabled"
 >
   <input
     disabled={true}
     type="radio"
   />
   <span
-    className="label"
+    className="uicore-label"
   >
      
     radio test
@@ -43,7 +43,7 @@ exports[`<Radio /> renders status correctly 1`] = `
     type="radio"
   />
   <span
-    className="label"
+    className="uicore-label"
   >
      
     radio test

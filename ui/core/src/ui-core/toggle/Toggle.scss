@@ -65,7 +65,7 @@ $toggle-width-large:  $toggle-height-large * 2;
 }
 
 /* Disabled toggle */
-.core-toggle.disabled {
+.core-toggle.uicore-disabled {
   opacity: .4;
   cursor: default;
 }

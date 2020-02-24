@@ -119,7 +119,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 
   /** @internal */
   public render() {
-    const className = classnames("cell", "components-cell-editor", "components-enum-editor", this.props.className);
+    const className = classnames("components-cell-editor", "components-enum-editor", this.props.className);
     const { propertyRecord } = this.props;
     const selectValue = this.state.selectValue ? this.state.selectValue.toString() : undefined;
     let choices: EnumerationChoice[] | undefined;

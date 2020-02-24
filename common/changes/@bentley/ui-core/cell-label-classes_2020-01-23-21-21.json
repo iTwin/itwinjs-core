@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Qualified .label & .message CSS classes. Removed .cell CSS class usage. Fixed cell editor sizes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

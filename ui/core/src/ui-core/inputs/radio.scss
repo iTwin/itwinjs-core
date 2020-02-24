@@ -27,7 +27,7 @@
         cursor:             pointer;
     }
 
-    > .label {
+    > .uicore-label {
 
         display:            inline;
         position:           relative;
@@ -46,13 +46,13 @@
         color:              $buic-text-color;
     }
 
-    &.disabled {
+    &.uicore-disabled {
 
         cursor:             not-allowed;
     }
 
-    &.success > .label {    color: $uicore-green; }
-    &.warning > .label {    color: $uicore-orange; }
-    &.error > .label {      color: $uicore-red; }
-    &.disabled > .label {   color: $buic-text-color-disabled; }
+    &.success > .uicore-label {    color: $uicore-green; }
+    &.warning > .uicore-label {    color: $uicore-orange; }
+    &.error > .uicore-label {      color: $uicore-red; }
+    &.uicore-disabled > .uicore-label {   color: $buic-text-color-disabled; }
 }

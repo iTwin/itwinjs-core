@@ -14,7 +14,7 @@
     font-weight:                $uicore-font-weight-normal;
     cursor:                     pointer;
 
-    > .label {
+    > .uicore-label {
 
         padding:                0;
         margin:                 0;
@@ -58,12 +58,12 @@
         }
     }
 
-    > .message {
+    > .uicore-message {
 
         display:                block;
         font-size:              $uicore-font-size-small;
         line-height:            $uicore-line-height;
-        color:                  $buic-text-color-muted; // $uicore-gray;
+        color:                  $buic-text-color-muted;
     }
 
 
@@ -78,7 +78,7 @@
     @each $status, $color in $status-colors {
 
         &.#{$status},
-        &.#{$status} > .message {
+        &.#{$status} > .uicore-message {
 
             color:              $color;
         }

@@ -171,12 +171,13 @@ export interface CheckBoxInfo {
 }
 
 // @public
-export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick">, CommonProps {
+export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
     label?: string;
     labelClassName?: string;
     labelStyle?: React.CSSProperties;
+    onBlur?: (e: React.FocusEvent) => void;
     onClick?: (e: React.MouseEvent) => void;
     setFocus?: boolean;
     status?: InputStatus;

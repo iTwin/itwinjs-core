@@ -248,7 +248,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     const readOnly = !record.isReadonly ? false : true;
     const disabled = !record.isDisabled ? false : true;
 
-    const className = classnames("cell", "components-cell-editor", "components-customnumber-editor", this.props.className);
+    const className = classnames("components-cell-editor", "components-customnumber-editor", this.props.className);
 
     const inputProps: InputProps = {
       type: "text",

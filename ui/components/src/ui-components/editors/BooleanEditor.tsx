@@ -110,7 +110,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
   }
 
   public render() {
-    const className = classnames("cell", "components-cell-editor", "components-boolean-editor", this.props.className);
+    const className = classnames("components-cell-editor", "components-boolean-editor", this.props.className);
     const checked = this.state.checkboxValue;
 
     return (

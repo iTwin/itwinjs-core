@@ -119,7 +119,7 @@ export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
       this.props.buttonType === ToggleButtonType.Primary && "core-toggle-primary",
       this.props.large && "core-toggle-large",
       this.props.rounded && "rounded",
-      this.props.disabled && "disabled",
+      this.props.disabled && "uicore-disabled",
       this.props.className);
     const toggleHandleStyle: React.CSSProperties = {
       width: this.state.height - (this._padding * 2),

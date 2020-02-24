@@ -31,16 +31,16 @@ export class LabeledTextarea extends React.PureComponent<LabeledTextareaProps> {
     return (
       <label style={this.props.style} className={classnames(
         "uicore-inputs-labeled-textarea",
-        { disabled: this.props.disabled },
+        this.props.disabled && "uicore-disabled",
         this.props.status,
         this.props.className,
       )}>
         {label &&
-          <div className={classnames("label", labelClassName)} style={labelStyle}> {label} </div>
+          <div className={classnames("uicore-label", labelClassName)} style={labelStyle}> {label} </div>
         }
         <Textarea disabled={this.props.disabled} className={inputClassName} style={inputStyle} {...props} />
         {message &&
-          <div className={classnames("message", messageClassName)} style={messageStyle}>{message}</div>
+          <div className={classnames("uicore-message", messageClassName)} style={messageStyle}>{message}</div>
         }
       </label>
     );

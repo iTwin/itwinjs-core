@@ -7,7 +7,7 @@
 
 @mixin uicore-inputs-select {
 
-  $uicore-select-padding-bordered:  $uicore-inputs-padding-bordered - 1px;
+  $uicore-select-padding-bordered:  $uicore-inputs-padding-bordered;
 
   display:            inline-block;
   padding:            $uicore-select-padding-bordered ($uicore-bordered-padding - 3px);
