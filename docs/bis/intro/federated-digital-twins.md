@@ -13,7 +13,7 @@ Models of the physical reality (including physical attributes like geometry, mat
 
 ## Shared, not siloed
 
-Another distinguishing characteristic of a Digital Twin is that it is not application-specific, but is intended to be shared by multiple apps and services, in contrast to traditional applications that each have their own siloed database.  This is especially true of the Physical Backbone. Nearly every app and service will either use it or relate their information to it. The affects how information is factored in the Digital Twin.
+Another distinguishing characteristic of a Digital Twin is that it is not application-specific, but is intended to be shared by multiple apps and services, in contrast to traditional applications that each have their own siloed database.  This is especially true of the Physical Backbone. Nearly every app and service will either use it or relate their information to it. This affects how information is factored in the Digital Twin.
 
 ## Aligned
 

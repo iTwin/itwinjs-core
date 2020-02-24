@@ -13,11 +13,14 @@ export interface SelectionScopePickerProps {
 }
 export interface SelectionScopePickerState {
   availableSelectionScopes?: SelectionScope[];
+  activeScopeId?: string;
 }
 export default class SelectionScopePicker extends React.Component<SelectionScopePickerProps, SelectionScopePickerState> {
   constructor(props: SelectionScopePickerProps) {
     super(props);
-    this.state = {};
+    this.state = {
+      activeScopeId: (typeof Presentation.selection.scopes.activeScope === "string") ? Presentation.selection.scopes.activeScope : Presentation.selection.scopes.activeScope?.id,
+    };
   }
   public componentDidMount() {
     this.initAvailableSelectionScopes(); // tslint:disable-line:no-floating-promises
@@ -39,15 +42,15 @@ export default class SelectionScopePicker extends React.Component<SelectionScope
   // tslint:disable-next-line:naming-convention
   private onSelectedScopeChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
     Presentation.selection.scopes.activeScope = e.target.value;
+    this.setState({ activeScopeId: e.target.value });
   }
   public render() {
     if (!this.state.availableSelectionScopes || 0 === this.state.availableSelectionScopes.length)
       return null;
     return (
       <div className="SelectionScopePicker">
-        <select onChange={this.onSelectedScopeChanged}>
+        <select onChange={this.onSelectedScopeChanged} value={this.state.activeScopeId}>
           {this.state.availableSelectionScopes.map((scope: SelectionScope) => (<option
-            selected={Presentation.selection.scopes.activeScope === scope.id}
             value={scope.id}
             key={scope.id}
           >

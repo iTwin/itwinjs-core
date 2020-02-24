@@ -242,7 +242,7 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext());
         expect(testSchema).to.exist;
-        await testSchema.deserialize(propertyJson);
+        await testSchema.fromJSON(propertyJson);
         assertValidSchema(testSchema);
       });
 
@@ -257,11 +257,11 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         expect(testSchema).to.exist;
-        await testSchema.deserialize(propertyJson);
+        await testSchema.fromJSON(propertyJson);
         assertValidSchema(testSchema);
       });
 
-      it("shoud throw for invalid alias", async () => {
+      it("should throw for invalid alias", async () => {
         const propertyJson = {
           $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
@@ -272,8 +272,8 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext());
         expect(testSchema).to.exist;
-        await expect(testSchema.deserialize(propertyJson)).to.be.rejectedWith(ECObjectsError, "The Schema ValidSchema does not have the required 'alias' attribute.");
-      })
+        await expect(testSchema.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError, "The Schema ValidSchema does not have the required 'alias' attribute.");
+      });
 
       it("should throw for invalid $schema", async () => {
         const schemaJson = {
@@ -284,7 +284,7 @@ describe("Schema", () => {
         const context = new SchemaContext();
         const testSchema = new Schema(context, "InvalidSchema", "is", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.deserialize(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
+        await expect(testSchema.fromJSON(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
         await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
       });
 
@@ -297,7 +297,7 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "BadSchema", "bad", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.deserialize(json)).to.be.rejectedWith(ECObjectsError);
+        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECObjectsError);
       });
 
       it("should throw for mismatched version", async () => {
@@ -309,9 +309,10 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "BadSchema", "bad", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.deserialize(json)).to.be.rejectedWith(ECObjectsError);
+        await expect(testSchema.fromJSON(json)).to.be.rejectedWith(ECObjectsError);
       });
     });
+
     describe("toJSON", () => {
       it("Simple serialization", async () => {
         const schemaJson = {
@@ -324,8 +325,24 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         expect(testSchema).to.exist;
-        await testSchema.deserialize(schemaJson);
-        const serialized = testSchema.toJson();
+        await testSchema.fromJSON(schemaJson);
+        const serialized = testSchema.toJSON();
+        expect(serialized).to.deep.equal({ ...schemaJson, version: "01.02.03" });
+      });
+      it("Serialization - JSON stringify", async () => {
+        const schemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "ValidSchema",
+          version: "1.2.3",
+          alias: "vs",
+          label: "SomeDisplayLabel",
+          description: "A really long description...",
+        };
+        const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
+        expect(testSchema).to.exist;
+        await testSchema.fromJSON(schemaJson);
+        const serializedString = JSON.stringify(testSchema);
+        const serialized = JSON.parse(serializedString);
         expect(serialized).to.deep.equal({ ...schemaJson, version: "01.02.03" });
       });
       it("Serialization with one custom attribute- only class name", async () => {
@@ -339,10 +356,10 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         expect(testSchema).to.exist;
-        await testSchema.deserialize(propertyJson);
+        await testSchema.fromJSON(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
-        const serialized = testSchema.toJson();
-        assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
+        const serialized = testSchema.toJSON();
+        assert.strictEqual(serialized.customAttributes![0].className, "CoreCustomAttributes.HiddenSchema");
       });
       it("Serialization with one custom attribute- additional properties", () => {
         const propertyJson = {
@@ -355,11 +372,11 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         expect(testSchema).to.exist;
-        testSchema.deserializeSync(propertyJson);
+        testSchema.fromJSONSync(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema", ShowClasses: true });
-        const serialized = testSchema.toJson();
-        assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
-        assert.isTrue(serialized.customAttributes[0].ShowClasses);
+        const serialized = testSchema.toJSON();
+        assert.strictEqual(serialized.customAttributes![0].className, "CoreCustomAttributes.HiddenSchema");
+        assert.isTrue(serialized.customAttributes![0].ShowClasses);
       });
       it("Serialization with multiple custom attributes- only class name", async () => {
         const propertyJson = {
@@ -372,14 +389,14 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         expect(testSchema).to.exist;
-        await testSchema.deserialize(propertyJson);
+        await testSchema.fromJSON(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreAttributes.HiddenSchema" });
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustom.HiddenSchema" });
-        const serialized = testSchema.toJson();
-        assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
-        assert.strictEqual(serialized.customAttributes[1].className, "CoreAttributes.HiddenSchema");
-        assert.strictEqual(serialized.customAttributes[2].className, "CoreCustom.HiddenSchema");
+        const serialized = testSchema.toJSON();
+        assert.strictEqual(serialized.customAttributes![0].className, "CoreCustomAttributes.HiddenSchema");
+        assert.strictEqual(serialized.customAttributes![1].className, "CoreAttributes.HiddenSchema");
+        assert.strictEqual(serialized.customAttributes![2].className, "CoreCustom.HiddenSchema");
       });
       it("Serialization with multiple custom attributes- additional properties", async () => {
         const propertyJson = {
@@ -392,14 +409,14 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         expect(testSchema).to.exist;
-        await testSchema.deserialize(propertyJson);
+        await testSchema.fromJSON(propertyJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema", ShowClasses: true });
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreAttributes.HiddenSchema", FloatValue: 1.2 });
         (testSchema as MutableSchema).addCustomAttribute({ className: "CoreCustom.HiddenSchema", IntegerValue: 5 });
-        const serialized = testSchema.toJson();
-        assert.isTrue(serialized.customAttributes[0].ShowClasses);
-        assert.strictEqual(serialized.customAttributes[1].FloatValue, 1.2);
-        assert.strictEqual(serialized.customAttributes[2].IntegerValue, 5);
+        const serialized = testSchema.toJSON();
+        assert.isTrue(serialized.customAttributes![0].ShowClasses);
+        assert.strictEqual(serialized.customAttributes![1].FloatValue, 1.2);
+        assert.strictEqual(serialized.customAttributes![2].IntegerValue, 5);
       });
       it("Serialization with one reference", async () => {
         const schemaJson = {
@@ -422,10 +439,10 @@ describe("Schema", () => {
         let testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
         expect(testSchema).to.exist;
-        const entityClassJson = testSchema.toJson();
+        const entityClassJson = testSchema.toJSON();
         assert.isDefined(entityClassJson);
-        assert.strictEqual(entityClassJson.references[0].name, "RefSchema");
-        assert.strictEqual(entityClassJson.references[0].version, "01.00.00");
+        assert.strictEqual(entityClassJson.references![0].name, "RefSchema");
+        assert.strictEqual(entityClassJson.references![0].version, "01.00.00");
       });
       it("Serialization with multiple references", () => {
         const schemaJson = {
@@ -454,12 +471,12 @@ describe("Schema", () => {
         let testSchema = new Schema(context, "ValidSchema", "vs", 1, 2, 3);
         testSchema = Schema.fromJsonSync(schemaJson, context);
         expect(testSchema).to.exist;
-        const entityClassJson = testSchema.toJson();
+        const entityClassJson = testSchema.toJSON();
         assert.isDefined(entityClassJson);
-        assert.strictEqual(entityClassJson.references[0].name, "RefSchema");
-        assert.strictEqual(entityClassJson.references[0].version, "01.00.00");
-        assert.strictEqual(entityClassJson.references[1].name, "AnotherRefSchema");
-        assert.strictEqual(entityClassJson.references[1].version, "01.00.02");
+        assert.strictEqual(entityClassJson.references![0].name, "RefSchema");
+        assert.strictEqual(entityClassJson.references![0].version, "01.00.00");
+        assert.strictEqual(entityClassJson.references![1].name, "AnotherRefSchema");
+        assert.strictEqual(entityClassJson.references![1].version, "01.00.02");
       });
       it("Serialization with one reference and item", async () => {
         const schemaJson = {
@@ -489,12 +506,13 @@ describe("Schema", () => {
         await context.addSchema(refSchema);
         let testSchema = new Schema(context, "TestSchema", "ts", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
-        const entityClassJson = testSchema.toJson();
+        const entityClassJson = testSchema.toJSON();
         assert.isDefined(entityClassJson);
-        assert.isDefined(entityClassJson.items.testClass);
-        assert.strictEqual(entityClassJson.items.testClass.schemaItemType, "EntityClass");
-        assert.strictEqual(entityClassJson.items.testClass.label, "ExampleEntity");
-        assert.strictEqual(entityClassJson.items.testClass.description, "An example entity class.");
+        // tslint:disable-next-line: no-string-literal
+        assert.isDefined(entityClassJson.items!["testClass"]);
+        assert.strictEqual(entityClassJson.items!.testClass.schemaItemType, "EntityClass");
+        assert.strictEqual(entityClassJson.items!.testClass.label, "ExampleEntity");
+        assert.strictEqual(entityClassJson.items!.testClass.description, "An example entity class.");
       });
       it("Serialization with one reference and multiple items", async () => {
         const schemaJson = {
@@ -553,22 +571,22 @@ describe("Schema", () => {
         await context.addSchema(refSchema);
         let testSchema = new Schema(context, "TestSchema", "ts", 1, 2, 3);
         testSchema = await Schema.fromJson(schemaJson, context);
-        const entityClassJson = testSchema.toJson();
+        const entityClassJson = testSchema.toJSON();
         assert.isDefined(entityClassJson);
 
-        assert.isDefined(entityClassJson.items.testClass);
-        assert.strictEqual(entityClassJson.items.testClass.schemaItemType, "EntityClass");
-        assert.strictEqual(entityClassJson.items.testClass.label, "ExampleEntity");
-        assert.strictEqual(entityClassJson.items.testClass.description, "An example entity class.");
+        assert.isDefined(entityClassJson.items!.testClass);
+        assert.strictEqual(entityClassJson.items!.testClass.schemaItemType, "EntityClass");
+        assert.strictEqual(entityClassJson.items!.testClass.label, "ExampleEntity");
+        assert.strictEqual(entityClassJson.items!.testClass.description, "An example entity class.");
 
-        assert.isDefined(entityClassJson.items.ExampleMixin);
-        assert.strictEqual(entityClassJson.items.ExampleMixin.schemaItemType, "Mixin");
+        assert.isDefined(entityClassJson.items!.ExampleMixin);
+        assert.strictEqual(entityClassJson.items!.ExampleMixin.schemaItemType, "Mixin");
 
-        assert.isDefined(entityClassJson.items.ExampleStruct);
-        assert.strictEqual(entityClassJson.items.ExampleMixin.schemaItemType, "Mixin");
+        assert.isDefined(entityClassJson.items!.ExampleStruct);
+        assert.strictEqual(entityClassJson.items!.ExampleMixin.schemaItemType, "Mixin");
 
-        assert.isDefined(entityClassJson.items.testEnum);
-        assert.strictEqual(entityClassJson.items.testEnum.schemaItemType, "Enumeration");
+        assert.isDefined(entityClassJson.items!.testEnum);
+        assert.strictEqual(entityClassJson.items!.testEnum.schemaItemType, "Enumeration");
       });
     });
 
@@ -593,10 +611,10 @@ describe("Schema", () => {
       let testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
       testSchema = await Schema.fromJson(schemaJson, context);
       expect(testSchema).to.exist;
-      const entityClassJson = testSchema.toJson();
+      const entityClassJson = testSchema.toJSON();
       assert.isDefined(entityClassJson);
-      assert.strictEqual(entityClassJson.references[0].name, "RefSchema");
-      assert.strictEqual(entityClassJson.references[0].version, "01.00.01");
+      assert.strictEqual(entityClassJson.references![0].name, "RefSchema");
+      assert.strictEqual(entityClassJson.references![0].version, "01.00.01");
     });
 
     it("Serialization with reference containing different write version, throws", async () => {
@@ -654,7 +672,7 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext(), "ValidSchema", "vs", 1, 2, 3);
         expect(testSchema).to.exist;
-        await testSchema.deserialize(schemaJson);
+        await testSchema.fromJSON(schemaJson);
 
         const serialized = (await testSchema.toXml(newDom)).documentElement;
         expect(serialized.nodeName).to.eql("ECSchema");
@@ -909,7 +927,7 @@ describe("Schema", () => {
           },
         };
         const testSchema = await Schema.fromJson(schemaJson, new SchemaContext());
-        await testSchema.deserialize(schemaJson);
+        await testSchema.fromJSON(schemaJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "TestCustomAttribute" });
         const serialized = (await testSchema.toXml(newDom)).documentElement;
 
@@ -931,7 +949,7 @@ describe("Schema", () => {
           },
         };
         const testSchema = await Schema.fromJson(schemaJson, new SchemaContext());
-        await testSchema.deserialize(schemaJson);
+        await testSchema.fromJSON(schemaJson);
         (testSchema as MutableSchema).addCustomAttribute({ className: "ValidSchema.TestCustomAttribute" });
         const serialized = (await testSchema.toXml(newDom)).documentElement;
 

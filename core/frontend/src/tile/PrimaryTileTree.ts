@@ -177,7 +177,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     if (undefined === settings || settings.enforceDisplayPriority || !settings.overlay)
       super.draw(args);
     else
-      args.context.withGraphicTypeAndPlane(TileGraphicType.Overlay, undefined, () => args.root.draw(args));
+      args.context.withGraphicType(TileGraphicType.Overlay, () => args.root.draw(args));
   }
 
   private getSettings() {

@@ -8,15 +8,11 @@
 
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Angle, Constant } from "@bentley/geometry-core";
-import { ScreenViewport } from "../Viewport";
 
 /** Settings that control the behavior of built-in tools. Applications may modify these values.
  * @public
  */
 export class ToolSettings {
-  /** @deprecated */
-  public static get animationTime() { return ScreenViewport.animation.time.normal; }
-  public static set animationTime(val: BeDuration) { ScreenViewport.animation.time.normal = val; }
   /** Two tap must be within this period to be a double tap. */
   public static doubleTapTimeout = BeDuration.fromMilliseconds(250);
   /** Two clicks must be within this period to be a double click. */

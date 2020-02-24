@@ -8,9 +8,9 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { StagePanelLocation } from "./StagePanel";
 import { StagePanelState } from "./StagePanelDef";
 import "./StagePanelHeader.scss";
 

@@ -1,6 +1,19 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- iModel write API development
+- Upgraded icons-generic-webfont to ^1.0.0
+- Added type converter for composite primitive value
+- Changed onNodeLoaded event to nodeLoadHandler in NodeLoader. Fixed node loading scheduling to avoid making multiple requests at the same time
+- Pass tree model changes to onModelChange event
+- Separate label and labelDefinition in PropertyData and TreeNodeItem
+- Property grid border fix.
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

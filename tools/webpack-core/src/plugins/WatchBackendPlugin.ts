@@ -13,7 +13,7 @@ export class WatchBackendPlugin {
   constructor(private _backendOutputPath: string) { }
 
   public apply(compiler: Compiler) {
-    compiler.hooks.emit.tap("WatchBackendPlugin", (compilation) => {
+    compiler.hooks.emit.tap("WatchBackendPlugin", (compilation: any) => {
       const newTimestamp = compilation.fileTimestamps.get(this._backendOutputPath);
       const didBackendChange = this._prevTimestamp < (newTimestamp || -Infinity);
       if (!didBackendChange)
@@ -24,7 +24,7 @@ export class WatchBackendPlugin {
       return true;
     });
 
-    compiler.hooks.afterCompile.tap("WatchBackendPlugin", (compilation) => {
+    compiler.hooks.afterCompile.tap("WatchBackendPlugin", (compilation: any) => {
       compilation.fileDependencies.add(this._backendOutputPath);
     });
   }

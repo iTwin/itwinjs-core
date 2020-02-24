@@ -6,7 +6,6 @@ import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
-import { BackstageItemType as UIA_BackstageItemType } from "@bentley/ui-abstract";
 import {
   BackstageComposerActionItem,
   BackstageComposerStageLauncher,
@@ -21,30 +20,24 @@ import { FrontstageDef } from "../../ui-framework/frontstage/FrontstageDef";
 import TestUtils from "../TestUtils";
 
 // tslint:disable-next-line: completed-docs
-export const getActionItem = (item?: Partial<BackstageActionItem>): BackstageActionItem => ({
+export const getActionItem = (item?: Partial<BackstageActionItem>): BackstageActionItem => ({ // tslint:disable-line:deprecation
   execute: () => { },
   groupPriority: 100,
   id: "Action",
-  isEnabled: true,
-  isVisible: true,
   itemPriority: 50,
   label: "Custom Label",
-  type: BackstageItemType.ActionItem,
-  itemType: UIA_BackstageItemType.ActionItem,
+  type: BackstageItemType.ActionItem, // tslint:disable-line:deprecation
   ...item ? item : {},
 });
 
 // tslint:disable-next-line: completed-docs
-export const getStageLauncherItem = (item?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({
+export const getStageLauncherItem = (item?: Partial<BackstageStageLauncher>): BackstageStageLauncher => ({ // tslint:disable-line:deprecation
   groupPriority: 100,
   id: "Stage",
-  isEnabled: true,
-  isVisible: true,
   itemPriority: 50,
   label: "Custom Label",
   stageId: "stage-1",
-  type: BackstageItemType.StageLauncher,
-  itemType: UIA_BackstageItemType.StageLauncher,
+  type: BackstageItemType.StageLauncher, // tslint:disable-line:deprecation
   ...item ? item : {},
 });
 

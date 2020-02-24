@@ -463,14 +463,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     return undefined;
 
   }
-  // cspell:word Normaln
-  /**
-   * This is a misspelling of findOrAddNormalInLineString
-   * @deprecated
-   */
-  public findOrAddNormalnLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined {
-    return this.findOrAddNormalInLineString(ls, index, transform, priorIndexA, priorIndexB);
-  }
 
   /**
    * Announce point coordinates.  The implementation is free to either create a new point or (if known) return index of a prior point with the same coordinates.

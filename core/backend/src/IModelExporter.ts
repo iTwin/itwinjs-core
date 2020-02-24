@@ -228,6 +228,11 @@ export class IModelExporter {
     }
   }
 
+  /** For logging, indicate the change type if known. */
+  private getChangeOpSuffix(isUpdate: boolean | undefined): string {
+    return isUpdate ? " UPDATE" : undefined === isUpdate ? "" : " INSERT";
+  }
+
   /** Export all CodeSpecs from the source iModel.
    * @note This method is called from [[exportChanges]] and [[exportAll]], so it only needs to be called directly when exporting a subset of an iModel.
    */
@@ -264,7 +269,7 @@ export class IModelExporter {
     }
     // CodeSpec has passed standard exclusion rules, now give handler a chance to accept/reject export
     if (this.handler.callProtected.shouldExportCodeSpec(codeSpec)) {
-      Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})` + isUpdate ? " UPDATE" : "");
+      Logger.logTrace(loggerCategory, `exportCodeSpec(${codeSpecName})${this.getChangeOpSuffix(isUpdate)}`);
       this.handler.callProtected.onExportCodeSpec(codeSpec, isUpdate);
     }
   }
@@ -432,7 +437,7 @@ export class IModelExporter {
       }
     }
     const element: Element = this.sourceDb.elements.getElement({ id: elementId, wantGeometry: true });
-    Logger.logTrace(loggerCategory, `exportElement()`);
+    Logger.logTrace(loggerCategory, `exportElement("${element.getDisplayLabel()}")${this.getChangeOpSuffix(isUpdate)}`);
     if (this.shouldExportElement(element)) {
       this.handler.callProtected.onExportElement(element, isUpdate);
       this.exportElementAspects(elementId);

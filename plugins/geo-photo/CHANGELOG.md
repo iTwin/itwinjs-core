@@ -1,6 +1,15 @@
 # Change Log - @bentley/geo-photo-plugin
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Consolidated sign-in across packages for integration tests
+- Renamed the folder and name of tests that run both the frontend and backend to "fullstack" instead of "integration". 
+- EN: #124601 - Initial implementation of WebGL2
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

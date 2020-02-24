@@ -89,13 +89,8 @@ export class OpenParams {
   /** Returns true if the OpenParams open a briefcase iModel */
   public get isBriefcase(): boolean { return this.syncMode !== undefined; }
 
-  /** Returns true if the OpenParams open a standalone iModel
-   * @deprecated Use [[isSnapshot]] instead as *standalone* has been replaced by *snapshot*.
-   */
-  public get isStandalone(): boolean { return this.syncMode === undefined; }
-
   /** Returns true if the OpenParams open a snapshot iModel */
-  public get isSnapshot(): boolean { return this.isStandalone; } // tslint:disable-line: deprecation
+  public get isSnapshot(): boolean { return this.syncMode === undefined; } // tslint:disable-line: deprecation
 
   private validate() {
     if (this.isSnapshot && this.syncMode !== undefined)
@@ -221,22 +216,6 @@ export class IModelDb extends IModel {
     super.initialize(name, props);
   }
 
-  private static constructIModelDb(briefcaseEntry: BriefcaseEntry, openParams: OpenParams, contextId?: string): IModelDb {
-    if (briefcaseEntry.iModelDb)
-      return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openParams.openMode);
-    return new IModelDb(briefcaseEntry, iModelToken, openParams);
-  }
-
-  /** @deprecated @internal */
-  public static performUpgrade(pathname: string): DbResult {
-    const nativeDb = new IModelHost.platform.DgnDb();
-    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeOptions.Upgrade);
-    if (DbResult.BE_SQLITE_OK === res)
-      nativeDb.closeIModel();
-    return res;
-  }
-
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
@@ -247,7 +226,9 @@ export class IModelDb extends IModel {
    */
   public static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, args);
-    return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(briefcaseEntry.openParams.openMode));
+    const openMode = briefcaseEntry.openParams.openMode;
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
+    return new IModelDb(briefcaseEntry, iModelToken, briefcaseEntry.openParams);
   }
 
   /** Create a local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file, using this iModel as a *seed* or starting point.
@@ -268,7 +249,10 @@ export class IModelDb extends IModel {
       briefcaseEntry.iModelId = Guid.createValue();
     }
     briefcaseEntry.briefcaseId = BriefcaseId.Snapshot;
-    const snapshotDb: IModelDb = IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(OpenMode.ReadWrite)); // WIP: clean up copied file on error?
+
+    const openMode = OpenMode.ReadWrite;
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
+    const snapshotDb = new IModelDb(briefcaseEntry, iModelToken, OpenParams.standalone(OpenMode.ReadWrite)); // WIP: clean up copied file on error?
     if (isSeedFileMaster) {
       snapshotDb.setGuid(briefcaseEntry.iModelId);
     } else {
@@ -298,7 +282,8 @@ export class IModelDb extends IModel {
    */
   public static openStandalone(pathname: string, openMode: OpenMode = OpenMode.ReadWrite, enableTransactions: boolean = false): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
-    return IModelDb.constructIModelDb(briefcaseEntry, OpenParams.standalone(openMode));
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
+    return new IModelDb(briefcaseEntry, iModelToken, OpenParams.standalone(openMode));
   }
 
   /** Open a local iModel *snapshot*. Once created, *snapshots* are read-only and are typically used for archival or data transfer purposes.
@@ -327,15 +312,41 @@ export class IModelDb extends IModel {
    */
   public static async open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
     requestContext.enter();
-    const perfLogger = new PerfLogger("Opening iModel", () => ({ contextId, iModelId, ...openParams }));
 
-    const briefcaseEntry: BriefcaseEntry = await this.downloadBriefcase(requestContext, contextId, iModelId, openParams, version);
-    requestContext.enter();
+    IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
 
-    const iModelDb: IModelDb = await this.openBriefcase(requestContext, briefcaseEntry);
-    requestContext.enter();
+    let iModelDb: IModelDb | undefined;
+    const finishOpen = async (): Promise<void> => {
+      requestContext.enter();
+      const perfLogger = new PerfLogger("Opening iModel", () => ({ contextId, iModelId, ...openParams }));
 
-    perfLogger.dispose();
+      const iModelToken: IModelToken = await this.downloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+      requestContext.enter();
+
+      iModelDb = await this.openBriefcase(requestContext, iModelToken);
+      requestContext.enter();
+
+      perfLogger.dispose();
+    };
+
+    try {
+      if (openParams.timeout === undefined)
+        await finishOpen();
+      else {
+        iModelDb = undefined;
+        await BeDuration.race(openParams.timeout, finishOpen());
+      }
+    } catch (error) {
+      requestContext.enter();
+      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
+      throw error;
+    }
+
+    if (iModelDb === undefined) {
+      Logger.logTrace(loggerCategory, "Issuing pending status in IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
+      throw new RpcPendingResponse();
+    }
+
     return iModelDb;
   }
 
@@ -348,45 +359,46 @@ export class IModelDb extends IModel {
    * @param openParams Parameters to open the iModel
    * @internal
    */
-  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseEntry> {
+  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
     requestContext.enter();
-    const perfLogger = new PerfLogger("Downloading briefcase", () => ({ contextId, iModelId, ...openParams }));
 
-    IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
+    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, BriefcaseManager.imodelClient);
+    requestContext.enter();
 
     let briefcaseEntry: BriefcaseEntry;
-    let timedOut = false;
     try {
-      briefcaseEntry = await BriefcaseManager.download(requestContext, contextId, iModelId, openParams, version);
+      briefcaseEntry = await BriefcaseManager.download(requestContext, contextId, iModelId, openParams, changeSetId);
       requestContext.enter();
-
-      if (briefcaseEntry.isPending !== undefined) {
-        if (typeof openParams.timeout === "undefined")
-          await briefcaseEntry.isPending;
-        else {
-          timedOut = true;
-          const waitForOpen = async () => {
-            await briefcaseEntry.isPending;
-            timedOut = false;
-          };
-          await BeDuration.race(openParams.timeout, waitForOpen());
-        }
-      }
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Failed IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
+      Logger.logError(loggerCategory, "Failed to start IModelDb.downloadBriefcase", () => ({ contextId, iModelId, ...openParams }));
       throw error;
     }
 
-    if (timedOut) {
-      Logger.logTrace(loggerCategory, "Issuing pending status in IModelDb.open", () => ({ contextId, iModelId, ...openParams }));
-      throw new RpcPendingResponse();
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, iModelId, changeSetId, openParams.openMode);
+
+    // If the briefcase has already been downloaded
+    if (briefcaseEntry.isPending === undefined)
+      return iModelToken;
+
+    // Setup the async-s after the download completes
+    const perfLogger = new PerfLogger("IModelDb.downloadBriefcase", () => briefcaseEntry.getDebugInfo());
+
+    // Finish the download
+    try {
+      await briefcaseEntry.isPending;
+      requestContext.enter();
+    } catch (error) {
+      // Note: If the briefcase download fails, the entry is cleared from the cache and the next call for the same briefcase will be a fresh attempt
+      requestContext.enter();
+      Logger.logError(loggerCategory, "Failed to finish IModelDb.downloadBriefcase", () => briefcaseEntry.getDebugInfo());
+      throw error;
+    } finally {
+      briefcaseEntry.isPending = undefined;
+      perfLogger.dispose();
     }
 
-    briefcaseEntry.isPending = undefined;
-
-    perfLogger.dispose();
-    return briefcaseEntry;
+    return iModelToken;
   }
 
   /**
@@ -395,25 +407,38 @@ export class IModelDb extends IModel {
    * @param briefcaseEntry Downloaded briefcase - see [[downloadBriefcase]]
    * @internal
    */
-  public static async openBriefcase(requestContext: AuthorizedClientRequestContext, briefcaseEntry: BriefcaseEntry): Promise<IModelDb> {
-    if (briefcaseEntry.isPending)
+  public static async openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<IModelDb> {
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    if (briefcaseEntry === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that has not been downloaded", Logger.logError, loggerCategory, () => iModelToken);
+    if (briefcaseEntry.isPending !== undefined)
       throw new IModelError(IModelStatus.BadRequest, "Cannot open a briefcase that's not been completely downloaded", Logger.logError, loggerCategory, () => { briefcaseEntry.getDebugInfo(); });
 
-    if (!briefcaseEntry.isOpen)
+    /**
+     * Validate any briefcases that were setup before
+     * Note: This validation should never fail since the iModelDb field is set to undefined when the briefcase is closed.
+     * - turn this into an assertion once testing/seq-logs validates it.
+     */
+    if (briefcaseEntry.iModelDb !== undefined && !briefcaseEntry.isOpen) {
+      Logger.logError(loggerCategory, "Briefcase was closed but the iModelDb was left initialized", () => briefcaseEntry.getDebugInfo());
       BriefcaseManager.openBriefcase(briefcaseEntry);
+    }
 
-    const alreadyOpen = (briefcaseEntry.iModelDb !== undefined);
+    // Setup an iModelDb
+    if (briefcaseEntry.iModelDb === undefined) {
+      if (!briefcaseEntry.isOpen)
+        BriefcaseManager.openBriefcase(briefcaseEntry);
 
-    const iModelDb = IModelDb.constructIModelDb(briefcaseEntry, briefcaseEntry.openParams, briefcaseEntry.contextId);
-    await this.logUsage(requestContext, briefcaseEntry.contextId, iModelDb);
+      const iModelDb = new IModelDb(briefcaseEntry, iModelToken, briefcaseEntry.openParams);
+      briefcaseEntry.iModelDb = iModelDb;
 
-    if (!alreadyOpen) {
       iModelDb.setDefaultConcurrentControlAndPolicy();
       await iModelDb.concurrencyControl.onOpened(requestContext);
       IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
     }
 
-    return iModelDb;
+    await this.logUsage(requestContext, briefcaseEntry.contextId, briefcaseEntry.iModelDb);
+    return briefcaseEntry.iModelDb;
   }
 
   private static _ulasClient: UlasClient;
@@ -441,13 +466,6 @@ export class IModelDb extends IModel {
     return this.briefcase.openParams.isBriefcase;
   }
 
-  /** Returns true if this is a standalone iModel
-   * @deprecated Use [[isSnapshot]] instead as *standalone* has been replaced by *snapshot* iModels.
-   */
-  public get isStandalone(): boolean {
-    return this.briefcase.openParams.isStandalone; // tslint:disable-line: deprecation
-  }
-
   /** Returns true if this is a *snapshot* iModel
    * @see [[openSnapshot]]
    */
@@ -462,7 +480,7 @@ export class IModelDb extends IModel {
    * @internal
    */
   public closeStandalone(): void {
-    if (!this.isStandalone)
+    if (!this.isSnapshot)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use to close a managed iModel. Use IModelDb.close() instead");
     BriefcaseManager.closeStandalone(this.briefcase);
     this.clearBriefcaseEntry();
@@ -486,7 +504,7 @@ export class IModelDb extends IModel {
    */
   public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     requestContext.enter();
-    if (this.isStandalone)
+    if (this.isSnapshot)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a snapshot iModel. Use IModelDb.closeSnapshot() instead");
 
     if (this.needsConcurrencyControl) {
@@ -776,40 +794,6 @@ export class IModelDb extends IModel {
 
     } while (result.status !== QueryResponseStatus.Done);
   }
-  /** Execute a query against this IModelDb.
-   * The result of the query is returned as an array of JavaScript objects where every array element represents an
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL SELECT statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
-   * @see [IModelDb.withPreparedStatement]($backend), [IModelDb.query]($backend)
-   * @deprecated Use [[withPreparedStatement]] or [[query]] instead.
-   */
-  public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
-    return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
-      if (bindings)
-        stmt.bindValues(bindings);
-      const rows: any[] = [];
-      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        rows.push(stmt.getRow());
-        if (rows.length > IModelDb.maxLimit) {
-          throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement", Logger.logError, loggerCategory);
-        }
-      }
-      return rows;
-    });
-  }
 
   /** Use a prepared SQLite SQL statement. This function takes care of preparing the statement and then releasing it.
    * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
@@ -1049,14 +1033,6 @@ export class IModelDb extends IModel {
     }
   }
 
-  /** Import a single ECSchema.
-   * @see importSchemas
-   * @deprecated use [[importSchemas]] instead as it is better to import a collection of schemas together rather than individually.
-   */
-  public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
-    return this.importSchemas(requestContext, [schemaFileName]);
-  }
-
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -1068,7 +1044,7 @@ export class IModelDb extends IModel {
    */
   public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void> {
     requestContext.enter();
-    if (this.isStandalone) {
+    if (this.isSnapshot) {
       const status = this.briefcase.nativeDb.importSchemas(schemaFileNames);
       if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
@@ -1842,14 +1818,15 @@ export namespace IModelDb {
     /** Query for aspects of a particular class (polymorphically) associated with this element.
      * @throws [[IModelError]]
      */
-    private _queryAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
-      const sql = `SELECT * FROM ${aspectClassName} WHERE Element.Id=:elementId`;
+    private _queryAspects(elementId: Id64String, fromClassFullName: string): ElementAspect[] {
+      const sql = `SELECT ECInstanceId,ECClassId FROM ${fromClassFullName} WHERE Element.Id=:elementId`;
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
         statement.bindId("elementId", elementId);
         const aspects: ElementAspect[] = [];
         while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const row: any = statement.getRow();
-          aspects.push(this._queryAspect(row.id, row.className.replace(".", ":")));
+          const aspectInstanceId: Id64String = statement.getValue(0).getId();
+          const aspectClassFullName: string = statement.getValue(1).getClassNameForClassId().replace(".", ":");
+          aspects.push(this._queryAspect(aspectInstanceId, aspectClassFullName));
         }
         return aspects;
       });
@@ -1874,6 +1851,21 @@ export namespace IModelDb {
         throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggerCategory, () => ({ aspectInstanceId, aspectClassName }));
       }
       return this._iModel.constructEntity<ElementAspect>(aspect);
+    }
+
+    /** Get a single ElementAspect by its instance Id.
+     * @throws [[IModelError]]
+     */
+    public getAspect(aspectInstanceId: Id64String): ElementAspect {
+      const sql = `SELECT ECClassId FROM ${ElementAspect.classFullName} WHERE ECInstanceId=:aspectInstanceId`;
+      const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
+        statement.bindId("aspectInstanceId", aspectInstanceId);
+        return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getClassNameForClassId().replace(".", ":") : undefined;
+      });
+      if (undefined === aspectClassFullName) {
+        throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggerCategory, () => ({ aspectInstanceId }));
+      }
+      return this._queryAspect(aspectInstanceId, aspectClassFullName);
     }
 
     /** Get the ElementAspect instances that are owned by the specified element.

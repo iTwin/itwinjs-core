@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PropertyDescription } from "@bentley/imodeljs-frontend";
+import { PropertyDescription } from "@bentley/ui-abstract";
 import { EnumTypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
 

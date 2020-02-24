@@ -8,7 +8,7 @@ import { expect } from "chai";
 import { PropertyEditorManager, BasicPropertyEditor, PropertyEditorBase, DataControllerBase } from "../../ui-components/editors/PropertyEditorManager";
 import { TextEditor } from "../../ui-components/editors/TextEditor";
 
-import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes, IconEditorParams } from "@bentley/imodeljs-frontend";
+import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes, IconEditorParams } from "@bentley/ui-abstract";
 import { AsyncValueProcessingResult } from "../../ui-components/converters/TypeConverter";
 
 describe("PropertyEditorManager", () => {

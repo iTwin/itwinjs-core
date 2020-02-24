@@ -2,178 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "definitions": {
-    "AllInstanceNodesSpecification": {
-      "additionalProperties": false,
-      "description": "Creates nodes for all available instances filtered only by the\n`supportedSchemas` properties of the specification or the ruleset.",
-      "properties": {
-        "doNotSort": {
-          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
-          "type": "boolean"
-        },
-        "groupByClass": {
-          "description": "Group instances by ECClass. Defaults to `true`.",
-          "type": "boolean"
-        },
-        "groupByLabel": {
-          "description": "Group instances by label. Defaults to `true`.",
-          "type": "boolean"
-        },
-        "hasChildren": {
-          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
-          "enum": [
-            "Always",
-            "Never",
-            "Unknown"
-          ],
-          "type": "string"
-        },
-        "hideExpression": {
-          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
-          "type": "string"
-        },
-        "hideIfNoChildren": {
-          "description": "Hide nodes if they don't have children.",
-          "type": "boolean"
-        },
-        "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
-          "type": "boolean"
-        },
-        "nestedRules": {
-          "description": "Nested rule specifications.",
-          "items": {
-            "$ref": "#/definitions/ChildNodeRule"
-          },
-          "type": "array"
-        },
-        "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
-          "type": "integer"
-        },
-        "relatedInstances": {
-          "description": "Specifications of related instances that can be used in content creation.",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        "specType": {
-          "description": "Used for serializing to JSON.",
-          "enum": [
-            "AllInstanceNodes"
-          ],
-          "type": "string"
-        },
-        "supportedSchemas": {
-          "$ref": "#/definitions/SchemasSpecification",
-          "description": "Specification of schemas whose instances should be returned."
-        }
-      },
-      "required": [
-        "specType"
-      ],
-      "type": "object"
-    },
-    "AllRelatedInstanceNodesSpecification": {
-      "additionalProperties": false,
-      "description": "Creates nodes for all related instances for parent ECInstance node.\n\nPrecondition: can be used only if parent node is ECInstance node. If there is\nno immediate parent instance node it will go up until it finds one.",
-      "properties": {
-        "doNotSort": {
-          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
-          "type": "boolean"
-        },
-        "groupByClass": {
-          "description": "Group instances by ECClass. Defaults to `true`.",
-          "type": "boolean"
-        },
-        "groupByLabel": {
-          "description": "Group instances by label. Defaults to `true`.",
-          "type": "boolean"
-        },
-        "hasChildren": {
-          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
-          "enum": [
-            "Always",
-            "Never",
-            "Unknown"
-          ],
-          "type": "string"
-        },
-        "hideExpression": {
-          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
-          "type": "string"
-        },
-        "hideIfNoChildren": {
-          "description": "Hide nodes if they don't have children.",
-          "type": "boolean"
-        },
-        "hideNodesInHierarchy": {
-          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
-          "type": "boolean"
-        },
-        "nestedRules": {
-          "description": "Nested rule specifications.",
-          "items": {
-            "$ref": "#/definitions/ChildNodeRule"
-          },
-          "type": "array"
-        },
-        "priority": {
-          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
-          "type": "integer"
-        },
-        "relatedInstances": {
-          "description": "Specifications of related instances that can be used in content creation.",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
-              },
-              {
-                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        "requiredDirection": {
-          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
-          "enum": [
-            "Backward",
-            "Both",
-            "Forward"
-          ],
-          "type": "string"
-        },
-        "skipRelatedLevel": {
-          "description": "Skips defined level of related items and shows next level related items.\n\nExample: lets say we have relationship hierarchy A->B->C, but we want\nto show A->C. In this case we need to set this property to 1 - the engine will\nquery all direct relationships and all nested relationships and only nested\nones will be used to create content.\n\nDefaults to `0`.",
-          "minimum": 0,
-          "type": "integer"
-        },
-        "specType": {
-          "description": "Used for serializing to JSON.",
-          "enum": [
-            "AllRelatedInstanceNodes"
-          ],
-          "type": "string"
-        },
-        "supportedSchemas": {
-          "$ref": "#/definitions/SchemasSpecification",
-          "description": "Specification of schemas whose instances should be returned."
-        }
-      },
-      "required": [
-        "specType"
-      ],
-      "type": "object"
-    },
     "CalculatedPropertiesSpecification": {
       "additionalProperties": false,
       "description": "Sub-specification to include additional calculated properties into the content.",
@@ -312,10 +140,10 @@
           "items": {
             "anyOf": [
               {
-                "$ref": "#/definitions/AllInstanceNodesSpecification"
+                "$ref": "#/definitions/DEPRECATED_AllInstanceNodesSpecification"
               },
               {
-                "$ref": "#/definitions/AllRelatedInstanceNodesSpecification"
+                "$ref": "#/definitions/DEPRECATED_AllRelatedInstanceNodesSpecification"
               },
               {
                 "$ref": "#/definitions/CustomNodeSpecification"
@@ -422,7 +250,7 @@
         "propertiesDisplay": {
           "description": "Specifications for customizing property display by hiding / showing them",
           "items": {
-            "$ref": "#/definitions/PropertiesDisplaySpecification"
+            "$ref": "#/definitions/DEPRECATED_PropertiesDisplaySpecification"
           },
           "type": "array"
         },
@@ -436,7 +264,7 @@
         "propertyEditors": {
           "description": "Specifications for assigning property editors",
           "items": {
-            "$ref": "#/definitions/PropertyEditorsSpecification"
+            "$ref": "#/definitions/DEPRECATED_PropertyEditorsSpecification"
           },
           "type": "array"
         },
@@ -519,7 +347,7 @@
         "propertiesDisplay": {
           "description": "Specifications for customizing property display by hiding / showing them",
           "items": {
-            "$ref": "#/definitions/PropertiesDisplaySpecification"
+            "$ref": "#/definitions/DEPRECATED_PropertiesDisplaySpecification"
           },
           "type": "array"
         },
@@ -533,7 +361,7 @@
         "propertyEditors": {
           "description": "Specifications for assigning property editors",
           "items": {
-            "$ref": "#/definitions/PropertyEditorsSpecification"
+            "$ref": "#/definitions/DEPRECATED_PropertyEditorsSpecification"
           },
           "type": "array"
         },
@@ -592,7 +420,7 @@
         "propertiesDisplay": {
           "description": "Specifications for customizing property display by hiding / showing them",
           "items": {
-            "$ref": "#/definitions/PropertiesDisplaySpecification"
+            "$ref": "#/definitions/DEPRECATED_PropertiesDisplaySpecification"
           },
           "type": "array"
         },
@@ -606,7 +434,7 @@
         "propertyEditors": {
           "description": "Specifications for assigning property editors",
           "items": {
-            "$ref": "#/definitions/PropertyEditorsSpecification"
+            "$ref": "#/definitions/DEPRECATED_PropertyEditorsSpecification"
           },
           "type": "array"
         },
@@ -904,6 +732,178 @@
       ],
       "type": "object"
     },
+    "DEPRECATED_AllInstanceNodesSpecification": {
+      "additionalProperties": false,
+      "description": "Creates nodes for all available instances filtered only by the\n`supportedSchemas` properties of the specification or the ruleset.",
+      "properties": {
+        "doNotSort": {
+          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "groupByClass": {
+          "description": "Group instances by ECClass. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "groupByLabel": {
+          "description": "Group instances by label. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "hasChildren": {
+          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "enum": [
+            "Always",
+            "Never",
+            "Unknown"
+          ],
+          "type": "string"
+        },
+        "hideExpression": {
+          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "type": "string"
+        },
+        "hideIfNoChildren": {
+          "description": "Hide nodes if they don't have children.",
+          "type": "boolean"
+        },
+        "hideNodesInHierarchy": {
+          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "type": "boolean"
+        },
+        "nestedRules": {
+          "description": "Nested rule specifications.",
+          "items": {
+            "$ref": "#/definitions/ChildNodeRule"
+          },
+          "type": "array"
+        },
+        "priority": {
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "relatedInstances": {
+          "description": "Specifications of related instances that can be used in content creation.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "AllInstanceNodes"
+          ],
+          "type": "string"
+        },
+        "supportedSchemas": {
+          "$ref": "#/definitions/SchemasSpecification",
+          "description": "Specification of schemas whose instances should be returned."
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
+    "DEPRECATED_AllRelatedInstanceNodesSpecification": {
+      "additionalProperties": false,
+      "description": "Creates nodes for all related instances for parent ECInstance node.\n\nPrecondition: can be used only if parent node is ECInstance node. If there is\nno immediate parent instance node it will go up until it finds one.",
+      "properties": {
+        "doNotSort": {
+          "description": "Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.\n\nNote: setting this flag to `true` improves performance.",
+          "type": "boolean"
+        },
+        "groupByClass": {
+          "description": "Group instances by ECClass. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "groupByLabel": {
+          "description": "Group instances by label. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "hasChildren": {
+          "description": "This tells the rules engine that nodes produced using this\nspecification always or never have children. Defaults to `Unknown`.\n\nNote: setting this flag to `Always` or `Never` improves performance.",
+          "enum": [
+            "Always",
+            "Never",
+            "Unknown"
+          ],
+          "type": "string"
+        },
+        "hideExpression": {
+          "description": "An ECExpression which\nindicates whether a node should be hidden or not.",
+          "type": "string"
+        },
+        "hideIfNoChildren": {
+          "description": "Hide nodes if they don't have children.",
+          "type": "boolean"
+        },
+        "hideNodesInHierarchy": {
+          "description": "Hide nodes provided by this specification and directly show nodes of its children.\nThis helps if you need to define related instance nodes of particular parent node that is not available in the\nhierarchy.",
+          "type": "boolean"
+        },
+        "nestedRules": {
+          "description": "Nested rule specifications.",
+          "items": {
+            "$ref": "#/definitions/ChildNodeRule"
+          },
+          "type": "array"
+        },
+        "priority": {
+          "description": "Defines the order in which specifications are evaluated and executed. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "relatedInstances": {
+          "description": "Specifications of related instances that can be used in content creation.",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/DEPRECATED_RelatedInstanceSpecification"
+              },
+              {
+                "$ref": "#/definitions/RelatedInstanceSpecificationNew"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "requiredDirection": {
+          "description": "Direction that will be followed in the relationship select criteria.\nDefaults to `RelationshipDirection.Both`.",
+          "enum": [
+            "Backward",
+            "Both",
+            "Forward"
+          ],
+          "type": "string"
+        },
+        "skipRelatedLevel": {
+          "description": "Skips defined level of related items and shows next level related items.\n\nExample: lets say we have relationship hierarchy A->B->C, but we want\nto show A->C. In this case we need to set this property to 1 - the engine will\nquery all direct relationships and all nested relationships and only nested\nones will be used to create content.\n\nDefaults to `0`.",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "specType": {
+          "description": "Used for serializing to JSON.",
+          "enum": [
+            "AllRelatedInstanceNodes"
+          ],
+          "type": "string"
+        },
+        "supportedSchemas": {
+          "$ref": "#/definitions/SchemasSpecification",
+          "description": "Specification of schemas whose instances should be returned."
+        }
+      },
+      "required": [
+        "specType"
+      ],
+      "type": "object"
+    },
     "DEPRECATED_ContentRelatedInstancesSpecification": {
       "additionalProperties": false,
       "properties": {
@@ -929,7 +929,7 @@
         "propertiesDisplay": {
           "description": "Specifications for customizing property display by hiding / showing them",
           "items": {
-            "$ref": "#/definitions/PropertiesDisplaySpecification"
+            "$ref": "#/definitions/DEPRECATED_PropertiesDisplaySpecification"
           },
           "type": "array"
         },
@@ -943,7 +943,7 @@
         "propertyEditors": {
           "description": "Specifications for assigning property editors",
           "items": {
-            "$ref": "#/definitions/PropertyEditorsSpecification"
+            "$ref": "#/definitions/DEPRECATED_PropertyEditorsSpecification"
           },
           "type": "array"
         },
@@ -1038,6 +1038,70 @@
       },
       "required": [
         "specType"
+      ],
+      "type": "object"
+    },
+    "DEPRECATED_PropertiesDisplaySpecification": {
+      "additionalProperties": false,
+      "description": "Sub-specification to hide / display specified ECInstance properties.",
+      "properties": {
+        "isDisplayed": {
+          "description": "Should property be displayed. Defaults to `true`.",
+          "type": "boolean"
+        },
+        "priority": {
+          "description": "Controls priority of the specification. Defaults to `1000`.",
+          "type": "integer"
+        },
+        "propertyNames": {
+          "description": "List of ECProperty names which should be hidden or shown",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "propertyNames"
+      ],
+      "type": "object"
+    },
+    "DEPRECATED_PropertyEditorsSpecification": {
+      "additionalProperties": false,
+      "description": "Sub-specification to specify custom property editor",
+      "properties": {
+        "editorName": {
+          "description": "Name of the custom editor",
+          "type": "string"
+        },
+        "parameters": {
+          "description": "Parameters for the editor",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/PropertyEditorJsonParameters"
+              },
+              {
+                "$ref": "#/definitions/PropertyEditorMultilineParameters"
+              },
+              {
+                "$ref": "#/definitions/PropertyEditorRangeParameters"
+              },
+              {
+                "$ref": "#/definitions/PropertyEditorSliderParameters"
+              }
+            ]
+          },
+          "type": "array"
+        },
+        "propertyName": {
+          "description": "Name of the property which custom editor should be used for",
+          "type": "string"
+        }
+      },
+      "required": [
+        "editorName",
+        "propertyName"
       ],
       "type": "object"
     },
@@ -1951,31 +2015,6 @@
       ],
       "type": "object"
     },
-    "PropertiesDisplaySpecification": {
-      "additionalProperties": false,
-      "description": "Sub-specification to hide / display specified ECInstance properties.",
-      "properties": {
-        "isDisplayed": {
-          "description": "Should property be displayed. Defaults to `true`.",
-          "type": "boolean"
-        },
-        "priority": {
-          "description": "Controls priority of the specification. Defaults to `1000`.",
-          "type": "integer"
-        },
-        "propertyNames": {
-          "description": "List of ECProperty names which should be hidden or shown",
-          "items": {
-            "type": "string"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "propertyNames"
-      ],
-      "type": "object"
-    },
     "PropertyCategorySpecification": {
       "additionalProperties": false,
       "description": "Specification to define a custom property category.",
@@ -2142,45 +2181,6 @@
       },
       "required": [
         "editorName"
-      ],
-      "type": "object"
-    },
-    "PropertyEditorsSpecification": {
-      "additionalProperties": false,
-      "description": "Sub-specification to specify custom property editor",
-      "properties": {
-        "editorName": {
-          "description": "Name of the custom editor",
-          "type": "string"
-        },
-        "parameters": {
-          "description": "Parameters for the editor",
-          "items": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/PropertyEditorJsonParameters"
-              },
-              {
-                "$ref": "#/definitions/PropertyEditorMultilineParameters"
-              },
-              {
-                "$ref": "#/definitions/PropertyEditorRangeParameters"
-              },
-              {
-                "$ref": "#/definitions/PropertyEditorSliderParameters"
-              }
-            ]
-          },
-          "type": "array"
-        },
-        "propertyName": {
-          "description": "Name of the property which custom editor should be used for",
-          "type": "string"
-        }
-      },
-      "required": [
-        "editorName",
-        "propertyName"
       ],
       "type": "object"
     },
@@ -2683,10 +2683,10 @@
           "items": {
             "anyOf": [
               {
-                "$ref": "#/definitions/AllInstanceNodesSpecification"
+                "$ref": "#/definitions/DEPRECATED_AllInstanceNodesSpecification"
               },
               {
-                "$ref": "#/definitions/AllRelatedInstanceNodesSpecification"
+                "$ref": "#/definitions/DEPRECATED_AllRelatedInstanceNodesSpecification"
               },
               {
                 "$ref": "#/definitions/CustomNodeSpecification"
@@ -2808,7 +2808,7 @@
         "propertiesDisplay": {
           "description": "Specifications for customizing property display by hiding / showing them",
           "items": {
-            "$ref": "#/definitions/PropertiesDisplaySpecification"
+            "$ref": "#/definitions/DEPRECATED_PropertiesDisplaySpecification"
           },
           "type": "array"
         },
@@ -2822,7 +2822,7 @@
         "propertyEditors": {
           "description": "Specifications for assigning property editors",
           "items": {
-            "$ref": "#/definitions/PropertyEditorsSpecification"
+            "$ref": "#/definitions/DEPRECATED_PropertyEditorsSpecification"
           },
           "type": "array"
         },
@@ -2980,10 +2980,10 @@
           "items": {
             "anyOf": [
               {
-                "$ref": "#/definitions/AllInstanceNodesSpecification"
+                "$ref": "#/definitions/DEPRECATED_AllInstanceNodesSpecification"
               },
               {
-                "$ref": "#/definitions/AllRelatedInstanceNodesSpecification"
+                "$ref": "#/definitions/DEPRECATED_AllRelatedInstanceNodesSpecification"
               },
               {
                 "$ref": "#/definitions/CustomNodeSpecification"

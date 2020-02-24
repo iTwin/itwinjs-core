@@ -436,7 +436,10 @@ export class Schema implements CustomAttributeContainerProps {
     return this.references.find((ref) => ref.name.toLowerCase() === refSchemaName.toLowerCase()) as T;
   }
 
-  public toJson() {
+  /**
+   * Save this Schema's properties to an object for serializing to JSON.
+   */
+  public toJSON(): SchemaProps {
     const schemaJson: { [value: string]: any } = {};
     schemaJson.$schema = SCHEMAURL3_2_JSON; // $schema is required
     schemaJson.name = this.name; // name is required
@@ -455,10 +458,10 @@ export class Schema implements CustomAttributeContainerProps {
     if (this._items.size > 0) {
       schemaJson.items = {};
       this._items.forEach((schemaItem: SchemaItem) => {
-        schemaJson.items[schemaItem.name] = schemaItem.toJson(false, true);
+        schemaJson.items[schemaItem.name] = schemaItem.toJSON(false, true);
       });
     }
-    return schemaJson;
+    return schemaJson as SchemaProps;
   }
 
   /**
@@ -506,7 +509,7 @@ export class Schema implements CustomAttributeContainerProps {
     return schemaXml;
   }
 
-  public deserializeSync(schemaProps: SchemaProps) {
+  public fromJSONSync(schemaProps: SchemaProps) {
     if (undefined === this._schemaKey) {
       const schemaName = schemaProps.name;
       const version = ECVersion.fromString(schemaProps.version);
@@ -534,8 +537,8 @@ export class Schema implements CustomAttributeContainerProps {
       this._description = schemaProps.description;
   }
 
-  public async deserialize(schemaProps: SchemaProps) {
-    this.deserializeSync(schemaProps);
+  public async fromJSON(schemaProps: SchemaProps) {
+    this.fromJSONSync(schemaProps);
   }
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {

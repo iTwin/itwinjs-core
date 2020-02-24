@@ -1,6 +1,35 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- #269169 Cancel drag operations when button is released outside of view. Suspend view tool animation when cursor moves out of view.
+- Option to omit area patterns from tiles.
+- Ignore ReadPixels calls when using GpuProfiler
+- iModel write API development
+- Fix broken links
+- Fix regression causing background map to be affected by view's symbology overrides.
+- Added support for backward slashes in erroneous URLs of Reality Data in PW Context Share
+- Prevent reuse of cached tiles after project extents change.
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
+- Fix incorrect aspect ratio for 3d view attachments.
+- Overriding transparency of a textured surface or raster text multiplies the texture alpha by the override rather than replacing it.
+- Better documentation of OidcDesktopClient/IOidcFrontendClient
+- Consolidate ViewState code shared with backend's ViewDefinition using ViewDetails.
+- Add support for plan projection models with 3d display priority.
+- Customizable display of plan projection models.
+- Break up System.ts into modular files.
+- Fix setAuxiliaryCoordinateSystem
+- Reduced the number of tiles that must be loaded before a zoomed-in view is complete.
+- Resolve circular dependencies between tile-related types.
+- Support for TypeDoc 0.16.8
+- Mark as deprecated classes and interfaces that have moved to bentley/ui-abstract.
+- Change feature tracking API for plugins as requested by Design Review. 
+- EN: #124601 - Initial implementation of WebGL2
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

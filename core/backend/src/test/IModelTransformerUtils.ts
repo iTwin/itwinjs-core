@@ -539,16 +539,15 @@ export namespace IModelTransformerUtils {
     let itIndex = 0;
     for (const entry of it) {
       if (0 === itIndex) {
-        assert.isDefined(entry.geometryQuery);
         assert.equal(entry.primitive.type, "geometryQuery");
         assert.equal(entry.geomParams.subCategoryId, subCategoryId);
         assert.equal(entry.geomParams.materialId, renderMaterialId);
       } else if (1 === itIndex) {
-        assert.isUndefined(entry.geometryQuery);
         assert.equal(entry.primitive.type, "partReference");
         assert.equal(entry.geomParams.subCategoryId, subCategoryId);
         assert.equal(entry.geomParams.materialId, renderMaterialId);
-        assert.equal(entry.partId, geometryPartId);
+        if (entry.primitive.type === "partReference")
+          assert.equal(entry.primitive.part.id, geometryPartId);
       } else {
         assert.fail(undefined, undefined, "Only expected 2 entries");
       }

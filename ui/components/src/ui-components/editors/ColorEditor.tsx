@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes, ColorEditorParams } from "@bentley/imodeljs-frontend"; //
+import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes, ColorEditorParams } from "@bentley/ui-abstract"; //
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { ColorPickerButton } from "../color/ColorPickerButton";

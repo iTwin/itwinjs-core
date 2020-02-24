@@ -30,7 +30,8 @@ import {
 import { UiComponents } from "../../UiComponents";
 import { TreeModelSource } from "./TreeModelSource";
 
-/** Data structure that describes node load result
+/**
+ * Data structure that describes node load result
  * @beta
  */
 export interface TreeNodeLoadResult {
@@ -42,8 +43,8 @@ export interface TreeNodeLoadResult {
  * @beta
  */
 export interface ITreeNodeLoader {
-  /** Loads node at specified place in tree.
-   *
+  /**
+   * Loads node at specified place in tree.
    * @param parentId specifies tree branch
    * @param childIndex specifies offset in the branch.
    */
@@ -51,25 +52,29 @@ export interface ITreeNodeLoader {
 }
 
 /**
- * Tree node loader which uses TreeDataProvider to load nodes.
+ * Tree node loader which uses `TreeDataProvider` to load nodes.
  * @beta
  */
 export interface ITreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvider> extends ITreeNodeLoader {
-  /** Returns TreeDataProvider used to load nodes. */
-  getDataProvider(): TDataProvider;
+  /** Returns `TreeDataProvider` used to load nodes. */
+  readonly dataProvider: TDataProvider;
 }
 
-/** Abstract node loader which loads nodes to provided model source.
+/**
+ * Abstract node loader implementation which loads nodes into provided model source.
  * @beta
  */
 export abstract class AbstractTreeNodeLoader implements ITreeNodeLoader {
   private _treeModelSource: TreeModelSource;
   private _loadScheduler = new SubscriptionScheduler<TreeNodeLoadResult>();
 
-  protected constructor(modelSource: TreeModelSource) { this._treeModelSource = modelSource; }
+  protected constructor(modelSource: TreeModelSource) {
+    this._treeModelSource = modelSource;
+  }
 
   public get modelSource() { return this._treeModelSource; }
 
+  /** Do not override this method. @see `load` */
   public loadNode(parent: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<TreeNodeLoadResult> {
     return from(this.load(parent, childIndex)).pipe(
       map((loadedHierarchy) => {
@@ -80,14 +85,22 @@ export abstract class AbstractTreeNodeLoader implements ITreeNodeLoader {
     );
   }
 
+  /**
+   * A method that's called when `load` loads some nodes and we need to put them into model source. The
+   * default implementation simply puts loaded child nodes under their parent at correct positions. Concrete
+   * implementation may override this method to handle loaded nodes in a a custom way (put them at custom locations
+   * in the hierarchy, etc.)
+   */
   protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void {
     handleLoadedNodeHierarchy(this._treeModelSource, loadedHierarchy);
   }
 
-  protected abstract load(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
+  /** An abstract method to load a node at the specific index for the specified parent. */
+  protected abstract load(parent: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>;
 }
 
-/** Abstract node loader with tree data provider which loads nodes to provided model source.
+/**
+ * Abstract node loader with tree data provider which loads nodes into provided model source.
  * @beta
  */
 export abstract class AbstractTreeNodeLoaderWithProvider<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoader implements ITreeNodeLoaderWithProvider<TDataProvider> {
@@ -98,11 +111,11 @@ export abstract class AbstractTreeNodeLoaderWithProvider<TDataProvider extends T
     this._dataProvider = dataProvider;
   }
 
-  public getDataProvider() { return this._dataProvider; }
+  public get dataProvider() { return this._dataProvider; }
 }
 
 /**
- * Default tree node loader with TreeDataProvider implementation.
+ * Default tree node loader with `TreeDataProvider` implementation.
  * @beta
  */
 export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
@@ -119,8 +132,7 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends Abst
 
   /**
    * Schedules to load children of node and returns an Observable.
-   *
-   * **Note:** It does not start loading node until '.subscribe()' is called on returned Observable.
+   * @note It does not start loading node until '.subscribe()' is called on returned Observable.
    */
   protected load(parentNode: TreeModelNode | TreeModelRootNode): Observable<LoadedNodeHierarchy> {
     const parentItem = isTreeModelNode(parentNode) ? parentNode.item : undefined;
@@ -144,7 +156,7 @@ export class TreeNodeLoader<TDataProvider extends TreeDataProvider> extends Abst
 }
 
 /**
- * Default paged tree node loader with TreeDataProvider implementation.
+ * Default paged tree node loader with `TreeDataProvider` implementation.
  * @beta
  */
 export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends AbstractTreeNodeLoaderWithProvider<TDataProvider> implements IDisposable {
@@ -161,12 +173,11 @@ export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends
   public dispose() { this._pageLoader.dispose(); }
 
   /** Returns page size used by tree node loader. */
-  public getPageSize(): number { return this._pageSize; }
+  public get pageSize(): number { return this._pageSize; }
 
   /**
    * Schedules to load one page of node children and returns an Observable.
-   *
-   * **Note:** It does not start loading node page until '.subscribe()' is called on returned Observable.
+   * @note It does not start loading node page until '.subscribe()' is called on returned Observable.
    */
   protected load(parentNode: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy> {
     const parentItem = isTreeModelNode(parentNode) ? parentNode.item : undefined;
@@ -174,7 +185,8 @@ export class PagedTreeNodeLoader<TDataProvider extends TreeDataProvider> extends
   }
 }
 
-/** Data structure that describes hierarchy loaded for parent node.
+/**
+ * Data structure that describes hierarchy loaded for parent node.
  * @beta
  */
 export interface LoadedNodeHierarchy {
@@ -188,7 +200,8 @@ export interface LoadedNodeHierarchy {
   numChildren?: number;
 }
 
-/** Data structure that describes one loaded hierarchy item.
+/**
+ * Data structure that describes one loaded hierarchy item.
  * @beta
  */
 export interface LoadedNodeHierarchyItem {
@@ -379,28 +392,33 @@ interface TreeDataSourceResult {
 }
 
 /**
- * Wrapper to handle different types of TreeDataProvider. Provides one method
- * to request items from TreeDataProviderRaw, TreeDataProviderMethod,
- * TreeDataProviderPromise or TreeDataProviderInterface.
+ * Wrapper to handle different types of `TreeDataProvider`. Provides one method
+ * to request items from `TreeDataProviderRaw`, `TreeDataProviderMethod`,
+ * `TreeDataProviderPromise` or `TreeDataProviderInterface`.
+ *
  * @internal
  */
 export class TreeDataSource implements IDisposable {
   private _dataProvider: TreeDataProvider;
-  private _dispose?: () => void;
+  private _disposeTreeNodesChangedListener?: () => void;
 
   public readonly onItemsChanged = new BeUiEvent<TreeDataChangesListener>();
 
   constructor(dataProvider: TreeDataProvider) {
     this._dataProvider = dataProvider;
 
+    // tslint:disable-next-line:deprecation
     if (isTreeDataProviderInterface(this._dataProvider) && this._dataProvider.onTreeNodeChanged) {
-      this._dispose = this._dataProvider.onTreeNodeChanged!.addListener(
+      // tslint:disable-next-line:deprecation
+      this._disposeTreeNodesChangedListener = this._dataProvider.onTreeNodeChanged!.addListener(
         (changedItems) => this.onItemsChanged.raiseEvent(changedItems),
       );
     }
   }
 
-  public dispose() { this._dispose && this._dispose(); }
+  public dispose() {
+    this._disposeTreeNodesChangedListener && this._disposeTreeNodesChangedListener();
+  }
 
   public requestItems(
     parent: TreeNodeItem | undefined,

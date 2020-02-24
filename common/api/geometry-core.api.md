@@ -571,10 +571,14 @@ export type BlockComparisonFunction = (data: Float64Array, blockSize: number, in
 
 // @public
 export class BooleanClipFactory {
-    static createCaptureDifference(primaryClipper: Clipper, excludedClip: Clipper, keepInside: boolean): Clipper;
+    static anyClipperToJSON(clipper: any): any | undefined;
+    static createCaptureClipOutside(primaryClipper: Clipper): Clipper;
+    static createCaptureDifference(primaryClipper: Clipper, excludedClipper: Clipper, keepInside: boolean): Clipper;
     static createCaptureIntersection(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;
     static createCaptureParity(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;
     static createCaptureUnion(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;
+    static parseToClipper(source?: object): Clipper | undefined;
+    static parseToClipperArray(source: any): Clipper[] | undefined;
 }
 
 // @public
@@ -894,12 +898,6 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, inside?: boolean, tolerance?: number): number;
     clone(): ClipPlane;
     cloneNegated(): ClipPlane;
-    // @deprecated
-    convexPolygonClipInPlace(xyz: Point3d[], work: Point3d[], tolerance?: number): void;
-    // @deprecated
-    convexPolygonSplitInsideOutside(xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d): void;
-    // @deprecated
-    convexPolygonSplitInsideOutsideGrowableArrays(xyz: GrowableXYZArray, xyzIn: GrowableXYZArray, xyzOut: GrowableXYZArray, altitudeRange: Range1d): void;
     static createEdgeAndUpVector(point0: Point3d, point1: Point3d, upVector: Vector3d, tiltAngle?: Angle, result?: ClipPlane): ClipPlane | undefined;
     static createEdgeXY(point0: Point3d, point1: Point3d, result?: ClipPlane): ClipPlane | undefined;
     static createNormalAndDistance(normal: Vector3d, distance: number, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane | undefined;
@@ -908,10 +906,6 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     static createPlane(plane: Plane3dByOriginAndUnitNormal, invisible?: boolean, interior?: boolean, result?: ClipPlane): ClipPlane;
     get distance(): number;
     dotProductPlaneNormalPoint(point: Point3d): number;
-    // @deprecated
-    dotProductVector(vector: Vector3d): number;
-    // @deprecated
-    evaluatePoint(point: Point3d): number;
     static fromJSON(json: any, result?: ClipPlane): ClipPlane | undefined;
     getBoundedSegmentSimpleIntersection(pointA: Point3d, pointB: Point3d): number | undefined;
     getFrame(): Transform;
@@ -919,8 +913,6 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     getPlane4d(): Point4d;
     get interior(): boolean;
     intersectRange(range: Range3d, addClosurePoint?: boolean): GrowableXYZArray | undefined;
-    // @deprecated
-    static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray): GrowableXYZArray | undefined;
     get invisible(): boolean;
     get inwardNormalRef(): Vector3d;
     isAlmostEqual(other: ClipPlane): boolean;
@@ -930,8 +922,6 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     multiplyPlaneByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     negateInPlace(): void;
     offsetDistance(offset: number): void;
-    // @deprecated
-    polygonCrossings(xyz: Point3d[], crossings: Point3d[]): void;
     setFlags(invisible: boolean, interior: boolean): void;
     setInvisible(invisible: boolean): void;
     setPlane4d(plane: Point4d): void;
@@ -1025,6 +1015,7 @@ export class ClipUtilities {
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
     static doesClipperIntersectRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): boolean;
     static doesConvexClipPlaneSetIntersectRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): boolean;
+    static isClipper(obj: any): boolean;
     static loopsOfConvexClipPlaneIntersectionWithRange(convexSet: ConvexClipPlaneSet, range: Range3d, includeConvexSetFaces?: boolean, includeRangeFaces?: boolean, ignoreInvisiblePlanes?: boolean): GeometryQuery[];
     static pointSetSingleClipStatus(points: GrowableXYZArray, planeSet: UnionOfConvexClipPlaneSets, tolerance: number): ClipStatus;
     static rangeOfClipperIntersectionWithRange(clipper: ConvexClipPlaneSet | UnionOfConvexClipPlaneSets | ClipPrimitive | ClipVector | undefined, range: Range3d, observeInvisibleFlag?: boolean): Range3d;
@@ -1335,9 +1326,7 @@ export type CurveCollectionType = "loop" | "path" | "unionRegion" | "parityRegio
 // @public
 export class CurveCurve {
     static allIntersectionsAmongPrimitivesXY(primitives: CurvePrimitive[]): CurveLocationDetailPair[];
-    static intersectionProjectedXY(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
-    // @deprecated
-    static intersectionXY(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
+    static intersectionProjectedXYPairs(worldToLocal: Matrix4d, geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailPair[];
     static intersectionXYPairs(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailPair[];
     // @beta
     static intersectionXYZ(geometryA: GeometryQuery, extendA: boolean, geometryB: GeometryQuery, extendB: boolean): CurveLocationDetailArrayPair;
@@ -1358,8 +1347,6 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
     computeSegmentLineString(lsA: LineSegment3d, extendA: boolean, lsB: LineString3d, extendB: boolean, reversed: boolean): any;
     dispatchLineStringBSplineCurve(lsA: LineString3d, extendA: boolean, curveB: BSplineCurve3d, extendB: boolean, reversed: boolean): any;
     grabPairedResults(reinitialize?: boolean): CurveLocationDetailPair[];
-    // @deprecated
-    grabResults(reinitialize?: boolean): CurveLocationDetailArrayPair;
     handleArc3d(arc0: Arc3d): any;
     handleBSplineCurve3d(curve: BSplineCurve3d): any;
     handleBSplineCurve3dH(_curve: BSplineCurve3dH): any;
@@ -2028,8 +2015,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
-    // @deprecated
-    distance(i: number, j: number): number | undefined;
     static distanceBetweenPointsIn2Arrays(arrayA: GrowableXYZArray, i: number, arrayB: GrowableXYZArray, j: number): number | undefined;
     distanceIndexIndex(i: number, j: number): number | undefined;
     distanceIndexToPoint(i: number, spacePoint: XYAndZ): number | undefined;
@@ -3583,10 +3568,6 @@ export class Point3dArray {
     } | undefined;
     static multiplyInPlace(transform: Transform, xyz: Float64Array): void;
     static packToFloat64Array(data: Point3d[]): Float64Array;
-    // @deprecated
-    static streamXYZ(data: MultiLineStringDataVariant, startChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined, pointCallback: (x: number, y: number, z: number) => void, endChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined): number;
-    // @deprecated
-    static streamXYZXYZ(data: MultiLineStringDataVariant, startChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined, segmentCallback: (x0: number, y0: number, z0: number, x1: number, y1: number, z1: number) => void, endChainCallback: ((chainData: MultiLineStringDataVariant, isLeaf: boolean) => void) | undefined): number;
     static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean): number;
     static sumWeightedX(weights: Float64Array, points: Point3d[]): number;
     static sumWeightedY(weights: Float64Array, points: Point3d[]): number;
@@ -3815,8 +3796,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     endFace(): boolean;
     findOrAddNormalInGrowableXYZArray(xyz: GrowableXYZArray, index: number, transform?: Transform, priorIndex?: number): number | undefined;
     findOrAddNormalInLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined;
-    // @deprecated
-    findOrAddNormalnLineString(ls: LineString3d, index: number, transform?: Transform, priorIndexA?: number, priorIndexB?: number): number | undefined;
     findOrAddParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined;
     findOrAddParamInLineString(ls: LineString3d, index: number, v: number, priorIndexA?: number, priorIndexB?: number): number | undefined;
     findOrAddParamXY(x: number, y: number): number;
@@ -4139,6 +4118,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     toFloat64Array(): Float64Array;
     toJSON(): Range2dProps;
     union(other: LowAndHighXY, result?: Range2d): Range2d;
+    worldToLocal(point: Point2d, result?: Point2d): Point2d | undefined;
     get xHigh(): number;
     xLength(): number;
     get xLow(): number;

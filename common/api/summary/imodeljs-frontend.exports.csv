@@ -34,7 +34,6 @@ internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 beta;AppearanceOverrideProps
-beta;ArrayValue 
 internal;class Attachment
 internal;AttachmentList
 internal;enum AttachmentSceneState
@@ -44,11 +43,10 @@ public;AuxCoordSystem3dState
 public;AuxCoordSystemSpatialState 
 public;class AuxCoordSystemState 
 internal;B3dmReader 
+internal;BackgroundMapGeometry
 internal;BackgroundMapTileTreeReference 
+internal;BackgroundMapTreeId
 internal;BackgroundTerrainTileTreeReference 
-beta;BasePropertyEditorParams
-beta;BasePropertyValue
-beta;class BaseQuantityDescription 
 internal;BatchedTileIdMap
 public;BeButton
 public;BeButtonEvent 
@@ -61,8 +59,8 @@ public;BeWheelEvent
 public;BeWheelEventProps 
 internal;BingElevationProvider
 beta;BlankConnectionProps
-beta;ButtonGroupEditorParams 
 internal;CachedIModelCoordinatesResponseProps
+internal;calculateEcefToDb(iModel: IModelConnection, bimElevationBias: number): Promise
 beta;calculateSolarAngles(date: Date, location: Cartographic):
 beta;calculateSolarDirection(date: Date, location: Cartographic): Vector3d
 beta;calculateSunriseOrSunset(date: Date, location: Cartographic, sunrise: boolean): Date
@@ -74,13 +72,11 @@ public;CategorySelectorState
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
-alpha;CheckBoxIconsEditorParams 
 alpha;ClipEventType
 beta;enum ClippingType
 internal;ClipResult
 internal;Clips
 public;Cluster
-beta;ColorEditorParams 
 internal;CompassMode
 internal;ContextMode
 internal;ContextRealityModelState
@@ -92,12 +88,12 @@ public;CoordSystem
 internal;CoreTools
 internal;createAttachment(props: ViewAttachmentProps, view: ViewState): Attachment
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
+internal;createDefaultViewFlagOverrides(options:
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
-internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, groundBias: number, filterTextures: boolean, iModel: IModelConnection): Promise
+internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, iModel: IModelConnection, forDrape?: boolean): Promise
 internal;CurrentInputState
 internal;CurrentState
-beta;CustomFormattedNumberParams 
 public;DecorateContext 
 public;Decorations 
 public;Decorator
@@ -116,7 +112,6 @@ public;DrawingModelState
 public;DrawingViewState 
 public;DynamicsContext 
 alpha;EditManipulator
-beta;EditorPosition
 internal;ElementAgenda
 alpha;ElementEditor3d
 public;ElementLocateManager
@@ -128,8 +123,6 @@ beta;EmphasizeElements
 beta;EmphasizeElementsProps
 beta;EngineeringLengthDescription 
 public;EntityState 
-beta;EnumerationChoice
-beta;EnumerationChoicesInfo
 public;Environment 
 internal;ErrorNums
 public;EventController
@@ -151,6 +144,7 @@ alpha;findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelCon
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
+beta;class FormattedQuantityDescription 
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FuzzySearch
@@ -164,7 +158,7 @@ public;class GeometricModelState
 internal;GeoServices
 internal;getBackgroundMapTreeSupplier(): TileTreeSupplier
 beta;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
-internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, heightRange: Range1d, wantSkirts: boolean): Promise
+internal;getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, wantSkirts: boolean, exaggeration: number): Promise
 beta;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
@@ -181,7 +175,6 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
-public;GridOrientationType
 internal;GroupMark
 internal;HilitedState
 internal;Hilites
@@ -195,9 +188,6 @@ public;HitParentGeomType
 public;HitPriority
 public;HitSource
 internal;I3dmReader 
-beta;IconDefinition
-alpha;IconEditorParams 
-beta;IconListEditorParams 
 public;IconSprites
 public;IdleTool 
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
@@ -217,17 +207,14 @@ alpha;EditingFunctions
 internal;Tiles
 internal;IModelTileLoader 
 public;class InputCollector 
-beta;InputEditorSizeParams 
 public;InputSource
 internal;InstancedGraphicParams
 public;class InteractiveTool 
 public;IntersectDetail 
 alpha;ItemField
-alpha;JsonEditorParams 
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-beta;LinkElementsInfo
 internal;LoadSavedPluginsResult
 internal;LoadSavedPluginsStatus
 public;LocateAction
@@ -238,11 +225,12 @@ internal;LockedStates
 beta;LookAndMoveTool 
 public;LookViewTool 
 alpha;ManipulatorToolEvent
+internal;MapCartoRectangle 
 internal;MapImageryTileTreeReference 
-internal;MapTile 
+internal;class MapTile 
 internal;MapTileGeometryAttributionProvider
 internal;class MapTileLoaderBase 
-internal;MapTileRectangle 
+internal;class MapTileProjection
 internal;MapTileTree 
 internal;class MapTileTreeReference 
 internal;class MapTilingScheme
@@ -269,7 +257,8 @@ internal;ModalReturn
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
-alpha;MultilineTextEditorParams 
+internal;NativeApp
+internal;NativeAppLogger
 internal;NoRenderApp
 public;NotificationManager
 public;NotifyMessageDetails
@@ -287,37 +276,28 @@ public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
 public;PanViewTool 
-beta;ParseResults
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
 public;PhysicalModelState 
 internal;PingTestResult
 beta;Pixel
 internal;PlanarClassifierMap = Map
+internal;PlanarMapTile 
 beta;class Plugin
 beta;PluginAdmin
 beta;PluginLoadResults = Plugin | undefined | string | string[]
-beta;Primitives
 public;class PrimitiveTool 
-beta;PrimitiveValue 
 alpha;enum PrimitiveVisibility
-beta;PropertyDescription
-beta;PropertyEditorInfo
-beta;PropertyEditorParams = BasePropertyEditorParams
-beta;PropertyEditorParamTypes
-beta;PropertyRecord
-beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
-beta;PropertyValueFormat
 internal;QuadId
 alpha;QuantityFormatter 
 beta;QuantityType
-alpha;RangeEditorParams 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
-public;RelativePosition
+internal;RealityTile 
+internal;RealityTileTree 
 beta;class RenderClipVolume 
 public;RenderContext
 internal;enum RenderDiagnostics
@@ -333,6 +313,7 @@ beta;Options
 beta;RenderSystemDebugControl
 internal;class RenderTarget 
 beta;RenderTargetDebugControl
+internal;class RenderTerrainMeshGeometry 
 internal;class RenderTextureDrape 
 public;RotateViewTool 
 alpha;RotationMode
@@ -370,7 +351,6 @@ internal;SkyBoxParams = Promise
 public;SkyCube 
 public;SkyGradient 
 public;SkySphere 
-alpha;SliderEditorParams 
 public;SnapDetail 
 public;SnapHeat
 public;SnapMode
@@ -388,18 +368,18 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-beta;StructValue 
+internal;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
-beta;SuppressLabelEditorParams 
-alpha;SuppressUnitLabelEditorParams 
 beta;SurveyLengthDescription 
 internal;SuspendedToolState
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
+internal;TerrainMapTile 
 internal;class TerrainProvider 
+internal;TerrainTexture
 internal;class TerrainTileLoaderBase 
 internal;TextureDrapeMap = Map
 internal;TextureImage
@@ -445,11 +425,7 @@ beta;ToolAssistanceSection
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings
-beta;ToolSettingsPropertyItem
-beta;ToolSettingsPropertyRecord 
-beta;ToolSettingsPropertySyncItem 
 internal;ToolSettingsState
-beta;ToolSettingsValue 
 internal;ToolState
 public;ToolTipOptions
 internal;ToolTipProvider
@@ -478,6 +454,10 @@ alpha;ViewClipPlanesModifyTool
 alpha;ViewClipSettingsProvider
 alpha;ViewClipShapeModifyTool 
 alpha;ViewClipTool 
+alpha;ViewGlobeBirdTool 
+alpha;ViewGlobeIModelTool 
+alpha;ViewGlobeLocationTool 
+alpha;ViewGlobeSatelliteTool 
 internal;ViewHandleArray
 internal;enum ViewHandleType
 internal;ViewingSpace
@@ -505,8 +485,8 @@ beta;WebGLRenderCompatibilityInfo
 beta;WebGLRenderCompatibilityStatus
 internal;WebMapDrawArgs 
 internal;WebMapTileLoader 
-internal;WebMapTileProps 
 internal;WebMapTileTreeProps 
+internal;WebMercatorProjection
 internal;WebMercatorTilingScheme 
 internal;WheelEventProcessor
 public;WindowAreaTool 

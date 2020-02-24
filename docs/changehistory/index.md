@@ -1,61 +1,128 @@
-# 1.11.0 Change Notes
+# 1.12.0 Change Notes
 
-## TypeScript 3.7.4
+## MacOS Support
 
-iModel.js now compiles with [TypeScript 3.7.2](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html). Aside from keeping current, the primary motivations for the upgrade include [uncalled function checks](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#uncalled-function-checks) and [assertion functions](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions).
+MacOS support is officially available for iModel.js backends.  Please see the [Supported Platforms](./../learning/SupportedPlatforms.md) page for details.
 
-[assert]($bentley) is now an [assertion function](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-7.html#assertion-functions). This assures the compiler that code following a call to `assert` will never execute unless the asserted condition is true. Bear in mind that because calls to `assert` are stripped out of production builds, this assurance is only true in development builds - so reserve use of `assert` for conditions that are truly never expected to occur, and use ordinary validation and exception handling for other conditions.
+## Plan projection display
 
-## api-extractor 7.7.3
+Alpha support for controlling the display of "plan projection" models has been added. A plan projection model is a spatial model with geometry all residing in an XY plane, indicated by the [GeometricModel3dProps.isPlanProjection]($common) flag. Multiple such models can be combined within a spatial view in various ways by using the `PlanProjectionSettings` associated with a [DisplayStyle3d]($backend) and [DisplayStyle3dState]($frontend). This allows each model to be displayed with any of the following:
+  * An absolute elevation in meters;
+  * A uniform transparency;
+  * As an overlay, drawn in front of all other geometry in the view;
+  * Deterministic draw order based on display priority.
 
-Upgrading to TypeScript 3.7.2 necessitated an upgrade to a new version of [api-extractor](https://api-extractor.com/), primarily due to changes to the JavaScript emitted by tsc for property getters and setters. api-extractor now requires that documentation and release tags are applied only to the *getter*, never the *setter*. This imposes some constraints which were temporarily relaxed in api-extractor 3.6:
+The latter groups geometry within plan projection models into "layers" based on subcategory Id: each subcategory represents a single layer containing geometry from any number of plan projection models, and each subcategory's [SubCategoryAppearance]($common) defines a display priority. At display time, if 2 (or more) plan projection models are displayed at the same elevation, their geometry is drawn in ascending order by the corresponding subcategory's display priority, such that geometry with a higher priority displays in front of geometry with a lower priority. Subcategory priorities can be overridden using [DisplayStyleSettings.overrideSubCategory]($common).
 
-- Write-only properties (having only a setter, no getter) are rejected.
-- A setter cannot have a different release tag than the corresponding getter.
+## Feature flags
 
-## Module documentation
+Options used to enable or disable certain features when invoking [IModelApp.startup]($frontend) have changed:
+  * [RenderSystem.Options.logarithmicDepthBuffer]($frontend) now defaults to `true`.
+  * `TileAdmin.Props.enableImprovedElision` now defaults to `true`.
+  * `TileAdmin.Props.ignoreAreaPatterns` has been added to temporarily mitigate issues with large amounts of geometry produced for area patterns. It defaults to `false`.
 
-Upgrading to TypeScript 3.7.2 necessitated an upgrade to [typedoc 0.15.1](https://typedoc.org/) and v2.1.0 of the [typedoc plugin](https://www.npmjs.com/package/typedoc-plugin-external-module-name) used to support external module declarations. This changes the format of `@module` comments.
+## View details
 
-Previous syntax for `@module` comments:
-```ts
-/** @module ModuleName */
-```
+Access to optional [ViewDefinition]($backend) and [ViewState]($frontend) properties stored as JSON has been consolidated into the [ViewDetails]($common) class. In addition, a new persistent [ViewDetails3d.allow3dManipulations]($common) flag allows 3d views to control whether viewing tools can operate on the view in three dimensions or should be limited to the XY plane.
 
-New syntax for `@module` comments:
-```ts
-/** @packageDocumentation
- * @module ModuleName
- */
-```
+## UI
 
-Without the `@packageDocumentation`, the documentation generator will fail to recognize that the source file should be mapped to the `ModuleName` external module.
+### ControlledTree
+  * New abstract classes: `AbstractTreeNodeLoader` and `AbstractTreeNodeLoaderWitProvider`
+    * Uses `TreeModelSource` to add loaded nodes to the model
+    * `protected abstract load(parentId: TreeModelNode | TreeModelRootNode, childIndex: number): Observable<LoadedNodeHierarchy>` is called to load nodes
+    * `protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void` is called when nodes are loaded and is responsible for adding them to the model
+  * `onNodeLoaded` event removed from `ITreeNodeLoader`
+    * `AbstractTreeNodeLoader.updateModel(loadedHierarchy: LoadedNodeHierarchy): void` should be overridden instead of listening for `onNodeLoaded` event
+  * `TreeNodeLoader` and `PagedTreeNodeLoader` extends `AbstractTreeNodeLoaderWitProvider` and requires `TreeModelSource` to be passed to constructor
+    * overriding `protected updateModel(loadedHierarchy: LoadedNodeHierarchy): void` allows to control how nodes are added to the model.
+  * `useNodeLoader` and `usePagedNodeLoader` hooks require `TreeModelSource`
+    * `function useNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, modelSource: TreeModelSource): TreeNodeLoader<TDataProvider>;`
+    * `function usePagedNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;`
+  * `useModelSource` hook takes `TreeDataProvider` instead of `ITreeNodeLoader`
+    * `function useModelSource(dataProvider: TreeDataProvider): TreeModelSource;`
+  * Removed function: `createDefaultNodeLoadHandler(modelSource: TreeModelSource): (loadedHierarchy: LoadedNodeHierarchy) => void;`
+  * Removed function: `createModelSourceForNodeLoader(nodeLoader: ITreeNodeLoader): { modelSource: TreeModelSource; disposeModelSource: () => void; };`
 
 ## Geometry
 
-* new public methods in RegionOps:
+### Ellipsoid
+ * New instance method:   `ellipsoid.localToWorld(localPoint: XYAndZ, result?: Point3d): Point3d`
+ * New instance method:   `worldToLocal(worldPoint: XYAndZ, result?: Point3d): Point3d | undefined`
+ * `local` image of a world point is in the coordinate system of a unit sphere.
+   * The point is (inside,on,outside) the ellipsoid if its local point magnitude (distance from local origin) is respectively (less than, equal to, greater than) one.
+* New instance method:  `ellipsoid.silhouette (eyePoint:Point4d): Arc3d | undefined`
+* New instance methods to implement the `Clipper` interface:
+   * `ellipsoid.isPointOnOrInside(point: Point3d): boolean`
+   * `ellipsoid.announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean`
+   * `ellipsoid.announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean`
 
-  * RegionOps.sortOuterAndHoleLoopsXY
-  * apply parity logic to determine containment of holes in parents (or holes in islands)
-  * RegionOps.constructAllXYRegionLoops
-    * Compute intersections among unstructured input curves
-    * Construct areas bounded by those inputs.
-  * RegionOps.curveArrayRange
-    * construct range of unstructured array of curves.
-  * RegionOps.expandLineStrings
-    * In an array of curve primitives, replace each LineString3d with expansion to LineSegment3d
+### PolyfaceQuery
+  * Existing static methods for area booleans of polygons have added (optional) argument to request triangulation of results.
+    * `polygonXYAreaUnionLoopsToPolyface`
+    * `polygonXYAreaDifferenceLoopsToPolyface`
+    * `polygonXYAreaIntersectLoopsToPolyface`
+  * New (static) method:  `cloneByFacetDuplication(source: Polyface, includeSingletons: boolean, clusterSelector: DuplicateFacetClusterSelector): Polyface`
+    * Copy facets from source to a new polyface
+    * `includeSingletons` controls inclusion of facets that appear only once
+    * `clusterSelector` indicates
+      * omit all duplicated facets
+      * include single representative among each cluster of duplicates
+      * omit all if even count, retain one if odd count. (Parity rules)
+      * include all within clusters of duplicates
+    * supporting methods to announce and collect arrays of clustered facet indices:
+      * `PolyfaceQuery.announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void`
+      * `PolyfaceQuery.collectDuplicateFacetIndices(polyface: Polyface, includeSingletons?: boolean): number[][]`
 
-* (new method) CurveCurve.allIntersectionsAmongPrimitivesXY
-  * Supporting changes in CurveCurveIntersectionXY context class.
-* CurveLocationDetail
-  * new method to ask if fraction1 is present (i.e. this is an interval rather than single point.
-* Make implementations of CurvePrimitive and CurveCollection methods to collect leaf primitives and strokes more consistent:
+  ### Arc3d
+   * Allow undefined center in create methods
+     * `Arc3d.create(center: Point3d | undefined, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d;`
+     * `Arc3d.createCenterNormalRadius(center: Point3d | undefined, normal: Vector3d, radius: number, result?: Arc3d): Arc3d;`
+   * `Arc3d.createScaledXYColumns(center: Point3d | undefined, matrix: Matrix3d, radius0: number, radius90: number, sweep?: AngleSweep, result?: Arc3d): Arc3d;`
+   * in `myArc.extendRange(range, transform)`, compute exact (rather than sampled) range.
 
-  * collectCurvePrimitives method
-    * new optional args for (a) preallocated collector, (b) controlling expansion of CurveChainWithDistanceIndex
-    * public entry RegionOps.collectCurvePrimitives
-    * internal entries in CurveCollection, CurvePrimitive
-    * internal "Go" methods in: CurveChainWithDistanceIndex,
-  * CurveChain.cloneStroked is abstract (implemented by Path, Loop, CurveChainWithDistanceIndex
-* CurveFactory
-  * New method to create xy rectangles with optional fillets.
+### Matrix3d
+  * New instance method: `matrix.multiplyInverseXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d | undefined;`
+
+### Point4d
+   * New instance method: `point4d.crossWeightedMinusPoint3d(other: Point3d, result?: Vector3d): Vector3d;`
+   * New instance method: `point4d.realPointOrVector (): Point3d | Vector3d;`
+
+### Vector3d
+   * New static method: `Vector3d.dotProductAsXYAndZ(dataA: XYAndZ, dataB: XYAndZ): number`
+     * dot product between x,y,z components of `dataA` and `dataB`, even if strong typing (e.g. as Point3d) says they should not be able to act as vectors.
+
+### Transform
+   * New instance method:   `multiplyInversePoint4d(weightedPoint: Point4d, result?: Point4d): Point4d | undefined;`
+
+### Point3d and Vector3d
+  * New instance method `data.setAt(index, value)` to address x,y,z by index (in `XYZ` base class)
+
+### ConvexClipPlaneSet
+  * allow undefined (zero) tilt in construction `ConvexClipPlaneSet.createSweptPolyline(points: Point3d[], upVector: Vector3d, tiltAngle?: Angle): ConvexClipPlaneSet | undefined`
+
+### MomentData
+  * (BUG) in `MomentData.inertiaProductsToPrincipalAxes(rawMomentData.origin, rawMomentData.sums)`, when the computed quantity (e.g. area) is negative, adjust axes directions to have the loop be CCW in the `localToWorldMap` xy plane.
+  * New optional property `absoluteQuantity` is
+     * `undefined` in raw moment data
+     * the (positive) quantity sum in principal moment data (produced by call to `inertiaProductsToPrincipalAxes`)
+
+### `Clipper` support
+  * new static method `ClipUtilities.isClipper(candidate: any)` to test if candidate supports all the methods of the Clipper interface.
+  * new (static) methods in `BooleanClipFactory`.  The static list (including some older methods) is
+    * JSON serialization:
+      * BooleanClipFactory.anyClipperToJSON(clipper: any): any | undefined;
+      * BooleanClipFactory.parseToClipper(source?: object): Clipper | undefined;
+    * `create` methods for various boolean trees:
+      * `BooleanClipFactory.createCaptureClipOutside(primaryClipper: Clipper): Clipper;`
+      * `BooleanClipFactory.createCaptureDifference(primaryClipper: Clipper, excludedClipper: Clipper, keepInside: boolean): Clipper;`
+      * `BooleanClipFactory.createCaptureIntersection(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;`
+      * `BooleanClipFactory.createCaptureParity(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;`
+      * `BooleanClipFactory.createCaptureUnion(clippers: Clipper | Clipper[], keepInside: boolean): Clipper;`
+
+## IModelSchemaLoader
+  * New utility class in @bentley/imodeljs-backend to retrieve full Schema information from an iModel.
+  * Requires the @bentley/ecschema-metadata package to be installed.  This package contains the EC Schema metadata classes which are the building blocks of the schema returned from the iModel.
+  * Contains two methods for Schema retrieval.
+    * `getSchema` Gets a Schema by name from the iModel and throws an exception if it cannot be found or loaded.
+    * `tryGetSchema` Attempts to retrieve a Schema by name from the iModel.  Returns `undefined` if it cannot be found.

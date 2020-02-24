@@ -8,7 +8,6 @@ Object {
   },
   "extendedData": undefined,
   "imageId": "70c6cab5-86c7-4d22-b010-6c0cf48d9662",
-  "label": "pink",
   "labelDefinition": Object {
     "displayValue": "pink",
     "rawValue": "pink",
@@ -30,7 +29,6 @@ Object {
   },
   "extendedData": undefined,
   "imageId": "0ea0e226-a243-44c2-83b1-e941fb2d30c8",
-  "label": "Oregon",
   "labelDefinition": Object {
     "displayValue": "Oregon",
     "rawValue": "Toys",
@@ -56,7 +54,6 @@ Object {
     "key2": "technologies",
   },
   "imageId": "4c3cfc6d-ca16-4409-b743-4afabfe4b926",
-  "label": "Rustic Soft Fish",
   "labelDefinition": Object {
     "displayValue": "Rustic Soft Fish",
     "rawValue": "override",
@@ -81,7 +78,6 @@ Object {
     "key2": "Quetzal context-sensitive",
   },
   "imageId": "64b46a85-7e4f-428a-98df-26ce9acb15ed",
-  "label": "Washington",
   "labelDefinition": Object {
     "displayValue": "Washington",
     "rawValue": "Common",
@@ -110,7 +106,6 @@ Object {
     "key2": "payment Future Legacy",
   },
   "imageId": "fc61ba21-2b4d-4c31-9124-d4b70a2f087a",
-  "label": "Strategist",
   "labelDefinition": Object {
     "displayValue": "Strategist",
     "rawValue": "firewall",
@@ -138,7 +133,6 @@ Object {
     "key1": null,
   },
   "imageId": "425d312e-81f7-4a06-a30a-1de9fba7ba14",
-  "label": "bricks-and-clicks",
   "labelDefinition": Object {
     "displayValue": "bricks-and-clicks",
     "rawValue": "Mountains",
@@ -183,7 +177,6 @@ Object {
     "key1": null,
   },
   "imageId": "26da4e9d-28ab-4e7b-8895-4da11390a707",
-  "label": "impactful",
   "labelDefinition": Object {
     "displayValue": "impactful",
     "rawValue": "GB",
@@ -195,49 +188,6 @@ Object {
   "primaryKeys": Array [],
   "values": Object {
     "key1": null,
-  },
-}
-`;
-
-exports[`Item toJSON serializes item without label definition 1`] = `
-Object {
-  "classInfo": undefined,
-  "displayValues": Object {
-    "key": "back up",
-  },
-  "extendedData": undefined,
-  "imageId": "9f85cf09-f254-4daf-8189-05b72a0fdb4d",
-  "label": "Plain",
-  "labelDefinition": Object {
-    "displayValue": "Plain",
-    "rawValue": "Plain",
-    "typeName": "string",
-  },
-  "mergedFieldNames": Array [],
-  "primaryKeys": Array [],
-  "values": Object {
-    "key": "Forward",
-  },
-}
-`;
-
-exports[`Item toJSON serializes item without label definition to json 1`] = `
-Object {
-  "classInfo": undefined,
-  "displayValues": Object {
-    "key": "models",
-  },
-  "extendedData": undefined,
-  "imageId": "9cc4d132-a1f6-4c5c-85a2-222ae14a7e22",
-  "label": Object {
-    "displayValue": "Incredible",
-    "rawValue": "Incredible",
-    "typeName": "string",
-  },
-  "mergedFieldNames": Array [],
-  "primaryKeys": Array [],
-  "values": Object {
-    "key": "solid state",
   },
 }
 `;

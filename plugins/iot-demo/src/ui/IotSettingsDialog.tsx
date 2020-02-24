@@ -5,8 +5,8 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { Dialog, Select, Input, Button, ButtonType, Position, Popup } from "@bentley/ui-core";
-import { ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
-import { ModelessDialogManager, SyncPropertiesChangeEventArgs } from "@bentley/ui-framework";
+import { ToolSettingsPropertyItem, ToolSettingsValue, SyncPropertiesChangeEventArgs } from "@bentley/ui-abstract";
+import { ModelessDialogManager } from "@bentley/ui-framework";
 import { IotUiProvider } from "./IotUiProvider";
 import { AnimationTypeName } from "../IoTDefinitions";
 

@@ -13,7 +13,7 @@ import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
+import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "@bentley/ui-abstract";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 

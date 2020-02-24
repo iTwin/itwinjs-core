@@ -22,6 +22,7 @@ export * from "./ui-components/common/selection/SelectionHandler";
 export * from "./ui-components/common/showhide/ShowHideDialog";
 export * from "./ui-components/common/showhide/ShowHideItem";
 export * from "./ui-components/common/showhide/ShowHideMenu";
+export * from "./ui-components/common/UseAsyncValue";
 
 export * from "./ui-components/converters/TypeConverter";
 export * from "./ui-components/converters/TypeConverterManager";
@@ -119,15 +120,14 @@ export * from "./ui-components/table/hocs/withDragDrop";
 export * from "./ui-components/tooltip/UITooltipRenderer";
 
 export * from "./ui-components/tree/TreeDataProvider";
-export * from "./ui-components/tree/HighlightingEngine";
-export * from "./ui-components/tree/component/Tree";
-export * from "./ui-components/tree/component/BeInspireTree";
-export * from "./ui-components/tree/component/Node";
-export * from "./ui-components/tree/CellEditingEngine";
-export * from "./ui-components/tree/ImageLoader";
-export * from "./ui-components/tree/hocs/withDragDrop";
 export * from "./ui-components/tree/SimpleTreeDataProvider";
-
+export * from "./ui-components/tree/HighlightingEngine";
+export * from "./ui-components/tree/ImageLoader";
+export * from "./ui-components/tree/deprecated/component/Tree";
+export * from "./ui-components/tree/deprecated/component/BeInspireTree";
+export * from "./ui-components/tree/deprecated/component/Node";
+export * from "./ui-components/tree/deprecated/CellEditingEngine";
+export * from "./ui-components/tree/deprecated/hocs/withDragDrop";
 export * from "./ui-components/tree/controlled/TreeActions";
 export * from "./ui-components/tree/controlled/TreeEventDispatcher";
 export * from "./ui-components/tree/controlled/TreeEventHandler";

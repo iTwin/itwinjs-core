@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { createRandomECClassInfoJSON, createRandomECInstanceKeyJSON, createRandomLabelDefinitionJSON, createRandomLabelDefinition } from "../_helpers/random";
-import { Item, ItemJSON } from "../../content/Item";
-import { NestedContentValueJSON } from "../../content/Value";
+import { Item, ItemJSON } from "../../presentation-common/content/Item";
+import { NestedContentValueJSON } from "../../presentation-common/content/Value";
 
 describe("Item", () => {
 

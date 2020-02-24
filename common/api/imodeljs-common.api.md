@@ -315,6 +315,8 @@ export enum BackgroundFill {
 // @public
 export interface BackgroundMapProps {
     applyTerrain?: boolean;
+    // @beta
+    globeMode?: GlobeMode;
     groundBias?: number;
     providerData?: {
         mapType?: BackgroundMapType;
@@ -337,6 +339,7 @@ export class BackgroundMapSettings {
     equals(other: BackgroundMapSettings): boolean;
     equalsJSON(json?: BackgroundMapProps): boolean;
     static fromJSON(json?: BackgroundMapProps): BackgroundMapSettings;
+    readonly globeMode: GlobeMode;
     readonly groundBias: number;
     readonly mapType: BackgroundMapType;
     readonly providerName: BackgroundMapProviderName;
@@ -506,6 +509,22 @@ export namespace BRepEntity {
     }
 }
 
+// @public
+export interface BRepPrimitive {
+    // @beta (undocumented)
+    readonly brep: BRepEntity.DataProps;
+    // (undocumented)
+    type: "brep";
+}
+
+// @internal
+export interface BriefcaseProps extends IModelTokenProps {
+    // (undocumented)
+    downloading?: boolean;
+    // (undocumented)
+    isOpen?: boolean;
+}
+
 export { BriefcaseStatus }
 
 // @public (undocumented)
@@ -577,12 +596,15 @@ export class Cartographic implements LatLongAndHeight {
     static fromDegrees(longitude: number, latitude: number, height: number, result?: Cartographic): Cartographic;
     static fromEcef(cartesian: Point3d, result?: Cartographic): Cartographic | undefined;
     static fromRadians(longitude: number, latitude: number, height?: number, result?: Cartographic): Cartographic;
+    static geocentricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
     // (undocumented)
     height: number;
     // (undocumented)
     latitude: number;
     // (undocumented)
     longitude: number;
+    static parametricLatitudeFromGeodeticLatitude(geodeticLatitude: number): number;
+    static scalePointToGeodeticSurface(point: Point3d, result?: Point3d): Point3d | undefined;
     toEcef(result?: Point3d): Point3d;
     toString(): string;
     }
@@ -1540,6 +1562,7 @@ export type EasingFunction = (k: number) => number;
 export class EcefLocation implements EcefLocationProps {
     constructor(props: EcefLocationProps);
     static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle): EcefLocation;
+    get earthCenter(): Point3d;
     getTransform(): Transform;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
@@ -1801,6 +1824,19 @@ export interface EnvironmentProps {
     sky?: SkyBoxProps;
 }
 
+// @internal
+export namespace Events {
+    // (undocumented)
+    export namespace NativeApp {
+        const // (undocumented)
+        namespace = "NativeApp";
+        const // (undocumented)
+        onMemoryWarning = "onMemoryWarning";
+        const // (undocumented)
+        onInternetConnectivityChanged = "onInternetConnectivityChanged";
+    }
+}
+
 // @public
 export interface ExternalSourceAspectProps extends ElementAspectProps {
     checksum?: string;
@@ -1983,8 +2019,10 @@ export class Frustum {
     static fromRange(range: LowAndHighXYZ | LowAndHighXY, out?: Frustum): Frustum;
     getCenter(): Point3d;
     getCorner(i: number): Point3d;
+    getEyePoint(result?: Point3d): Point3d | undefined;
     getFraction(): number;
     getRangePlanes(clipFront: boolean, clipBack: boolean, expandPlaneDistance: number): ConvexClipPlaneSet;
+    getRotation(result?: Matrix3d): Matrix3d | undefined;
     get hasMirror(): boolean;
     initFromRange(range: LowAndHighXYZ | LowAndHighXY): void;
     initNpc(): this;
@@ -2186,6 +2224,14 @@ export interface GeometryPartProps extends ElementProps {
 }
 
 // @public
+export interface GeometryPrimitive {
+    // (undocumented)
+    readonly geometry: AnyGeometryQuery;
+    // (undocumented)
+    type: "geometryQuery";
+}
+
+// @public
 export class GeometryStreamBuilder {
     // @beta
     appendBRepData(brep: BRepEntity.DataProps): boolean;
@@ -2251,8 +2297,7 @@ export interface GeometryStreamHeaderProps {
 export class GeometryStreamIterator implements IterableIterator<GeometryStreamIteratorEntry> {
     // (undocumented)
     [Symbol.iterator](): IterableIterator<GeometryStreamIteratorEntry>;
-    constructor(geometryStream: GeometryStreamProps, category?: Id64String);
-    entry: GeometryStreamIteratorEntry;
+    constructor(geometryStream: GeometryStreamProps, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform);
     readonly flags: GeometryStreamFlags;
     static fromGeometricElement2d(element: GeometricElement2dProps): GeometryStreamIterator;
     static fromGeometricElement3d(element: GeometricElement3dProps): GeometryStreamIterator;
@@ -2262,65 +2307,18 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     get isViewIndependent(): boolean;
     next(): IteratorResult<GeometryStreamIteratorEntry>;
     partToWorld(): Transform | undefined;
-    setLocalToWorld(localToWorld?: Transform): void;
-    setLocalToWorld2d(origin: Point2d, angle?: Angle): void;
-    setLocalToWorld3d(origin: Point3d, angles?: YawPitchRollAngles): void;
 }
 
 // @public
-export class GeometryStreamIteratorEntry {
-    constructor(category?: Id64String);
-    // @beta
-    brep?: BRepEntity.DataProps;
-    geometryQuery?: AnyGeometryQuery;
-    geomParams: GeometryParams;
-    // @beta
-    image?: ImageGraphic;
-    localRange?: Range3d;
-    localToWorld?: Transform;
-    partId?: Id64String;
-    partToLocal?: Transform;
-    get primitive(): GeometryStreamIteratorEntry.Primitive;
-    textString?: TextString;
+export interface GeometryStreamIteratorEntry {
+    readonly geomParams: GeometryParams;
+    readonly localRange?: Range3d;
+    readonly localToWorld?: Transform;
+    readonly primitive: GeometryStreamPrimitive;
 }
 
-// @public (undocumented)
-export namespace GeometryStreamIteratorEntry {
-    export interface BRepPrimitive {
-        // @beta (undocumented)
-        readonly brep: BRepEntity.DataProps;
-        // (undocumented)
-        type: "brep";
-    }
-    export interface GeometryPrimitive {
-        // (undocumented)
-        readonly geometry: AnyGeometryQuery;
-        // (undocumented)
-        type: "geometryQuery";
-    }
-    export interface ImagePrimitive {
-        // @beta (undocumented)
-        readonly image: ImageGraphic;
-        // (undocumented)
-        type: "image";
-    }
-    export interface PartReference {
-        // (undocumented)
-        part: {
-            id: Id64String;
-            readonly toLocal?: Transform;
-        };
-        // (undocumented)
-        type: "partReference";
-    }
-    export type Primitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive;
-    export interface TextStringPrimitive {
-        // (undocumented)
-        readonly textString: TextString;
-        // (undocumented)
-        type: "textString";
-    }
-}
+// @public
+export type GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive;
 
 // @public
 export type GeometryStreamProps = GeometryStreamEntryProps[];
@@ -2350,6 +2348,12 @@ export enum GeometrySummaryVerbosity {
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
 export { GetMetaDataFunction }
+
+// @public
+export enum GlobeMode {
+    Ellipsoid = 0,
+    Plane = 1
+}
 
 // @internal
 export class GltfBufferData {
@@ -2952,6 +2956,14 @@ export namespace ImageLight {
 }
 
 // @public
+export interface ImagePrimitive {
+    // @beta (undocumented)
+    readonly image: ImageGraphic;
+    // (undocumented)
+    type: "image";
+}
+
+// @public
 export class ImageSource {
     constructor(data: Uint8Array | string, format: ImageSourceFormat);
     readonly data: Uint8Array | string;
@@ -3197,7 +3209,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     // (undocumented)
     openForWrite(_iModelToken: IModelTokenProps): Promise<IModelProps>;
     // (undocumented)
-    pullMergePush(_tokenProps: IModelTokenProps, _comment: string, _doPush: boolean): Promise<void>;
+    pullMergePush(_tokenProps: IModelTokenProps, _comment: string, _doPush: boolean): Promise<GuidString>;
     // (undocumented)
     requestResources(_tokenProps: IModelTokenProps, _elementIds: Id64Array, _modelIds: Id64Array, _opcode: DbOpcode): Promise<void>;
     // (undocumented)
@@ -3221,6 +3233,14 @@ export const initializeRpcRequest: () => void;
 
 // @internal (undocumented)
 export const INSTANCE: unique symbol;
+
+// @internal
+export enum InternetConnectivityStatus {
+    // (undocumented)
+    Offline = 1,
+    // (undocumented)
+    Online = 0
+}
 
 // @internal (undocumented)
 export const interop: any;
@@ -3675,10 +3695,33 @@ export interface ModelSelectorProps extends DefinitionElementProps {
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
     cancelTileContentRequests(_iModelToken: IModelTokenProps, _contentIds: TileTreeContentIds[]): Promise<void>;
+    checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
+    downloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps>;
     fetchEvents(_iModelToken: IModelTokenProps, _maxToFetch: number): Promise<QueuedEvent[]>;
+    getBriefcases(): Promise<BriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
+    getConfig(): Promise<any>;
     static readonly interfaceName = "NativeAppRpcInterface";
     static interfaceVersion: string;
+    log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
+    openBriefcase(_iModelToken: IModelTokenProps): Promise<IModelProps>;
+    overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
+    // (undocumented)
+    storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
+    // (undocumented)
+    storageKeys(_storageId: string): Promise<string[]>;
+    // (undocumented)
+    storageMgrClose(_storageId: string, _deleteIt: boolean): Promise<void>;
+    // (undocumented)
+    storageMgrNames(): Promise<string[]>;
+    // (undocumented)
+    storageMgrOpen(_storageId: string): Promise<string>;
+    // (undocumented)
+    storageRemove(_storageId: string, _key: string): Promise<void>;
+    // (undocumented)
+    storageRemoveAll(_storageId: string): Promise<void>;
+    // (undocumented)
+    storageSet(_storageId: string, _key: string, _value: StorageValue): Promise<void>;
 }
 
 // @public
@@ -3939,6 +3982,14 @@ export interface OpenAPISchema {
 // @internal (undocumented)
 export const OPERATION: unique symbol;
 
+// @internal
+export enum OverriddenBy {
+    // (undocumented)
+    Browser = 0,
+    // (undocumented)
+    User = 1
+}
+
 // @internal (undocumented)
 export interface PackedFeature {
     // (undocumented)
@@ -3987,6 +4038,17 @@ export class PackedFeatureTable {
     readonly type: BatchType;
     get uniform(): Feature | undefined;
     unpack(): FeatureTable;
+}
+
+// @public
+export interface PartReference {
+    // (undocumented)
+    part: {
+        id: Id64String;
+        readonly toLocal?: Transform;
+    };
+    // (undocumented)
+    type: "partReference";
 }
 
 // @public
@@ -4355,6 +4417,8 @@ export class QPoint2dList {
     static fromPoints(points: Point2d[], out?: QPoint2dList): QPoint2dList;
     get length(): number;
     // (undocumented)
+    get list(): QPoint2d[];
+    // (undocumented)
     readonly params: QParams2d;
     push(qpt: QPoint2d): void;
     requantize(params: QParams2d): void;
@@ -4413,6 +4477,8 @@ export class QPoint3dList {
 
 // @internal
 export namespace Quantization {
+    const // (undocumented)
+    rangeScale = 65535;
     // (undocumented)
     export function computeScale(extent: number): number;
     // (undocumented)
@@ -4683,6 +4749,8 @@ export namespace RenderSchedule {
 // @beta
 export abstract class RenderTexture implements IDisposable {
     protected constructor(params: RenderTexture.Params);
+    // (undocumented)
+    abstract get bytesUsed(): number;
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;
@@ -5602,6 +5670,9 @@ export interface SpotProps extends LightProps {
     outer?: AngleProps;
 }
 
+// @internal
+export type StorageValue = string | number | boolean | null | Uint8Array;
+
 // @public
 export class SubCategoryAppearance {
     constructor(props?: SubCategoryAppearance.Props);
@@ -5690,11 +5761,8 @@ export interface SubjectProps extends ElementProps {
 
 // @alpha
 export enum TerrainHeightOriginMode {
-    // (undocumented)
     Geodetic = 0,
-    // (undocumented)
     Geoid = 1,
-    // (undocumented)
     Ground = 2
 }
 
@@ -5754,6 +5822,14 @@ export class TextString {
     get width(): number;
     // (undocumented)
     widthFactor?: number;
+}
+
+// @public
+export interface TextStringPrimitive {
+    // (undocumented)
+    readonly textString: TextString;
+    // (undocumented)
+    type: "textString";
 }
 
 // @public
@@ -6321,51 +6397,51 @@ export namespace ViewFlag {
     // (undocumented)
     export const enum PresenceFlag {
         // (undocumented)
-        kBackgroundMap = 21,
+        BackgroundMap = 21,
         // (undocumented)
-        kClipVolume = 15,
+        ClipVolume = 15,
         // (undocumented)
-        kConstructions = 16,
+        Constructions = 16,
         // (undocumented)
-        kDimensions = 2,
+        Dimensions = 2,
         // (undocumented)
-        kEdgeMask = 20,
+        EdgeMask = 20,
         // (undocumented)
-        kFill = 8,
+        Fill = 8,
         // (undocumented)
-        kForceSurfaceDiscard = 22,
+        ForceSurfaceDiscard = 22,
         // (undocumented)
-        kGeometryMap = 18,
+        GeometryMap = 18,
         // (undocumented)
-        kHiddenEdges = 12,
+        HiddenEdges = 12,
         // (undocumented)
-        kHlineMaterialColors = 19,
+        HlineMaterialColors = 19,
         // (undocumented)
-        kLighting = 13,
+        Lighting = 13,
         // (undocumented)
-        kMaterials = 10,
+        Materials = 10,
         // (undocumented)
-        kMonochrome = 17,
+        Monochrome = 17,
         // (undocumented)
-        kPatterns = 3,
+        Patterns = 3,
         // (undocumented)
-        kRenderMode = 0,
+        RenderMode = 0,
         // (undocumented)
-        kShadows = 14,
+        Shadows = 14,
         // (undocumented)
-        kStyles = 5,
+        Styles = 5,
         // (undocumented)
-        kText = 1,
+        Text = 1,
         // (undocumented)
-        kTextures = 9,
+        Textures = 9,
         // (undocumented)
-        kTransparency = 6,
+        Transparency = 6,
         // (undocumented)
-        kUnused = 7,
+        Unused = 7,
         // (undocumented)
-        kVisibleEdges = 11,
+        VisibleEdges = 11,
         // (undocumented)
-        kWeights = 4
+        Weights = 4
     }
 }
 

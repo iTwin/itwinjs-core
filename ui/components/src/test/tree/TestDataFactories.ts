@@ -2,8 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { ResolvablePromise } from "../test-helpers/misc";
-import { ITreeDataProvider, DelayLoadedTreeNodeItem, TreeNodeItem, PageOptions, BeInspireTree, Tree } from "../../ui-components";
+import {
+  ITreeDataProvider, DelayLoadedTreeNodeItem, TreeNodeItem,
+  PageOptions, BeInspireTree, DEPRECATED_Tree as Tree,
+} from "../../ui-components";
+
+// tslint:disable:deprecation
+
+// tslint:disable:deprecation
 
 /** @internal */
 export interface TestTreeHierarchyNode {
@@ -50,7 +58,7 @@ export class TestTreeDataProvider implements ITreeDataProvider {
   }
 
   private _makeTreeNodeItem = (node: TestTreeHierarchyNode): DelayLoadedTreeNodeItem => {
-    return { id: node.id, label: node.id, autoExpand: node.autoExpand, hasChildren: node.children && node.children.length > 0 };
+    return { id: node.id, label: PropertyRecord.fromString(node.id, "label"), autoExpand: node.autoExpand, hasChildren: node.children && node.children.length > 0 };
   }
 
   private _findNode = (nodeId: string): TestTreeHierarchyNode => {

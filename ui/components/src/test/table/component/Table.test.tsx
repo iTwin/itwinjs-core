@@ -15,7 +15,7 @@ import { BeDuration } from "@bentley/bentleyjs-core";
 import { LocalUiSettings } from "@bentley/ui-core";
 import {
   PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PrimitiveValue,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 
 import TestUtils from "../../TestUtils";
 import {

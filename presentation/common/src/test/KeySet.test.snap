@@ -23,26 +23,38 @@ Map {
 exports[`KeySet [get] nodeKeys returns set with node keys 1`] = `
 Set {
   Object {
-    "instanceKey": Object {
-      "className": "Mouse",
-      "id": "0x17330000000af45",
-    },
-    "pathFromRoot": Array [
-      "ab56fd0d-5577-4f68-a2c1-4f390950ff7c",
-      "ebede29d-348b-45ba-862a-4023864af832",
+    "instanceKeys": Array [
+      Object {
+        "className": "payment",
+        "id": "0xa5b40000008392",
+      },
+      Object {
+        "className": "Facilitator",
+        "id": "0x1557800000006dd",
+      },
     ],
-    "type": "ECInstanceNode",
+    "pathFromRoot": Array [
+      "5577f68e-2c14-4f39-8950-ff7cebede29d",
+      "348b5ba4-62a4-4023-864a-f832237f8ccf",
+    ],
+    "type": "ECInstancesNode",
   },
   Object {
-    "instanceKey": Object {
-      "className": "Sierra Leone",
-      "id": "0xedcb000000a5f2",
-    },
-    "pathFromRoot": Array [
-      "8ccf0ac8-3d01-49c4-8256-2918fd77819c",
-      "bbec4a09-7228-4ac0-865c-a46e1671ccf3",
+    "instanceKeys": Array [
+      Object {
+        "className": "Baby",
+        "id": "0xc91b00000131e3",
+      },
+      Object {
+        "className": "fuchsia",
+        "id": "0x2fd90000000252",
+      },
     ],
-    "type": "ECInstanceNode",
+    "pathFromRoot": Array [
+      "9c442562-918f-4d77-819c-bbec4a097228",
+      "ac0c65ca-46e1-4671-8cf3-8c69b58ee31f",
+    ],
+    "type": "ECInstancesNode",
   },
 }
 `;
@@ -66,15 +78,21 @@ Object {
   ],
   "nodeKeys": Array [
     Object {
-      "instanceKey": Object {
-        "className": "Multi-lateral",
-        "id": "0x1816600000067a9",
-      },
-      "pathFromRoot": Array [
-        "1e674819-3238-44e6-9599-0ce47a5f28a7",
-        "241922d2-ad4d-4ed7-b584-50311c418df8",
+      "instanceKeys": Array [
+        Object {
+          "className": "Unbranded",
+          "id": "0xbeec0000009fc8",
+        },
+        Object {
+          "className": "intangible",
+          "id": "0xf42000000018a3",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "32384e61-5990-4ce4-ba5f-28a7241922d2",
+        "ad4ded7f-5845-4031-9c41-8df8374fbaed",
+      ],
+      "type": "ECInstancesNode",
     },
   ],
 }

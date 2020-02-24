@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/oidc-signin-tool",
+      "comment": "This come from another branch.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/oidc-signin-tool",
+  "email": "Affan.Khan@Bentley.com"
+}

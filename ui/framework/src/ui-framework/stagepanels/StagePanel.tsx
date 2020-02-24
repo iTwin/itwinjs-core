@@ -7,13 +7,13 @@
  */
 
 import * as React from "react";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import {
   StagePanelType as NZ_StagePanelType, NestedStagePanelKey, NestedStagePanelsManagerProps,
   NineZoneStagePanelManagerProps, WidgetZoneId, ZonesManagerWidgetsProps,
 } from "@bentley/ui-ninezone";
 import { StagePanelState as StagePanelState, StagePanelDef } from "./StagePanelDef";
-import { WidgetDef } from "../widgets/WidgetDef";
-import { WidgetProps } from "../widgets/Widget";
+import { WidgetProps } from "../widgets/WidgetProps";
 import { WidgetTabs } from "../widgets/WidgetStack";
 import { StagePanelChangeHandler, WidgetChangeHandler, ZoneDefProvider } from "../frontstage/FrontstageComposer";
 import { ZoneLocation } from "../zones/Zone";
@@ -36,26 +36,29 @@ import { FrameworkStagePanel } from "./FrameworkStagePanel";
  * ------------------------------------------------------------------------------------
  * BottomMost
  * ------------------------------------------------------------------------------------
- * @alpha
  */
-export enum StagePanelLocation {
-  Top,
-  TopMost,
-  Left,
-  Right,
-  Bottom,
-  BottomMost,
+
+/** Properties of a Stage Panel Zone
+ * @alpha
+ */
+export interface StagePanelZoneProps {
+  /** Properties for the Widgets in this Zone. */
+  widgets: Array<React.ReactElement<WidgetProps>>;
+  /** Any application data to attach to this Zone. */
+  applicationData?: any;
 }
 
-/** @internal */
-export const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
-  StagePanelLocation.Top,
-  StagePanelLocation.TopMost,
-  StagePanelLocation.Left,
-  StagePanelLocation.Right,
-  StagePanelLocation.Bottom,
-  StagePanelLocation.BottomMost,
-];
+/** Properties of the Stage Panel Zones
+ * @alpha
+ */
+export interface StagePanelZonesProps {
+  /** Properties for the Widgets in the Start section. */
+  start?: StagePanelZoneProps;
+  /** Properties for the Widgets in the Middle section. */
+  middle?: StagePanelZoneProps;
+  /** Properties for the Widgets in the End section. */
+  end?: StagePanelZoneProps;
+}
 
 /** Properties of a [[StagePanel]] component
  * @alpha
@@ -79,6 +82,9 @@ export interface StagePanelProps {
   size?: number;
   /** Properties for the Widgets in this Panel. */
   widgets?: Array<React.ReactElement<WidgetProps>>;
+
+  /** Properties for the Panel Zones in this Panel. @alpha */
+  panelZones?: StagePanelZonesProps;
 
   /** @internal */
   runtimeProps?: StagePanelRuntimeProps;
@@ -115,20 +121,7 @@ export class StagePanel extends React.Component<StagePanelProps> {
   };
 
   public static initializeStagePanelDef(panelDef: StagePanelDef, props: StagePanelProps, panelLocation: StagePanelLocation): void {
-    panelDef.size = props.size;
-    panelDef.location = panelLocation;
-    if (props.defaultState !== undefined)
-      panelDef.initializePanelState(props.defaultState);
-    panelDef.resizable = props.resizable;
-    if (props.applicationData !== undefined)
-      panelDef.applicationData = props.applicationData;
-
-    if (props.widgets) {
-      props.widgets.forEach((widgetNode: React.ReactElement<WidgetProps>) => {
-        const widgetDef = new WidgetDef(widgetNode.props);
-        panelDef.addWidgetDef(widgetDef);
-      });
-    }
+    panelDef.initializeFromProps(props, panelLocation);
   }
 
   public render(): React.ReactNode {

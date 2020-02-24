@@ -7,6 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { render, cleanup } from "@testing-library/react";
 import ReactTestUtils from "react-dom/test-utils";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { BreadcrumbDetails, BreadcrumbPath } from "../../../../ui-components";
 import { withBreadcrumbDetailsDragDrop } from "../../../../ui-components/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 import { mockRawTreeDataProvider } from "../../mockTreeDataProvider";
@@ -49,7 +50,7 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
       expect(root.createDragProps()).to.be.empty;
     });
     it("should add parentObject to args return and pass them on when dataObject is undefined and outgoing onDragSourceBegin is undefined", () => {
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const path = new BreadcrumbPath(tree);
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumbDetails path={path} dragProps={{ objectType: "test" }} />) as any;
       const callbacks = root.createDragProps(tree[0]) as DragSourceProps;
@@ -59,7 +60,7 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
     it("should add parentObject to args and pass them on when dataObject is undefined", () => {
       const onDragSourceBegin = sinon.spy((a: DragSourceArguments) => a);
       const onDragSourceEnd = sinon.spy();
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const path = new BreadcrumbPath(tree);
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumbDetails path={path} dragProps={{ onDragSourceBegin, onDragSourceEnd, objectType: "test" }} />) as any;
       const callbacks = root.createDragProps(tree[0]) as DragSourceProps;
@@ -73,7 +74,7 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
       const onDragSourceBegin = sinon.spy((a: DragSourceArguments) => a);
       const onDragSourceEnd = sinon.spy();
       const objectType = sinon.spy(() => "testType");
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const path = new BreadcrumbPath(tree);
       path.setCurrentNode(tree[0]);
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumbDetails path={path} dragProps={{ onDragSourceBegin, onDragSourceEnd, objectType }} />) as any;
@@ -89,7 +90,7 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
     it("should add parentId to dataObject and pass them on when dataObject is defined", () => {
       const onDragSourceBegin = sinon.spy((a: DragSourceArguments) => a);
       const onDragSourceEnd = sinon.spy();
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const path = new BreadcrumbPath(tree);
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumbDetails path={path} dragProps={{ onDragSourceBegin, onDragSourceEnd, objectType: "test" }} />) as any;
       const callbacks = root.createDragProps(tree[0]) as DragSourceProps;
@@ -108,7 +109,7 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
     });
     it("should pass object data through with parentId for functional objectType", () => {
       const objectType = sinon.spy(() => "testType");
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const path = new BreadcrumbPath(tree);
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumbDetails path={path} dragProps={{ objectType }} />) as any;
       const callbacks = root.createDragProps(tree[0]) as DragSourceProps;
@@ -117,7 +118,7 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
     });
     it("should pass non-object data through unmodified for functional objectType", () => {
       const objectType = sinon.spy(() => "testType");
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const path = new BreadcrumbPath(tree);
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumbDetails path={path} dragProps={{ objectType }} />) as any;
       const callbacks = root.createDragProps(tree[0]) as DragSourceProps;
@@ -135,7 +136,7 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const path = new BreadcrumbPath(tree);
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumbDetails path={path} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createDropProps() as DropTargetProps;
@@ -155,8 +156,8 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
       const tree = [
         {
-          label: "Raw Node", id: "1", description: "node description", children: [
-            { label: "Raw Child Node", id: "1.1", description: "child node description" },
+          label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", children: [
+            { label: PropertyRecord.fromString("Raw Child Node"), id: "1.1", description: "child node description" },
           ],
         },
       ];
@@ -181,8 +182,8 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
       const tree = [
         {
-          label: "Raw Node", id: "1", description: "node description", children: [
-            { label: "Raw Child Node", id: "1.1", description: "child node description" },
+          label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", children: [
+            { label: PropertyRecord.fromString("Raw Child Node"), id: "1.1", description: "child node description" },
           ],
         },
       ];
@@ -206,8 +207,8 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
       const tree = [
         {
-          label: "Raw Node", id: "1", description: "node description", children: [
-            { label: "Raw Child Node", id: "1.1", description: "child node description" },
+          label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", children: [
+            { label: PropertyRecord.fromString("Raw Child Node"), id: "1.1", description: "child node description" },
           ],
         },
       ];
@@ -228,8 +229,8 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
     it("should add dropLocation as item to dropProps callback returns without input callback", () => {
       const tree = [
         {
-          label: "Raw Node", id: "1", description: "node description", children: [
-            { label: "Raw Child Node", id: "1.1", description: "child node description" },
+          label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", children: [
+            { label: PropertyRecord.fromString("Raw Child Node"), id: "1.1", description: "child node description" },
           ],
         },
       ];

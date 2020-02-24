@@ -1,0 +1,109 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.nz-widgetPanels-grip {
+  background: $buic-background-5;
+  padding: 0.25em;
+  border-radius: 3px;
+  @include uicore-z-index(widget-grip);
+
+  &:not(.nz-collapsed) {
+    position: absolute;
+  }
+
+  &.nz-collapsed {
+    position: relative;
+  }
+
+  &.nz-left, &.nz-right {
+    display: flex;
+    flex-direction: column;
+    cursor: ew-resize;
+    top: 50%;
+
+    > .nz-dot {
+      &:not(:first-child) {
+        margin-top: 3px;
+      }
+    }
+  }
+
+  &.nz-left {
+    right: 0;
+
+    &.nz-collapsed {
+      transform: translateY(-50%);
+    }
+
+    &:not(.nz-collapsed) {
+      transform: translate(50%, -50%);
+    }
+  }
+
+  &.nz-right {
+    left: 0;
+
+    &.nz-collapsed {
+      transform: translateY(-50%);
+    }
+
+    &:not(.nz-collapsed) {
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  &.nz-top, &.nz-bottom {
+    display: inline-flex;
+    flex-direction: row;
+    cursor: ns-resize;
+    left: 50%;
+
+    > .nz-dot {
+      &:not(:first-child) {
+        margin-left: 3px;
+      }
+    }
+  }
+
+  &.nz-top {
+    bottom: 0;
+
+    &.nz-collapsed {
+      transform: translate(-50%);
+    }
+
+    &:not(.nz-collapsed) {
+      transform: translate(-50%, 50%);
+    }
+  }
+
+  &.nz-bottom {
+    top: 0;
+
+    &.nz-collapsed {
+      transform: translateX(-50%);
+    }
+
+    &:not(.nz-collapsed) {
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  &:hover, &.nz-resizing {
+    background-color: $buic-accessory-primary;
+
+    > .nz-dot {
+      background-color: $buic-foreground-accessory;
+    }
+  }
+
+  > .nz-dot {
+    $size: 0.25em;
+    width: $size;
+    height: $size;
+    background-color: $buic-background-2;
+  }
+}

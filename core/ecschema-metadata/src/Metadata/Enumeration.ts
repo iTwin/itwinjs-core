@@ -106,8 +106,13 @@ export class Enumeration extends SchemaItem {
     this.enumerators.push(enumerator);
   }
 
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+  /**
+   * Save this Enumeration's properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): EnumerationProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.type = (this.isInt) ? "int" : "string";
     schemaJson.isStrict = this.isStrict;
     schemaJson.enumerators = this._enumerators.map(({ name, label, value, description }) => {
@@ -143,8 +148,8 @@ export class Enumeration extends SchemaItem {
     return itemElement;
   }
 
-  public deserializeSync(enumerationProps: EnumerationProps) {
-    super.deserializeSync(enumerationProps);
+  public fromJSONSync(enumerationProps: EnumerationProps) {
+    super.fromJSONSync(enumerationProps);
     if (undefined === this._type) {
       if (/int/i.test(enumerationProps.type))
         this._type = PrimitiveType.Integer;
@@ -168,8 +173,8 @@ export class Enumeration extends SchemaItem {
     }
   }
 
-  public async deserialize(enumerationProps: EnumerationProps) {
-    this.deserializeSync(enumerationProps);
+  public async fromJSON(enumerationProps: EnumerationProps) {
+    this.fromJSONSync(enumerationProps);
   }
 }
 

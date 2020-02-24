@@ -15,8 +15,7 @@ Array [
                       Object {
                         "children": Array [
                           Object {
-                            "label": "Physical Object [0-38]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -73,8 +72,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "Physical Object [0-39]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -131,8 +129,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1K]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -189,8 +186,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1L]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -247,8 +243,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1M]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -305,8 +300,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1N]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -363,8 +357,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1O]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -421,8 +414,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1P]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -479,8 +471,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1Q]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -537,8 +528,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1R]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -595,8 +585,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1S]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -653,8 +642,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1T]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -711,8 +699,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1U]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -769,8 +756,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1V]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -827,8 +813,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1W]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -885,8 +870,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1X]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -943,8 +927,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1Y]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1001,8 +984,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-1Z]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1059,8 +1041,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2A]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1117,8 +1098,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2B]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1175,8 +1155,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2C]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1233,8 +1212,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2D]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1291,8 +1269,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2E]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1349,8 +1326,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2F]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1407,8 +1383,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2G]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1465,8 +1440,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2H]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1523,8 +1497,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2I]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1581,8 +1554,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2J]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1639,8 +1611,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2K]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1697,8 +1668,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2L]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1755,8 +1725,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2M]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1813,8 +1782,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2N]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1871,8 +1839,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2O]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1929,8 +1896,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2P]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -1987,8 +1953,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2Q]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2045,8 +2010,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2R]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2103,8 +2067,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2S]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2161,8 +2124,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2T]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2219,8 +2181,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2U]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2277,8 +2238,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2V]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2335,8 +2295,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2W]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2393,8 +2352,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2X]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2451,8 +2409,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2Y]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2509,8 +2466,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-2Z]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2567,8 +2523,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-20]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2625,8 +2580,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-21]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2683,8 +2637,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-22]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2741,8 +2694,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-23]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2799,8 +2751,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-24]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2857,8 +2808,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-25]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2915,8 +2865,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-26]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -2973,8 +2922,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-27]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3031,8 +2979,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-28]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3089,8 +3036,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-29]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3147,8 +3093,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-30]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3205,8 +3150,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-31]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3263,8 +3207,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-32]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3321,8 +3264,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-33]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3379,8 +3321,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-34]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3437,8 +3378,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-35]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3495,8 +3435,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-36]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3553,8 +3492,7 @@ Array [
                             },
                           },
                           Object {
-                            "label": "TestClass [0-37]",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3613,8 +3551,7 @@ Array [
                         ],
                         "description": "The Spatial Category used to categorize the 3D Geometric Element",
                         "hasChildren": true,
-                        "label": "Uncategorized",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3629,8 +3566,7 @@ Array [
                       },
                     ],
                     "hasChildren": true,
-                    "label": "Properties_60InstancesWithUrl2",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -3645,8 +3581,7 @@ Array [
                   },
                 ],
                 "hasChildren": true,
-                "label": "Properties_60InstancesWithUrl2",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -3660,8 +3595,7 @@ Array [
                 },
               },
               Object {
-                "label": "Converted Drawings",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -3675,8 +3609,7 @@ Array [
                 },
               },
               Object {
-                "label": "Converted Groups",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -3690,8 +3623,7 @@ Array [
                 },
               },
               Object {
-                "label": "Converted Sheets",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -3709,8 +3641,7 @@ Array [
                   Object {
                     "children": Array [
                       Object {
-                        "label": "Default - View 2",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3724,8 +3655,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 3",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3739,8 +3669,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 4",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3754,8 +3683,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Illustration",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3770,8 +3698,7 @@ Array [
                       },
                     ],
                     "hasChildren": true,
-                    "label": "3D Display Style",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -3787,8 +3714,7 @@ Array [
                   Object {
                     "children": Array [
                       Object {
-                        "label": "Default - View 1",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3802,8 +3728,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 2",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3817,8 +3742,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 3",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3832,8 +3756,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 4",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3848,8 +3771,7 @@ Array [
                       },
                     ],
                     "hasChildren": true,
-                    "label": "Category Selector",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -3867,8 +3789,7 @@ Array [
                       Object {
                         "children": Array [
                           Object {
-                            "label": "Uncategorized",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -3883,8 +3804,7 @@ Array [
                           },
                         ],
                         "hasChildren": true,
-                        "label": "Uncategorized",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3899,8 +3819,7 @@ Array [
                       },
                     ],
                     "hasChildren": true,
-                    "label": "Drawing Category",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -3916,8 +3835,7 @@ Array [
                   Object {
                     "children": Array [
                       Object {
-                        "label": "Default - View 1",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3931,8 +3849,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 2",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3946,8 +3863,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 3",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3961,8 +3877,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 4",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -3977,8 +3892,7 @@ Array [
                       },
                     ],
                     "hasChildren": true,
-                    "label": "Model Selector",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -3994,8 +3908,7 @@ Array [
                   Object {
                     "children": Array [
                       Object {
-                        "label": "Default - View 1",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -4009,8 +3922,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 2",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -4024,8 +3936,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 3",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -4039,8 +3950,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 4",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -4056,8 +3966,7 @@ Array [
                     ],
                     "description": "A spatial coordinate system.",
                     "hasChildren": true,
-                    "label": "Spatial Auxiliary Coordinate System",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -4075,8 +3984,7 @@ Array [
                       Object {
                         "children": Array [
                           Object {
-                            "label": "Uncategorized",
-                            "labelDefinition": PropertyRecord {
+                            "label": PropertyRecord {
                               "property": Object {
                                 "displayLabel": "Label",
                                 "name": "node_label",
@@ -4091,8 +3999,7 @@ Array [
                           },
                         ],
                         "hasChildren": true,
-                        "label": "Uncategorized",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -4107,8 +4014,7 @@ Array [
                       },
                     ],
                     "hasChildren": true,
-                    "label": "Spatial Category",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -4124,8 +4030,7 @@ Array [
                   Object {
                     "children": Array [
                       Object {
-                        "label": "Default - View 1",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -4139,8 +4044,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 2",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -4154,8 +4058,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 3",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -4169,8 +4072,7 @@ Array [
                         },
                       },
                       Object {
-                        "label": "Default - View 4",
-                        "labelDefinition": PropertyRecord {
+                        "label": PropertyRecord {
                           "property": Object {
                             "displayLabel": "Label",
                             "name": "node_label",
@@ -4186,8 +4088,7 @@ Array [
                     ],
                     "description": "A view of a spatially located volume.",
                     "hasChildren": true,
-                    "label": "Spatial View Definition",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -4202,8 +4103,7 @@ Array [
                   },
                 ],
                 "hasChildren": true,
-                "label": "Definition Model For DgnV8Bridge:D:\\\\Temp\\\\Properties_60InstancesWithUrl2.dgn, Default",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -4218,8 +4118,7 @@ Array [
               },
             ],
             "hasChildren": true,
-            "label": "DgnV8Bridge:D:\\\\Temp\\\\Properties_60InstancesWithUrl2.dgn, Default",
-            "labelDefinition": PropertyRecord {
+            "label": PropertyRecord {
               "property": Object {
                 "displayLabel": "Label",
                 "name": "node_label",
@@ -4237,8 +4136,7 @@ Array [
               Object {
                 "children": Array [
                   Object {
-                    "label": "lc1",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -4252,8 +4150,7 @@ Array [
                     },
                   },
                   Object {
-                    "label": "lc2",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -4267,8 +4164,7 @@ Array [
                     },
                   },
                   Object {
-                    "label": "lc3",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -4282,8 +4178,7 @@ Array [
                     },
                   },
                   Object {
-                    "label": "lc4",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -4297,8 +4192,7 @@ Array [
                     },
                   },
                   Object {
-                    "label": "lc5",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -4312,8 +4206,7 @@ Array [
                     },
                   },
                   Object {
-                    "label": "lc6",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -4327,8 +4220,7 @@ Array [
                     },
                   },
                   Object {
-                    "label": "lc7",
-                    "labelDefinition": PropertyRecord {
+                    "label": PropertyRecord {
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
@@ -4343,8 +4235,7 @@ Array [
                   },
                 ],
                 "hasChildren": true,
-                "label": "Line Style",
-                "labelDefinition": PropertyRecord {
+                "label": PropertyRecord {
                   "property": Object {
                     "displayLabel": "Label",
                     "name": "node_label",
@@ -4359,8 +4250,7 @@ Array [
               },
             ],
             "hasChildren": true,
-            "label": "BisCore.DictionaryModel",
-            "labelDefinition": PropertyRecord {
+            "label": PropertyRecord {
               "property": Object {
                 "displayLabel": "Label",
                 "name": "node_label",
@@ -4374,8 +4264,7 @@ Array [
             },
           },
           Object {
-            "label": "BisCore.RealityDataSources",
-            "labelDefinition": PropertyRecord {
+            "label": PropertyRecord {
               "property": Object {
                 "displayLabel": "Label",
                 "name": "node_label",
@@ -4390,8 +4279,7 @@ Array [
           },
         ],
         "hasChildren": true,
-        "label": "DgnV8Bridge",
-        "labelDefinition": PropertyRecord {
+        "label": PropertyRecord {
           "property": Object {
             "displayLabel": "Label",
             "name": "node_label",
@@ -4408,8 +4296,7 @@ Array [
     "description": "test nested value",
     "hasChildren": true,
     "icon": "subjects",
-    "label": "test value",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -4428,8 +4315,7 @@ Array [
 exports[`RulesetTesting generates correct hierarchy for 'default' ruleset 1`] = `
 Array [
   Object {
-    "label": "root",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

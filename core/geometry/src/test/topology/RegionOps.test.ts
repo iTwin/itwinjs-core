@@ -42,6 +42,8 @@ import { Path } from "../../curve/Path";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { Point3dArray } from "../../geometry3d/PointHelpers";
+import { ChainCollectorContext } from "../../curve/ChainCollectorContext";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 
 class PolygonBooleanTests {
   public allGeometry: GeometryQuery[] = [];
@@ -630,6 +632,39 @@ describe("CloneSplitCurves", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "PathSplits");
 
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("ChainCollector", () => {
+    const ck = new Checker();
+    const chainCollector = new ChainCollectorContext(true);
+    const segment1 = LineSegment3d.createXYZXYZ(1, 2, 3, 4, 2, 1);
+    const segment2 = LineSegment3d.createXYZXYZ(4, 2, 1, 5, 2, 6);
+    segment2.startCut = CurveLocationDetail.createCurveFractionPoint(segment1, 1, segment1.endPoint());
+    ck.testUndefined(chainCollector.grabResult());
+    chainCollector.announceCurvePrimitive(segment1);
+    const singleton = chainCollector.grabResult();
+    chainCollector.announceCurvePrimitive(segment1);
+    chainCollector.announceCurvePrimitive(segment2);
+    ck.testTrue(singleton instanceof LineSegment3d);
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ChainCollectorBreaks", () => {
+    const ck = new Checker();
+    const pointA0 = Point3d.create(0, 0, 0);
+    const pointB0 = Point3d.create(1, 0, 0);
+    const pointB1 = Point3d.create(1, 0, 1);
+    const pointC1 = Point3d.create(2, 0, 1);
+
+    const segmentA0B0 = LineSegment3d.create(pointA0, pointB0);
+    const segmentB0C1 = LineSegment3d.create(pointB0, pointC1);
+    const segmentB1C1 = LineSegment3d.create(pointB1, pointC1);
+    ck.testFalse(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB0C1), "A0B0..B0C1");
+    ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(undefined, segmentB0C1), "undefined..B0C1");
+    ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, undefined), "A0B0..undefined");
+    ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB1C1), "A0B0..B1C1");
+    ck.testFalse(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB1C1, true), "A0B0..B0C1XY");
     expect(ck.getNumErrors()).equals(0);
   });
 

@@ -6,7 +6,7 @@
  * @module Base
  */
 import * as React from "react";
-import ResizeObserver from "resize-observer-polyfill";
+import { ResizeObserver } from "./ResizeObserverPolyfill";
 import { useRefEffect } from "./useRefEffect";
 import { useRefs } from "./useRefs";
 
@@ -15,7 +15,7 @@ import { useRefs } from "./useRefs";
  */
 export function useResizeObserver<T extends Element>(onResize?: (width: number) => void) {
   const resizeObserverRef = React.useRef(new ResizeObserver((entries) => {
-    entries.length === 1 && onResize && onResize(entries[0].contentRect.width);
+    entries.length === 1 && onResize && onResize(entries[0].target.getBoundingClientRect().width);
   }));
   const observerRef = useRefEffect((instance: T | null) => {
     const resizeObserver = resizeObserverRef.current;

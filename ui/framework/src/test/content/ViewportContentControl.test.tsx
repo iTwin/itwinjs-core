@@ -57,6 +57,7 @@ describe("ViewportContentControl", () => {
 
   after(() => {
     MockRender.App.shutdown();
+    TestUtils.terminateUiFramework();
 
     // restore the overriden property getter
     Object.defineProperty(window, "sessionStorage", propertyDescriptorToRestore);
@@ -106,7 +107,7 @@ describe("ViewportContentControl", () => {
 
           topRight={
             <Zone widgets={[
-              <Widget isFreeform={true} element={<NavigationWidget />} />,
+              <Widget isFreeform={true} element={<NavigationWidget />} />, // tslint:disable-line:deprecation
             ]} />
           }
         />

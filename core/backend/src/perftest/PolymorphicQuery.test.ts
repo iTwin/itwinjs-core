@@ -232,7 +232,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       reporter.addEntry("PolyPerfTest", "PolymorphicFlatRead", "Execution time(s)", totalTime / fhCount, { sCount: flatSeedCount, hCount: fhCount });
 
       perfimodel.saveChanges();
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
     }
   });
   it("Multi Read", async () => {
@@ -269,7 +269,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     reporter.addEntry("PolyPerfTest", "PolymorphicMultiRead", "Execution time(s)", parentTime, { sCount: multiSeedCount, hCount: multiHierarchyCount, level: "Base" });
 
     perfimodel.saveChanges();
-    perfimodel.closeStandalone();
+    perfimodel.closeSnapshot();
   });
 
 });

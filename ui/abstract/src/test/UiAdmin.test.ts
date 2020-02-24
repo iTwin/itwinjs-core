@@ -34,8 +34,8 @@ describe("UiAdmin", () => {
 
   it("showContextMenu should return false by default", () => {
     const menuItemProps: AbstractMenuItemProps[] = [
-      { id: "test", item: { commandId: "command", label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
-      { id: "test2", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
+      { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
+      { id: "test2", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
     ];
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 
@@ -46,9 +46,9 @@ describe("UiAdmin", () => {
     const toolbarProps: AbstractToolbarProps = {
       toolbarId: "test",
       items: [
-        { toolId: "tool", label: "tool label", iconSpec: "icon-placeholder", execute: () => { } },
-        { commandId: "command", label: "command label", iconSpec: "icon-placeholder", execute: () => { } },
-        { label: "command label", iconSpec: "icon-placeholder", execute: () => { } },
+        { id: "tool", itemPriority: 10, label: "tool label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command", itemPriority: 20, label: "command label", icon: "icon-placeholder", execute: () => { } },
+        { id: "command2", itemPriority: 30, label: "command label", icon: "icon-placeholder", execute: () => { } },
       ],
     };
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
@@ -61,8 +61,8 @@ describe("UiAdmin", () => {
 
   it("showMenuButton should return false by default", () => {
     const menuItemProps: AbstractMenuItemProps[] = [
-      { id: "test", item: { commandId: "command", label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
-      { id: "test2", item: { label: "test label", iconSpec: "icon-placeholder", execute: () => { } } },
+      { id: "test", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
+      { id: "test2", item: { label: "test label", icon: "icon-placeholder", execute: () => { } } },
     ];
     const doc = new DOMParser().parseFromString("<div>xyz</div>", "text/html");
 

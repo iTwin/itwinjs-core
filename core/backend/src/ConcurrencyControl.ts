@@ -6,6 +6,7 @@
  * @module iModels
  */
 
+import * as deepAssign from "deep-assign";
 import { assert, DbOpcode, Id64String, Logger, RepositoryStatus, DbResult } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, CodeQuery, CodeState, HubCode, Lock, LockLevel, LockType, LockQuery } from "@bentley/imodeljs-clients";
 import { IModelError, IModelStatus, ElementProps, ModelProps, CodeProps, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
@@ -97,7 +98,12 @@ export class ConcurrencyControl {
   }
 
   /** @internal */
-  public onMergedChanges() { this.applyTransactionOptions(); }
+  public onMergedChanges() {
+    this.applyTransactionOptions();
+    this._iModel.nativeDb.purgeTileTrees(undefined); // TODO: Remove this when we get tile healing
+    const data = { parentChangeSetId: this.iModel.briefcase.parentChangeSetId };
+    this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onPulledChanges", data);
+  }
 
   /** @internal */
   public onUndoRedo() { this.applyTransactionOptions(); }
@@ -253,22 +259,32 @@ export class ConcurrencyControl {
   public async requestResources(ctx: AuthorizedClientRequestContext, elements: ConcurrencyControl.ElementAndOpcode[], models?: ConcurrencyControl.ModelAndOpcode[], relationships?: ConcurrencyControl.RelationshipAndOpcode[]): Promise<void> {
     ctx.enter();
 
-    for (const e of elements)
-      this.buildRequestForElement(e.element, e.opcode);
+    const prevRequest = this.pendingRequest.clone();
 
-    if (models) {
-      for (const m of models)
-        this.buildRequestForModel(m.model, m.opcode);
+    try {
+
+      for (const e of elements)
+        this.buildRequestForElement(e.element, e.opcode);
+
+      if (models) {
+        for (const m of models)
+          this.buildRequestForModel(m.model, m.opcode);
+      }
+
+      if (relationships) {
+        for (const r of relationships)
+          this.buildRequestForRelationship(r.relationship, r.opcode);
+      }
+
+      await this.request(ctx);
+
+      assert(!this.hasPendingRequests);
+
+    } catch (err) {
+      // This operation must be atomic - if we didn't obtain the resources, then we must not leave anything in pendingRequests. Caller must re-try after fixing the underlying problem.
+      this._pendingRequest = prevRequest;
+      throw err;
     }
-
-    if (relationships) {
-      for (const r of relationships)
-        this.buildRequestForRelationship(r.relationship, r.opcode);
-    }
-
-    await this.request(ctx);
-
-    assert(!this._iModel.concurrencyControl.hasPendingRequests);
   }
 
   /** @internal */
@@ -385,8 +401,10 @@ export class ConcurrencyControl {
 
   public async onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void> {
     requestContext.enter();
+
     const data = { parentChangeSetId: this.iModel.briefcase.parentChangeSetId };
     this._iModel.eventSink!.emit(IModelWriteRpcInterface.name, "onPushedChanges", data);
+
     return this.openOrCreateCache(requestContext); // re-create after we know that push has succeeded
   }
 
@@ -726,6 +744,12 @@ export namespace ConcurrencyControl {
   export class Request {
     private _locks: ConcurrencyControl.LockProps[] = [];
     private _codes: CodeProps[] = [];
+
+    public clone(): Request {
+      const c = new Request();
+      deepAssign(c, this);
+      return c;
+    }
 
     public get locks(): ConcurrencyControl.LockProps[] { return this._locks; }
     public get codes(): CodeProps[] { return this._codes; }

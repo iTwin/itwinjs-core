@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
@@ -22,6 +21,8 @@ export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./HitDetail";
 export * from "./IModelApp";
+export * from "./NativeApp";
+export * from "./NativeAppLogger";
 export * from "./IModelConnection";
 export * from "./ElementEditor";
 export * from "./ImageUtil";
@@ -31,7 +32,6 @@ export * from "./ModelState";
 export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./QuantityFormatter";
-export * from "./RelativePosition";
 export * from "./RenderCompatibility";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
@@ -53,14 +53,8 @@ export * from "./oidc/OidcBrowserClient";
 export * from "./oidc/OidcDesktopClientRenderer";
 export * from "./plugin/Plugin";
 export * from "./properties/AngleDescription";
-export * from "./properties/BaseQuantityDescription";
-export * from "./properties/Description";
-export * from "./properties/EditorParams";
+export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";
-export * from "./properties/PrimitiveTypes";
-export * from "./properties/Record";
-export * from "./properties/ToolSettingsValue";
-export * from "./properties/Value";
 export * from "./render/CanvasDecoration";
 export * from "./render/Decorations";
 export * from "./render/FeatureSymbology";
@@ -71,6 +65,7 @@ export * from "./render/MockRender";
 export * from "./render/Pixel";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";
+export * from "./render/RenderMemory";
 export * from "./render/RenderPlan";
 export * from "./render/RenderPlanarClassifier";
 export * from "./render/RenderTarget";
@@ -93,6 +88,7 @@ export * from "./tools/ToolSettings";
 export * from "./tools/ToolAdmin";
 export * from "./tools/ToolAssistance";
 export * from "./tools/ViewTool";
+export * from "./BackgroundMapGeometry";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

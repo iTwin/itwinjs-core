@@ -5,8 +5,7 @@ Array [
   Object {
     "children": Array [
       Object {
-        "label": "Child 1",
-        "labelDefinition": PropertyRecord {
+        "label": PropertyRecord {
           "property": Object {
             "displayLabel": "Label",
             "name": "node_label",
@@ -20,8 +19,7 @@ Array [
         },
       },
       Object {
-        "label": "Child 2",
-        "labelDefinition": PropertyRecord {
+        "label": PropertyRecord {
           "property": Object {
             "displayLabel": "Label",
             "name": "node_label",
@@ -36,8 +34,7 @@ Array [
       },
     ],
     "hasChildren": true,
-    "label": "Root Node",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

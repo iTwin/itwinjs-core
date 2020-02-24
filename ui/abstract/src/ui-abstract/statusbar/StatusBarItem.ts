@@ -6,21 +6,10 @@
  * @module StatusBar
  */
 
-import { BadgeType } from "../../ui-abstract";
-
-/** Used to specify the item type added to the status bar.
- * @beta
- */
-export enum StatusBarItemType {
-  /** Item that executes an action function */
-  ActionItem = 1,
-  /** Item that displays a label and optional icon in status bar. */
-  Label,
-  /** Item that provides its own custom component */
-  CustomItem,
-  // Opens a modal pop-up dialog
-  // PopupItem
-}
+import { BadgeType } from "../items/BadgeType";
+import { ConditionalBooleanValue } from "../items/ConditionalBooleanValue";
+import { ProvidedItem } from "../items/ProvidedItem";
+import { ConditionalStringValue } from "../items/ConditionalStringValue";
 
 /** Status bar Groups/Sections from Left to Right
  * @beta
@@ -47,7 +36,7 @@ export enum StatusBarSection {
 /** Defines which side of Icon where label is placed
  * @beta
  */
-export enum StatusbarLabelSide {
+export enum StatusBarLabelSide {
   /** Label is placed left side of icon. This is the default if not specified */
   Left,
   /** Label is placed on right side of icon. */
@@ -62,19 +51,23 @@ export type StatusBarItemId = CommonStatusBarItem["id"];
 /** Describes the data needed to insert a button into the status bar.
  * @beta
  */
-export interface AbstractStatusBarItem {
+export interface AbstractStatusBarItem extends ProvidedItem {
+  /** can be used by application to store miscellaneous data. */
+  applicationData?: any;
   /** Describes badge. Renders no badge if not specified. */
-  readonly badge?: BadgeType;
+  readonly badgeType?: BadgeType;
   /** Required unique id of the item. To ensure uniqueness it is suggested that a namespace prefix of the plugin name be used. */
   readonly id: string;
-  /** Describes if the item is visible. */
-  readonly isVisible: boolean;
+  /** optional data to used by item implementor. */
+  readonly internalData?: Map<string, any>;
+  /** Describes if the item is visible or hidden. The default is for the item to be visible. */
+  readonly isHidden?: boolean | ConditionalBooleanValue;
+  /** Describes if the item is enabled or disabled. The default is for the item to be enabled. */
+  readonly isDisabled?: boolean | ConditionalBooleanValue;
   /** Priority within a section (recommend using values 1 through 100). */
   readonly itemPriority: number;
   /** status bar section */
   readonly section: StatusBarSection;
-  /** Type of item to be inserted. */
-  readonly type: StatusBarItemType;
 }
 
 /** Describes the data needed to insert an action item into the status bar.
@@ -84,13 +77,11 @@ export interface AbstractStatusBarActionItem extends AbstractStatusBarItem {
   /** method to execute when icon is pressed */
   readonly execute: () => void;
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
-  readonly icon?: string;
+  readonly icon?: string | ConditionalStringValue;
   /** Label. */
-  readonly label?: string;
+  readonly label?: string | ConditionalStringValue;
   /** tooltip. */
-  readonly tooltip?: string;
-  /** Type of item to be inserted. */
-  readonly type: StatusBarItemType.ActionItem;
+  readonly tooltip?: string | ConditionalStringValue;
 }
 
 /** Describes the data needed to insert a label item with an optional icon into the status bar.
@@ -98,13 +89,11 @@ export interface AbstractStatusBarActionItem extends AbstractStatusBarItem {
  */
 export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem {
   /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
-  readonly icon?: string;
+  readonly icon?: string | ConditionalStringValue;
   /** Label. */
-  readonly label: string;
+  readonly label: string | ConditionalStringValue;
   /** Defines which side of icon to display label if icon is defined. */
-  readonly labelSide?: StatusbarLabelSide;
-  /** Type of item to be inserted. */
-  readonly type: StatusBarItemType.Label;
+  readonly labelSide?: StatusBarLabelSide;
 }
 
 /** Describes the data needed to insert a custom item into the status bar. This is used to allow plugin
@@ -112,7 +101,7 @@ export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem {
  * @beta
  */
 export interface AbstractStatusBarCustomItem extends AbstractStatusBarItem {
-  readonly type: StatusBarItemType.CustomItem;
+  readonly isCustom: true;
 }
 
 /** Describes the data needed to insert a button into the status bar.
@@ -124,49 +113,40 @@ export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBa
  * @beta
  */
 export const isAbstractStatusBarActionItem = (item: CommonStatusBarItem): item is AbstractStatusBarActionItem => {
-  return item.type === StatusBarItemType.ActionItem;
+  return (item as AbstractStatusBarActionItem).execute !== undefined;
 };
 
 /** AbstractStatusBarLabelItem type guard.
  * @beta
  */
 export const isAbstractStatusBarLabelItem = (item: CommonStatusBarItem): item is AbstractStatusBarLabelItem => {
-  return item.type === StatusBarItemType.Label;
+  return (item as AbstractStatusBarLabelItem).label !== undefined && (item as AbstractStatusBarActionItem).execute === undefined;
 };
 
 /** AbstractStatusBarCustomItem type guard.
  * @beta
  */
 export const isAbstractStatusBarCustomItem = (item: CommonStatusBarItem): item is AbstractStatusBarCustomItem => {
-  return item.type === StatusBarItemType.CustomItem;
+  return !!(item as AbstractStatusBarCustomItem).isCustom;
 };
-
-// /** AbstractStatusBarPopupItem type guard.
-//  * @beta
-//  */
-// export const isAbstractStatusBarPopupItem = (item: CommonStatusBarItem): item is AbstractStatusBarPopupItem => {
-//   return item.type === StatusBarItemType.Popup;
-// };
 
 /** Helper class to create Abstract StatusBar Item definitions.
  * @beta
  */
 export class AbstractStatusBarItemUtilities {
   /** Creates a StatusBar item to perform an action */
-  public static createActionItem = (id: string, section: StatusBarSection, itemPriority: number, icon: string, tooltip: string, execute: () => void): AbstractStatusBarActionItem => ({
+  public static createActionItem = (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, tooltip: string | ConditionalStringValue, execute: () => void, overrides?: Partial<AbstractStatusBarCustomItem>): AbstractStatusBarActionItem => ({
     id, section, itemPriority,
     icon, tooltip,
-    isVisible: true,
     execute,
-    type: StatusBarItemType.ActionItem,
+    ...overrides,
   })
 
   /** Creates a StatusBar item to display a label */
-  public static createLabelItem = (id: string, section: StatusBarSection, itemPriority: number, icon: string, label: string, labelSide = StatusbarLabelSide.Right): AbstractStatusBarLabelItem => ({
+  public static createLabelItem = (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, labelSide = StatusBarLabelSide.Right, overrides?: Partial<AbstractStatusBarLabelItem>): AbstractStatusBarLabelItem => ({
     id, section, itemPriority,
     icon, label,
-    isVisible: true,
-    type: StatusBarItemType.Label,
     labelSide,
+    ...overrides,
   })
 }

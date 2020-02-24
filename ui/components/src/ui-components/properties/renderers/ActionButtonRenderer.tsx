@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 /** Properties of [[ActionButtonRenderer]]
  * @beta

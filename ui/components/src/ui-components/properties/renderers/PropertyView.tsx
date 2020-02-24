@@ -9,7 +9,7 @@
 import * as React from "react";
 import { Orientation, ElementSeparator } from "@bentley/ui-core";
 import { SharedRendererProps } from "./PropertyRenderer";
-import { PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyValueFormat } from "@bentley/ui-abstract";
 import { ActionButtonList } from "./ActionButtonList";
 import "./PropertyView.scss";
 

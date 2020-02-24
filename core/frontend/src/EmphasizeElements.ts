@@ -473,8 +473,8 @@ export class EmphasizeElements implements FeatureOverrideProvider {
     const overriddenElements = this.getOverriddenElements();
     if (undefined !== overriddenElements) {
       const appearanceOverride: AppearanceOverrideProps[] = [];
-      const color = new ColorDef();
       for (const [key, ovrIds] of overriddenElements) {
+        const color = new ColorDef();
         const overrideType = this.getOverrideFromKey(key, color);
         const ids = [...ovrIds];
         appearanceOverride.push({ overrideType, color, ids });

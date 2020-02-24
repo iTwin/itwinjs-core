@@ -77,7 +77,7 @@ describe("Locate Toolbar items", () => {
 
   it("Find item in horizontal and vertical toolbars.", () => {
     const component = render(
-      <ToolWidget
+      <ToolWidget // tslint:disable-line:deprecation
         appButton={backstageToggleCommand}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { WidgetState } from "@bentley/ui-abstract";
 import {
   Frontstage,
   FrontstageProvider,
@@ -14,7 +15,6 @@ import {
   ZoneState,
   ContentControl,
   ConfigurableCreateInfo,
-  WidgetState,
   WidgetControl,
   ZoneLocation,
   CoreTools,
@@ -98,6 +98,7 @@ export class TestFrontstage extends FrontstageProvider {
         defaultContentId="defaultContentId"
         isInFooterMode={false}
         applicationData={{ key: "value" }}
+        usage="MyUsage"
         topLeft={
           <Zone defaultState={ZoneState.Open} allowsMerging={true} applicationData={{ key: "value" }}
             widgets={[
@@ -115,7 +116,10 @@ export class TestFrontstage extends FrontstageProvider {
         centerLeft={
           <Zone defaultState={ZoneState.Open} allowsMerging={true}
             widgets={[
-              <Widget id="widget3" defaultState={WidgetState.Open} control={TestWidget} />,
+              <Widget id="widget3" defaultState={WidgetState.Open} control={TestWidget}
+                onWidgetStateChanged={() => { }}
+                saveTransientState={() => { }}
+                restoreTransientState={() => false} />,
             ]}
           />
         }

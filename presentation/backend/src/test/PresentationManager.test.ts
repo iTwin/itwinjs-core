@@ -10,11 +10,11 @@ import * as hash from "object-hash";
 import * as sinon from "sinon";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
 import {
-  createRandomNodePathElementJSON, createRandomECInstanceNodeKey,
-  createRandomECInstanceNodeKeyJSON,
+  createRandomNodePathElementJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON,
   createRandomECClassInfoJSON, createRandomRelationshipPathJSON,
   createRandomECInstanceKeyJSON, createRandomECInstanceKey,
-  createRandomDescriptor, createRandomCategory, createRandomId, createRandomDescriptorJSON, createRandomRelatedClassInfoJSON, createRandomRuleset, createRandomLabelDefinition, createRandomLabelDefinitionJSON,
+  createRandomDescriptor, createRandomCategory, createRandomId, createRandomDescriptorJSON,
+  createRandomRelatedClassInfoJSON, createRandomRuleset, createRandomLabelDefinitionJSON,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
@@ -28,18 +28,18 @@ import {
   KindOfQuantityInfo, DefaultContentDisplayTypes, LabelRequestOptions, InstanceKey,
   Ruleset, VariableValueTypes, RequestPriority, LOCALES_DIRECTORY, LabelDefinition,
 } from "@bentley/presentation-common";
-import { PropertyInfoJSON } from "@bentley/presentation-common/lib/EC";
-import { NodeKeyJSON, ECInstanceNodeKeyJSON, NodeKey } from "@bentley/presentation-common/lib/hierarchy/Key";
-import { NodeJSON } from "@bentley/presentation-common/lib/hierarchy/Node";
-import { PropertyJSON } from "@bentley/presentation-common/lib/content/Property";
-import { ContentJSON } from "@bentley/presentation-common/lib/content/Content";
-import { ItemJSON } from "@bentley/presentation-common/lib/content/Item";
-import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/content/Fields";
-import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/content/Descriptor";
-import { NativePlatformDefinition, NativePlatformRequestTypes } from "../NativePlatform";
-import { PresentationManager, PresentationManagerMode } from "../PresentationManager";
-import { RulesetManagerImpl } from "../RulesetManager";
-import { RulesetVariablesManagerImpl } from "../RulesetVariablesManager";
+import { PropertyInfoJSON } from "@bentley/presentation-common/lib/presentation-common/EC";
+import { NodeKeyJSON, NodeKey } from "@bentley/presentation-common/lib/presentation-common/hierarchy/Key";
+import { NodeJSON } from "@bentley/presentation-common/lib/presentation-common/hierarchy/Node";
+import { PropertyJSON } from "@bentley/presentation-common/lib/presentation-common/content/Property";
+import { ContentJSON } from "@bentley/presentation-common/lib/presentation-common/content/Content";
+import { ItemJSON } from "@bentley/presentation-common/lib/presentation-common/content/Item";
+import { PropertiesFieldJSON, NestedContentFieldJSON, FieldJSON } from "@bentley/presentation-common/lib/presentation-common/content/Fields";
+import { DescriptorJSON, SelectClassInfoJSON } from "@bentley/presentation-common/lib/presentation-common/content/Descriptor";
+import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
+import { PresentationManager, PresentationManagerMode } from "../presentation-backend/PresentationManager";
+import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
+import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 
 describe("PresentationManager", () => {
 
@@ -214,7 +214,7 @@ describe("PresentationManager", () => {
           })))
           .returns(async () => "{}")
           .verifiable(moq.Times.once());
-        await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetId });
+        await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId });
         addonMock.verifyAll();
       });
     });
@@ -232,7 +232,7 @@ describe("PresentationManager", () => {
           })))
           .returns(async () => "{}")
           .verifiable(moq.Times.once());
-        await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetId, locale });
+        await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId, locale });
         addonMock.verifyAll();
       });
     });
@@ -242,9 +242,9 @@ describe("PresentationManager", () => {
   describe("vars", () => {
 
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
-    const manager: PresentationManager = new PresentationManager({ addon: addon.object });
 
     it("returns variables manager", () => {
+      const manager = new PresentationManager({ addon: addon.object });
       const vars = manager.vars(faker.random.word());
       expect(vars).to.be.instanceOf(RulesetVariablesManagerImpl);
     });
@@ -254,9 +254,9 @@ describe("PresentationManager", () => {
   describe("rulesets", () => {
 
     const addon = moq.Mock.ofType<NativePlatformDefinition>();
-    const manager: PresentationManager = new PresentationManager({ addon: addon.object });
 
     it("returns rulesets manager", () => {
+      const manager = new PresentationManager({ addon: addon.object });
       expect(manager.rulesets()).to.be.instanceOf(RulesetManagerImpl);
     });
 
@@ -312,12 +312,8 @@ describe("PresentationManager", () => {
       addonMock
         .setup((x) => x.setRulesetVariableValue(rulesetId, variable.id, variable.type, variable.value))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetId, rulesetVariables });
+      await manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object, rulesetOrId: rulesetId, rulesetVariables });
       addonMock.verifyAll();
-    });
-
-    it("throws if ruleset or ruleset id is not provided", async () => {
-      await expect(manager.getNodesCount(ClientRequestContext.current, { imodel: imodelMock.object })).to.be.rejectedWith(PresentationError);
     });
 
   });
@@ -426,8 +422,8 @@ describe("PresentationManager", () => {
         key: {
           type: "ECInstanceNode",
           pathFromRoot: ["p1"],
-          instanceKey: createRandomECInstanceKeyJSON(),
-        } as ECInstanceNodeKeyJSON,
+          instanceKeys: [createRandomECInstanceKeyJSON()],
+        },
         labelDefinition: LabelDefinition.fromLabelString("test2"),
         description: "description2",
         imageId: "",
@@ -523,8 +519,8 @@ describe("PresentationManager", () => {
         key: {
           type: "ECInstanceNode",
           pathFromRoot: ["p1"],
-          instanceKey: createRandomECInstanceKeyJSON(),
-        } as ECInstanceNodeKeyJSON,
+          instanceKeys: [createRandomECInstanceKeyJSON()],
+        },
         labelDefinition: LabelDefinition.fromLabelString("test2"),
         description: "description2",
         imageId: "",
@@ -563,7 +559,7 @@ describe("PresentationManager", () => {
 
     it("returns child nodes", async () => {
       // what the addon receives
-      const parentNodeKeyJSON = createRandomECInstanceNodeKeyJSON();
+      const parentNodeKeyJSON = createRandomECInstancesNodeKeyJSON();
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetChildren,
         params: {
@@ -578,8 +574,8 @@ describe("PresentationManager", () => {
         key: {
           type: "ECInstanceNode",
           pathFromRoot: ["p1"],
-          instanceKey: createRandomECInstanceKeyJSON(),
-        } as ECInstanceNodeKeyJSON,
+          instanceKeys: [createRandomECInstanceKeyJSON()],
+        },
         labelDefinition: LabelDefinition.fromLabelString("test2"),
       }, {
         key: {
@@ -602,7 +598,7 @@ describe("PresentationManager", () => {
 
     it("returns child nodes count", async () => {
       // what the addon receives
-      const parentNodeKeyJSON = createRandomECInstanceNodeKeyJSON();
+      const parentNodeKeyJSON = createRandomECInstancesNodeKeyJSON();
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetChildrenCount,
         params: {
@@ -627,7 +623,7 @@ describe("PresentationManager", () => {
     it("returns child nodes and child node count when requesting first page", async () => {
       // what the addon receives
       const pageOptions = { start: 0, size: 2 };
-      const parentNodeKeyJSON = createRandomECInstanceNodeKeyJSON();
+      const parentNodeKeyJSON = createRandomECInstancesNodeKeyJSON();
       const expectedGetChildNodesParams = {
         requestId: NativePlatformRequestTypes.GetChildren,
         params: {
@@ -650,8 +646,8 @@ describe("PresentationManager", () => {
         key: {
           type: "ECInstanceNode",
           pathFromRoot: ["p1"],
-          instanceKey: createRandomECInstanceKeyJSON(),
-        } as ECInstanceNodeKeyJSON,
+          instanceKeys: [createRandomECInstanceKeyJSON()],
+        },
         labelDefinition: LabelDefinition.fromLabelString("test2"),
       }, {
         key: {
@@ -752,7 +748,7 @@ describe("PresentationManager", () => {
 
     it("returns content descriptor", async () => {
       // what the addon receives
-      const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
+      const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetContentDescriptor,
         params: {
@@ -907,7 +903,7 @@ describe("PresentationManager", () => {
 
     it("returns content set size", async () => {
       // what the addon receives
-      const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
+      const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
       const descriptor = createRandomDescriptor();
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetContentSetSize,
@@ -933,7 +929,7 @@ describe("PresentationManager", () => {
 
     it("returns content set size when descriptor overrides are passed instead of descriptor", async () => {
       // what the addon receives
-      const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
+      const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
       const descriptor = createRandomDescriptor();
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetContentSetSize,
@@ -963,7 +959,7 @@ describe("PresentationManager", () => {
 
     it("returns content", async () => {
       // what the addon receives
-      const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
+      const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
       const descriptor = createRandomDescriptor();
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetContent,
@@ -1188,7 +1184,7 @@ describe("PresentationManager", () => {
 
     it("returns content when descriptor overrides are passed instead of descriptor", async () => {
       // what the addon receives
-      const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
+      const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
       const descriptor = createRandomDescriptor();
       const expectedParams = {
         requestId: NativePlatformRequestTypes.GetContent,
@@ -1267,7 +1263,7 @@ describe("PresentationManager", () => {
     it("returns content and content set size when requesting first page", async () => {
       // what the addon receives
       const pageOptions = { start: 0, size: 2 };
-      const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
+      const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
       const descriptor = createRandomDescriptor();
       const expectedGetContentParams = {
         requestId: NativePlatformRequestTypes.GetContent,
@@ -1357,7 +1353,7 @@ describe("PresentationManager", () => {
 
       it("returns distinct values", async () => {
         // what the addon receives
-        const keys = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceKey()]);
+        const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
         const descriptor = createRandomDescriptor();
         const fieldName = faker.random.word();
         const maximumValueCount = faker.random.number();
@@ -1415,32 +1411,6 @@ describe("PresentationManager", () => {
 
     });
 
-    describe("getDisplayLabel", () => {
-
-      it("returns label from native addon", async () => {
-        // what the addon receives
-        const key = createRandomECInstanceKey();
-        const expectedParams = {
-          requestId: NativePlatformRequestTypes.GetDisplayLabel,
-          params: {
-            key,
-          },
-        };
-
-        // what the addon returns
-        const addonResponse = createRandomLabelDefinitionJSON();
-        setup(addonResponse);
-
-        // test
-        const options: LabelRequestOptions<IModelDb> = {
-          imodel: imodelMock.object,
-        };
-        const result = await manager.getDisplayLabel(ClientRequestContext.current, options, key);
-        verifyWithExpectedResult(result, addonResponse.displayValue, expectedParams);
-      });
-
-    });
-
     describe("getDisplayLabelDefinition", () => {
 
       it("returns label from native addon", async () => {
@@ -1467,195 +1437,7 @@ describe("PresentationManager", () => {
 
     });
 
-    describe("getDisplayLabels", () => {
-
-      it("returns labels from list content", async () => {
-        // what the addon receives
-        const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
-        const labelsDefinitions = [createRandomLabelDefinitionJSON(), createRandomLabelDefinitionJSON()];
-        const expectedContentParams = {
-          requestId: NativePlatformRequestTypes.GetContent,
-          params: {
-            keys: new KeySet(keys).toJSON(),
-            descriptorOverrides: {
-              displayType: DefaultContentDisplayTypes.List,
-              contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
-              hiddenFieldNames: [],
-            },
-            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-          },
-        };
-
-        // what the addon returns
-        const addonContentResponse = {
-          descriptor: {
-            connectionId: faker.random.uuid(),
-            inputKeysHash: faker.random.uuid(),
-            contentOptions: {},
-            displayType: DefaultContentDisplayTypes.List,
-            selectClasses: [{
-              selectClassInfo: createRandomECClassInfoJSON(),
-              isSelectPolymorphic: true,
-              pathToPrimaryClass: [],
-              relatedPropertyPaths: [],
-              navigationPropertyClasses: [],
-              relatedInstanceClasses: [],
-            } as SelectClassInfoJSON],
-            fields: [],
-            contentFlags: 0,
-          } as DescriptorJSON,
-          // note: return in wrong order to verify the resulting labels are still in the right order
-          contentSet: [1, 0].map((index): ItemJSON => ({
-            primaryKeys: [keys[index]],
-            classInfo: createRandomECClassInfoJSON(),
-            labelDefinition: labelsDefinitions[index],
-            label: labelsDefinitions[index].displayValue,
-            imageId: faker.random.uuid(),
-            values: {},
-            displayValues: {},
-            mergedFieldNames: [],
-          })),
-        } as ContentJSON;
-        setup(addonContentResponse);
-
-        // test
-        const options: LabelRequestOptions<IModelDb> = {
-          imodel: imodelMock.object,
-        };
-        const result = await manager.getDisplayLabels(ClientRequestContext.current, options, keys);
-        verifyMockRequest(expectedContentParams);
-        expect(result).to.deep.eq(labelsDefinitions.map((r) => r.displayValue));
-      });
-
-      it("returns labels for BisCore:Element instances", async () => {
-        // what the addon receives
-        const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
-        const concreteClassKey = { className: faker.random.word(), id: baseClassKey.id };
-        setupIModelForElementKey(imodelMock, concreteClassKey);
-        const labelDefinition = createRandomLabelDefinitionJSON();
-        const expectedContentParams = {
-          requestId: NativePlatformRequestTypes.GetContent,
-          params: {
-            keys: new KeySet([concreteClassKey]).toJSON(),
-            descriptorOverrides: {
-              displayType: DefaultContentDisplayTypes.List,
-              contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
-              hiddenFieldNames: [],
-            },
-            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-          },
-        };
-
-        // what the addon returns
-        const addonContentResponse = {
-          descriptor: {
-            connectionId: faker.random.uuid(),
-            inputKeysHash: faker.random.uuid(),
-            contentOptions: {},
-            displayType: DefaultContentDisplayTypes.List,
-            selectClasses: [{
-              selectClassInfo: createRandomECClassInfoJSON(),
-              isSelectPolymorphic: true,
-              pathToPrimaryClass: [],
-              relatedPropertyPaths: [],
-              navigationPropertyClasses: [],
-              relatedInstanceClasses: [],
-            } as SelectClassInfoJSON],
-            fields: [],
-            contentFlags: 0,
-          } as DescriptorJSON,
-          // note: return in wrong order to verify the resulting labels are still in the right order
-          contentSet: [{
-            primaryKeys: [concreteClassKey],
-            classInfo: createRandomECClassInfoJSON(),
-            labelDefinition,
-            label: labelDefinition.displayValue,
-            imageId: faker.random.uuid(),
-            values: {},
-            displayValues: {},
-            mergedFieldNames: [],
-          }],
-        } as ContentJSON;
-        setup(addonContentResponse);
-
-        // test
-        const options: LabelRequestOptions<IModelDb> = {
-          imodel: imodelMock.object,
-        };
-        const result = await manager.getDisplayLabels(ClientRequestContext.current, options, [baseClassKey]);
-        verifyMockRequest(expectedContentParams);
-        expect(result).to.deep.eq([labelDefinition.displayValue]);
-      });
-
-      it("returns empty labels if content doesn't contain item with request key", async () => {
-        const keys = [createRandomECInstanceKey()];
-        const expectedContentParams = {
-          requestId: NativePlatformRequestTypes.GetContent,
-          params: {
-            keys: new KeySet(keys).toJSON(),
-            descriptorOverrides: {
-              displayType: DefaultContentDisplayTypes.List,
-              contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
-              hiddenFieldNames: [],
-            },
-            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-          },
-        };
-
-        // what the addon returns
-        const addonContentResponse = {
-          descriptor: createRandomDescriptorJSON(),
-          contentSet: [{
-            primaryKeys: [createRandomECInstanceKeyJSON()], // different than input key
-            classInfo: createRandomECClassInfoJSON(),
-            labelDefinition: createRandomLabelDefinitionJSON(),
-            imageId: faker.random.uuid(),
-            values: {},
-            displayValues: {},
-            mergedFieldNames: [],
-          }],
-        } as ContentJSON;
-        setup(addonContentResponse);
-
-        // test
-        const options: LabelRequestOptions<IModelDb> = {
-          imodel: imodelMock.object,
-        };
-        const result = await manager.getDisplayLabels(ClientRequestContext.current, options, keys);
-        verifyMockRequest(expectedContentParams);
-        expect(result).to.deep.eq([""]);
-      });
-
-      it("returns empty labels if content is undefined", async () => {
-        const keys = [createRandomECInstanceKey()];
-        const expectedContentParams = {
-          requestId: NativePlatformRequestTypes.GetContent,
-          params: {
-            keys: new KeySet(keys).toJSON(),
-            descriptorOverrides: {
-              displayType: DefaultContentDisplayTypes.List,
-              contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
-              hiddenFieldNames: [],
-            },
-            rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-          },
-        };
-
-        // what the addon returns
-        setup(null);
-
-        // test
-        const options: LabelRequestOptions<IModelDb> = {
-          imodel: imodelMock.object,
-        };
-        const result = await manager.getDisplayLabels(ClientRequestContext.current, options, keys);
-        verifyMockRequest(expectedContentParams);
-        expect(result).to.deep.eq([""]);
-      });
-
-    });
-
-    describe("getDisplayLabelsDefinitions", () => {
+    describe("getDisplayLabelDefinitions", () => {
 
       it("returns labels from list content", async () => {
         // what the addon receives
@@ -1709,7 +1491,7 @@ describe("PresentationManager", () => {
         const options: LabelRequestOptions<IModelDb> = {
           imodel: imodelMock.object,
         };
-        const result = await manager.getDisplayLabelsDefinitions(ClientRequestContext.current, options, keys);
+        const result = await manager.getDisplayLabelDefinitions(ClientRequestContext.current, options, keys);
         verifyMockRequest(expectedContentParams);
         expect(result).to.deep.eq(labels);
       });
@@ -1719,7 +1501,7 @@ describe("PresentationManager", () => {
         const baseClassKey = { className: "BisCore:Element", id: createRandomId() };
         const concreteClassKey = { className: faker.random.word(), id: baseClassKey.id };
         setupIModelForElementKey(imodelMock, concreteClassKey);
-        const labelDefinition = createRandomLabelDefinitionJSON();
+        const label = createRandomLabelDefinitionJSON();
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContent,
           params: {
@@ -1755,7 +1537,7 @@ describe("PresentationManager", () => {
           contentSet: [{
             primaryKeys: [concreteClassKey],
             classInfo: createRandomECClassInfoJSON(),
-            labelDefinition,
+            labelDefinition: label,
             imageId: faker.random.uuid(),
             values: {},
             displayValues: {},
@@ -1768,9 +1550,9 @@ describe("PresentationManager", () => {
         const options: LabelRequestOptions<IModelDb> = {
           imodel: imodelMock.object,
         };
-        const result = await manager.getDisplayLabelsDefinitions(ClientRequestContext.current, options, [baseClassKey]);
+        const result = await manager.getDisplayLabelDefinitions(ClientRequestContext.current, options, [baseClassKey]);
         verifyMockRequest(expectedContentParams);
-        expect(result).to.deep.eq([labelDefinition]);
+        expect(result).to.deep.eq([label]);
       });
 
       it("returns empty labels if content doesn't contain item with request key", async () => {
@@ -1807,7 +1589,7 @@ describe("PresentationManager", () => {
         const options: LabelRequestOptions<IModelDb> = {
           imodel: imodelMock.object,
         };
-        const result = await manager.getDisplayLabelsDefinitions(ClientRequestContext.current, options, keys);
+        const result = await manager.getDisplayLabelDefinitions(ClientRequestContext.current, options, keys);
         verifyMockRequest(expectedContentParams);
         expect(result).to.deep.eq([{ displayValue: "", rawValue: "", typeName: "" }]);
       });
@@ -1834,7 +1616,7 @@ describe("PresentationManager", () => {
         const options: LabelRequestOptions<IModelDb> = {
           imodel: imodelMock.object,
         };
-        const result = await manager.getDisplayLabelsDefinitions(ClientRequestContext.current, options, keys);
+        const result = await manager.getDisplayLabelDefinitions(ClientRequestContext.current, options, keys);
         verifyMockRequest(expectedContentParams);
         expect(result).to.deep.eq([{ displayValue: "", rawValue: "", typeName: "" }]);
       });
@@ -1933,6 +1715,14 @@ describe("PresentationManager", () => {
         if (props?.parentKey)
           setupIModelForElementKey(imodelMock, props.parentKey);
         return { key, props: elementProps };
+      };
+
+      const setupIModelDerivesFromClassQuery = (doesDeriveFromSuppliedClass: boolean) => {
+        imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns((_q, cb) => {
+          const stmtMock = moq.Mock.ofType<ECSqlStatement>();
+          stmtMock.setup((x) => x.step()).returns(() => doesDeriveFromSuppliedClass ? DbResult.BE_SQLITE_ROW : DbResult.BE_SQLITE_DONE);
+          return cb(stmtMock.object);
+        });
       };
 
       beforeEach(() => {
@@ -2195,8 +1985,31 @@ describe("PresentationManager", () => {
 
       describe("scope: 'functional-element'", () => {
 
-        it("returns element key if it doesn't have an associated functional element or parent", async () => {
+        it("returns GeometricElement3d key if it doesn't have an associated functional element or parent", async () => {
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey });
+          setupIModelForElementKey(imodelMock, graphicalElementKey);
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional");
+          expect(result.size).to.eq(1);
+          expect(result.has(graphicalElementKey)).to.be.true;
+        });
+
+        it("returns functional element key if GeometricElement3d has an associated functional element", async () => {
+          const functionalElementKey = createRandomECInstanceKey();
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey, functionalElementKey });
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-element");
+          expect(result.size).to.eq(1);
+          expect(result.has(functionalElementKey)).to.be.true;
+        });
+
+        it("returns GeometricElement2d key if it doesn't have an associated functional element or parent", async () => {
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey });
           setupIModelForElementKey(imodelMock, graphicalElementKey);
@@ -2206,10 +2019,11 @@ describe("PresentationManager", () => {
           expect(result.has(graphicalElementKey)).to.be.true;
         });
 
-        it("returns element key if it has parents but none of them have related functional elements", async () => {
+        it("returns GeometricElement2d key if it has parents but none of them have related functional elements", async () => {
           const graphicalGrandParentElementKey = createRandomECInstanceKey();
           const graphicalParentElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
           setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
@@ -2223,9 +2037,10 @@ describe("PresentationManager", () => {
           expect(result.has(graphicalElementKey)).to.be.true;
         });
 
-        it("returns functional element key if element has an associated functional element", async () => {
+        it("returns functional element key if GeometricElement2d has an associated functional element", async () => {
           const functionalElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey, functionalElementKey });
 
           const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-element");
@@ -2233,11 +2048,12 @@ describe("PresentationManager", () => {
           expect(result.has(functionalElementKey)).to.be.true;
         });
 
-        it("returns functional element key of the first parent that has related functional element", async () => {
+        it("returns functional element key of the first GeometricElement2d parent that has related functional element", async () => {
           const functionalElementKey = createRandomECInstanceKey();
           const graphicalGrandParentElementKey = createRandomECInstanceKey();
           const graphicalParentElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
           setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
@@ -2251,6 +2067,7 @@ describe("PresentationManager", () => {
 
         it("skips transient element ids", async () => {
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey });
           setupIModelForElementKey(imodelMock, graphicalElementKey);
@@ -2264,8 +2081,46 @@ describe("PresentationManager", () => {
 
       describe("scope: 'functional-assembly'", () => {
 
-        it("returns element key if it doesn't have an associated functional element or parent", async () => {
+        it("returns GeometricElement3d key if it doesn't have a parent", async () => {
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForElementProps({ key: graphicalElementKey });
+          setupIModelForElementKey(imodelMock, graphicalElementKey);
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has(graphicalElementKey)).to.be.true;
+        });
+
+        it("returns GeometricElement3d parent key if it doesn't have a related functional element", async () => {
+          const graphicalParentElementKey = createRandomECInstanceKey();
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has(graphicalParentElementKey)).to.be.true;
+        });
+
+        it("returns functional element key of GeometricElement3d parent", async () => {
+          const functionalElementKey = createRandomECInstanceKey();
+          const graphicalGrandParentElementKey = createRandomECInstanceKey();
+          const graphicalParentElementKey = createRandomECInstanceKey();
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has(functionalElementKey)).to.be.true;
+        });
+
+        it("returns GeometricElement2d key if it doesn't have an associated functional element or parent", async () => {
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey });
           setupIModelForElementKey(imodelMock, graphicalElementKey);
@@ -2275,10 +2130,11 @@ describe("PresentationManager", () => {
           expect(result.has(graphicalElementKey)).to.be.true;
         });
 
-        it("returns first parent key if none of the parents have an associated functional element", async () => {
+        it("returns first GeometricElement2d parent key if none of the parents have an associated functional element", async () => {
           const graphicalGrandParentElementKey = createRandomECInstanceKey();
           const graphicalParentElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
           setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
@@ -2293,11 +2149,12 @@ describe("PresentationManager", () => {
           expect(result.has(graphicalParentElementKey)).to.be.true;
         });
 
-        it("returns functional element key of the first parent that has a related functional element and the functional element has no parent", async () => {
+        it("returns functional element key of the first GeometricElement2d parent that has a related functional element and the functional element has no parent", async () => {
           const functionalElementKey = createRandomECInstanceKey();
           const graphicalGrandParentElementKey = createRandomECInstanceKey();
           const graphicalParentElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
           setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
@@ -2311,11 +2168,12 @@ describe("PresentationManager", () => {
           expect(result.has(functionalElementKey)).to.be.true;
         });
 
-        it("returns functional parent element key of the first parent that has a related functional element", async () => {
+        it("returns functional parent element key of the first GeometricElement2d parent that has a related functional element", async () => {
           const functionalParentElementKey = createRandomECInstanceKey();
           const functionalElementKey = createRandomECInstanceKey();
           const graphicalParentElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
           setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey, functionalElementKey });
@@ -2330,8 +2188,51 @@ describe("PresentationManager", () => {
 
       describe("scope: 'functional-top-assembly'", () => {
 
-        it("returns element key if it doesn't have an associated functional element or parent", async () => {
+        it("returns GeometricElement3d key if it doesn't have a parent", async () => {
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForElementProps({ key: graphicalElementKey });
+          setupIModelForElementKey(imodelMock, graphicalElementKey);
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has(graphicalElementKey)).to.be.true;
+        });
+
+        it("returns topmost GeometricElement3d parent key if it doesn't have a related functional element", async () => {
+          const graphicalGrandParentElementKey = createRandomECInstanceKey();
+          const graphicalParentElementKey = createRandomECInstanceKey();
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
+          setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
+          setupIModelForElementProps({ key: graphicalGrandParentElementKey });
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has(graphicalGrandParentElementKey)).to.be.true;
+        });
+
+        it("returns functional element key of the topmost GeometricElement3d parent", async () => {
+          const functionalElementKey = createRandomECInstanceKey();
+          const graphicalGrandParentElementKey = createRandomECInstanceKey();
+          const graphicalParentElementKey = createRandomECInstanceKey();
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(true);
+          setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
+          setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
+          setupIModelForElementProps({ key: graphicalGrandParentElementKey });
+          setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
+
+          const result = await manager.computeSelection(ClientRequestContext.current, { imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
+          expect(result.size).to.eq(1);
+          expect(result.has(functionalElementKey)).to.be.true;
+        });
+
+        it("returns GeometricElement2d key if it doesn't have an associated functional element or parent", async () => {
+          const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey });
           setupIModelForElementKey(imodelMock, graphicalElementKey);
@@ -2341,10 +2242,11 @@ describe("PresentationManager", () => {
           expect(result.has(graphicalElementKey)).to.be.true;
         });
 
-        it("returns topmost parent key if none of the parents have an associated functional element", async () => {
+        it("returns topmost GeometricElement2d parent key if none of the parents have an associated functional element", async () => {
           const graphicalGrandParentElementKey = createRandomECInstanceKey();
           const graphicalParentElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
           setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
@@ -2361,11 +2263,12 @@ describe("PresentationManager", () => {
           expect(result.has(graphicalGrandParentElementKey)).to.be.true;
         });
 
-        it("returns functional element key of the first parent that has a related functional element and the functional element has no parent", async () => {
+        it("returns functional element key of the first GeometricElement2d parent that has a related functional element and the functional element has no parent", async () => {
           const functionalElementKey = createRandomECInstanceKey();
           const graphicalGrandParentElementKey = createRandomECInstanceKey();
           const graphicalParentElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
           setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
@@ -2379,13 +2282,14 @@ describe("PresentationManager", () => {
           expect(result.has(functionalElementKey)).to.be.true;
         });
 
-        it("returns functional topmost parent element key of the first parent that has a related functional element", async () => {
+        it("returns functional topmost parent element key of the first GeometricElement2d parent that has a related functional element", async () => {
           const functionalGrandParentElementKey = createRandomECInstanceKey();
           const functionalParentElementKey = createRandomECInstanceKey();
           const functionalElementKey = createRandomECInstanceKey();
           const graphicalGrandParentElementKey = createRandomECInstanceKey();
           const graphicalParentElementKey = createRandomECInstanceKey();
           const graphicalElementKey = createRandomECInstanceKey();
+          setupIModelDerivesFromClassQuery(false);
           setupIModelForFunctionalKeyQuery({ graphicalElementKey });
           setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
           setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });

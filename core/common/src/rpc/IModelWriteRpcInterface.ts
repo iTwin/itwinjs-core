@@ -10,7 +10,7 @@ import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { IModelProps, IModelTokenProps } from "../IModel";
 import { AxisAlignedBox3dProps } from "../geometry/Placement";
-import { Id64String, Id64Array, DbOpcode } from "@bentley/bentleyjs-core";
+import { Id64String, Id64Array, DbOpcode, GuidString } from "@bentley/bentleyjs-core";
 import { LockLevel } from "@bentley/imodeljs-clients";
 import { SubCategoryAppearance } from "../SubCategoryAppearance";
 import { CodeProps } from "../Code";
@@ -45,7 +45,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
   public async doConcurrencyControlRequest(_tokenProps: IModelTokenProps): Promise<void> { return this.forward(arguments); }
   public async lockModel(_tokenProps: IModelTokenProps, _modelId: Id64String, _level: LockLevel): Promise<void> { return this.forward(arguments); }
   public async synchConcurrencyControlResourcesCache(_tokenProps: IModelTokenProps): Promise<void> { return this.forward(arguments); }
-  public async pullMergePush(_tokenProps: IModelTokenProps, _comment: string, _doPush: boolean): Promise<void> { return this.forward(arguments); }
+  public async pullMergePush(_tokenProps: IModelTokenProps, _comment: string, _doPush: boolean): Promise<GuidString> { return this.forward(arguments); }
   public async getModelsAffectedByWrites(_tokenProps: IModelTokenProps): Promise<Id64String[]> { return this.forward(arguments); }
   public async getParentChangeset(_iModelToken: IModelTokenProps): Promise<string> { return this.forward(arguments); }
 

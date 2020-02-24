@@ -15,7 +15,7 @@ TODO: add figure
 
 ## RepositoryModel
 
-Every BIS repository has exactly one `RepositoryModel` that defines the top of the hierarchy. `Element`s can be inserted into to or updated within the `RepositoryModel`, but the `RepositoryModel` itself cannot be deleted.
+Every BIS repository has exactly one `RepositoryModel` that defines the top of the hierarchy. `Element`s can be inserted into or updated within the `RepositoryModel`, but the `RepositoryModel` itself cannot be deleted.
 
 *The RepositoryModel is the only Model in a BIS repository that does not have a `ModelModelsElement` relationship and an "owning" `Element`*
 

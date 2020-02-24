@@ -22,6 +22,18 @@ export enum BackgroundMapType {
   Hybrid = 3,
 }
 
+/** Describes the projection of the background map
+ * @see [[BackgroundMapProps]]
+ * @see [[DisplayStyleSettingsProps]]
+ * @public
+ */
+export enum GlobeMode {
+  /** Display Earth as 3d ellipsoid */
+  Ellipsoid = 0,
+  /** Display Earth as plane. */
+  Plane = 1,
+}
+
 /** JSON representation of the settings associated with a background map displayed by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
  * @public
@@ -49,6 +61,10 @@ export interface BackgroundMapProps {
    * @alpha
    */
   terrainSettings?: TerrainProps;
+  /** Globe Mode. Default value: GlobeMode.Ellipsoid
+   * @beta
+   */
+  globeMode?: GlobeMode;
 }
 
 /** The current set of supported background map providers.
@@ -76,12 +92,15 @@ export class BackgroundMapSettings {
    * @alpha
    */
   public readonly terrainSettings: TerrainSettings;
-  /**  */
+  /**  Globe display mode
+   * @beta
+   */
+  public readonly globeMode: GlobeMode;
 
   /** If transparency is overridden, the transparency to apply; otherwise, undefined. */
   public get transparencyOverride(): number | undefined { return false !== this.transparency ? this.transparency : undefined; }
 
-  private constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias = 0, useDepthBuffer = false, transparency: number | false = false, applyTerrain = false, terrainSettings?: TerrainProps) {
+  private constructor(providerName: BackgroundMapProviderName = "BingProvider", mapType: BackgroundMapType = BackgroundMapType.Hybrid, groundBias = 0, useDepthBuffer = false, transparency: number | false = false, applyTerrain = false, terrainSettings?: TerrainProps, globeMode = GlobeMode.Ellipsoid) {
     this.groundBias = groundBias;
     this.providerName = providerName;
     this.useDepthBuffer = useDepthBuffer;
@@ -96,6 +115,7 @@ export class BackgroundMapSettings {
         this.mapType = BackgroundMapType.Hybrid;
     }
     this.terrainSettings = TerrainSettings.fromJSON(terrainSettings);
+    this.globeMode = globeMode;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
@@ -105,7 +125,8 @@ export class BackgroundMapSettings {
 
     const providerName = ("MapBoxProvider" === json.providerName) ? "MapBoxProvider" : "BingProvider";
     const mapType = (undefined !== json.providerData) ? json.providerData.mapType : BackgroundMapType.Hybrid;
-    return new BackgroundMapSettings(providerName, mapType, json.groundBias, json.useDepthBuffer, json.transparency, json.applyTerrain, json.terrainSettings);
+    const globeMode = (undefined !== json.globeMode) ? json.globeMode : GlobeMode.Ellipsoid;
+    return new BackgroundMapSettings(providerName, mapType, json.groundBias, json.useDepthBuffer, json.transparency, json.applyTerrain, json.terrainSettings, globeMode);
   }
 
   public toJSON(): BackgroundMapProps {
@@ -116,6 +137,7 @@ export class BackgroundMapSettings {
       providerData: { mapType: this.mapType },
       transparency: this.transparency,
       terrainSettings: this.terrainSettings.toJSON(),
+      globeMode: this.globeMode,
     };
   }
 
@@ -126,7 +148,7 @@ export class BackgroundMapSettings {
 
   public equals(other: BackgroundMapSettings): boolean {
     return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType
-      && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings);
+      && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency && this.globeMode === other.globeMode && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings);
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
@@ -147,6 +169,7 @@ export class BackgroundMapSettings {
       providerData: {
         mapType: undefined !== changedProps.providerData && undefined !== changedProps.providerData.mapType ? changedProps.providerData.mapType : this.mapType,
       },
+      globeMode: undefined !== changedProps.globeMode ? changedProps.globeMode : this.globeMode,
     };
 
     return BackgroundMapSettings.fromJSON(props);

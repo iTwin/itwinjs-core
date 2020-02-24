@@ -9,19 +9,42 @@
 import * as React from "react";
 import {
   StatusBarItemsManager, CommonStatusBarItem, isAbstractStatusBarActionItem, AbstractStatusBarActionItem,
-  isAbstractStatusBarLabelItem, AbstractStatusBarLabelItem, StatusbarLabelSide, StatusBarSection,
+  isAbstractStatusBarLabelItem, AbstractStatusBarLabelItem, StatusBarLabelSide, StatusBarSection, ConditionalStringValue, ConditionalBooleanValue,
 } from "@bentley/ui-abstract";
 import { Icon } from "@bentley/ui-core";
 import { FooterIndicator } from "@bentley/ui-ninezone";
 import { StatusBarSpaceBetween, StatusBarLeftSection, StatusBarCenterSection, StatusBarRightSection, StatusBarContext } from "./StatusBar";
 import { isStatusBarItem } from "./StatusBarItem";
-import { useStageStatusBarItems } from "./useStageStatusBarItems";
-import { usePluginStatusBarItems } from "./usePluginStatusBarItems";
+import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
+import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../ui-framework";
 import { Indicator } from "../statusfields/Indicator";
+
+/** Private function to set up sync event monitoring of statusbar items */
+function useStatusBarItemSyncEffect(itemsManager: StatusBarItemsManager, syncIdsOfInterest: string[]) {
+  React.useEffect(() => {
+    const handleSyncUiEvent = (args: SyncUiEventArgs) => {
+      if (0 === syncIdsOfInterest.length)
+        return;
+
+      // istanbul ignore else
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
+        // process each item that has interest
+        itemsManager.refreshAffectedItems(args.eventIds);
+      }
+    };
+
+    // Note: that items with conditions have condition run when loaded into the items manager
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+    return () => {
+      SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
+    };
+  }, [itemsManager, itemsManager.items, syncIdsOfInterest]);
+}
 
 /** function to produce a StatusBarItem component from an AbstractStatusBarLabelItem */
 function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem, isInFooterMode: boolean): React.ReactNode {
-  const iconPaddingClass = item.labelSide === StatusbarLabelSide.Left ? "nz-icon-padding-right" : "nz-icon-padding-left";
+  const iconPaddingClass = item.labelSide === StatusBarLabelSide.Left ? "nz-icon-padding-right" : "nz-icon-padding-left";
   return (<FooterIndicator
     isInFooterMode={isInFooterMode}
   >
@@ -33,17 +56,17 @@ function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem, isInFoo
 
 /** function to produce a StatusBarItem component from an AbstractStatusBarActionItem */
 function generateActionStatusBarItem(item: AbstractStatusBarActionItem, isInFooterMode: boolean): React.ReactNode {
-  return <Indicator toolTip={item.tooltip ? item.tooltip : item.label} opened={false} onClick={item.execute} iconName={item.icon}
+  return <Indicator toolTip={ConditionalStringValue.getValue(item.tooltip)} opened={false} onClick={item.execute} iconName={ConditionalStringValue.getValue(item.icon)}
     isInFooterMode={isInFooterMode} />;
 }
 
 /** local function to combine items from Stage and from Plugins */
-function combineItems(stageItems: ReadonlyArray<CommonStatusBarItem>, pluginItems: ReadonlyArray<CommonStatusBarItem>) {
+function combineItems(stageItems: ReadonlyArray<CommonStatusBarItem>, addonItems: ReadonlyArray<CommonStatusBarItem>) {
   const items: CommonStatusBarItem[] = [];
   if (stageItems.length)
     items.push(...stageItems);
-  if (pluginItems.length)
-    items.push(...pluginItems);
+  if (addonItems.length)
+    items.push(...addonItems);
   return items;
 }
 
@@ -51,10 +74,7 @@ function combineItems(stageItems: ReadonlyArray<CommonStatusBarItem>, pluginItem
  * @beta
  */
 export interface StatusBarComposerProps {
-  /** StatusBar items manager containing status fields */
-  itemsManager: StatusBarItemsManager;
-  /** If specified is used to managed statusbar items provided from plugins */
-  pluginItemsManager?: StatusBarItemsManager;
+  items: CommonStatusBarItem[];
 }
 
 /** Component to load components into the [[StatusBar]].
@@ -62,11 +82,26 @@ export interface StatusBarComposerProps {
  */
 // tslint:disable-next-line: variable-name
 export const StatusBarComposer: React.FC<StatusBarComposerProps> = (props) => {
+  const [defaultItemsManager, setDefaultItemsManager] = React.useState(new StatusBarItemsManager(props.items));
+  const isInitialMount = React.useRef(true);
+  React.useEffect(() => {
+    if (isInitialMount.current)
+      isInitialMount.current = false;
+    else {
+      setDefaultItemsManager(new StatusBarItemsManager(props.items));
+    }
+  }, [props.items]);
+  const defaultItems = useDefaultStatusBarItems(defaultItemsManager);
+  const syncIdsOfInterest = React.useMemo(() => StatusBarItemsManager.getSyncIdsOfInterest(defaultItems), [defaultItems]);
+  useStatusBarItemSyncEffect(defaultItemsManager, syncIdsOfInterest);
+
   const statusBarContext = React.useContext(StatusBarContext);
-  const { itemsManager, pluginItemsManager } = props;
-  const stageItems = useStageStatusBarItems(itemsManager);
-  const pluginItems = usePluginStatusBarItems(pluginItemsManager);
-  const statusBarItems = React.useMemo(() => combineItems(stageItems, pluginItems), [stageItems, pluginItems]);
+  const [addonItemsManager] = React.useState(new StatusBarItemsManager());
+  const addonItems = useUiItemsProviderStatusBarItems(addonItemsManager);
+  const addonSyncIdsOfInterest = React.useMemo(() => StatusBarItemsManager.getSyncIdsOfInterest(addonItems), [addonItems]);
+  useStatusBarItemSyncEffect(addonItemsManager, addonSyncIdsOfInterest);
+
+  const statusBarItems = React.useMemo(() => combineItems(defaultItems, addonItems), [defaultItems, addonItems]);
 
   const getComponent = (item: CommonStatusBarItem): React.ReactNode => {
     if (isStatusBarItem(item)) {
@@ -85,7 +120,7 @@ export const StatusBarComposer: React.FC<StatusBarComposerProps> = (props) => {
 
   const getSectionItems = (section: StatusBarSection): React.ReactNode[] => {
     const sectionItems = statusBarItems
-      .filter((item) => item.section as number === section && item.isVisible)
+      .filter((item) => item.section as number === section && !ConditionalBooleanValue.getValue(item.isHidden))
       .sort((a, b) => a.itemPriority - b.itemPriority);
 
     return sectionItems.map((sectionItem) => (

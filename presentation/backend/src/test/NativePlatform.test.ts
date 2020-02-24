@@ -9,9 +9,9 @@ import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelHost, IModelDb, IModelJsNative } from "@bentley/imodeljs-backend";
 import { PresentationError, VariableValueTypes } from "@bentley/presentation-common";
+import { NativePlatformDefinition, createDefaultNativePlatform } from "../presentation-backend/NativePlatform";
+import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 import "./IModelHostSetup";
-import { NativePlatformDefinition, createDefaultNativePlatform } from "../NativePlatform";
-import { PresentationManagerMode } from "../PresentationManager";
 
 describe("default NativePlatform", () => {
 

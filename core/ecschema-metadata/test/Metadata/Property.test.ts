@@ -135,7 +135,7 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("TestProp");
       expect(testProp).to.exist;
-      await testProp.deserialize(propertyJson);
+      await testProp.fromJSON(propertyJson);
       expect(testProp.name).to.eql("TestProp");
       expect(testProp.label).to.eql("SomeDisplayLabel");
       expect(testProp.description).to.eql("A really long description...");
@@ -155,7 +155,7 @@ describe("Property", () => {
         type: "PrimitiveProperty",
         category: "TestSchema.NonExistentPropertyCategory",
       };
-      await testProp.deserialize(propertyJson);
+      await testProp.fromJSON(propertyJson);
       await expect(testProp.category).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
 
     });
@@ -167,11 +167,12 @@ describe("Property", () => {
         type: "PrimitiveProperty",
         kindOfQuantity: "TestSchema.NonExistentKindOfQuantity",
       };
-      await testProp.deserialize(propertyJson);
+      await testProp.fromJSON(propertyJson);
       await expect(testProp.kindOfQuantity).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
     });
   });
-  describe("toJson", () => {
+
+  describe("toJSON", () => {
     it("Simple serialization", async () => {
       const propertyJson = {
         name: "ValidProp",
@@ -182,8 +183,8 @@ describe("Property", () => {
         priority: 100,
       };
       const testProp = new MockProperty("ValidProp");
-      await testProp.deserialize(propertyJson);
-      const serialized = testProp.toJson();
+      await testProp.fromJSON(propertyJson);
+      const serialized = testProp.toJSON();
       expect(serialized).to.deep.equal({ ...propertyJson });
     });
 
@@ -193,8 +194,8 @@ describe("Property", () => {
         type: "PrimitiveProperty",
       };
       const testProp = new MockProperty("ValidProp");
-      await testProp.deserialize(propertyJson);
-      expect(testProp.toJson()).to.not.have.property("isReadOnly");
+      await testProp.fromJSON(propertyJson);
+      expect(testProp.toJSON()).to.not.have.property("isReadOnly");
     });
 
     it("should include false isReadOnly", async () => {
@@ -204,8 +205,8 @@ describe("Property", () => {
         isReadOnly: false,
       };
       const testProp = new MockProperty("ValidProp");
-      await testProp.deserialize(propertyJson);
-      expect(testProp.toJson()).to.include({ isReadOnly: false });
+      await testProp.fromJSON(propertyJson);
+      expect(testProp.toJSON()).to.include({ isReadOnly: false });
     });
 
     it("should omit undefined priority", async () => {
@@ -214,8 +215,8 @@ describe("Property", () => {
         type: "PrimitiveProperty",
       };
       const testProp = new MockProperty("ValidProp");
-      await testProp.deserialize(propertyJson);
-      expect(testProp.toJson()).to.not.have.property("priority");
+      await testProp.fromJSON(propertyJson);
+      expect(testProp.toJSON()).to.not.have.property("priority");
     });
 
     it("should include 0 priority", async () => {
@@ -225,8 +226,8 @@ describe("Property", () => {
         priority: 0,
       };
       const testProp = new MockProperty("ValidProp");
-      await testProp.deserialize(propertyJson);
-      expect(testProp.toJson()).to.include({ priority: 0 });
+      await testProp.fromJSON(propertyJson);
+      expect(testProp.toJSON()).to.include({ priority: 0 });
     });
 
     it("should include kindOfQuantity", async () => {
@@ -236,8 +237,8 @@ describe("Property", () => {
         kindOfQuantity: "TestSchema.TestKoQ",
       };
       const testProp = new MockProperty("ValidProp");
-      await testProp.deserialize(propertyJson);
-      expect(testProp.toJson()).to.include({ kindOfQuantity: "TestSchema.TestKoQ" });
+      await testProp.fromJSON(propertyJson);
+      expect(testProp.toJSON()).to.include({ kindOfQuantity: "TestSchema.TestKoQ" });
     });
 
     it("should include category", async () => {
@@ -247,8 +248,8 @@ describe("Property", () => {
         category: "TestSchema.TestCategory",
       };
       const testProp = new MockProperty("ValidProp");
-      await testProp.deserialize(propertyJson);
-      expect(testProp.toJson()).to.include({ category: "TestSchema.TestCategory" });
+      await testProp.fromJSON(propertyJson);
+      expect(testProp.toJSON()).to.include({ category: "TestSchema.TestCategory" });
     });
 
     it("should omit customAttributes if empty", async () => {
@@ -258,8 +259,8 @@ describe("Property", () => {
         customAttributes: [],
       };
       const testProp = new MockProperty("ValidProp");
-      await testProp.deserialize(propertyJson);
-      expect(testProp!.toJson()).to.not.have.property("customAttributes");
+      await testProp.fromJSON(propertyJson);
+      expect(testProp!.toJSON()).to.not.have.property("customAttributes");
     });
 
     it("Serialization with one custom attribute- only class name", async () => {
@@ -270,12 +271,12 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
-      await testProp.deserialize(propertyJson);
+      await testProp.fromJSON(propertyJson);
       testProp.addCustomAttribute({
         className: "CoreCustomAttributes.HiddenSchema",
       });
-      const serialized = testProp.toJson();
-      assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
+      const serialized = testProp.toJSON();
+      assert.strictEqual(serialized.customAttributes![0].className, "CoreCustomAttributes.HiddenSchema");
     });
     it("Serialization with one custom attribute- additional properties", () => {
       const propertyJson = {
@@ -285,14 +286,14 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
-      testProp.deserializeSync(propertyJson);
+      testProp.fromJSONSync(propertyJson);
       testProp.addCustomAttribute({
         className: "CoreCustomAttributes.HiddenSchema",
         ShowClasses: true,
       });
-      const serialized = testProp.toJson();
-      assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
-      assert.isTrue(serialized.customAttributes[0].ShowClasses);
+      const serialized = testProp.toJSON();
+      assert.strictEqual(serialized.customAttributes![0].className, "CoreCustomAttributes.HiddenSchema");
+      assert.isTrue(serialized.customAttributes![0].ShowClasses);
     });
     it("Serialization with multiple custom attributes- only class name", async () => {
       const propertyJson = {
@@ -302,14 +303,14 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
-      await testProp.deserialize(propertyJson);
+      await testProp.fromJSON(propertyJson);
       testProp.addCustomAttribute({ className: "CoreCustomAttributes.HiddenSchema" });
       testProp.addCustomAttribute({ className: "CoreAttributes.HiddenSchema" });
       testProp.addCustomAttribute({ className: "CoreCustom.HiddenSchema" });
-      const serialized = testProp.toJson();
-      assert.strictEqual(serialized.customAttributes[0].className, "CoreCustomAttributes.HiddenSchema");
-      assert.strictEqual(serialized.customAttributes[1].className, "CoreAttributes.HiddenSchema");
-      assert.strictEqual(serialized.customAttributes[2].className, "CoreCustom.HiddenSchema");
+      const serialized = testProp.toJSON();
+      assert.strictEqual(serialized.customAttributes![0].className, "CoreCustomAttributes.HiddenSchema");
+      assert.strictEqual(serialized.customAttributes![1].className, "CoreAttributes.HiddenSchema");
+      assert.strictEqual(serialized.customAttributes![2].className, "CoreCustom.HiddenSchema");
     });
     it("Serialization with multiple custom attributes- additional properties", async () => {
       const propertyJson = {
@@ -319,7 +320,7 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
-      await testProp.deserialize(propertyJson);
+      await testProp.fromJSON(propertyJson);
       testProp.addCustomAttribute({
         className: "CoreCustomAttributes.HiddenSchema",
         ShowClasses: true,
@@ -332,10 +333,10 @@ describe("Property", () => {
         className: "CoreCustom.HiddenSchema",
         IntegerValue: 5,
       });
-      const serialized = testProp.toJson();
-      assert.isTrue(serialized.customAttributes[0].ShowClasses);
-      assert.strictEqual(serialized.customAttributes[1].FloatValue, 1.2);
-      assert.strictEqual(serialized.customAttributes[2].IntegerValue, 5);
+      const serialized = testProp.toJSON();
+      assert.isTrue(serialized.customAttributes![0].ShowClasses);
+      assert.strictEqual(serialized.customAttributes![1].FloatValue, 1.2);
+      assert.strictEqual(serialized.customAttributes![2].IntegerValue, 5);
     });
   });
 
@@ -392,7 +393,7 @@ describe("Property", () => {
       };
 
       const testProp = new MockProperty("ValidProp");
-      await testProp.deserialize(propertyJson);
+      await testProp.fromJSON(propertyJson);
       const serialized = await testProp.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECProperty");
       expect(serialized.getAttribute("propertyName")).to.eql("ValidProp");
@@ -411,7 +412,7 @@ describe("Property", () => {
       assert.isDefined(refCAClass);
       await context.addSchema(refSchema);
       const testSchema = await Schema.fromJson(getSchemaJson(), new SchemaContext());
-      (testSchema as MutableSchema).addReference(refSchema);
+      await (testSchema as MutableSchema).addReference(refSchema);
       const entityClass = await testSchema.getItem<EntityClass>("testClass") as ECClass;
       const property = await entityClass.getProperty("TestProperty") as MutableProperty;
       property.addCustomAttribute({ className: "RefSchema.TestCustomAttribute" });
@@ -894,7 +895,7 @@ describe("PrimitiveProperty", () => {
         extendedTypeName: "SomeExtendedType",
       };
       expect(testProperty).to.exist;
-      await testProperty.deserialize(propertyJson);
+      await testProperty.fromJSON(propertyJson);
 
       expect(testProperty.minLength).to.eql(2);
       expect(testProperty.maxLength).to.eql(4);
@@ -910,7 +911,7 @@ describe("PrimitiveProperty", () => {
         typeName: "string",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.deserialize(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
     });
   });
 
@@ -936,14 +937,14 @@ describe("PrimitiveProperty", () => {
     };
 
     it("Should load KindOfQuantity synchronously", () => {
-      testProperty.deserializeSync(propertyJson);
+      testProperty.fromJSONSync(propertyJson);
       const koq = testProperty.getKindOfQuantitySync();
       assert(koq !== undefined);
       assert.strictEqual(koq!.name, "MyKindOfQuantity");
     });
 
     it("Should load KindOfQuantity", async () => {
-      await testProperty.deserialize(propertyJson);
+      await testProperty.fromJSON(propertyJson);
       const koq = await testProperty.kindOfQuantity;
       assert(koq !== undefined);
       assert.strictEqual(koq!.name, "MyKindOfQuantity");
@@ -972,20 +973,21 @@ describe("PrimitiveProperty", () => {
     };
 
     it("Should load PropertyCategory synchronously", () => {
-      testProperty.deserializeSync(propertyJson);
+      testProperty.fromJSONSync(propertyJson);
       const cat = testProperty.getCategorySync();
       assert(cat !== undefined);
       assert.strictEqual(cat!.name, "MyCategory");
     });
 
     it("Should load PropertyCategory", async () => {
-      await testProperty.deserialize(propertyJson);
+      await testProperty.fromJSON(propertyJson);
       const cat = await testProperty.category;
       assert(cat !== undefined);
       assert.strictEqual(cat!.name, "MyCategory");
     });
   });
-  describe("toJson", () => {
+
+  describe("toJSON", () => {
     let testProperty: PrimitiveProperty;
 
     beforeEach(() => {
@@ -1006,8 +1008,8 @@ describe("PrimitiveProperty", () => {
         extendedTypeName: "SomeExtendedType",
       };
       expect(testProperty).to.exist;
-      await testProperty.deserialize(propertyJson);
-      const testPropSerialization = testProperty.toJson();
+      await testProperty.fromJSON(propertyJson);
+      const testPropSerialization = testProperty.toJSON();
       expect(testPropSerialization.minLength).to.eql(2);
       expect(testPropSerialization.maxLength).to.eql(4);
       expect(testPropSerialization.minValue).to.eql(6);
@@ -1039,7 +1041,7 @@ describe("PrimitiveProperty", () => {
       };
 
       expect(testProperty).to.exist;
-      await testProperty.deserialize(propertyJson);
+      await testProperty.fromJSON(propertyJson);
       const serialized = await testProperty.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECProperty");
       expect(serialized.getAttribute("propertyName")).to.eql("TestProperty");
@@ -1072,7 +1074,7 @@ describe("EnumerationProperty", () => {
         typeName: "TestSchema.TestEnum",
       };
       expect(testProperty).to.exist;
-      await testProperty.deserialize(propertyJson);
+      await testProperty.fromJSON(propertyJson);
       expect(await testProperty.enumeration).to.eql(testEnum);
     });
 
@@ -1083,10 +1085,11 @@ describe("EnumerationProperty", () => {
         typeName: "ThisDoesNotMatch",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.deserialize(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
     });
   });
-  describe("toJson", () => {
+
+  describe("toJSON", () => {
     let testProperty: EnumerationProperty;
     let testEnum: Enumeration;
 
@@ -1104,11 +1107,12 @@ describe("EnumerationProperty", () => {
         typeName: "TestSchema.TestEnum",
       };
       expect(testProperty).to.exist;
-      await testProperty.deserialize(propertyJson);
-      const testPropSerialization = testProperty.toJson();
+      await testProperty.fromJSON(propertyJson);
+      const testPropSerialization = testProperty.toJSON();
       assert.strictEqual(testPropSerialization.typeName, "TestSchema.TestEnum");
     });
   });
+
   describe("toXml", () => {
     let testProperty: EnumerationProperty;
     const newDom = createEmptyXmlDocument();
@@ -1128,7 +1132,7 @@ describe("EnumerationProperty", () => {
       };
 
       expect(testProperty).to.exist;
-      await testProperty.deserialize(propertyJson);
+      await testProperty.fromJSON(propertyJson);
       const serialized = await testProperty.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECProperty");
       expect(serialized.getAttribute("propertyName")).to.eql("TestProperty");
@@ -1156,8 +1160,8 @@ describe("StructProperty", () => {
         typeName: "TestSchema.TestStruct",
       };
       expect(testProperty).to.exist;
-      await testProperty.deserialize(propertyJson);
-      expect(await testProperty.structClass).to.eql(testStruct);
+      await testProperty.fromJSON(propertyJson);
+      expect(testProperty.structClass).to.eql(testStruct);
     });
 
     it("should throw for mismatched typeName", async () => {
@@ -1167,10 +1171,11 @@ describe("StructProperty", () => {
         typeName: "ThisDoesNotMatch",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.deserialize(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
     });
   });
-  describe("toJson", () => {
+
+  describe("toJSON", () => {
     let testProperty: StructProperty;
     let testStruct: StructClass;
 
@@ -1188,8 +1193,8 @@ describe("StructProperty", () => {
         typeName: "TestSchema.TestStruct",
       };
       expect(testProperty).to.exist;
-      await testProperty.deserialize(propertyJson);
-      const testPropSerialization = testProperty.toJson();
+      await testProperty.fromJSON(propertyJson);
+      const testPropSerialization = testProperty.toJSON();
       assert.strictEqual(testPropSerialization.typeName, "TestSchema.TestStruct");
     });
   });
@@ -1213,7 +1218,7 @@ describe("StructProperty", () => {
         typeName: "TestSchema.TestStruct",
       };
       expect(testProperty).to.exist;
-      await testProperty.deserialize(propertyJson);
+      await testProperty.fromJSON(propertyJson);
       const serialized = await testProperty.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECStructProperty");
       expect(serialized.getAttribute("typeName")).to.eql("TestStruct");
@@ -1239,13 +1244,13 @@ describe("PrimitiveArrayProperty", () => {
         maxOccurs: 4,
       };
       expect(testProperty).to.exist;
-      await testProperty.deserialize(propertyJson);
+      await testProperty.fromJSON(propertyJson);
 
       expect(testProperty.minOccurs).to.eql(2);
       expect(testProperty.maxOccurs).to.eql(4);
     });
 
-    describe("toJson", () => {
+    describe("toJSON", () => {
       let testArrayProperty: PrimitiveArrayProperty;
 
       beforeEach(() => {
@@ -1262,8 +1267,8 @@ describe("PrimitiveArrayProperty", () => {
           maxOccurs: 4,
         };
         expect(testArrayProperty).to.exist;
-        await testArrayProperty.deserialize(propertyJson);
-        const testPropSerialization = testArrayProperty.toJson();
+        await testArrayProperty.fromJSON(propertyJson);
+        const testPropSerialization = testArrayProperty.toJSON();
         expect(testPropSerialization.minOccurs).to.eql(2);
         expect(testPropSerialization.maxOccurs).to.eql(4);
       });
@@ -1287,7 +1292,7 @@ describe("PrimitiveArrayProperty", () => {
           maxOccurs: 4,
         };
         expect(testArrayProperty).to.exist;
-        await testArrayProperty.deserialize(propertyJson);
+        await testArrayProperty.fromJSON(propertyJson);
         const serialized = await testArrayProperty.toXml(newDom);
         expect(serialized.nodeName).to.eql("ECArrayProperty");
         expect(serialized.getAttribute("minOccurs")).to.eql("2");
@@ -1318,7 +1323,7 @@ describe.skip("NavigationProperty (Deserialization not fully implemented)", () =
         direction: "Forward",
       };
       expect(testNavigationProperty).to.exist;
-      await testNavigationProperty.deserialize(propertyJson);
+      await testNavigationProperty.fromJSON(propertyJson);
       const serialized = await testNavigationProperty.toXml(newDom);
       expect(serialized.nodeName).to.eql("ECNavigationProperty");
       expect(serialized.getAttribute("relationshipName")).to.eql("TestRelationship");

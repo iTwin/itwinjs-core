@@ -14,6 +14,10 @@ describe("ElementTooltip", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("showTooltip & hideTooltip set isTooltipVisible appropriately", () => {
     const divElement = document.createElement("div");
     const wrapper = mount(<ElementTooltip />);

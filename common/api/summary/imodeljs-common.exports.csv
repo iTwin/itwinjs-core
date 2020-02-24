@@ -28,6 +28,8 @@ internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
 internal;BoundingSphere
 beta;BRepEntity
+public;BRepPrimitive
+internal;BriefcaseProps 
 public;CalloutProps 
 public;Camera 
 public;CameraProps
@@ -107,6 +109,7 @@ beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
 public;EnvironmentProps
+internal;Events
 public;ExternalSourceAspectProps 
 public;Feature
 internal;FeatureGates
@@ -141,18 +144,20 @@ public;GeometryClass
 public;GeometryParams
 public;GeometryPartInstanceProps
 public;GeometryPartProps 
+public;GeometryPrimitive
 public;GeometryStreamBuilder
 public;GeometryStreamEntryProps 
 public;GeometryStreamFlags
 public;GeometryStreamHeaderProps
 public;GeometryStreamIterator 
 public;GeometryStreamIteratorEntry
-public;GeometryStreamIteratorEntry
+public;GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive
 public;GeometryStreamProps = GeometryStreamEntryProps[]
 alpha;GeometrySummaryOptions
 alpha;GeometrySummaryRequestProps
 alpha;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+public;GlobeMode
 internal;GltfBufferData
 internal;GltfBufferView
 internal;enum GltfConstants
@@ -185,6 +190,7 @@ beta;ImageGraphicCorners
 beta;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
 beta;ImageGraphicProps
 internal;ImageLight
+public;ImagePrimitive
 public;ImageSource
 public;ImageSourceFormat
 internal;enum ImdlFlags
@@ -206,6 +212,7 @@ alpha;class IModelWriteRpcInterface
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
+internal;InternetConnectivityStatus
 internal;interop: any
 beta;Interpolation:
 beta;InterpolationFunction = (v: any, k: number) => number
@@ -274,8 +281,10 @@ internal;OpenAPIResponse
 internal;OpenAPIResponses
 internal;OpenAPISchema
 internal;OPERATION: unique symbol
+internal;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
+public;PartReference
 public;Placement2d 
 public;Placement2dProps
 public;Placement3d 
@@ -399,6 +408,7 @@ beta;SpatialClassificationProps
 public;SpatialViewDefinitionProps 
 internal;Spot 
 internal;SpotProps 
+internal;StorageValue = string | number | boolean | null | Uint8Array
 public;SubCategoryAppearance
 public;SubCategoryAppearance
 public;SubCategoryOverride
@@ -410,6 +420,7 @@ alpha;TerrainProviderName = "CesiumWorldTerrain"
 alpha;TerrainSettings
 internal;TestRpcManager
 public;TextString
+public;TextStringPrimitive
 public;TextStringProps
 beta;TextureFlags
 beta;TextureMapping

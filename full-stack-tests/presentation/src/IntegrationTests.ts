@@ -13,7 +13,7 @@ import { LoggingNamespaces, RequestPriority } from "@bentley/presentation-common
 import { PresentationProps as PresentationBackendProps } from "@bentley/presentation-backend";
 import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { NoRenderApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
-import { initializeAsync as initializeTesting, terminate as terminateTesting, PresentationTestingInitProps } from "@bentley/presentation-testing";
+import { initialize as initializeTesting, terminate as terminateTesting, PresentationTestingInitProps } from "@bentley/presentation-testing";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 
 IModelJsConfig.init(true);

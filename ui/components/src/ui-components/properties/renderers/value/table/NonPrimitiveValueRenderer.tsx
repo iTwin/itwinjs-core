@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Orientation, UnderlinedButton } from "@bentley/ui-core";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyDialogState } from "../../../ValueRendererManager";
 
 import "./NonPrimitiveValueRenderer.scss";

@@ -9,7 +9,6 @@ import { render, fireEvent, act, wait } from "@testing-library/react";
 import { TreeNodeEditor } from "../../../../ui-components/tree/controlled/component/TreeNodeEditor";
 import { MutableTreeModelNode } from "../../../../ui-components/tree/controlled/TreeModel";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
-import TestUtils from "../../../TestUtils";
 
 describe("TreeNodeEditor", () => {
   let testNode: MutableTreeModelNode;
@@ -61,8 +60,6 @@ describe("TreeNodeEditor", () => {
   });
 
   it("renders editor with label PropertyRecord", () => {
-    testNode.item.labelDefinition = TestUtils.createPrimitiveStringProperty("node_label", "Test Value");
-
     const { getByTestId } = render(
       <TreeNodeEditor
         node={testNode}

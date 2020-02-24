@@ -1,43 +1,48 @@
 sep=;
 Release Tag;API Item
 public;CacheInvalidationProps
+public;CacheInvalidationProps
 internal;ContentBuilder
 public;ContentDataProvider 
-beta;controlledTreeWithFilteringSupport
+public;ContentDataProviderProps
+beta;ControlledTreeFilteringProps
 beta;ControlledTreeWithFilteringSupportProps
-beta;controlledTreeWithUnifiedSelection
-beta;ControlledTreeWithUnifiedSelectionProps
-beta;controlledTreeWithVisibleNodes
 beta;ControlledTreeWithVisibleNodesProps 
 public;DataProvidersFactory
 public;DataProvidersFactoryProps
+beta;DEPRECATED_controlledTreeWithFilteringSupport
+beta;DEPRECATED_controlledTreeWithVisibleNodes
+public;DEPRECATED_treeWithFilteringSupport
+public;DEPRECATED_treeWithUnifiedSelection
 beta;FavoritePropertiesDataProvider 
 beta;FavoritePropertiesDataProviderProps
 public;IContentDataProvider 
-public;IPresentationDataProvider
+public;IPresentationDataProvider 
 public;IPresentationLabelsProvider
 public;IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider
 public;IPresentationTableDataProvider = TableDataProvider & IContentDataProvider &
 public;IPresentationTreeDataProvider 
-public;IUnifiedSelectionComponent 
-public;LabelsProvider 
-beta;PresentationNodeLoaderProps
+public;IUnifiedSelectionComponent
+public;PresentationLabelsProvider 
+public;PresentationLabelsProviderProps
 public;PresentationPropertyDataProvider 
+public;PresentationPropertyDataProviderProps
 public;PresentationTableDataProvider 
 public;PresentationTableDataProviderProps
 public;PresentationTreeDataProvider 
+public;PresentationTreeDataProviderProps
+beta;PresentationTreeNodeLoaderProps
 public;propertyGridWithUnifiedSelection
 public;PropertyGridWithUnifiedSelectionProps
 public;tableWithUnifiedSelection
 public;TableWithUnifiedSelectionProps
-public;treeWithFilteringSupport
 public;TreeWithFilteringSupportProps
-public;treeWithUnifiedSelection
 public;TreeWithUnifiedSelectionProps
 beta;UnifiedSelectionTreeEventHandler 
-beta;useControlledTreeFiltering(nodeLoader: AbstractTreeNodeLoaderWithProvider
-beta;useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents
-beta;usePresentationNodeLoader(props: PresentationNodeLoaderProps): import("@bentley/ui-components").PagedTreeNodeLoader
-alpha;useRulesetRegistration(ruleset: Ruleset): void
+beta;UnifiedSelectionTreeEventHandlerParams
+beta;useControlledTreeFiltering(props: ControlledTreeFilteringProps):
+beta;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PagedTreeNodeLoader
+public;useRulesetRegistration(ruleset: Ruleset): void
+beta;useUnifiedSelectionTreeEventHandler(props: UnifiedSelectionTreeEventHandlerParams): UnifiedSelectionTreeEventHandler
 public;viewWithUnifiedSelection
 public;ViewWithUnifiedSelectionProps

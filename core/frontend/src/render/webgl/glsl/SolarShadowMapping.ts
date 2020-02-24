@@ -10,6 +10,7 @@ import { VariableType, ProgramBuilder, FragmentShaderBuilder, FragmentShaderComp
 import { TextureUnit } from "../RenderFlags";
 import { addInstancedRtcMatrix } from "./Vertex";
 import { RenderType, System } from "../System";
+import { addEyeSpace, addFrustum } from "./Common";
 
 const computeShadowPos = `
   vec4 shadowProj = u_shadowProj * rawPosition;
@@ -74,6 +75,14 @@ const applySolarShadowMap = `
   return vec4(baseColor.rgb * mix(u_shadowParams.rgb, vec3(1.0), visible), baseColor.a);
   `;
 
+const applySolarShadowMapTerrain = `
+  if (v_shadowPos.x < 0.0 || v_shadowPos.x > 1.0 || v_shadowPos.y < 0.0 || v_shadowPos.y > 1.0 || v_shadowPos.z < 0.0 || v_shadowPos.z > 1.0)
+    return baseColor;
+  vec3 toEye = mix(vec3(0.0, 0.0, -1.0), normalize(v_eyeSpace), float(kFrustumType_Perspective == u_frustum.z));
+  float visible = shadowMapEVSM(v_shadowPos);
+  return vec4(baseColor.rgb * mix(u_shadowParams.rgb, vec3(1.0), visible), baseColor.a);
+  `;
+
 /** @internal */
 export function addEvsmExponent(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_evsmExponent", VariableType.Float, (prog) => {
@@ -84,7 +93,7 @@ export function addEvsmExponent(frag: FragmentShaderBuilder): void {
 }
 
 /** @internal */
-export function addSolarShadowMap(builder: ProgramBuilder) {
+export function addSolarShadowMap(builder: ProgramBuilder, toTerrain = false) {
   const frag = builder.frag;
   const vert = builder.vert;
 
@@ -102,11 +111,16 @@ export function addSolarShadowMap(builder: ProgramBuilder) {
     });
   });
 
-  frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {
-    prog.addGraphicUniform("u_sunDir", (uniform, params) => {
-      params.target.uniforms.shadow.bindSunDirection(uniform);
+  if (!toTerrain) {
+    frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {
+      prog.addGraphicUniform("u_sunDir", (uniform, params) => {
+        params.target.uniforms.shadow.bindSunDirection(uniform);
+      });
     });
-  });
+  } else {
+    addEyeSpace(builder);
+    addFrustum(builder);
+  }
 
   vert.addUniform("u_shadowProj", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_shadowProj", (uniform, params) => {
@@ -128,5 +142,5 @@ export function addSolarShadowMap(builder: ProgramBuilder) {
   frag.addFunction(warpDepth);
   frag.addFunction(chebyshevUpperBound);
   frag.addFunction(shadowMapEVSM);
-  frag.set(FragmentShaderComponent.ApplySolarShadowMap, applySolarShadowMap);
+  frag.set(FragmentShaderComponent.ApplySolarShadowMap, toTerrain ? applySolarShadowMapTerrain : applySolarShadowMap);
 }

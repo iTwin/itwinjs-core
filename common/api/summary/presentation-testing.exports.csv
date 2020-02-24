@@ -1,12 +1,13 @@
 sep=;
 Release Tag;API Item
 public;ContentBuilder
+public;ContentBuilderProps
 public;ContentBuilderResult
 public;HierarchyBuilder
+public;HierarchyBuilderProps
 public;HierarchyNode 
 public;IContentBuilderDataProvider
-public;initialize: (backendProps?: PresentationManagerProps | undefined, frontendProps?: PresentationManagerProps_2 | undefined, frontendApp?:
-public;initializeAsync: (props?: PresentationTestingInitProps | undefined) => Promise
+public;initialize: (props?: PresentationTestingInitProps | undefined) => Promise
 public;MappedNode
 public;NodeMappingFunc = (node: TreeNodeItem) => MappedNode
 public;PresentationTestingInitProps

@@ -7,6 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { render, cleanup } from "@testing-library/react";
 import ReactTestUtils from "react-dom/test-utils";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { Breadcrumb } from "../../../ui-components";
 import { withBreadcrumbDragDrop } from "../../../ui-components/breadcrumb/hoc/withDragDrop";
 import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
@@ -18,7 +19,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
   const DragDropBreadcrumb = withBreadcrumbDragDrop(Breadcrumb); // tslint:disable-line:variable-name
 
   it("should render", () => {
-    const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
+    const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];
     render(<DragDropBreadcrumb dataProvider={tree} />);
   });
   it("should render with drag/drop props", () => {
@@ -33,7 +34,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
       canDropTargetDrop: () => true,
       objectTypes: ["test"],
     };
-    const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
+    const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];
     render(<DragDropBreadcrumb dataProvider={tree} dragProps={dragProps} dropProps={dropProps} />);
   });
   it("should render with drag/drop props with initialCurrent set", () => {
@@ -48,7 +49,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
       canDropTargetDrop: () => true,
       objectTypes: ["test"],
     };
-    const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
+    const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];
     render(<DragDropBreadcrumb dataProvider={tree} dragProps={dragProps} dropProps={dropProps} initialCurrent={tree[0]} />);
   });
   describe("Drag callbacks", () => {
@@ -62,7 +63,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
     });
     it("should forward extendedData from tree node into DragDrop dataObject", () => {
       const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => args);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumb dataProvider={tree} dragProps={{ onDragSourceBegin, objectType: "test" }} />) as any;
       const callbacks = root.createNodeDragProps(tree[0]) as DragSourceProps;
       const ret = callbacks.onDragSourceBegin!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
@@ -70,7 +71,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
       expect(ret.dataObject).to.contain({ testData: true });
     });
     it("should forward extendedData from tree node without onDragSourceBegin input callback", () => {
-      const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumb dataProvider={tree} dragProps={{ objectType: "test" }} />) as any;
       const callbacks = root.createNodeDragProps(tree[0]) as DragSourceProps;
       const ret = callbacks.onDragSourceBegin!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
@@ -81,7 +82,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
         args.dataObject = { test: true };
         return args;
       };
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumb dataProvider={tree} dragProps={{ onDragSourceBegin, objectType: "test" }} />) as any;
       const callbacks = root.createNodeDragProps(tree[0]) as DragSourceProps;
       const ret = callbacks.onDragSourceBegin!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
@@ -90,7 +91,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
     it("should set parentObject to dataProvider when on root node", () => {
       const onDragSourceBegin = sinon.spy((args: DragSourceArguments) => args);
       const onDragSourceEnd = sinon.spy();
-      const tree = [{ label: "Raw Node", id: "1", description: "node description" }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description" }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumb dataProvider={tree} dragProps={{ onDragSourceBegin, onDragSourceEnd, objectType: "test" }} />) as any;
       const callbacks = root.createNodeDragProps(tree[0]) as DragSourceProps;
       const ret = callbacks.onDragSourceBegin!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
@@ -107,7 +108,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
     });
     it("should pass data through for functional objectType", () => {
       const objectType = sinon.spy((data: { testType: string } | any) => data.testType);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testType: "function-test" } }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testType: "function-test" } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumb dataProvider={tree} dragProps={{ objectType }} />) as any;
       const callbacks = root.createNodeDragProps(tree[0]) as DragSourceProps;
       const ret = (callbacks.objectType as any)();
@@ -123,7 +124,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumb dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createNodeDropProps() as DropTargetProps;
       callbacks.onDropTargetDrop!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
@@ -139,7 +140,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
       const onDropTargetDrop = sinon.spy();
       const onDropTargetOver = sinon.spy();
       const canDropTargetDrop = sinon.spy((_args: DropTargetArguments) => true);
-      const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumb dataProvider={tree} dropProps={{ onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes: ["test"] }} />) as any;
       const callbacks = root.createNodeDropProps(tree[0]) as DropTargetProps;
       callbacks.onDropTargetDrop!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });
@@ -152,7 +153,7 @@ describe("Breadcrumb withDragDrop HOC", () => {
       expect(canDropTargetDrop).to.be.calledWithMatch({ dropLocation: tree[0] });
     });
     it("should add dropLocation as item to dropProps callback returns without input callback", () => {
-      const tree = [{ label: "Raw Node", id: "1", description: "node description", extendedData: { testData: true } }];
+      const tree = [{ label: PropertyRecord.fromString("Raw Node"), id: "1", description: "node description", extendedData: { testData: true } }];
       const root = ReactTestUtils.renderIntoDocument(<DragDropBreadcrumb dataProvider={tree} dropProps={{ objectTypes: ["test"] }} />) as any;
       const callbacks = root.createNodeDropProps(tree[0]) as DropTargetProps;
       const ret1 = callbacks.onDropTargetDrop!({ dataObject: undefined, dropEffect: DropEffects.Move, dropStatus: DropStatus.None, clientOffset: { x: 0, y: 0 }, initialClientOffset: { x: 0, y: 0 } });

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-testing",
+      "comment": "Remove deprecated initialize",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-testing",
+  "email": "Saulius.Skliutas@bentley.com"
+}

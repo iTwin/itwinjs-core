@@ -23,8 +23,8 @@ export class CopyExternalsPlugin {
   }
 
   public apply(compiler: Compiler) {
-    compiler.hooks.compilation.tap("CopyExternalsPlugin", (compilation) => {
-      compilation.hooks.buildModule.tap("CopyExternalsPlugin", (currentModule) => {
+    compiler.hooks.compilation.tap("CopyExternalsPlugin", (compilation: any) => {
+      compilation.hooks.buildModule.tap("CopyExternalsPlugin", (currentModule: any) => {
         if ((currentModule as any).external) {
           this._promises.push(this.handleModule(currentModule, compiler.outputPath));
         }

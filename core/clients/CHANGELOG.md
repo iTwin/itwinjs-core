@@ -1,6 +1,18 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Extended ECJsonTypeMap to support relationship properties e.g. direction.
+- iModel write API development
+- Fix broken links
+- Added support for backward slashes in erroneous URLs of Reality Data in PW Context Share
+- Fixes to integration tests. 
+- Better documentation of OidcDesktopClient/IOidcFrontendClient
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

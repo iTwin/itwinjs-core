@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { PropertyValue, PropertyRecord, PropertyDescription } from "@bentley/imodeljs-frontend";
+import { PropertyValue, PropertyRecord, PropertyDescription } from "@bentley/ui-abstract";
 import { AsyncValueProcessingResult } from "../converters/TypeConverter";
 import { TextEditor } from "./TextEditor";
 

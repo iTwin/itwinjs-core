@@ -11,7 +11,7 @@ import classnames from "classnames";
 import {
   PropertyValueFormat, PrimitiveValue, PropertyValue, EnumerationChoice,
   PropertyEditorParamTypes, IconDefinition, PropertyEditorParams, ButtonGroupEditorParams, PropertyRecord,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import "./EnumButtonGroupEditor.scss";

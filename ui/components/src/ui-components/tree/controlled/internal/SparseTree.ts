@@ -116,7 +116,7 @@ export class SparseTree<T extends Node> {
  * The main advantage of this class over the standard javascript array is that
  * this class does not need to check each index when iterating values that are
  * stored in the array.
- * @beta
+ * @public
  */
 export class SparseArray<T> implements Iterable<T | undefined> {
   public static [immerable] = true;

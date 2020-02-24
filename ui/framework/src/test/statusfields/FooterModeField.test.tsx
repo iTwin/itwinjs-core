@@ -6,18 +6,19 @@ import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
 
+import { WidgetState } from "@bentley/ui-abstract";
+import { FooterSeparator } from "@bentley/ui-ninezone";
+
 import TestUtils from "../TestUtils";
 import {
   StatusBar,
   StatusBarWidgetControl,
-  WidgetState,
   ConfigurableCreateInfo,
   ConfigurableUiControlType,
   WidgetDef,
   StatusBarWidgetControlArgs,
   FooterModeField,
 } from "../../ui-framework";
-import { FooterSeparator } from "@bentley/ui-ninezone";
 
 describe("FooterModeField", () => {
 

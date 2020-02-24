@@ -7,10 +7,10 @@ import { initialize, terminate } from "../IntegrationTests";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { using } from "@bentley/bentleyjs-core";
 import { Ruleset } from "@bentley/presentation-common";
-import { RulesetManagerImpl } from "@bentley/presentation-backend/lib/RulesetManager";
-import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/NativePlatform";
-import { tweakRuleset } from "./Helpers";
 import { PresentationManagerMode } from "@bentley/presentation-backend";
+import { RulesetManagerImpl } from "@bentley/presentation-backend/lib/presentation-backend/RulesetManager";
+import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
+import { tweakRuleset } from "./Helpers";
 
 describe("Rulesets roundtrip", () => {
 

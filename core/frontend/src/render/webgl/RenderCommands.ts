@@ -408,7 +408,7 @@ export class RenderCommands {
         if (0 < cmds.length && cmds[cmds.length - 1] === push)
           cmds.pop();
         else
-        cmds.push(pop);
+          cmds.push(pop);
       }
     } else {
       assert(0 < this._commands[this._forcedRenderPass].length);
@@ -583,6 +583,13 @@ export class RenderCommands {
         const mg = ga.graphics[0] as MeshGraphic;
         if (SurfaceType.VolumeClassifier === mg.surfaceType)
           pass = RenderPass.HiliteClassification;
+      } else if (ga.graphics[0] instanceof Branch) {
+        const b = ga.graphics[0] as Branch;
+        if (b.branch.entries.length > 0 && b.branch.entries[0] instanceof MeshGraphic) {
+          const mg = b.branch.entries[0] as MeshGraphic;
+          if (SurfaceType.VolumeClassifier === mg.surfaceType)
+            pass = RenderPass.HiliteClassification;
+        }
       }
     }
     return pass;

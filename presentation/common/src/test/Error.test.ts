@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PresentationError, PresentationStatus } from "../Error";
+import { PresentationError, PresentationStatus } from "../presentation-common";
 
 describe("PresentationError", () => {
 

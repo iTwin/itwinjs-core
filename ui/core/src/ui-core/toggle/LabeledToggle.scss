@@ -10,11 +10,11 @@
   box-sizing:   border-box;
   align-items:  center;
 
-  >.label {
+  >.uicore-label {
     padding-left: .5em;
     font-size:    $uicore-font-size;
   }
 
-  &.disabled > .label {   color: $buic-text-color-disabled; }
+  &.uicore-disabled > .uicore-label {   color: $buic-text-color-disabled; }
 
 }

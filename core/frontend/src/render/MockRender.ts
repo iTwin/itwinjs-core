@@ -16,10 +16,8 @@ import {
 } from "./RenderGraphic";
 import { Pixel } from "./Pixel";
 import { RenderTarget } from "./RenderTarget";
-import {
-  RenderMemory,
-  RenderSystem,
-} from "./RenderSystem";
+import { RenderMemory } from "./RenderMemory";
+import { RenderSystem } from "./RenderSystem";
 import { RenderPlan } from "./RenderPlan";
 import { GraphicType } from "./GraphicBuilder";
 import { IModelApp, IModelAppOptions } from "../IModelApp";

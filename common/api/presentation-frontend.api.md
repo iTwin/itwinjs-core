@@ -26,7 +26,6 @@ import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
-import { PersistentKeysContainer } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RpcRequestsHandler } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
@@ -34,29 +33,59 @@ import { RulesetVariable } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 
-// @internal
-export interface FavoriteProperties {
-    baseFieldInfos: Set<string>;
-    nestedContentInfos: Set<string>;
-    propertyInfos: Set<string>;
-}
+// @internal (undocumented)
+export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
 
 // @beta
 export class FavoritePropertiesManager {
     constructor(props?: FavoritePropertiesManagerProps);
+    // @deprecated
     add(field: Field, projectId?: string, imodelId?: string): Promise<void>;
+    add(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
+    changeFieldPriority(imodel: IModelConnection, field: Field, afterField: Field | undefined, visibleFields: Field[]): Promise<void>;
+    // @deprecated
     clear(projectId?: string, imodelId?: string): Promise<void>;
+    clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
+    // @deprecated
     has(field: Field, projectId?: string, imodelId?: string): boolean;
-    // @internal
-    initializeConnection: (imodelConnection: IModelConnection) => Promise<void>;
+    has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean;
+    initializeConnection: (imodel: IModelConnection) => Promise<void>;
     onFavoritesChanged: BeEvent<() => void>;
+    // @deprecated
     remove(field: Field, projectId?: string, imodelId?: string): Promise<void>;
+    remove(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
+    sortFields: (imodel: IModelConnection, fields: Field[]) => Field[];
     }
+
+// @internal
+export interface FavoritePropertiesOrderInfo {
+    // (undocumented)
+    name: PropertyFullName;
+    // (undocumented)
+    orderedTimestamp: Date;
+    // (undocumented)
+    parentClassName: string | undefined;
+    // (undocumented)
+    priority: number;
+}
+
+// @beta
+export enum FavoritePropertiesScope {
+    // (undocumented)
+    Global = 0,
+    // (undocumented)
+    IModel = 2,
+    // (undocumented)
+    Project = 1
+}
+
+// @internal (undocumented)
+export const getFieldInfos: (field: Field) => Set<string>;
 
 // @public
 export function getScopeId(scope: SelectionScope | string | undefined): string;
 
-// @alpha
+// @public
 export interface HiliteSet {
     // (undocumented)
     elements?: Id64String[];
@@ -66,36 +95,42 @@ export interface HiliteSet {
     subCategories?: Id64String[];
 }
 
-// @alpha
+// @public
 export class HiliteSetProvider {
-    static create(imodel: IModelConnection): HiliteSetProvider;
+    static create(props: HiliteSetProviderProps): HiliteSetProvider;
     getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet>;
     }
 
+// @public
+export interface HiliteSetProviderProps {
+    // (undocumented)
+    imodel: IModelConnection;
+}
+
 // @internal
 export interface IFavoritePropertiesStorage {
-    loadProperties(projectId?: string, imodelId?: string): Promise<FavoriteProperties | undefined>;
-    saveProperties(properties: FavoriteProperties, projectId?: string, imodelId?: string): Promise<void>;
+    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
+    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
 }
 
 // @internal (undocumented)
 export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
     // (undocumented)
-    loadProperties(projectId?: string, imodelId?: string): Promise<FavoriteProperties | undefined>;
+    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
     // (undocumented)
-    saveProperties(properties: FavoriteProperties, projectId?: string, imodelId?: string): Promise<void>;
+    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
+    // (undocumented)
+    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
+    // (undocumented)
+    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
 }
 
 // @public
 export interface ISelectionProvider {
     getSelection(imodel: IModelConnection, level: number): Readonly<KeySet>;
     selectionChange: SelectionChangeEvent;
-}
-
-// @beta
-export class PersistenceHelper {
-    static createKeySet(imodel: IModelConnection, container: PersistentKeysContainer): Promise<KeySet>;
-    static createPersistentKeysContainer(imodel: IModelConnection, keyset: KeySet): Promise<PersistentKeysContainer>;
 }
 
 // @public
@@ -105,9 +140,11 @@ export class Presentation {
     static set favoriteProperties(value: FavoritePropertiesManager);
     static get i18n(): I18N;
     static set i18n(value: I18N);
-    static initialize(props?: PresentationManagerProps): void;
+    static initialize(props?: PresentationManagerProps): Promise<void>;
     static get presentation(): PresentationManager;
     static set presentation(value: PresentationManager);
+    // @internal
+    static registerInitializationHandler(handler: () => Promise<() => void>): void;
     static get selection(): SelectionManager;
     static set selection(value: SelectionManager);
     static terminate(): void;
@@ -121,17 +158,13 @@ export class PresentationManager implements IDisposable {
     dispose(): void;
     getContent(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<Content | undefined>;
     getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{
-        content: Content | undefined;
+        content: Content;
         size: number;
-    }>;
+    } | undefined>;
     getContentDescriptor(requestOptions: ContentRequestOptions<IModelConnection>, displayType: string, keys: KeySet, selection: SelectionInfo | undefined): Promise<Descriptor | undefined>;
     getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
-    // @deprecated
-    getDisplayLabel(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<string>;
     getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition>;
-    // @deprecated
-    getDisplayLabels(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<string[]>;
-    getDisplayLabelsDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]>;
+    getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]>;
     getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Descriptor, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
     getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]>;
@@ -141,7 +174,7 @@ export class PresentationManager implements IDisposable {
         count: number;
     }>;
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey?: NodeKey): Promise<number>;
-    // @beta
+    // @alpha
     loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @internal
     onNewiModelConnection(_: IModelConnection): Promise<void>;
@@ -158,6 +191,9 @@ export interface PresentationManagerProps {
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
 }
+
+// @internal
+export type PropertyFullName = string;
 
 // @public
 export interface RulesetManager {
@@ -213,7 +249,7 @@ export enum SelectionChangeType {
 
 // @public
 export class SelectionHandler implements IDisposable {
-    constructor(manager: SelectionManager, name: string, imodel: IModelConnection, rulesetId?: string, onSelect?: SelectionChangesListener);
+    constructor(props: SelectionHandlerProps);
     addToSelection(keys: Keys, level?: number): void;
     clearSelection(level?: number): void;
     dispose(): void;
@@ -230,6 +266,15 @@ export class SelectionHandler implements IDisposable {
     protected shouldHandle(evt: SelectionChangeEventArgs): boolean;
 }
 
+// @public
+export interface SelectionHandlerProps {
+    imodel: IModelConnection;
+    manager: SelectionManager;
+    name: string;
+    onSelect?: SelectionChangesListener;
+    rulesetId?: string;
+}
+
 // @internal (undocumented)
 export class SelectionHelper {
     static getKeysForSelection(keys: Readonly<Keys>): Key[];
@@ -241,7 +286,6 @@ export class SelectionManager implements ISelectionProvider {
     addToSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     clearSelection(source: string, imodel: IModelConnection, level?: number, rulesetId?: string): void;
-    // @alpha
     getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
     getSelectionLevels(imodel: IModelConnection): number[];

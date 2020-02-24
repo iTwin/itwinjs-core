@@ -16,14 +16,19 @@
  * to circular dependencies.
  */
 
+export * from "./MapCartoRectangle";
+export * from "./QuadId";
 export * from "./Tile";
+export * from "./RealityTile";
 export * from "./TileParams";
 export * from "./TileContent";
 export * from "./TileDrawArgs";
+export * from "./WebMapDrawArgs";
 export * from "./GraphicsCollector";
 export * from "./BatchedTileIdMap";
 export * from "./TileTreeParams";
 export * from "./TileTree";
+export * from "./RealityTileTree";
 export * from "./TileLoader";
 export * from "./TileTreeSupplier";
 export * from "./TileTreeOwner";

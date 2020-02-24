@@ -114,6 +114,11 @@ export class EcefLocation implements EcefLocationProps {
 
     return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)! });
   }
+  /** Get the location center of the earth in the iModel coordinate system. */
+  public get earthCenter(): Point3d {
+    const matrix = this.orientation.toMatrix3d();
+    return Point3d.createFrom(matrix.multiplyTransposeXYZ(-this.origin.x, -this.origin.y, -this.origin.z));
+  }
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).

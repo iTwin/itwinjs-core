@@ -14,7 +14,7 @@ import { Orientation } from "@bentley/ui-core";
 import { PropertyCategoryBlock } from "../../../ui-components";
 import { PropertyGrid, PropertyGridCategory } from "../../../ui-components/propertygrid/component/PropertyGrid";
 import { IPropertyDataProvider, PropertyDataChangeEvent, PropertyCategory, PropertyData } from "../../../ui-components/propertygrid/PropertyDataProvider";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 
@@ -35,7 +35,7 @@ describe("PropertyGrid", () => {
     dataProvider = {
       onDataChanged: evt,
       getData: async (): Promise<PropertyData> => ({
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         description: faker.random.words(),
         categories,
         records: {
@@ -93,7 +93,7 @@ describe("PropertyGrid", () => {
         matcher: testMatcher,
       };
       dataProvider.getData = async (): Promise<PropertyData> => ({
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         description: faker.random.words(),
         categories: [...categories],
         records: {
@@ -131,7 +131,7 @@ describe("PropertyGrid", () => {
       };
 
       dataProvider.getData = async (): Promise<PropertyData> => ({
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         description: faker.random.words(),
         categories: [...categories],
         records: {
@@ -170,7 +170,7 @@ describe("PropertyGrid", () => {
       };
 
       dataProvider.getData = async (): Promise<PropertyData> => ({
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         description: faker.random.words(),
         categories: [...categories],
         records: {
@@ -214,7 +214,7 @@ describe("PropertyGrid", () => {
           matcher: testMatcher,
         };
         dataProvider.getData = async (): Promise<PropertyData> => ({
-          label: faker.random.word(),
+          label: PropertyRecord.fromString(faker.random.word()),
           description: faker.random.words(),
           categories: [...categories],
           records: {
@@ -349,7 +349,7 @@ describe("PropertyGrid", () => {
       const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
       dataProvider.getData = async (): Promise<PropertyData> => ({
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         description: faker.random.words(),
         categories: [...categories, { name: "Group_3", label: "Group 3", expand: false }],
         records: {
@@ -369,7 +369,7 @@ describe("PropertyGrid", () => {
 
     it("doesn't rerender on intermediate data changes", async () => {
       const data: PropertyData = {
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         categories: [{ label: faker.random.word(), name: "test", expand: true }],
         records: {
           test: [
@@ -767,12 +767,12 @@ describe("PropertyGrid", () => {
   it("handles onDataChanged event subscriptions when mounting, changing props and unmounting", () => {
     const evt1 = new PropertyDataChangeEvent();
     const providerMock1 = moq.Mock.ofType<IPropertyDataProvider>();
-    providerMock1.setup(async (x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
+    providerMock1.setup(async (x) => x.getData()).returns(async () => ({ label: PropertyRecord.fromString(""), categories: [], records: {} }));
     providerMock1.setup((x) => x.onDataChanged).returns(() => evt1);
 
     const evt2 = new PropertyDataChangeEvent();
     const providerMock2 = moq.Mock.ofType<IPropertyDataProvider>();
-    providerMock2.setup(async (x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
+    providerMock2.setup(async (x) => x.getData()).returns(async () => ({ label: PropertyRecord.fromString(""), categories: [], records: {} }));
     providerMock2.setup((x) => x.onDataChanged).returns(() => evt2);
 
     const pane = shallow(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={providerMock1.object} />);

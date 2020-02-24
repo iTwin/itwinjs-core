@@ -11,12 +11,13 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { IModelConnection, PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { PropertyData } from "@bentley/ui-components";
-import { KeySet } from "@bentley/presentation-common";
+import { KeySet, Ruleset } from "@bentley/presentation-common";
 import { FavoritePropertiesManager, Presentation, PresentationManager, RulesetManager, SelectionManager, SelectionScopesManager } from "@bentley/presentation-frontend";
-import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../favorite-properties/DataProvider";
-import { PresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
+import { FavoritePropertiesDataProvider, getFavoritesCategory } from "../../presentation-components/favorite-properties/DataProvider";
+import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 
 describe("FavoritePropertiesDataProvider", () => {
 
@@ -28,7 +29,7 @@ describe("FavoritePropertiesDataProvider", () => {
   const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
   const presentationPropertyDataProviderMock = moq.Mock.ofType<PresentationPropertyDataProvider>();
   const favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
-  const factoryMock = moq.Mock.ofType<(imodel: IModelConnection, ruleSet?: string) => PresentationPropertyDataProvider>();
+  const factoryMock = moq.Mock.ofType<(imodel: IModelConnection, ruleset?: Ruleset | string) => PresentationPropertyDataProvider>();
 
   before(() => {
     elementId = faker.random.uuid();
@@ -38,6 +39,10 @@ describe("FavoritePropertiesDataProvider", () => {
     Presentation.i18n = new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
     });
+  });
+
+  after(() => {
+    Presentation.terminate();
   });
 
   beforeEach(() => {
@@ -50,10 +55,6 @@ describe("FavoritePropertiesDataProvider", () => {
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
     factoryMock.setup((x) => x(moq.It.isAny(), moq.It.isAny())).returns(() => presentationPropertyDataProviderMock.object);
     provider = new FavoritePropertiesDataProvider({ propertyDataProviderFactory: factoryMock.object });
-  });
-
-  after(() => {
-    Presentation.terminate();
   });
 
   describe("constructor", () => {
@@ -78,13 +79,13 @@ describe("FavoritePropertiesDataProvider", () => {
 
     it("passes `customRulesetId` to PropertyDataProvider if set", async () => {
       presentationPropertyDataProviderMock.setup((x) => x.getData()).returns(async () => ({
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         categories: [],
         records: {},
       }));
 
       const customRulesetId = faker.random.word();
-      provider.customRulesetId = customRulesetId;
+      provider = new FavoritePropertiesDataProvider({ propertyDataProviderFactory: factoryMock.object, ruleset: customRulesetId });
 
       await provider.getData(imodelMock.object, elementId);
       factoryMock.verify((x) => x(imodelMock.object, customRulesetId), moq.Times.once());
@@ -92,7 +93,7 @@ describe("FavoritePropertiesDataProvider", () => {
 
     it("returns empty property data when there is no favorite category", async () => {
       const dataToReturn: PropertyData = {
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         categories: [{ label: faker.random.word(), name: "test", expand: true }],
         records: {
           test: [
@@ -110,18 +111,18 @@ describe("FavoritePropertiesDataProvider", () => {
     });
 
     it("filters out only favorite category", async () => {
-      const favoritesCategory = await getFavoritesCategory();
+      const favoritesCategory = getFavoritesCategory();
       const favoritePropertyName = faker.random.word();
       const regularPropertyName = faker.random.word();
 
       const dataToReturn: PropertyData = {
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word()),
         categories: [favoritesCategory, { label: faker.random.word(), name: "test", expand: true }],
         records: {
           [favoritesCategory.name]: [
             new PropertyRecord(
               { valueFormat: PropertyValueFormat.Primitive, displayValue: faker.random.word() },
-              { typename: faker.database.type(), name: favoritePropertyName, displayLabel: faker.random.word() })
+              { typename: faker.database.type(), name: favoritePropertyName, displayLabel: faker.random.word() }),
           ],
           test: [
             new PropertyRecord(

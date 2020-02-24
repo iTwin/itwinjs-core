@@ -18,6 +18,10 @@ describe("StandardMessageBox", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("OK button & NoSymbol", () => {
     const spyMethod = sinon.spy();
 

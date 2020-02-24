@@ -5,7 +5,7 @@ exports[`<InputLabel /> renders correctly 1`] = `
   className="uicore-inputs-labeled-input"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     input test
@@ -19,10 +19,10 @@ exports[`<InputLabel /> renders correctly 1`] = `
 
 exports[`<InputLabel /> renders disabled correctly 1`] = `
 <label
-  className="uicore-inputs-labeled-input disabled"
+  className="uicore-inputs-labeled-input uicore-disabled"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     input test
@@ -39,7 +39,7 @@ exports[`<InputLabel /> renders message correctly 1`] = `
   className="uicore-inputs-labeled-input"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     input test
@@ -49,7 +49,7 @@ exports[`<InputLabel /> renders message correctly 1`] = `
     className="input"
   />
   <div
-    className="message"
+    className="uicore-message"
   >
     Test message
   </div>
@@ -61,7 +61,7 @@ exports[`<InputLabel /> renders status correctly 1`] = `
   className="uicore-inputs-labeled-input success"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     input test

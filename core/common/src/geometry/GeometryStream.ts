@@ -419,103 +419,94 @@ export class GeometryStreamBuilder {
   }
 }
 
+/** Represents a text string within a GeometryStream.
+ * @public
+ */
+export interface TextStringPrimitive {
+  type: "textString";
+  readonly textString: TextString;
+}
+
+/** Represents an image within a GeometryStream.
+ * @public
+ */
+export interface ImagePrimitive {
+  type: "image";
+  /** @beta */
+  readonly image: ImageGraphic;
+}
+
+/** Represents a reference to a GeometryPart within a GeometryStream.
+ * @public
+ */
+export interface PartReference {
+  type: "partReference";
+  part: {
+    id: Id64String;
+    readonly toLocal?: Transform;
+  };
+}
+
+/** Represents a BRep within a GeometryStream.
+ * @public
+ */
+export interface BRepPrimitive {
+  type: "brep";
+  /** @beta */
+  readonly brep: BRepEntity.DataProps;
+}
+
+/** Represents one of a variety of GeometryQuery objects within a GeometryStream.
+ * @public
+ */
+export interface GeometryPrimitive {
+  type: "geometryQuery";
+  readonly geometry: AnyGeometryQuery;
+}
+
+/** Union of all possible geometric primitive types that may appear within a GeometryStream.
+ * @public
+ */
+export type GeometryStreamPrimitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive;
+
 /** Holds current state information for [[GeometryStreamIterator]]. Each entry represents exactly one geometry primitive in the stream.
  * @public
  */
-export class GeometryStreamIteratorEntry {
+export interface GeometryStreamIteratorEntry {
   /** A [[GeometryParams]] representing the appearance of the current geometric entry */
-  public geomParams: GeometryParams;
+  readonly geomParams: GeometryParams;
   /** Placement transform, used for converting placement relative, local coordinate entries to world */
-  public localToWorld?: Transform;
+  readonly localToWorld?: Transform;
   /** Optional stored local range for the current geometric entry */
-  public localRange?: Range3d;
-  /** Optional [[GeometryPart]] instance transform when current entry is for a [[GeometryPart]].
-   * @note Can also use [[primitive]] and switch on the primitive type.
-   */
-  public partToLocal?: Transform;
-  /** Current iterator entry is a [[GeometryPart]] instance when partId is not undefined.
-   * @note Can also use [[primitive]] and switch on the primitive type.
-   */
-  public partId?: Id64String;
-  /** Current iterator entry is a [[GeometryQuery]] when geometryQuery is not undefined.
-   * @note Can also use [[primitive]] and switch on the primitive type.
-   */
-  public geometryQuery?: AnyGeometryQuery;
-  /** Current iterator entry is a [[TextString]] when textString is not undefined.
-   * @note Can also use [[primitive]] and switch on the primitive type.
-   */
-  public textString?: TextString;
-  /** Current iterator entry is an [[ImageGraphic]] when `image` is not undefined.
-   * @note Can also use [[primitive]] and switch on the primitive type.
-   * @beta
-   */
-  public image?: ImageGraphic;
-  /** Current iterator entry is a [[BRepEntity.DataProps]] when brep is not undefined.
-   * @note Can also use [[primitive]] and switch on the primitive type.
-   * @beta
-   */
-  public brep?: BRepEntity.DataProps;
-
-  /** Returns the geometric primitive represented by this entry.
-   * @public
-   */
-  public get primitive(): GeometryStreamIteratorEntry.Primitive {
-    if (undefined !== this.geometryQuery)
-      return { type: "geometryQuery", geometry: this.geometryQuery };
-    else if (undefined !== this.textString)
-      return { type: "textString", textString: this.textString };
-    else if (undefined !== this.brep)
-      return { type: "brep", brep: this.brep };
-    else if (undefined !== this.image)
-      return { type: "image", image: this.image };
-    else
-      return { type: "partReference", part: { id: this.partId!, toLocal: this.partToLocal } };
-  }
-
-  public constructor(category?: Id64String) {
-    this.geomParams = new GeometryParams(category !== undefined ? category : Id64.invalid);
-  }
+  readonly localRange?: Range3d;
+  /** Returns the geometric primitive represented by this entry. */
+  readonly primitive: GeometryStreamPrimitive;
 }
 
-/** @public */
-export namespace GeometryStreamIteratorEntry {
-  /** Represents a text string within a GeometryStream. */
-  export interface TextStringPrimitive {
-    type: "textString";
-    readonly textString: TextString;
+class IteratorEntry implements GeometryStreamIteratorEntry {
+  private _primitive?: GeometryStreamPrimitive;
+  public readonly geomParams: GeometryParams;
+  public readonly localToWorld?: Transform;
+  public localRange?: Range3d;
+
+  public constructor(appearance: Id64String | GeometryParams, localToWorld?: Transform) {
+    this.geomParams = typeof appearance === "string" ? new GeometryParams(appearance) : appearance;
+    this.localToWorld = localToWorld;
   }
 
-  /** Represents an image within a GeometryStream. */
-  export interface ImagePrimitive {
-    type: "image";
-    /** @beta */
-    readonly image: ImageGraphic;
-  }
+  public get primitive() { return this._primitive!; }
+  public set primitive(primitive: GeometryStreamPrimitive) { this._primitive = primitive; }
 
-  /** Represents a reference to a GeometryPart within a GeometryStream. */
-  export interface PartReference {
-    type: "partReference";
-    part: {
-      id: Id64String;
-      readonly toLocal?: Transform;
+  public setGeometryQuery(geometry: AnyGeometryQuery) { this._primitive = { type: "geometryQuery", geometry }; }
+  public setTextString(textString: TextString) { this._primitive = { type: "textString", textString }; }
+  public setBRep(brep: BRepEntity.DataProps) { this._primitive = { type: "brep", brep }; }
+  public setImage(image: ImageGraphic) { this._primitive = { type: "image", image }; }
+  public setPartReference(id: Id64String, toLocal?: Transform) {
+    this._primitive = {
+      type: "partReference",
+      part: {id, toLocal },
     };
   }
-
-  /** Represents a BRep within a GeometryStream. */
-  export interface BRepPrimitive {
-    type: "brep";
-    /** @beta */
-    readonly brep: BRepEntity.DataProps;
-  }
-
-  /** Represents one of a variety of GeometryQuery objects within a GeometryStream. */
-  export interface GeometryPrimitive {
-    type: "geometryQuery";
-    readonly geometry: AnyGeometryQuery;
-  }
-
-  /** Union of all possible geometric primitive types that may appear within a GeometryStream. */
-  export type Primitive = TextStringPrimitive | PartReference | BRepPrimitive | GeometryPrimitive | ImagePrimitive;
 }
 
 /** GeometryStreamIterator is a helper class for iterating a [[GeometryStreamProps]].
@@ -526,19 +517,23 @@ export namespace GeometryStreamIteratorEntry {
 export class GeometryStreamIterator implements IterableIterator<GeometryStreamIteratorEntry> {
   /** GeometryStream entries */
   public geometryStream: GeometryStreamProps;
-  /** Current entry information */
-  public entry: GeometryStreamIteratorEntry;
   /** Flags applied to the entire geometry stream. */
   public readonly flags: GeometryStreamFlags;
   /** Current entry position */
   private _index = 0;
+  /** Allocated on first call to next() and reused thereafter. */
+  private _entry?: IteratorEntry;
+  /** Used to initialize this._entry. */
+  private readonly _appearance: Id64String | GeometryParams;
+  private readonly _localToWorld?: Transform;
 
   /** Construct a new GeometryStreamIterator given a [[GeometryStreamProps]] from either a [[GeometricElement3d]], [[GeometricElement2d]], or [[GeometryPart]].
    * Supply the [[GeometricElement]]'s category to initialize the appearance information for each geometric entry.
    */
-  public constructor(geometryStream: GeometryStreamProps, category?: Id64String) {
+  public constructor(geometryStream: GeometryStreamProps, categoryOrGeometryParams?: Id64String | GeometryParams, localToWorld?: Transform) {
     this.geometryStream = geometryStream;
-    this.entry = new GeometryStreamIteratorEntry(category !== undefined ? category : Id64.invalid);
+    this._appearance = categoryOrGeometryParams ?? Id64.invalid;
+    this._localToWorld = localToWorld;
     if (0 < geometryStream.length && undefined !== geometryStream[0].header) {
       this.flags = geometryStream[0].header.flags;
       ++this._index;
@@ -547,23 +542,11 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     }
   }
 
-  /** Supply optional local to world transform. Used to transform entries that are stored relative to the element placement and return them in world coordinates. */
-  public setLocalToWorld(localToWorld?: Transform) {
-    this.entry.localToWorld = (undefined === localToWorld || localToWorld.isIdentity ? undefined : localToWorld.clone());
-  }
+  private get entry() {
+    if (undefined === this._entry)
+      this._entry = new IteratorEntry(this._appearance, this._localToWorld);
 
-  /** Supply local to world transform from Point3d and optional YawPitchRollAngles.
-   * @see [[Placement3d]]
-   */
-  public setLocalToWorld3d(origin: Point3d, angles: YawPitchRollAngles = YawPitchRollAngles.createDegrees(0.0, 0.0, 0.0)) {
-    this.setLocalToWorld(Transform.createOriginAndMatrix(origin, angles.toMatrix3d()));
-  }
-
-  /** Supply local to world transform from Point2d and optional Angle.
-   * @see [[Placement2d]]
-   */
-  public setLocalToWorld2d(origin: Point2d, angle: Angle = Angle.createDegrees(0.0)) {
-    this.setLocalToWorld(Transform.createOriginAndMatrix(Point3d.createFrom(origin), Matrix3d.createRotationAroundVector(Vector3d.unitZ(), angle)!));
+    return this._entry;
   }
 
   /** Create a new GeometryStream iterator for a [[GeometricElement3d]].
@@ -573,10 +556,12 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   public static fromGeometricElement3d(element: GeometricElement3dProps) {
     if (element.geom === undefined)
       throw new IModelError(IModelStatus.NoGeometry, "GeometricElement has no geometry or geometry wasn't requested");
-    const result = new GeometryStreamIterator(element.geom, element.category);
+
+    let transform;
     if (element.placement !== undefined)
-      result.setLocalToWorld3d(Point3d.fromJSON(element.placement.origin), YawPitchRollAngles.fromJSON(element.placement.angles));
-    return result;
+      transform = Transform.createOriginAndMatrix(Point3d.fromJSON(element.placement.origin), YawPitchRollAngles.fromJSON(element.placement.angles).toMatrix3d());
+
+    return new GeometryStreamIterator(element.geom, element.category, transform);
   }
 
   /** Create a new GeometryStream iterator for a [[GeometricElement2d]].
@@ -586,10 +571,15 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   public static fromGeometricElement2d(element: GeometricElement2dProps) {
     if (element.geom === undefined)
       throw new IModelError(IModelStatus.NoGeometry, "GeometricElement has no geometry or geometry wasn't requested");
-    const result = new GeometryStreamIterator(element.geom, element.category);
-    if (element.placement !== undefined)
-      result.setLocalToWorld2d(Point2d.fromJSON(element.placement.origin), Angle.fromJSON(element.placement.angle));
-    return result;
+
+    let transform;
+    if (element.placement !== undefined) {
+      const origin = Point3d.createFrom(Point2d.fromJSON(element.placement.origin));
+      const matrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.fromJSON(element.placement.angle))!;
+      transform = Transform.createOriginAndMatrix(origin, matrix);
+    }
+
+    return new GeometryStreamIterator(element.geom, element.category, transform);
   }
 
   /** Create a new GeometryStream iterator for a [[GeometryPart]].
@@ -602,26 +592,27 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   public static fromGeometryPart(geomPart: GeometryPartProps, geomParams?: GeometryParams, partTransform?: Transform) {
     if (geomPart.geom === undefined)
       throw new IModelError(IModelStatus.NoGeometry, "GeometryPart has no geometry or geometry wasn't requested");
-    const result = new GeometryStreamIterator(geomPart.geom);
-    if (geomParams !== undefined)
-      result.entry.geomParams = geomParams.clone();
-    if (partTransform !== undefined)
-      result.setLocalToWorld(partTransform);
-    return result;
+
+    return new GeometryStreamIterator(geomPart.geom, geomParams?.clone(), partTransform);
   }
 
   /** Get the transform that if applied to a [[GeometryPart]]'s GeometryStream entries would return them in world coordinates. */
   public partToWorld(): Transform | undefined {
-    if (this.entry.localToWorld === undefined || this.entry.partToLocal === undefined)
-      return this.entry.localToWorld;
-    return this.entry.partToLocal.multiplyTransformTransform(this.entry.localToWorld);
+    if (undefined === this._entry)
+      return this._localToWorld;
+
+    const partToLocal = "partReference" === this._entry.primitive.type ? this._entry.primitive.part.toLocal : undefined;
+    if (this._entry.localToWorld === undefined || partToLocal === undefined)
+      return this._entry.localToWorld;
+
+    return partToLocal.multiplyTransformTransform(this._entry.localToWorld);
   }
 
   /** Advance to next displayable geometric entry while updating the current [[GeometryParams]] from appearance related entries.
    * Geometric entries are [[TextString]], [[GeometryQuery]], [[GeometryPart]], [[ImageGraphic]], and [[BRepEntity.DataProps]].
    */
   public next(): IteratorResult<GeometryStreamIteratorEntry> {
-    this.entry.partToLocal = this.entry.partId = this.entry.geometryQuery = this.entry.textString = this.entry.brep = this.entry.image = undefined; // NOTE: localRange remains valid until new subRange entry is encountered
+    // NOTE: localRange remains valid until new subRange entry is encountered
     while (this._index < this.geometryStream.length) {
       const entry = this.geometryStream[this._index++];
       if (entry.appearance) {
@@ -643,9 +634,11 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
       } else if (entry.styleMod) {
         if (this.entry.geomParams.styleInfo === undefined)
           continue;
+
         const styleMod = new LineStyle.Modifier(entry.styleMod);
         if (this.entry.localToWorld !== undefined)
           styleMod.applyTransform(this.entry.localToWorld);
+
         this.entry.geomParams.styleInfo = new LineStyle.Info(this.entry.geomParams.styleInfo.styleId, styleMod);
       } else if (entry.fill) {
         if (entry.fill.display)
@@ -662,6 +655,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
         const params = AreaPattern.Params.fromJSON(entry.pattern);
         if (this.entry.localToWorld !== undefined)
           params.applyTransform(this.entry.localToWorld);
+
         this.entry.geomParams.pattern = params;
       } else if (entry.material) {
         if (entry.material.materialId)
@@ -669,43 +663,52 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
       } else if (entry.subRange) {
         this.entry.localRange = Range3d.fromJSON(entry.subRange);
       } else if (entry.geomPart) {
-        this.entry.partId = Id64.fromJSON(entry.geomPart.part);
+        let transform;
         if (entry.geomPart.origin !== undefined || entry.geomPart.rotation !== undefined || entry.geomPart.scale !== undefined) {
           const origin = entry.geomPart.origin ? Point3d.fromJSON(entry.geomPart.origin) : Point3d.createZero();
           const rotation = entry.geomPart.rotation ? YawPitchRollAngles.fromJSON(entry.geomPart.rotation).toMatrix3d() : Matrix3d.createIdentity();
-          this.entry.partToLocal = Transform.createRefs(origin, rotation);
+          transform = Transform.createRefs(origin, rotation);
           if (entry.geomPart.scale)
-            this.entry.partToLocal.multiplyTransformTransform(Transform.createRefs(Point3d.createZero(), Matrix3d.createUniformScale(entry.geomPart.scale)), this.entry.partToLocal);
+            transform.multiplyTransformTransform(Transform.createRefs(Point3d.createZero(), Matrix3d.createUniformScale(entry.geomPart.scale)), transform);
         }
+
+        this.entry.setPartReference(Id64.fromJSON(entry.geomPart.part), transform);
         return { value: this.entry, done: false };
       } else if (entry.textString) {
-        this.entry.textString = new TextString(entry.textString);
+        const textString = new TextString(entry.textString);
         if (this.entry.localToWorld !== undefined)
-          this.entry.textString.transformInPlace(this.entry.localToWorld);
+          textString.transformInPlace(this.entry.localToWorld);
+
+        this.entry.setTextString(textString);
         return { value: this.entry, done: false };
       } else if (entry.image) {
-        this.entry.image = ImageGraphic.fromJSON(entry.image);
+        const image = ImageGraphic.fromJSON(entry.image);
         if (undefined !== this.entry.localToWorld)
-          this.entry.image.transformInPlace(this.entry.localToWorld);
+          image.transformInPlace(this.entry.localToWorld);
+
+        this.entry.setImage(image);
         return { value: this.entry, done: false };
       } else if (entry.brep) {
-        this.entry.brep = entry.brep;
         if (this.entry.localToWorld !== undefined) {
           const entityTrans = Transform.fromJSON(entry.brep.transform);
-          this.entry.brep.transform = entityTrans.multiplyTransformTransform(this.entry.localToWorld);
+          entry.brep.transform = entityTrans.multiplyTransformTransform(this.entry.localToWorld);
         }
+
+        this.entry.setBRep(entry.brep);
         return { value: this.entry, done: false };
       } else {
         const geometryQuery = GeomJson.Reader.parse(entry);
         if (!(geometryQuery instanceof GeometryQuery))
           continue;
 
-        this.entry.geometryQuery = geometryQuery;
         if (this.entry.localToWorld !== undefined)
-          this.entry.geometryQuery.tryTransformInPlace(this.entry.localToWorld);
+          geometryQuery.tryTransformInPlace(this.entry.localToWorld);
+
+        this.entry.setGeometryQuery(geometryQuery);
         return { value: this.entry, done: false };
       }
     }
+
     return { value: this.entry, done: true };
   }
 

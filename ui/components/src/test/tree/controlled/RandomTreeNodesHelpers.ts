@@ -4,23 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { MutableTreeModelNode, TreeNodeItemData } from "../../../ui-components";
 import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 
 /** Returns random MutableTreeModelNode. */
-export const createRandomMutableTreeModelNode = (parentNodeId?: string, selected?: boolean): MutableTreeModelNode => {
+export const createRandomMutableTreeModelNode = (parentNodeId?: string, selected?: boolean, label?: string): MutableTreeModelNode => {
   const nodeId = faker.random.uuid();
-  const label = faker.random.word();
+  const labelRecord = PropertyRecord.fromString(label ?? faker.random.word(), "label");
   return {
     id: nodeId,
     description: faker.random.word(),
     isLoading: faker.random.boolean(),
-    label,
+    label: labelRecord,
     isExpanded: faker.random.boolean(),
     isSelected: selected !== undefined ? selected : faker.random.boolean(),
     checkbox: { state: CheckBoxState.Off, isVisible: faker.random.boolean(), isDisabled: faker.random.boolean() },
     depth: faker.random.number(),
-    item: createRandomTreeNodeItem(nodeId, parentNodeId, label),
+    item: createRandomTreeNodeItem(nodeId, parentNodeId, labelRecord),
     parentId: parentNodeId,
     numChildren: faker.random.number(),
   };
@@ -51,10 +52,10 @@ export const createRandomTreeNodeItems = (count?: number, parentId?: string, cre
 };
 
 /** Returns random TreeNodeItem */
-export const createRandomTreeNodeItem = (itemId?: string, parentId?: string, label?: string): TreeNodeItem => {
+export const createRandomTreeNodeItem = (itemId?: string, parentId?: string, label?: PropertyRecord | string): TreeNodeItem => {
   return {
     id: itemId || faker.random.uuid(),
-    label: label || faker.random.word(),
+    label: label ? (label instanceof PropertyRecord) ? label : PropertyRecord.fromString(label, "label") : PropertyRecord.fromString(faker.random.word(), "label"),
     autoExpand: faker.random.boolean(),
     description: faker.random.word(),
     icon: faker.random.word(),

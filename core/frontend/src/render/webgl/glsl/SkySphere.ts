@@ -66,6 +66,14 @@ const scratchVec3 = new Vector3d();
 const scratchPoint3 = new Point3d();
 
 /** @internal */
+function modulateColor(colorIn: Float32Array, t: number, colorOut: Float32Array): void {
+  const b = 1.0 - t;
+  colorOut[0] = colorIn[0] * b;
+  colorOut[1] = colorIn[1] * b;
+  colorOut[2] = colorIn[2] * b;
+}
+
+/** @internal */
 export function createSkySphereProgram(context: WebGLRenderingContext | WebGL2RenderingContext, isGradient: boolean): ShaderProgram {
   const attrMap = AttributeMap.findAttributeMap(isGradient ? TechniqueId.SkySphereGradient : TechniqueId.SkySphereTexture, false);
   const builder = createViewportQuadBuilder(false, attrMap);
@@ -91,14 +99,14 @@ export function createSkySphereProgram(context: WebGLRenderingContext | WebGL2Re
         scratch3Floats[2] = cameraPosition.z;
         uniform.setUniform3fv(scratch3Floats);
       } else {
-        const delta = Vector3d.createStartEnd(frustum.getCorner(Npc.LeftBottomRear), frustum.getCorner(Npc.LeftBottomFront));
+        const delta = Vector3d.createStartEnd(frustum.getCorner(Npc.LeftBottomRear), frustum.getCorner(Npc.LeftBottomFront), scratchVec3);
         const pseudoCameraHalfAngle = 22.5;
         const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
         const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Angle.radiansPerDegree));
         let zScale = focalLength / delta.magnitude();
         if (zScale < 1.000001)
           zScale = 1.000001; // prevent worldEye front being on or inside the frustum front plane
-        const worldEye = Point3d.createAdd3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, zScale);
+        const worldEye = Point3d.createAdd3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, zScale, scratchPoint3);
         scratch3Floats[0] = worldEye.x;
         scratch3Floats[1] = worldEye.y;
         scratch3Floats[2] = worldEye.z;
@@ -132,25 +140,59 @@ export function createSkySphereProgram(context: WebGLRenderingContext | WebGL2Re
     frag.addUniform("u_zenithColor", VariableType.Vec3, (shader) => {
       shader.addGraphicUniform("u_zenithColor", (uniform, params) => {
         const geom = params.geometry as SkySphereViewportQuadGeometry;
-        uniform.setUniform3fv(geom.zenithColor);
+        const plan = params.target.plan;
+        if (plan.backgroundMapOn && plan.isGlobeMode3D) {
+          modulateColor(geom.zenithColor, plan.globalViewTransition, scratch3Floats);
+          uniform.setUniform3fv(scratch3Floats);
+        } else
+          uniform.setUniform3fv(geom.zenithColor);
       });
     });
     frag.addUniform("u_skyColor", VariableType.Vec3, (shader) => {
       shader.addGraphicUniform("u_skyColor", (uniform, params) => {
         const geom = params.geometry as SkySphereViewportQuadGeometry;
-        uniform.setUniform3fv(geom.skyColor);
+        const plan = params.target.plan;
+        if (plan.backgroundMapOn && plan.isGlobeMode3D) {
+          modulateColor(geom.skyColor, plan.globalViewTransition, scratch3Floats);
+          uniform.setUniform3fv(scratch3Floats);
+        } else
+          uniform.setUniform3fv(geom.skyColor);
       });
     });
     frag.addUniform("u_groundColor", VariableType.Vec3, (shader) => {
       shader.addGraphicUniform("u_groundColor", (uniform, params) => {
         const geom = params.geometry as SkySphereViewportQuadGeometry;
-        uniform.setUniform3fv(geom.groundColor);
+        const plan = params.target.plan;
+        if (plan.backgroundMapOn) {
+          let clr = geom.skyColor;
+          if (-1 === geom.typeAndExponents[0]) // 2-color gradient
+            clr = geom.zenithColor;
+          if (plan.isGlobeMode3D) {
+            modulateColor(clr, plan.globalViewTransition, scratch3Floats);
+            uniform.setUniform3fv(scratch3Floats);
+          } else
+            uniform.setUniform3fv(clr);
+        } else {
+          uniform.setUniform3fv(geom.groundColor);
+        }
       });
     });
     frag.addUniform("u_nadirColor", VariableType.Vec3, (shader) => {
       shader.addGraphicUniform("u_nadirColor", (uniform, params) => {
         const geom = params.geometry as SkySphereViewportQuadGeometry;
-        uniform.setUniform3fv(geom.nadirColor);
+        const plan = params.target.plan;
+        if (plan.backgroundMapOn) {
+          let clr = geom.skyColor;
+          if (-1 === geom.typeAndExponents[0]) // 2-color gradient
+            clr = geom.zenithColor;
+          if (plan.isGlobeMode3D) {
+            modulateColor(clr, plan.globalViewTransition, scratch3Floats);
+            uniform.setUniform3fv(scratch3Floats);
+          } else
+            uniform.setUniform3fv(clr);
+        } else {
+          uniform.setUniform3fv(geom.nadirColor);
+        }
       });
     });
     frag.set(FragmentShaderComponent.ComputeBaseColor, computeSkySphereColorGradient);

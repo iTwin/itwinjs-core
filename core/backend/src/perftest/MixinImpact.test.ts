@@ -189,7 +189,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       });
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeStandalone();
+      perfimodel.closeSnapshot();
       reporter.addEntry("MixinPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { hierarchy: hCount, sCount: seedCount });
     }
   });

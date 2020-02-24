@@ -6,9 +6,11 @@ import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
+
+import { StagePanelLocation } from "@bentley/ui-abstract";
+
 import {
   StagePanelHeader,
-  StagePanelLocation,
   FrontstageManager,
   StagePanelDef,
   StagePanelState,

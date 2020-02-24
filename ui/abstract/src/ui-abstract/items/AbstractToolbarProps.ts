@@ -6,21 +6,14 @@
  * @module Item
  */
 
-import { AbstractItemProps } from "./AbstractItemProps";
-import { AnyItemProps } from "./AnyItemProps";
-import { AbstractConditionalItemProps } from "./AbstractConditionalItemProps";
-
-/** Union of all Item definitions that can be specified in a GroupButton or ConditionalGroup
- * @beta
- */
-export type AnyToolbarItemProps = AnyItemProps | AbstractConditionalItemProps;
+import { CommonToolbarItem } from "../toolbars/ToolbarItem";
 
 /** Definition for a Toolbar.
  * @beta
  */
-export interface AbstractToolbarProps extends AbstractItemProps {
+export interface AbstractToolbarProps {
   /** Id of Toolbar */
   toolbarId?: string;
   /** Items shown in the Toolbar */
-  items: AnyToolbarItemProps[];
+  items: CommonToolbarItem[];
 }

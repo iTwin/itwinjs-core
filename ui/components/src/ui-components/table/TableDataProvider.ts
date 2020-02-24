@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { PropertyRecord, PropertyDescription, Primitives } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyDescription, Primitives } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
 import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
 import { DistinctValueCollection, CompositeFilterDescriptorCollection } from "./columnfiltering/ColumnFiltering";

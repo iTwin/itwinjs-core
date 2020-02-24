@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "../../ui-components/tree/SimpleTreeDataProvider";
 import { DelayLoadedTreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
 
@@ -12,7 +13,7 @@ describe("SimpleTreeDataProvider", () => {
     return {
       id,
       parentId,
-      label: "label",
+      label: PropertyRecord.fromString("label", "label"),
       hasChildren,
     };
   };

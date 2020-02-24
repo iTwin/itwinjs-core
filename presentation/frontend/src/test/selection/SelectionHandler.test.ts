@@ -26,7 +26,12 @@ describe("SelectionHandler", () => {
     const selectionChangeEvent = new SelectionChangeEvent();
     selectionManagerMock.reset();
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);
-    selectionHandler = new SelectionHandler(selectionManagerMock.object, source, imodelMock.object, ruleset);
+    selectionHandler = new SelectionHandler({
+      manager: selectionManagerMock.object,
+      imodel: imodelMock.object,
+      rulesetId: ruleset,
+      name: source,
+    });
   });
 
   afterEach(() => {

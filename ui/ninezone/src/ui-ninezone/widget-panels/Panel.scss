@@ -1,0 +1,190 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.nz-widgetPanels-panel {
+  position: relative;
+
+  &.nz-left, &.nz-right {
+    max-width: 100%;
+
+    &.nz-span-top {
+      grid-row-start: 2;
+    }
+
+    &:not(.nz-span-top) {
+      grid-row-start: 1;
+    }
+
+    &.nz-span-bottom {
+      grid-row-end: 3;
+    }
+
+    &:not(.nz-span-bottom) {
+      grid-row-end: 4;
+    }
+
+    > div, > div > .nz-content {
+      height: 100%;
+    }
+  }
+
+  &.nz-left {
+    grid-column: 1/2;
+
+    &.nz-collapsed {
+      > div {
+        > .nz-content {
+          transform: translateX(-100%);
+        }
+      }
+
+      &.nz-captured {
+        > div {
+          > .nz-content {
+            left: 50%;
+          }
+        }
+      }
+    }
+  }
+
+  &.nz-right {
+    grid-column: 3/4;
+
+    &.nz-collapsed {
+      > div {
+        right: 0;
+      }
+
+      &.nz-captured {
+        > div {
+          > .nz-content {
+            left: 50%;
+          }
+        }
+      }
+
+      &:not(.nz-captured) {
+        > div {
+          > .nz-content {
+            left: 100%;
+          }
+        }
+      }
+    }
+  }
+
+  &.nz-top, &.nz-bottom {
+    max-height: 100%;
+    min-width: 0;
+
+    > div, > div > .nz-content {
+      width: 100%;
+    }
+
+    &.nz-collapsed {
+      > div {
+        line-height: 0;
+      }
+    }
+  }
+
+  &.nz-top {
+    grid-row: 1;
+
+    &.nz-span {
+      grid-column: 1/4;
+    }
+
+    &:not(.nz-span) {
+      grid-column: 2/3;
+    }
+
+    &.nz-collapsed {
+      > div {
+        > .nz-content {
+          transform: translateY(-100%);
+        }
+      }
+
+      &.nz-captured {
+        > div {
+          > .nz-content {
+            top: 50%;
+          }
+        }
+      }
+    }
+  }
+
+  &.nz-bottom {
+    grid-row: 3;
+
+    &.nz-span {
+      grid-column: 1/4;
+    }
+
+    &:not(.nz-span) {
+      grid-column: 2/3;
+    }
+
+    &.nz-collapsed {
+      > div {
+        bottom: 0;
+      }
+
+      &.nz-captured {
+        > div {
+          > .nz-content {
+            top: 50%;
+          }
+        }
+      }
+
+      &:not(.nz-captured) {
+        > div {
+          > .nz-content {
+            top: 100%;
+          }
+        }
+      }
+    }
+  }
+
+  &:not(.nz-collapsed) {
+    > div, > div > .nz-content {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  &.nz-collapsed {
+    > div {
+      position: absolute;
+
+      > .nz-content {
+        position: absolute;
+      }
+    }
+  }
+
+  > div >.nz-content {
+    display: flex;
+  }
+
+
+  &.nz-horizontal {
+    > div >.nz-content {
+      flex-direction: row;
+    }
+  }
+
+  &:not(.nz-horizontal) {
+    > div >.nz-content {
+      flex-direction: column;
+    }
+  }
+}

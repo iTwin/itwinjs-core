@@ -41,6 +41,10 @@ describe("ContentGroup", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("ContentGroupManager.loadGroup should throw Error if ContentGroupProps does not have an id", () => {
     const groupProps: ContentGroupProps = {
       contents: [{ id: "myContent", classId: TestContentControl }],

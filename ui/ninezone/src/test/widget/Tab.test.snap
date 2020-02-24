@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetTab should render active 1`] = `
+<div
+  class="nz-widget-tab nz-active"
+>
+  <span />
+</div>
+`;
+
+exports[`WidgetTab should render minimized 1`] = `
+<div
+  class="nz-widget-tab nz-minimized"
+>
+  <span />
+</div>
+`;
+
+exports[`WidgetTab should render overflown 1`] = `
+<div
+  class="nz-widget-tab nz-overflown"
+>
+  <span />
+  <div
+    class="nz-icon"
+  />
+</div>
+`;

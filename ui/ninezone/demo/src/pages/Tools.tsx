@@ -150,7 +150,7 @@ export default class Tools extends React.PureComponent<{}, State> {
           columns={path}
           onBack={this._handleBackClick}
         />
-      </div >
+      </div>
     );
   }
 

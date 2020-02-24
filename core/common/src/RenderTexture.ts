@@ -28,6 +28,7 @@ export abstract class RenderTexture implements IDisposable {
   public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
   public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
   public get isSkyBox(): boolean { return RenderTexture.Type.SkyBox === this.type; }
+  public abstract get bytesUsed(): number;
 
   protected constructor(params: RenderTexture.Params) {
     this.key = params.key;

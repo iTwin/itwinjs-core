@@ -7,13 +7,16 @@
  */
 
 import * as React from "react";
+
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { WidgetState } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { NineZoneManager } from "@bentley/ui-ninezone";
-import { IModelConnection, IModelApp, Tool, StartOrResume, InteractiveTool, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { Logger } from "@bentley/bentleyjs-core";
+
 import { FrontstageDef } from "./FrontstageDef";
 import { ContentControlActivatedEvent } from "../content/ContentControl";
-import { WidgetDef, WidgetState, WidgetStateChangedEvent } from "../widgets/WidgetDef";
+import { WidgetDef, WidgetStateChangedEvent } from "../widgets/WidgetDef";
 import { ToolInformation } from "../zones/toolsettings/ToolInformation";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { ToolUiManager } from "../zones/toolsettings/ToolUiManager";
@@ -361,6 +364,7 @@ export class FrontstageManager {
     const activeToolInformation = FrontstageManager.activeToolInformation;
     const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : /* istanbul ignore next */ undefined;
 
+    // istanbul ignore else
     if (toolUiProvider && toolUiProvider.toolSettingsNode)
       return toolUiProvider.toolSettingsNode;
 

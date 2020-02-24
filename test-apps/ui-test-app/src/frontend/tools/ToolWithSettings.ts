@@ -7,10 +7,16 @@
 import {
   IModelApp, PrimitiveTool,
   BeButtonEvent, EventHandled,
-  ToolSettingsPropertyRecord, PropertyDescription, PrimitiveValue, ToolSettingsValue, ToolSettingsPropertySyncItem,
-  NotifyMessageDetails, OutputMessagePriority, PropertyEditorParamTypes, QuantityType, ToolAssistance, ToolAssistanceImage,
-  ColorEditorParams, InputEditorSizeParams, SuppressLabelEditorParams, AngleDescription, LengthDescription, SurveyLengthDescription,
+  AngleDescription, LengthDescription, SurveyLengthDescription,
+  NotifyMessageDetails, OutputMessagePriority,
+  QuantityType, ToolAssistance, ToolAssistanceImage,
 } from "@bentley/imodeljs-frontend";
+import {
+  ToolSettingsPropertyRecord, PropertyDescription, PrimitiveValue, ToolSettingsValue, ToolSettingsPropertySyncItem,
+  PropertyEditorParamTypes,
+  ColorEditorParams, InputEditorSizeParams, SuppressLabelEditorParams,
+} from "@bentley/ui-abstract";
+
 import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
@@ -371,9 +377,9 @@ export class ToolWithSettings extends PrimitiveTool {
     // Used to test Cursor Menu
     if (ev.isAltKey) {
       const menuItems: MenuItemProps[] = [];
-      menuItems.push({ id: "entry1", item: { label: "Label1", iconSpec: "icon-placeholder", execute: () => { this.showInfoFromCursorMenu("hello from entry1"); } } });
+      menuItems.push({ id: "entry1", item: { label: "Label1", icon: "icon-placeholder", execute: () => { this.showInfoFromCursorMenu("hello from entry1"); } } });
       menuItems.push({ id: "entry2", item: { label: "Label2", execute: () => { this.showInfoFromCursorMenu("hello from entry2"); } } });
-      menuItems.push({ id: "entry3", item: { label: "Label3", iconSpec: "icon-placeholder", execute: () => { this.showInfoFromCursorMenu("hello from entry3"); } } });
+      menuItems.push({ id: "entry3", item: { label: "Label3", icon: "icon-placeholder", execute: () => { this.showInfoFromCursorMenu("hello from entry3"); } } });
 
       UiFramework.openCursorMenu({ items: menuItems, position: { x: CursorInformation.cursorX, y: CursorInformation.cursorY } });
       return EventHandled.No;

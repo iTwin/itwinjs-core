@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/build-tools",
+      "comment": "extract-api: Remove unused `isPresentation` command line arg",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "grigas.petraitis@bentley.com"
+}

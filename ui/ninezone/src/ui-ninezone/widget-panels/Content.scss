@@ -1,0 +1,39 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.nz-widgetPanels-content {
+  &:not(.nz-pinned-left) {
+    grid-column-start: 1;
+  }
+
+  &.nz-pinned-left {
+    grid-column-start: 2;
+  }
+
+  &:not(.nz-pinned-right) {
+    grid-column-end: 4;
+  }
+
+  &.nz-pinned-right {
+    grid-column-end: 3;
+  }
+
+  &:not(.nz-pinned-top) {
+    grid-row-start: 1;
+  }
+
+  &.nz-pinned-top {
+    grid-row-start: 2;
+  }
+
+  &:not(.nz-pinned-bottom) {
+    grid-row-end: 4;
+  }
+
+  &.nz-pinned-bottom {
+    grid-row-end: 3;
+  }
+}

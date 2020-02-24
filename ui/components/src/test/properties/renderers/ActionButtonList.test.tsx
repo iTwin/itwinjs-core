@@ -8,7 +8,7 @@ import sinon from "sinon";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { ActionButtonList, ActionButtonRendererProps } from "../../../ui-components";
 
 describe("ActionButtonList", () => {

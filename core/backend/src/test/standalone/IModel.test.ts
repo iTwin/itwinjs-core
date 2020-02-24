@@ -13,6 +13,7 @@ import {
   Logger,
   LogLevel,
   GetMetaDataFunction,
+  GuidString,
 } from "@bentley/bentleyjs-core";
 import {
   Angle,
@@ -42,7 +43,7 @@ import {
   DictionaryModel, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext,
+  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, BriefcaseId,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -103,17 +104,14 @@ describe("iModel", () => {
     imodel5.closeSnapshot();
   });
 
-  /** test the copy constructor and to/from Json methods for the supplied entity */
-  const testCopyAndJson = (entity: Entity) => {
-    const copyOf = entity.clone();
-    const s1 = JSON.stringify(entity); let s2 = JSON.stringify(copyOf);
-    assert.equal(s1, s2);
-
-    // now round trip the entity through a json string and back to a new entity.
-    const jsonObj = JSON.parse(s1) as EntityProps;
-    const el2 = new (entity.constructor as any)(jsonObj, entity.iModel); // create a new entity from the json
-    s2 = JSON.stringify(el2);
-    assert.equal(s1, s2);
+  /** Roundtrip the entity through a json string and back to a new entity. */
+  const roundtripThroughJson = (entity1: Entity): Entity => {
+    const string1 = JSON.stringify(entity1);
+    const props1 = JSON.parse(string1) as EntityProps;
+    const entity2 = new (entity1.constructor as any)(props1, entity1.iModel); // create a new entity from the EntityProps
+    const string2 = JSON.stringify(entity2);
+    assert.equal(string1, string2);
+    return entity2;
   };
 
   it("should verify object vault", () => {
@@ -307,7 +305,7 @@ describe("iModel", () => {
       assert.equal(Id64.getBriefcaseId(subCat.code.spec), 0);
       assert.isTrue(subCat.code.scope === "0x2d");
       assert.isTrue(subCat.code.value === "A-Z013-G-Legn");
-      testCopyAndJson(subCat);
+      roundtripThroughJson(subCat);
     }
 
     /// Get the parent Category of the subcategory.
@@ -320,7 +318,7 @@ describe("iModel", () => {
       assert.equal(Id64.getLocalId(cat.code.spec), 22);
       assert.equal(Id64.getBriefcaseId(cat.code.spec), 0);
       assert.isTrue(cat.code.value === "A-Z013-G-Legn");
-      testCopyAndJson(cat);
+      roundtripThroughJson(cat);
     }
 
     const phys = imodel1.elements.getElement("0x38");
@@ -336,7 +334,7 @@ describe("iModel", () => {
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.equal(a2.id, el3.id);
-    testCopyAndJson(el3);
+    roundtripThroughJson(el3);
 
     const newEl = el3;
     newEl.federationGuid = undefined;
@@ -618,7 +616,7 @@ describe("iModel", () => {
       assert.exists(childElement);
       assert.isTrue(childElement instanceof Element);
 
-      testCopyAndJson(childElement);
+      roundtripThroughJson(childElement);
       assert.equal(rootSubject.id, childElement.parent!.id);
 
       const childLocalId = Id64.getLocalId(childId);
@@ -658,17 +656,17 @@ describe("iModel", () => {
     assert.exists(formatter, "formatter should exist as json property");
     assert.equal(formatter.fmtFlags.angMode, 1, "fmtFlags");
     assert.equal(formatter.mastUnit.label, "m", "mastUnit is meters");
-    testCopyAndJson(model2);
+    roundtripThroughJson(model2);
     let model = imodel1.models.getModel(IModel.repositoryModelId);
     assert.exists(model);
-    testCopyAndJson(model!);
+    roundtripThroughJson(model!);
     const code1 = new Code({ spec: "0x1d", scope: "0x1d", value: "A" });
     model = imodel1.models.getSubModel(code1);
     // By this point, we expect the submodel's class to be in the class registry *cache*
     const geomModel = ClassRegistry.getClass(PhysicalModel.classFullName, imodel1);
     assert.exists(model);
     assert.isTrue(model instanceof geomModel!);
-    testCopyAndJson(model!);
+    roundtripThroughJson(model!);
     const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents();
     assert.isBelow(modelExtents.low.x, modelExtents.high.x);
     assert.isBelow(modelExtents.low.y, modelExtents.high.y);
@@ -728,7 +726,7 @@ describe("iModel", () => {
 
   // NOTE: this test can be removed when the deprecated executeQuery method is removed
   it("should produce an array of rows", () => {
-    const rows: any[] = imodel1.executeQuery(`SELECT * FROM ${Category.classFullName}`); // tslint:disable-line: deprecation
+    const rows: any[] = IModelTestUtils.executeQuery(imodel1, `SELECT * FROM ${Category.classFullName}`); // tslint:disable-line: deprecation
     assert.exists(rows);
     assert.isArray(rows);
     assert.isAtLeast(rows.length, 1);
@@ -907,7 +905,7 @@ describe("iModel", () => {
     assert.equal(testElem.classFullName, "DgnPlatformTest:TestElementWithNoHandler");
     assert.isUndefined(testElem.asAny.integerProperty1);
 
-    const newTestElem = testElem.clone();
+    const newTestElem = roundtripThroughJson(testElem) as Element;
     assert.equal(newTestElem.classFullName, testElem.classFullName);
     newTestElem.asAny.integerProperty1 = 999;
     assert.isTrue(testElem.asAny.arrayOfPoint3d[0].isAlmostEqual(newTestElem.asAny.arrayOfPoint3d[0]));
@@ -1788,6 +1786,35 @@ describe("iModel", () => {
     // tslint:disable-next-line:no-console
     console.timeEnd("ImodelJsTest.MeasureInsertPerformance");
 
+  });
+
+  it("Snapshot iModel properties", () => {
+    const snapshotRootSubjectName = "Snapshot";
+    const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
+    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
+    const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
+    const snapshotDb1: IModelDb = IModelDb.createSnapshot(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName } });
+    const snapshotDb2: IModelDb = snapshotDb1.createSnapshot(snapshotFile2);
+    const snapshotDb3: IModelDb = imodel1.createSnapshot(snapshotFile3);
+    assert.equal(snapshotDb1.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    assert.equal(snapshotDb2.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    assert.equal(snapshotDb3.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    assert.equal(imodel1.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    const iModelGuid1: GuidString = snapshotDb1.getGuid();
+    const iModelGuid2: GuidString = snapshotDb2.getGuid();
+    const iModelGuid3: GuidString = snapshotDb3.getGuid();
+    assert.notEqual(iModelGuid1, iModelGuid2, "Expect different iModel GUIDs for each snapshot");
+    assert.notEqual(iModelGuid2, iModelGuid3, "Expect different iModel GUIDs for each snapshot");
+    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.getValue();
+    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.getValue();
+    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.getValue();
+    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.getValue();
+    assert.equal(rootSubjectName1, snapshotRootSubjectName);
+    assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
+    assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
+    snapshotDb1.closeSnapshot();
+    snapshotDb2.closeSnapshot();
+    snapshotDb3.closeSnapshot();
   });
 
   it("Run plain SQL", () => {

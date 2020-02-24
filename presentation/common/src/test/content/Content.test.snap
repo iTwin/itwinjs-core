@@ -13,7 +13,6 @@ Object {
         "test": "Sharable",
       },
       "imageId": "83c2f9cb-35cd-420d-ba21-1cb278fb504e",
-      "label": "evolve",
       "labelDefinition": Object {
         "displayValue": "evolve",
         "rawValue": "monitor",
@@ -384,7 +383,6 @@ Object {
         "test": "Shoes Buckinghamshire Streets",
       },
       "imageId": "ab9860a1-04db-4e2a-ac7d-c91ccb3ee332",
-      "label": "Handmade",
       "labelDefinition": Object {
         "displayValue": "Handmade",
         "rawValue": "driver",

@@ -8,13 +8,13 @@
 
 import { IModelApp } from "../IModelApp";
 import { QuantityType } from "../QuantityFormatter";
-import { BaseQuantityDescription } from "./BaseQuantityDescription";
+import { FormattedQuantityDescription } from "./FormattedQuantityDescription";
 
 /**
  * Length Property Description
  * @beta
  */
-export class LengthDescription extends BaseQuantityDescription {
+export class LengthDescription extends FormattedQuantityDescription {
   constructor(name?: string, displayLabel?: string, iconSpec?: string) {
     const defaultName = "length";
     super(
@@ -24,7 +24,8 @@ export class LengthDescription extends BaseQuantityDescription {
     );
   }
 
-  public get quantityType(): QuantityType { return QuantityType.Length; }
+  public get formatterQuantityType(): QuantityType { return QuantityType.Length; }
+  public get quantityType(): string { return "Length"; }
 
   public get parseError(): string { return IModelApp.i18n.translate("iModelJs:Properties.UnableToParseLength"); }
 }
@@ -33,7 +34,7 @@ export class LengthDescription extends BaseQuantityDescription {
  * Survey Length Property Description
  * @beta
  */
-export class SurveyLengthDescription extends BaseQuantityDescription {
+export class SurveyLengthDescription extends FormattedQuantityDescription {
   constructor(name?: string, displayLabel?: string, iconSpec?: string) {
     const defaultName = "surveyLength";
     super(
@@ -43,7 +44,8 @@ export class SurveyLengthDescription extends BaseQuantityDescription {
     );
   }
 
-  public get quantityType(): QuantityType { return QuantityType.LengthSurvey; }
+  public get formatterQuantityType(): QuantityType { return QuantityType.LengthSurvey; }
+  public get quantityType(): string { return "LengthSurvey"; }
 
   public get parseError(): string { return IModelApp.i18n.translate("iModelJs:Properties.UnableToParseLength"); }
 }
@@ -52,7 +54,7 @@ export class SurveyLengthDescription extends BaseQuantityDescription {
  * Engineering Length Property Description
  * @beta
  */
-export class EngineeringLengthDescription extends BaseQuantityDescription {
+export class EngineeringLengthDescription extends FormattedQuantityDescription {
 
   constructor(name?: string, displayLabel?: string, iconSpec?: string) {
     const defaultName = "engineeringLength";
@@ -63,7 +65,8 @@ export class EngineeringLengthDescription extends BaseQuantityDescription {
     );
   }
 
-  public get quantityType(): QuantityType { return QuantityType.LengthEngineering; }
+  public get formatterQuantityType(): QuantityType { return QuantityType.LengthEngineering; }
+  public get quantityType(): string { return "LengthEngineering"; }
 
   public get parseError(): string { return IModelApp.i18n.translate("iModelJs:Properties.UnableToParseLength"); }
 }

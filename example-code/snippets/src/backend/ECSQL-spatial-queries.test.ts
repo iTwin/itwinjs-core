@@ -13,11 +13,11 @@ describe("Useful ECSQL spatial queries", () => {
   let iModel: IModelDb;
 
   before(async () => {
-    iModel = IModelTestUtils.openIModel("test.bim");
+    iModel = IModelTestUtils.openSnapshotFromSeed("test.bim");
   });
 
   after(() => {
-    iModel.closeStandalone();
+    iModel.closeSnapshot();
   });
 
   it("should execute spatial queries", () => {

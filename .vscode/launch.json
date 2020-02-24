@@ -347,6 +347,24 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "[UI] Tests: Abstract",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/abstract/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/abstract",
+      "args": [
+        "--opts",
+        "./mocha.opts",
+        "--no-timeouts",
+        "lib/test/**/*.test.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**/*.js",
+        "node_modules/rxjs/**/*"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "[UI] Tests: Components",
       "protocol": "inspector",
       "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
@@ -593,6 +611,28 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "simple-editor-app Electron (backend)",
+      "cwd": "${workspaceFolder}/test-apps/simple-editor-app/",
+      "env": {
+        "SVT_LOG_LEVEL": "TRACE",
+        "BROWSER": "none",
+        "imjs_buddi_resolve_url_using_region": "102"
+      },
+      "runtimeExecutable": "${workspaceFolder}/test-apps/simple-editor-app/node_modules/.bin/electron",
+      "runtimeArgs": [
+        "${workspaceFolder}/test-apps/simple-editor-app/lib/backend/main.js",
+        "--remote-debugging-port=9223"
+      ],
+      "protocol": "inspector",
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/simple-editor-app/lib/{backend}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Debug imodel-from-geojson",
       "program": "${workspaceRoot}/test-apps/imodel-from-geojson/lib/Main.js",
       "cwd": "${workspaceRoot}/test-apps/imodel-from-geojson",
@@ -692,6 +732,46 @@
       "webRoot": "${workspaceFolder}",
       "internalConsoleOptions": "openOnSessionStart"
     },
+    //sss
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "⚠︝Full Stack NativeApp Integration Tests (backend)",
+      "cwd": "${workspaceRoot}/full-stack-tests/native-app/",
+      "program": "${workspaceRoot}/tools/certa/bin/certa.js",
+      "runtimeArgs": [
+        "--max-http-header-size=16000",
+      ],
+      "args": [
+        "--debug",
+        "-r",
+        "${input:integrationTestEnvironment}",
+        "--grep",
+        "#integration",
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/full-stack-tests/native-app/lib/**/*.js",
+        "${workspaceRoot}/core/*/lib/**/*.js",
+        "${workspaceRoot}/tools/certa/lib/**/*.js"
+      ],
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "port": 5858 // NB: This must match ports.debugging in full-stack-tests/native-app/certa.json
+    },
+    {
+      "name": "⚠︝Full Stack NativeApp Integration Tests (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/native-app/certa.json
+      "sourceMaps": true,
+      "timeout": 200000,
+      "smartStep": true,
+      "showAsyncStacks": true,
+      "webRoot": "${workspaceFolder}"
+    },
+    //sss
     {
       "type": "node",
       "request": "launch",
@@ -934,6 +1014,13 @@
       "configurations": [
         "⚠︝Full Stack Core Integration Tests (frontend)",
         "⚠︝Full Stack Core Integration Tests (backend)"
+      ]
+    },
+    {
+      "name": "✔Full Stack NativeApp Integration Tests",
+      "configurations": [
+        "⚠︝Full Stack NativeApp Integration Tests (backend)",
+        "⚠︝Full Stack NativeApp Integration Tests (frontend)"
       ]
     },
     {

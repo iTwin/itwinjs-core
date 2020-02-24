@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { createStore, Store } from "redux";
+import { Store } from "redux";  // createStore,
 import { Provider, connect } from "react-redux";
 import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer } from "@bentley/bentleyjs-core";
 import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
@@ -14,7 +14,7 @@ import {
 } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, SnapMode, AccuSnap, ViewClipByPlaneTool, RenderSystem,
-  IModelAppOptions, SelectionTool, ViewState, FrontendLoggerCategory,
+  IModelAppOptions, SelectionTool, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp } from "@bentley/imodeljs-markup";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
@@ -23,13 +23,15 @@ import { getClassName } from "@bentley/ui-abstract";
 import { UiCore } from "@bentley/ui-core";
 import { UiComponents, BeDragDropContext } from "@bentley/ui-components";
 import {
-  UiFramework, FrameworkState, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,
+  UiFramework, FrameworkReducer, AppNotificationManager, FrameworkUiAdmin,   // , FrameworkState
   IModelInfo, FrontstageManager, createAction, ActionsUnion, DeepReadonly, ProjectInfo,
-  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, combineReducers,
+  ConfigurableUiContent, ThemeManager, DragDropLayerRenderer, SyncUiEventDispatcher, // combineReducers,
   FrontstageDef,
   SafeAreaContext,
-  SyncUiEventArgs,
   ToolbarDragInteractionContext,
+  StateManager,
+  FrameworkRootState,
+  FrameworkVersion,
 } from "@bentley/ui-framework";
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
@@ -48,7 +50,6 @@ import "./index.scss";
 import { TestAppConfiguration } from "../common/TestAppConfiguration";
 import { LocalFileOpenFrontstage } from "./appui/frontstages/LocalFileStage";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
-import { AppBackstageItemProvider } from "./appui/backstage/AppBackstageItemProvider";
 import { AppBackstageComposer } from "./appui/backstage/AppBackstageComposer";
 
 // Initialize my application gateway configuration for the frontend
@@ -139,9 +140,8 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
 }
 
 // React-redux interface stuff
-export interface RootState {
+export interface RootState extends FrameworkRootState {
   sampleAppState: SampleAppState;
-  frameworkState?: FrameworkState;
 }
 
 interface SampleIModelParams {
@@ -153,9 +153,16 @@ interface SampleIModelParams {
 
 export class SampleAppIModelApp {
   public static sampleAppNamespace: I18NNamespace;
-  public static store: Store<RootState>;
-  public static rootReducer: any;
+  // if using StateManager that supports states from plugins and snippets then we don't explicitly setup redux store in app we just
+  // pass our reducer map to the StateManager constructor.
+  // deprecated - public static store: Store<RootState>;
+  // deprecated - public static rootReducer: any;
   public static iModelParams: SampleIModelParams | undefined;
+  private static _appStateManager: StateManager | undefined;
+
+  public static get store(): Store<RootState> {
+    return StateManager.store as Store<RootState>;
+  }
 
   public static startup(opts?: IModelAppOptions): void {
     opts = opts ? opts : {};
@@ -165,15 +172,27 @@ export class SampleAppIModelApp {
     IModelApp.startup(opts);
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
-    // this is the rootReducer for the sample application.
-    this.rootReducer = combineReducers({
-      sampleAppState: SampleAppReducer,
-      frameworkState: FrameworkReducer,
-    });
 
+    // use new state manager that allows dynamic additions from plugins and snippets
+    if (!this._appStateManager) {
+      this._appStateManager = new StateManager({
+        sampleAppState: SampleAppReducer,
+        frameworkState: FrameworkReducer,
+      });
+    }
+
+    ////////////////////////////////////////////////////////
+    // deprecated was of handling state locally.
+    ////////////////////////////////////////////////////////
+    // this is the rootReducer for the sample application.
+    // this.rootReducer = combineReducers({
+    //   sampleAppState: SampleAppReducer,
+    //   frameworkState: FrameworkReducer,
+    // });
+    //
     // create the Redux Store.
-    this.store = createStore(this.rootReducer,
-      (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
+    // this.store = createStore(this.rootReducer,
+    //  (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
     // register local commands.
     // register core commands not automatically registered
@@ -188,18 +207,17 @@ export class SampleAppIModelApp {
   }
 
   public static async initialize() {
-    Presentation.initialize();
-    Presentation.selection.scopes.activeScope = "top-assembly";
     UiCore.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
     UiComponents.initialize(IModelApp.i18n); // tslint:disable-line:no-floating-promises
 
     const oidcConfiguration = this.getOidcConfiguration();
-    await UiFramework.initialize(SampleAppIModelApp.store, IModelApp.i18n, oidcConfiguration, "frameworkState");
+    await UiFramework.initialize(undefined, IModelApp.i18n, oidcConfiguration);
 
     // initialize Presentation
-    Presentation.initialize({
+    await Presentation.initialize({
       activeLocale: IModelApp.i18n.languageList()[0],
     });
+    Presentation.selection.scopes.activeScope = "top-assembly";
 
     // Register tools.
     Tool1.register(this.sampleAppNamespace);
@@ -475,7 +493,6 @@ function mapStateToProps(state: RootState) {
 const AppDragInteraction = connect(mapStateToProps)(AppDragInteractionComponent);
 
 export class SampleAppViewer extends React.Component<any> {
-  private _backstageItemProvider = new AppBackstageItemProvider();
 
   constructor(props: any) {
     super(props);
@@ -493,17 +510,11 @@ export class SampleAppViewer extends React.Component<any> {
   }
 
   public componentDidMount() {
-    UiFramework.backstageManager.itemsManager.add(this._backstageItemProvider.backstageItems);
-    SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
     if (UiFramework.oidcClient)
       UiFramework.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   public componentWillUnmount() {
-    const backstageItems = this._backstageItemProvider.backstageItems.map((item) => item.id);
-    UiFramework.backstageManager.itemsManager.remove(backstageItems);
-
-    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this.handleSyncUiEvent);
     if (UiFramework.oidcClient)
       UiFramework.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
@@ -515,9 +526,11 @@ export class SampleAppViewer extends React.Component<any> {
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
-                <ConfigurableUiContent
-                  appBackstage={<AppBackstageComposer />}
-                />
+                <FrameworkVersion version="1">
+                  <ConfigurableUiContent
+                    appBackstage={<AppBackstageComposer />}
+                  />
+                </FrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>
             <DragDropLayerRenderer />
@@ -525,25 +538,6 @@ export class SampleAppViewer extends React.Component<any> {
         </ThemeManager>
       </Provider >
     );
-  }
-
-  public handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SampleAppUiActionId.setTestProperty])) {
-      if (SampleAppIModelApp.getTestProperty() === "HIDE") {
-        UiFramework.backstageManager.itemsManager.setIsVisible("Test3", false);
-        UiFramework.backstageManager.itemsManager.setIsEnabled("Test4", false);
-      } else {
-        UiFramework.backstageManager.itemsManager.setIsVisible("Test3", true);
-        UiFramework.backstageManager.itemsManager.setIsEnabled("Test4", true);
-      }
-    }
-    if (SyncUiEventDispatcher.hasEventOfInterest(args.eventIds, [SampleAppUiActionId.setIsIModelLocal])) {
-      if (SampleAppIModelApp.isIModelLocal) {
-        UiFramework.backstageManager.itemsManager.setIsEnabled("IModelIndex", false);
-      } else {
-        UiFramework.backstageManager.itemsManager.setIsEnabled("IModelIndex", true);
-      }
-    }
   }
 }
 
@@ -585,7 +579,6 @@ async function main() {
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("ui-test-app", LogLevel.Info);
-  Logger.setLevel(FrontendLoggerCategory.OidcBrowserClient, LogLevel.Info);
 
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Info);  // used to show minimal output calculating toolbar overflow
   // Logger.setLevel("ui-framework.Toolbar", LogLevel.Trace);  // used to show detailed output calculating toolbar overflow

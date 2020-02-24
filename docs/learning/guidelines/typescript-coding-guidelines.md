@@ -44,26 +44,102 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 2. Use curly braces `{}` instead of `new Object()`.
 3. Use brackets `[]` instead of `new Array()`.
 
-## Preserve vertical screen space
+## Make judicious use of vertical screen space
 
 Programmer monitors are almost always wider than they are tall. It is common for widths to be at least 120 columns but heights to be less than 100. Therefore to make the greatest use of screen real estate, it is desireable to preserve vertical screen space wherever possible.
 
+On the other hand, vertical whitespace can contribute significantly to code readability by making the logical structure clearer. The following guidelines are intended to strike a balance between readability and code density.
+
 1. Some codebases advocate breaking lines at 80 columns. With current screen sizes, this is silly and wasteful. Don't break lines before 120 columns.
-1. Don't use blank lines unnecessarily. For example the first line of a function *not* should be a blank line.
-1. There should never be more than one blank line in a row.
-1. **Don't use** clever/pretty multi-line comment blocks to separate sections of code. One line suffices, if you absolutely feel the need to include them. Usually they aren't necessary. Your well written, accurate and complete documentation and logical source organization is all the help anyone needs to understand your code.
-1. If a function has only a single statement, it **should be** on one line.
+2. Don't use blank lines unnecessarily. For example the first line of a function *not* should be a blank line.
+3. There should never be more than one blank line in a row.
+4. **Don't use** clever/pretty multi-line comment blocks to separate sections of code. One line suffices, if you absolutely feel the need to include them. Usually they aren't necessary. Your well written, accurate and complete documentation and logical source organization is all the help anyone needs to understand your code.
+5. If a function has only a single statement, it should **not** be on one line. Many debuggers refuse to allow breakpoints to be set on single-line functions.
+
+> Note: This recommendation is now the exact opposite of the previous recommendation.
 
 ```ts
-  // No !!!
+  // No, cannot set breakpoint !!!
+  public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
+```
+
+```ts
+  // Correct, breakpoint may be set on body of function !!!
   public middle(): number {
      return this.minimum + ((this.maximum - this.minimum) / 2.0);
   }
 ```
 
+6. The body of an `if` statement or a loop should be on a separate line, even if the body contains only a single line of code.
+
 ```ts
-  // Correct (1 line vs 3) !!!
-  public middle(): number { return this.minimum + ((this.maximum - this.minimum) / 2.0); }
+  // No (body on same line as conditional, cannot set breakpoint) !!!
+  if (meow) return "cat";
+```
+
+```ts
+  // Correct (body on separate line from conditional) !!!
+  if (meow)
+    return "cat";
+```
+
+7. A closing curly brace should be followed by a blank line.
+
+```ts
+  // No (missing blank line after closing brace) !!!
+  if (minimum > maximum) {
+    const temp = minimum;
+    minimum = maximum;
+    maximum = temp;
+  }
+  return maximum - minimum;
+```
+
+```ts
+  // Correct (blank line after closing brace) !!!
+  if (minimum > maximum) {
+    const temp = minimum;
+    minimum = maximum;
+    maximum = temp;
+  }
+
+  return maximum - minimum;
+```
+
+8. Omit curly braces from single-line code blocks...
+
+```ts
+  // No (closing brace wastes a line) !!!
+  if (meow) {
+    return "cat";
+  }
+```
+
+```ts
+  // Correct (no braces) !!!
+  if (meow)
+    return "cat";
+```
+
+9. ...unless related blocks require braces
+
+```ts
+  // No (unbalanced braces) !!!
+  if (woof) {
+    rollover();
+    animal = "dog";
+  } else if (meow)
+    animal = "cat";
+```
+
+```ts
+  // Correct (balanced braces) !!!
+  if (woof) {
+    rollover();
+    animal = "dog";
+  } else if (meow) {
+    animal = "cat";
+  }
 ```
 
 ## Style
@@ -148,7 +224,9 @@ for methods that are one line and for which the return type is obvious, it is no
 
 ``` ts
 // fine, return type is obvious
-public getCorner() { return new Point3d(this.x, this.y); }
+public getCorner() {
+  return new Point3d(this.x, this.y);
+}
 ```
 
 When calling methods, the best practice would be to explicitly specify the return type. In the case of async methods calls, these calls almost always involve awaiting the results, and this practice guards against omitting the await keyword - a frequent cause of hard to debug race conditions.
@@ -306,7 +384,9 @@ public myMethod1(): void { }
  * @returns Returns the number associated with param1.
  * @throws [[NameOfErrorClass]] when the parameter is invalid.
  */
-public myMethod2(param1: string): number { /* ... */ }
+public myMethod2(param1: string): number {
+  /* ... */
+}
 
 ```
 
@@ -382,3 +462,4 @@ verbatim, with the xx replaced with the current year.
 ## Source Code Editor
 
 While not an absolute requirement, we recommend and optimize for [Visual Studio Code](https://code.visualstudio.com/). You will be likely be less productive if you attempt to use anything else. We recommend configuring the **TSLint** extension for Visual Studio Code and using our **tslint.json** to get real-time feedback.
+

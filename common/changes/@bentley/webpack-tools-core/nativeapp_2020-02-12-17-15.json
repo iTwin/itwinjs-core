@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webpack-tools-core",
+      "comment": "Fix lint errors",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools-core",
+  "email": "Affan.Khan@Bentley.com"
+}

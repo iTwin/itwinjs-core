@@ -73,6 +73,11 @@
     "typescriptreact",
   ],
   "eslint.workingDirectories": [
+    "./presentation/common",
+    "./presentation/backend",
+    "./presentation/frontend",
+    "./presentation/components",
+    "./presentation/testing",
     "./ui/components",
     "./ui/core",
     "./ui/framework",

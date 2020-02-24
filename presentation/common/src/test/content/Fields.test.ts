@@ -10,7 +10,7 @@ import {
   createRandomCategory, createRandomPrimitiveTypeDescription,
   createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomNestedFieldJSON, createRandomNestedContentField,
 } from "../_helpers/random";
-import { PropertiesFieldJSON } from "../../content/Fields";
+import { PropertiesFieldJSON } from "../../presentation-common/content/Fields";
 import { Field, PropertiesField, NestedContentField, PropertyValueFormat, StructTypeDescription, Property } from "../../presentation-common";
 
 const generateTestData = () => {

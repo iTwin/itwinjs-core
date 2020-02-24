@@ -7,7 +7,7 @@
  */
 import { Range3d, Range1d, Point3d, Point2d, Range2d, Angle, BilinearPatch } from "@bentley/geometry-core";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { QParams3d, QPoint3d, TextureMapping, RenderTexture, ColorDef, LinePixels, FillFlags } from "@bentley/imodeljs-common";
+import { QParams3d, QPoint3d, TextureMapping, RenderTexture, ColorDef, LinePixels, FillFlags, Cartographic } from "@bentley/imodeljs-common";
 import { Mesh, MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
@@ -39,6 +39,16 @@ export class BingElevationProvider {
     this._seaLevelOffsetRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
     this._heightListRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}".replace("{BingMapsAPIKey}", bingKey);
   }
+  public async getHeight(carto: Cartographic, geodetic = true) {
+    const requestUrl = this._heightListRequestTemplate.replace("{points}", Angle.radiansToDegrees(carto.latitude) + "," + Angle.radiansToDegrees(carto.longitude)).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
+    const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
+    try {
+      const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
+      return tileResponse.body.resourceSets[0].resources[0].elevations[0];
+    } catch (error) {
+      return 0.0;
+    }
+  }
   public async getHeights(range: Range2d) {
     const boundingBox = range.low.y + "," + range.low.x + "," + range.high.y + "," + range.high.x;
     const requestUrl = this._heightRangeRequestTemplate.replace("{boundingBox}", boundingBox);
@@ -62,15 +72,7 @@ export class BingElevationProvider {
     }
   }
   public async getHeightValue(point: Point3d, iModel: IModelConnection, geodetic = true): Promise<number> {
-    const carto = iModel.spatialToCartographicFromEcef(point);
-    const requestUrl = this._heightListRequestTemplate.replace("{points}", Angle.radiansToDegrees(carto.latitude) + "," + Angle.radiansToDegrees(carto.longitude)).replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
-    const requestOptions: RequestOptions = { method: "GET", responseType: "json" };
-    try {
-      const tileResponse: Response = await request(this._requestContext, requestUrl, requestOptions);
-      return tileResponse.body.resourceSets[0].resources[0].elevations[0];
-    } catch (error) {
-      return 0.0;
-    }
+    return this.getHeight(iModel.spatialToCartographicFromEcef(point), geodetic);
   }
 
   public async getHeightRange(iModel: IModelConnection) {

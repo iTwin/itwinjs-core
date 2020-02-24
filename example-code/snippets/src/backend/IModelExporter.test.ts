@@ -40,8 +40,8 @@ import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("IModelExporter", () => {
   let iModelDb: IModelDb;
-  before(() => { iModelDb = IModelTestUtils.openIModel("test.bim"); });
-  after(() => { iModelDb.closeStandalone(); });
+  before(() => { iModelDb = IModelTestUtils.openSnapshotFromSeed("test.bim"); });
+  after(() => { iModelDb.closeSnapshot(); });
 
   it("call CodeExporter example code", () => {
     const outputDirName = path.join(__dirname, "output");

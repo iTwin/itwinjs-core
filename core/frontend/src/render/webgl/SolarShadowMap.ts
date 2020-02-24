@@ -8,8 +8,8 @@
 import { GL } from "./GL";
 import { dispose, assert } from "@bentley/bentleyjs-core";
 import { RenderGraphic } from "../RenderGraphic";
-import { RenderMemory } from "../RenderSystem";
-import { Geometry, Vector3d, Point3d, Map4d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
+import { RenderMemory } from "../RenderMemory";
+import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Vector3d, Point3d, Map4d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
 import { Target } from "./Target";
 import { Texture, TextureHandle } from "./Texture";
 import { FrameBuffer } from "./FrameBuffer";
@@ -192,6 +192,8 @@ class ShadowMapParams {
 }
 
 const defaultSunDirection = Vector3d.create(-1, -1, -1).normalize()!;
+const scratchFrustum = new Frustum();
+const scratchFrustumPlanes = new FrustumPlanes();
 
 export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
   private _bundle?: Bundle;
@@ -204,7 +206,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
   private _params?: ShadowMapParams;
   private readonly _scratchRange = Range3d.createNull();
   private readonly _scratchTransform = Transform.createIdentity();
-  private readonly _scratchFrustumPlanes = new FrustumPlanes();
+
   private readonly _scratchViewFlags = new ViewFlags();
   private readonly _renderState: RenderState;
   private readonly _noZRenderState: RenderState;
@@ -320,40 +322,48 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     const worldToMap = Matrix4d.createTransform(worldToMapTransform);
     const mapToWorld = worldToMap.createInverse()!;
 
-    const backgroundOn = context.viewFlags.backgroundMap;
-    const shadowRange = Range3d.createTransformedArray(worldToMapTransform, this._params.viewFrustum.points);
+    // Start with entire project.
+    const shadowRange = worldToMapTransform.multiplyRange(iModel.projectExtents);
 
-    // By fitting to the actual tiles we can reduce the shadowRange and make better use of the texture pixels.
-    if (!backgroundOn) {
-      const viewTileRange = Range3d.createNull();
-      this._scratchFrustumPlanes.init(this._params.viewFrustum);
-      view.forEachModelTreeRef((ref) => {
-        ref.accumulateTransformedRange(viewTileRange, worldToMap, this._scratchFrustumPlanes);
-      });
+    // Limit the map to only displayed models.
+    const viewTileRange = Range3d.createNull();
+    view.forEachModelTreeRef((ref) => ref.accumulateTransformedRange(viewTileRange, worldToMap, undefined));
 
-      if (!viewTileRange.isNull)
-        shadowRange.intersect(viewTileRange, shadowRange);
+    if (!viewTileRange.isNull)
+      viewTileRange.clone(shadowRange);
+
+    // Expand shadow range to include both the shadowers and shadowed portion of background map.
+    scratchFrustum.initFromRange(shadowRange);
+    mapToWorld.multiplyPoint3dArrayQuietNormalize(scratchFrustum.points);       // This frustum represents the shadwowing geometry.  Intersect it with background geometry and expand the range depth to include that intersection.
+    const backgroundMapGeometry = context.viewport.view.displayStyle.getBackgroundMapGeometry();
+    if (undefined !== backgroundMapGeometry) {
+      const backgroundDepthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(this._shadowFrustum);
+      if (!backgroundDepthRange.isNull)
+        shadowRange.low.z = Math.min(shadowRange.low.z, backgroundDepthRange.low);
     }
 
-    const projectRange = worldToMapTransform.multiplyRange(iModel.projectExtents, this._scratchRange);
-    shadowRange.low.x = Math.max(shadowRange.low.x, projectRange.low.x);
-    shadowRange.high.x = Math.min(shadowRange.high.x, projectRange.high.x);
-    shadowRange.low.y = Math.max(shadowRange.low.y, projectRange.low.y);
-    shadowRange.high.y = Math.min(shadowRange.high.y, projectRange.high.y);
-    shadowRange.high.z = projectRange.high.z;
+    this._params.viewFrustum.transformBy(worldToMapTransform, scratchFrustum);
+    scratchFrustumPlanes.init(scratchFrustum);
 
-    if (shadowRange.isNull) {
+    const viewIntersectShadowRange = Range3d.createNull();
+    const viewClipPlanes = ConvexClipPlaneSet.createPlanes(scratchFrustumPlanes.planes!);
+    ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(viewClipPlanes, shadowRange, (points: GrowableXYZArray) => {
+      for (const point of points.getPoint3dArray())
+        viewIntersectShadowRange.extendPoint(point);
+    });
+    if (viewIntersectShadowRange.isNull) {
       this.notifyGraphicsChanged();
       return;
     }
+    viewIntersectShadowRange.high.z = shadowRange.high.z;   // We need to include shadowing geometry that may be outside view (along the solar axis).
 
-    this._shadowFrustum.initFromRange(shadowRange);
+    this._shadowFrustum.initFromRange(viewIntersectShadowRange);
     mapToWorld.multiplyPoint3dArrayQuietNormalize(this._shadowFrustum.points);
 
     const tileRange = Range3d.createNull();
-    this._scratchFrustumPlanes.init(this._shadowFrustum);
+    scratchFrustumPlanes.init(this._shadowFrustum);
     view.forEachModelTreeRef(((ref) => {
-      const drawArgs = createDrawArgs(context, this, ref, this._scratchFrustumPlanes);
+      const drawArgs = createDrawArgs(context, this, ref, scratchFrustumPlanes);
       if (undefined === drawArgs)
         return;
 
@@ -364,24 +374,18 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
         tileRange.extendRange(tileToMapTransform.multiplyRange(selectedTile.range, this._scratchRange));
         selectedTile.drawGraphics(drawArgs);
       }
-
       drawArgs.drawGraphics();
     }));
 
     if (tileRange.isNull) {
       this.clearGraphics(true);
-    } else if (0 < this._graphics.length) {
-      if (!backgroundOn) {
-        shadowRange.intersect(tileRange, shadowRange);
-
-        // Avoid an uninvertible matrix on empty range...
-        if (Geometry.isAlmostEqualNumber(shadowRange.low.x, shadowRange.high.x) ||
-          Geometry.isAlmostEqualNumber(shadowRange.low.y, shadowRange.high.y) ||
-          Geometry.isAlmostEqualNumber(shadowRange.low.z, shadowRange.high.z)) {
-          this.clearGraphics(true);
-          return;
-        }
-
+    } else if (this._graphics.length > 0) {
+      // Avoid an uninvertible matrix on empty range...
+      if (Geometry.isAlmostEqualNumber(shadowRange.low.x, shadowRange.high.x) ||
+        Geometry.isAlmostEqualNumber(shadowRange.low.y, shadowRange.high.y) ||
+        Geometry.isAlmostEqualNumber(shadowRange.low.z, shadowRange.high.z)) {
+        this.clearGraphics(true);
+        return;
         this._shadowFrustum.initFromRange(shadowRange);
         mapToWorld.multiplyPoint3dArrayQuietNormalize(this._shadowFrustum.points);
       }
@@ -472,11 +476,8 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     }
-    const ext = System.instance.capabilities.queryExtensionObject<EXT_texture_filter_anisotropic>("EXT_texture_filter_anisotropic");
-    if (undefined !== ext) {
-      const max = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
-      gl.texParameterf(gl.TEXTURE_2D, ext.TEXTURE_MAX_ANISOTROPY_EXT, max);
-    }
+
+    System.instance.setMaxAnisotropy(undefined);
     // target.recordPerformanceMetric("Compute EVSM");
 
     this._batchState.reset();   // Reset the batch Ids...

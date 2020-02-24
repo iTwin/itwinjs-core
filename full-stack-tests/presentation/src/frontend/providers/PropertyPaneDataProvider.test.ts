@@ -8,6 +8,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet } from "@bentley/presentation-common";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { initialize, terminate } from "../../IntegrationTests";
+import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider"; // tslint:disable-line: no-direct-imports
 
 describe("PropertyDataProvider", async () => {
 
@@ -21,7 +22,7 @@ describe("PropertyDataProvider", async () => {
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openSnapshot(testIModelName);
     physicalModelProps = (await imodel.models.queryProps({ from: "bis.PhysicalModel" }))[0];
-    provider = new PresentationPropertyDataProvider(imodel, "SimpleContent");
+    provider = new PresentationPropertyDataProvider({ imodel, ruleset: DEFAULT_PROPERTY_GRID_RULESET });
   });
 
   after(async () => {

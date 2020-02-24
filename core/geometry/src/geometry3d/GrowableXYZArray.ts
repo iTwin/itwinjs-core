@@ -761,20 +761,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return undefined;
   }
 
-  /** Return the distance between two points in the array.
-   * @deprecated use distanceIndexIndex
-   */
-  public distance(i: number, j: number): number | undefined {
-    if (i >= 0 && i < this._xyzInUse && j >= 0 && j <= this._xyzInUse) {
-      const i0 = 3 * i;
-      const j0 = 3 * j;
-      return Geometry.hypotenuseXYZ(
-        this._data[j0] - this._data[i0],
-        this._data[j0 + 1] - this._data[i0 + 1],
-        this._data[j0 + 2] - this._data[i0 + 2]);
-    }
-    return undefined;
-  }
   /** Return the distance between an array point and the input point. */
   public distanceIndexToPoint(i: number, spacePoint: XYAndZ): number | undefined {
     if (i >= 0 && i < this._xyzInUse) {

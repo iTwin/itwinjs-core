@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import {
   StagePanel as NZ_StagePanel,
   StagePanelTypeHelpers,
@@ -24,7 +25,7 @@ import { WidgetStack, WidgetTabs } from "../widgets/WidgetStack";
 import { StagePanelChangeHandler, WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { ZoneLocation } from "../zones/Zone";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
-import { StagePanelLocation, getStagePanelType, getNestedStagePanelKey } from "./StagePanel";
+import { getStagePanelType, getNestedStagePanelKey } from "./StagePanel";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import "./FrameworkStagePanel.scss";
 

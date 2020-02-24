@@ -19,7 +19,7 @@ import { assert } from "@bentley/bentleyjs-core";
  * @internal
  */
 export namespace Quantization {
-  const rangeScale = 0xffff;
+  export const rangeScale = 0xffff;
 
   export function computeScale(extent: number): number { return 0.0 === extent ? extent : rangeScale / extent; }
   export function isInRange(qpos: number) { return qpos >= 0.0 && qpos < rangeScale + 1.0; }
@@ -145,6 +145,7 @@ export class QPoint2d {
 export class QPoint2dList {
   public readonly params: QParams2d;
   private readonly _list = new Array<QPoint2d>();
+  public get list(): QPoint2d[] { return this._list; }
 
   public constructor(params: QParams2d) {
     this.params = params.clone();

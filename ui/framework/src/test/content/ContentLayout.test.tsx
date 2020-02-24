@@ -37,6 +37,10 @@ describe("ContentLayout", () => {
     await TestUtils.initializeUiFramework();
   });
 
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   const myContentGroup: ContentGroup = new ContentGroup({
     contents: [{ id: "myContent", classId: TestContentControl, applicationData: { name: "Test" } }],
   });

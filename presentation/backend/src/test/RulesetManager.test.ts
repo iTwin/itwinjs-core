@@ -7,8 +7,8 @@ import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { RegisteredRuleset } from "@bentley/presentation-common";
-import { NativePlatformDefinition } from "../NativePlatform";
-import { RulesetManagerImpl } from "../RulesetManager";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 
 describe("RulesetManager", () => {
 
@@ -85,14 +85,14 @@ describe("RulesetManager", () => {
       const rulesetId = faker.random.uuid();
       const hash = faker.random.uuid();
       addonMock.setup((x) => x.removeRuleset(rulesetId, hash)).returns(() => true).verifiable();
-      const result = await manager.remove([rulesetId, hash]);
+      const result = manager.remove([rulesetId, hash]);
       addonMock.verifyAll();
       expect(result).to.be.true;
     });
 
     it("calls addon's removeRuleset with RegisteredRuleset argument", async () => {
       const ruleset = { id: faker.random.uuid(), rules: [] };
-      const registered = new RegisteredRuleset(ruleset, faker.random.uuid(), (ruleset: RegisteredRuleset) => manager.remove(ruleset));
+      const registered = new RegisteredRuleset(ruleset, faker.random.uuid(), (r: RegisteredRuleset) => manager.remove(r));
       addonMock.setup((x) => x.removeRuleset(ruleset.id, registered.uniqueIdentifier)).returns(() => true).verifiable();
       const result = manager.remove(registered);
       addonMock.verifyAll();

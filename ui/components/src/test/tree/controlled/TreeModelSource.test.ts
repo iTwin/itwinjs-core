@@ -7,6 +7,7 @@ import * as moq from "typemoq";
 import sinon from "sinon";
 import * as faker from "faker";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeModelSource } from "../../../ui-components/tree/controlled/TreeModelSource";
 import { ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components/tree/TreeDataProvider";
 import { TreeModelNodeInput, MutableTreeModel, VisibleTreeNodes } from "../../../ui-components/tree/controlled/TreeModel";
@@ -25,6 +26,7 @@ describe("TreeModelSource", () => {
     mutableTreeModelMock.reset();
 
     onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
+    // tslint:disable-next-line:deprecation
     dataProviderMock.setup((x) => x.onTreeNodeChanged).returns(() => onTreeNodeChanged);
     modelSource = new TreeModelSource();
   });
@@ -49,8 +51,8 @@ describe("TreeModelSource", () => {
       inputNode = {
         id: faker.random.uuid(),
         isExpanded: faker.random.boolean(),
-        item: { id: faker.random.uuid(), label: faker.random.word() },
-        label: faker.random.word(),
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
         isLoading: faker.random.boolean(),
         isSelected: faker.random.boolean(),
       };
@@ -68,8 +70,8 @@ describe("TreeModelSource", () => {
       const newInput: TreeModelNodeInput = {
         id: faker.random.uuid(),
         isExpanded: faker.random.boolean(),
-        item: { id: faker.random.uuid(), label: faker.random.word() },
-        label: faker.random.word(),
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
         isLoading: faker.random.boolean(),
         isSelected: faker.random.boolean(),
       };

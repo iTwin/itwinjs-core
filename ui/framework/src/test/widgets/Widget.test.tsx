@@ -4,8 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount } from "enzyme";
+
+import { WidgetState } from "@bentley/ui-abstract";
+
 import TestUtils from "../TestUtils";
-import { Widget, WidgetState } from "../../ui-framework";
+import { Widget } from "../../ui-framework";
 
 describe("Widget", () => {
 

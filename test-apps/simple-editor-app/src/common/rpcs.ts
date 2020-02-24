@@ -11,10 +11,10 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
 export default function getSupportedRpcs(): RpcInterfaceDefinition[] {
   return [
     IModelReadRpcInterface,
-    IModelWriteRpcInterface,
     IModelTileRpcInterface,
-    PresentationRpcInterface,
     SnapshotIModelRpcInterface,
+    PresentationRpcInterface,
+    IModelWriteRpcInterface,
     Editor3dRpcInterface,
     NativeAppRpcInterface,
   ];

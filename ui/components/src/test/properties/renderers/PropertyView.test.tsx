@@ -8,7 +8,7 @@ import sinon from "sinon";
 import * as React from "react";
 import { Orientation, ElementSeparator } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyView } from "../../../ui-components";
 
 describe("PropertyView", () => {

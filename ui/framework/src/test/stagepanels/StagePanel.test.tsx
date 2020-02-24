@@ -9,6 +9,7 @@ import * as moq from "typemoq";
 import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
+import { StagePanelLocation } from "@bentley/ui-abstract";
 import { SplitterPaneTarget as NZ_SplitterPaneTarget } from "@bentley/ui-ninezone";
 import {
   StagePanel,
@@ -28,7 +29,7 @@ import {
 import { StagePanelState, StagePanelDef } from "../../ui-framework/stagepanels/StagePanelDef";
 import { UiFramework } from "../../ui-framework/UiFramework";
 import { UiShowHideManager } from "../../ui-framework/utils/UiShowHideManager";
-import { StagePanelLocation, StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel";
+import { StagePanelRuntimeProps } from "../../ui-framework/stagepanels/StagePanel";
 
 describe("StagePanel", () => {
   class TestWidget extends WidgetControl {

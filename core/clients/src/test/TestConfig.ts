@@ -30,7 +30,7 @@ function isOfflineSet(): boolean {
  */
 export class TestConfig {
   /** Name of project used by most tests */
-  public static readonly projectName: string = "iModelJsTest";
+  public static readonly projectName: string = "iModelJsIntegrationTest";
   public static readonly enableMocks: boolean = isOfflineSet();
 
   /** Login the specified user and return the AuthorizationToken */

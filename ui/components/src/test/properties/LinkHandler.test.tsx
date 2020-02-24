@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render, fireEvent } from "@testing-library/react";
+import { render, fireEvent, waitForElement } from "@testing-library/react";
 import * as sinon from "sinon";
 import * as React from "react";
+import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
 import TestUtils from "../TestUtils";
-import { PropertyRecord, LinkElementsInfo } from "@bentley/imodeljs-frontend";
-import { hasLinks, renderLinks, withLinks } from "../../ui-components/properties/LinkHandler";
-import { isPromiseLike } from "@bentley/ui-core";
+import { hasLinks, renderLinks, withLinks, LinksRenderer } from "../../ui-components/properties/LinkHandler";
 
 describe("LinkHandler", () => {
   let record: PropertyRecord;
@@ -43,10 +42,6 @@ describe("LinkHandler", () => {
       record.links = links;
     });
 
-    it("returns promise when promised text is provided", () => {
-      expect(isPromiseLike(renderLinks(Promise.resolve("random text"), record))).to.be.true;
-    });
-
     it("renders whole anchor tag when matcher is not provided", () => {
       const testString = "Example text";
 
@@ -54,6 +49,29 @@ describe("LinkHandler", () => {
 
       expect(anchor.container.getElementsByClassName("core-underlined-button")).to.not.be.empty;
       expect(anchor.container.innerHTML).to.contain(testString);
+    });
+
+    it("calls highlight callback if provided", () => {
+      const testString = "Example text";
+      const highlightSpy = sinon.spy();
+
+      renderLinks(testString, record, highlightSpy);
+      expect(highlightSpy).to.be.calledOnce;
+    });
+
+    it("calls highlight callback for matching part", () => {
+      record.links!.matcher = () => [{ start: 0, end: 7 }];
+      const testString = "Example text";
+      let matchedPartHighlighted = false;
+      const highlighter = (text: string) => {
+        if (text === testString.substr(0, 7))
+          matchedPartHighlighted = true;
+        return text;
+      };
+
+      renderLinks(testString, record, highlighter);
+
+      expect(matchedPartHighlighted).to.be.true;
     });
 
     it("rendered anchor tag calls appropriate callback on click", () => {
@@ -119,5 +137,38 @@ describe("LinkHandler", () => {
 
       expect(typeof withLinks(record, stringValue)).to.equal(typeof {});
     });
+  });
+
+  describe("<LinksRenderer />", () => {
+
+    it("renders string", () => {
+      const value = "some value";
+      const propertyRecord = TestUtils.createPrimitiveStringProperty("link_property", value);
+      const { getByText } = render(<LinksRenderer value={value} record={propertyRecord} />);
+      getByText(value);
+    });
+
+    it("renders async string", async () => {
+      const value = "some value";
+      const propertyRecord = TestUtils.createPrimitiveStringProperty("link_property", value);
+      const valuePromise = Promise.resolve(value);
+      const { getByText } = render(<LinksRenderer value={valuePromise} record={propertyRecord} />);
+      await waitForElement(() => getByText(value));
+    });
+
+    it("rerenders async string", async () => {
+      const value = "some value";
+      const propertyRecord = TestUtils.createPrimitiveStringProperty("link_property", value);
+      const valuePromise = Promise.resolve(value);
+      const { getByText, rerender } = render(<LinksRenderer value={valuePromise} record={propertyRecord} />);
+      await waitForElement(() => getByText(value));
+
+      const newValue = "some new value";
+      const newPropertyRecord = TestUtils.createPrimitiveStringProperty("link_property", newValue);
+      const newValuePromise = Promise.resolve(newValue);
+      rerender(<LinksRenderer value={newValuePromise} record={newPropertyRecord} />);
+      await waitForElement(() => getByText(newValue));
+    });
+
   });
 });

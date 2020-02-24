@@ -1,6 +1,30 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 22 Jan 2020 19:24:12 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 12 Feb 2020 17:45:50 GMT
+
+### Updates
+
+- Fix IGeometry roundtripping issue through ECSql.  Fix insert/update binary properties for Element Aspect.
+- Separated out routines to download and open briefcases. 
+- bulk mode
+- Consolidated sign-in for integration tests
+- bulkmode
+- iModel write API development
+- Prevent reuse of cached tiles after project extents change.
+- A new optional dependency, ecschema-metadata, allows for retrieval of full Schema information from an iModel using the new IModelSchemaLoader utility class.
+- Added parameters for ruleset directory and temp cache location for version compare processing
+- Add ViewDefinition.getAuxiliaryCoordinateSystemId and ViewDefinition.setAuxiliaryCoordinateSystemId methods
+- Add SpatialLocationModel.insert
+- Add optional isPlantProjection parameter to PhysicalModel.insert
+- VSTS#256133: Fixed issue with reopening connections if the backend crashes. Fixes to integration tests. 
+- Better documentation of OidcDesktopClient
+- Fixed changeset perf test by using another iModel on Hub
+- Add ViewDetails to ViewDefinition.
+- Add support for plan projection models with 3d display priority.
+- UlasUtilities exported as an module.
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT

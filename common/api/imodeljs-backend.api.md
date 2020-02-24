@@ -15,6 +15,7 @@ import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { BackgroundMapProps } from '@bentley/imodeljs-common';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyStatus } from '@bentley/bentleyjs-core';
+import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
 import { CategoryProps } from '@bentley/imodeljs-common';
@@ -92,6 +93,7 @@ import { IModelToken } from '@bentley/imodeljs-common';
 import { IModelTokenProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
+import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { LightLocationProps } from '@bentley/imodeljs-common';
 import { LinearLocationReference } from '@bentley/imodeljs-common';
@@ -117,6 +119,7 @@ import { OidcClient } from '@bentley/imodeljs-clients';
 import { OidcDesktopClientConfiguration } from '@bentley/imodeljs-common';
 import { OpenMode } from '@bentley/bentleyjs-core';
 import * as os from 'os';
+import { OverriddenBy } from '@bentley/imodeljs-common';
 import { Placement2d } from '@bentley/imodeljs-common';
 import { Placement3d } from '@bentley/imodeljs-common';
 import { Point2d } from '@bentley/geometry-core';
@@ -242,6 +245,8 @@ export interface AppActivityMonitor {
 
 // @alpha
 export enum ApplicationType {
+    // (undocumented)
+    NativeApp = 2,
     // (undocumented)
     WebAgent = 0,
     // (undocumented)
@@ -485,10 +490,12 @@ export class BriefcaseManager {
     static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken;
     // (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
-    static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry>;
+    static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry>;
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     static dumpChangeSet(briefcase: BriefcaseEntry, changeSetToken: ChangeSetToken): void;
     static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined;
+    // (undocumented)
+    static getBriefcases(requestContext: AuthorizedClientRequestContext): BriefcaseProps[];
     // (undocumented)
     static getChangeCachePathName(iModelId: GuidString): string;
     // (undocumented)
@@ -893,6 +900,8 @@ export namespace ConcurrencyControl {
         addLocks(locks: LockProps[]): this;
         // (undocumented)
         clear(): void;
+        // (undocumented)
+        clone(): Request;
         // (undocumented)
         get codes(): CodeProps[];
         // (undocumented)
@@ -1308,6 +1317,8 @@ export class ECSchemaXmlContext {
     // (undocumented)
     readSchemaFromXmlFile(filePath: string): any;
     // (undocumented)
+    setFirstSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void;
+    // (undocumented)
     setSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void;
 }
 
@@ -1642,6 +1653,22 @@ export class EmbeddedFileLink extends LinkElement {
     static get className(): string;
 }
 
+// @internal
+export interface EmitOptions {
+    // (undocumented)
+    strategy: EmitStrategy;
+}
+
+// @internal
+export enum EmitStrategy {
+    // (undocumented)
+    NoDuplicateEvents = 2,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    PurgeOlderEvents = 1
+}
+
 // @public
 export class Entity implements EntityProps {
     // @internal
@@ -1654,8 +1681,6 @@ export class Entity implements EntityProps {
     get classFullName(): string;
     static get className(): string;
     get className(): string;
-    // @internal @deprecated
-    clone(): this;
     // @beta
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
@@ -1670,7 +1695,7 @@ export class Entity implements EntityProps {
 export class EventSink {
     constructor(id: string);
     // (undocumented)
-    emit(namespace: string, eventName: string, data: any): void;
+    emit(namespace: string, eventName: string, data: any, options?: EmitOptions): void;
     // (undocumented)
     fetch(limit: number): QueuedEvent[];
     // (undocumented)
@@ -1705,8 +1730,6 @@ export interface EventSinkOptions {
 
 // @public
 export namespace ExportGraphics {
-    // @beta @deprecated
-    export function areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean;
     export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean;
 }
 
@@ -1750,9 +1773,6 @@ export interface ExportGraphicsOptions {
     partInstanceArray?: ExportPartInstanceInfo[];
 }
 
-// @beta @deprecated (undocumented)
-export type ExportGraphicsProps = ExportGraphicsOptions;
-
 // @public
 export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 
@@ -1778,9 +1798,6 @@ export interface ExportPartDisplayInfo {
     subCategoryId: Id64String;
 }
 
-// @beta @deprecated (undocumented)
-export type ExportPartDisplayProps = ExportPartDisplayInfo;
-
 // @public
 export type ExportPartFunction = (info: ExportPartInfo) => void;
 
@@ -1795,9 +1812,6 @@ export interface ExportPartGraphicsOptions {
     onPartGraphics: ExportPartFunction;
     onPartLineGraphics?: ExportPartLinesFunction;
 }
-
-// @beta @deprecated (undocumented)
-export type ExportPartGraphicsProps = ExportPartGraphicsOptions;
 
 // @public
 export interface ExportPartInfo {
@@ -1814,9 +1828,6 @@ export interface ExportPartInstanceInfo {
     partInstanceId: Id64String;
     transform?: Float64Array;
 }
-
-// @beta @deprecated (undocumented)
-export type ExportPartInstanceProps = ExportPartInstanceInfo;
 
 // @public
 export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
@@ -2229,15 +2240,13 @@ export class IModelDb extends IModel {
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
     // @internal
-    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<BriefcaseEntry>;
+    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
     // (undocumented)
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
     // @internal
     get eventSink(): EventSink | undefined;
-    // @deprecated
-    executeQuery(ecsql: string, bindings?: any[] | object): any[];
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static find(iModelToken: IModelToken): IModelDb;
@@ -2254,8 +2263,6 @@ export class IModelDb extends IModel {
     // @beta
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
-    // @deprecated
-    importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void>;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
@@ -2264,8 +2271,6 @@ export class IModelDb extends IModel {
     get isOpen(): boolean;
     get isReadonly(): boolean;
     get isSnapshot(): boolean;
-    // @deprecated
-    get isStandalone(): boolean;
     // (undocumented)
     static readonly maxLimit = 10000;
     // (undocumented)
@@ -2282,14 +2287,12 @@ export class IModelDb extends IModel {
     static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: IModelDb) => void>;
     static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelDb>;
     // @internal
-    static openBriefcase(requestContext: AuthorizedClientRequestContext, briefcaseEntry: BriefcaseEntry): Promise<IModelDb>;
+    static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<IModelDb>;
     readonly openParams: OpenParams;
     // @beta
     static openSnapshot(filePath: string): IModelDb;
     // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
-    // @internal @deprecated (undocumented)
-    static performUpgrade(pathname: string): DbResult;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
@@ -2341,6 +2344,7 @@ export namespace IModelDb {
         createElement<T extends Element>(elProps: ElementProps): T;
         deleteAspect(aspectInstanceIds: Id64Arg): void;
         deleteElement(ids: Id64Arg): void;
+        getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
         getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
         // @internal
@@ -2472,6 +2476,8 @@ export class IModelHost {
     // @internal
     static elementEditors: Map<string, IElementEditor>;
     static getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+    // (undocumented)
+    static get isNativeAppBackend(): boolean;
     // @internal (undocumented)
     static loadNative(region: number, dir?: string): void;
     static get logTileLoadTimeThreshold(): number;
@@ -2519,10 +2525,16 @@ export class IModelHostConfiguration {
     // @internal
     eventSinkOptions: EventSinkOptions;
     imodelClient?: IModelClient;
+    // (undocumented)
+    get isDefaultBriefcaseCacheDir(): boolean;
+    // (undocumented)
+    get isDefaultNativeAppCacheDir(): boolean;
     // @internal
     logTileLoadTimeThreshold: number;
     // @internal
     logTileSizeThreshold: number;
+    // @internal
+    nativeAppCacheDir?: string;
     nativePlatform?: any;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
@@ -2566,17 +2578,20 @@ export interface IModelImportOptions {
 
 // @public
 export class IModelJsFs {
-    static appendFileSync(path: string, str: string): void;
+    static appendFileSync(pathname: string, str: string): void;
     static copySync(src: string, dest: string, opts?: any): void;
-    static existsSync(path: string): boolean;
-    static lstatSync(path: string): IModelJsFsStats | undefined;
-    static mkdirSync(path: string): void;
-    static readdirSync(path: string): string[];
-    static readFileSync(path: string): string | Buffer;
-    static removeSync(path: string): void;
-    static rmdirSync(path: string): void;
-    static unlinkSync(path: string): void;
-    static writeFileSync(path: string, data: string | Uint8Array, wflag?: string): void;
+    static existsSync(pathname: string): boolean;
+    static lstatSync(pathname: string): IModelJsFsStats | undefined;
+    static mkdirSync(pathname: string): void;
+    static readdirSync(pathname: string): string[];
+    static readFileSync(pathname: string): string | Buffer;
+    static recursiveMkDirSync(dirPath: string): void;
+    static recusiveFindSync(rootDir: string, pattern: RegExp): string[];
+    static removeSync(pathname: string): void;
+    static rmdirSync(pathname: string): void;
+    static unlinkSync(pathname: string): void;
+    static walkDirSync(rootDir: string, cb: (pathname: string, isDir: boolean) => boolean): void;
+    static writeFileSync(pathname: string, data: string | Uint8Array, wflag?: string): void;
 }
 
 // @public
@@ -3191,6 +3206,16 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     toJSON(): ModelSelectorProps;
 }
 
+// @internal
+export class NativeAppBackend {
+    static checkInternetConnectivity(): InternetConnectivityStatus;
+    // (undocumented)
+    static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
+    static overrideInternetConnectivity(_overridenBy: OverriddenBy, status?: InternetConnectivityStatus): void;
+    static shutdown(): void;
+    static startup(configuration?: IModelHostConfiguration): void;
+}
+
 // @alpha
 export class OidcDesktopClient extends OidcClient implements IOidcFrontendClient {
     constructor(clientConfiguration: OidcDesktopClientConfiguration);
@@ -3215,8 +3240,6 @@ export class OpenParams {
     static fixedVersion(): OpenParams;
     get isBriefcase(): boolean;
     get isSnapshot(): boolean;
-    // @deprecated
-    get isStandalone(): boolean;
     readonly openMode: OpenMode;
     static pullAndPush(): OpenParams;
     // @deprecated

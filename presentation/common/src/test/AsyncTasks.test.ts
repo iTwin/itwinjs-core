@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { using } from "@bentley/bentleyjs-core";
-import { AsyncTasksTracker } from "../AsyncTasks";
+import { AsyncTasksTracker } from "../presentation-common";
 
 describe("AsyncTasksTracker", () => {
 

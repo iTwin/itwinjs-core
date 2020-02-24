@@ -2,6 +2,21 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "1.12.0",
+      "tag": "@bentley/ui-core_v1.12.0",
+      "date": "Wed, 12 Feb 2020 17:45:50 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgraded icons-generic-webfont to ^1.0.0"
+          },
+          {
+            "comment": "Added useDisposable hook"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.11.0",
       "tag": "@bentley/ui-core_v1.11.0",
       "date": "Wed, 22 Jan 2020 19:24:12 GMT",

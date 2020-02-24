@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Id64, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64 } from "@bentley/bentleyjs-core";
 import { Arc3d, Point3d, AngleSweep, Angle, LineString3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ElementProps, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelProps, Placement3dProps, Code } from "@bentley/imodeljs-common";
 import { IModelDb } from "@bentley/imodeljs-backend";
@@ -18,11 +18,11 @@ describe("Wire Format Snippets", () => {
   let iModel: IModelDb;
 
   before(() => {
-    iModel = IModelTestUtils.openIModel("test.bim", { copyFilename: "wire-format.bim", openMode: OpenMode.ReadWrite });
+    iModel = IModelTestUtils.openSnapshotFromSeed("test.bim", { copyFilename: "wire-format.bim" });
   });
 
   after(() => {
-    iModel.closeStandalone();
+    iModel.closeSnapshot();
   });
 
   it("Root Subject", () => {

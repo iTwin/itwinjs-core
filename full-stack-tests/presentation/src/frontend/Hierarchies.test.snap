@@ -13,8 +13,7 @@ Array [
       ],
       "type": "ECClassGroupingNode",
     },
-    "label": "Definition Model",
-    "labelDefinition": Object {
+    "label": Object {
       "displayValue": "Definition Model",
       "rawValue": "Definition Model",
       "typeName": "string",
@@ -31,8 +30,7 @@ Array [
       ],
       "type": "ECClassGroupingNode",
     },
-    "label": "Dictionary Model",
-    "labelDefinition": Object {
+    "label": Object {
       "displayValue": "Dictionary Model",
       "rawValue": "Dictionary Model",
       "typeName": "string",
@@ -49,8 +47,7 @@ Array [
       ],
       "type": "ECClassGroupingNode",
     },
-    "label": "Document List",
-    "labelDefinition": Object {
+    "label": Object {
       "displayValue": "Document List",
       "rawValue": "Document List",
       "typeName": "string",
@@ -66,8 +63,7 @@ Array [
       ],
       "type": "ECClassGroupingNode",
     },
-    "label": "Group Model",
-    "labelDefinition": Object {
+    "label": Object {
       "displayValue": "Group Model",
       "rawValue": "Group Model",
       "typeName": "string",
@@ -84,8 +80,7 @@ Array [
       ],
       "type": "ECClassGroupingNode",
     },
-    "label": "Link Model",
-    "labelDefinition": Object {
+    "label": Object {
       "displayValue": "Link Model",
       "rawValue": "Link Model",
       "typeName": "string",
@@ -102,8 +97,7 @@ Array [
       ],
       "type": "ECClassGroupingNode",
     },
-    "label": "Physical Model",
-    "labelDefinition": Object {
+    "label": Object {
       "displayValue": "Physical Model",
       "rawValue": "Physical Model",
       "typeName": "string",
@@ -120,8 +114,7 @@ Array [
       ],
       "type": "ECClassGroupingNode",
     },
-    "label": "Repository Model",
-    "labelDefinition": Object {
+    "label": Object {
       "displayValue": "Repository Model",
       "rawValue": "Repository Model",
       "typeName": "string",
@@ -152,8 +145,7 @@ Array [
             ],
             "type": "nodeType",
           },
-          "label": "filter ch1",
-          "labelDefinition": Object {
+          "label": Object {
             "displayValue": "filter ch1",
             "rawValue": "filter ch1",
             "typeName": "string",
@@ -181,8 +173,7 @@ Array [
                 ],
                 "type": "nodeType",
               },
-              "label": "filter ch4",
-              "labelDefinition": Object {
+              "label": Object {
                 "displayValue": "filter ch4",
                 "rawValue": "filter ch4",
                 "typeName": "string",
@@ -207,8 +198,7 @@ Array [
             ],
             "type": "nodeType",
           },
-          "label": "other ch3",
-          "labelDefinition": Object {
+          "label": Object {
             "displayValue": "other ch3",
             "rawValue": "other ch3",
             "typeName": "string",
@@ -232,8 +222,7 @@ Array [
         ],
         "type": "nodeType",
       },
-      "label": "filter r1",
-      "labelDefinition": Object {
+      "label": Object {
         "displayValue": "filter r1",
         "rawValue": "filter r1",
         "typeName": "string",
@@ -260,8 +249,7 @@ Array [
             ],
             "type": "nodeType",
           },
-          "label": "filter ch6",
-          "labelDefinition": Object {
+          "label": Object {
             "displayValue": "filter ch6",
             "rawValue": "filter ch6",
             "typeName": "string",
@@ -285,8 +273,7 @@ Array [
         ],
         "type": "nodeType",
       },
-      "label": "other r3",
-      "labelDefinition": Object {
+      "label": Object {
         "displayValue": "other r3",
         "rawValue": "other r3",
         "typeName": "string",
@@ -314,10 +301,6 @@ Array [
                 "isMarked": false,
                 "node": Object {
                   "key": Object {
-                    "instanceKey": Object {
-                      "className": "BisCore:DefinitionPartition",
-                      "id": "0x10",
-                    },
                     "instanceKeys": Array [
                       Object {
                         "className": "BisCore:DefinitionPartition",
@@ -333,8 +316,7 @@ Array [
                     ],
                     "type": "ECInstancesNode",
                   },
-                  "label": "BisCore.DictionaryModel",
-                  "labelDefinition": Object {
+                  "label": Object {
                     "displayValue": "BisCore.DictionaryModel",
                     "rawValue": "BisCore.DictionaryModel",
                     "typeName": "string",
@@ -362,8 +344,7 @@ Array [
                 ],
                 "type": "ECClassGroupingNode",
               },
-              "label": "Definition Partition",
-              "labelDefinition": Object {
+              "label": Object {
                 "displayValue": "Definition Partition",
                 "rawValue": "Definition Partition",
                 "typeName": "string",
@@ -382,10 +363,6 @@ Array [
                 "isMarked": true,
                 "node": Object {
                   "key": Object {
-                    "instanceKey": Object {
-                      "className": "BisCore:LinkPartition",
-                      "id": "0xe",
-                    },
                     "instanceKeys": Array [
                       Object {
                         "className": "BisCore:LinkPartition",
@@ -401,8 +378,7 @@ Array [
                     ],
                     "type": "ECInstancesNode",
                   },
-                  "label": "BisCore.RealityDataSources",
-                  "labelDefinition": Object {
+                  "label": Object {
                     "displayValue": "BisCore.RealityDataSources",
                     "rawValue": "BisCore.RealityDataSources",
                     "typeName": "string",
@@ -430,8 +406,7 @@ Array [
                 ],
                 "type": "ECClassGroupingNode",
               },
-              "label": "Link Partition",
-              "labelDefinition": Object {
+              "label": Object {
                 "displayValue": "Link Partition",
                 "rawValue": "Link Partition",
                 "typeName": "string",
@@ -448,10 +423,6 @@ Array [
         "node": Object {
           "hasChildren": true,
           "key": Object {
-            "instanceKey": Object {
-              "className": "BisCore:Subject",
-              "id": "0x1",
-            },
             "instanceKeys": Array [
               Object {
                 "className": "BisCore:Subject",
@@ -465,8 +436,7 @@ Array [
             ],
             "type": "ECInstancesNode",
           },
-          "label": "DgnV8Bridge",
-          "labelDefinition": Object {
+          "label": Object {
             "displayValue": "DgnV8Bridge",
             "rawValue": "DgnV8Bridge",
             "typeName": "string",
@@ -483,10 +453,6 @@ Array [
     "node": Object {
       "hasChildren": true,
       "key": Object {
-        "instanceKey": Object {
-          "className": "BisCore:RepositoryModel",
-          "id": "0x1",
-        },
         "instanceKeys": Array [
           Object {
             "className": "BisCore:RepositoryModel",
@@ -499,8 +465,7 @@ Array [
         ],
         "type": "ECInstancesNode",
       },
-      "label": "DgnV8Bridge",
-      "labelDefinition": Object {
+      "label": Object {
         "displayValue": "DgnV8Bridge",
         "rawValue": "DgnV8Bridge",
         "typeName": "string",

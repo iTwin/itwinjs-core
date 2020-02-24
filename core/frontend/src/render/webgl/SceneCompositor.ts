@@ -26,7 +26,7 @@ import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
-import { RenderMemory } from "../RenderSystem";
+import { RenderMemory } from "../RenderMemory";
 import { ViewRect } from "../../ViewRect";
 import { IModelConnection } from "../../IModelConnection";
 import { assert, dispose } from "@bentley/bentleyjs-core";

@@ -38,6 +38,7 @@ describe("Sign in (#integration)", () => {
       email: "invalid@bentley.com",
       password: "invalid",
     };
+
     await expect(getTestOidcToken(oidcConfig, invalidUser))
       .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: Incorrect user ID or password. Type the correct user ID and password, and try again.`);
   });

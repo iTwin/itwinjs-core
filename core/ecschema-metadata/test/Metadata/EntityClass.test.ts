@@ -497,16 +497,17 @@ describe("EntityClass", () => {
     it("should throw for invalid mixins", async () => {
       expect(testClass).to.exist;
       const props = { ...baseJson, mixins: ["DoesNotExist"] };
-      await expect(testClass.deserialize(props)).to.be.rejectedWith(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
+      await expect(testClass.fromJSON(props)).to.be.rejectedWith(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
 
     it("should throw for invalid mixins synchronously", () => {
       expect(testClass).to.exist;
       const props = { ...baseJson, mixins: ["DoesNotExist"] };
-      expect(() => testClass.deserializeSync(props)).to.throw(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
+      expect(() => testClass.fromJSONSync(props)).to.throw(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
   });
-  describe("toJson", () => {
+
+  describe("toJSON", () => {
     const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
     const testEntityClass = new EntityClass(schema, "testClass");
     const schemaJsonOne = {
@@ -517,20 +518,38 @@ describe("EntityClass", () => {
       baseClass: "TestSchema.testBaseClass",
     };
     it("async - Simple serialization", async () => {
-      await testEntityClass.deserialize(schemaJsonOne);
-      const serialized = testEntityClass.toJson(true, true);
+      await testEntityClass.fromJSON(schemaJsonOne);
+      const serialized = testEntityClass.toJSON(true, true);
       assert.strictEqual(serialized.baseClass, "TestSchema.testBaseClass");
       assert.notProperty(serialized, "modifier");
       assert.strictEqual(serialized.schemaVersion, "01.00.00");
       assert.strictEqual(serialized.name, "testClass");
     });
     it("sync - Simple serialization", () => {
-      testEntityClass.deserializeSync(schemaJsonOne);
-      const serialized = testEntityClass.toJson(true, true);
+      testEntityClass.fromJSONSync(schemaJsonOne);
+      const serialized = testEntityClass.toJSON(true, true);
       assert.strictEqual(serialized.baseClass, "TestSchema.testBaseClass");
       assert.notProperty(serialized, "modifier");
       assert.strictEqual(serialized.schemaVersion, "01.00.00");
       assert.strictEqual(serialized.name, "testClass");
+    });
+    it("async - JSON stringify serialization succeeds", async () => {
+      await testEntityClass.fromJSON(schemaJsonOne);
+      const json = JSON.stringify(testEntityClass);
+      const serialized = JSON.parse(json);
+      assert.strictEqual(serialized.baseClass, "TestSchema.testBaseClass");
+      assert.notProperty(serialized, "modifier");
+      assert.strictEqual(serialized.schemaVersion, undefined);
+      assert.strictEqual(serialized.name, undefined);
+    });
+    it("sync - JSON stringify serialization succeeds", () => {
+      testEntityClass.fromJSONSync(schemaJsonOne);
+      const json = JSON.stringify(testEntityClass);
+      const serialized = JSON.parse(json);
+      assert.strictEqual(serialized.baseClass, "TestSchema.testBaseClass");
+      assert.notProperty(serialized, "modifier");
+      assert.strictEqual(serialized.schemaVersion, undefined);
+      assert.strictEqual(serialized.name, undefined);
     });
     it("should succeed with mixin", async () => {
       const schemaJson = createSchemaJsonWithItems({
@@ -551,7 +570,7 @@ describe("EntityClass", () => {
       assert.isDefined(testClass);
       assert.isTrue(testClass instanceof EntityClass);
       const entityClass = testClass as EntityClass;
-      const entityClassSerialization = entityClass!.toJson(false, true);
+      const entityClassSerialization = entityClass!.toJSON(false, true);
       const expectedResult = {
         schemaItemType: "EntityClass",
         mixins: ["TestSchema.testMixin"],

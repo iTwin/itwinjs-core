@@ -14,7 +14,7 @@ Executing an ECSQL statement typically consists of these steps:
 
 There are two ways to execute an ECSQL statement:
 
-- [IModelDb.executeQuery]($backend) is the high-level API which does all the above steps in a single call.
+- [IModelDb.query]($backend) is the high-level API which does all the above steps in a single asynchronous call.
 - [ECSqlStatement]($backend) is the lower-level API in case you need more flexibility,
   e.g. when iterating over the query results. Use [IModelDb.withPreparedStatement]($backend)
   or [ECDb.withPreparedStatement]($backend) in that case.

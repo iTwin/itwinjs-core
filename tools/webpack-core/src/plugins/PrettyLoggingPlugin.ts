@@ -97,7 +97,7 @@ export class PrettyLoggingPlugin {
       this.printHeading("Files changed, rebuilding...");
     });
 
-    compiler.hooks.done.tap("PrettyLoggingPlugin", (stats) => {
+    compiler.hooks.done.tap("PrettyLoggingPlugin", (stats: any) => {
       this.clearIfInteractive();
       const elapsed = Date.now() - this._startTime;
 

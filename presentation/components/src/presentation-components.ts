@@ -2,18 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Presentation } from "@bentley/presentation-frontend";
+import { initializeLocalization } from "./presentation-components/common/Utils";
+
 /**
  * @module Core
  *
  * @docs-group-description Core
  * Common types used all across presentation-component package.
  */
-export { IPresentationDataProvider } from "./common/IPresentationDataProvider";
-export { IUnifiedSelectionComponent } from "./common/IUnifiedSelectionComponent";
-export { ContentBuilder } from "./common/ContentBuilder";
-export { IContentDataProvider, ContentDataProvider, CacheInvalidationProps } from "./common/ContentDataProvider";
-export { DataProvidersFactory, DataProvidersFactoryProps } from "./DataProvidersFactory";
-export { useRulesetRegistration } from "./hooks/UseRulesetRegistration";
+export { IPresentationDataProvider } from "./presentation-components/common/IPresentationDataProvider";
+export { IUnifiedSelectionComponent } from "./presentation-components/common/IUnifiedSelectionComponent";
+export { ContentBuilder } from "./presentation-components/common/ContentBuilder";
+export { IContentDataProvider, ContentDataProvider, ContentDataProviderProps, CacheInvalidationProps } from "./presentation-components/common/ContentDataProvider";
+export { DataProvidersFactory, DataProvidersFactoryProps } from "./presentation-components/DataProvidersFactory";
+export { useRulesetRegistration } from "./presentation-components/hooks/UseRulesetRegistration";
 
 /**
  * @module PropertyGrid
@@ -21,8 +24,8 @@ export { useRulesetRegistration } from "./hooks/UseRulesetRegistration";
  * @docs-group-description PropertyGrid
  * Types related to `PropertyGrid` component in `@bentley/ui-components` package.
  */
-export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider } from "./propertygrid/DataProvider";
-export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./propertygrid/WithUnifiedSelection";
+export { IPresentationPropertyDataProvider, PresentationPropertyDataProvider, PresentationPropertyDataProviderProps } from "./presentation-components/propertygrid/DataProvider";
+export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps } from "./presentation-components/propertygrid/WithUnifiedSelection";
 
 /**
  * @module FavoriteProperties
@@ -30,7 +33,7 @@ export { propertyGridWithUnifiedSelection, PropertyGridWithUnifiedSelectionProps
  * @docs-group-description FavoriteProperties
  * Types related to `FavoriteProperties` component in `@bentley/ui-components` package.
  */
-export { FavoritePropertiesDataProvider, FavoritePropertiesDataProviderProps } from "./favorite-properties/DataProvider";
+export { FavoritePropertiesDataProvider, FavoritePropertiesDataProviderProps } from "./presentation-components/favorite-properties/DataProvider";
 
 /**
  * @module Table
@@ -38,8 +41,8 @@ export { FavoritePropertiesDataProvider, FavoritePropertiesDataProviderProps } f
  * @docs-group-description Table
  * Types related to `Table` component in `@bentley/ui-components` package.
  */
-export { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./table/DataProvider";
-export { tableWithUnifiedSelection, TableWithUnifiedSelectionProps } from "./table/WithUnifiedSelection";
+export { IPresentationTableDataProvider, PresentationTableDataProvider, PresentationTableDataProviderProps } from "./presentation-components/table/DataProvider";
+export { tableWithUnifiedSelection, TableWithUnifiedSelectionProps } from "./presentation-components/table/WithUnifiedSelection";
 
 /**
  * @module Tree
@@ -47,16 +50,15 @@ export { tableWithUnifiedSelection, TableWithUnifiedSelectionProps } from "./tab
  * @docs-group-description Tree
  * Types related to `Tree` component in `@bentley/ui-components` package.
  */
-export { PresentationTreeDataProvider } from "./tree/DataProvider";
-export { IPresentationTreeDataProvider } from "./tree/IPresentationTreeDataProvider";
-export { treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./tree/WithUnifiedSelection";
-export { treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./tree/WithFilteringSupport";
-export { useControlledTreeUnifiedSelection, UnifiedSelectionTreeEventHandler } from "./tree/controlled/UseUnifiedSelection";
-export { controlledTreeWithUnifiedSelection, ControlledTreeWithUnifiedSelectionProps } from "./tree/controlled/WithUnifiedSelection";
-export { useControlledTreeFiltering } from "./tree/controlled/UseControlledTreeFiltering";
-export { controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./tree/controlled/WithFilteringSupport";
-export { controlledTreeWithVisibleNodes, ControlledTreeWithVisibleNodesProps } from "./tree/controlled/WithVisibleNodes";
-export { usePresentationNodeLoader, PresentationNodeLoaderProps } from "./tree/controlled/TreeHooks";
+export { PresentationTreeDataProvider, PresentationTreeDataProviderProps } from "./presentation-components/tree/DataProvider";
+export { IPresentationTreeDataProvider } from "./presentation-components/tree/IPresentationTreeDataProvider";
+export { DEPRECATED_treeWithUnifiedSelection, TreeWithUnifiedSelectionProps } from "./presentation-components/tree/WithUnifiedSelection";
+export { DEPRECATED_treeWithFilteringSupport, TreeWithFilteringSupportProps } from "./presentation-components/tree/WithFilteringSupport";
+export { UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams, useUnifiedSelectionTreeEventHandler } from "./presentation-components/tree/controlled/UseUnifiedSelection";
+export { useControlledTreeFiltering, ControlledTreeFilteringProps } from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
+export { DEPRECATED_controlledTreeWithFilteringSupport, ControlledTreeWithFilteringSupportProps } from "./presentation-components/tree/controlled/WithFilteringSupport";
+export { DEPRECATED_controlledTreeWithVisibleNodes, ControlledTreeWithVisibleNodesProps } from "./presentation-components/tree/controlled/WithVisibleNodes";
+export { usePresentationTreeNodeLoader, PresentationTreeNodeLoaderProps } from "./presentation-components/tree/controlled/TreeHooks";
 
 /**
  * @module Viewport
@@ -64,7 +66,7 @@ export { usePresentationNodeLoader, PresentationNodeLoaderProps } from "./tree/c
  * @docs-group-description Viewport
  * Types related to `Viewport` component in `@bentley/ui-components` package.
  */
-export { viewWithUnifiedSelection, ViewWithUnifiedSelectionProps } from "./viewport/WithUnifiedSelection";
+export { viewWithUnifiedSelection, ViewWithUnifiedSelectionProps } from "./presentation-components/viewport/WithUnifiedSelection";
 
 /**
  * @module DisplayLabels
@@ -72,7 +74,9 @@ export { viewWithUnifiedSelection, ViewWithUnifiedSelectionProps } from "./viewp
  * @docs-group-description DisplayLabels
  * Types related to display labels
  */
-export { IPresentationLabelsProvider, LabelsProvider } from "./labels/LabelsProvider";
+export { IPresentationLabelsProvider, PresentationLabelsProvider, PresentationLabelsProviderProps } from "./presentation-components/labels/LabelsProvider";
+
+Presentation.registerInitializationHandler(initializeLocalization);
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

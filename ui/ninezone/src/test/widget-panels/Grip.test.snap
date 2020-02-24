@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetPanelGrip should dispatch TOGGLE_PANEL_COLLAPSED 1`] = `
+<div
+  class="nz-widgetPanels-grip nz-left"
+>
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+</div>
+`;
+
+exports[`WidgetPanelGrip should render 1`] = `
+<div
+  class="nz-widgetPanels-grip nz-left"
+>
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+</div>
+`;

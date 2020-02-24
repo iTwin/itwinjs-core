@@ -107,28 +107,25 @@ public;ElementRefersToElements
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
+internal;EmitOptions
+internal;EmitStrategy
 public;Entity 
 internal;EventSink
 internal;EventSinkManager
 internal;EventSinkOptions
 public;ExportGraphics
-beta;areDisplayPropsEqual(lhs: ExportPartDisplayProps, rhs: ExportPartDisplayProps): boolean
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
 public;ExportGraphicsLines
 public;ExportGraphicsMesh
 public;ExportGraphicsOptions
-beta;ExportGraphicsProps = ExportGraphicsOptions
 public;ExportLinesFunction = (info: ExportLinesInfo) => void
 public;ExportLinesInfo
 public;ExportPartDisplayInfo
-beta;ExportPartDisplayProps = ExportPartDisplayInfo
 public;ExportPartFunction = (info: ExportPartInfo) => void
 public;ExportPartGraphicsOptions
-beta;ExportPartGraphicsProps = ExportPartGraphicsOptions
 public;ExportPartInfo
 public;ExportPartInstanceInfo
-beta;ExportPartInstanceProps = ExportPartInstanceInfo
 public;ExportPartLinesFunction = (info: ExportPartLinesInfo) => void
 public;ExportPartLinesInfo
 public;ExternalSourceAspect 
@@ -224,6 +221,7 @@ public;LinkPartition
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;NativeAppBackend
 alpha;OidcDesktopClient 
 public;OpenParams
 public;OrthographicViewDefinition 

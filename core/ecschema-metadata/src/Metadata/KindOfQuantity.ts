@@ -127,12 +127,12 @@ export class KindOfQuantity extends SchemaItem {
    */
   protected createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat {
     if (unitLabelOverrides && parent.units && parent.units.length !== unitLabelOverrides.length)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add presetantion format to KindOfQuantity '${this.name}' because the number of unit overrides is inconsistent with the number in the Format '${parent.name}'.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add presentation format to KindOfQuantity '${this.name}' because the number of unit overrides is inconsistent with the number in the Format '${parent.name}'.`);
 
     if (parent.units && 0 === parent.units.length && unitLabelOverrides && 0 < unitLabelOverrides.length)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add a presetantion format to KindOfQuantity '${this.name}' without any units and no unit overrides.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Cannot add a presentation format to KindOfQuantity '${this.name}' without any units and no unit overrides.`);
 
-    // TODO: Check compatibility of Unit overrides with the persisitence unit
+    // TODO: Check compatibility of Unit overrides with the persistence unit
 
     return new OverrideFormat(parent, precision, unitLabelOverrides);
   }
@@ -205,8 +205,13 @@ export class KindOfQuantity extends SchemaItem {
     }
   }
 
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    const schemaJson = super.toJson(standalone, includeSchemaVersion);
+  /**
+   * Save this KindOfQuantity's properties to an object for serializing to JSON.
+   * @param standalone Serialization includes only this object (as opposed to the full schema).
+   * @param includeSchemaVersion Include the Schema's version information in the serialized object.
+   */
+  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): KindOfQuantityProps {
+    const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.relativeError = this.relativeError;
     schemaJson.persistenceUnit = this.persistenceUnit!.fullName;
     if (undefined !== this.presentationFormats && 0 < this.presentationFormats.length)
@@ -237,8 +242,8 @@ export class KindOfQuantity extends SchemaItem {
     return itemElement;
   }
 
-  public deserializeSync(kindOfQuantityProps: KindOfQuantityProps): void {
-    super.deserializeSync(kindOfQuantityProps);
+  public fromJSONSync(kindOfQuantityProps: KindOfQuantityProps): void {
+    super.fromJSONSync(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
     const persistenceUnit = this.schema.lookupItemSync<Unit>(kindOfQuantityProps.persistenceUnit);
@@ -251,8 +256,8 @@ export class KindOfQuantity extends SchemaItem {
       this.processPresentationUnitsSync(kindOfQuantityProps.presentationUnits);
   }
 
-  public async deserialize(kindOfQuantityProps: KindOfQuantityProps): Promise<void> {
-    await super.deserialize(kindOfQuantityProps);
+  public async fromJSON(kindOfQuantityProps: KindOfQuantityProps): Promise<void> {
+    await super.fromJSON(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
     const persistenceUnit = await this.schema.lookupItem<Unit>(kindOfQuantityProps.persistenceUnit);

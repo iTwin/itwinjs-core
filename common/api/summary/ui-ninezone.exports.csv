@@ -1,7 +1,10 @@
 sep=;
 Release Tag;API Item
+internal;addPanelWidget(state: NineZoneState, side: WidgetPanelSide, id: WidgetState["id"], widgetArgs?: Partial
+internal;addTab(state: NineZoneState, widgetId: WidgetState["id"], id: TabState["id"], tabArgs?: Partial
 alpha;AppButton 
 alpha;AppButtonProps 
+internal;assert(condition: boolean | undefined | object): asserts condition
 alpha;BackArrow 
 alpha;BackArrowProps 
 alpha;BackButton 
@@ -22,6 +25,13 @@ alpha;contain: (componentBounds: RectangleProps, containerBounds: RectangleProps
 alpha;containHorizontally: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
 alpha;containVertically: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps
 internal;ContentZoneId = 5
+internal;createHorizontalPanelState(side: HorizontalWidgetPanelSide): HorizontalPanelState
+internal;createNineZoneState(): NineZoneState
+internal;createPanelsState(): PanelsState
+internal;createPanelState(side: WidgetPanelSide): PanelState
+internal;createTabState(id: TabState["id"]): TabState
+internal;createVerticalPanelState(side: VerticalWidgetPanelSide): VerticalPanelState
+internal;createWidgetState(id: WidgetState["id"]): WidgetState
 internal;Css
 internal;CssProperties
 alpha;DefaultHistoryManager: HistoryManager
@@ -43,6 +53,7 @@ beta;DraggedWidgetManagerProps
 internal;DragHandle 
 internal;DragHandleProps 
 internal;Ellipsis(props: CommonProps): JSX.Element
+internal;EXPAND_WIDGET = "EXPAND_WIDGET"
 alpha;ExpandableButton 
 alpha;ExpandableButtonProps 
 beta;ExpandableItem 
@@ -57,6 +68,7 @@ beta;FooterPopupProps
 beta;FooterProps 
 beta;FooterSeparator 
 beta;FooterSeparatorProps 
+internal;getChildKey(child: React.ReactNode, index: number): string
 internal;getClosedWidgetTabIndex: (tabIndex: number) => number
 internal;getColumnZones: (id: WidgetZoneId) => WidgetZoneId[]
 internal;getDefaultAllowsMerging: (id: WidgetZoneId) => boolean
@@ -101,6 +113,12 @@ alpha;HistoryTray
 alpha;HistoryTrayProps 
 beta;HorizontalAnchor
 internal;HorizontalAnchorHelpers
+internal;HorizontalPanelState 
+internal;HorizontalWidgetPanelSide = "top" | "bottom"
+internal;INITIALIZE_PANEL = "INITIALIZE_PANEL"
+internal;InitializePanelAction
+internal;isHorizontalPanelState(state: PanelStateTypes): state is HorizontalPanelState
+internal;isHorizontalWidgetPanelSide: (side: WidgetPanelSide) => side is HorizontalWidgetPanelSide
 beta;Item 
 beta;ItemProps 
 alpha;Items 
@@ -123,6 +141,7 @@ beta;MessageHyperlinkProps
 beta;MessageLayout 
 beta;MessageLayoutProps 
 beta;MessageProgress 
+internal;MINIMIZE_WIDGET = "MINIMIZE_WIDGET"
 alpha;NestedGroup 
 alpha;NestedGroupProps 
 beta;NestedStagePanelKey
@@ -131,6 +150,10 @@ beta;NestedStagePanelsManager
 beta;NestedStagePanelsManagerProps
 beta;NestedToolSettings 
 beta;NestedToolSettingsProps 
+internal;NineZoneActionTypes = TogglePanelCollapsedAction | TogglePanelSpanAction | TogglePanelPinnedAction | ResizePanelAction | InitializePanelAction | WidgetTabClickAction | WidgetTabDoubleClickAction
+internal;NineZoneContext: React.Context
+internal;NineZoneDispatch = (action: NineZoneActionTypes) => void
+internal;NineZoneDispatchContext: React.Context
 alpha;NineZoneManager
 internal;NineZoneManagerHiddenWidget
 internal;NineZoneManagerHiddenWidgets =
@@ -139,12 +162,16 @@ alpha;NineZoneManagerPaneTarget
 alpha;NineZoneManagerProps
 alpha;NineZoneNestedStagePanelsManager 
 alpha;NineZoneNestedStagePanelsManagerProps 
+internal;NineZoneProvider(props: NineZoneProviderProps): JSX.Element
+internal;NineZoneProviderProps
 alpha;NineZoneStagePanelManager 
 alpha;NineZoneStagePanelManagerProps 
 alpha;NineZoneStagePanelPaneManager
 alpha;NineZoneStagePanelPaneManagerProps
 alpha;NineZoneStagePanelsManager 
 alpha;NineZoneStagePanelsManagerProps 
+internal;NineZoneState
+internal;NineZoneStateReducer: (state: NineZoneState, action: NineZoneActionTypes) => NineZoneState
 internal;offsetAndContainInContainer: (tooltipBounds: RectangleProps, containerSize: SizeProps, offset?: PointProps) => Point
 alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
@@ -156,15 +183,23 @@ alpha;Panel
 alpha;PanelProps 
 alpha;PanelsProvider 
 alpha;PanelsProviderProps
+internal;PanelsState
+internal;PanelState
+internal;PanelStateTypes = HorizontalPanelState | VerticalPanelState
 internal;PointerCaptor 
 internal;PointerCaptorProps 
 beta;ProgressProps 
+internal;RESIZE_PANEL = "RESIZE_PANEL"
 alpha;ResizeDirection
 alpha;ResizeDirectionHelpers
 alpha;ResizeGrip 
 alpha;ResizeGripProps 
 alpha;ResizeGripResizeArgs
 beta;ResizeHandle
+internal;ResizeObserver: ResizeObserverType
+internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
+internal;ResizePanelAction
+internal;RESTORE_WIDGET = "RESTORE_WIDGET"
 beta;SafeAreaInsets
 internal;SafeAreaInsetsHelpers
 beta;ScrollableToolSettings 
@@ -205,6 +240,8 @@ alpha;TabModeHelpers
 alpha;TabProps 
 alpha;TabSeparator 
 alpha;TabSeparatorProps 
+internal;TabsState
+internal;TabState
 alpha;Title 
 beta;TitleBar 
 beta;TitleBarButton 
@@ -215,6 +252,12 @@ alpha;Toast
 alpha;ToastDefaultProps = Pick
 alpha;ToastProps 
 alpha;ToastStyle = Pick
+internal;TOGGLE_PANEL_COLLAPSED = "TOGGLE_PANEL_COLLAPSED"
+internal;TOGGLE_PANEL_PINNED = "TOGGLE_PANEL_PINNED"
+internal;TOGGLE_PANEL_SPAN = "TOGGLE_PANEL_SPAN"
+internal;TogglePanelCollapsedAction
+internal;TogglePanelPinnedAction
+internal;TogglePanelSpanAction
 beta;ToolAssistance 
 beta;ToolAssistanceDialog 
 beta;ToolAssistanceDialogProps 
@@ -252,21 +295,64 @@ alpha;ToolsProps
 beta;Tooltip 
 beta;TooltipDefaultProps = Pick
 beta;TooltipProps 
+internal;useNineZone(): NineZoneState
+internal;useNineZoneDispatch(): NineZoneDispatch
 internal;useOverflow(children: React.ReactNode): [ReadonlyArray
-internal;usePointerCaptor
+internal;usePanel(): VerticalPanelState | HorizontalPanelState
+internal;usePanelBySide(side: WidgetPanelSide): VerticalPanelState | HorizontalPanelState
+internal;usePointerCaptor: 
 internal;useRefEffect
 internal;useRefs
+internal;useResizeGrip: 
 internal;useResizeObserver
 beta;UserProfile 
 beta;UserProfileProps 
+internal;useSingleDoubleClick
+internal;useTabById(id: TabState["id"]): TabState
 internal;useTargeted: (elementRef: React.RefObject
 internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs
+internal;useWidget(): WidgetState
+internal;useWidgetById(id: WidgetState["id"]): WidgetState
+internal;useWidgetId(): string
+internal;useWidgetPanelSide(): WidgetPanelSide
+internal;useWidgetTab(): WidgetTabContextArgs
 beta;VerticalAnchor
 internal;VerticalAnchorHelpers
+internal;VerticalPanelState 
+internal;VerticalWidgetPanelSide = "left" | "right"
+internal;WIDGET_TAB_CLICK = "WIDGET_TAB_CLICK"
+internal;WIDGET_TAB_DOUBLE_CLICK = "WIDGET_TAB_DOUBLE_CLICK"
+internal;WidgetComponent(props: WidgetComponentProps): JSX.Element
+internal;WidgetComponentProps 
 alpha;WidgetContent 
 alpha;WidgetContentProps 
+internal;WidgetIdContext: React.Context
 beta;WidgetManagerProps
+internal;WidgetMenu: React.ForwardRefExoticComponent
+internal;WidgetMenuProps 
+internal;WidgetOverflow(props: WidgetOverflowProps): JSX.Element
+internal;WidgetOverflowProps 
+internal;WidgetPanel(props: WidgetPanelProps): JSX.Element | null
+internal;WidgetPanelContent(props: WidgetPanelContentProps): JSX.Element
+internal;WidgetPanelContentProps 
+internal;WidgetPanelContext: React.Context
+internal;WidgetPanelGrip(props: WidgetPanelGripProps): JSX.Element
+internal;WidgetPanelGripProps 
+internal;WidgetPanelProps 
+internal;WidgetPanels(props: WidgetPanelsProps): JSX.Element
+internal;WidgetPanelsGripOverlay(props: WidgetPanelsGripOverlayProps): JSX.Element
+internal;WidgetPanelsGripOverlayProps 
+internal;WidgetPanelSide = VerticalWidgetPanelSide | HorizontalWidgetPanelSide
+internal;WidgetPanelsProps 
+internal;WidgetsState
+internal;WidgetState
+internal;WidgetTab(props: WidgetTabProps): JSX.Element
+internal;WidgetTabClickAction
+internal;WidgetTabContext: React.Context
+internal;WidgetTabDoubleClickAction
 alpha;WidgetTabDragStartArguments
+internal;WidgetTabProps 
+internal;WidgetTabs(): JSX.Element
 internal;widgetZoneColumnIds: ReadonlyArray
 beta;WidgetZoneId = 1 | 2 | 3 | 4 | 6 | 7 | 8 | 9
 beta;widgetZoneIds: ReadonlyArray

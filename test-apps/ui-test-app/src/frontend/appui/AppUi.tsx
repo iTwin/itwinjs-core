@@ -4,10 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
+import * as React from "react";
+
+import { StageUsage, StagePanelLocation } from "@bentley/ui-abstract";
+import { FillCentered } from "@bentley/ui-core";
 import {
   ConfigurableUiManager, FrontstageManager, WidgetState, ContentGroupProps,
   TaskPropsList, WorkflowPropsList, ContentLayoutProps, UiFramework, CoreTools,
-  KeyboardShortcutProps, FunctionKey, CommandItemDef, KeyboardShortcutManager, WorkflowProps, StatusBarItemsManager,
+  KeyboardShortcutProps, FunctionKey, CommandItemDef, KeyboardShortcutManager,
+  WorkflowProps, WidgetDef, ZoneLocation, WidgetProvider, StagePanelSection,
 } from "@bentley/ui-framework";
 
 /** Include application registered Controls in Webpack
@@ -39,8 +44,6 @@ import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
 import { AppTools } from "../tools/ToolSpecifications";
 import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
-import { AppStatusBarItemProvider } from "./statusbars/AppStatusBarItemProvider";
-import { SmallStatusBarItemProvider } from "./statusbars/SmallStatusBarItemProvider";
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -56,15 +59,7 @@ export class AppUi {
     AppUi.defineTasksAndWorkflows();
     AppUi.defineKeyboardShortcuts();
 
-    const mainItemsManager = new StatusBarItemsManager();
-    const appStatusBarItemProvider = new AppStatusBarItemProvider();
-    mainItemsManager.add(appStatusBarItemProvider.statusBarItems);
-    UiFramework.statusBarManager.addItemsManager("main", mainItemsManager);
-
-    const smallItemsManager = new StatusBarItemsManager();
-    const smallStatusBarItemProvider = new SmallStatusBarItemProvider();
-    smallItemsManager.add(smallStatusBarItemProvider.statusBarItems);
-    UiFramework.statusBarManager.addItemsManager("small", smallItemsManager);
+    AppUi.defineDynamicWidgets();
   }
 
   /** Define Frontstages
@@ -439,5 +434,43 @@ export class AppUi {
         UiFramework.setIsUiVisible(!isVisible);
       },
     });
+  }
+
+  private static defineDynamicWidgets() {
+    const widgetDef1 = new WidgetDef({
+      iconSpec: "icon-placeholder",
+      label: "Dynamic Widget 1",
+      element: <FillCentered>Dynamic Widget for ViewsFrontstage</FillCentered>,
+      fillZone: true,
+      priority: -1,
+    });
+    UiFramework.widgetManager.addWidgetDef(widgetDef1, "ViewsFrontstage", undefined, ZoneLocation.BottomRight);
+
+    const widgetDef2 = new WidgetDef({
+      iconSpec: "icon-placeholder",
+      label: "Dynamic Widget 2",
+      element: <FillCentered>Dynamic Widget for StageUsage.General</FillCentered>,
+      fillZone: true,
+      priority: -1,
+    });
+    UiFramework.widgetManager.addWidgetDef(widgetDef2, undefined, StageUsage.General, ZoneLocation.BottomRight);
+
+    const widgetDef3 = new WidgetDef({
+      iconSpec: "icon-placeholder",
+      label: "Dynamic Widget 3",
+      element: <FillCentered>Dynamic Widget in panel</FillCentered>,
+      fillZone: true,
+      priority: -1,
+    });
+    const provider: WidgetProvider = {
+      id: "test",
+      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<WidgetDef> | undefined => {
+        if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
+          return [widgetDef3];
+        }
+        return undefined;
+      },
+    };
+    UiFramework.widgetManager.addWidgetProvider(provider);
   }
 }

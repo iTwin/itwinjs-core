@@ -20,6 +20,7 @@
 
   > div {
     height: 100%;
+    box-sizing: border-box;
   }
 
   &.nz-safe-area-left {
@@ -65,9 +66,11 @@
   }
 
   &.nz-safe-area-bottom {
-    &.nz-zone-7 > div {
+    &.nz-zone-7 {
       &:not(.nz-footer-mode) {
-        @include nz-safe-area-bottom;
+        > div {
+          @include nz-safe-area-bottom;
+        }
       }
     }
 
@@ -79,9 +82,11 @@
       }
     }
 
-    &.nz-zone-9 > div {
+    &.nz-zone-9 {
       &:not(.nz-footer-mode) {
-        @include nz-safe-area-bottom;
+        > div {
+          @include nz-safe-area-bottom;
+        }
       }
     }
   }
