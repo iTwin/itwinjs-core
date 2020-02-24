@@ -16,13 +16,17 @@ import {
 import {
   ColorDef,
   ViewFlag,
+  Frustum,
+  FrustumPlanes,
 } from "@bentley/imodeljs-common";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import {
   RealityTile,
+  RealityTileDrawArgs,
   Tile,
   TileDrawArgs,
+  TileGraphicType,
   TileParams,
   TileTree,
 } from "./internal";
@@ -73,7 +77,7 @@ export class TraversalChildrenDetails {
 export class TraversalSelectionContext {
   public preloaded = new Set<RealityTile>();
   public missing = new Array<RealityTile>();
-  constructor(public selected: Tile[], public displayedDescendants: Tile[][], public preloadBuilder?: GraphicBuilder) { }
+  constructor(public selected: Tile[], public displayedDescendants: Tile[][], public preloadDebugBuilder?: GraphicBuilder) { }
 
   public selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     tile.selectSecondaryTiles(args, this);
@@ -91,8 +95,8 @@ export class TraversalSelectionContext {
   }
   public preload(tile: RealityTile, args: TileDrawArgs): void {
     if (!this.preloaded.has(tile)) {
-      if (this.preloadBuilder)
-        tile.addBoundingGraphic(this.preloadBuilder, ColorDef.green);
+      if (this.preloadDebugBuilder)
+        tile.addBoundingGraphic(this.preloadDebugBuilder, ColorDef.red);
       tile.setLastUsed(args.now);
       tile.selectSecondaryTiles(args, this);
       this.preloaded.add(tile);
@@ -109,6 +113,9 @@ export class TraversalSelectionContext {
   }
 }
 
+const scratchFrustum = new Frustum();
+const scratchFrustumPlanes = new FrustumPlanes();
+
 /** @internal */
 export class RealityTileTree extends TileTree {
   private get _realityRoot() { return this._rootTile as RealityTile; }
@@ -122,16 +129,14 @@ export class RealityTileTree extends TileTree {
   public draw(args: TileDrawArgs): void {
     return this.drawRealityTiles(args);
   }
-  public static debugSelectedTiles = false;           // tslint:disable-ldoine: prefer-const
-  public static debugMissingTiles = false;            // tslint:disable-line: prefer-const
-  public static debugSelectedRanges = false;         // tslint:disable-line: prefer-const
-  public static debugPreload = false;
   private drawRealityTiles(args: TileDrawArgs): void {
     const displayedTileDescendants = new Array<RealityTile[]>();
-    const selectBuilder = RealityTileTree.debugSelectedRanges ? args.context.createSceneGraphicBuilder() : undefined;
-    const preloadBuilder = RealityTileTree.debugPreload ? args.context.createSceneGraphicBuilder() : undefined;
+    const debugControl = args.context.target.debugControl;
+    const selectBuilder = (debugControl && debugControl.displayRealityTileRanges) ? args.context.createSceneGraphicBuilder() : undefined;
+    const preloadDebugBuilder = (debugControl && debugControl.displayRealityTilePreload) ? args.context.createSceneGraphicBuilder() : undefined;
+    const graphicTypeBranches = new Map<TileGraphicType, GraphicBranch>();
 
-    const selectedTiles = this.selectRealityTiles(args, displayedTileDescendants, preloadBuilder);
+    const selectedTiles = this.selectRealityTiles(args, displayedTileDescendants, preloadDebugBuilder);
     if (!this.loader.parentsAndChildrenExclusive)
       selectedTiles.sort((a, b) => a.depth - b.depth);                    // If parent and child are not exclusive then display parents (low resolution) first.
 
@@ -139,11 +144,19 @@ export class RealityTileTree extends TileTree {
     for (let i = 0; i < selectedTiles.length; i++) {
       const selectedTile = selectedTiles[i];
       const graphics = args.getTileGraphics(selectedTile);
-      if (undefined !== graphics) {
+      const tileGraphicType = selectedTile.graphicType;
+      let targetBranch;
+      if (undefined !== tileGraphicType && tileGraphicType !== args.context.graphicType) {
+        if (!(targetBranch = graphicTypeBranches.get(tileGraphicType)))
+          graphicTypeBranches.set(tileGraphicType, targetBranch = new GraphicBranch());
+      }
+      if (!targetBranch)
+        targetBranch = args.graphics;
 
+      if (undefined !== graphics) {
         const displayedDescendants = displayedTileDescendants[i];
         if (0 === displayedDescendants.length || !this.loader.parentsAndChildrenExclusive || selectedTile.allChildrenIncluded(displayedDescendants)) {
-          args.graphics.add(graphics);
+          targetBranch.add(graphics);
           if (selectBuilder) selectedTile.addBoundingGraphic(selectBuilder, ColorDef.green);
         } else {
           if (selectBuilder) selectedTile.addBoundingGraphic(selectBuilder, ColorDef.red);
@@ -152,7 +165,7 @@ export class RealityTileTree extends TileTree {
             if (selectBuilder)
               displayedDescendant.addBoundingGraphic(selectBuilder, ColorDef.blue);
             if (undefined === clipVector) {
-              args.graphics.add(graphics);
+              targetBranch.add(graphics);
             } else {
               clipVector.transformInPlace(args.location);
 
@@ -162,24 +175,27 @@ export class RealityTileTree extends TileTree {
               branch.add(graphics);
               branch.setViewFlagOverrides(doClipOverride);
               const clipVolume = args.context.target.renderSystem.createClipVolume(clipVector);
-
-              args.graphics.add(args.context.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume }));
+              targetBranch.add(args.context.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume }));
             }
           }
         }
-        if (preloadBuilder)
-          args.graphics.add(preloadBuilder.finish());
+        if (preloadDebugBuilder)
+          targetBranch.add(preloadDebugBuilder.finish());
         if (selectBuilder)
-          args.graphics.add(selectBuilder.finish());
+          targetBranch.add(selectBuilder.finish());
 
         const rangeGraphic = selectedTile.getRangeGraphic(args.context);
         if (undefined !== rangeGraphic)
-          args.graphics.add(rangeGraphic);
+          targetBranch.add(rangeGraphic);
       }
     }
 
     args.drawGraphics();
+    for (const graphicTypeBranch of graphicTypeBranches) {
+      args.drawGraphicsWithType(graphicTypeBranch[0], graphicTypeBranch[1]);
+    }
     args.context.viewport.numSelectedTiles += selectedTiles.length;
+
     this.purgeRealityTiles(args.purgeOlderThan);        // Purge stale tiles....
   }
 
@@ -196,35 +212,49 @@ export class RealityTileTree extends TileTree {
     this._realityRoot.purgeContents(purgeOlderThan);
   }
 
-  public static freezeRealityState = false;
-  public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadBuilder?: GraphicBuilder): RealityTile[] {
+  public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[] {
     this._lastSelected = BeTimePoint.now();
     const selected: RealityTile[] = [];
-    const context = new TraversalSelectionContext(selected, displayedDescendants, preloadBuilder);
+    const context = new TraversalSelectionContext(selected, displayedDescendants, preloadDebugBuilder);
     const rootTile = this._realityRoot;
-    const baseDepth = this.getBaseRealityDepth(args.context);
-
-    if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
-      rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
+    const debugControl = args.context.target.debugControl;
+    const freezeTiles = debugControl && debugControl.freezeRealityTiles;
 
     rootTile.selectRealityTiles(context, args, new TraversalDetails());
 
-    if (!RealityTileTree.freezeRealityState)
+    if (!freezeTiles)
+      this.preloadTilesForScene(args, context, undefined);
+
+    if (!freezeTiles)
       for (const tile of context.missing)
         args.insertMissing(tile.loadableTile);
 
-    if (RealityTileTree.debugSelectedTiles) {
+    if (debugControl && debugControl.logRealityTiles) {
       this.logTiles("Selected: ", selected.values());
       const preloaded = [];
       for (const tile of context.preloaded)
         preloaded.push(tile);
       this.logTiles("Preloaded: ", preloaded.values());
+      this.logTiles("Missing: ", context.missing.values());
     }
 
-    if (RealityTileTree.debugMissingTiles && context.missing.length)
-      this.logTiles("Missing: ", context.missing.values());
-
     return selected;
+  }
+
+  public preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform) {
+    const preloadFrustum = args.viewingSpace.getPreloadFrustum(frustumTransform, scratchFrustum);
+    const preloadFrustumPlanes = new FrustumPlanes(preloadFrustum);
+    const worldToNpc = preloadFrustum.toMap4d();
+    const preloadWorldToViewMap = args.viewingSpace.calcNpcToView().multiplyMapMap(worldToNpc!);
+    const preloadArgs = new RealityTileDrawArgs(args, preloadWorldToViewMap, preloadFrustumPlanes);
+
+    scratchFrustumPlanes.init(preloadFrustum);
+    if (context.preloadDebugBuilder) {
+      context.preloadDebugBuilder.setSymbology(ColorDef.blue, ColorDef.blue, 2, 0);
+      context.preloadDebugBuilder.addFrustum(preloadFrustum);
+    }
+
+    this._realityRoot.preloadTilesInFrustum(preloadArgs, context, 2);
   }
 
   protected logTiles(label: string, tiles: IterableIterator<Tile>) {

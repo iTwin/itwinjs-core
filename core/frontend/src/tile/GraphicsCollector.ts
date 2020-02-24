@@ -35,7 +35,7 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
   }
 
   public get frustumPlanes(): FrustumPlanes { return this._planes; }
-  protected get worldToViewMap(): Map4d { return this._worldToViewMap; }
+  public get worldToViewMap(): Map4d { return this._worldToViewMap; }
   public drawGraphics(): void {
     if (!this.graphics.isEmpty)
       this._collector.addGraphic(this.context.createBranch(this.graphics, this.location));

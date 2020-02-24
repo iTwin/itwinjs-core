@@ -2017,6 +2017,7 @@ export class Frustum {
     equals(rhs: Frustum): boolean;
     fixPointOrder(): void;
     static fromRange(range: LowAndHighXYZ | LowAndHighXY, out?: Frustum): Frustum;
+    get frontCenter(): Point3d;
     getCenter(): Point3d;
     getCorner(i: number): Point3d;
     getEyePoint(result?: Point3d): Point3d | undefined;
@@ -2030,7 +2031,9 @@ export class Frustum {
     isSame(other: Frustum): boolean;
     multiply(trans: Transform): void;
     readonly points: Point3d[];
+    get rearCenter(): Point3d;
     scaleAboutCenter(scale: number): void;
+    scaleXYAboutCenter(scale: number): void;
     setFrom(other: Frustum): void;
     toMap4d(): Map4d | undefined;
     toRange(range?: Range3d): Range3d;

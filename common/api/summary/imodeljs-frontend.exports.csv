@@ -91,7 +91,7 @@ internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, clas
 internal;createDefaultViewFlagOverrides(options:
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
-internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, iModel: IModelConnection, forDrape?: boolean): Promise
+internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape?: boolean): Promise
 internal;CurrentInputState
 internal;CurrentState
 public;DecorateContext 
@@ -297,6 +297,7 @@ internal;RealityModelTileClient
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
 internal;RealityTile 
+internal;RealityTileDrawArgs 
 internal;RealityTileTree 
 beta;class RenderClipVolume 
 public;RenderContext
@@ -483,7 +484,6 @@ internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | 
 beta;WebGLFeature
 beta;WebGLRenderCompatibilityInfo
 beta;WebGLRenderCompatibilityStatus
-internal;WebMapDrawArgs 
 internal;WebMapTileLoader 
 internal;WebMapTileTreeProps 
 internal;WebMercatorProjection

@@ -54,7 +54,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
 * `fdt freeze scene` - Toggles scene freeze for the active viewport. While scene freeze is enabled, the same set of tiles will continue to be displayed until the scene is unfrozen - no new tiles will be loaded. Useful for zooming in or out to inspect geometry inside specific tiles.
 * `fdt frustum selected` - Toggles a decoration representing the current frustum of the selected viewport. The decoration is displayed in any *other* open viewports - so if no other viewports are open, this key-in has no effect.
 * `fdt shadow frustum` - Like `fdt frustum selected`, but visualizes the frustum used to select tiles for the shadow map (when shadows are enabled).
-* `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports.
+* `fdt frustum snapshot` - Toggles a decoration representing the current frustum of the active viewport. The decoration remains displayed until it is toggled back off. `fdt frustum selected` is much more useful, but requires at least two open viewports.  Including `fdt snapshot preload` will also display the preload frustum decoration.
 * `fdt tooltips` - Toggles debugging tooltips for element locate. When enabled, hovering over an element will display a tooltip containing information like element ID, subcategory ID, and model ID.
 * `fdt metric` - Toggles use of metric quantity formatting, e.g. as used to format output from the measure tools. Turning metric "off" switches to use of imperial units.
 * `fdt fadeout` - Toggles "fade-out" transparency mode for the selected viewport.
@@ -128,3 +128,7 @@ The key-ins below enable, disable, or toggle a specific feature. They take at mo
   * `overlay=`: 1 to draw as an overlay, 0 to draw normally (with depth).
   * `priority=`: 1 to enforce subcategory display priority, 0 to ignore.
 * `fdt subcat priority` - Override display priority of one or more subcategories. Only has an effect on plan projection models. The first argument is a comma-separated list of subcategory Ids; the second is the integer priority value. Omit the second argument to clear the overrides for the specified subcategories.
+* `fdy toggle reality preload` - Toggles the display of preloaded reality tile bounding boxes.
+* `fdt toggle reality freeze`  - Toggles the freezing of reality tile loading, when the reality tiles are frozen new reality tiles are not downloaded or purged.
+* `fdt toggle reality logging` - Toggle the logging of reality tile loading and selection diagnostics to the console.
+* `fdt toggle reality bounds` - Toggle the display of bounding boxes for reality tiles.

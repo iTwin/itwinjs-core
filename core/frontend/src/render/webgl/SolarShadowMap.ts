@@ -40,7 +40,7 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
         return this._mapFrustumPlanes;
     }
 
-    protected get worldToViewMap(): Map4d {
+    public get worldToViewMap(): Map4d {
       if (true === this._useViewportMap)
         return super.worldToViewMap;
       else

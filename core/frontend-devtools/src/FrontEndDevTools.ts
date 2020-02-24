@@ -15,6 +15,10 @@ import {
   SetVolClassIntersectOn,
   SetVolClassIntersectOff,
   ToggleDrapeFrustumTool,
+  ToggleRealityTileBounds,
+  ToggleRealityTilePreload,
+  ToggleRealityTileLogging,
+  ToggleRealityTileFreeze,
 } from "./tools/RenderTargetTools";
 import {
   CompileShadersTool,
@@ -128,6 +132,10 @@ export class FrontendDevTools {
       ToggleTileTreeBoundsDecorationTool,
       ToggleToolTipsTool,
       ToggleWiremeshTool,
+      ToggleRealityTileBounds,
+      ToggleRealityTilePreload,
+      ToggleRealityTileLogging,
+      ToggleRealityTileFreeze,
       ViewportAddRealityModel,
       ViewportTileSizeModifierTool,
     ];

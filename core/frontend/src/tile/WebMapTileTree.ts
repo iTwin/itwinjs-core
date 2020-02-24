@@ -199,6 +199,7 @@ export interface BackgroundMapTreeId {
   forDrape: boolean;
   filterTextures: boolean;
   globeMode: GlobeMode;
+  wantSkirts: boolean;
 }
 
 class BackgroundMapTreeSupplier implements TileTreeSupplier {
@@ -212,8 +213,12 @@ class BackgroundMapTreeSupplier implements TileTreeSupplier {
           cmp = compareBooleans(lhs.forDrape, rhs.forDrape);
           if (0 === cmp) {
             cmp = compareBooleans(lhs.filterTextures, rhs.filterTextures);
-            if (0 === cmp)
+            if (0 === cmp) {
               cmp = compareNumbers(lhs.globeMode, rhs.globeMode);
+              if (0 === cmp)
+                cmp = compareBooleans(lhs.wantSkirts, rhs.wantSkirts);
+
+            }
           }
         }
       }
@@ -227,7 +232,7 @@ class BackgroundMapTreeSupplier implements TileTreeSupplier {
     if (undefined === imageryProvider)
       return undefined;
 
-    return createTileTreeFromImageryProvider(imageryProvider, id.groundBias, id.filterTextures, id.globeMode, iModel, id.forDrape);
+    return createTileTreeFromImageryProvider(imageryProvider, id.groundBias, id.filterTextures, id.globeMode, id.wantSkirts, iModel, id.forDrape);
   }
 }
 
@@ -248,10 +253,11 @@ class ImageryTreeSupplier implements TileTreeSupplier {
 
   public compareTileTreeIds(lhs: number, rhs: number) { return compareNumbers(lhs, rhs); }
 
-  public async createTileTree(options: { groundBias: number, filterTextures: boolean, globeMode: GlobeMode }, iModel: IModelConnection): Promise<TileTree | undefined> {
-    return createTileTreeFromImageryProvider(this.provider, options.groundBias, options.filterTextures, options.globeMode, iModel, false);
+  public async createTileTree(options: { groundBias: number, filterTextures: boolean, globeMode: GlobeMode, wantSkirts: boolean }, iModel: IModelConnection): Promise<TileTree | undefined> {
+    return createTileTreeFromImageryProvider(this.provider, options.groundBias, options.filterTextures, options.globeMode, options.wantSkirts, iModel, false);
   }
 }
+
 /** Returns whether a GCS converter is available.
  * @internal
  */
@@ -274,7 +280,7 @@ export async function getGcsConverterAvailable(iModel: IModelConnection) {
 /** Represents the service that is providing map tiles for Web Mercator models (background maps).
  * @internal
  */
-export async function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, iModel: IModelConnection, forDrape = false): Promise<TileTree | undefined> {
+export async function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape = false): Promise<TileTree | undefined> {
   if (undefined === iModel.ecefLocation)
     return undefined;
 
@@ -286,7 +292,7 @@ export async function createTileTreeFromImageryProvider(imageryProvider: Imagery
   const loader = new WebMapTileLoader(imageryProvider, iModel, modelId, bimElevationBias, tilingScheme, filterTextures, globeMode, forDrape);
   const tileTreeProps = new WebMapTileTreeProps(bimElevationBias, modelId);
   const ecefToDb = await calculateEcefToDb(iModel, bimElevationBias);
-  return new MapTileTree(tileTreeParamsFromJSON(tileTreeProps, iModel, true, loader, modelId), ecefToDb!, bimElevationBias, haveConverter, tilingScheme, imageryProvider.maximumZoomLevel, globeMode, false);
+  return new MapTileTree(tileTreeParamsFromJSON(tileTreeProps, iModel, true, loader, modelId), ecefToDb!, bimElevationBias, haveConverter, tilingScheme, imageryProvider.maximumZoomLevel, globeMode, false, useDepthBuffer);
 }
 
 /** A specialization of MapTileTreeReference associated with a specific ImageryProvider. Provided mostly as a convenience.

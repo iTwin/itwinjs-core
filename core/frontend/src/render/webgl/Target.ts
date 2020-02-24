@@ -206,6 +206,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public drawForReadPixels = false;
   public primitiveVisibility = PrimitiveVisibility.All;
   public displayDrapeFrustum = false;
+  public displayRealityTilePreload = false;
+  public displayRealityTileRanges = false;
+  public logRealityTiles = false;
+  public freezeRealityTiles = false;
   public get shadowFrustum(): Frustum | undefined {
     const map = this.solarShadowMap;
     return map.isEnabled && map.isReady ? map.frustum : undefined;

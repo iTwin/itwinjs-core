@@ -1799,6 +1799,8 @@ export class BackgroundMapGeometry {
     // (undocumented)
     readonly cartesianRange: Range3d;
     // (undocumented)
+    readonly cartesianTransitionRange: Range3d;
+    // (undocumented)
     cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
     dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic;
@@ -1806,6 +1808,8 @@ export class BackgroundMapGeometry {
     readonly geometry: Plane3dByOriginAndUnitNormal | Ellipsoid;
     // (undocumented)
     static getCartesianRange(iModel: IModelConnection, result?: Range3d): Range3d;
+    // (undocumented)
+    static getCartesianTransitionDistance(iModel: IModelConnection): number;
     // (undocumented)
     getEarthEllipsoid(radiusOffset?: number): Ellipsoid;
     // (undocumented)
@@ -1861,6 +1865,8 @@ export interface BackgroundMapTreeId {
     mapType: BackgroundMapType;
     // (undocumented)
     providerName: BackgroundMapProviderName;
+    // (undocumented)
+    wantSkirts: boolean;
 }
 
 // @internal
@@ -2376,7 +2382,7 @@ export function createPrimaryTileTreeReference(view: ViewState, model: Geometric
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference;
 
 // @internal
-export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, iModel: IModelConnection, forDrape?: boolean): Promise<TileTree | undefined>;
+export function createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape?: boolean): Promise<TileTree | undefined>;
 
 // @internal (undocumented)
 export class CurrentInputState {
@@ -3808,7 +3814,7 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
     // (undocumented)
     get frustumPlanes(): FrustumPlanes;
     // (undocumented)
-    protected get worldToViewMap(): Map4d;
+    get worldToViewMap(): Map4d;
     }
 
 // @public
@@ -4801,6 +4807,8 @@ export abstract class MapTile extends RealityTile {
     // (undocumented)
     disposeContents(): void;
     // (undocumented)
+    getClipShape(): Point3d[];
+    // (undocumented)
     getContentClip(): ClipVector | undefined;
     // (undocumented)
     getGraphic(_system: RenderSystem, _texture: RenderTexture): RenderGraphic | undefined;
@@ -4887,8 +4895,6 @@ export abstract class MapTileLoaderBase extends ContextTileLoader {
 // @internal (undocumented)
 export abstract class MapTileProjection {
     // (undocumented)
-    abstract get clip(): ClipVector | undefined;
-    // (undocumented)
     abstract getPoint(u: number, v: number, height: number, result?: Point3d): Point3d;
     // (undocumented)
     abstract get localRange(): Range3d;
@@ -4898,7 +4904,7 @@ export abstract class MapTileProjection {
 
 // @internal
 export class MapTileTree extends RealityTileTree {
-    constructor(params: TileTreeParams, ecefToDb: Transform, bimElevationBias: number, gcsConverterAvailable: boolean, sourceTilingScheme: MapTilingScheme, _maxDepth: number, globeMode: GlobeMode, includeTerrain: boolean);
+    constructor(params: TileTreeParams, ecefToDb: Transform, bimElevationBias: number, gcsConverterAvailable: boolean, sourceTilingScheme: MapTilingScheme, _maxDepth: number, globeMode: GlobeMode, includeTerrain: boolean, wantSkirts: boolean);
     // (undocumented)
     bimElevationBias: number;
     // (undocumented)
@@ -4959,6 +4965,8 @@ export class MapTileTree extends RealityTileTree {
     selectCartoDrapeTiles(tileToDrape: MapTile, args: TileDrawArgs): MapTile[];
     // (undocumented)
     sourceTilingScheme: MapTilingScheme;
+    // (undocumented)
+    wantSkirts: boolean;
 }
 
 // @internal
@@ -6138,6 +6146,8 @@ export class PlanarMapTile extends MapTile {
     // (undocumented)
     corners: Point3d[];
     // (undocumented)
+    getClipShape(): Point3d[];
+    // (undocumented)
     getGraphic(system: RenderSystem, texture: RenderTexture): RenderGraphic;
     // (undocumented)
     getRangeCorners(result: Point3d[]): Point3d[];
@@ -6391,13 +6401,19 @@ export class RealityTile extends Tile {
     // (undocumented)
     allChildrenIncluded(tiles: Tile[]): boolean;
     // (undocumented)
+    computeVisibility(args: TileDrawArgs): TileVisibility;
+    // (undocumented)
     forceSelectRealityTile(): boolean;
     // (undocumented)
     protected getLoadedRealityChildren(args: TileDrawArgs): boolean;
     // (undocumented)
+    get graphicType(): TileGraphicType | undefined;
+    // (undocumented)
+    isOccluded(_viewingSpace: ViewingSpace): boolean;
+    // (undocumented)
     get loadableTile(): RealityTile;
     // (undocumented)
-    preloadRealityTilesAtDepth(depth: number, context: TraversalSelectionContext, args: TileDrawArgs): void;
+    preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number): void;
     // (undocumented)
     purgeContents(olderThan: BeTimePoint): void;
     // (undocumented)
@@ -6414,24 +6430,23 @@ export class RealityTile extends Tile {
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
     // (undocumented)
     setLastUsed(lastUsed: BeTimePoint): void;
-}
+    }
+
+// @internal (undocumented)
+export class RealityTileDrawArgs extends TileDrawArgs {
+    constructor(args: TileDrawArgs, worldToViewMap: Map4d, frustumPlanes: FrustumPlanes);
+    // (undocumented)
+    getPixelSize(tile: Tile): number;
+    // (undocumented)
+    get worldToViewMap(): Map4d;
+    }
 
 // @internal (undocumented)
 export class RealityTileTree extends TileTree {
     // (undocumented)
     createTile(props: TileParams): RealityTile;
     // (undocumented)
-    static debugMissingTiles: boolean;
-    // (undocumented)
-    static debugPreload: boolean;
-    // (undocumented)
-    static debugSelectedRanges: boolean;
-    // (undocumented)
-    static debugSelectedTiles: boolean;
-    // (undocumented)
     draw(args: TileDrawArgs): void;
-    // (undocumented)
-    static freezeRealityState: boolean;
     // (undocumented)
     getBaseRealityDepth(_sceneContext: SceneContext): number;
     // (undocumented)
@@ -6439,9 +6454,11 @@ export class RealityTileTree extends TileTree {
     // (undocumented)
     protected logTiles(label: string, tiles: IterableIterator<Tile>): void;
     // (undocumented)
+    preloadTilesForScene(args: TileDrawArgs, context: TraversalSelectionContext, frustumTransform?: Transform): void;
+    // (undocumented)
     purgeRealityTiles(purgeOlderThan: BeTimePoint): void;
     // (undocumented)
-    selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadBuilder?: GraphicBuilder): RealityTile[];
+    selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[];
     // (undocumented)
     selectTilesForScene(args: TileDrawArgs): Tile[];
     // (undocumented)
@@ -7054,7 +7071,15 @@ export interface RenderTargetDebugControl {
     devicePixelRatioOverride?: number;
     // @internal (undocumented)
     displayDrapeFrustum: boolean;
+    // @internal (undocumented)
+    displayRealityTilePreload: boolean;
+    // @internal (undocumented)
+    displayRealityTileRanges: boolean;
     drawForReadPixels: boolean;
+    // @internal (undocumented)
+    freezeRealityTiles: boolean;
+    // @internal (undocumented)
+    logRealityTiles: boolean;
     // @alpha (undocumented)
     primitiveVisibility: PrimitiveVisibility;
     // @internal (undocumented)
@@ -7202,6 +7227,8 @@ export class SceneContext extends RenderContext {
     getTextureDrapeForModel(modelId: Id64String): RenderTextureDrape | undefined;
     // (undocumented)
     get graphics(): RenderGraphic[];
+    // (undocumented)
+    get graphicType(): TileGraphicType;
     // (undocumented)
     hasMissingTiles: boolean;
     // (undocumented)
@@ -8177,6 +8204,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     displayDrapeFrustum: boolean;
     // (undocumented)
+    displayRealityTilePreload: boolean;
+    // (undocumented)
+    displayRealityTileRanges: boolean;
+    // (undocumented)
     dispose(): void;
     // (undocumented)
     drawForReadPixels: boolean;
@@ -8210,6 +8241,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     get flashedId(): Id64String;
     // (undocumented)
     get flashIntensity(): number;
+    // (undocumented)
+    freezeRealityTiles: boolean;
     // (undocumented)
     getEdgeLineCode(params: ShaderProgramParams, baseCode: number): number;
     // (undocumented)
@@ -8252,6 +8285,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     isRangeOutsideActiveVolume(range: Range3d): boolean;
     // (undocumented)
     get isReadPixelsInProgress(): boolean;
+    // (undocumented)
+    logRealityTiles: boolean;
     // (undocumented)
     modelToView(modelPt: XYZ, result?: Point3d): Point3d;
     // (undocumented)
@@ -8394,11 +8429,15 @@ export class TerrainMapTile extends MapTile {
     drapeTiles?: MapTile[];
     // (undocumented)
     everLoaded: boolean;
+    // (undocumented)
+    everPurged: boolean;
     forceSelectRealityTile(): boolean;
     // (undocumented)
     get geometry(): RenderTerrainMeshGeometry | undefined;
     // (undocumented)
     protected _geometry?: RenderTerrainMeshGeometry;
+    // (undocumented)
+    getClipShape(): Point3d[];
     // (undocumented)
     getDrapeTextures(): TerrainTexture[] | undefined;
     // (undocumented)
@@ -8802,9 +8841,13 @@ export class TileDrawArgs {
     // (undocumented)
     drawGraphics(): void;
     // (undocumented)
+    drawGraphicsWithType(graphicType: TileGraphicType, graphics: GraphicBranch): void;
+    // (undocumented)
     static fromTileTree(context: SceneContext, location: Transform, root: TileTree, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive?: boolean, symbologyOverrides?: FeatureSymbology.Overrides): TileDrawArgs;
     // (undocumented)
     get frustumPlanes(): FrustumPlanes;
+    // (undocumented)
+    protected _frustumPlanes?: FrustumPlanes;
     // (undocumented)
     getPixelSize(tile: Tile): number;
     // (undocumented)
@@ -8839,7 +8882,7 @@ export class TileDrawArgs {
     // (undocumented)
     viewingSpace: ViewingSpace;
     // (undocumented)
-    protected get worldToViewMap(): Map4d;
+    get worldToViewMap(): Map4d;
 }
 
 // @internal
@@ -9583,7 +9626,7 @@ export class TraversalDetails {
 
 // @internal (undocumented)
 export class TraversalSelectionContext {
-    constructor(selected: Tile[], displayedDescendants: Tile[][], preloadBuilder?: GraphicBuilder | undefined);
+    constructor(selected: Tile[], displayedDescendants: Tile[][], preloadDebugBuilder?: GraphicBuilder | undefined);
     // (undocumented)
     displayedDescendants: Tile[][];
     // (undocumented)
@@ -9591,7 +9634,7 @@ export class TraversalSelectionContext {
     // (undocumented)
     preload(tile: RealityTile, args: TileDrawArgs): void;
     // (undocumented)
-    preloadBuilder?: GraphicBuilder | undefined;
+    preloadDebugBuilder?: GraphicBuilder | undefined;
     // (undocumented)
     preloaded: Set<RealityTile>;
     // (undocumented)
@@ -10269,6 +10312,8 @@ export const enum ViewHandleType {
 // @internal
 export class ViewingSpace {
     // (undocumented)
+    calcNpcToView(): Map4d;
+    // (undocumented)
     static createFromViewport(vp: Viewport): ViewingSpace | undefined;
     readonly eyePoint: Point3d | undefined;
     // (undocumented)
@@ -10278,6 +10323,8 @@ export class ViewingSpace {
     getFrustum(sys?: CoordSystem, adjustedBox?: boolean, box?: Frustum): Frustum;
     // (undocumented)
     getPixelSizeAtPoint(inPoint?: Point3d): number;
+    // (undocumented)
+    getPreloadFrustum(transformOrScale?: Transform | number, result?: Frustum): Frustum;
     // (undocumented)
     getTerrainHeightRange(): Range1d | undefined;
     // (undocumented)
@@ -11398,13 +11445,6 @@ export enum WebGLRenderCompatibilityStatus {
     MissingOptionalFeatures = 1,
     MissingRequiredFeatures = 3
 }
-
-// @internal (undocumented)
-export class WebMapDrawArgs extends TileDrawArgs {
-    constructor(args: TileDrawArgs);
-    // (undocumented)
-    getPixelSize(tile: Tile): number;
-    }
 
 // @internal (undocumented)
 export class WebMapTileLoader extends MapTileLoaderBase {

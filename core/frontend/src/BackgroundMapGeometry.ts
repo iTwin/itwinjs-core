@@ -11,6 +11,7 @@ import {
   Constant,
   CurvePrimitive,
   Ellipsoid,
+  GrowableXYZArray,
   Plane3dByOriginAndUnitNormal,
   Point2d,
   Point3d,
@@ -24,7 +25,7 @@ import {
   XYAndZ,
   Arc3d,
 } from "@bentley/geometry-core";
-import { Cartographic, GlobeMode, Frustum, ColorDef } from "@bentley/imodeljs-common";
+import { Cartographic, GlobeMode, Frustum, ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 import { MapTile, WebMercatorTilingScheme } from "./tile/internal";
 import { GraphicBuilder } from "./render/GraphicBuilder";
@@ -37,6 +38,8 @@ const scratchIntersectRay = Ray3d.create(Point3d.create(), Vector3d.create());
 const scratchEyePoint = Point3d.createZero();
 const scratchViewRotation = Matrix3d.createIdentity();
 const scratchSilhouetteNormal = Vector3d.create();
+const scratchCartoRectangle = new GrowableXYZArray();
+const scratchWorkArray = new GrowableXYZArray();
 
 /** Geometry of background map - either an ellipsoid or a plane as defined by GlobeMode.
  * @internal
@@ -47,13 +50,15 @@ export class BackgroundMapGeometry {
   public readonly globeOrigin: Point3d;
   public readonly globeMatrix: Matrix3d;
   public readonly cartesianRange: Range3d;
+  public readonly cartesianTransitionRange: Range3d;
   public readonly cartesianPlane: Plane3dByOriginAndUnitNormal;
   public readonly cartesianDiagonal: number;
   public readonly cartesianChordHeight: number;
   public readonly maxGeometryChordHeight: number;
   private _mercatorFractionToDb: Transform;
   private _mercatorTilingScheme: WebMercatorTilingScheme;
-  public static maxCartesianDistance = 1E4;        // If globe is 3D we still consider the map geometry flat within this distance of the project extents.
+  public static maxCartesianDistance = 1E4;           // If globe is 3D we still consider the map geometry flat within this distance of the project extents.
+  private static _transitionDistanceMultiplier = .25;  // In the transition range which extends beyond the caretesian range we intepolate between cartesian and ellipsoid.
 
   private static _scratchRayFractions = new Array<number>();
   private static _scratchRayAngles = new Array<Point2d>();
@@ -62,6 +67,8 @@ export class BackgroundMapGeometry {
   constructor(private _ecefToDb: Transform, private _bimElevationBias: number, globeMode: GlobeMode, iModel: IModelConnection) {
     this.globeMode = globeMode;
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(iModel);
+    this.cartesianTransitionRange = this.cartesianRange.clone();
+    this.cartesianTransitionRange.expandInPlace(BackgroundMapGeometry.getCartesianTransitionDistance(iModel));
     this.cartesianDiagonal = this.cartesianRange.diagonal().magnitudeXY();
     const earthRadius = Constant.earthRadiusWGS84.equator;
     this.globeOrigin = _ecefToDb.origin.cloneAsPoint3d();
@@ -78,6 +85,9 @@ export class BackgroundMapGeometry {
     const cartesianRange = Range3d.createFrom(iModel.projectExtents, result);
     cartesianRange.expandInPlace(BackgroundMapGeometry.maxCartesianDistance);
     return cartesianRange;
+  }
+  public static getCartesianTransitionDistance(iModel: IModelConnection): number {
+    return BackgroundMapGeometry.getCartesianRange(iModel, scratchRange).diagonal().magnitudeXY() * BackgroundMapGeometry._transitionDistanceMultiplier;
   }
 
   public dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic {
@@ -169,6 +179,7 @@ export class BackgroundMapGeometry {
     const viewZ = viewRotation.getRow(2);
     const depthRange = Range1d.createNull();
     const eyeDepth = eyePoint ? viewZ.dotProduct(eyePoint) : 0;
+    const cartoRange = this.cartesianTransitionRange;
 
     if (this.geometry instanceof Plane3dByOriginAndUnitNormal) {
       let includeHorizon = false;
@@ -225,8 +236,9 @@ export class BackgroundMapGeometry {
           } else {
             clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
           }
-
-          // Intersections with frustum planes...
+        }
+        if (!isInside || radiusOffset === radiusOffsets[0]) {
+          // Intersections of ellipsoid with frustum planes...
           const viewingInside = eyePoint !== undefined && viewZ.dotProduct(Vector3d.createStartEnd(center, eyePoint)) < 0;
           if (eyePoint === undefined || !isInside || viewingInside) {
             for (const clipPlane of clipPlanes.planes) {
@@ -249,6 +261,17 @@ export class BackgroundMapGeometry {
               }
             }
           }
+          // Intersections of the cartesian region with frustum planes.
+          scratchCartoRectangle.resize(0);
+          scratchCartoRectangle.push({ x: cartoRange.low.x, y: cartoRange.low.y, z: radiusOffset });
+          scratchCartoRectangle.push({ x: cartoRange.high.x, y: cartoRange.low.y, z: radiusOffset });
+          scratchCartoRectangle.push({ x: cartoRange.high.x, y: cartoRange.high.y, z: radiusOffset });
+          scratchCartoRectangle.push({ x: cartoRange.low.x, y: cartoRange.high.y, z: radiusOffset });
+          scratchCartoRectangle.push({ x: cartoRange.low.x, y: cartoRange.low.y, z: radiusOffset });
+
+          clipPlanes.clipConvexPolygonInPlace(scratchCartoRectangle, scratchWorkArray);
+          for (let i = 0; i < scratchCartoRectangle.length; i++)
+            depthRange.extendX(viewZ.dotProduct(scratchCartoRectangle.getPoint3dAtUncheckedPointIndex(i)));
         }
       }
     }
@@ -264,6 +287,7 @@ export class BackgroundMapGeometry {
       const eyePoint4d = eyePoint ? Point4d.createFromPointAndWeight(eyePoint, 1) : Point4d.createFromPointAndWeight(viewZ, 0);
       const isInside = eyePoint && ellipsoid.worldToLocal(eyePoint)!.magnitude() < 1.0;
       const center = ellipsoid.localToWorld(scratchZeroPoint, scratchCenterPoint);
+      const cartoRange = this.cartesianTransitionRange;
 
       if (!isInside) {
         const silhouette = ellipsoid.silhouetteArc(eyePoint4d);
@@ -276,7 +300,8 @@ export class BackgroundMapGeometry {
           clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
         }
 
-        builder.setSymbology(ColorDef.green, ColorDef.green, 15, 0);
+        const ellipsoidColor = new ColorDef(ColorByName.yellow);
+        builder.setSymbology(ellipsoidColor, ellipsoidColor, 1, 2);
         for (const clipPlane of clipPlanes.planes) {
           const plane = clipPlane.getPlane3d();
           const arc = ellipsoid.createPlaneSection(plane);
@@ -286,6 +311,19 @@ export class BackgroundMapGeometry {
               if (segment !== undefined)
                 builder.addArc(segment as Arc3d, false, false);
             });
+          }
+
+          // Intersections of the cartesian region with frustum planes.
+          scratchCartoRectangle.resize(0);
+          scratchCartoRectangle.push({ x: cartoRange.low.x, y: cartoRange.low.y, z: 0 });
+          scratchCartoRectangle.push({ x: cartoRange.high.x, y: cartoRange.low.y, z: 0 });
+          scratchCartoRectangle.push({ x: cartoRange.high.x, y: cartoRange.high.y, z: 0 });
+          scratchCartoRectangle.push({ x: cartoRange.low.x, y: cartoRange.high.y, z: 0 });
+          scratchCartoRectangle.push({ x: cartoRange.low.x, y: cartoRange.low.y, z: 0 });
+
+          clipPlanes.clipConvexPolygonInPlace(scratchCartoRectangle, scratchWorkArray);
+          if (scratchCartoRectangle.length > 0) {
+            builder.addLineString(scratchCartoRectangle.getPoint3dArray());
           }
         }
       }

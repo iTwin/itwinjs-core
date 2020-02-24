@@ -18,7 +18,7 @@ import {
   MapTileTreeReference,
   TileGraphicType,
   TileTreeOwner,
-  WebMapDrawArgs,
+  RealityTileDrawArgs,
   WebMapTileLoader,
   getBackgroundMapTreeSupplier,
 } from "./internal";
@@ -49,6 +49,7 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
       groundBias: this.settings.groundBias,
       forDrape: this._forCartoDrape,
       filterTextures: this._filterTextures,
+      wantSkirts: this.settings.useDepthBuffer && !this.settings.transparency,
     };
 
     return this._iModel.tiles.getTileTreeOwner(id, getBackgroundMapTreeSupplier());
@@ -56,7 +57,7 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
 
   protected get _groundBias() { return this.settings.groundBias; }
   protected get _graphicType() {
-    return (this.settings.useDepthBuffer || GlobeMode.Ellipsoid === this.settings.globeMode) ? TileGraphicType.Scene : TileGraphicType.BackgroundMap;
+    return this.settings.useDepthBuffer ? TileGraphicType.Scene : TileGraphicType.BackgroundMap;
   }
 
   protected get _transparency(): number | undefined {
@@ -71,7 +72,7 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
   public createDrawArgs(context: SceneContext) {
     let args = super.createDrawArgs(context);
     if (undefined !== args)
-      args = new WebMapDrawArgs(args);
+      args = new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes);
 
     return args;
   }

@@ -216,7 +216,8 @@ export class ViewingSpace {
       delta.z = eyeOrg.z;
   }
 
-  private calcNpcToView(): Map4d {
+  /* get the mapping from NPC to view */
+  public calcNpcToView(): Map4d {
     const corners = this.getViewCorners();
     const map = Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high);
     assert(undefined !== map, "undefined npcToViewMap");
@@ -457,5 +458,17 @@ export class ViewingSpace {
     const viewPt = !!inPoint ? this.worldToView(inPoint) : this.npcToView(new Point3d(0.5, 0.5, 0.5));
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     return this.viewToWorld(viewPt).distance(this.viewToWorld(viewPt2));
+  }
+  public getPreloadFrustum(transformOrScale?: Transform | number, result?: Frustum) {
+    const viewFrustum = this.getFrustum(CoordSystem.World, true);
+
+    if (transformOrScale && transformOrScale instanceof Transform) {
+      return viewFrustum.transformBy(transformOrScale, result);
+    } else {
+      const scale = transformOrScale === undefined ? 2 : transformOrScale;
+      const expandedFrustum = viewFrustum.clone(result);
+      expandedFrustum.scaleXYAboutCenter(scale);
+      return expandedFrustum;
+    }
   }
 }

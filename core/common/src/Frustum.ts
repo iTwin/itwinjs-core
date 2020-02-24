@@ -109,6 +109,25 @@ export class Frustum {
     orig.points[Npc._100].interpolate(f, orig.points[Npc._011], this.points[Npc._011]);
     orig.points[Npc._000].interpolate(f, orig.points[Npc._111], this.points[Npc._111]);
   }
+  /** Get the front center point */
+  public get frontCenter() { return this.getCorner(Npc.LeftBottomFront).interpolate(.5, this.getCorner(Npc.RightTopFront)); }
+
+  /** Get the front center point */
+  public get rearCenter() { return this.getCorner(Npc.LeftBottomRear).interpolate(.5, this.getCorner(Npc.RightTopRear)); }
+
+  /** Scale this frustum's XY (viewing) plane about its center */
+  public scaleXYAboutCenter(scale: number) {
+    const frontCenter = this.frontCenter, rearCenter = this.rearCenter;
+    frontCenter.interpolate(scale, this.points[Npc.LeftTopFront], this.points[Npc.LeftTopFront]);
+    frontCenter.interpolate(scale, this.points[Npc.RightTopFront], this.points[Npc.RightTopFront]);
+    frontCenter.interpolate(scale, this.points[Npc.LeftBottomFront], this.points[Npc.LeftBottomFront]);
+    frontCenter.interpolate(scale, this.points[Npc.RightBottomFront], this.points[Npc.RightBottomFront]);
+
+    rearCenter.interpolate(scale, this.points[Npc.LeftTopRear], this.points[Npc.LeftTopRear]);
+    rearCenter.interpolate(scale, this.points[Npc.RightTopRear], this.points[Npc.RightTopRear]);
+    rearCenter.interpolate(scale, this.points[Npc.LeftBottomRear], this.points[Npc.LeftBottomRear]);
+    rearCenter.interpolate(scale, this.points[Npc.RightBottomRear], this.points[Npc.RightBottomRear]);
+  }
 
   /** Create a Map4d that converts world coordinates to/from [[Npc]] coordinates of this Frustum. */
   public toMap4d(): Map4d | undefined {

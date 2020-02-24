@@ -49,6 +49,7 @@ import {
   Tile,
   TileContent,
   TileDrawArgs,
+  TileGraphicType,
   TileParams,
   TileTreeLoadStatus,
   TileTreeParams,
@@ -111,6 +112,9 @@ export abstract class MapTile extends RealityTile {
       stats.addTexture(this.texture.bytesUsed);
   }
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
+    if (!this.isDisplayable)
+      return;
+
     const heightRange = (this.heightRange === undefined) ? Range1d.createXX(-1, 1) : this.heightRange;
     const lows = [], highs = [], reorder = [0, 1, 3, 2, 0];
     const cornerRays = this._cornerRays!;
@@ -147,16 +151,26 @@ export abstract class MapTile extends RealityTile {
     builder.addPointString(transitionPoints);
   }
 
-  public getContentClip(): ClipVector | undefined {
+  public getClipShape(): Point3d[] {
     const cornerRays = this._cornerRays!;
-    const points = [cornerRays[0].origin, cornerRays[1].origin, cornerRays[3].origin, cornerRays[2].origin];
+    return [cornerRays[0].origin, cornerRays[1].origin, cornerRays[3].origin, cornerRays[2].origin];
+  }
+  public getContentClip(): ClipVector | undefined {
+    const points = this.getClipShape();
+    if (points.length < 3)
+      return undefined;
     if (this.mapTree.globeMode === GlobeMode.Ellipsoid) {
+      const normal = PolygonOps.areaNormal(points);
       const globeOrigin = this.mapTree.globeOrigin;
+      const globeNormal = Vector3d.createStartEnd(globeOrigin, points[0]);
+      const negate = normal.dotProduct(globeNormal) < 0;
       const clipPlanes = [];
       for (let i = 0; i < 4; i++) {
         const point = points[i];
-        const normal = point.crossProductToPoints(globeOrigin, points[(i + 1) % 4], scratchNormal);
-        const clipPlane = ClipPlane.createNormalAndPoint(normal, point, false, false, scratchClipPlanes[i]);
+        const clipNormal = globeOrigin.crossProductToPoints(point, points[(i + 1) % 4], scratchNormal);
+        if (negate)
+          clipNormal.negate(clipNormal);
+        const clipPlane = ClipPlane.createNormalAndPoint(clipNormal, point, false, false, scratchClipPlanes[i]);
         if (clipPlane !== undefined)      // Undefined at pole tiles...
           clipPlanes.push(clipPlane);
       }
@@ -426,6 +440,9 @@ export class PlanarMapTile extends MapTile {
   public getTransformFromPlane(result?: Transform) {
     return Transform.createOriginAndMatrix(undefined, Matrix3d.createRigidHeadsUp(this._normal, AxisOrder.ZYX), result);
   }
+  public getClipShape(): Point3d[] {
+    return [this.corners[0], this.corners[1], this.corners[3], this.corners[2]];
+  }
 }
 
 /** @internal */
@@ -433,6 +450,8 @@ class GlobeMapTile extends MapTile {
   constructor(params: TileParams, public quadId: QuadId, private _rangeCorners: Point3d[], rectangle: MapCartoRectangle, private _ellipsoidPatch: EllipsoidPatch, cornerNormals: Ray3d[] | undefined) {
     super(params, quadId, rectangle, cornerNormals);
   }
+  public get graphicType(): TileGraphicType | undefined { return TileGraphicType.Scene; }     // We can't allow these to be (undepthbuffered) BackgroundMapType so override here.
+
   public setReprojectedCorners(_reprojectedCorners: Point3d[]) {
     assert(false);   // Globe tiles should never be reprojected.
   }
@@ -455,8 +474,9 @@ class GlobeMapTile extends MapTile {
     builder.setSymbology(color, color, 1);
     if (doMesh) {
       const delta = 1.0 / (MapTile.globeMeshDimension - 1);
+      const dimensionM1 = MapTile.globeMeshDimension - 1;
 
-      for (let iRow = 0; iRow < MapTile.globeMeshDimension - 1; iRow++) {
+      for (let iRow = 0; iRow < dimensionM1; iRow++) {
         for (let iColumn = 0; iColumn < MapTile.globeMeshDimension - 1; iColumn++) {
           const points = [];
           const jColumn = iColumn + 1;
@@ -474,7 +494,6 @@ class GlobeMapTile extends MapTile {
     }
   }
 
-  private static _meshArgs = new MeshArgs();
   private static _scratchMeshPoints = new Array<Point3d>();
   private static _scratchEllipsoid = Ellipsoid.create(Transform.createIdentity());
 
@@ -485,41 +504,46 @@ class GlobeMapTile extends MapTile {
     const dimensionM1 = MapTile.globeMeshDimension - 1, dimensionM2 = MapTile.globeMeshDimension - 2;
     const bordersSouthPole = this.quadId.bordersSouthPole(this.mapTree.sourceTilingScheme);
     const bordersNorthPole = this.quadId.bordersNorthPole(this.mapTree.sourceTilingScheme);
+    const wantSkirts = this.mapTree.wantSkirts;
+    const rowMin = (bordersNorthPole || wantSkirts) ? 0 : 1;
+    const rowMax = (bordersSouthPole || wantSkirts) ? dimensionM1 : dimensionM2;
+    const colMin = wantSkirts ? 0 : 1;
+    const colMax = wantSkirts ? dimensionM1 : dimensionM2;
+    const meshArgs = new MeshArgs();
 
-    if (undefined === GlobeMapTile._meshArgs.vertIndices) {
-      const vertIndices = new Array<number>();
-      for (let iRow = 0; iRow < MapTile.globeMeshDimension - 1; iRow++) {
-        for (let iColumn = 0; iColumn < MapTile.globeMeshDimension - 1; iColumn++) {
-          const base = iRow * MapTile.globeMeshDimension + iColumn;
-          const top = base + MapTile.globeMeshDimension;
-          vertIndices.push(base);
-          vertIndices.push(base + 1);
-          vertIndices.push(top);
-          vertIndices.push(top);
-          vertIndices.push(base + 1);
-          vertIndices.push(top + 1);
-        }
+    const vertIndices = new Array<number>();
+    for (let iRow = rowMin; iRow < rowMax; iRow++) {
+      for (let iColumn = colMin; iColumn < colMax; iColumn++) {
+        const base = iRow * MapTile.globeMeshDimension + iColumn;
+        const top = base + MapTile.globeMeshDimension;
+        vertIndices.push(base);
+        vertIndices.push(base + 1);
+        vertIndices.push(top);
+        vertIndices.push(top);
+        vertIndices.push(base + 1);
+        vertIndices.push(top + 1);
       }
-
-      const uvParams = new Array<Point2d>();
-      for (let iRow = 0; iRow < MapTile.globeMeshDimension; iRow++) {
-        const y = (iRow ? (Math.min(dimensionM2, iRow) - 1) : 0) * delta;
-        for (let iColumn = 0; iColumn < MapTile.globeMeshDimension; iColumn++) {
-          const x = (iColumn ? (Math.min(dimensionM2, iColumn) - 1) : 0) * delta;
-          uvParams.push(Point2d.create(x, y));
-        }
-      }
-
-      GlobeMapTile._meshArgs.hasBakedLighting = true;
-      GlobeMapTile._meshArgs.vertIndices = vertIndices;
-      GlobeMapTile._meshArgs.textureUv = uvParams;
-      GlobeMapTile._meshArgs.points = new QPoint3dList();
-
-      for (let i = 0; i < nTotal; i++)
-        GlobeMapTile._scratchMeshPoints.push(Point3d.createZero());
     }
 
-    const qPoints = GlobeMapTile._meshArgs.points!;
+    const uvParams = new Array<Point2d>();
+    for (let iRow = 0; iRow < MapTile.globeMeshDimension; iRow++) {
+      const y = (iRow ? (Math.min(dimensionM2, iRow) - 1) : 0) * delta;
+      for (let iColumn = 0; iColumn < MapTile.globeMeshDimension; iColumn++) {
+        const x = (iColumn ? (Math.min(dimensionM2, iColumn) - 1) : 0) * delta;
+        uvParams.push(Point2d.create(x, y));
+      }
+    }
+
+    meshArgs.hasBakedLighting = true;
+    meshArgs.vertIndices = vertIndices;
+    meshArgs.textureUv = uvParams;
+    meshArgs.points = new QPoint3dList();
+
+    if (0 === GlobeMapTile._scratchMeshPoints.length)
+      for (let i = 0; i < nTotal; i++)
+        GlobeMapTile._scratchMeshPoints.push(Point3d.createZero());
+
+    const qPoints = meshArgs.points!;
     ellipsoidPatch.ellipsoid.transformRef.clone(GlobeMapTile._scratchEllipsoid.transformRef);
     const scaleFactor = Math.max(.99, 1 - Math.sin(ellipsoidPatch.longitudeSweep.sweepRadians * delta));
     GlobeMapTile._scratchEllipsoid.transformRef.matrix.scaleColumnsInPlace(scaleFactor, scaleFactor, scaleFactor);
@@ -553,16 +577,11 @@ class GlobeMapTile extends MapTile {
     }
 
     qPoints.params.setFromRange(pointRange);
-    if (qPoints.list.length === 0) {
-      for (const point of GlobeMapTile._scratchMeshPoints)
-        qPoints.add(point);
-    } else {
-      for (let index = 0; index < nTotal; index++)
-        qPoints.list[index].init(GlobeMapTile._scratchMeshPoints[index], qPoints.params);
-    }
+    for (const point of GlobeMapTile._scratchMeshPoints)
+      qPoints.add(point);
 
-    GlobeMapTile._meshArgs.texture = texture;
-    const graphic = system.createMesh(MeshParams.create(GlobeMapTile._meshArgs))!;
+    meshArgs.texture = texture;
+    const graphic = system.createMesh(MeshParams.create(meshArgs))!;
     const branch = new GraphicBranch();
     branch.add(graphic);
     const transform = Transform.createTranslation(patchCenter);
@@ -645,7 +664,7 @@ export class MapTileTree extends RealityTileTree {
     return h > loadThreshold ? MapTileTree.minDisplayableDepth : -1;
   }
 
-  constructor(params: TileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, gcsConverterAvailable: boolean, public sourceTilingScheme: MapTilingScheme, protected _maxDepth: number, globeMode: GlobeMode, includeTerrain: boolean) {
+  constructor(params: TileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, gcsConverterAvailable: boolean, public sourceTilingScheme: MapTilingScheme, protected _maxDepth: number, globeMode: GlobeMode, includeTerrain: boolean, public wantSkirts: boolean) {
     super(params);
 
     this._mercatorTilingScheme = new WebMercatorTilingScheme();

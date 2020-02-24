@@ -73,6 +73,14 @@ export interface RenderTargetDebugControl {
    * @internal
    */
   devicePixelRatioOverride?: number;
+  /** @internal */
+  displayRealityTilePreload: boolean;
+  /** @internal */
+  displayRealityTileRanges: boolean;
+  /** @internal */
+  logRealityTiles: boolean;
+  /** @internal */
+  freezeRealityTiles: boolean;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
