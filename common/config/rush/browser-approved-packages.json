@@ -7,6 +7,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@babel/core",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@bentley/bentleyjs-core",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
@@ -171,6 +175,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@svgr/webpack",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@testing-library/dom",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -199,6 +207,18 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "babel-loader",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "babel-plugin-named-asset-import",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "babel-preset-react-app",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "body-parser",
       "allowedCategories": [ "internal" ]
     },
@@ -209,6 +229,10 @@
     {
       "name": "bunyan-seq",
       "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "cache-loader",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "cache-require-paths",
@@ -631,6 +655,18 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "postcss-normalize",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "postcss-preset-env",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "postcss-safe-parser",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "promise",
       "allowedCategories": [ "tools" ]
     },
@@ -771,6 +807,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "resolve-url-loader",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
@@ -853,6 +893,14 @@
     {
       "name": "tar",
       "allowedCategories": [ "backend", "tools" ]
+    },
+    {
+      "name": "terser-webpack-plugin",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "thread-loader",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tooltip.js",
@@ -976,6 +1024,10 @@
     },
     {
       "name": "webpack-node-externals",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "webpack-sources",
       "allowedCategories": [ "tools" ]
     },
     {

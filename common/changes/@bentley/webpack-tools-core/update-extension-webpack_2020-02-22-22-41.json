@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/webpack-tools-core",
+      "comment": "Add new webpack plugin for iModel.js shared library",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools-core",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}
