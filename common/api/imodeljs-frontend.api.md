@@ -1813,7 +1813,7 @@ export class BackgroundMapGeometry {
     // (undocumented)
     getEarthEllipsoid(radiusOffset?: number): Ellipsoid;
     // (undocumented)
-    getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d): Range1d;
+    getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, doGlobalScope?: boolean): Range1d;
     // (undocumented)
     getPlane(offset?: number): Plane3dByOriginAndUnitNormal;
     // (undocumented)
@@ -3617,6 +3617,12 @@ export function getBackgroundMapTreeSupplier(): TileTreeSupplier;
 
 // @beta
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
+
+// @internal (undocumented)
+export function getCesiumAccessTokenAndEndpointUrl(): Promise<{
+    token?: string;
+    url?: string;
+}>;
 
 // @internal (undocumented)
 export function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, wantSkirts: boolean, exaggeration: number): Promise<TerrainTileLoaderBase | undefined>;
@@ -6485,6 +6491,8 @@ export class RealityTile extends Tile {
     // (undocumented)
     get loadableTile(): RealityTile;
     // (undocumented)
+    preloadRealityTilesAtDepth(depth: number, context: TraversalSelectionContext, args: TileDrawArgs): void;
+    // (undocumented)
     preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number): void;
     // (undocumented)
     purgeContents(olderThan: BeTimePoint): void;
@@ -8505,8 +8513,6 @@ export class TerrainMapTile extends MapTile {
     drapeTiles?: MapTile[];
     // (undocumented)
     everLoaded: boolean;
-    // (undocumented)
-    everPurged: boolean;
     forceSelectRealityTile(): boolean;
     // (undocumented)
     get geometry(): RenderTerrainMeshGeometry | undefined;
@@ -11179,6 +11185,7 @@ export abstract class ViewState extends ElementState {
     getXVector(result?: Vector3d): Vector3d;
     getYVector(result?: Vector3d): Vector3d;
     getZVector(result?: Vector3d): Vector3d;
+    get globalScopeFactor(): number;
     // @internal
     get globeMode(): GlobeMode;
     // @internal
@@ -11195,6 +11202,8 @@ export abstract class ViewState extends ElementState {
     load(): Promise<void>;
     lookAtViewAlignedVolume(volume: Range3d, aspect?: number, margin?: MarginPercent): void;
     lookAtVolume(volume: LowAndHighXYZ | LowAndHighXY, aspect?: number, margin?: MarginPercent): void;
+    // @alpha
+    get maxGlobalScopeFactor(): number;
     get name(): string;
     // @internal
     refreshForModifiedModels(modelIds: Id64Arg | undefined): boolean;
@@ -11221,6 +11230,8 @@ export abstract class ViewState extends ElementState {
     showFrustumErrorMessage(status: ViewStatus): void;
     // (undocumented)
     toJSON(): ViewDefinitionProps;
+    // (undocumented)
+    protected _updateMaxGlobalScopeFactor(): void;
     // @internal (undocumented)
     validateViewDelta(delta: Vector3d, messageNeeded?: boolean): ViewStatus;
     get viewFlags(): ViewFlags;
@@ -11324,9 +11335,13 @@ export abstract class ViewState3d extends ViewState {
     forceMinFrontDist: number;
     getBackDistance(): number;
     // (undocumented)
+    getCartographicHeight(point: XYAndZ): number | undefined;
+    // (undocumented)
     getDisplayStyle3d(): DisplayStyle3dState;
     // (undocumented)
     getExtents(): Vector3d;
+    // (undocumented)
+    getEyeCartographicHeight(): number | undefined;
     getEyePoint(): Point3d;
     getFocusDistance(): number;
     getFrontDistance(): number;
@@ -11338,6 +11353,7 @@ export abstract class ViewState3d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getTargetPoint(result?: Point3d): Point3d;
+    get globalScopeFactor(): number;
     // (undocumented)
     globalViewTransition(): number;
     // (undocumented)

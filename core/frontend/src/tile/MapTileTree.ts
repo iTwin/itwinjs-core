@@ -70,7 +70,6 @@ import { RenderMemory } from "../render/RenderMemory";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
-import { ViewState3d } from "../ViewState";
 
 const scratchNormal = Vector3d.create();
 const scratchViewZ = Vector3d.create();
@@ -623,7 +622,6 @@ export async function calculateEcefToDb(iModel: IModelConnection, bimElevationBi
 
 const scratchCorner = Point3d.createZero();
 const scratchZNormal = Vector3d.create(0, 0, 1);
-const scratchCarto = new Cartographic();
 
 /**
  * A specialization of TileTree for map quadTrees.  This overrides the default tile selection to simplified traversal that preloads ancestors to avoid
@@ -647,21 +645,8 @@ export class MapTileTree extends RealityTileTree {
   public static minDisplayableDepth = 3;
   public get mapLoader() { return this.loader as MapTileLoaderBase; }
   public getBaseRealityDepth(sceneContext: SceneContext) {
-    const view = sceneContext.viewport.view;
-
-    if (!(view instanceof ViewState3d))
-      return -1
-        ;
-    let h = 0.0;
-    if (view.isCameraOn) {
-      const carto = view.rootToCartographic(view.getEyePoint(), scratchCarto);
-      h = (undefined === carto ? 0.0 : carto.height);
-    } else {
-      h = view.extents.magnitudeXY();
-    }
-
-    const loadThreshold = 10E4;   // Start loading when we hit 10KM altitude or width.
-    return h > loadThreshold ? MapTileTree.minDisplayableDepth : -1;
+    // If the view has ever had global scope then preload low level (global) tiles.
+    return (sceneContext.viewport.view.maxGlobalScopeFactor > 1) ? MapTileTree.minDisplayableDepth : -1;
   }
 
   constructor(params: TileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, gcsConverterAvailable: boolean, public sourceTilingScheme: MapTilingScheme, protected _maxDepth: number, globeMode: GlobeMode, includeTerrain: boolean, public wantSkirts: boolean) {

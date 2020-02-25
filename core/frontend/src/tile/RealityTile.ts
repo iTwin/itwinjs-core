@@ -58,6 +58,21 @@ export class RealityTile extends Tile {
   // An upsampled tile is not loadable - will override to return loadable parent.
   public get loadableTile(): RealityTile { return this; }
 
+  public preloadRealityTilesAtDepth(depth: number, context: TraversalSelectionContext, args: TileDrawArgs) {
+    if (this.depth === depth) {
+      context.preload(this, args);
+      return;
+    }
+
+    this.loadChildren();
+    this._childrenLastUsed = args.now;
+
+    if (undefined !== this.children) {
+      for (const child of this.realityChildren)
+        child.preloadRealityTilesAtDepth(depth, context, args);
+    }
+  }
+
   protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     if (TileTreeLoadStatus.Loading === childrenLoadStatus) {

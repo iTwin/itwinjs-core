@@ -8,6 +8,7 @@
 
 import {
   assert,
+  BeDuration,
   BeTimePoint,
 } from "@bentley/bentleyjs-core";
 import {
@@ -118,6 +119,8 @@ const scratchFrustumPlanes = new FrustumPlanes();
 
 /** @internal */
 export class RealityTileTree extends TileTree {
+  private static _purgeInterval = BeDuration.fromSeconds(5);
+  private _nextPurge: BeTimePoint = BeTimePoint.fromNow(RealityTileTree._purgeInterval);
   private get _realityRoot() { return this._rootTile as RealityTile; }
   public createTile(props: TileParams) { return new RealityTile(props); }
 
@@ -196,7 +199,12 @@ export class RealityTileTree extends TileTree {
     }
     args.context.viewport.numSelectedTiles += selectedTiles.length;
 
-    this.purgeRealityTiles(args.purgeOlderThan);        // Purge stale tiles....
+    if (args.now.milliseconds > this._nextPurge.milliseconds) {
+      this.purgeRealityTiles(args.purgeOlderThan);        // Purge stale tiles....
+      this._nextPurge = args.now.plus(RealityTileTree._purgeInterval);
+      if (debugControl && debugControl.logRealityTiles)
+        console.log("Purging reality tiles");    // tslint:disable-line
+    }
   }
 
   public getTraversalChildren(depth: number) {
@@ -222,12 +230,21 @@ export class RealityTileTree extends TileTree {
 
     rootTile.selectRealityTiles(context, args, new TraversalDetails());
 
+    const baseDepth = this.getBaseRealityDepth(args.context);
+
+    if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
+      rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
+
     if (!freezeTiles)
       this.preloadTilesForScene(args, context, undefined);
 
     if (!freezeTiles)
-      for (const tile of context.missing)
+      for (const tile of context.missing) {
+        const loadableTile = tile.loadableTile;
+
+        loadableTile.setLastUsed(args.now);
         args.insertMissing(tile.loadableTile);
+      }
 
     if (debugControl && debugControl.logRealityTiles) {
       this.logTiles("Selected: ", selected.values());

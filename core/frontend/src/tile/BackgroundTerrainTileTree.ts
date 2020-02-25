@@ -177,7 +177,6 @@ export class TerrainMapTile extends MapTile {
   private static _maxParentHeightDepth = 4;
   public drapeTiles?: MapTile[];
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
-  public everPurged = false;
   protected _heightRange: Range1d | undefined;
   protected _geometry?: RenderTerrainMeshGeometry;
   protected _mesh?: TerrainMeshPrimitive;     // Primitive retained on leaves only for upsampling.
@@ -368,7 +367,6 @@ export class TerrainMapTile extends MapTile {
     super.disposeContents();
     this._geometry = dispose(this._geometry);
     this._mesh = undefined;
-    this.everPurged = true;
   }
 }
 

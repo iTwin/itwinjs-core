@@ -172,7 +172,7 @@ export class BackgroundMapGeometry {
     }
   }
 
-  public getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d): Range1d {
+  public getFrustumIntersectionDepthRange(frustum: Frustum, heightRange?: Range1d, doGlobalScope?: boolean): Range1d {
     const clipPlanes = frustum.getRangePlanes(false, false, 0);
     const eyePoint = frustum.getEyePoint(scratchEyePoint);
     const viewRotation = frustum.getRotation(scratchViewRotation)!;
@@ -209,6 +209,12 @@ export class BackgroundMapGeometry {
     } else {
       const minOffset = heightRange ? heightRange.low : 0, maxOffset = (heightRange ? heightRange.high : 0) + this.cartesianChordHeight;
       const radiusOffsets = [minOffset, maxOffset];
+
+      // If we are doing global scope then include minimum ellipsoid that represents the chordal approximation of the low level tiles.
+      // this substantially expands the frustum so don't do it for non-global views, but this clipping out the low level tiles.
+      if (doGlobalScope)
+        radiusOffsets.push(minOffset - this.maxGeometryChordHeight);
+
       const toView = Transform.createRefs(Point3d.createZero(), viewRotation);
       const eyePoint4d = eyePoint ? Point4d.createFromPointAndWeight(eyePoint, 1) : Point4d.createFromPointAndWeight(viewZ, 0);
       for (const radiusOffset of radiusOffsets) {

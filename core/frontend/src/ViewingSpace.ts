@@ -167,7 +167,7 @@ export class ViewingSpace {
       const viewZ = this.rotation.getRow(2);
       const eyeDepth = this.eyePoint ? viewZ.dotProduct(this.eyePoint) : undefined;
       const heightRange = this.view.displayStyle.displayTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(-1, 1);
-      depthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(frustum, heightRange);
+      depthRange = backgroundMapGeometry.getFrustumIntersectionDepthRange(frustum, heightRange, this.view.maxGlobalScopeFactor > 1);
 
       if (eyeDepth !== undefined) {
         const maxBackgroundFrontBackRatio = 1.0E6;

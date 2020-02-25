@@ -62,7 +62,6 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
       internalFormat = context2.DEPTH24_STENCIL8;
   }
 
-  gl.getError();
   // send the texture data
   if (undefined !== element) {
     gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.format, params.dataType, element);
