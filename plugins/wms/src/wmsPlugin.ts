@@ -118,6 +118,10 @@ class WMSTreeRef extends MapTileTreeReference {
   protected get _imageryProvider() { return this._plugin.currentImageryProvider; }
   protected get _transparency() { return 0.7; }
 
+  public get castsShadows() {
+    return false;
+  }
+
   /** Return the owner of the TileTree to draw. */
   public get treeOwner(): TileTreeOwner {
     return this.iModel.tiles.getTileTreeOwner(this._plugin.currentImageryType, this._plugin.treeSupplier);

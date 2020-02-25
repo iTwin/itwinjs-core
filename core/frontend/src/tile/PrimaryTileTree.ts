@@ -135,6 +135,10 @@ class PrimaryTreeReference extends TileTreeReference {
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
   }
 
+  public get castsShadows() {
+    return true;
+  }
+
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this._view, this._id.modelId);
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
@@ -168,6 +172,10 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   public constructor(view: ViewState3d, model: GeometricModelState) {
     super(view, model, true);
     this._viewFlagOverrides.setForceSurfaceDiscard(true);
+  }
+
+  public get castsShadows() {
+    return false;
   }
 
   protected getViewFlagOverrides(_tree: TileTree) {

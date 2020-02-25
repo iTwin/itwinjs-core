@@ -25,6 +25,10 @@ class ExternalTreeRef extends TileTreeReference {
     this._ovrs = ovrs;
   }
 
+  public get castsShadows() {
+    return this._ref.castsShadows;
+  }
+
   public get treeOwner() { return this._ref.treeOwner; }
 
   public addToScene(context: SceneContext): void {

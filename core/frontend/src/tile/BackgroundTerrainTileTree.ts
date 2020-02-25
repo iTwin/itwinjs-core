@@ -522,6 +522,10 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
   /** Terrain  tiles do not contribute to the range used by "fit view". */
   public unionFitRange(_range: Range3d): void { }
 
+  public get castsShadows() {
+    return false;
+  }
+
   public get treeOwner(): TileTreeOwner {
     const id = {
       providerName: this.settings.terrainSettings.providerName,

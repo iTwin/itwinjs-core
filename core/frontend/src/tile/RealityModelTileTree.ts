@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode, Cartographic } from "@bentley/imodeljs-common";
+import { IModelError, TileTreeProps, TileProps, Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import {
   assert,
@@ -23,6 +23,7 @@ import {
   BatchedTileIdMap,
   ContextTileLoader,
   createClassifierTileTreeReference,
+  createDefaultViewFlagOverrides,
   RealityTileTree,
   SpatialClassifierTileTreeReference,
   Tile,
@@ -217,8 +218,8 @@ class FindChildResult {
   constructor(public id: string, public json: any, public transformToRoot?: Transform) { }
 }
 
-const realityModelViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
-realityModelViewFlagOverrides.clearClipVolume();
+// Smooth shade, no lighting or clip volume, shadows if enabled for view.
+const realityModelViewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false, lighting: false });
 
 /** @internal */
 class RealityModelTileLoader extends ContextTileLoader {
@@ -416,6 +417,10 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
     if (undefined !== props.classifiers)
       this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
+  }
+
+  public get castsShadows() {
+    return true;
   }
 
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }

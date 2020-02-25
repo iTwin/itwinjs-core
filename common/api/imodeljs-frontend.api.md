@@ -1836,6 +1836,8 @@ export class BackgroundMapGeometry {
 export class BackgroundMapTileTreeReference extends MapTileTreeReference {
     constructor(settings: BackgroundMapSettings, iModel: IModelConnection, forCartographicDrape?: boolean, _forPlanarDrape?: boolean);
     // (undocumented)
+    get castsShadows(): boolean;
+    // (undocumented)
     createDrawArgs(context: SceneContext): import("./TileDrawArgs").TileDrawArgs | undefined;
     // (undocumented)
     protected get _graphicType(): TileGraphicType.BackgroundMap | TileGraphicType.Scene;
@@ -1874,6 +1876,8 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     constructor(settings: BackgroundMapSettings, iModel: IModelConnection);
     addLogoCards(logoDiv: HTMLTableElement, vp: ScreenViewport): void;
     addToScene(context: SceneContext): void;
+    // (undocumented)
+    get castsShadows(): boolean;
     // (undocumented)
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // (undocumented)
@@ -4835,6 +4839,8 @@ export class MapImageryTileTreeReference extends MapTileTreeReference {
     constructor(imageryProvider: ImageryProvider, groundBias: number, applyTerrain: boolean, iModel: IModelConnection, graphicType?: TileGraphicType, transparency?: number);
     // (undocumented)
     applyTerrain: boolean;
+    // (undocumented)
+    get castsShadows(): boolean;
     // (undocumented)
     graphicType: TileGraphicType;
     // (undocumented)
@@ -9228,6 +9234,8 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
     // (undocumented)
     accumulateTransformedRange(range: Range3d, matrix: Matrix4d, frustumPlanes?: FrustumPlanes): void;
     addToScene(context: SceneContext): void;
+    // (undocumented)
+    abstract get castsShadows(): boolean;
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)

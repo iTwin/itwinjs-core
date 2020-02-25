@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Reality models now cast and receive solar shadows.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

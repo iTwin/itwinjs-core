@@ -319,6 +319,10 @@ export class MapImageryTileTreeReference extends MapTileTreeReference {
     this._supplier = new ImageryTreeSupplier(imageryProvider);
   }
 
+  public get castsShadows() {
+    return false;
+  }
+
   public get treeOwner(): TileTreeOwner {
     if (this.provider !== this._supplier.provider)
       this._supplier = new ImageryTreeSupplier(this.provider);

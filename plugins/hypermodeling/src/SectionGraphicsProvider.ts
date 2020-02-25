@@ -92,6 +92,10 @@ class ProxyTreeReference extends TileTreeReference {
     this._owner = iModel.tiles.getTileTreeOwner(props, proxyTreeSupplier);
   }
 
+  public get castsShadows() {
+    return false;
+  }
+
   public get treeOwner() { return this._owner; }
 
   private get _proxiedRef(): TileTreeReference | undefined {

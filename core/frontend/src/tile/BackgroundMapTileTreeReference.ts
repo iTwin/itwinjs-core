@@ -41,6 +41,10 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
     this._filterTextures = (forCartographicDrape || _forPlanarDrape) ? (options.filterMapDrapeTextures === undefined || options.filterMapDrapeTextures) : options.filterMapTextures;
   }
 
+  public get castsShadows() {
+    return false;
+  }
+
   public get treeOwner(): TileTreeOwner {
     const id = {
       providerName: this.settings.providerName,
