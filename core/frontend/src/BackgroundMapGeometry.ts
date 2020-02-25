@@ -221,6 +221,7 @@ export class BackgroundMapGeometry {
         const ellipsoid = this.getEarthEllipsoid(radiusOffset);
         const isInside = eyePoint && ellipsoid.worldToLocal(eyePoint)!.magnitude() < 1.0;
         const center = ellipsoid.localToWorld(scratchZeroPoint, scratchCenterPoint);
+        const clipPlaneCount = clipPlanes.planes.length;
 
         // Extrema...
         let angles, extremaPoint;
@@ -278,6 +279,8 @@ export class BackgroundMapGeometry {
           clipPlanes.clipConvexPolygonInPlace(scratchCartoRectangle, scratchWorkArray);
           for (let i = 0; i < scratchCartoRectangle.length; i++)
             depthRange.extendX(viewZ.dotProduct(scratchCartoRectangle.getPoint3dAtUncheckedPointIndex(i)));
+          while (clipPlanes.planes.length > clipPlaneCount)   // Remove pushed silhouette plane.
+            clipPlanes.planes.pop();
         }
       }
     }
