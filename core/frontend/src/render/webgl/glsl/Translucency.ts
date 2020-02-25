@@ -18,22 +18,20 @@ import { System } from "../System";
 // flatAlphaWeight bit is set if we want to apply OIT transparency using a constant Z value of 1.
 // computeLinearDepth() removes the perspective and puts z in linear [0..1]
 const computeAlphaWeight = `
-float computeAlphaWeight(float a, float flatAlpha) {
-  float z = mix(computeLinearDepth(v_eyeSpace.z), 1.0, flatAlpha);
+float computeAlphaWeight(float a) {
+  float z = chooseFloatWithBitFlag(computeLinearDepth(v_eyeSpace.z), 1.0, u_shaderFlags, kShaderBit_OITFlatAlphaWeight);
   return pow(a + 0.01, 4.0) + max(1e-2, 3.0 * 1e3 * pow(z, 3.0));
 }
 `;
 
 // NB: Our blending algorithm uses pre-multiplied alpha
 const computeOutputs = `
-  float flatAlpha = extractShaderBit(kShaderBit_OITFlatAlphaWeight);
-  float scaleOutput = extractShaderBit(kShaderBit_OITScaleOutput);
   vec3 Ci = baseColor.rgb * baseColor.a;
   float ai = min(0.99, baseColor.a); // OIT algorithm does not nicely handle a=1
-  float wzi = computeAlphaWeight(ai, flatAlpha);
+  float wzi = computeAlphaWeight(ai);
 
   // If we are scaling output into the 0 to 1 range, we use the maximum output of the alpha weight function.
-  float outputScale = mix(1.0, 1.0 / 3001.040604, scaleOutput);
+  float outputScale = chooseFloatWithBitFlag(1.0, 1.0 / 3001.040604, u_shaderFlags, kShaderBit_OITScaleOutput);
 
   vec4 output0 = vec4(Ci * wzi * outputScale, ai);
   vec4 output1 = vec4(ai * wzi * outputScale);

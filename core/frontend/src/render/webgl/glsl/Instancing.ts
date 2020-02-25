@@ -9,10 +9,14 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { VertexShaderBuilder, VariableType } from "../ShaderBuilder";
 import { addOvrFlagConstants } from "./FeatureSymbology";
-import { extractNthBit } from "./Common";
+import { addExtractNthBit } from "./Common";
+import { System } from "../System";
 
 const extractInstanceBit = `
-  float extractInstanceBit(float flag) { return extractNthBit(a_instanceOverrides.r, flag); }
+float extractInstanceBit(float flag) { return extractNthBit(a_instanceOverrides.r, flag); }
+`;
+const extractInstanceBit2 = `
+float extractInstanceBit(uint flag) { return extractNthBit(a_instanceOverrides.r, flag); }
 `;
 
 const computeInstancedModelMatrixRTC = `
@@ -37,8 +41,8 @@ export function addInstanceOverrides(vert: VertexShaderBuilder): void {
 
   addOvrFlagConstants(vert);
 
-  vert.addFunction(extractNthBit);
-  vert.addFunction(extractInstanceBit);
+  addExtractNthBit(vert);
+  vert.addFunction(System.instance.capabilities.isWebGL2 ? extractInstanceBit2 : extractInstanceBit);
 }
 
 /** @internal */

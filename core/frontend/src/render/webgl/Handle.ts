@@ -525,6 +525,7 @@ const enum DataType {
   Vec3,
   Vec4,
   Int,
+  Uint,
 }
 
 /** A handle to the location of a uniform within a shader program
@@ -566,7 +567,7 @@ export class UniformHandle {
   }
 
   private updateDatum(type: DataType, datum: number): boolean {
-    assert(DataType.Int === type || DataType.Float === type);
+    assert(DataType.Int === type || DataType.Uint === type || DataType.Float === type);
 
     // NB: Yes, calling data.length without actually changing the length shows up as a significant performance bottleneck...
     if (this._data.length !== 1)
@@ -617,5 +618,17 @@ export class UniformHandle {
   public setUniform1f(data: number) {
     if (this.updateDatum(DataType.Float, data))
       System.instance.context.uniform1f(this._location, data);
+  }
+
+  public setUniform1ui(data: number) {
+    if (this.updateDatum(DataType.Uint, data))
+      (System.instance.context as WebGL2RenderingContext).uniform1ui(this._location, data);
+  }
+
+  public setUniformBitflags(data: number) {
+    if (System.instance.capabilities.isWebGL2)
+      this.setUniform1ui(data);
+    else
+      this.setUniform1f(data);
   }
 }

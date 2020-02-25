@@ -33,6 +33,7 @@ export const enum VariableType {
   Mat4, // mat4
   Sampler2D, // sampler2D
   SamplerCube, // samplerCube
+  Uint, // uint
 
   COUNT,
 }
@@ -74,6 +75,7 @@ namespace Convert {
       case VariableType.Mat4: return "mat4";
       case VariableType.Sampler2D: return "sampler2D";
       case VariableType.SamplerCube: return "samplerCube";
+      case VariableType.Uint: return "uint";
       default: assert(false); return "undefined";
     }
   }
@@ -215,6 +217,13 @@ export class ShaderVariables {
 
   public addConstant(name: string, type: VariableType, value: string) {
     this.addGlobal(name, type, value, true);
+  }
+
+  public addBitFlagConstant(name: string, value: number) {
+    if (System.instance.capabilities.isWebGL2)
+      this.addGlobal(name, VariableType.Uint, (2 ** value).toFixed(0) + "u", true);
+    else
+      this.addGlobal(name, VariableType.Float, value.toFixed(0) + ".0", true);
   }
 
   /** Constructs the lines of glsl code declaring all of the variables. */

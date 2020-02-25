@@ -20,7 +20,7 @@ const applyMonochromeColor = `
   vec4 monoColor = vec4(mix(u_monoRgb, litRgb, u_mixMonoColor), baseColor.a);
 
   // Select monochrome or element color based on shader flag
-  return mix(baseColor, monoColor, extractShaderBit(kShaderBit_Monochrome));
+  return chooseVec4WithBitFlag(baseColor, monoColor, u_shaderFlags, kShaderBit_Monochrome);
 `;
 
 /** @internal */

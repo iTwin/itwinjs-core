@@ -20,11 +20,12 @@ import { TextureUnit } from "../RenderFlags";
 import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
 import { addFeatureAndMaterialLookup, addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
 import { assignFragColor, computeLinearDepth, addWindowToTexCoords } from "./Fragment";
-import { extractNthBit, addEyeSpace, addUInt32s } from "./Common";
+import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
 import { decodeDepthRgb } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
 import { assert } from "@bentley/bentleyjs-core";
+import { System } from "../System";
 
 // tslint:disable:no-const-enum
 
@@ -45,18 +46,18 @@ export const enum FeatureSymbologyOptions {
 /** @internal */
 export function addOvrFlagConstants(builder: ShaderBuilder): void {
   // NB: These are the bit positions of each flag in OvrFlags enum - not the flag values
-  builder.addConstant("kOvrBit_Visibility", VariableType.Float, "0.0");
-  builder.addConstant("kOvrBit_Rgb", VariableType.Float, "1.0");
-  builder.addConstant("kOvrBit_Alpha", VariableType.Float, "2.0");
-  builder.addConstant("kOvrBit_IgnoreMaterial", VariableType.Float, "3.0");
-  builder.addConstant("kOvrBit_Flashed", VariableType.Float, "4.0");
-  builder.addConstant("kOvrBit_NonLocatable", VariableType.Float, "5.0");
-  builder.addConstant("kOvrBit_LineCode", VariableType.Float, "6.0");
-  builder.addConstant("kOvrBit_Weight", VariableType.Float, "7.0");
+  builder.addBitFlagConstant("kOvrBit_Visibility", 0);
+  builder.addBitFlagConstant("kOvrBit_Rgb", 1);
+  builder.addBitFlagConstant("kOvrBit_Alpha", 2);
+  builder.addBitFlagConstant("kOvrBit_IgnoreMaterial", 3);
+  builder.addBitFlagConstant("kOvrBit_Flashed", 4);
+  builder.addBitFlagConstant("kOvrBit_NonLocatable", 5);
+  builder.addBitFlagConstant("kOvrBit_LineCode", 6);
+  builder.addBitFlagConstant("kOvrBit_Weight", 7);
 
   // NB: We treat the 16-bit flags as 2 bytes - so subtract 8 from each of these bit indices.
-  builder.addConstant("kOvrBit_Hilited", VariableType.Float, "0.0");
-  builder.addConstant("kOvrBit_Emphasized", VariableType.Float, "1.0");
+  builder.addBitFlagConstant("kOvrBit_Hilited", 0);
+  builder.addBitFlagConstant("kOvrBit_Emphasized", 1);
 }
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
@@ -76,6 +77,11 @@ function getFeatureIndex(instanced: boolean): string {
 const extractNthFeatureBit = `
 float extractNthFeatureBit(float flags, float n) {
   return (1.0 - extractNthBit(u_globalOvrFlags, n)) * extractNthBit(flags, n);
+}
+`;
+const extractNthFeatureBit2 = `
+float extractNthFeatureBit(float flags, uint n) {
+  return mix(1.0, 0.0, 0u != (u_globalOvrFlags & n)) * extractNthBit(flags, n);
 }
 `;
 
@@ -158,7 +164,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   const wantAlpha = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Alpha);
   assert(wantColor || !wantAlpha);
 
-  vert.addFunction(extractNthBit);
+  addExtractNthBit(vert);
   addOvrFlagConstants(vert);
 
   vert.addGlobal("linear_feature_overrides", VariableType.Vec4, "vec4(0.0)");
@@ -174,8 +180,15 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   }
 
   if (wantGlobalOvrFlags) {
-    vert.addFunction(extractNthFeatureBit);
-    vert.addUniform("u_globalOvrFlags", VariableType.Float, (prog) => {
+    let bitmapType;
+    if (System.instance.capabilities.isWebGL2) {
+      vert.addFunction(extractNthFeatureBit2);
+      bitmapType = VariableType.Uint;
+    } else {
+      vert.addFunction(extractNthFeatureBit);
+      bitmapType = VariableType.Float;
+    }
+    vert.addUniform("u_globalOvrFlags", bitmapType, (prog) => {
       prog.addGraphicUniform("u_globalOvrFlags", (uniform, params) => {
         let flags = 0.0;
         if (params.geometry.isEdge) {
@@ -184,7 +197,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
             flags = edgeOvrs.computeOvrFlags();
         }
 
-        uniform.setUniform1f(flags);
+        uniform.setUniformBitflags(flags);
       });
     });
   }
@@ -237,9 +250,9 @@ export function addMaxAlpha(builder: ShaderBuilder): void {
 
 /** @internal */
 function addEmphasisFlags(builder: ShaderBuilder): void {
-  builder.addConstant("kEmphBit_Hilite", VariableType.Float, "0.0");
-  builder.addConstant("kEmphBit_Emphasize", VariableType.Float, "1.0");
-  builder.addConstant("kEmphBit_Flash", VariableType.Float, "2.0");
+  builder.addBitFlagConstant("kEmphBit_Hilite", 0);
+  builder.addBitFlagConstant("kEmphBit_Emphasize", 1);
+  builder.addBitFlagConstant("kEmphBit_Flash", 2);
   builder.addConstant("kEmphFlag_Hilite", VariableType.Float, "1.0");
   builder.addConstant("kEmphFlag_Emphasize", VariableType.Float, "2.0");
   builder.addConstant("kEmphFlag_Flash", VariableType.Float, "4.0");
@@ -312,7 +325,7 @@ export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false)
   builder.vert.set(VertexShaderComponent.CheckForDiscard, checkVertexHiliteDiscard);
 
   addEmphasisFlags(builder.frag);
-  builder.frag.addFunction(extractNthBit);
+  addExtractNthBit(builder.frag);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeHiliteColor);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 }
@@ -642,7 +655,7 @@ function addApplyFlash(frag: FragmentShaderBuilder) {
   addHiliteSettings(frag, true);
   addEmphasisFlags(frag);
 
-  frag.addFunction(extractNthBit);
+  addExtractNthBit(frag);
   frag.addFunction(doApplyFlash);
   frag.set(FragmentShaderComponent.ApplyFlash, applyFlash);
   addFlashIntensity(frag);
