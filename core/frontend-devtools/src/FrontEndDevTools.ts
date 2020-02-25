@@ -69,6 +69,7 @@ import {
   OverrideSubCategoryPriorityTool,
 } from "./tools/PlanProjectionTools";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
+import { ClipColorTool } from "./tools/ClipColorTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -100,6 +101,7 @@ export class FrontendDevTools {
       ChangeUnitsTool,
       ChangeViewFlagsTool,
       ClearIsolatedElementsTool,
+      ClipColorTool,
       CompileShadersTool,
       DefaultTileSizeModifierTool,
       DumpPlanProjectionSettingsTool,

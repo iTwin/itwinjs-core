@@ -22,7 +22,7 @@ import {
   Decorator,
   DecorateContext,
 } from "@bentley/imodeljs-frontend";
-import { Point2d, Point3d } from "@bentley/geometry-core";
+import { Point2d, Point3d, ClipVector } from "@bentley/geometry-core";
 import { BuffersContainer, VAOContainer, VBOContainer } from "@bentley/imodeljs-frontend/lib/webgl";
 
 describe("Test VAO creation", () => {
@@ -161,6 +161,67 @@ describe("Properly render on- or off-screen", () => {
     const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
     expect(vp0.rendersToScreen).to.be.false;
     expect(vp1.rendersToScreen).to.be.false;
+  });
+});
+
+describe("Render mirukuru with single clip plane", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    IModelApp.startup();
+    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/mirukuru.ibim");
+    imodel = await IModelConnection.openSnapshot(imodelLocation);
+  });
+
+  after(async () => {
+    if (imodel) await imodel.closeSnapshot();
+    IModelApp.shutdown();
+  });
+
+  it("should render the model", async () => {
+    const rect = new ViewRect(0, 0, 100, 100);
+    await testViewportsWithDpr(imodel, rect, async (vp) => {
+      const vf = vp.view.viewFlags;
+      vf.visibleEdges = false;
+
+      const clip = ClipVector.fromJSON([{
+        shape: {
+          points: [[-58.57249751634662, -261.9870625343174, 0], [297.4029912650585, -261.9870625343174, 0], [297.4029912650585, 111.24234024435282, 0], [-58.57249751634662, 111.24234024435282, 0], [-58.57249751634662, -261.9870625343174, 0]],
+          trans: [[1, 0, 0, 289076.52682419703], [0, 1, 0, 3803926.4450675533], [0, 0, 1, 0]],
+        },
+      }]);
+      expect(clip).to.not.be.undefined;
+      vp.view.setViewClip(clip);
+      vp.outsideClipColor = ColorDef.red;
+      vp.insideClipColor = ColorDef.green;
+
+      await vp.waitForAllTilesToRender();
+      expect(vp.numRequestedTiles).to.equal(0);
+      expect(vp.numSelectedTiles).to.equal(1);
+
+      vp.outsideClipColor = ColorDef.red;
+      vp.insideClipColor = ColorDef.green;
+
+      // White rectangle is centered in view with black background surrounding. Clipping shape and colors splits the shape into red and green halves. Lighting is on so rectangle will not be pure red and green.
+      const colors = vp.readUniqueColors();
+      const bgColor = Color.fromRgba(0, 0, 0, 0xff);
+      expect(colors.length).least(3);
+      expect(colors.contains(bgColor)).to.be.true; // black background
+
+      const isReddish = (c: Color): boolean => {
+        return c.r >= 0x50 && c.g < 0xa && c.b < 0xa && c.a === 0xff;
+      };
+
+      const isGreenish = (c: Color) => {
+        return c.r < 0xa && c.g >= 0x50 && c.b < 0xa && c.a === 0xff;
+      };
+
+      for (const c of colors.array) {
+        if (0 !== c.compare(bgColor)) {
+          expect(isReddish(c) || isGreenish(c)).to.be.true;
+        }
+      }
+    });
   });
 });
 

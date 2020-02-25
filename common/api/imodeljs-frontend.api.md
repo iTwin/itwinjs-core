@@ -2242,9 +2242,13 @@ export class Clips {
     // (undocumented)
     get count(): number;
     // (undocumented)
+    get insideRgba(): FloatRgba;
+    // (undocumented)
     get isValid(): boolean;
     // (undocumented)
-    set(numPlanes: number, texture: TextureHandle): void;
+    get outsideRgba(): FloatRgba;
+    // (undocumented)
+    set(numPlanes: number, texture: TextureHandle, outsideRgba: FloatRgba, insideRgba: FloatRgba): void;
     // (undocumented)
     get texture(): TextureHandle | undefined;
     }
@@ -6552,6 +6556,10 @@ export abstract class RenderClipVolume implements IDisposable {
     // @internal (undocumented)
     abstract collectStatistics(stats: RenderMemory.Statistics): void;
     abstract dispose(): void;
+    // @internal
+    abstract get hasOutsideClipColor(): boolean;
+    // @internal (undocumented)
+    abstract setClipColors(outsideColor: ColorDef | undefined, insideColor: ColorDef | undefined): void;
     abstract get type(): ClippingType;
 }
 
@@ -6759,7 +6767,7 @@ export namespace RenderMemory {
 // @internal
 export class RenderPlan {
     // (undocumented)
-    readonly activeVolume?: ClipVector;
+    readonly activeClipSettings?: ViewClipSettings;
     // (undocumented)
     readonly analysisStyle?: AnalysisStyle;
     // (undocumented)
@@ -10836,6 +10844,9 @@ export abstract class Viewport implements IDisposable {
     get hilite(): Hilite.Settings;
     set hilite(hilite: Hilite.Settings);
     get iModel(): IModelConnection;
+    // @alpha
+    get insideClipColor(): ColorDef | undefined;
+    set insideClipColor(color: ColorDef | undefined);
     // @internal (undocumented)
     invalidateController(): void;
     // @beta
@@ -10897,6 +10908,9 @@ export abstract class Viewport implements IDisposable {
     readonly onViewportChanged: BeEvent<(vp: Viewport, changed: ChangeFlags) => void>;
     // @beta
     readonly onViewUndoRedo: BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>;
+    // @alpha
+    get outsideClipColor(): ColorDef | undefined;
+    set outsideClipColor(color: ColorDef | undefined);
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
     // @alpha
     get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides;

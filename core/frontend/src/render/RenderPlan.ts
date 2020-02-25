@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ClipVector, Vector3d, Point3d } from "@bentley/geometry-core";
+import { Vector3d, Point3d } from "@bentley/geometry-core";
 import {
   AmbientOcclusion,
   AnalysisStyle,
@@ -23,6 +23,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import { ViewState3d } from "../ViewState";
+import { ViewClipSettings, createViewClipSettings } from "./ViewClipSettings";
 
 const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();
@@ -38,7 +39,7 @@ export class RenderPlan {
   public readonly monoColor: ColorDef;
   public readonly hiliteSettings: Hilite.Settings;
   public readonly emphasisSettings: Hilite.Settings;
-  public readonly activeVolume?: ClipVector;
+  public readonly activeClipSettings?: ViewClipSettings;
   public readonly hline?: HiddenLine.Settings;
   public readonly analysisStyle?: AnalysisStyle;
   public readonly ao?: AmbientOcclusion.Settings;
@@ -78,7 +79,7 @@ export class RenderPlan {
       this.hiliteSettings = vp.hilite;
       this.emphasisSettings = vp.emphasisSettings;
       this.isFadeOutActive = vp.isFadeOutActive;
-      this.activeVolume = view.getViewClip();
+      this.activeClipSettings = createViewClipSettings(view.getViewClip(), vp.outsideClipColor, vp.insideClipColor);
       this.hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
       this.ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
       this.analysisStyle = style.analysisStyle;

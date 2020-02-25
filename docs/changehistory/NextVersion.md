@@ -34,6 +34,14 @@ The following are view tools that allow a user to navigate a plane or three-dime
   * To navigate to a precise latitude/longitude location on the map, specify exactly two numeric arguments to `parseAndRun`. The first will be the latitude and the second will be the longitude. These are specified in degrees.
   * To search for and possibly navigate to a named location, specify any number of string arguments to `parseAndRun`. They will be joined with single spaces between them. If a location corresponding to the joined strings can be found, the tool will navigate there.
 
+## Colorizing Clip Regions
+[Viewport]($frontend) now contains the following properties which control the color of pixels outside or inside a clip region. If either of these are defined, the corresponding pixels will be shown using the specified color; otherwise, no color override occurs and clipping proceeds normally for that area of the clip region. By default, these are both undefined.
+  * `outsideClipColor` - Either a [ColorDef]($common) or undefined. This setting controls the color overrride for pixels outside a clip region.
+  * `insideClipColor` - Either a [ColorDef]($common) or undefined. This setting controls the color overrride for pixels inside a clip region.
+
+![Clipped geometry drawn in yellow](assets/section-color.png)
+<p align="center">Clipped geometry drawn in yellow - arrow indicates direction of clip plane</p>
+
 ## Breaking API changes
 
 With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APis have changed in ways that may require calling code to be adjusted:

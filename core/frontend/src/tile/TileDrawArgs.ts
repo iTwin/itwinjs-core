@@ -81,7 +81,9 @@ export class TileDrawArgs {
   public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = true, symbologyOverrides?: FeatureSymbology.Overrides) {
     this.location = location;
     this.root = root;
-    this.clipVolume = clip;
+    if (undefined !== clip && !clip.hasOutsideClipColor)
+      this.clipVolume = clip;
+
     this.context = context;
 
     this.now = now;
@@ -99,7 +101,7 @@ export class TileDrawArgs {
 
     // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
     if (context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
-      this.viewClip = context.viewport.view.getViewClip();
+      this.viewClip = undefined === context.viewport.outsideClipColor ? context.viewport.view.getViewClip() : undefined;
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
   }

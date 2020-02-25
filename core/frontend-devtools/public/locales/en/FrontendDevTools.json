@@ -137,6 +137,9 @@
     },
     "OverrideSubCategoryPriority": {
       "keyin": "fdt subcat priority"
+    },
+    "ClipColorTool": {
+      "keyin": "fdt clip color"
     }
   }
 }

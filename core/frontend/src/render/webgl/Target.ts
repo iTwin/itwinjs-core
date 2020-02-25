@@ -9,7 +9,6 @@
 import {
   ClipPlaneContainment,
   ClipUtilities,
-  ClipVector,
   Point2d,
   Point3d,
   Range3d,
@@ -95,6 +94,8 @@ import { PerformanceMetrics } from "./PerformanceMetrics";
 import { desync, SyncTarget } from "./Sync";
 import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
 import { Viewport } from "../../Viewport";
+import { ViewClipSettings } from "../ViewClipSettings";
+import { FloatRgba } from "./FloatRGBA";
 
 /** Interface for 3d GPU clipping.
  * @internal
@@ -103,18 +104,25 @@ export class Clips {
   private _texture?: TextureHandle;
   private _clipActive: number = 0;   // count of SetActiveClip nesting (only outermost used)
   private _clipCount: number = 0;
+  private _outsideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
+  private _insideRgba: FloatRgba = FloatRgba.from(0.0, 0.0, 0.0, 0.0); // 0 alpha means disabled
+
+  public get outsideRgba(): FloatRgba { return this._outsideRgba; }
+  public get insideRgba(): FloatRgba { return this._insideRgba; }
 
   public get texture(): TextureHandle | undefined { return this._texture; }
   public get count(): number { return this._clipCount; }
   public get isValid(): boolean { return this._clipCount > 0; }
 
-  public set(numPlanes: number, texture: TextureHandle) {
+  public set(numPlanes: number, texture: TextureHandle, outsideRgba: FloatRgba, insideRgba: FloatRgba) {
     this._clipActive++;
     if (this._clipActive !== 1)
       return;
 
     this._clipCount = numPlanes;
     this._texture = texture;
+    this._outsideRgba = outsideRgba;
+    this._insideRgba = insideRgba;
   }
 
   public clear() {
@@ -373,17 +381,20 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._activeClipVolume.pop(this);
   }
 
-  private updateActiveVolume(clip?: ClipVector): void {
-    if (undefined === clip) {
+  private updateActiveVolume(clipSettings?: ViewClipSettings): void {
+    if (undefined === clipSettings) {
       this._activeClipVolume = dispose(this._activeClipVolume);
       return;
     }
 
     // ###TODO: Currently we assume the active view ClipVector is never mutated in place.
     // ###TODO: We may want to compare differing ClipVectors to determine if they are logically equivalent to avoid reallocating clip volume.
-    if (undefined === this._activeClipVolume || this._activeClipVolume.clipVector !== clip) {
+    if (undefined === this._activeClipVolume || this._activeClipVolume.clipVector !== clipSettings.clipVector) {
       this._activeClipVolume = dispose(this._activeClipVolume);
-      this._activeClipVolume = this.renderSystem.createClipVolume(clip) as ClipVolume;
+      this._activeClipVolume = this.renderSystem.createClipVolume(clipSettings.clipVector) as ClipVolume;
+    }
+    if (undefined !== this._activeClipVolume) {
+      this._activeClipVolume.setClipColors(clipSettings.outsideColor, clipSettings.insideColor);
     }
   }
 
@@ -407,7 +418,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   /** @internal */
   public isRangeOutsideActiveVolume(range: Range3d): boolean {
-    if (undefined === this._activeClipVolume || !this.uniforms.branch.top.showClipVolume || !this.clips.isValid)
+    if (undefined === this._activeClipVolume || !this.uniforms.branch.top.showClipVolume || !this.clips.isValid || this._activeClipVolume.hasOutsideClipColor)
       return false;
 
     range = this.currentTransform.multiplyRange(range, range);
@@ -583,7 +594,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       this._transparencyThreshold = 1.0 - threshold;
     }
 
-    this.updateActiveVolume(plan.activeVolume);
+    this.updateActiveVolume(plan.activeClipSettings);
 
     let visEdgeOvrs = undefined !== plan.hline ? plan.hline.visible : undefined;
     let hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden : undefined;
