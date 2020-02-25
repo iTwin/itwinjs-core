@@ -303,15 +303,15 @@ class GlobalLocationAnimator implements Animator {
   private readonly _scratchFrustum = new Frustum();
 
   private _moveFlightToFraction(fraction: number): boolean {
-    if (!(this._viewport.view instanceof ViewState3d) || !this._viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
-      return true;
-
     const vp = this._viewport;
-    const view3d = vp.view as ViewState3d;
+    const view = vp.view;
+
+    if (!(view.is3d()) || !vp.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
+      return true;
 
     // If we're done, set the final state directly
     if (fraction >= 1.0) {
-      view3d.lookAtGlobalLocation(this._endHeight!, ViewGlobalLocationConstants.birdPitchAngleRadians, this._endLocation);
+      view.lookAtGlobalLocation(this._endHeight!, ViewGlobalLocationConstants.birdPitchAngleRadians, this._endLocation);
       vp.synchWithView();
       return true;
     }
@@ -326,7 +326,7 @@ class GlobalLocationAnimator implements Animator {
     if (fraction >= this._fixLandingFraction && fraction < 1.0) {
       if (this._fixLandingInterpolator === undefined) {
         const beforeLanding = vp.getWorldFrustum();
-        view3d.lookAtGlobalLocation(this._endHeight!, ViewGlobalLocationConstants.birdPitchAngleRadians, this._endLocation);
+        view.lookAtGlobalLocation(this._endHeight!, ViewGlobalLocationConstants.birdPitchAngleRadians, this._endLocation);
         vp.setupFromView();
         const afterLanding = vp.getWorldFrustum();
         this._fixLandingInterpolator = SmoothTransformBetweenFrusta.create(beforeLanding.points, afterLanding.points);
@@ -338,48 +338,46 @@ class GlobalLocationAnimator implements Animator {
     // Set the camera based on a fraction along the flight arc
     const height: number = Interpolation.Bezier([this._startHeight, this._midHeight, this._endHeight], fraction);
     let targetPoint: Point3d;
-    if (view3d.globeMode === GlobeMode.Plane)
+    if (view.globeMode === GlobeMode.Plane)
       targetPoint = this._columbusLine[0].interpolate(fraction, this._columbusLine[1]);
     else
       targetPoint = this._ellipsoidArc!.fractionToPoint(fraction);
-    view3d.lookAtGlobalLocation(height, ViewGlobalLocationConstants.birdPitchAngleRadians, undefined, targetPoint);
+    view.lookAtGlobalLocation(height, ViewGlobalLocationConstants.birdPitchAngleRadians, undefined, targetPoint);
     vp.setupFromView();
 
     return false;
   }
 
   // Apply a SmoothTransformBetweenFrusta interpolator to the view based on a fraction.
-  private _moveFixToFraction(fraction: number, interpolator: SmoothTransformBetweenFrusta): boolean {
-    let fract = fraction;
-    let status = false;
-    const vp = this._viewport;
+  private _moveFixToFraction(fract: number, interpolator: SmoothTransformBetweenFrusta): boolean {
+    let done = false;
 
     if (fract >= 1.0) {
       fract = 1.0;
-      status = true;
+      done = true;
     }
 
     interpolator.fractionToWorldCorners(Math.max(fract, 0), this._scratchFrustum.points);
-    vp.setupViewFromFrustum(this._scratchFrustum);
-    return status;
+    this._viewport.setupViewFromFrustum(this._scratchFrustum);
+    return done;
   }
 
   public constructor(viewport: ScreenViewport, destination: GlobalLocation) {
     this._viewport = viewport;
     this._endLocation = destination;
+    const view = viewport.view;
 
-    if (!(viewport.view instanceof ViewState3d) || !viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
+    if (!(view.is3d()) || !viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
       return;
 
     // Calculate start height as the height of the current eye above the earth.
     // Calculate end height from the destination area (if specified); otherwise, use a constant value.
-    const view3d = viewport.view as ViewState3d;
-    const backgroundMapGeometry = view3d.displayStyle.getBackgroundMapGeometry();
+    const backgroundMapGeometry = view.displayStyle.getBackgroundMapGeometry();
     if (undefined === backgroundMapGeometry)
       return;
 
     this._startHeight = eyeToCartographicOnGlobe(this._viewport, true)!.height;
-    this._endHeight = destination.area !== undefined ? areaToEyeHeight(view3d, destination.area, destination.center.height) : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
+    this._endHeight = destination.area !== undefined ? areaToEyeHeight(view, destination.area, destination.center.height) : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
 
     // Starting cartographic position is the eye projected onto the globe.
     let startCartographic = eyeToCartographicOnGlobe(viewport);
@@ -390,10 +388,10 @@ class GlobalLocationAnimator implements Animator {
 
     let maxFlightDuration: number;
 
-    if (view3d.globeMode === GlobeMode.Plane) {
+    if (view.globeMode === GlobeMode.Plane) {
       // Calculate a line segment going from the starting cartographic coordinate to the ending cartographic coordinate
-      this._columbusLine.push(view3d.cartographicToRoot(startCartographic)!);
-      this._columbusLine.push(view3d.cartographicToRoot(this._endLocation.center)!);
+      this._columbusLine.push(view.cartographicToRoot(startCartographic)!);
+      this._columbusLine.push(view.cartographicToRoot(this._endLocation.center)!);
       this._flightLength = this._columbusLine[0].distance(this._columbusLine[1]);
       // Set a shorter flight duration in Plane mode
       maxFlightDuration = 7000.0;

@@ -1,3 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module WebGL
+ */
+
 import { RenderCommands } from "./RenderCommands";
 import { CompositeFlags } from "./RenderFlags";
 import { FrameBufferStack, FrameBuffer } from "./FrameBuffer";
@@ -9,12 +17,6 @@ import {
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { System } from "./System";
 import { Viewport } from "../../Viewport";
-
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-/** @module IModelFrameLifecycle */
 
 /** @internal */
 export interface FrameRenderData {
