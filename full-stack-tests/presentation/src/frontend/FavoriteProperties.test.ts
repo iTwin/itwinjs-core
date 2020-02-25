@@ -2,15 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+// tslint:disable: no-direct-imports
 import { expect } from "chai";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PresentationPropertyDataProvider } from "@bentley/presentation-components";
 import { KeySet, Field } from "@bentley/presentation-common";
-import { Presentation, IModelAppFavoritePropertiesStorage, FavoritePropertiesScope, PropertyFullName } from "@bentley/presentation-frontend";
+import { Presentation, FavoritePropertiesScope, PropertyFullName } from "@bentley/presentation-frontend";
+import { IModelAppFavoritePropertiesStorage } from "@bentley/presentation-frontend/lib/presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 import { PropertyData } from "@bentley/ui-components";
 import { initialize, initializeWithClientServices, terminate } from "../IntegrationTests";
-import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider"; // tslint:disable-line: no-direct-imports
+import { DEFAULT_PROPERTY_GRID_RULESET } from "@bentley/presentation-components/lib/presentation-components/propertygrid/DataProvider";
 
 const favoritesCategoryName = "Favorite";
 describe("Favorite properties", () => {
@@ -281,7 +283,7 @@ describe("Favorite properties", () => {
 
 });
 
-describe("Favorite properties storage", () => {
+describe("IModelAppFavoritePropertiesStorage", () => {
 
   let storage: IModelAppFavoritePropertiesStorage;
 

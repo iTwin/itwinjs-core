@@ -96,7 +96,7 @@ describe("Tree withUnifiedSelection", () => {
   it("creates default implementation for selection handler when not provided through props", () => {
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
-    Presentation.selection = selectionManagerMock.object;
+    Presentation.setSelectionManager(selectionManagerMock.object);
 
     const tree = shallow(<PresentationTree
       dataProvider={dataProviderMock.object}

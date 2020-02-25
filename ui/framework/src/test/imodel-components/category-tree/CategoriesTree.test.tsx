@@ -72,10 +72,10 @@ describe("CategoryTree", () => {
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);
     selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
     selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAny())).returns(() => new KeySet());
-    Presentation.selection = selectionManagerMock.object;
+    Presentation.setSelectionManager(selectionManagerMock.object);
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
     presentationManagerMock.setup((x) => x.vars(moq.It.isAny())).returns(() => rulesetVariablesMock.object);
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
 
     async function* generator() {
       return;

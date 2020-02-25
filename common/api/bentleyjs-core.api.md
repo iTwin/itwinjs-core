@@ -892,6 +892,9 @@ export class IndexMap<T> {
 export const isElectronRenderer: boolean;
 
 // @public
+export function isIDisposable(obj: unknown): obj is IDisposable;
+
+// @public
 export namespace JsonUtils {
     export function asArray(json: any): any;
     export function asBool(json: any, defaultVal?: boolean): boolean;

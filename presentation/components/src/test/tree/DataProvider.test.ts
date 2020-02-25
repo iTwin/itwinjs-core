@@ -29,7 +29,7 @@ describe("TreeDataProvider", () => {
 
   before(() => {
     rulesetId = faker.random.word();
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
   });
 
   after(() => {

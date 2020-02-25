@@ -71,11 +71,11 @@ describe("PropertyDataProvider", () => {
 
   before(async () => {
     rulesetId = faker.random.word();
-    Presentation.presentation = presentationManagerMock.object;
-    Presentation.favoriteProperties = favoritePropertiesManagerMock.object;
-    Presentation.i18n = new I18N("", {
+    Presentation.setPresentationManager(presentationManagerMock.object);
+    Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
+    Presentation.setI18nManager(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    });
+    }));
     await initializeLocalization();
   });
 

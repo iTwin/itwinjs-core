@@ -70,9 +70,9 @@ describe("SpatialContainmentTree", () => {
       selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAny())).returns(() => new KeySet());
       selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAny())).returns(() => new KeySet());
-      Presentation.selection = selectionManagerMock.object;
+      Presentation.setSelectionManager(selectionManagerMock.object);
       presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
-      Presentation.presentation = presentationManagerMock.object;
+      Presentation.setPresentationManager(presentationManagerMock.object);
     });
 
     after(() => {

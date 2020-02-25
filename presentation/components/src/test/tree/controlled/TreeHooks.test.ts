@@ -25,7 +25,7 @@ describe("usePresentationNodeLoader", () => {
 
   beforeEach(() => {
     presentationManagerMock.reset();
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
   });
 
   afterEach(() => {

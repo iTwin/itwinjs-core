@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-frontend",
+      "comment": "Add offline mode support. Currently the only component that makes use of that is favorite properties persistence layer - the data will be cached locally until the application comes online and then synced with the persistence service.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

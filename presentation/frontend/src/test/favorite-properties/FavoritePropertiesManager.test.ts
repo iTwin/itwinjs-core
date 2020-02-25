@@ -19,6 +19,8 @@ import {
 } from "../../presentation-frontend";
 import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 
+// tslint:disable:deprecation
+
 describe("FavoritePropertiesManager", () => {
 
   let manager: FavoritePropertiesManager;
@@ -50,6 +52,7 @@ describe("FavoritePropertiesManager", () => {
   });
 
   afterEach(() => {
+    manager.dispose();
     storageMock.reset();
     imodelTokenMock.reset();
     imodelMock.reset();

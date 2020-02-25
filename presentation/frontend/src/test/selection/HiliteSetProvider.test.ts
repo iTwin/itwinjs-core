@@ -25,7 +25,7 @@ describe("HiliteSetProvider", () => {
     imodelMock.reset();
     presentationManagerMock.reset();
     rulesetsManagerMock.reset();
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
   });
 

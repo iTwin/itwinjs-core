@@ -22,7 +22,7 @@ describe("useRulesetRegistration", () => {
 
   beforeEach(() => {
     presentationManagerMock = moq.Mock.ofType<PresentationManager>();
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
     rulesetManagerMock = moq.Mock.ofType<RulesetManager>();
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetManagerMock.object);
   });

@@ -109,7 +109,7 @@ describe("Utils", () => {
 
     beforeEach(() => {
       i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(() => ({ name: "namespace", readFinished: Promise.resolve() }));
-      Presentation.i18n = i18nMock.object;
+      Presentation.setI18nManager(i18nMock.object);
     });
 
     afterEach(() => {

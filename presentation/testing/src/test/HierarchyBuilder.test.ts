@@ -54,7 +54,7 @@ describe("HierarchyBuilder", () => {
   describe("createHierarchy", () => {
     context("without data", () => {
       beforeEach(() => {
-        Presentation.presentation = presentationManagerMock.object;
+        Presentation.setPresentationManager(presentationManagerMock.object);
         presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), undefined)).returns(async () => []);
       });
 
@@ -75,7 +75,7 @@ describe("HierarchyBuilder", () => {
       beforeEach(() => {
         presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), undefined)).returns(getRootNodes);
         presentationManagerMock.setup(async (manager) => manager.getNodes(moq.It.isAny(), moq.It.isAny())).returns(getChildrenNodes);
-        Presentation.presentation = presentationManagerMock.object;
+        Presentation.setPresentationManager(presentationManagerMock.object);
       });
 
       it("returns correct hierarchy", async () => {

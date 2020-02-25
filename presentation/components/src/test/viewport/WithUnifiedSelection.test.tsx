@@ -91,7 +91,7 @@ describe("Viewport withUnifiedSelection", () => {
     it("creates default implementation when not provided through props", () => {
       const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
-      Presentation.selection = selectionManagerMock.object;
+      Presentation.setSelectionManager(selectionManagerMock.object);
 
       const viewport = shallow(<PresentationViewport
         imodel={imodelMock.object}
@@ -163,7 +163,7 @@ describe("ViewportSelectionHandler", () => {
 
   before(() => {
     NoRenderApp.startup();
-    Presentation.selection = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
+    Presentation.setSelectionManager(new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object }));
     const defaultClassName = faker.random.word();
     classNameGenerator = () => defaultClassName;
   });

@@ -26,7 +26,7 @@ describe("DataProvidersFactory", () => {
   let props: DataProvidersFactoryProps | undefined;
 
   before(() => {
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
   });
 
   after(() => {

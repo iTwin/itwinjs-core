@@ -110,13 +110,13 @@ describe("Table withUnifiedSelection", () => {
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
     selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
     selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAnyNumber())).returns(() => new KeySet());
-    Presentation.selection = selectionManagerMock.object;
+    Presentation.setSelectionManager(selectionManagerMock.object);
 
     const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
     presentationManagerMock
       .setup(async (x) => x.getContentDescriptor(moq.It.isAny(), moq.It.isAnyString(), moq.It.isAny(), moq.It.isAny()))
       .returns(async () => undefined);
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
 
     const component = shallow(<PresentationTable
       dataProvider={dataProviderMock.object}

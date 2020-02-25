@@ -20,7 +20,7 @@ describe("PresentationLabelsProvider", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
   before(() => {
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
   });
 
   after(() => {

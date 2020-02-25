@@ -53,7 +53,7 @@ describe("PresentationManager", () => {
 
   const mockI18N = () => {
     i18nMock.reset();
-    Presentation.i18n = i18nMock.object;
+    Presentation.setI18nManager(i18nMock.object);
     const resolvedPromise = new Promise<void>((resolve) => resolve());
     i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns((name: string) => new I18NNamespace(name, resolvedPromise));
     i18nMock.setup((x) => x.translate(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);

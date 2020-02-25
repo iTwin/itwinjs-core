@@ -55,7 +55,7 @@ describe("ContentDataProvider", () => {
   before(() => {
     rulesetId = faker.random.word();
     displayType = faker.random.word();
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
   });
 
   after(() => {

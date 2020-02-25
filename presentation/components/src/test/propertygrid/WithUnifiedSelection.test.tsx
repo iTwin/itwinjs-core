@@ -34,10 +34,10 @@ const PresentationPropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 describe("PropertyGrid withUnifiedSelection", () => {
 
   before(async () => {
-    Presentation.presentation = moq.Mock.ofType<PresentationManager>().object;
-    Presentation.i18n = new I18N("", {
+    Presentation.setPresentationManager(moq.Mock.ofType<PresentationManager>().object);
+    Presentation.setI18nManager(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    });
+    }));
     await initializeLocalization();
   });
 
@@ -101,7 +101,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
     selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
     selectionManagerMock.setup((x) => x.getSelectionLevels(imodelMock.object)).returns(() => []);
     selectionManagerMock.setup((x) => x.getSelection(imodelMock.object, moq.It.isAnyNumber())).returns(() => new KeySet());
-    Presentation.selection = selectionManagerMock.object;
+    Presentation.setSelectionManager(selectionManagerMock.object);
 
     const component = shallow(<PresentationPropertyGrid
       orientation={Orientation.Vertical}

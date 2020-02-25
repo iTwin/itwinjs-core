@@ -1,21 +1,20 @@
 sep=;
 Release Tag;API Item
 internal;createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[]
-beta;FavoritePropertiesManager
-internal;FavoritePropertiesOrderInfo
+beta;FavoritePropertiesManager 
+beta;FavoritePropertiesOrderInfo
 beta;FavoritePropertiesScope
 internal;getFieldInfos: (field: Field) => Set
 public;getScopeId(scope: SelectionScope | string | undefined): string
 public;HiliteSet
 public;HiliteSetProvider
 public;HiliteSetProviderProps
-internal;IFavoritePropertiesStorage
-internal;IModelAppFavoritePropertiesStorage 
+beta;IFavoritePropertiesStorage
 public;ISelectionProvider
 public;Presentation
 public;PresentationManager 
 public;PresentationManagerProps
-internal;PropertyFullName = string
+beta;PropertyFullName = string
 public;RulesetManager
 public;RulesetVariablesManager
 public;SelectionChangeEvent 

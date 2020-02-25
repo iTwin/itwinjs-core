@@ -26,10 +26,6 @@ import { NoRenderApp, IModelApp, IModelAppOptions } from "@bentley/imodeljs-fron
 import {
   Presentation as PresentationFrontend,
   PresentationManagerProps as PresentationFrontendProps,
-  FavoritePropertiesManager,
-  IFavoritePropertiesStorage,
-  PropertyFullName,
-  FavoritePropertiesOrderInfo,
 } from "@bentley/presentation-frontend";
 
 import { OidcAgentClientConfiguration, OidcAgentClient } from "@bentley/imodeljs-clients-backend";
@@ -106,7 +102,6 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     props.frontendApp.startup({ authorizationClient });
   } else {
     props.frontendApp.startup();
-    setCustomFavoritePropertiesManager();
   }
   const defaultFrontendProps: PresentationFrontendProps = {
     activeLocale: IModelApp.i18n.languageList()[0],
@@ -114,16 +109,6 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });
 
   isInitialized = true;
-};
-
-const setCustomFavoritePropertiesManager = () => {
-  const storage: IFavoritePropertiesStorage = {
-    loadProperties: async (_projectId?: string, _imodelId?: string) => (new Set<PropertyFullName>()),
-    async saveProperties(_properties: Set<PropertyFullName>, _projectId?: string, _imodelId?: string) { },
-    loadPropertiesOrder: async (_projectId?: string, _imodelId?: string) => ([]),
-    async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _projectId?: string, _imodelId?: string) { },
-  };
-  PresentationFrontend.favoriteProperties = new FavoritePropertiesManager({ storage });
 };
 
 /**

@@ -174,7 +174,7 @@ describe("ContentBuilder", () => {
       presentationManagerMock.reset();
       presentationManagerMock.setup((manager) => manager.rulesets()).returns(() => rulesetManagerMock.object);
       presentationManagerMock.setup(async (manager) => manager.getContent(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(getEmptyContent);
-      Presentation.presentation = presentationManagerMock.object;
+      Presentation.setPresentationManager(presentationManagerMock.object);
     });
 
     it("returns empty records when there is no content returned from presentation", async () => {

@@ -17,6 +17,7 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InstanceKey } from '@bentley/presentation-common';
+import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
 import { Key } from '@bentley/presentation-common';
 import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
@@ -37,8 +38,8 @@ import { SelectionScope } from '@bentley/presentation-common';
 export const createFieldOrderInfos: (field: Field) => FavoritePropertiesOrderInfo[];
 
 // @beta
-export class FavoritePropertiesManager {
-    constructor(props?: FavoritePropertiesManagerProps);
+export class FavoritePropertiesManager implements IDisposable {
+    constructor(props: FavoritePropertiesManagerProps);
     // @deprecated
     add(field: Field, projectId?: string, imodelId?: string): Promise<void>;
     add(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
@@ -46,6 +47,8 @@ export class FavoritePropertiesManager {
     // @deprecated
     clear(projectId?: string, imodelId?: string): Promise<void>;
     clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
+    // (undocumented)
+    dispose(): void;
     // @deprecated
     has(field: Field, projectId?: string, imodelId?: string): boolean;
     has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean;
@@ -57,7 +60,7 @@ export class FavoritePropertiesManager {
     sortFields: (imodel: IModelConnection, fields: Field[]) => Field[];
     }
 
-// @internal
+// @beta
 export interface FavoritePropertiesOrderInfo {
     // (undocumented)
     name: PropertyFullName;
@@ -107,23 +110,11 @@ export interface HiliteSetProviderProps {
     imodel: IModelConnection;
 }
 
-// @internal
+// @beta
 export interface IFavoritePropertiesStorage {
     loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
     loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
     saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
-    savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
-}
-
-// @internal (undocumented)
-export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
-    // (undocumented)
-    loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined>;
-    // (undocumented)
-    loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined>;
-    // (undocumented)
-    saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void>;
-    // (undocumented)
     savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string): Promise<void>;
 }
 
@@ -135,18 +126,25 @@ export interface ISelectionProvider {
 
 // @public
 export class Presentation {
+    static get connectivity(): IConnectivityInformationProvider;
     // @beta
     static get favoriteProperties(): FavoritePropertiesManager;
-    static set favoriteProperties(value: FavoritePropertiesManager);
     static get i18n(): I18N;
-    static set i18n(value: I18N);
     static initialize(props?: PresentationManagerProps): Promise<void>;
     static get presentation(): PresentationManager;
-    static set presentation(value: PresentationManager);
     // @internal
     static registerInitializationHandler(handler: () => Promise<() => void>): void;
     static get selection(): SelectionManager;
-    static set selection(value: SelectionManager);
+    // @internal (undocumented)
+    static setConnectivityInformationProvider(value: IConnectivityInformationProvider): void;
+    // @internal (undocumented)
+    static setFavoritePropertiesManager(value: FavoritePropertiesManager): void;
+    // @internal (undocumented)
+    static setI18nManager(value: I18N): void;
+    // @internal (undocumented)
+    static setPresentationManager(value: PresentationManager): void;
+    // @internal (undocumented)
+    static setSelectionManager(value: SelectionManager): void;
     static terminate(): void;
 }
 
@@ -192,7 +190,7 @@ export interface PresentationManagerProps {
     rpcRequestsHandler?: RpcRequestsHandler;
 }
 
-// @internal
+// @beta
 export type PropertyFullName = string;
 
 // @public

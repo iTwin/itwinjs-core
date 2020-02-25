@@ -8,9 +8,9 @@
 
 import * as _ from "lodash";
 import { Field, ClassId, NestedContentField, PropertiesField } from "@bentley/presentation-common";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, IDisposable, isIDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { IFavoritePropertiesStorage, IModelAppFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
+import { IFavoritePropertiesStorage } from "./FavoritePropertiesStorage";
 
 /**
  * Scopes that favorite properties can be stored in.
@@ -22,17 +22,18 @@ export enum FavoritePropertiesScope {
   IModel,
 }
 
-/** Format:
+/**
+ * Format:
  * Regular property - [{path from parent class}-]{schema name}:{class name}:{property name}.
  * Nested property - [{path from parent class}-]{content class schema name}:{content class name}.
  * Primitive property - {field name}.
- * @internal
+ * @beta
  */
 export type PropertyFullName = string;
 
 /**
  * Holds the information of favorite properties ordering.
- * @internal
+ * @beta
  */
 export interface FavoritePropertiesOrderInfo {
   parentClassName: string | undefined;
@@ -41,10 +42,16 @@ export interface FavoritePropertiesOrderInfo {
   orderedTimestamp: Date;
 }
 
-/** @beta */
+/**
+ * Properties for initializing [[FavoritePropertiesManager]]
+ * @beta
+ */
 export interface FavoritePropertiesManagerProps {
-  /** @internal */
-  storage?: IFavoritePropertiesStorage;
+  /**
+   * Implementation of a persistence layer for storing favorite properties and their order.
+   * @beta
+   */
+  storage: IFavoritePropertiesStorage;
 }
 
 /**
@@ -53,7 +60,7 @@ export interface FavoritePropertiesManagerProps {
  *
  * @beta
  */
-export class FavoritePropertiesManager {
+export class FavoritePropertiesManager implements IDisposable {
   /** Event raised after favorite properties have changed. */
   public onFavoritesChanged = new BeEvent<() => void>();
 
@@ -66,13 +73,18 @@ export class FavoritePropertiesManager {
   /** Property order is saved only in iModel scope */
   private _propertiesOrder: Map<string, FavoritePropertiesOrderInfo[]>;
 
-  public constructor(props?: FavoritePropertiesManagerProps) {
-    this._storage = (props && props.storage) ? props.storage : new IModelAppFavoritePropertiesStorage();
-
+  public constructor(props: FavoritePropertiesManagerProps) {
+    this._storage = props.storage;
     this._projectProperties = new Map<string, Set<PropertyFullName>>();
     this._imodelProperties = new Map<string, Set<PropertyFullName>>();
     this._propertiesOrder = new Map<string, FavoritePropertiesOrderInfo[]>();
     this._imodelBaseClassesByClass = new Map<string, { [className: string]: string[] }>();
+  }
+
+  public dispose() {
+    // istanbul ignore else
+    if (isIDisposable(this._storage))
+      this._storage.dispose();
   }
 
   /**
@@ -99,7 +111,10 @@ export class FavoritePropertiesManager {
     await this._adjustPropertyOrderInfos(projectId, imodelId);
   }
 
-  /** Function that removes order information of properties that are no longer favorited and adds missing order information for favorited properties. */
+  /**
+   * Function that removes order information of properties that are no longer
+   * favorited and adds missing order information for favorited properties.
+   */
   private _adjustPropertyOrderInfos = async (projectId: string, imodelId: string) => {
     const propertiesOrder = this._propertiesOrder.get(getiModelInfo(projectId, imodelId))!;
 

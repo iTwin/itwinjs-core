@@ -6,6 +6,7 @@
  * @module Core
  */
 
+import { isIDisposable } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
@@ -14,10 +15,13 @@ import { SelectionManager } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
 import { FavoritePropertiesManager } from "./favorite-properties/FavoritePropertiesManager";
 import { LocalizationHelper } from "./LocalizationHelper";
+import { IConnectivityInformationProvider, ConnectivityInformationProvider } from "./ConnectivityInformationProvider";
+import { IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage } from "./favorite-properties/FavoritePropertiesStorage";
 
+let connectivityInfoProvider: IConnectivityInformationProvider | undefined;
+let i18n: I18N | undefined;
 let presentationManager: PresentationManager | undefined;
 let selectionManager: SelectionManager | undefined;
-let i18n: I18N | undefined;
 let favoritePropertiesManager: FavoritePropertiesManager | undefined;
 const initializationHandlers: Array<() => Promise<(() => void) | void>> = [];
 const terminationHandlers: Array<() => void> = [];
@@ -58,6 +62,9 @@ export class Presentation {
     if (!i18n) {
       i18n = IModelApp.i18n;
     }
+    if (!connectivityInfoProvider) {
+      connectivityInfoProvider = new ConnectivityInformationProvider();
+    }
     if (!presentationManager) {
       if (!props)
         props = {};
@@ -77,7 +84,11 @@ export class Presentation {
       });
     }
     if (!favoritePropertiesManager) {
-      favoritePropertiesManager = new FavoritePropertiesManager();
+      const storage = new OfflineCachingFavoritePropertiesStorage({
+        connectivityInfo: connectivityInfoProvider,
+        impl: new IModelAppFavoritePropertiesStorage(),
+      });
+      favoritePropertiesManager = new FavoritePropertiesManager({ storage });
     }
     presentationManager.onNewiModelConnection = favoritePropertiesManager.initializeConnection;
     await LocalizationHelper.registerNamespaces();
@@ -93,17 +104,25 @@ export class Presentation {
    * before a call to [IModelApp.shutdown]($imodeljs-frontend)
    */
   public static terminate(): void {
+    terminationHandlers.forEach((handler) => handler());
+    terminationHandlers.length = 0;
+
     if (i18n)
       LocalizationHelper.unregisterNamespaces();
 
-    terminationHandlers.forEach((handler) => handler());
-    terminationHandlers.length = 0;
+    if (connectivityInfoProvider && isIDisposable(connectivityInfoProvider))
+      connectivityInfoProvider.dispose();
+    connectivityInfoProvider = undefined;
 
     if (presentationManager)
       presentationManager.dispose();
     presentationManager = undefined;
-    selectionManager = undefined;
+
+    if (favoritePropertiesManager)
+      favoritePropertiesManager.dispose();
     favoritePropertiesManager = undefined;
+
+    selectionManager = undefined;
     i18n = undefined;
   }
 
@@ -117,36 +136,34 @@ export class Presentation {
     initializationHandlers.push(handler);
   }
 
-  /**
-   * The singleton [[PresentationManager]]. The setter for this property is for internal use only.
-   */
+  /** The singleton [[PresentationManager]] */
   public static get presentation(): PresentationManager {
     if (!presentationManager)
       throw new Error("Presentation must be first initialized by calling Presentation.initialize");
     return presentationManager;
   }
 
-  public static set presentation(value: PresentationManager) {
+  /** @internal */
+  public static setPresentationManager(value: PresentationManager) {
     if (presentationManager)
       presentationManager.dispose();
     presentationManager = value;
   }
 
-  /**
-   * The singleton [[SelectionManager]]. The setter for this property is for internal use only.
-   */
+  /** The singleton [[SelectionManager]] */
   public static get selection(): SelectionManager {
     if (!selectionManager)
       throw new Error("Presentation must be first initialized by calling Presentation.initialize");
     return selectionManager;
   }
 
-  public static set selection(value: SelectionManager) {
+  /** @internal */
+  public static setSelectionManager(value: SelectionManager) {
     selectionManager = value;
   }
 
   /**
-   * The singleton [[FavoritePropertiesManager]]. The setter for this property is for internal use only.
+   * The singleton [[FavoritePropertiesManager]
    * @beta
    */
   public static get favoriteProperties(): FavoritePropertiesManager {
@@ -155,14 +172,15 @@ export class Presentation {
     return favoritePropertiesManager;
   }
 
-  public static set favoriteProperties(value: FavoritePropertiesManager) {
+  /** @internal */
+  public static setFavoritePropertiesManager(value: FavoritePropertiesManager) {
+    if (favoritePropertiesManager)
+      favoritePropertiesManager.dispose();
     favoritePropertiesManager = value;
   }
 
   /**
-   * The localization manager used by Presentation frontend.
-   * Returns the result of `IModelApp.i18n`.
-   * The setter for this property is for internal use only.
+   * The localization manager used by Presentation frontend. Returns the result of `IModelApp.i18n`.
    */
   public static get i18n(): I18N {
     if (!i18n)
@@ -170,7 +188,22 @@ export class Presentation {
     return i18n;
   }
 
-  public static set i18n(value: I18N) {
+  /** @internal */
+  public static setI18nManager(value: I18N) {
     i18n = value;
+  }
+
+  /** Provides information about current connection status. */
+  public static get connectivity(): IConnectivityInformationProvider {
+    if (!connectivityInfoProvider)
+      throw new Error("Presentation must be first initialized by calling Presentation.initialize");
+    return connectivityInfoProvider;
+  }
+
+  /** @internal */
+  public static setConnectivityInformationProvider(value: IConnectivityInformationProvider) {
+    if (connectivityInfoProvider && isIDisposable(connectivityInfoProvider))
+      connectivityInfoProvider.dispose();
+    connectivityInfoProvider = value;
   }
 }

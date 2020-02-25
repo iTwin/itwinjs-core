@@ -279,7 +279,7 @@ describe("SyncUiEventDispatcher", () => {
 
       baseSelection = generateSelection();
 
-      Presentation.selection = new SelectionManager({ scopes: getManager() });
+      Presentation.setSelectionManager(new SelectionManager({ scopes: getManager() }));
     });
 
     it("clearConnectionEvents with no intervening initializeConnectionEvents", () => {
