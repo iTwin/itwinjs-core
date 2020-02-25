@@ -6428,7 +6428,7 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 
 // @internal
 export class RealityModelTileClient {
-    constructor(url: string, accessToken?: AccessToken);
+    constructor(url: string, accessToken?: AccessToken, contextId?: string);
     // (undocumented)
     getRootDocument(url: string): Promise<any>;
     getTileContent(url: string): Promise<any>;

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Passing optional iModel context/project as it is the one to be used for Reality Data originating from ContextShare(RDS)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "alain.robert@bentley.com"
+}
