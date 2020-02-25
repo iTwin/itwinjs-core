@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Inputs */
+/** @packageDocumentation
+ * @module Inputs
+ */
 
 import * as React from "react";
 import * as classnames from "classnames";
@@ -16,7 +18,7 @@ import "./Slider.scss";
 // cspell:ignore pushable
 
 /** Properties for [[Slider]] component
- * @alpha
+ * @beta
  */
 export interface SliderProps extends CommonProps {
   /** Minimum value */
@@ -82,7 +84,7 @@ export interface SliderProps extends CommonProps {
 
 /**
  * Slider React component
- * @alpha
+ * @beta
  */
 // tslint:disable-next-line: variable-name
 export const Slider: React.FC<SliderProps> = (props) => {

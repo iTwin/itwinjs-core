@@ -70,7 +70,7 @@ export interface AbstractToolbarProps {
     toolbarId?: string;
 }
 
-// @alpha
+// @beta
 export interface AbstractWidgetProps extends ProvidedItem {
     readonly applicationData?: any;
     readonly badgeType?: BadgeType;
@@ -699,7 +699,7 @@ export enum RelativePosition {
     TopRight = 5
 }
 
-// @alpha
+// @beta
 export enum StagePanelLocation {
     // (undocumented)
     Bottom = 105,
@@ -715,7 +715,7 @@ export enum StagePanelLocation {
     TopMost = 102
 }
 
-// @alpha
+// @beta
 export enum StagePanelSection {
     // (undocumented)
     End = 2,
@@ -725,7 +725,7 @@ export enum StagePanelSection {
     Start = 0
 }
 
-// @alpha
+// @beta
 export enum StageUsage {
     // (undocumented)
     General = "General",
@@ -970,13 +970,13 @@ export class UiError extends BentleyError {
     constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
 }
 
-// @alpha
+// @beta
 export interface UiItemProviderRegisteredEventArgs {
     // (undocumented)
     providerId: string;
 }
 
-// @alpha
+// @beta
 export interface UiItemsApplication {
     validateBackstageItem?: (item: BackstageItem) => {
         updatedItem: BackstageItem;
@@ -996,17 +996,14 @@ export interface UiItemsApplication {
     };
 }
 
-// @alpha
+// @beta
 export enum UiItemsApplicationAction {
-    // (undocumented)
     Allow = 0,
-    // (undocumented)
     Disallow = 1,
-    // (undocumented)
     Update = 2
 }
 
-// @alpha
+// @beta
 export class UiItemsArbiter {
     static get uiItemsApplication(): UiItemsApplication | undefined;
     static set uiItemsApplication(app: UiItemsApplication | undefined);
@@ -1020,7 +1017,7 @@ export class UiItemsArbiter {
     static updateWidgets(widgets: ReadonlyArray<AbstractWidgetProps>): ReadonlyArray<AbstractWidgetProps>;
 }
 
-// @alpha
+// @beta
 export class UiItemsManager {
     static getBackstageItems(): BackstageItem[];
     static getStatusBarItems(stageId: string, stageUsage: StageUsage): CommonStatusBarItem[];
@@ -1034,7 +1031,7 @@ export class UiItemsManager {
     static unregister(uiProviderId: string): void;
 }
 
-// @alpha
+// @beta
 export interface UiItemsProvider {
     readonly id: string;
     onBackstageItemArbiterChange?: (item: BackstageItem, action: UiItemsApplicationAction) => void;
@@ -1047,7 +1044,7 @@ export interface UiItemsProvider {
     provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
 }
 
-// @alpha
+// @beta
 export enum WidgetState {
     Closed = 1,
     Floating = 3,

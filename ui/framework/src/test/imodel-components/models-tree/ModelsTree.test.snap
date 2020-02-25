@@ -3876,8 +3876,12 @@ exports[`ModelsTree #unit <ModelsTree /> should match snapshot 1`] = `
                         type="checkbox"
                       />
                       <span
-                        class="image icon icon-visibility-hide-2"
-                      />
+                        class="image"
+                      >
+                        <i
+                          class="icon icon-visibility-hide-2"
+                        />
+                      </span>
                     </label>
                     <div
                       class="core-tree-node-icon"

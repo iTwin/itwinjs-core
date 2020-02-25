@@ -85,11 +85,10 @@ export interface NullableOperatorProcessor {
  * @beta
  */
 export interface AsyncErrorMessage {
-  briefMsg: string;
-  detailedMsg?: string;
-  priority?: OutputMessagePriority;
+  priority: OutputMessagePriority;
+  briefMessage: string;
+  detailedMessage?: string;
   msgType?: OutputMessageType;
-  localizationNamespace?: string;   // If this is defined, the detailed and brief properties are keys used along with the namespace to look up localized strings.
   alertType?: OutputMessageAlert;
   displayTime?: number;
 }
@@ -100,7 +99,7 @@ export interface AsyncErrorMessage {
 export interface AsyncValueProcessingResult {
   returnValue?: PropertyValue;
   encounteredError: boolean;
-  errorMsg?: AsyncErrorMessage;
+  errorMessage?: AsyncErrorMessage;
 }
 
 /**

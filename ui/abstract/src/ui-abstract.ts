@@ -26,6 +26,7 @@ export * from "./ui-abstract/items/ConditionalStringValue";
 export * from "./ui-abstract/items/RelativePosition";
 export * from "./ui-abstract/items/ProvidedItem";
 export * from "./ui-abstract/items/RelativePosition";
+export * from "./ui-abstract/items/StageUsage";
 
 export * from "./ui-abstract/properties/Description";
 export * from "./ui-abstract/properties/EditorParams";
@@ -40,8 +41,6 @@ export * from "./ui-abstract/statusbar/StatusBarItemsManager";
 
 export * from "./ui-abstract/toolbars/ToolbarItem";
 export * from "./ui-abstract/toolbars/ToolbarItemsManager";
-
-export * from "./ui-abstract/stage/Stage";
 
 export * from "./ui-abstract/statusbar/StatusBarItem";
 export * from "./ui-abstract/statusbar/StatusBarItemsManager";
@@ -66,10 +65,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 
 /** @docs-package-description
  * The ui-abstract package contains abstractions for UI controls, such as toolbars, buttons and menus.
- */
-/**
- * @docs-group-description Admin
- * Abstractions for UI controls, such as toolbars, buttons and menus and are callable from IModelApp.uiAdmin in imodeljs-frontend.
+ * For more information, see [learning about ui-abstract]($docs/learning/ui/abstract/index.md).
  */
 /**
  * @docs-group-description Backstage
@@ -80,8 +76,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for working with an Item in a Toolbar, Widget, Backstage or Context Menu
  */
 /**
- * @docs-group-description UiItemsProvider
- * Interface for specifying UI items to be inserted at runtime.
+ * @docs-group-description Properties
+ * Properties system for data input and formatting.
  */
 /**
  * @docs-group-description StatusBar
@@ -92,10 +88,18 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for creating and managing items in a toolbar.
  */
 /**
+ * @docs-group-description UiAdmin
+ * Abstractions for UI controls, such as toolbars, buttons and menus and are callable from IModelApp.uiAdmin in imodeljs-frontend.
+ */
+/**
+ * @docs-group-description UiItemsProvider
+ * Interface for specifying UI items to be inserted at runtime.
+ */
+/**
  * @docs-group-description Utilities
  * Various utility classes for working with a UI.
  */
 /**
- * @docs-group-description Properties
- * Properties system for data input and formatting.
+ * @docs-group-description Widget
+ * Classes for creating and providing Widgets.
  */

@@ -54,7 +54,8 @@
     "imodelopen": "IModel Open",
     "imodelindex": "IModel Index",
     "fileSelect": "Open Local File",
-    "custom": "Custom"
+    "custom": "Custom",
+    "componentExamples": "Component Examples"
   },
   "zone6": {
     "month": "Month",
@@ -293,5 +294,12 @@
         "description": "A sample of a context menu item"
       }
     }
+  },
+  "componentExamplesStage": {
+    "examples": "Component Examples",
+    "light": "Light",
+    "dark": "Dark",
+    "themeTitle": "Theme",
+    "themeDescription": "Toggle the theme between light and dark"
   }
 }

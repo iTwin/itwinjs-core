@@ -155,6 +155,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 
 /** @docs-package-description
  * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
+ * For more information, see [learning about ui-components]($docs/learning/ui/components/index.md).
  */
 /**
  * @docs-group-description Common
@@ -162,11 +163,11 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Breadcrumb
- * Classes for working with a Breadcrumb.
+ * Classes and components for working with a Breadcrumb.
  */
 /**
  * @docs-group-description Color
- * Classes for working with and picking a Color.
+ * Classes and components for working with and picking a Color.
  */
 /**
  * @docs-group-description DragDrop
@@ -174,11 +175,11 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Filtering
- * Classes for working with filtering.
+ * Classes and components for working with filtering.
  */
 /**
  * @docs-group-description LineWeight
- * Classes for working with and picking a Line Weight.
+ * Classes and components for working with and picking a Line Weight.
  */
 /**
  * @docs-group-description OIDC
@@ -186,23 +187,23 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Properties
- * Classes for working with Properties.
+ * Classes and components for working with Properties.
  */
 /**
  * @docs-group-description PropertyEditors
- * Classes for working with Property Editors.
+ * Classes and components for working with Property Editors.
  */
 /**
  * @docs-group-description PropertyGrid
- * Classes for working with a PropertyGrid.
+ * Classes and components for working with a PropertyGrid.
  */
 /**
  * @docs-group-description Table
- * Classes for working with a Table.
+ * Classes and components for working with a Table.
  */
 /**
  * @docs-group-description Tree
- * Classes for working with a Tree.
+ * Classes and components for working with a Tree.
  */
 /**
  * @docs-group-description TypeConverters
@@ -210,5 +211,5 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Viewport
- * Classes for working with a Viewport.
+ * Classes and components for working with a Viewport.
  */

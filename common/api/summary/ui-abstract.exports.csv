@@ -8,7 +8,7 @@ beta;AbstractStatusBarItem
 beta;AbstractStatusBarItemUtilities
 beta;AbstractStatusBarLabelItem 
 beta;AbstractToolbarProps
-alpha;AbstractWidgetProps 
+beta;AbstractWidgetProps 
 beta;ActionButton 
 beta;ArrayValue 
 beta;BackstageActionItem 
@@ -79,9 +79,9 @@ beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
 beta;PropertyValueFormat
 beta;ProvidedItem
 public;RelativePosition
-alpha;StagePanelLocation
-alpha;StagePanelSection
-alpha;StageUsage
+beta;StagePanelLocation
+beta;StagePanelSection
+beta;StageUsage
 beta;StatusBarItemId = CommonStatusBarItem["id"]
 internal;StatusBarItemsChangedArgs
 internal;StatusBarItemsManager
@@ -107,10 +107,10 @@ public;UiAbstract
 beta;UiAdmin
 beta;class UiDataProvider
 public;UiError 
-alpha;UiItemProviderRegisteredEventArgs
-alpha;UiItemsApplication
-alpha;UiItemsApplicationAction
-alpha;UiItemsArbiter
-alpha;UiItemsManager
-alpha;UiItemsProvider
-alpha;WidgetState
+beta;UiItemProviderRegisteredEventArgs
+beta;UiItemsApplication
+beta;UiItemsApplicationAction
+beta;UiItemsArbiter
+beta;UiItemsManager
+beta;UiItemsProvider
+beta;WidgetState

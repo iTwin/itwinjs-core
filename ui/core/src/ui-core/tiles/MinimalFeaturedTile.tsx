@@ -9,7 +9,9 @@
 import * as React from "react";
 import { Tile, TileProps } from "./Tile";
 
-/** @alpha */
+/** Minimal and Featured [[Tile]] component
+ * @beta
+ */
 // tslint:disable-next-line:variable-name
 export const MinimalFeaturedTile: React.FunctionComponent<TileProps> = (props: TileProps) => {
   return <Tile {...props} minimal={true} featured={true} />;

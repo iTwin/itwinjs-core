@@ -331,7 +331,7 @@ export class AppNotificationManager extends NotificationManager {
     outputMessage(message: NotifyMessageDetails): void;
     outputPrompt(prompt: string): void;
     outputPromptByKey(key: string): void;
-    // @alpha
+    // @beta
     setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     setupActivityMessage(details: ActivityMessageDetails): boolean;
     protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
@@ -3246,12 +3246,12 @@ export class MessageManager {
     // (undocumented)
     static readonly onInputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent;
     static readonly onMessageAddedEvent: MessageAddedEvent;
-    // @alpha
+    // @beta
     static readonly onToolAssistanceChangedEvent: ToolAssistanceChangedEvent;
     static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
     static outputPrompt(prompt: string): void;
     static setMaxCachedMessages(max: number): void;
-    // @alpha
+    // @beta
     static setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
     static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean;
@@ -4794,11 +4794,11 @@ export interface ToolActivatedEventArgs {
     toolId: string;
 }
 
-// @alpha
+// @beta
 export class ToolAssistanceChangedEvent extends UiEvent<ToolAssistanceChangedEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface ToolAssistanceChangedEventArgs {
     // (undocumented)
     instructions: ToolAssistanceInstructions | undefined;
@@ -5207,7 +5207,7 @@ export class UiFramework {
     static get widgetManager(): WidgetManager;
     }
 
-// @alpha
+// @beta
 export class UiShowHideManager {
     // (undocumented)
     static get autoHideUi(): boolean;
@@ -5662,7 +5662,7 @@ export interface WidgetInfo {
     widgetDef: WidgetDef;
 }
 
-// @alpha
+// @beta
 export class WidgetManager {
     addWidgetDef(widgetDef: WidgetDef, stageId: string | undefined, stageUsage: string | undefined, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): boolean;
     addWidgetProvider(widgetProvider: WidgetProvider): void;
@@ -5718,7 +5718,7 @@ export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent
     tooltipKey?: string;
 }
 
-// @alpha
+// @beta
 export interface WidgetProvider {
     getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): ReadonlyArray<WidgetDef> | undefined;
     readonly id: string;

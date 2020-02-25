@@ -67,7 +67,7 @@ export interface InputFieldMessageEventArgs {
 }
 
 /** Tool Assistance Changed event arguments.
- * @alpha
+ * @beta
  */
 export interface ToolAssistanceChangedEventArgs {
   instructions: ToolAssistanceInstructions | undefined;
@@ -99,7 +99,7 @@ export class InputFieldMessageAddedEvent extends UiEvent<InputFieldMessageEventA
 export class InputFieldMessageRemovedEvent extends UiEvent<{}> { }
 
 /** Tool Assistance Changed event class
- * @alpha
+ * @beta
  */
 export class ToolAssistanceChangedEvent extends UiEvent<ToolAssistanceChangedEventArgs> { }
 
@@ -141,7 +141,7 @@ export class MessageManager {
   public static readonly onInputFieldMessageRemovedEvent = new InputFieldMessageRemovedEvent();
 
   /** The ToolAssistanceChangedEvent is fired when a tool calls IModelApp.notifications.setToolAssistance().
-   * @alpha
+   * @beta
    */
   public static readonly onToolAssistanceChangedEvent = new ToolAssistanceChangedEvent();
 
@@ -393,7 +393,7 @@ export class MessageManager {
 
   /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
    * @param instructions The tool assistance instructions.
-   * @alpha
+   * @beta
    */
   public static setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
     MessageManager.onToolAssistanceChangedEvent.emit({ instructions });

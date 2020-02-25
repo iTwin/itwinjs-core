@@ -10,8 +10,7 @@ import { I18N, TranslationOptions } from "@bentley/imodeljs-i18n";
 import { UiError, getClassName } from "@bentley/ui-abstract";
 
 /**
- * Entry point for static initialization required by various
- * components used in the package.
+ * Entry point for static initialization required by various components used in the package.
  * @public
  */
 export class UiComponents {

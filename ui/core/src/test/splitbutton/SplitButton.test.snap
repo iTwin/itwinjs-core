@@ -13,6 +13,49 @@ exports[`<SplitButton /> renders correctly 1`] = `
     test
   </div>
   <div
+    className="core-split-button-divider"
+  />
+  <div
+    className="core-split-button-arrow"
+    onClick={[Function]}
+    onKeyUp={[Function]}
+    tabIndex={0}
+  >
+    <div
+      className="core-split-button-arrow-icon icon icon-chevron-down"
+    />
+    <ContextMenu
+      autoflip={false}
+      direction="bottom right"
+      edgeLimit={true}
+      floating={true}
+      hotkeySelect={true}
+      onEsc={[Function]}
+      onOutsideClick={[Function]}
+      onSelect={[Function]}
+      opened={false}
+      selectedIndex={0}
+    />
+  </div>
+</div>
+`;
+
+exports[`<SplitButton /> renders with drawBorder correctly 1`] = `
+<div
+  className="core-split-button core-split-button-border"
+  data-testid="core-split-button-root"
+>
+  <div
+    className="core-split-button-label"
+    data-testid="core-split-button-label"
+  >
+     
+    test
+  </div>
+  <div
+    className="core-split-button-divider core-split-button-border"
+  />
+  <div
     className="core-split-button-arrow"
     onClick={[Function]}
     onKeyUp={[Function]}
@@ -52,6 +95,9 @@ exports[`<SplitButton /> renders with icon correctly 1`] = `
      
     test
   </div>
+  <div
+    className="core-split-button-divider"
+  />
   <div
     className="core-split-button-arrow"
     onClick={[Function]}

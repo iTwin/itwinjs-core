@@ -14,9 +14,13 @@
   height: 100%;
 }
 
-@mixin uicore-full-size {
+@mixin uicore-full-width {
   width: 100%;
-  height: 100%;
+}
+
+@mixin uicore-full-size {
+  @include uicore-full-height;
+  @include uicore-full-width;
 }
 
 @mixin uicore-fill-centered {
@@ -25,8 +29,7 @@
 }
 
 @mixin uicore-scrollview {
-  width: 100%;
-  height: 100%;
+  @include uicore-full-size;
   overflow-y: auto;
 
   @include uicore-touch-scrolling;

@@ -24,8 +24,8 @@ declare namespace Polymer {
 }
 
 declare module "*.svg" {
-  const value: any;
-  export default value;
+  const moreVerticalSvg: any;
+  export default moreVerticalSvg;
 }
 
 declare namespace JSX {

@@ -481,8 +481,8 @@ beta;ThemeManager: any
 beta;TileLoadingIndicator 
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs
-alpha;ToolAssistanceChangedEvent 
-alpha;ToolAssistanceChangedEventArgs
+beta;ToolAssistanceChangedEvent 
+beta;ToolAssistanceChangedEventArgs
 beta;ToolAssistanceField 
 internal;ToolAssistanceFieldDefaultProps = Pick
 beta;ToolAssistanceFieldProps 
@@ -514,7 +514,7 @@ public;ToolWidgetDef
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
 public;UiFramework
-alpha;UiShowHideManager
+beta;UiShowHideManager
 beta;UiVisibilityChangedEvent 
 beta;UiVisibilityEventArgs
 internal;useActiveFrontstageDef(): FrontstageDef | undefined
@@ -563,7 +563,7 @@ public;WidgetControl
 public;WidgetDef
 public;WidgetHost
 internal;WidgetInfo
-alpha;WidgetManager
+beta;WidgetManager
 internal;WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSettingsProps): JSX.Element
 internal;WidgetPanelsDefaultToolSettingsProps
 internal;WidgetPanelsFrontstage(): JSX.Element | null
@@ -572,7 +572,7 @@ internal;WidgetPanelsStatusBar(): JSX.Element | null
 internal;WidgetPanelsToolbars(): JSX.Element
 internal;WidgetPanelsToolSettings(): JSX.Element | null
 public;WidgetProps 
-alpha;WidgetProvider
+beta;WidgetProvider
 internal;WidgetProvidersChangedEvent 
 internal;WidgetProvidersChangedEventArgs
 internal;WidgetsChangedEvent 

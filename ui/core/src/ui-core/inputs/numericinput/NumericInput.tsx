@@ -17,20 +17,26 @@ import "./NumericInput.scss";
 
 // cSpell:ignore nostyle
 
-/** @alpha */
+/** Step function prototype for [[NumericInput]] component
+ * @beta
+ */
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
-/** @alpha */
+/** Properties for the [[NumericInput]] component
+ * @beta
+ */
 export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">, CommonProps {
   step?: StepFunctionProp;
 }
 
 /** Default properties of [[NumericInput]] component.
- * @alpha
+ * @internal
  */
 export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
 
-/** @alpha */
+/** Numeric Input React component.
+ * @beta
+ */
 export class NumericInput extends React.Component<NumericInputProps> {
 
   /** @internal */

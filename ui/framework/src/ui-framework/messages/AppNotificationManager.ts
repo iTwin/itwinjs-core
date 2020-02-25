@@ -152,7 +152,7 @@ export class AppNotificationManager extends NotificationManager {
 
   /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
    * @param instructions The tool assistance instructions.
-   * @alpha
+   * @beta
    */
   public setToolAssistance(instructions: ToolAssistanceInstructions | undefined) {
     MessageManager.outputPrompt(instructions ? instructions.mainInstruction.text : "");

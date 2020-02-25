@@ -11,7 +11,7 @@ import * as classnames from "classnames";
 import { CommonDivProps } from "../utils/Props";
 
 /** Properties for the [[Div]] component
- * @internal
+ * @public
  */
 export interface DivProps extends CommonDivProps {
   /** Main CSS class name */
@@ -19,7 +19,7 @@ export interface DivProps extends CommonDivProps {
 }
 
 /** Base div element
- * @internal
+ * @public
  */
 export class Div extends React.PureComponent<DivProps> {
   public render(): JSX.Element {

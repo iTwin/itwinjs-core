@@ -138,17 +138,15 @@ export interface AsyncErrorMessage {
     // (undocumented)
     alertType?: OutputMessageAlert;
     // (undocumented)
-    briefMsg: string;
+    briefMessage: string;
     // (undocumented)
-    detailedMsg?: string;
+    detailedMessage?: string;
     // (undocumented)
     displayTime?: number;
     // (undocumented)
-    localizationNamespace?: string;
-    // (undocumented)
     msgType?: OutputMessageType;
     // (undocumented)
-    priority?: OutputMessagePriority;
+    priority: OutputMessagePriority;
 }
 
 // @beta
@@ -156,7 +154,7 @@ export interface AsyncValueProcessingResult {
     // (undocumented)
     encounteredError: boolean;
     // (undocumented)
-    errorMsg?: AsyncErrorMessage;
+    errorMessage?: AsyncErrorMessage;
     // (undocumented)
     returnValue?: PropertyValue;
 }
@@ -851,7 +849,7 @@ export interface ColumnDescription {
     filterable?: boolean;
     // (undocumented)
     filterCaseSensitive?: boolean;
-    // @alpha (undocumented)
+    // @beta (undocumented)
     filterRenderer?: FilterRenderer;
     // (undocumented)
     groupable?: boolean;
@@ -883,7 +881,7 @@ export interface ColumnDescription {
     width?: number;
 }
 
-// @alpha
+// @beta
 export interface ColumnFilterDescriptor extends FilterDescriptor {
     distinctFilter: DistinctValuesFilterDescriptor;
     fieldFilter: FieldFilterDescriptor;
@@ -901,13 +899,13 @@ export interface CompletionObserver<T> {
     next?: (value: T) => void;
 }
 
-// @alpha
+// @beta
 export interface CompositeFilterDescriptor extends FilterDescriptor {
     filterDescriptorCollection: FilterDescriptorCollection;
     logicalOperator: FilterCompositionLogicalOperator;
 }
 
-// @alpha
+// @beta
 export interface CompositeFilterDescriptorCollection {
     add(item: FilterDescriptor): void;
     clear(): void;
@@ -1134,7 +1132,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
 // @beta @deprecated
 export function DEPRECATED_withTreeDragDrop<P extends TreeProps, DragDropObject extends TreeDragDropType>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeDragDropProps<DragDropObject>>;
 
-// @alpha
+// @beta
 export class DistinctValueCollection {
     constructor();
     // (undocumented)
@@ -1142,7 +1140,7 @@ export class DistinctValueCollection {
     set values(values: any[]);
     }
 
-// @alpha
+// @beta
 export interface DistinctValuesFilterDescriptor extends FilterDescriptor {
     addDistinctValue(distinctValue: any): void;
     distinctValues: DistinctValueCollection;
@@ -1386,7 +1384,7 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
     nodeEditorRenderer?: TreeNodeEditorRenderer;
 }
 
-// @alpha
+// @beta
 export interface FieldFilterDescriptor extends FilterDescriptor {
     addFieldValue(fieldValue: any, operator: FilterOperator, isCaseSensitive?: boolean): void;
     filterDescriptorCollection: OperatorValueFilterDescriptorCollection;
@@ -1395,7 +1393,7 @@ export interface FieldFilterDescriptor extends FilterDescriptor {
     tryFindDescriptor(fieldValue: any, operator: FilterOperator): FilterDescriptor | undefined;
 }
 
-// @alpha
+// @beta
 export interface FilterableColumn {
     columnFilterDescriptor: ColumnFilterDescriptor;
     createSimpleFilterDescriptor(value: any, filterOperator: FilterOperator): OperatorValueFilterDescriptor;
@@ -1408,13 +1406,13 @@ export interface FilterableColumn {
     showFieldFilters: boolean;
 }
 
-// @alpha
+// @beta
 export interface FilterableTable {
     filterDescriptors: CompositeFilterDescriptorCollection;
     getPropertyDisplayValueExpression(property: string): string;
 }
 
-// @alpha
+// @beta
 export enum FilterCompositionLogicalOperator {
     // (undocumented)
     And = 0,
@@ -1422,7 +1420,7 @@ export enum FilterCompositionLogicalOperator {
     Or = 1
 }
 
-// @alpha
+// @beta
 export interface FilterDescriptor {
     clear(): void;
     evaluateRow(row: RowItem): boolean;
@@ -1431,11 +1429,11 @@ export interface FilterDescriptor {
     isFilterForColumn(columnKey: string): boolean;
 }
 
-// @alpha
+// @beta
 export class FilterDescriptorCollection extends FilterDescriptorCollectionBase<FilterDescriptor> {
 }
 
-// @alpha
+// @beta
 export abstract class FilterDescriptorCollectionBase<TDescriptor extends FilterDescriptor> {
     constructor();
     add(item: TDescriptor): void;
@@ -1468,7 +1466,7 @@ export interface FilteringInputProps extends CommonProps {
     resultSelectorProps?: ResultSelectorProps;
 }
 
-// @alpha
+// @beta
 export enum FilterOperator {
     // (undocumented)
     Contains = 9,
@@ -1506,7 +1504,7 @@ export enum FilterOperator {
     StartsWith = 7
 }
 
-// @alpha
+// @beta
 export enum FilterRenderer {
     // (undocumented)
     MultiSelect = 2,
@@ -2082,7 +2080,7 @@ export interface NullableOperatorProcessor {
     isNull(value: Primitives.Value): boolean;
 }
 
-// @alpha
+// @beta
 export interface NumericRangeData {
     // (undocumented)
     begin: number;
@@ -2132,7 +2130,7 @@ export interface OperatorProcessor {
     isNotEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
-// @alpha
+// @beta
 export interface OperatorValueFilterDescriptor extends FilterDescriptor {
     isCaseSensitive: boolean;
     memberKey: string;
@@ -2141,7 +2139,7 @@ export interface OperatorValueFilterDescriptor extends FilterDescriptor {
     value: any;
 }
 
-// @alpha
+// @beta
 export class OperatorValueFilterDescriptorCollection extends FilterDescriptorCollectionBase<OperatorValueFilterDescriptor> {
 }
 
@@ -2784,13 +2782,11 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     constructor(columns: ColumnDescription[]);
     // (undocumented)
     addRow(rowItem: RowItem): number;
-    // @alpha (undocumented)
     applyFilterDescriptors(filterDescriptors: CompositeFilterDescriptorCollection): Promise<void>;
     // (undocumented)
     deleteRow(rowItem: RowItem, raiseRowsChangedEvent?: boolean): void;
     // (undocumented)
     getColumns(): Promise<ColumnDescription[]>;
-    // @alpha (undocumented)
     getDistinctValues(columnKey: string, maximumValueCount?: number): Promise<DistinctValueCollection>;
     // (undocumented)
     getRow(rowIndex: number, unfiltered?: boolean): Promise<RowItem>;
@@ -3082,11 +3078,11 @@ export type TableDataChangesListener = () => void;
 
 // @public
 export interface TableDataProvider {
-    // @alpha
+    // @beta
     applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
     // (undocumented)
     getColumns(): Promise<ColumnDescription[]>;
-    // @alpha
+    // @beta
     getDistinctValues?: (columnKey: string, maximumValueCount?: number) => Promise<DistinctValueCollection>;
     // @alpha
     getPropertyDisplayValueExpression?: (property: string) => string;
@@ -3102,7 +3098,7 @@ export interface TableDataProvider {
     sort(columnIndex: number, sortDirection: SortDirection): Promise<void>;
 }
 
-// @alpha (undocumented)
+// @beta
 export interface TableDistinctValue {
     // (undocumented)
     label: string;

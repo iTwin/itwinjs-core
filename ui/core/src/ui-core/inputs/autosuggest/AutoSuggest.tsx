@@ -13,15 +13,15 @@ import { CommonProps } from "../../utils/Props";
 import "./AutoSuggest.scss";
 
 /** Data for the [[AutoSuggest]] options
- *  @alpha
+ *  @beta
  */
 export interface AutoSuggestData {
   value: string;
   label: string;
 }
 
-/** Properties for the [[AutoSuggest]] component
- * @alpha
+/** Properties for the [[AutoSuggest]] component.
+ * @beta
  */
 export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
   /** Current value. */
@@ -53,8 +53,8 @@ interface AutoSuggestState {
   suggestions: AutoSuggestData[];
 }
 
-/** Auto Suggest React component
- * @alpha
+/** Auto Suggest React component. Uses the react-autosuggest component internally.
+ * @beta
  */
 export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
 

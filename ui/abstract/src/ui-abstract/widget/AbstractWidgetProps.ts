@@ -12,7 +12,7 @@ import { ProvidedItem } from "../items/ProvidedItem";
 import { ConditionalStringValue } from "../../ui-abstract";
 
 /** Properties for a Widget.
- * @alpha
+ * @beta
  */
 export interface AbstractWidgetProps extends ProvidedItem {
   /** Gets the widget content */

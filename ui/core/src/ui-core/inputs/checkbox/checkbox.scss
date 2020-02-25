@@ -86,6 +86,7 @@
   input[type="checkbox"]:disabled + .core-checkbox-label:before,
   input[type="checkbox"]:disabled + .core-checkbox-label:after {
     opacity: .4;
+    cursor: not-allowed;
   }
 
   @keyframes core-checkbox-tick {

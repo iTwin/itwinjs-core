@@ -90,6 +90,7 @@ exports[`<Select /> renders placeholder correctly 1`] = `
     className="placeholder"
     disabled={true}
     key=""
+    selected={true}
     value=""
   >
     test

@@ -50,7 +50,7 @@ export class Annulus {
     outer: Circle;
 }
 
-// @alpha
+// @beta
 export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
     constructor(props: AutoSuggestProps);
     // (undocumented)
@@ -59,7 +59,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     render(): JSX.Element;
     }
 
-// @alpha
+// @beta
 export interface AutoSuggestData {
     // (undocumented)
     label: string;
@@ -67,7 +67,7 @@ export interface AutoSuggestData {
     value: string;
 }
 
-// @alpha
+// @beta
 export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
@@ -110,7 +110,7 @@ export const BlockText: React.FunctionComponent<TextProps>;
 // @public
 export const BodyText: React.FunctionComponent<TextProps>;
 
-// @alpha (undocumented)
+// @beta
 export type BoundsFunctionProp = number | (() => number | undefined);
 
 // @public
@@ -543,13 +543,13 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
 // @public
 export const DisabledText: React.FunctionComponent<TextProps>;
 
-// @internal
+// @public
 export class Div extends React.PureComponent<DivProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @internal
+// @public
 export interface DivProps extends CommonDivProps {
     mainClassName: string;
 }
@@ -705,17 +705,17 @@ export enum Face {
     Top = "top"
 }
 
-// @alpha (undocumented)
+// @beta
 export const FeaturedTile: React.FunctionComponent<TileProps>;
 
-// @alpha
+// @beta
 export class Field extends React.Component<IFieldProps> {
     constructor(props: IFieldProps);
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export interface FieldDef {
     // (undocumented)
     editor?: FieldEditor;
@@ -729,16 +729,16 @@ export interface FieldDef {
     value?: any;
 }
 
-// @alpha
+// @beta
 export interface FieldDefinitions {
     // (undocumented)
     [key: string]: FieldDef;
 }
 
-// @alpha
+// @beta
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
 
-// @alpha
+// @beta
 export interface FieldValues {
     // (undocumented)
     [key: string]: any;
@@ -766,17 +766,17 @@ export class FocusTrap extends React.Component<Props, State> {
     render(): JSX.Element | null;
     }
 
-// @alpha
+// @beta
 export class Form extends React.Component<IFormProps, FormState> {
     constructor(props: IFormProps);
     // (undocumented)
     render(): JSX.Element;
     }
 
-// @alpha
+// @beta
 export const FormContext: React.Context<FormContextState | undefined>;
 
-// @alpha
+// @beta
 export interface FormContextState extends FormState {
     // (undocumented)
     setValues: (values: FieldValues) => void;
@@ -847,13 +847,13 @@ export class HorizontalTabs extends React.PureComponent<TabsProps> {
 // @public
 export const Icon: React.FunctionComponent<IconProps>;
 
-// @alpha
+// @beta
 export class IconInput extends React.PureComponent<IconInputProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @alpha
+// @beta
 export interface IconInputProps extends InputProps {
     containerClassName?: string;
     icon: React.ReactNode;
@@ -877,8 +877,8 @@ export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
 export interface ImageCheckBoxProps extends CommonProps {
     checked?: boolean;
     disabled?: boolean;
-    imageOff: string;
-    imageOn: string;
+    imageOff: string | React.ReactNode;
+    imageOn: string | React.ReactNode;
     inputClassName?: string;
     inputStyle?: React.CSSProperties;
     onClick?: (checked: boolean) => any;
@@ -1136,10 +1136,10 @@ export enum MessageSeverity {
     Warning = 3
 }
 
-// @alpha (undocumented)
+// @beta
 export const MinimalFeaturedTile: React.FunctionComponent<TileProps>;
 
-// @alpha (undocumented)
+// @beta
 export const MinimalTile: React.FunctionComponent<TileProps>;
 
 // @public
@@ -1171,7 +1171,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
     onClick: (e: React.MouseEvent) => void;
 };
 
-// @alpha (undocumented)
+// @beta
 export class NumericInput extends React.Component<NumericInputProps> {
     // @internal (undocumented)
     static readonly defaultProps: NumericInputDefaultProps;
@@ -1179,10 +1179,10 @@ export class NumericInput extends React.Component<NumericInputProps> {
     render(): JSX.Element;
     }
 
-// @alpha
+// @internal
 export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
 
-// @alpha (undocumented)
+// @beta
 export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">, CommonProps {
     // (undocumented)
     step?: StepFunctionProp;
@@ -1387,7 +1387,7 @@ export class ReactNumericInput extends React.Component<ReactNumericInputProps, R
     UNSAFE_componentWillUpdate(): void;
     }
 
-// @alpha (undocumented)
+// @beta
 export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">, CommonProps {
     // (undocumented)
     componentClass?: string;
@@ -1593,10 +1593,10 @@ export interface SizeProps {
     readonly width: number;
 }
 
-// @alpha
+// @beta
 export const Slider: React.FC<SliderProps>;
 
-// @alpha
+// @beta
 export interface SliderProps extends CommonProps {
     disabled?: boolean;
     formatTick?: (tick: number) => string;
@@ -1678,12 +1678,13 @@ export enum SplitButtonActionType {
 
 // @beta
 export interface SplitButtonProps extends CommonProps {
+    drawBorder?: boolean;
     icon?: string;
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
 }
 
-// @alpha (undocumented)
+// @beta
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
 // @internal
@@ -1766,7 +1767,7 @@ export class TildeFinder {
     };
 }
 
-// @alpha (undocumented)
+// @beta
 export class Tile extends React.Component<TileProps> {
     // @internal (undocumented)
     static readonly defaultProps: TileDefaultProps;
@@ -1777,14 +1778,14 @@ export class Tile extends React.Component<TileProps> {
 // @internal (undocumented)
 export type TileDefaultProps = Pick<TileProps, "stepNum">;
 
-// @alpha (undocumented)
+// @beta
 export interface TileProps extends CommonDivProps {
     // (undocumented)
     featured?: boolean;
     // (undocumented)
     href?: string;
     // (undocumented)
-    icon?: React.ReactNode;
+    icon?: string | React.ReactNode;
     // (undocumented)
     minimal?: boolean;
     // (undocumented)

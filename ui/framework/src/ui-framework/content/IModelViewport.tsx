@@ -23,7 +23,7 @@ import { connectIModelConnectionAndViewState } from "../redux/connectIModel";
 // tslint:disable-next-line:variable-name
 const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 
-/** ViewSelector that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
+/** Viewport that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
  * @beta
  */
 export const IModelConnectedViewport = connectIModelConnectionAndViewState(null, null)(UnifiedSelectionViewport); // tslint:disable-line:variable-name

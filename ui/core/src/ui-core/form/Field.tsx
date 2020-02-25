@@ -16,7 +16,7 @@ import { Select } from "../inputs/Select";
 // cSpell:ignore multilinetextbox
 
 /** Properties used to create a [[Field]] in a [[Form]]
- * @alpha
+ * @beta
  */
 interface IFieldProps extends FieldDef {
   /* The unique field name */
@@ -24,7 +24,7 @@ interface IFieldProps extends FieldDef {
 }
 
 /** Component that represents a single field in an input form. Only four type of editors are supported. Field gets/sets state data from/to the context control by the form.
- * @alpha
+ * @beta
  */
 export class Field extends React.Component<IFieldProps> {
   constructor(props: IFieldProps) {

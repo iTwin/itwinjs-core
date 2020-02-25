@@ -66,10 +66,10 @@ beta;ColorPropertyEditor
 beta;ColorSwatch: React.FunctionComponent
 beta;ColorSwatchProps 
 public;ColumnDescription
-alpha;ColumnFilterDescriptor 
+beta;ColumnFilterDescriptor 
 public;CompletionObserver
-alpha;CompositeFilterDescriptor 
-alpha;CompositeFilterDescriptorCollection
+beta;CompositeFilterDescriptor 
+beta;CompositeFilterDescriptorCollection
 public;CompositeTypeConverter 
 internal;ContextMenu 
 internal;ContextMenuItem 
@@ -90,8 +90,8 @@ alpha;DayPicker
 public;DelayLoadedTreeNodeItem 
 public;DEPRECATED_Tree 
 beta;DEPRECATED_withTreeDragDrop
-alpha;DistinctValueCollection
-alpha;DistinctValuesFilterDescriptor 
+beta;DistinctValueCollection
+beta;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
 internal;DragAction
 beta;DragDropArguments
@@ -116,17 +116,17 @@ public;EnumTypeConverter
 public;ErrorObserver
 public;EventsMuteContext 
 beta;ExtendedTreeNodeRendererProps 
-alpha;FieldFilterDescriptor 
-alpha;FilterableColumn
-alpha;FilterableTable
-alpha;FilterCompositionLogicalOperator
-alpha;FilterDescriptor
-alpha;FilterDescriptorCollection 
-alpha;class FilterDescriptorCollectionBase
+beta;FieldFilterDescriptor 
+beta;FilterableColumn
+beta;FilterableTable
+beta;FilterCompositionLogicalOperator
+beta;FilterDescriptor
+beta;FilterDescriptorCollection 
+beta;class FilterDescriptorCollectionBase
 public;FilteringInput 
 public;FilteringInputProps 
-alpha;FilterOperator
-alpha;FilterRenderer
+beta;FilterOperator
+beta;FilterRenderer
 public;FloatTypeConverter 
 public;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
@@ -201,7 +201,7 @@ public;NonPrimitivePropertyLabelRendererProps
 public;NonPrimitivePropertyRenderer 
 public;NonPrimitivePropertyRendererProps 
 public;NullableOperatorProcessor
-alpha;NumericRangeData
+beta;NumericRangeData
 public;class NumericTypeConverterBase 
 public;Observable
 public;Observer
@@ -209,8 +209,8 @@ public;OnItemsDeselectedCallback
 public;OnItemsSelectedCallback
 public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
-alpha;OperatorValueFilterDescriptor 
-alpha;OperatorValueFilterDescriptorCollection 
+beta;OperatorValueFilterDescriptor 
+beta;OperatorValueFilterDescriptorCollection 
 beta;PagedTreeNodeLoader
 public;PageOptions
 alpha;PlaybackSettings
@@ -301,7 +301,7 @@ internal;TableColumn
 public;TableDataChangeEvent 
 public;TableDataChangesListener = () => void
 public;TableDataProvider
-alpha;TableDistinctValue
+beta;TableDistinctValue
 beta;TableDragDropProps
 beta;TableDragDropType = {} | RowItem | TableDataProvider
 beta;TableDropTargetProps

@@ -170,7 +170,9 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     return result;
   }
 
-  /** @alpha */
+  /** Gets distinct values in a column
+   * @beta
+   */
   public async getDistinctValues(columnKey: string, maximumValueCount?: number): Promise<DistinctValueCollection> {
     const distinctValues = new DistinctValueCollection();
     const columnIndex = this._columns.findIndex((description: ColumnDescription) => description.key === columnKey);
@@ -224,7 +226,9 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     return distinctValues;
   }
 
-  /** @alpha */
+  /** Apply a filter descriptor collection
+   * @beta
+   */
   public async applyFilterDescriptors(filterDescriptors: CompositeFilterDescriptorCollection): Promise<void> {
     this._filterDescriptors = filterDescriptors;
 
