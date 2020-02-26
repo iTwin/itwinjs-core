@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geo-photo-plugin",
-  "version": "2.0.0-dev.15",
+  "version": "2.0.0-dev.16",
   "description": "Geotagged Photo Viewer",
   "main": "index.js",
   "scripts": {
@@ -68,12 +68,12 @@
     }
   },
   "devDependencies": {
-    "@bentley/certa": "2.0.0-dev.15",
-    "@bentley/build-tools": "2.0.0-dev.15",
-    "@bentley/webpack-tools": "2.0.0-dev.15",
-    "@bentley/config-loader": "2.0.0-dev.15",
-    "@bentley/express-server": "2.0.0-dev.15",
-    "@bentley/imodeljs-backend": "2.0.0-dev.15",
+    "@bentley/certa": "2.0.0-dev.16",
+    "@bentley/build-tools": "2.0.0-dev.16",
+    "@bentley/webpack-tools": "2.0.0-dev.16",
+    "@bentley/config-loader": "2.0.0-dev.16",
+    "@bentley/express-server": "2.0.0-dev.16",
+    "@bentley/imodeljs-backend": "2.0.0-dev.16",
     "ui-test-app": "0.0.0",
     "@types/node": "10.14.1",
     "@types/chai": "^4.1.4",
@@ -93,18 +93,18 @@
     "svg-baker-runtime": "^1.4.2"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.15",
-    "@bentley/geometry-core": "2.0.0-dev.15",
-    "@bentley/imodeljs-clients": "2.0.0-dev.15",
-    "@bentley/imodeljs-common": "2.0.0-dev.15",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.15",
-    "@bentley/imodeljs-frontend": "2.0.0-dev.15",
-    "@bentley/imodeljs-quantity": "2.0.0-dev.15",
-    "@bentley/ui-abstract": "2.0.0-dev.15",
-    "@bentley/ui-core": "2.0.0-dev.15",
-    "@bentley/ui-components": "2.0.0-dev.15",
-    "@bentley/ui-ninezone": "2.0.0-dev.15",
-    "@bentley/ui-framework": "2.0.0-dev.15",
+    "@bentley/bentleyjs-core": "2.0.0-dev.16",
+    "@bentley/geometry-core": "2.0.0-dev.16",
+    "@bentley/imodeljs-clients": "2.0.0-dev.16",
+    "@bentley/imodeljs-common": "2.0.0-dev.16",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.16",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.16",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.16",
+    "@bentley/ui-abstract": "2.0.0-dev.16",
+    "@bentley/ui-core": "2.0.0-dev.16",
+    "@bentley/ui-components": "2.0.0-dev.16",
+    "@bentley/ui-ninezone": "2.0.0-dev.16",
+    "@bentley/ui-framework": "2.0.0-dev.16",
     "react": "^16.8.0",
     "svg-sprite-loader": "^3.8.0"
   }
