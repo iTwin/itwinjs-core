@@ -6,35 +6,26 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Point3d, Vector3d, Matrix3d, AxisIndex } from "@bentley/geometry-core";
-import { render, cleanup, wait, fireEvent } from "@testing-library/react";
 import * as moq from "typemoq";
-import {
-  ConfigurableUiManager,
-  DrawingNavigationAid,
-  MapMode,
-  DrawingNavigationAidControl,
-  AnyWidgetProps,
-  NavigationWidgetDef,
-  ContentControl,
-} from "../../ui-framework";
-import { TestUtils } from "../TestUtils";
+import { render, cleanup, wait, fireEvent } from "@testing-library/react";
+
+import { Point3d, Vector3d, Matrix3d, AxisIndex } from "@bentley/geometry-core";
 import { IModelConnection, DrawingViewState, ScreenViewport, ViewManager, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
-import { ViewportComponentEvents } from "@bentley/ui-components";
-import { DrawingNavigationCanvas } from "../../ui-framework/navigationaids/DrawingNavigationAid";
+
+import { TestUtils } from "../TestUtils";
+import { DrawingNavigationAid, MapMode, DrawingNavigationCanvas } from "../../ui-components/navigationaids/DrawingNavigationAid";
+import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
+
+// cspell:ignore unrotate
 
 describe("DrawingNavigationAid", () => {
 
   before(async () => {
     sinon.restore();
-    await TestUtils.initializeUiFramework();
-
-    if (!ConfigurableUiManager.isControlRegistered("DrawingNavigationAid"))
-      ConfigurableUiManager.registerControl("DrawingNavigationAid", DrawingNavigationAidControl);
+    await TestUtils.initializeUiComponents();
   });
 
   after(() => {
-    TestUtils.terminateUiFramework();
     sinon.restore();
   });
 
@@ -51,10 +42,6 @@ describe("DrawingNavigationAid", () => {
   viewState.setup((x) => x.getRotation).returns(() => () => rotation);
   const vp = moq.Mock.ofType<ScreenViewport>();
   vp.setup((x) => x.view).returns(() => viewState.object);
-
-  const contentControl = moq.Mock.ofType<ContentControl>();
-  contentControl.setup((x) => x.isViewport).returns(() => true);
-  contentControl.setup((x) => x.viewport).returns(() => vp.object);
 
   const viewState3d = moq.Mock.ofType<ViewState3d>();
   viewState3d.setup((x) => x.id).returns(() => "id2");
@@ -89,7 +76,7 @@ describe("DrawingNavigationAid", () => {
     it("should exist", async () => {
       const animationEnd = sinon.spy();
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} onAnimationEnd={animationEnd} />);
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       expect(navAid).to.exist;
     });
     it("should not have unrotate button with spatial views", async () => {
@@ -100,28 +87,28 @@ describe("DrawingNavigationAid", () => {
     it("should have expected closed dimensions", () => {
       const size = Vector3d.create(96, 96);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={size} />);
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       expect(navAid.style.width).to.equal("96px");
       expect(navAid.style.height).to.equal("96px");
     });
     it("should have expected default closed dimensions", () => {
       const size = DrawingNavigationAid.getDefaultClosedMapSize();
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} />);
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       expect(navAid.style.width).to.equal(size.x + "px");
       expect(navAid.style.height).to.equal(size.y + "px");
     });
     it("should have expected opened dimensions", () => {
       const size = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={size} initialMapMode={MapMode.Opened} />);
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       expect(navAid.style.width).to.equal("350px");
       expect(navAid.style.height).to.equal("300px");
     });
     it("should have expected default opened dimensions", () => {
       const size = DrawingNavigationAid.getDefaultOpenedMapSize();
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} initialMapMode={MapMode.Opened} />);
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       expect(navAid.style.width).to.equal(size.x + "px");
       expect(navAid.style.height).to.equal(size.y + "px");
     });
@@ -131,7 +118,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} />);
 
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       const drawingContainer = component.getByTestId("drawing-container");
 
       expect(navAid.style.width).to.equal("96px");
@@ -141,7 +128,7 @@ describe("DrawingNavigationAid", () => {
 
       await waitForSpy(animationEnd, { timeout: 1000 });
 
-      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      const navAid2 = component.queryByTestId("components-drawing-navigation-aid");
       expect(navAid2).to.exist;
       expect(navAid2!.style.width).to.equal("350px");
       expect(navAid2!.style.height).to.equal("300px");
@@ -152,7 +139,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} />);
 
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       const drawingWindow = component.getByTestId("drawing-view-window");
 
       expect(navAid.style.width).to.equal("96px");
@@ -162,7 +149,7 @@ describe("DrawingNavigationAid", () => {
 
       await waitForSpy(animationEnd, { timeout: 1000 });
 
-      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      const navAid2 = component.queryByTestId("components-drawing-navigation-aid");
       expect(navAid2).to.exist;
       expect(navAid2!.style.width).to.equal("350px");
       expect(navAid2!.style.height).to.equal("300px");
@@ -173,7 +160,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} initialRotateMinimapWithView={true} />);
 
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       const drawingContainer = component.getByTestId("drawing-container");
 
       expect(navAid.style.width).to.equal("96px");
@@ -183,7 +170,7 @@ describe("DrawingNavigationAid", () => {
 
       await waitForSpy(animationEnd, { timeout: 1000 });
 
-      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      const navAid2 = component.queryByTestId("components-drawing-navigation-aid");
       expect(navAid2).to.exist;
       expect(navAid2!.style.width).to.equal("350px");
       expect(navAid2!.style.height).to.equal("300px");
@@ -194,7 +181,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} initialMapMode={MapMode.Opened} />);
 
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       const drawingContainer = component.getByTestId("drawing-container");
 
       expect(navAid.style.width).to.equal("350px");
@@ -203,7 +190,7 @@ describe("DrawingNavigationAid", () => {
 
       await waitForSpy(animationEnd, { timeout: 1000 });
 
-      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      const navAid2 = component.queryByTestId("components-drawing-navigation-aid");
       expect(navAid2).to.exist;
       expect(navAid2!.style.width).to.equal("96px");
       expect(navAid2!.style.height).to.equal("96px");
@@ -214,7 +201,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} initialMapMode={MapMode.Opened} initialRotateMinimapWithView={true} />);
 
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       const drawingContainer = component.getByTestId("drawing-container");
 
       expect(navAid.style.width).to.equal("350px");
@@ -223,7 +210,7 @@ describe("DrawingNavigationAid", () => {
 
       await waitForSpy(animationEnd, { timeout: 1000 });
 
-      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      const navAid2 = component.queryByTestId("components-drawing-navigation-aid");
       expect(navAid2).to.exist;
       expect(navAid2!.style.width).to.equal("96px");
       expect(navAid2!.style.height).to.equal("96px");
@@ -234,7 +221,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} initialMapMode={MapMode.Opened} />);
 
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       const drawingContainer = component.getByTestId("drawing-container");
 
       expect(navAid.style.width).to.equal("350px");
@@ -243,7 +230,7 @@ describe("DrawingNavigationAid", () => {
 
       await waitForSpy(animationEnd, { timeout: 1000 });
 
-      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      const navAid2 = component.queryByTestId("components-drawing-navigation-aid");
       expect(navAid2).to.exist;
       expect(navAid2!.style.width).to.equal("96px");
       expect(navAid2!.style.height).to.equal("96px");
@@ -254,7 +241,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<div data-testid="outside"><DrawingNavigationAid iModelConnection={connection.object} closeSize={closedSize} openSize={openedSize} animationTime={.1} onAnimationEnd={animationEnd} initialMapMode={MapMode.Opened} /></div>);
 
-      const navAid = component.getByTestId("drawing-navigation-aid");
+      const navAid = component.getByTestId("components-drawing-navigation-aid");
       const outside = component.getByTestId("outside");
 
       expect(navAid.style.width).to.equal("350px");
@@ -265,7 +252,7 @@ describe("DrawingNavigationAid", () => {
 
       await waitForSpy(animationEnd, { timeout: 1000 });
 
-      const navAid2 = component.queryByTestId("drawing-navigation-aid");
+      const navAid2 = component.queryByTestId("components-drawing-navigation-aid");
       expect(navAid2).to.exist;
       expect(navAid2!.style.width).to.equal("96px");
       expect(navAid2!.style.height).to.equal("96px");
@@ -277,21 +264,21 @@ describe("DrawingNavigationAid", () => {
         rotation = Matrix3d.createIdentity();
       });
       it("should update onViewRotationChangeEvent", async () => {
-        const component = render(<DrawingNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} />);
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} viewport={vp.object} />);
         const viewWindow = component.getByTestId("drawing-view-window");
         expect(viewWindow.style.transform).to.equal("matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 47.5, 47.5, 0, 1)");
         ViewportComponentEvents.onViewRotationChangeEvent.emit({ viewport: vp.object });
         expect(viewWindow.style.transform).to.equal("matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 32, 32, 0, 1)");
       });
       it("should update onViewRotationChangeEvent with rotateMinimapWithView", async () => {
-        const component = render(<DrawingNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} initialRotateMinimapWithView={true} />);
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} viewport={vp.object} initialRotateMinimapWithView={true} />);
         const viewWindow = component.getByTestId("drawing-view-window");
         expect(viewWindow.style.transform).to.equal("translate(47.5px, 47.5px)");
         ViewportComponentEvents.onViewRotationChangeEvent.emit({ viewport: vp.object });
         expect(viewWindow.style.transform).to.equal("translate(32px, 32px)");
       });
       it("should update with rotation", async () => {
-        const component = render(<DrawingNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} />);
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} viewport={vp.object} />);
         const viewWindow = component.getByTestId("drawing-view-window");
         expect(viewWindow.style.transform).to.equal("matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 47.5, 47.5, 0, 1)");
         rotation = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.Z);
@@ -300,8 +287,8 @@ describe("DrawingNavigationAid", () => {
       });
       it("should update with rotation in opened mode", async () => {
         const size = Vector3d.create(240, 240);
-        const component = render(<DrawingNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} openSize={size} initialMapMode={MapMode.Opened} />);
-        const navAid = component.getByTestId("drawing-navigation-aid");
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} viewport={vp.object} openSize={size} initialMapMode={MapMode.Opened} />);
+        const navAid = component.getByTestId("components-drawing-navigation-aid");
         const viewWindow = component.getByTestId("drawing-view-window");
         expect(viewWindow.style.transform).to.equal("matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 119.5, 119.5, 0, 1)");
         rotation = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.Z);
@@ -312,7 +299,7 @@ describe("DrawingNavigationAid", () => {
       });
       it("should update rotation and reset on un-rotate", async () => {
         const animationEnd = sinon.fake();
-        const component = render(<DrawingNavigationAid iModelConnection={connection.object} onAnimationEnd={animationEnd} contentControlOverride={contentControl.object} animationTime={.1} />);
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} onAnimationEnd={animationEnd} viewport={vp.object} animationTime={.1} />);
         const viewWindow = component.getByTestId("drawing-view-window");
         expect(viewWindow.style.transform).to.equal("matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 47.5, 47.5, 0, 1)");
         rotation = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.Z);
@@ -325,7 +312,7 @@ describe("DrawingNavigationAid", () => {
       });
       it("should update rotation and reset on un-rotate with rotateMinimapWithView", async () => {
         const animationEnd = sinon.fake();
-        const component = render(<DrawingNavigationAid iModelConnection={connection.object} onAnimationEnd={animationEnd} initialRotateMinimapWithView={true} contentControlOverride={contentControl.object} animationTime={.1} />);
+        const component = render(<DrawingNavigationAid iModelConnection={connection.object} onAnimationEnd={animationEnd} initialRotateMinimapWithView={true} viewport={vp.object} animationTime={.1} />);
         const viewWindow = component.getByTestId("drawing-view-window");
         expect(viewWindow.style.transform).to.equal("translate(47.5px, 47.5px)");
         rotation = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.Z);
@@ -454,7 +441,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} />);
 
-      const drawingNavigationAid = component.getByTestId("drawing-navigation-aid");
+      const drawingNavigationAid = component.getByTestId("components-drawing-navigation-aid");
       const drawingWindow = component.getByTestId("drawing-view-window");
 
       expect(drawingWindow.style.transform).to.equal("matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 174.5, 149.5, 0, 1)");
@@ -471,7 +458,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} initialRotateMinimapWithView={true} />);
 
-      const drawingNavigationAid = component.getByTestId("drawing-navigation-aid");
+      const drawingNavigationAid = component.getByTestId("components-drawing-navigation-aid");
       const drawingWindow = component.getByTestId("drawing-view-window");
 
       expect(drawingWindow.style.transform).to.equal("translate(174.5px, 149.5px)");
@@ -488,7 +475,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} />);
 
-      const drawingNavigationAid = component.getByTestId("drawing-navigation-aid");
+      const drawingNavigationAid = component.getByTestId("components-drawing-navigation-aid");
       const drawingWindow = component.getByTestId("drawing-view-window");
 
       expect(drawingWindow.style.transform).to.equal("matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 174.5, 149.5, 0, 1)");
@@ -505,7 +492,7 @@ describe("DrawingNavigationAid", () => {
       const openedSize = Vector3d.create(350, 300);
       const component = render(<DrawingNavigationAid iModelConnection={connection.object} openSize={openedSize} initialMapMode={MapMode.Opened} initialRotateMinimapWithView={true} />);
 
-      const drawingNavigationAid = component.getByTestId("drawing-navigation-aid");
+      const drawingNavigationAid = component.getByTestId("components-drawing-navigation-aid");
       const drawingWindow = component.getByTestId("drawing-view-window");
 
       expect(drawingWindow.style.transform).to.equal("translate(174.5px, 149.5px)");
@@ -559,7 +546,7 @@ describe("DrawingNavigationAid", () => {
     });
     it("should toggle rotation mode with button with viewport", async () => {
       const closedSize = Vector3d.create(96, 96);
-      const component = render(<DrawingNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} closeSize={closedSize} />);
+      const component = render(<DrawingNavigationAid iModelConnection={connection.object} viewport={vp.object} closeSize={closedSize} />);
 
       const toggleButton = component.getByTestId("toggle-rotate-style");
 
@@ -608,30 +595,6 @@ describe("DrawingNavigationAid", () => {
       const newRotation = Matrix3d.createIdentity();
       component.rerender(<DrawingNavigationCanvas canvasSizeOverride={true} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} view={viewState.object} origin={origin} extents={extents} rotation={newRotation} zoom={1} viewId={viewState.object.id} />);
     });
-  });
-
-  describe("DrawingNavigationAidControl", () => {
-
-    const widgetProps: AnyWidgetProps = {
-      classId: "NavigationWidget",
-      isFreeform: true,
-      navigationAidId: "DrawingNavigationAid",
-    };
-
-    it("DrawingNavigationAidControl creates DrawingNavigationAid", () => {
-
-      const widgetDef = new NavigationWidgetDef(widgetProps); // tslint:disable-line:deprecation
-      expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // tslint:disable-line:deprecation
-
-      const navigationWidgetDef = widgetDef as NavigationWidgetDef; // tslint:disable-line:deprecation
-
-      const reactElement = navigationWidgetDef.reactElement;
-      expect(reactElement).to.not.be.undefined;
-
-      const reactNode = navigationWidgetDef.renderCornerItem();
-      expect(reactNode).to.not.be.undefined;
-    });
-
   });
 
 });

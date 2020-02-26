@@ -114,10 +114,7 @@ public;ContentViewManager
 public;CoreTools
 public;createAction
 public;createAction
-internal;CubeHover
-alpha;CubeNavigationAid 
-alpha;CubeNavigationAidControl 
-alpha;CubeNavigationAidProps 
+beta;CubeNavigationAidControl 
 beta;CursorDirection
 beta;CursorDirectionParts
 beta;CursorInformation
@@ -161,11 +158,7 @@ beta;DragDropLayerManager
 beta;DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponentClass
 beta;DragDropLayerRendererComponent 
 beta;DragDropLayerRendererProps 
-alpha;DrawingNavigationAid 
-alpha;DrawingNavigationAidControl 
-alpha;DrawingNavigationAidProps 
-internal;DrawingNavigationCanvas 
-internal;DrawingNavigationCanvasProps
+beta;DrawingNavigationAidControl 
 internal;dummy_node = React.ReactNode
 public;ElementTooltip 
 public;ElementTooltipChangedEvent 
@@ -173,8 +166,6 @@ public;ElementTooltipChangedEventArgs
 beta;ExpandableSection 
 beta;ExpandableSectionProps 
 beta;ExtensibleToolbarProps
-internal;FaceCell 
-internal;FaceCellProps 
 public;FooterModeField 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
@@ -225,9 +216,6 @@ internal;GroupedItems = ReadonlyArray
 internal;GroupItem 
 public;GroupItemDef 
 public;GroupItemProps 
-internal;HitBoxX
-internal;HitBoxY
-internal;HitBoxZ
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
 public;Icon: React.FunctionComponent
@@ -235,7 +223,6 @@ beta;IconHelper
 public;IconProps 
 public;IconSpec = IconSpec_2
 beta;IModelConnectedCategoryTree: any
-beta;IModelConnectedCubeNavigationAid: any
 alpha;IModelConnectedModelsTree: any
 beta;IModelConnectedNavigationWidget: any
 beta;IModelConnectedSpatialContainmentTree: any
@@ -291,7 +278,6 @@ beta;ListPickerItem
 beta;ListPickerItemProps 
 beta;ListPickerProps
 beta;ListPickerPropsExtended 
-alpha;MapMode
 public;MarkupTools
 alpha;MenuButton 
 alpha;MenuButtonPopup 
@@ -327,8 +313,6 @@ alpha;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) =>
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 beta;NameToReducerMap
-internal;NavCubeFace 
-internal;NavCubeFaceProps 
 public;NavigationAidActivatedEvent 
 public;NavigationAidActivatedEventArgs
 public;NavigationAidControl 

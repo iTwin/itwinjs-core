@@ -58,6 +58,9 @@ export * from "./ui-components/editors/IconEditor";
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
 
+export * from "./ui-components/navigationaids/CubeNavigationAid";
+export * from "./ui-components/navigationaids/DrawingNavigationAid";
+
 export * from "./ui-components/oidc/SignIn";
 
 export * from "./ui-components/properties/ValueRendererManager";
@@ -180,6 +183,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description LineWeight
  * Classes and components for working with and picking a Line Weight.
+ */
+/**
+ * @docs-group-description NavigationAids
+ * Classes and components for working with Navigation Aids.
  */
 /**
  * @docs-group-description OIDC

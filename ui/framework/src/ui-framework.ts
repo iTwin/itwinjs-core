@@ -94,10 +94,10 @@ export * from "./ui-framework/messages/MessageManager";
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/Pointer";
 
+export * from "./ui-framework/navigationaids/CubeNavigationAidControl";
+export * from "./ui-framework/navigationaids/DrawingNavigationAidControl";
 export * from "./ui-framework/navigationaids/NavigationAidControl";
-export * from "./ui-framework/navigationaids/CubeNavigationAid";
 export * from "./ui-framework/navigationaids/SheetNavigationAid";
-export * from "./ui-framework/navigationaids/DrawingNavigationAid";
 export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 

@@ -48,7 +48,6 @@ import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
-import { Face } from '@bentley/ui-core';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -61,7 +60,6 @@ import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
-import { Matrix3d } from '@bentley/geometry-core';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
@@ -91,8 +89,6 @@ import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PlaybackSettings } from '@bentley/ui-components';
 import { Point } from '@bentley/ui-core';
-import { Point2d } from '@bentley/geometry-core';
-import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
@@ -141,11 +137,9 @@ import { TreeNodeItem } from '@bentley/ui-components';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
-import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
-import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
@@ -1193,47 +1187,13 @@ export function createAction<T extends string>(type: T): Action<T>;
 // @public
 export function createAction<T extends string, P>(type: T, payload: P): ActionWithPayload<T, DeepReadonly<P>>;
 
-// @internal (undocumented)
-export enum CubeHover {
-    // (undocumented)
-    Active = 2,
-    // (undocumented)
-    Hover = 1,
-    // (undocumented)
-    None = 0
-}
-
-// @alpha
-export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, CubeNavigationAidState> {
-    // @internal (undocumented)
-    componentDidMount(): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React.ReactNode;
-    // (undocumented)
-    readonly state: Readonly<CubeNavigationAidState>;
-}
-
-// @alpha
+// @beta
 export class CubeNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
     // (undocumented)
     static navigationAidId: string;
-}
-
-// @alpha
-export interface CubeNavigationAidProps extends CommonProps {
-    // @internal (undocumented)
-    animationTime?: number;
-    // @internal (undocumented)
-    contentControlOverride?: ContentControl | undefined;
-    // (undocumented)
-    iModelConnection: IModelConnection;
-    // @internal (undocumented)
-    onAnimationEnd?: () => void;
 }
 
 // @beta
@@ -1658,92 +1618,13 @@ export interface DragDropLayerRendererProps extends CommonProps {
     };
 }
 
-// @alpha
-export class DrawingNavigationAid extends React.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
-    constructor(props: DrawingNavigationAidProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    static findRotatedWindowDimensions: (extents: Vector3d, rotation: Matrix3d) => Vector3d;
-    // @internal (undocumented)
-    static getDefaultClosedMapSize: () => Vector3d;
-    // @internal (undocumented)
-    static getDefaultOpenedMapSize: (paddingX?: number, paddingY?: number) => Vector3d;
-    // @internal (undocumented)
-    render(): React.ReactNode;
-    // @internal (undocumented)
-    readonly state: Readonly<DrawingNavigationAidState>;
-    }
-
-// @alpha
+// @beta
 export class DrawingNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
     // (undocumented)
     static navigationAidId: string;
-}
-
-// @alpha
-export interface DrawingNavigationAidProps extends CommonProps {
-    // @internal (undocumented)
-    animationTime?: number;
-    // @internal (undocumented)
-    closeSize?: Vector3d;
-    // @internal (undocumented)
-    contentControlOverride?: ContentControl | undefined;
-    // (undocumented)
-    iModelConnection: IModelConnection;
-    // @internal (undocumented)
-    initialMapMode?: MapMode;
-    // @internal (undocumented)
-    initialRotateMinimapWithView?: boolean;
-    // @internal (undocumented)
-    initialView?: ViewState;
-    // @internal (undocumented)
-    onAnimationEnd?: () => void;
-    // @internal (undocumented)
-    openSize?: Vector3d;
-    // @internal (undocumented)
-    screenViewportOverride?: typeof ScreenViewport;
-    // @internal (undocumented)
-    viewManagerOverride?: ViewManager;
-}
-
-// @internal (undocumented)
-export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCanvasProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(oldProps: DrawingNavigationCanvasProps): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React.ReactNode;
-    }
-
-// @internal (undocumented)
-export interface DrawingNavigationCanvasProps {
-    // (undocumented)
-    canvasSizeOverride?: boolean;
-    // (undocumented)
-    extents: Vector3d;
-    // (undocumented)
-    origin: Point3d;
-    // (undocumented)
-    rotation: Matrix3d;
-    // (undocumented)
-    screenViewportOverride?: typeof ScreenViewport;
-    // (undocumented)
-    view: ViewState | undefined;
-    // (undocumented)
-    viewId?: string;
-    // (undocumented)
-    viewManagerOverride?: ViewManager;
-    // (undocumented)
-    zoom: number;
 }
 
 // @internal (undocumented)
@@ -1809,30 +1690,6 @@ export interface ExtensibleToolbarProps {
     orientation: ToolbarOrientation;
     // (undocumented)
     usage: ToolbarUsage;
-}
-
-// @internal (undocumented)
-export class FaceCell extends React.Component<FaceCellProps> {
-    // (undocumented)
-    render(): React.ReactNode;
-    }
-
-// @internal (undocumented)
-export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
-    // (undocumented)
-    center?: boolean;
-    // (undocumented)
-    face: Face;
-    // (undocumented)
-    hoverMap: {
-        [key: string]: CubeHover;
-    };
-    // (undocumented)
-    onFaceCellClick: (vector: Vector3d, face: Face) => void;
-    // (undocumented)
-    onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
-    // (undocumented)
-    vector: Vector3d;
 }
 
 // @public
@@ -2484,36 +2341,6 @@ export interface GroupItemProps extends ItemProps {
     panelLabelKey?: string;
 }
 
-// @internal (undocumented)
-export enum HitBoxX {
-    // (undocumented)
-    Left = -1,
-    // (undocumented)
-    None = 0,
-    // (undocumented)
-    Right = 1
-}
-
-// @internal (undocumented)
-export enum HitBoxY {
-    // (undocumented)
-    Back = 1,
-    // (undocumented)
-    Front = -1,
-    // (undocumented)
-    None = 0
-}
-
-// @internal (undocumented)
-export enum HitBoxZ {
-    // (undocumented)
-    Bottom = -1,
-    // (undocumented)
-    None = 0,
-    // (undocumented)
-    Top = 1
-}
-
 // @alpha
 export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
     // (undocumented)
@@ -2556,9 +2383,6 @@ export type IconSpec = IconSpec_2;
 
 // @beta
 export const IModelConnectedCategoryTree: any;
-
-// @beta
-export const IModelConnectedCubeNavigationAid: any;
 
 // @alpha
 export const IModelConnectedModelsTree: any;
@@ -3112,14 +2936,6 @@ export interface ListPickerPropsExtended extends ListPickerProps {
     invertFunc?: () => void;
 }
 
-// @alpha
-export enum MapMode {
-    // (undocumented)
-    Closed = "map-closed",
-    // (undocumented)
-    Opened = "map-opened"
-}
-
 // @public
 export class MarkupTools {
     // (undocumented)
@@ -3425,30 +3241,6 @@ export interface MouseDownChangedEventArgs {
 export interface NameToReducerMap {
     // (undocumented)
     [name: string]: (state: any, action: any) => any;
-}
-
-// @internal (undocumented)
-export class NavCubeFace extends React.Component<NavCubeFaceProps> {
-    // (undocumented)
-    static faceCellToPos: (face: Face, x: number, y: number) => Vector3d;
-    // (undocumented)
-    render(): React.ReactNode;
-}
-
-// @internal (undocumented)
-export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
-    // (undocumented)
-    face: Face;
-    // (undocumented)
-    hoverMap: {
-        [key: string]: CubeHover;
-    };
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    onFaceCellClick: (vector: Vector3d, face: Face) => void;
-    // (undocumented)
-    onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
 }
 
 // @public

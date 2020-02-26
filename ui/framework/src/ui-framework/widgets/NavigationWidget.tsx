@@ -61,7 +61,10 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 
     // istanbul ignore else
     if (!this._navigationAidControl && this._navigationAidId) {
-      this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel }) as NavigationAidControl;
+      const activeContentControl = ContentViewManager.getActiveContentControl();
+      const viewport = activeContentControl ? activeContentControl.viewport : undefined;
+
+      this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel, viewport }) as NavigationAidControl;
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
         throw new UiError(UiFramework.loggerCategory(this), `renderCornerItem: navigationAidId '${this._navigationAidId}' is registered to a control that is NOT a NavigationAid`);
       }

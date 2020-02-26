@@ -77,6 +77,9 @@ internal;ContextMenuProps
 beta;ControlledTree: React.FC
 beta;ControlledTreeProps 
 public;ConvertedPrimitives
+internal;CubeHover
+beta;CubeNavigationAid 
+beta;CubeNavigationAidProps 
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
 alpha;CustomNumberEditor 
@@ -98,6 +101,10 @@ beta;DragDropArguments
 beta;DragLayerProps
 beta;DragSourceArguments
 beta;DragSourceProps
+beta;DrawingNavigationAid 
+beta;DrawingNavigationAidProps 
+internal;DrawingNavigationCanvas 
+internal;DrawingNavigationCanvasProps
 public;DrawingViewportChangeEvent 
 public;DrawingViewportChangeEventArgs
 beta;DropEffects
@@ -116,6 +123,8 @@ public;EnumTypeConverter
 public;ErrorObserver
 public;EventsMuteContext 
 beta;ExtendedTreeNodeRendererProps 
+internal;FaceCell 
+internal;FaceCellProps 
 beta;FieldFilterDescriptor 
 beta;FilterableColumn
 beta;FilterableTable
@@ -137,6 +146,9 @@ public;HexadecimalTypeConverter
 beta;HighlightableTreeNodeProps
 beta;HighlightableTreeProps
 beta;HighlightingEngine
+internal;HitBoxX
+internal;HitBoxY
+internal;HitBoxZ
 public;HorizontalAlignment = "left" | "center" | "right" | "justify"
 beta;HueSlider 
 beta;HueSliderProps 
@@ -178,6 +190,7 @@ public;LoadedBinaryImage
 public;LoadedImage
 beta;LoadedNodeHierarchy
 beta;LoadedNodeHierarchyItem
+internal;MapMode
 public;MapPayloadToInspireNodeCallback
 public;matchLinks: (text: string) =>
 internal;MenuItem
@@ -189,6 +202,8 @@ beta;MutableTableDataProvider
 beta;MutableTreeDataProvider 
 beta;MutableTreeModel 
 beta;MutableTreeModelNode 
+internal;NavCubeFace 
+internal;NavCubeFaceProps 
 public;NavigationPropertyTypeConverter 
 public;NavigationPropertyValueRenderer 
 public;NextObserver

@@ -2,42 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { render, cleanup, fireEvent, wait } from "@testing-library/react";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { expect } from "chai";
-import { Face } from "@bentley/ui-core";
+import { render, cleanup, fireEvent, wait } from "@testing-library/react";
+
 import { Vector3d, Matrix3d, AxisIndex, Transform } from "@bentley/geometry-core";
 import { IModelConnection, DrawingViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
-import {
-  CubeNavigationAid,
-  NavCubeFace,
-  FaceCell,
-  HitBoxX,
-  HitBoxY,
-  HitBoxZ,
-  CubeHover,
-  ConfigurableUiManager,
-  CubeNavigationAidControl,
-  AnyWidgetProps,
-  NavigationWidgetDef,
-} from "../../ui-framework";
+import { Face } from "@bentley/ui-core";
+
 import TestUtils from "../TestUtils";
-import { ContentControl } from "../../ui-framework/content/ContentControl";
-import { ViewportComponentEvents } from "@bentley/ui-components";
+import { CubeNavigationAid, NavCubeFace, HitBoxX, HitBoxY, HitBoxZ, FaceCell, CubeHover } from "../../ui-components/navigationaids/CubeNavigationAid";
+import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
 
 describe("CubeNavigationAid", () => {
 
   before(async () => {
-    await TestUtils.initializeUiFramework();
-
-    if (!ConfigurableUiManager.isControlRegistered("CubeNavigationAid"))
-      ConfigurableUiManager.registerControl("CubeNavigationAid", CubeNavigationAidControl);
-  });
-
-  after(() => {
-    TestUtils.terminateUiFramework();
+    await TestUtils.initializeUiComponents();
   });
 
   afterEach(cleanup);
@@ -52,9 +34,6 @@ describe("CubeNavigationAid", () => {
   const vp = moq.Mock.ofType<ScreenViewport>();
   vp.setup((x) => x.view).returns(() => viewState.object);
   vp.setup((x) => x.rotation).returns(() => rotation);
-  const contentControl = moq.Mock.ofType<ContentControl>();
-  contentControl.setup((x) => x.isViewport).returns(() => true);
-  contentControl.setup((x) => x.viewport).returns(() => vp.object);
 
   const waitForSpy = async (spy: sinon.SinonSpy, timeoutMillis: number = 1500) => {
     return wait(() => {
@@ -94,7 +73,7 @@ describe("CubeNavigationAid", () => {
     });
     it("should exist", async () => {
       const component = render(<CubeNavigationAid iModelConnection={connection.object} />);
-      const navAid = component.getByTestId("cube-navigation-aid");
+      const navAid = component.getByTestId("components-cube-navigation-aid");
       expect(navAid).to.exist;
     });
     it("should change from top to front when arrow clicked", async () => {
@@ -303,7 +282,7 @@ describe("CubeNavigationAid", () => {
         rotation = Matrix3d.createIdentity();
       });
       it("should update onViewRotationChangeEvent", async () => {
-        const component = render(<CubeNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} />);
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} viewport={vp.object} />);
         const topFace = component.getByTestId("core-cube-face-top");
         const mat = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
         expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
@@ -312,7 +291,7 @@ describe("CubeNavigationAid", () => {
         expect(mat2.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
       });
       it("should update onViewRotationChangeEvent with new rotation", async () => {
-        const component = render(<CubeNavigationAid iModelConnection={connection.object} contentControlOverride={contentControl.object} />);
+        const component = render(<CubeNavigationAid iModelConnection={connection.object} viewport={vp.object} />);
         const topFace = component.getByTestId("core-cube-face-top");
         const mat = cssMatrix3dToBentleyTransform(topFace.style.transform!)!;
         expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
@@ -432,29 +411,6 @@ describe("CubeNavigationAid", () => {
         expect(cellHover).to.be.calledWithExactly(pos, CubeHover.None);
       });
     });
-  });
-
-  describe("CubeNavigationAidControl", () => {
-
-    const widgetProps: AnyWidgetProps = {
-      classId: "NavigationWidget",
-      isFreeform: true,
-      navigationAidId: "CubeNavigationAid",
-    };
-
-    it("CubeNavigationAidControl creates CubeNavigationAid", () => {
-      const widgetDef = new NavigationWidgetDef(widgetProps); // tslint:disable-line:deprecation
-      expect(widgetDef).to.be.instanceof(NavigationWidgetDef); // tslint:disable-line:deprecation
-
-      const navigationWidgetDef = widgetDef as NavigationWidgetDef; // tslint:disable-line:deprecation
-
-      const reactElement = navigationWidgetDef.reactElement;
-      expect(reactElement).to.not.be.undefined;
-
-      const reactNode = navigationWidgetDef.renderCornerItem();
-      expect(reactNode).to.not.be.undefined;
-    });
-
   });
 
 });

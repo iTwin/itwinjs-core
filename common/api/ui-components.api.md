@@ -37,6 +37,7 @@ import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
+import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
 import { Position } from '@bentley/ui-core';
 import { Primitives } from '@bentley/ui-abstract';
@@ -979,6 +980,40 @@ export namespace ConvertedPrimitives {
     export type Value = boolean | number | string | Date | Point | Id64String;
 }
 
+// @internal (undocumented)
+export enum CubeHover {
+    // (undocumented)
+    Active = 2,
+    // (undocumented)
+    Hover = 1,
+    // (undocumented)
+    None = 0
+}
+
+// @beta
+export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, CubeNavigationAidState> {
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React.ReactNode;
+    // (undocumented)
+    readonly state: Readonly<CubeNavigationAidState>;
+}
+
+// @beta
+export interface CubeNavigationAidProps extends CommonProps {
+    // @internal (undocumented)
+    animationTime?: number;
+    // (undocumented)
+    iModelConnection: IModelConnection;
+    // @internal (undocumented)
+    onAnimationEnd?: () => void;
+    // (undocumented)
+    viewport?: Viewport;
+}
+
 // @public
 export class CubeRotationChangeEvent extends UiEvent<CubeRotationChangeEventArgs> {
 }
@@ -1215,6 +1250,85 @@ export interface DragSourceProps<DragDropObject = any> {
     onDragSourceEnd?: (data: DragSourceArguments<DragDropObject>) => void;
 }
 
+// @beta
+export class DrawingNavigationAid extends React.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
+    constructor(props: DrawingNavigationAidProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // @internal (undocumented)
+    static findRotatedWindowDimensions: (extents: Vector3d, rotation: Matrix3d) => Vector3d;
+    // @internal (undocumented)
+    static getDefaultClosedMapSize: () => Vector3d;
+    // @internal (undocumented)
+    static getDefaultOpenedMapSize: (paddingX?: number, paddingY?: number) => Vector3d;
+    // @internal (undocumented)
+    render(): React.ReactNode;
+    // @internal (undocumented)
+    readonly state: Readonly<DrawingNavigationAidState>;
+    }
+
+// @beta
+export interface DrawingNavigationAidProps extends CommonProps {
+    // @internal (undocumented)
+    animationTime?: number;
+    // @internal (undocumented)
+    closeSize?: Vector3d;
+    // (undocumented)
+    iModelConnection: IModelConnection;
+    // @internal (undocumented)
+    initialMapMode?: MapMode;
+    // @internal (undocumented)
+    initialRotateMinimapWithView?: boolean;
+    // @internal (undocumented)
+    initialView?: ViewState;
+    // @internal (undocumented)
+    onAnimationEnd?: () => void;
+    // @internal (undocumented)
+    openSize?: Vector3d;
+    // @internal (undocumented)
+    screenViewportOverride?: typeof ScreenViewport;
+    // @internal (undocumented)
+    viewManagerOverride?: ViewManager;
+    // (undocumented)
+    viewport?: Viewport;
+}
+
+// @internal (undocumented)
+export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCanvasProps> {
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentDidUpdate(oldProps: DrawingNavigationCanvasProps): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    render(): React.ReactNode;
+    }
+
+// @internal (undocumented)
+export interface DrawingNavigationCanvasProps {
+    // (undocumented)
+    canvasSizeOverride?: boolean;
+    // (undocumented)
+    extents: Vector3d;
+    // (undocumented)
+    origin: Point3d;
+    // (undocumented)
+    rotation: Matrix3d;
+    // (undocumented)
+    screenViewportOverride?: typeof ScreenViewport;
+    // (undocumented)
+    view: ViewState | undefined;
+    // (undocumented)
+    viewId?: string;
+    // (undocumented)
+    viewManagerOverride?: ViewManager;
+    // (undocumented)
+    zoom: number;
+}
+
 // @public
 export class DrawingViewportChangeEvent extends UiEvent<DrawingViewportChangeEventArgs> {
 }
@@ -1382,6 +1496,30 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
     descriptionEnabled?: boolean;
     imageLoader?: ITreeImageLoader;
     nodeEditorRenderer?: TreeNodeEditorRenderer;
+}
+
+// @internal (undocumented)
+export class FaceCell extends React.Component<FaceCellProps> {
+    // (undocumented)
+    render(): React.ReactNode;
+    }
+
+// @internal (undocumented)
+export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    center?: boolean;
+    // (undocumented)
+    face: Face;
+    // (undocumented)
+    hoverMap: {
+        [key: string]: CubeHover;
+    };
+    // (undocumented)
+    onFaceCellClick: (vector: Vector3d, face: Face) => void;
+    // (undocumented)
+    onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
+    // (undocumented)
+    vector: Vector3d;
 }
 
 // @beta
@@ -1585,6 +1723,36 @@ export class HighlightingEngine {
     // (undocumented)
     static renderNodeLabel(text: string, props: HighlightableTreeNodeProps): React.ReactNode;
     }
+
+// @internal (undocumented)
+export enum HitBoxX {
+    // (undocumented)
+    Left = -1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Right = 1
+}
+
+// @internal (undocumented)
+export enum HitBoxY {
+    // (undocumented)
+    Back = 1,
+    // (undocumented)
+    Front = -1,
+    // (undocumented)
+    None = 0
+}
+
+// @internal (undocumented)
+export enum HitBoxZ {
+    // (undocumented)
+    Bottom = -1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Top = 1
+}
 
 // @public
 export type HorizontalAlignment = "left" | "center" | "right" | "justify";
@@ -1874,6 +2042,14 @@ export interface LoadedNodeHierarchyItem {
     numChildren?: number;
 }
 
+// @internal
+export enum MapMode {
+    // (undocumented)
+    Closed = "map-closed",
+    // (undocumented)
+    Opened = "map-opened"
+}
+
 // @public @deprecated
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
 
@@ -1999,6 +2175,30 @@ export interface MutableTreeModelNode extends TreeModelNode {
     item: TreeNodeItem;
     // (undocumented)
     label: PropertyRecord;
+}
+
+// @internal (undocumented)
+export class NavCubeFace extends React.Component<NavCubeFaceProps> {
+    // (undocumented)
+    static faceCellToPos: (face: Face, x: number, y: number) => Vector3d;
+    // (undocumented)
+    render(): React.ReactNode;
+}
+
+// @internal (undocumented)
+export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    face: Face;
+    // (undocumented)
+    hoverMap: {
+        [key: string]: CubeHover;
+    };
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    onFaceCellClick: (vector: Vector3d, face: Face) => void;
+    // (undocumented)
+    onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
 }
 
 // @public
