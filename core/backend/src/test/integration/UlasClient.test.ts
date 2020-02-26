@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Guid, BentleyStatus } from "@bentley/bentleyjs-core";
+import { Guid, BentleyStatus, Logger } from "@bentley/bentleyjs-core";
 import { Config, AuthorizedClientRequestContext, AccessToken } from "@bentley/imodeljs-clients";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
-import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, IModelJsNative, NativeLoggerCategory } from "../../imodeljs-backend";
 import { UlasUtilities } from "../../ulas/UlasUtilities";
 import { getTestOidcToken, TestOidcConfiguration, TestUsers } from "@bentley/oidc-signin-tool";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 // Configuration needed
 //    imjs_test_regular_user_name
@@ -23,6 +23,9 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
 
   before(async () => {
+    IModelTestUtils.setupLogging();
+    IModelTestUtils.setupDebugLogLevels();
+
     const oidcConfig: TestOidcConfiguration = {
       clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
@@ -30,6 +33,10 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
     };
     const accessToken = await getTestOidcToken(oidcConfig, TestUsers.regular);
     requestContext = new AuthorizedBackendRequestContext(accessToken);
+  });
+
+  after(async () => {
+    IModelTestUtils.resetDebugLogLevels();
   });
 
   it("Check Entitlements (#integration)", async function (this: Mocha.Context) {
@@ -140,6 +147,10 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
         }
       }
 
+      const assertMessage = passingTokenModes.includes(mode)
+        ? `is expected to pass for token mode: ${TokenMode[mode]}`
+        : `is expected to throw for token mode: ${TokenMode[mode]} because it lacks required user profile info`;
+
       let tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.5.101");
       let exceptionThrown = false;
       try {
@@ -147,7 +158,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
       } catch (err) {
         exceptionThrown = true;
       }
-      assert.equal(exceptionThrown, !passingTokenModes.includes(mode), `UlasClient.logUsage is expected to throw if access token does not have required user profile info for ${TokenMode[mode]}.`);
+      assert.equal(exceptionThrown, !passingTokenModes.includes(mode), `UlasClient.logUsage ${assertMessage}.`);
 
       tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.99");
       try {
@@ -155,7 +166,7 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
       } catch (error) {
         exceptionThrown = true;
       }
-      assert.equal(exceptionThrown, !passingTokenModes.includes(mode), `UlasClient.trackFeature is expected to throw if access token does not have required user profile info ${TokenMode[mode]}.`);
+      assert.equal(exceptionThrown, !passingTokenModes.includes(mode), `UlasClient.trackFeature ${assertMessage}.`);
     }
   });
 

@@ -29,7 +29,7 @@ export class UlasUtilities {
       authType,
       productId,
       UlasUtilities.prepareMachineName(hostName),
-      Guid.createValue());
+      UlasUtilities.getSessionId(requestContext));
   }
 
   public static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus {
