@@ -41,7 +41,8 @@ export class RpcPendingQueue {
 
       case RpcRequestStatus.Resolved:
       case RpcRequestStatus.Rejected:
-      case RpcRequestStatus.NotFound: {
+      case RpcRequestStatus.NotFound:
+      case RpcRequestStatus.Cancelled: {
         this.dequeuePending(request);
         break;
       }

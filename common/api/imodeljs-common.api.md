@@ -5230,7 +5230,10 @@ export class RpcRegistry {
 // @public
 export abstract class RpcRequest<TResponse = any> {
     constructor(client: RpcInterface, operation: string, parameters: any[]);
+    static get activeRequests(): ReadonlyMap<string, RpcRequest>;
     static get aggregateLoad(): RpcOperationsProfile;
+    // (undocumented)
+    cancel(): void;
     readonly client: RpcInterface;
     get connecting(): boolean;
     static current(context: RpcInterface): RpcRequest;
@@ -5319,6 +5322,8 @@ export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFo
 
 // @public
 export enum RpcRequestStatus {
+    // (undocumented)
+    Cancelled = 8,
     // (undocumented)
     Created = 1,
     // (undocumented)

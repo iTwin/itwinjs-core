@@ -84,10 +84,23 @@ export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest
  */
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
+class Cancellable<T> {
+  public promise: Promise<T | undefined>;
+  public cancel() { }
+
+  public constructor(task: Promise<T>) {
+    this.promise = new Promise((resolve, reject) => {
+      this.cancel = () => resolve(undefined);
+      task.then(resolve, reject);
+    });
+  }
+}
+
 /** A RPC operation request.
  * @public
  */
 export abstract class RpcRequest<TResponse = any> {
+  private static _activeRequests: Map<string, RpcRequest> = new Map();
   private _resolve: (value?: TResponse | PromiseLike<TResponse> | undefined) => void = () => undefined;
   protected _resolveRaw: (value?: Response | PromiseLike<Response> | undefined) => void = () => undefined;
   private _reject: (reason?: any) => void = () => undefined;
@@ -101,8 +114,12 @@ export abstract class RpcRequest<TResponse = any> {
   private _active: boolean = true;
   private _hasRawListener = false;
   private _raw: ArrayBuffer | string | undefined = undefined;
+  private _sending?: Cancellable<number>;
   protected _response: Response | undefined = undefined;
   protected _rawPromise: Promise<Response>;
+
+  /** All RPC requests that are currently in flight. */
+  public static get activeRequests(): ReadonlyMap<string, RpcRequest> { return this._activeRequests; }
 
   /** Events raised by RpcRequest. See [[RpcRequestEvent]] */
   public static readonly events: BeEvent<RpcRequestEventHandler> = new BeEvent();
@@ -245,44 +262,69 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   /* @internal */
+  public cancel() {
+    if (typeof (this._sending) === "undefined") {
+      return;
+    }
+
+    this._sending.cancel();
+    this._sending = undefined;
+
+    this._connecting = false;
+    RpcRequest._activeRequests.delete(this.id);
+    this.setStatus(RpcRequestStatus.Cancelled);
+  }
+
+  /* @internal */
   public async submit(): Promise<void> {
     if (!this._active)
       return;
 
     this._lastSubmitted = new Date().getTime();
 
-    if (this.status === RpcRequestStatus.Created || this.status === RpcRequestStatus.NotFound) {
+    if (this.status === RpcRequestStatus.Created || this.status === RpcRequestStatus.NotFound || this.status === RpcRequestStatus.Cancelled) {
       this.setStatus(RpcRequestStatus.Submitted);
     }
 
     try {
       this._connecting = true;
+      RpcRequest._activeRequests.set(this.id, this);
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestCreated, this);
-      const sent = this.setHeaders().then(() => this.send());
+      this._sending = new Cancellable(this.setHeaders().then(() => this.send()));
       this.operation.policy.sentCallback(this);
-      const response: number = await sent;
+
+      const response = await this._sending.promise;
+      if (typeof (response) === "undefined") {
+        return;
+      }
+
+      this._sending = undefined;
 
       const status = this.protocol.getStatus(response);
 
       if (this._hasRawListener && status === RpcRequestStatus.Resolved && typeof (this._response) !== "undefined") {
         this._connecting = false;
+        RpcRequest._activeRequests.delete(this.id);
         this.resolveRaw();
       } else {
         this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
 
         if (status === RpcRequestStatus.Unknown) {
           this._connecting = false;
+          RpcRequest._activeRequests.delete(this.id);
           this.handleUnknownResponse(response);
           return;
         }
 
         const value = await this.load();
         this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
+        RpcRequest._activeRequests.delete(this.id);
         this._connecting = false;
         this.handleResponse(response, value);
       }
     } catch (err) {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this, err);
+      RpcRequest._activeRequests.delete(this.id);
       this._connecting = false;
       this.reject(err);
     }
