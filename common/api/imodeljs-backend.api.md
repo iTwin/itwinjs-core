@@ -173,6 +173,14 @@ import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { YawPitchRollAngles } from '@bentley/geometry-core';
 
+// @internal
+export interface AdditionalFeatureData {
+    // (undocumented)
+    iModelId?: GuidString;
+    // (undocumented)
+    iModelJsVersion?: string;
+}
+
 // @beta (undocumented)
 export class AliCloudStorageService extends CloudStorageService {
     constructor(credentials: CloudStorageServiceCredentials);
@@ -900,8 +908,6 @@ export namespace ConcurrencyControl {
         addLocks(locks: LockProps[]): this;
         // (undocumented)
         clear(): void;
-        // (undocumented)
-        clone(): Request;
         // (undocumented)
         get codes(): CodeProps[];
         // (undocumented)
@@ -1681,6 +1687,8 @@ export class Entity implements EntityProps {
     get classFullName(): string;
     static get className(): string;
     get className(): string;
+    // @internal @deprecated
+    clone(): this;
     // @beta
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     id: Id64String;
@@ -2247,6 +2255,8 @@ export class IModelDb extends IModel {
     embedFont(prop: FontProps): FontProps;
     // @internal
     get eventSink(): EventSink | undefined;
+    // @deprecated
+    executeQuery(ecsql: string, bindings?: any[] | object): any[];
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static find(iModelToken: IModelToken): IModelDb;
@@ -2263,6 +2273,8 @@ export class IModelDb extends IModel {
     // @beta
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
+    // @deprecated
+    importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void>;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
@@ -2271,6 +2283,8 @@ export class IModelDb extends IModel {
     get isOpen(): boolean;
     get isReadonly(): boolean;
     get isSnapshot(): boolean;
+    // @deprecated
+    get isStandalone(): boolean;
     // (undocumented)
     static readonly maxLimit = 10000;
     // (undocumented)
@@ -2293,6 +2307,8 @@ export class IModelDb extends IModel {
     static openSnapshot(filePath: string): IModelDb;
     // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
+    // @internal @deprecated (undocumented)
+    static performUpgrade(pathname: string): DbResult;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
@@ -2344,7 +2360,6 @@ export namespace IModelDb {
         createElement<T extends Element>(elProps: ElementProps): T;
         deleteAspect(aspectInstanceIds: Id64Arg): void;
         deleteElement(ids: Id64Arg): void;
-        getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string): ElementAspect[];
         getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
         // @internal
@@ -2527,8 +2542,6 @@ export class IModelHostConfiguration {
     imodelClient?: IModelClient;
     // (undocumented)
     get isDefaultBriefcaseCacheDir(): boolean;
-    // (undocumented)
-    get isDefaultNativeAppCacheDir(): boolean;
     // @internal
     logTileLoadTimeThreshold: number;
     // @internal
@@ -3240,6 +3253,8 @@ export class OpenParams {
     static fixedVersion(): OpenParams;
     get isBriefcase(): boolean;
     get isSnapshot(): boolean;
+    // @deprecated
+    get isStandalone(): boolean;
     readonly openMode: OpenMode;
     static pullAndPush(): OpenParams;
     // @deprecated
@@ -3982,11 +3997,10 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
 // @internal (undocumented)
 export class UlasUtilities {
     // (undocumented)
-    static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: string, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
+    static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
+    static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, additionalData?: AdditionalFeatureData): BentleyStatus;
     // (undocumented)
-    static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: string): BentleyStatus;
-    // (undocumented)
-    static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus;
+    static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus;
 }
 
 // @public
