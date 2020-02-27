@@ -57,7 +57,7 @@ export class UlasUtilities {
    * @param additionalData A collection of arbitrary data that will be attached to the feature usage log
    * @throws [[TypeError]] when an invalid property is given, [[Error]] when logging fails due to internal issues.
    */
-  public static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): BentleyStatus {
+  public static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, additionalData?: AdditionalFeatureData): BentleyStatus {
     const featureUserData: IModelJsNative.FeatureUserDataKeyValuePair[] = [];
     for (const propName in additionalData) { // tslint:disable-line: forin
       featureUserData.push({
@@ -73,8 +73,8 @@ export class UlasUtilities {
         versionStr: requestContext.applicationVersion,
         projectId: contextId,
         featureUserData,
-        startDateZ: startDateZ ? startDateZ.toISOString() : "foo",
-        endDateZ: endDateZ ? endDateZ.toISOString() : "foo",
+        // startDateZ: startDateZ ? startDateZ.toISOString() : "foo",
+        // endDateZ: endDateZ ? endDateZ.toISOString() : "foo",
       },
       authType,
       UlasUtilities.getApplicationId(requestContext),

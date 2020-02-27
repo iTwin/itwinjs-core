@@ -202,12 +202,12 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
     }
   });
 
-  it("Post feature log - with startDate and endDate (#integration)", async function (this: Mocha.Context) {
-    const startDate = new Date();
-    const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
-    const endDate = new Date();
-    const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate, endDate);
+  // it("Post feature log - with startDate and endDate (#integration)", async function (this: Mocha.Context) {
+  //   const startDate = new Date();
+  //   const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
+  //   const endDate = new Date();
+  //   const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate, endDate);
 
-    assert.equal(status, BentleyStatus.SUCCESS);
-  });
+  //   assert.equal(status, BentleyStatus.SUCCESS);
+  // });
 });
