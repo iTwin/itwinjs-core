@@ -13,7 +13,7 @@ exports[`MenuButton renders correctly 1`] = `
   <SquareButton
     onClick={[Function]}
   >
-    <Component
+    <Icon
       iconSpec="icon-more-2"
     />
   </SquareButton>

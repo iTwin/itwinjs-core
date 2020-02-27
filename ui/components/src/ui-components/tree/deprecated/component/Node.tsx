@@ -174,7 +174,8 @@ export interface TreeNodeIconProps extends React.Attributes {
 /** React component that renders tree node icons
  * @public @deprecated Use [[ControlledTree]] instead
  */
-export const TreeNodeIcon: React.FunctionComponent<TreeNodeIconProps> = ({ imageLoader, node }) => { // tslint:disable-line:variable-name
+export function TreeNodeIcon(props: TreeNodeIconProps) {
+  const { imageLoader, node } = props;
   let image: Image | undefined;
 
   if (node.itree && node.itree.icon)
@@ -187,4 +188,4 @@ export const TreeNodeIcon: React.FunctionComponent<TreeNodeIconProps> = ({ image
 
   const renderer = new ImageRenderer();
   return <>{renderer.render(image)}</>;
-};
+}

@@ -104,7 +104,7 @@ export const [
  * Default component for rendering tree.
  * @beta
  */
-export const TreeRenderer: React.FC<TreeRendererProps> = (props) => { // tslint:disable-line: variable-name
+export function TreeRenderer(props: TreeRendererProps) {
   const coreTreeRef = useRef<CoreTree>(null);
   const previousVisibleNodes = usePrevious(props.visibleNodes);
   const variableSizeListRef = useRef<VariableSizeList>(null);
@@ -177,7 +177,7 @@ export const TreeRenderer: React.FC<TreeRendererProps> = (props) => { // tslint:
       </CoreTree>
     </TreeRendererContextProvider>
   );
-};
+}
 
 function getNodeKey(node: TreeModelNode | TreeModelNodePlaceholder): string {
   if (isTreeModelNode(node)) {

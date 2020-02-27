@@ -49,7 +49,7 @@ exports[`BackstageComposer should render backstage separators 1`] = `
 exports[`BackstageComposerItem BackstageComposerActionItem should render 1`] = `
 <BackstageItem
   icon={
-    <Unknown
+    <Icon
       iconSpec={undefined}
     />
   }
@@ -93,7 +93,7 @@ exports[`BackstageComposerItem BackstageComposerItem should render stage launche
 exports[`BackstageComposerItem BackstageComposerStageLauncher should render 1`] = `
 <BackstageItem
   icon={
-    <Unknown
+    <Icon
       iconSpec={undefined}
     />
   }

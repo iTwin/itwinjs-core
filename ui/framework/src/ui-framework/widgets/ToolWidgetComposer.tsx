@@ -27,8 +27,7 @@ export interface BackstageAppButtonProps {
  * BackstageAppButton used to toggle display of Backstage.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const BackstageAppButton: React.FC<BackstageAppButtonProps> = (props) => {
+export function BackstageAppButton(props: BackstageAppButtonProps) {
   const [icon, setIcon] = React.useState(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
   const isInitialMount = React.useRef(true);
   React.useEffect(() => {
@@ -47,7 +46,7 @@ export const BackstageAppButton: React.FC<BackstageAppButtonProps> = (props) => 
       }
     />
   );
-};
+}
 
 /** Properties for the [[ToolbarComposer]] React components
  * @beta
@@ -64,11 +63,10 @@ export interface ToolWidgetComposerProps {
 /**
  * ToolWidget component that supports use of ToolbarComposer-based Toolbars. The ToolWidget is shown in the top left of the content area
  * and typically holds tools to manipulate or interrogate content. The horizontal toolbar often includes context specific tools based on
- * select items. The vertical toolbar typically contain a more fixed list of tools.
+ * selected items. The vertical toolbar typically contains a more fixed list of tools.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const ToolWidgetComposer: React.FC<ToolWidgetComposerProps> = (props) => {
+export function ToolWidgetComposer(props: ToolWidgetComposerProps) {
   return (
     <NZ_ToolsWidget
       button={props.cornerItem}
@@ -79,4 +77,4 @@ export const ToolWidgetComposer: React.FC<ToolWidgetComposerProps> = (props) => 
       onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
     />
   );
-};
+}

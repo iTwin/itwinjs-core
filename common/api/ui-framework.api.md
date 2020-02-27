@@ -51,6 +51,7 @@ import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
+import { Icon as Icon_2 } from '@bentley/ui-core';
 import { IconProps as IconProps_2 } from '@bentley/ui-core';
 import { IconSpec as IconSpec_2 } from '@bentley/ui-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
@@ -177,7 +178,7 @@ export interface Action<T extends string> {
 }
 
 // @internal
-export const ActionButtonItem: React.FC<ActionButtonProps>;
+export function ActionButtonItem(props: ActionButtonProps): JSX.Element;
 
 // @public
 export abstract class ActionButtonItemDef extends ItemDefBase {
@@ -509,7 +510,7 @@ export interface BaseItemState {
 }
 
 // @beta
-export const BasicNavigationWidget: React.FC<BasicNavigationWidgetProps>;
+export function BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element;
 
 // @beta
 export interface BasicNavigationWidgetProps {
@@ -518,7 +519,7 @@ export interface BasicNavigationWidgetProps {
 }
 
 // @beta
-export const BasicToolWidget: React.FC<BasicToolWidgetProps>;
+export function BasicToolWidget(props: BasicToolWidgetProps): JSX.Element;
 
 // @beta
 export interface BasicToolWidgetProps {
@@ -697,7 +698,7 @@ export interface Category {
 }
 
 // @public
-export const CategoryTree: React.FC<CategoryTreeProps>;
+export function CategoryTree(props: CategoryTreeProps): JSX.Element;
 
 // @public
 export interface CategoryTreeProps {
@@ -753,7 +754,7 @@ export interface ChangeSetInfo {
 }
 
 // @beta
-export const ClearEmphasisStatusField: React.FC<ClearEmphasisStatusFieldProps>;
+export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
 
 // @beta
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
@@ -1269,7 +1270,7 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
     }
 
 // @beta
-export const CursorPopupContent: React.FunctionComponent<CommonDivProps>;
+export function CursorPopupContent(props: CommonDivProps): JSX.Element;
 
 // @internal
 export class CursorPopupFadeOutEvent extends UiEvent<CursorPopupFadeOutEventArgs> {
@@ -2257,10 +2258,10 @@ export const getStagePanelType: (location: StagePanelLocation_2) => StagePanelTy
 export function getWidgetId(side: WidgetPanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
 
 // @public
-export const GroupButton: React.FunctionComponent<GroupButtonProps>;
+export function GroupButton(props: GroupButtonProps): JSX.Element;
 
 // @internal
-export const GroupButtonItem: React.FunctionComponent<GroupButtonProps_2>;
+export function GroupButtonItem(props: GroupButtonProps_2): JSX.Element;
 
 // @public
 export interface GroupButtonProps extends GroupItemProps, CommonProps {
@@ -2364,7 +2365,7 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
 }
 
 // @public @deprecated
-export const Icon: React.FunctionComponent<IconProps_2>;
+export const Icon: typeof Icon_2;
 
 // @beta
 export class IconHelper {
@@ -3193,7 +3194,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
 }
 
 // @public
-export const ModelsTree: React.FC<ModelsTreeProps>;
+export function ModelsTree(props: ModelsTreeProps): JSX.Element;
 
 // @alpha
 export enum ModelsTreeNodeType {
@@ -3265,7 +3266,7 @@ export class NavigationAidControl extends ConfigurableUiControl {
     }
 
 // @beta
-export const NavigationAidHost: React.FC<NavigationAidHostProps>;
+export function NavigationAidHost(props: NavigationAidHostProps): JSX.Element;
 
 // @beta
 export interface NavigationAidHostProps {
@@ -3289,7 +3290,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 }
 
 // @beta
-export const NavigationWidgetComposer: React.FC<NavigationWidgetComposerProps>;
+export function NavigationWidgetComposer(props: NavigationWidgetComposerProps): JSX.Element;
 
 // @beta
 export interface NavigationWidgetComposerProps {
@@ -3523,7 +3524,7 @@ export class PositionPopup extends React.PureComponent<PositionPopupProps> {
     }
 
 // @alpha
-export const PositionPopupContent: React.FunctionComponent<CommonDivProps>;
+export function PositionPopupContent(props: CommonDivProps): JSX.Element;
 
 // @alpha (undocumented)
 export interface PositionPopupProps extends CommonProps {
@@ -3725,7 +3726,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
 
 // @beta
-export const SectionsStatusField: React.FC<SectionsStatusFieldProps>;
+export function SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element;
 
 // @beta
 export interface SectionsStatusFieldProps extends StatusFieldProps {
@@ -4018,7 +4019,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
 }
 
 // @public
-export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps>;
+export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element;
 
 // @public
 export interface SpatialContainmentTreeProps {
@@ -4311,10 +4312,10 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 }
 
 // @beta
-export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps>;
+export function StatusBarCenterSection(props: CommonDivProps): JSX.Element;
 
 // @beta
-export const StatusBarComposer: React.FC<StatusBarComposerProps>;
+export function StatusBarComposer(props: StatusBarComposerProps): JSX.Element;
 
 // @beta
 export interface StatusBarComposerProps {
@@ -4343,7 +4344,7 @@ export class StatusBarItemUtilities {
 }
 
 // @beta
-export const StatusBarLeftSection: React.FunctionComponent<CommonDivProps>;
+export function StatusBarLeftSection(props: CommonDivProps): JSX.Element;
 
 // @public
 export interface StatusBarProps extends CommonProps {
@@ -4354,10 +4355,10 @@ export interface StatusBarProps extends CommonProps {
 }
 
 // @beta
-export const StatusBarRightSection: React.FunctionComponent<CommonDivProps>;
+export function StatusBarRightSection(props: CommonDivProps): JSX.Element;
 
 // @beta
-export const StatusBarSpaceBetween: React.FunctionComponent<CommonDivProps>;
+export function StatusBarSpaceBetween(props: CommonDivProps): JSX.Element;
 
 // @public
 export abstract class StatusBarWidgetControl extends WidgetControl {
@@ -4647,7 +4648,7 @@ export class ToolbarButtonHelper {
 }
 
 // @beta
-export const ToolbarComposer: React.FC<ExtensibleToolbarProps>;
+export function ToolbarComposer(props: ExtensibleToolbarProps): JSX.Element;
 
 // @beta
 export const ToolbarDragInteractionContext: React.Context<boolean>;

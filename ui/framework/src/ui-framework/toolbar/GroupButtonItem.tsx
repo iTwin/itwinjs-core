@@ -498,7 +498,7 @@ interface GroupButtonProps {
 /** Group Button React component
  * @internal
  */
-export const GroupButtonItem: React.FunctionComponent<GroupButtonProps> = (props) => {  // tslint:disable-line:variable-name
+export function GroupButtonItem(props: GroupButtonProps) {
   return (
     <ToolbarGroupItem
       groupItem={props.item}
@@ -506,4 +506,4 @@ export const GroupButtonItem: React.FunctionComponent<GroupButtonProps> = (props
       onItemExecuted={props.onItemExecuted}
     />
   );
-};
+}

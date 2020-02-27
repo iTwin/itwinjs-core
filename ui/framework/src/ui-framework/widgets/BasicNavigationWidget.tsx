@@ -23,12 +23,11 @@ export interface BasicNavigationWidgetProps {
   additionalVerticalItems?: CommonToolbarItem[];
 }
 
-/** Basic Navigation Widget that provides standard tools to manipulate views containing element data. Supports the specification
- *  of additional horizontal and vertical toolbar items through props.
+/** Basic Navigation Widget that provides standard tools to manipulate views containing element data.
+ * Supports the specification of additional horizontal and vertical toolbar items through props.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const BasicNavigationWidget: React.FC<BasicNavigationWidgetProps> = (props) => {
+export function BasicNavigationWidget(props: BasicNavigationWidgetProps) {
 
   const getHorizontalToolbarItems = React.useCallback(
     (): CommonToolbarItem[] => {
@@ -76,4 +75,4 @@ export const BasicNavigationWidget: React.FC<BasicNavigationWidgetProps> = (prop
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
     />
   );
-};
+}

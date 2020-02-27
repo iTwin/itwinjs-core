@@ -60,8 +60,7 @@ export interface CategoryTreeProps {
  * Tree which displays and manages models or categories contained in an iModel.
  * @public
  */
-// tslint:disable-next-line:variable-name naming-convention
-export const CategoryTree: React.FC<CategoryTreeProps> = (props: CategoryTreeProps) => {
+export function CategoryTree(props: CategoryTreeProps) {
   useRulesetRegistration(RULESET_CATEGORIES);
   const activeView = (props.activeView || IModelApp.viewManager.getFirstOpenView())!;
   const nodeLoader = usePresentationTreeNodeLoader({
@@ -132,7 +131,7 @@ export const CategoryTree: React.FC<CategoryTreeProps> = (props: CategoryTreePro
       </div>
     </div>
   );
-};
+}
 
 /**
  * CategoryTree that is connected to the IModelConnection property in the Redux store. The

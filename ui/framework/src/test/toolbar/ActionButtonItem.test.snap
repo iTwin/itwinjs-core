@@ -3,7 +3,7 @@
 exports[`ActionButtonItem enabled renders correctly 1`] = `
 <Item
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-button"
     />
   }
@@ -18,7 +18,7 @@ exports[`ActionButtonItem enabled renders correctly 1`] = `
 exports[`ActionButtonItem hidden renders correctly 1`] = `
 <Item
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-button"
     />
   }
@@ -33,7 +33,7 @@ exports[`ActionButtonItem hidden renders correctly 1`] = `
 exports[`ActionButtonItem renders correctly 1`] = `
 <Item
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-button"
     />
   }
@@ -48,7 +48,7 @@ exports[`ActionButtonItem renders correctly 1`] = `
 exports[`ActionButtonItem should render when created view CommandItemDef 1`] = `
 <Item
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-placeholder"
     />
   }

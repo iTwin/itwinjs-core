@@ -109,7 +109,8 @@ interface TreeNodeIconProps {
   imageLoader: ITreeImageLoader;
 }
 
-const TreeNodeIcon: React.FC<TreeNodeIconProps> = ({ imageLoader, node }) => { // tslint:disable-line:variable-name
+function TreeNodeIcon(props: TreeNodeIconProps) {
+  const { imageLoader, node } = props;
   const image = imageLoader.load(node.item);
 
   if (!image)
@@ -117,4 +118,4 @@ const TreeNodeIcon: React.FC<TreeNodeIconProps> = ({ imageLoader, node }) => { /
 
   const renderer = new ImageRenderer();
   return <>{renderer.render(image)}</>;
-};
+}

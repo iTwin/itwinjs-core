@@ -352,6 +352,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Classes for working Tool Settings
  */
 /**
+ * @docs-group-description UiProvider
+ * Interfaces and classes for specifying UI items to be inserted at runtime.
+ */
+/**
  * @docs-group-description Utilities
  * Various utility classes for working with a UI and Redux.
  */

@@ -11,7 +11,7 @@ exports[`ToolWidgetComposer ToolWidgetComposer should render correctly 1`] = `
 exports[`ToolWidgetComposer ToolWidgetComposer with should render 1`] = `
 <Tools
   button={
-    <Unknown
+    <BackstageAppButton
       icon="icon-test"
     />
   }

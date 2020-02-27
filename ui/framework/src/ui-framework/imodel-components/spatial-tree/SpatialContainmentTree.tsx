@@ -45,8 +45,7 @@ export interface SpatialContainmentTreeProps {
  * Tree which displays and manages models or categories contained in an iModel.
  * @public
  */
-// tslint:disable-next-line:variable-name naming-convention
-export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps> = (props: SpatialContainmentTreeProps) => {
+export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
   useRulesetRegistration(RULESET_SPATIAL_BREAKDOWN);
   const nodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModel,
@@ -71,7 +70,7 @@ export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps> = (pr
       />
     </div>
   );
-};
+}
 
 /**
  * SpatialContainmentTree that is connected to the IModelConnection property in the Redux store. The

@@ -18,17 +18,15 @@ export interface DivProps extends CommonDivProps {
   mainClassName: string;
 }
 
-/** Base div element
+/** Base div element React component
  * @public
  */
-export class Div extends React.PureComponent<DivProps> {
-  public render(): JSX.Element {
-    const { mainClassName, className, style, children, ...props } = this.props;
+export function Div(props: DivProps) {
+  const { mainClassName, className, style, children, ...divProps } = props;
 
-    return (
-      <div {...props} className={classnames(mainClassName, className)} style={style} >
-        {children}
-      </div>
-    );
-  }
+  return (
+    <div {...divProps} className={classnames(mainClassName, className)} style={style} >
+      {children}
+    </div>
+  );
 }

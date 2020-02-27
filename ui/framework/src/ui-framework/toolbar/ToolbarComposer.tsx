@@ -138,8 +138,7 @@ export interface ExtensibleToolbarProps {
  * Toolbar that is populated and maintained by item managers.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const ToolbarComposer: React.FC<ExtensibleToolbarProps> = (props) => {
+export function ToolbarComposer(props: ExtensibleToolbarProps) {
   const { usage, orientation } = props;
   const [defaultItemsManager] = React.useState(() => new ToolbarItemsManager(props.items));
   const isInitialMount = React.useRef(true);
@@ -192,4 +191,4 @@ export const ToolbarComposer: React.FC<ExtensibleToolbarProps> = (props) => {
     }
   />;
 
-};
+}

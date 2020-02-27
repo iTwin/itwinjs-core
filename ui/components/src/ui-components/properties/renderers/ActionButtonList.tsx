@@ -61,8 +61,7 @@ interface ActionButtonContainerProps {
   rendererProps: ActionButtonRendererProps;
 }
 
-// tslint:disable-next-line: variable-name
-const ActionButtonContainer: React.FC<ActionButtonContainerProps> = (props: ActionButtonContainerProps) => {
+function ActionButtonContainer(props: ActionButtonContainerProps) {
   const actionButton = props.renderer(props.rendererProps);
   if (!actionButton)
     return null;
@@ -72,4 +71,4 @@ const ActionButtonContainer: React.FC<ActionButtonContainerProps> = (props: Acti
       {actionButton}
     </div>
   );
-};
+}

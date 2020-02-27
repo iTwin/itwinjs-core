@@ -1,14 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`BasicToolWidget BasicToolWidget should render correctly 1`] = `
-<Component
+<ToolWidgetComposer
   cornerItem={
-    <Unknown
+    <BackstageAppButton
       icon={undefined}
     />
   }
   horizontalToolbar={
-    <Unknown
+    <ToolbarComposer
       items={
         Array [
           Object {
@@ -102,7 +102,7 @@ exports[`BasicToolWidget BasicToolWidget should render correctly 1`] = `
     />
   }
   verticalToolbar={
-    <Unknown
+    <ToolbarComposer
       items={
         Array [
           Object {
@@ -227,14 +227,14 @@ exports[`BasicToolWidget BasicToolWidget should render correctly 1`] = `
 `;
 
 exports[`BasicToolWidget BasicToolWidget with bentley B should render 1`] = `
-<Component
+<ToolWidgetComposer
   cornerItem={
-    <Unknown
+    <BackstageAppButton
       icon="icon-bentley-systems"
     />
   }
   horizontalToolbar={
-    <Unknown
+    <ToolbarComposer
       items={
         Array [
           Object {
@@ -422,7 +422,7 @@ exports[`BasicToolWidget BasicToolWidget with bentley B should render 1`] = `
     />
   }
   verticalToolbar={
-    <Unknown
+    <ToolbarComposer
       items={
         Array [
           Object {
@@ -547,14 +547,14 @@ exports[`BasicToolWidget BasicToolWidget with bentley B should render 1`] = `
 `;
 
 exports[`BasicToolWidget BasicToolWidget with suffix and prefix items should render correctly 1`] = `
-<Component
+<ToolWidgetComposer
   cornerItem={
-    <Unknown
+    <BackstageAppButton
       icon={undefined}
     />
   }
   horizontalToolbar={
-    <Unknown
+    <ToolbarComposer
       items={
         Array [
           Object {
@@ -672,7 +672,7 @@ exports[`BasicToolWidget BasicToolWidget with suffix and prefix items should ren
     />
   }
   verticalToolbar={
-    <Unknown
+    <ToolbarComposer
       items={
         Array [
           Object {

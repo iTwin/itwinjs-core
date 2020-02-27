@@ -3,7 +3,7 @@
 exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders correctly when active 1`] = `
 <WithSafeArea
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-placeholder"
     />
   }
@@ -19,7 +19,7 @@ exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders c
 exports[`Backstage <TaskLaunchBackstageItem /> TaskLaunchBackstageItem renders correctly when inactive 1`] = `
 <WithSafeArea
   icon={
-    <Unknown
+    <Icon
       iconSpec="icon-placeholder"
     />
   }

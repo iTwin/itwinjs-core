@@ -10,10 +10,10 @@ import * as React from "react";
 import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
-/** Full height & width and centered React functional component
+/** Full height & width and centered React functional component.
+ * Displays content centered vertically and horizontally and has a height and width of 100%.
  * @public
  */
-// tslint:disable-next-line:variable-name
-export const FillCentered: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function FillCentered(props: CommonDivProps) {
   return <Div {...props} mainClassName="uicore-fill-centered" />;
-};
+}

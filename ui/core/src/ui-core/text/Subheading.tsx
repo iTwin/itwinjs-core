@@ -13,6 +13,6 @@ import { StyledText } from "./StyledText";
 /** Styled subheading text React functional component
  * @public
  */
-export const Subheading: React.FunctionComponent<TextProps> = (props: TextProps) => {  // tslint:disable-line:variable-name
+export function Subheading(props: TextProps) {
   return <StyledText {...props} mainClassName="uicore-text-subheading" />;
-};
+}

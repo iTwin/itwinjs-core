@@ -46,7 +46,7 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2a"
           />
-          <Unknown
+          <GroupButton
             direction={3}
             iconSpec="icon-placeholder"
             items={
@@ -185,7 +185,7 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2c"
           />
-          <Unknown
+          <GroupButton
             iconSpec="icon-placeholder"
             items={
               Array [

@@ -13,6 +13,6 @@ import { StyledText } from "./StyledText";
 /** Styled block text React functional component
  * @public
  */
-export const BlockText: React.FunctionComponent<TextProps> = (props: TextProps) => {  // tslint:disable-line:variable-name
+export function BlockText(props: TextProps) {
   return <StyledText {...props} mainClassName="uicore-text-block" />;
-};
+}

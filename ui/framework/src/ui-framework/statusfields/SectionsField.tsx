@@ -32,8 +32,7 @@ export interface SectionsStatusFieldProps extends StatusFieldProps {
 /** Status Field for showing section extra tools for clearing and showing manipulators
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const SectionsStatusField: React.FC<SectionsStatusFieldProps> = (props) => {
+export function SectionsStatusField(props: SectionsStatusFieldProps) {
   const [toolTip] = useState(UiFramework.translate("tools.sectionTools"));
   const [clearLabel] = useState(UiFramework.translate("tools.sectionClear"));
   const [showHandlesLabel] = useState(UiFramework.translate("tools.sectionShowHandles"));
@@ -109,4 +108,4 @@ export const SectionsStatusField: React.FC<SectionsStatusFieldProps> = (props) =
       </FooterPopup>
     </>
   );
-};
+}

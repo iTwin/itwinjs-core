@@ -34,8 +34,7 @@ export interface TreeNodeContentProps extends CommonProps {
 /** React component for displaying [[TreeNode]] label
  * @internal
  */
-// tslint:disable-next-line: variable-name
-export const TreeNodeContent: React.FC<TreeNodeContentProps> = (props: TreeNodeContentProps) => {
+export function TreeNodeContent(props: TreeNodeContentProps) {
   const { node, valueRendererManager, onLabelRendered, highlightProps } = props;
   const label = useMemo(() => getLabel(node, valueRendererManager, highlightProps), [node, valueRendererManager, highlightProps]);
   useEffect(() => {
@@ -79,7 +78,7 @@ export const TreeNodeContent: React.FC<TreeNodeContentProps> = (props: TreeNodeC
         : undefined}
     </div>
   );
-};
+}
 
 function getLabel(
   node: TreeModelNode,

@@ -80,8 +80,7 @@ export interface StatusBarComposerProps {
 /** Component to load components into the [[StatusBar]].
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const StatusBarComposer: React.FC<StatusBarComposerProps> = (props) => {
+export function StatusBarComposer(props: StatusBarComposerProps) {
   const [defaultItemsManager, setDefaultItemsManager] = React.useState(new StatusBarItemsManager(props.items));
   const isInitialMount = React.useRef(true);
   React.useEffect(() => {
@@ -149,4 +148,4 @@ export const StatusBarComposer: React.FC<StatusBarComposerProps> = (props) => {
       </StatusBarRightSection>
     </StatusBarSpaceBetween>
   );
-};
+}

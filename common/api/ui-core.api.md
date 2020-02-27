@@ -102,13 +102,13 @@ export class BadgeUtilities {
 }
 
 // @internal
-export const BetaBadge: React.FunctionComponent<CommonProps>;
+export function BetaBadge(props: CommonProps): JSX.Element;
 
 // @public
-export const BlockText: React.FunctionComponent<TextProps>;
+export function BlockText(props: TextProps): JSX.Element;
 
 // @public
-export const BodyText: React.FunctionComponent<TextProps>;
+export function BodyText(props: TextProps): JSX.Element;
 
 // @beta
 export type BoundsFunctionProp = number | (() => number | undefined);
@@ -148,7 +148,7 @@ export enum ButtonType {
 }
 
 // @public
-export const Centered: React.FunctionComponent<CommonDivProps>;
+export function Centered(props: CommonDivProps): JSX.Element;
 
 // @public
 export class Checkbox extends React.PureComponent<CheckboxProps> {
@@ -214,7 +214,7 @@ export interface CheckListBoxItemProps extends CommonProps {
 }
 
 // @beta
-export const CheckListBoxSeparator: React.FunctionComponent;
+export function CheckListBoxSeparator(): JSX.Element;
 
 // @internal
 export class Circle {
@@ -541,13 +541,10 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
 }
 
 // @public
-export const DisabledText: React.FunctionComponent<TextProps>;
+export function DisabledText(props: TextProps): JSX.Element;
 
 // @public
-export class Div extends React.PureComponent<DivProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export function Div(props: DivProps): JSX.Element;
 
 // @public
 export interface DivProps extends CommonDivProps {
@@ -706,7 +703,7 @@ export enum Face {
 }
 
 // @beta
-export const FeaturedTile: React.FunctionComponent<TileProps>;
+export function FeaturedTile(props: TileProps): JSX.Element;
 
 // @beta
 export class Field extends React.Component<IFieldProps> {
@@ -745,13 +742,13 @@ export interface FieldValues {
 }
 
 // @public
-export const FillCentered: React.FunctionComponent<CommonDivProps>;
+export function FillCentered(props: CommonDivProps): JSX.Element;
 
 // @internal
 export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
 
 // @public
-export const FlexWrapContainer: React.FunctionComponent<CommonDivProps>;
+export function FlexWrapContainer(props: CommonDivProps): JSX.Element;
 
 // @beta
 export class FocusTrap extends React.Component<Props, State> {
@@ -824,7 +821,7 @@ export interface GlobalDialogProps extends DialogProps {
 }
 
 // @public
-export const Headline: React.FunctionComponent<TextProps>;
+export function Headline(props: TextProps): JSX.Element;
 
 // @public
 export enum HorizontalAlignment {
@@ -845,7 +842,7 @@ export class HorizontalTabs extends React.PureComponent<TabsProps> {
 }
 
 // @public
-export const Icon: React.FunctionComponent<IconProps>;
+export function Icon(props: IconProps): JSX.Element | null;
 
 // @beta
 export class IconInput extends React.PureComponent<IconInputProps> {
@@ -977,10 +974,10 @@ export interface LabeledToggleProps extends ToggleProps {
 }
 
 // @public
-export const LeadingText: React.FunctionComponent<TextProps>;
+export function LeadingText(props: TextProps): JSX.Element;
 
 // @public
-export const LeadingText2: React.FunctionComponent<TextProps>;
+export function LeadingText2(props: TextProps): JSX.Element;
 
 // @internal
 export class Line {
@@ -1137,16 +1134,16 @@ export enum MessageSeverity {
 }
 
 // @beta
-export const MinimalFeaturedTile: React.FunctionComponent<TileProps>;
+export function MinimalFeaturedTile(props: TileProps): JSX.Element;
 
 // @beta
-export const MinimalTile: React.FunctionComponent<TileProps>;
+export function MinimalTile(props: TileProps): JSX.Element;
 
 // @public
-export const MutedText: React.FunctionComponent<TextProps>;
+export function MutedText(props: TextProps): JSX.Element;
 
 // @internal
-export const NewBadge: React.FunctionComponent<CommonProps>;
+export function NewBadge(props: CommonProps): JSX.Element;
 
 // @beta
 export interface NoChildrenProps {
@@ -1512,7 +1509,7 @@ export class ScrollPositionMaintainer implements IDisposable {
     }
 
 // @public
-export const ScrollView: React.FunctionComponent<CommonDivProps>;
+export function ScrollView(props: CommonDivProps): JSX.Element;
 
 // @public
 export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
@@ -1594,7 +1591,7 @@ export interface SizeProps {
 }
 
 // @beta
-export const Slider: React.FC<SliderProps>;
+export function Slider(props: SliderProps): JSX.Element;
 
 // @beta
 export interface SliderProps extends CommonProps {
@@ -1623,7 +1620,7 @@ export interface SliderProps extends CommonProps {
 }
 
 // @public
-export const SmallText: React.FunctionComponent<TextProps>;
+export function SmallText(props: TextProps): JSX.Element;
 
 // @public
 export enum SortDirection {
@@ -1688,10 +1685,7 @@ export interface SplitButtonProps extends CommonProps {
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
 // @internal
-export class StyledText extends React.PureComponent<StyledTextProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export function StyledText(props: StyledTextProps): JSX.Element;
 
 // @internal
 export interface StyledTextProps extends TextProps {
@@ -1699,10 +1693,10 @@ export interface StyledTextProps extends TextProps {
 }
 
 // @public
-export const Subheading: React.FunctionComponent<TextProps>;
+export function Subheading(props: TextProps): JSX.Element;
 
 // @public
-export const Subheading2: React.FunctionComponent<TextProps>;
+export function Subheading2(props: TextProps): JSX.Element;
 
 // @public
 export class SvgPath extends React.PureComponent<SvgPathProps> {
@@ -1820,10 +1814,10 @@ export class Timer {
     }
 
 // @public
-export const Title: React.FunctionComponent<TextProps>;
+export function Title(props: TextProps): JSX.Element;
 
 // @public
-export const Title2: React.FunctionComponent<TextProps>;
+export function Title2(props: TextProps): JSX.Element;
 
 // @public
 export class Toggle extends React.PureComponent<ToggleProps, ToggleState> {
@@ -2039,7 +2033,7 @@ export class VerticalTabs extends React.PureComponent<TabsProps> {
 }
 
 // @public
-export const WebFontIcon: React.FunctionComponent<WebFontIconProps>;
+export function WebFontIcon(props: WebFontIconProps): JSX.Element;
 
 // @public
 export interface WebFontIconProps extends CommonProps {

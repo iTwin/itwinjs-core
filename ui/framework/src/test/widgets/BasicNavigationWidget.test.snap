@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`] = `
-<Component
+<NavigationWidgetComposer
   horizontalToolbar={
-    <Unknown
+    <ToolbarComposer
       items={
         Array [
           Object {
@@ -101,7 +101,7 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
     />
   }
   verticalToolbar={
-    <Unknown
+    <ToolbarComposer
       items={
         Array [
           Object {
@@ -138,9 +138,9 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
 `;
 
 exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix items should render correctly 1`] = `
-<Component
+<NavigationWidgetComposer
   horizontalToolbar={
-    <Unknown
+    <ToolbarComposer
       items={
         Array [
           Object {
@@ -262,7 +262,7 @@ exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix item
     />
   }
   verticalToolbar={
-    <Unknown
+    <ToolbarComposer
       items={
         Array [
           Object {

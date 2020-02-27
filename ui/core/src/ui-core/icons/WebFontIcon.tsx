@@ -31,8 +31,7 @@ export interface WebFontIconProps extends CommonProps {
 /** WebFontIcon React component
  * @public
  */
-// tslint:disable-next-line:variable-name
-export const WebFontIcon: React.FunctionComponent<WebFontIconProps> = (props) => {
+export function WebFontIcon(props: WebFontIconProps) {
   const className = classnames(
     "bui-webfont-icon",
     props.iconName,
@@ -48,4 +47,4 @@ export const WebFontIcon: React.FunctionComponent<WebFontIconProps> = (props) =>
       onClick={props.onClick}
     />
   );
-};
+}

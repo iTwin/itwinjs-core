@@ -94,8 +94,7 @@ export interface ModelsTreeProps {
  * the display of those instances.
  * @public
  */
-// tslint:disable-next-line:variable-name naming-convention
-export const ModelsTree: React.FC<ModelsTreeProps> = (props: ModelsTreeProps) => {
+export function ModelsTree(props: ModelsTreeProps) {
   useRulesetRegistration(RULESET_MODELS);
   const selectionMode = props.selectionMode || SelectionMode.None;
   const nodeLoader = usePresentationTreeNodeLoader({
@@ -126,7 +125,7 @@ export const ModelsTree: React.FC<ModelsTreeProps> = (props: ModelsTreeProps) =>
       />
     </div>
   );
-};
+}
 
 /**
  * ModelsTree that is connected to the IModelConnection property in the Redux store. The

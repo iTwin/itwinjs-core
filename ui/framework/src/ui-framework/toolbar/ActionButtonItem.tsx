@@ -31,8 +31,7 @@ interface ActionButtonProps {
 /** ActionItem toolbar Function component
  * @internal
  */
-// tslint:disable-next-line: variable-name
-export const ActionButtonItem: React.FC<ActionButtonProps> = (props: ActionButtonProps) => {
+export function ActionButtonItem(props: ActionButtonProps) {
   const { item } = props;
   const execute = () => {
     item.execute();
@@ -49,4 +48,4 @@ export const ActionButtonItem: React.FC<ActionButtonProps> = (props: ActionButto
     icon={ToolbarHelper.getIconReactNode(item)}
     badge={BadgeUtilities.getComponentForBadge(item.badgeType)}
   />);
-};
+}
