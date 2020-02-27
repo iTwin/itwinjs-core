@@ -91,6 +91,7 @@ function getConfig(env) {
       "fs": "fs",
       "fs-extra": "fs",
       "express": "express",
+      "os": "os",
     },
     stats: {
       warnings: false
