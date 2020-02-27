@@ -5778,7 +5778,7 @@ export class NativeApp {
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
     // (undocumented)
-    static openBriefcase(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<IModelConnection>;
+    static openBriefcase(contextId: string, iModelId: string, changeSetId: string, openMode?: OpenMode): Promise<IModelConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status?: InternetConnectivityStatus): Promise<void>;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module NativeApp */
 import { BeEvent, IModelStatus, BentleyStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { NativeAppRpcInterface, InternetConnectivityStatus, OverriddenBy, Events, RpcRegistry, IModelError, IModelVersion, IModelToken, IModelReadRpcInterface, BriefcaseProps, StorageValue } from "@bentley/imodeljs-common";
+import { NativeAppRpcInterface, InternetConnectivityStatus, OverriddenBy, Events, RpcRegistry, IModelError, IModelVersion, IModelToken, BriefcaseProps, StorageValue } from "@bentley/imodeljs-common";
 import { EventSourceManager } from "./EventSource";
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -87,19 +87,12 @@ export class NativeApp {
     await NativeAppRpcInterface.getClient().downloadBriefcase(iModelToken.toJSON());
   }
 
-  public static async openBriefcase(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
+  public static async openBriefcase(contextId: string, iModelId: string, changeSetId: string, openMode: OpenMode = OpenMode.Readonly): Promise<IModelConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
-
-    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
-    requestContext.enter();
-
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
-
-    const token = await IModelReadRpcInterface.getClient().openForRead(iModelToken.toJSON());
+    const token = await NativeAppRpcInterface.getClient().openBriefcase(iModelToken.toJSON());
     return IModelConnection.create(token, openMode);
   }
 
@@ -111,8 +104,6 @@ export class NativeApp {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
     return NativeAppRpcInterface.getClient().getBriefcases();
   }
 

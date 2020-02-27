@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-clients",
+      "comment": "Added option to Request.ts to make retries configurable",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Affan.Khan@Bentley.com"
+}

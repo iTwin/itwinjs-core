@@ -21,12 +21,13 @@ import {
   IModelProps,
   BriefcaseProps,
   StorageValue,
+  IModelError,
 } from "@bentley/imodeljs-common";
 import { EventSinkManager } from "../EventSink";
 import { cancelTileContentRequests } from "./IModelTileRpcImpl";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { Logger, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, ClientRequestContext, DbResult, assert } from "@bentley/bentleyjs-core";
 import { IModelDb, OpenParams } from "../IModelDb";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { NativeAppStorage } from "../NativeAppStorage";
@@ -117,6 +118,18 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async openBriefcase(tokenProps: IModelTokenProps): Promise<IModelProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelToken = IModelToken.fromJSON(tokenProps);
+    if (!tokenProps.key) {
+      const briefcases = BriefcaseManager.getBriefcases(requestContext).filter((v) => {
+        return v.changeSetId === iModelToken.changeSetId
+          && v.iModelId === iModelToken.iModelId
+          && v.openMode === iModelToken.openMode;
+      });
+      if (briefcases.length === 0) {
+        throw new IModelError(DbResult.BE_SQLITE_ERROR_FileNotFound, "Briefcase not found with requested iModelId/changesetId/openMode");
+      }
+      assert(briefcases.length === 1);
+      Object.assign(iModelToken, { key: briefcases[0].key });
+    }
     const db = await IModelDb.openBriefcase(requestContext, iModelToken);
     return db.toJSON();
   }

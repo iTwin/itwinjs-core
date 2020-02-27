@@ -131,6 +131,7 @@ export interface ProgressInfo {
 /** @beta */
 export class RequestGlobalOptions {
   public static httpsProxy?: https.Agent = undefined;
+  public static maxRetries: number = 4;
   public static timeout: RequestTimeoutOptions = {
     deadline: 25000,
     response: 10000,
@@ -273,7 +274,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
   } else {
     proxyUrl = url;
   }
-  const retries = typeof options.retries === "undefined" ? 4 : options.retries;
+  const retries = typeof options.retries === "undefined" ? RequestGlobalOptions.maxRetries : options.retries;
   let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(retries, options.retryCallback);
 
   if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
