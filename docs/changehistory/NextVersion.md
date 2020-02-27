@@ -42,6 +42,13 @@ The following are view tools that allow a user to navigate a plane or three-dime
 ![Clipped geometry drawn in yellow](assets/section-color.png)
 <p align="center">Clipped geometry drawn in yellow - arrow indicates direction of clip plane</p>
 
+## Opening iModels
+
+* Can open iModels at the backend with a new [SyncMode.pullOnly]($backend).
+  * Allows pulling change sets, but errors out when pushing a change set.
+  * A new briefcase is acquired from the iModel Hub and is meant for exclusive use by the user.
+  * Since the briefcase is opened ReadWrite to accept change sets, the user will still be able to make edits.
+
 ## Breaking API changes
 
 With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APis have changed in ways that may require calling code to be adjusted:

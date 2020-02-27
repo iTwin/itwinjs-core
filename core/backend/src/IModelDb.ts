@@ -54,7 +54,7 @@ export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub
  * @public
  */
-export enum SyncMode { FixedVersion = 1, PullAndPush = 2 }
+export enum SyncMode { FixedVersion = 1, PullAndPush = 2, PullOnly = 3 }
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @public
@@ -96,9 +96,11 @@ export class OpenParams {
     if (this.isSnapshot && this.syncMode !== undefined)
       throw new IModelError(BentleyStatus.ERROR, "Invalid parameters - only openMode can be defined if opening a standalone Db");
 
-    if (this.openMode === OpenMode.Readonly && this.syncMode === SyncMode.PullAndPush) {
+    if (this.openMode === OpenMode.Readonly && this.syncMode === SyncMode.PullAndPush)
       throw new IModelError(BentleyStatus.ERROR, "Cannot pull or push changes into/from a ReadOnly IModel");
-    }
+
+    if (this.openMode === OpenMode.Readonly && this.syncMode === SyncMode.PullOnly)
+      throw new IModelError(BentleyStatus.ERROR, "Cannot pull or push changes into/from a ReadOnly IModel");
   }
 
   /** Create parameters to open the Db as of a fixed version in a readonly mode */
@@ -106,6 +108,9 @@ export class OpenParams {
 
   /** Create parameters to open the Db to make edits and push changes to the Hub */
   public static pullAndPush(): OpenParams { return new OpenParams(OpenMode.ReadWrite, SyncMode.PullAndPush); }
+
+  /** Create parameters to open the Db that allows pulling changes from the Hub */
+  public static pullOnly(): OpenParams { return new OpenParams(OpenMode.ReadWrite, SyncMode.PullOnly); }
 
   /** Create parameters to open a standalone Db
    * @deprecated use snapshot iModels.
@@ -977,11 +982,12 @@ export class IModelDb extends IModel {
    */
   public async pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void> {
     requestContext.enter();
-    if (this.briefcase.nativeDb.hasUnsavedChanges()) {
-      return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Invalid to call pushChanges when there are unsaved changes", Logger.logError, loggerCategory));
-    } else if (!this.briefcase.nativeDb.hasSavedChanges()) {
+    if (this.briefcase.nativeDb.hasUnsavedChanges())
+      return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Invalid to call pushChanges when there are unsaved changes", Logger.logError, loggerCategory, () => this.iModelToken));
+    else if (this.openParams.syncMode !== SyncMode.PullAndPush)
+      throw new IModelError(BentleyStatus.ERROR, "Invalid to call pushChanges when the IModel was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => this.iModelToken);
+    else if (!this.briefcase.nativeDb.hasSavedChanges())
       return Promise.resolve(); // nothing to push
-    }
 
     await this.concurrencyControl.onPushChanges(requestContext);
 

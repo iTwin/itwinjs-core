@@ -317,4 +317,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await iModel.close(requestContext);
   });
 
+  it.skip("should purge the briefcase cache", async () => {
+    await BriefcaseManager.purgeCache(requestContext);
+  });
+
 });

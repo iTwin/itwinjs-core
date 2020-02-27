@@ -3242,6 +3242,7 @@ export class OpenParams {
     get isSnapshot(): boolean;
     readonly openMode: OpenMode;
     static pullAndPush(): OpenParams;
+    static pullOnly(): OpenParams;
     // @deprecated
     static standalone(openMode: OpenMode): OpenParams;
     readonly syncMode?: SyncMode | undefined;
@@ -3821,7 +3822,9 @@ export enum SyncMode {
     // (undocumented)
     FixedVersion = 1,
     // (undocumented)
-    PullAndPush = 2
+    PullAndPush = 2,
+    // (undocumented)
+    PullOnly = 3
 }
 
 // @internal

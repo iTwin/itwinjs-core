@@ -53,6 +53,15 @@ export enum KeepBriefcase {
   Yes = 1,
 }
 
+/**
+ * Result of validity check of a briefcase in cache or on disk
+ */
+enum BriefcaseValidity {
+  Reuse, // the briefcase is valid and can be re-used as is, OR is invalid and cannot be updated/re-created
+  Update, // the briefcase can be made valid by updating it
+  Recreate, // the briefcase can be made valid by re-fetching it
+}
+
 /** A token that represents a ChangeSet
  * @internal
  */
@@ -262,8 +271,8 @@ class BriefcaseCache {
     return this._briefcases.get(briefcase.getKey());
   }
 
-  /** Find read only briefcase */
-  public findFixedVersionBriefcase(iModelId: GuidString, changeSetId: GuidString): BriefcaseEntry | undefined {
+  /** Find FixedVersion briefcase */
+  public findBriefcaseByChangeSetId(iModelId: GuidString, changeSetId: GuidString): BriefcaseEntry | undefined {
     for (const entry of this._briefcases.values()) {
       if (entry.iModelId === iModelId && entry.targetChangeSetId === changeSetId && entry.openParams.syncMode === SyncMode.FixedVersion)
         return entry;
@@ -271,10 +280,10 @@ class BriefcaseCache {
     return undefined;
   }
 
-  /** Find read write briefcase */
-  public findPullAndPushBriefcase(iModelId: GuidString, briefcaseId: number): BriefcaseEntry | undefined {
+  /** Find VariableVersion (PullAndPush or PullOnly) briefcase */
+  public findBriefcaseByBriefcaseId(iModelId: GuidString, briefcaseId: number, openParams: OpenParams): BriefcaseEntry | undefined {
     for (const entry of this._briefcases.values()) {
-      if (entry.iModelId === iModelId && entry.briefcaseId === briefcaseId && entry.openParams.syncMode === SyncMode.PullAndPush)
+      if (entry.iModelId === iModelId && entry.briefcaseId === briefcaseId && entry.openParams.syncMode === openParams.syncMode)
         return entry;
     }
     return undefined;
@@ -410,7 +419,7 @@ export class BriefcaseManager {
 
             const fixedVersionChangesetDirs = IModelJsFs.readdirSync(fixedVersions);
             for (const changesetDir of fixedVersionChangesetDirs) {
-              if (!BriefcaseManager._cache.findFixedVersionBriefcase(imodelDir, changesetDir)) {
+              if (!BriefcaseManager.findFixedVersionBriefcaseInCache(imodelDir, changesetDir)) {
                 this.initializeFixedVersionBriefcaseOnDisk(requestContext, "", imodelDir, changesetDir);
               }
             }
@@ -418,7 +427,7 @@ export class BriefcaseManager {
             // const pullPushBriefcaseIds = IModelJsFs.readdirSync(pullPushVersions);
             // for (const briefcaseIdStr of pullPushBriefcaseIds) {
             //   const briefcaseId = Number(briefcaseIdStr);
-            //   if (!BriefcaseManager._cache.findPullAndPushBriefcase(imodelDir, briefcaseId)) {
+            //   if (!BriefcaseManager._cache.findBriefcaseByBriefcaseId(imodelDir, briefcaseId)) {
             //     // not handled
             //   }
             // }
@@ -433,8 +442,8 @@ export class BriefcaseManager {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "bc", "FixedVersion");
   }
 
-  private static getPullAndPushBriefcasePath(iModelId: GuidString) {
-    return path.join(BriefcaseManager.getIModelPath(iModelId), "bc", "PullAndPush");
+  private static getVariableVersionBriefcasePath(iModelId: GuidString, syncMode: SyncMode) {
+    return path.join(BriefcaseManager.getIModelPath(iModelId), "bc", syncMode === SyncMode.PullOnly ? "PullOnly" : "PullAndPush");
   }
 
   private static buildFixedVersionBriefcasePath(iModelId: GuidString, changeSetId: GuidString): string {
@@ -442,13 +451,13 @@ export class BriefcaseManager {
     return path.join(pathBaseName, changeSetId || this._firstChangeSetDir, "bc.bim");
   }
 
-  private static buildPullAndPushBriefcasePath(iModelId: GuidString, briefcaseId: number): string {
-    const pathBaseName: string = BriefcaseManager.getPullAndPushBriefcasePath(iModelId);
+  private static buildVariableVersionBriefcasePath(iModelId: GuidString, briefcaseId: number, syncMode: SyncMode): string {
+    const pathBaseName: string = BriefcaseManager.getVariableVersionBriefcasePath(iModelId, syncMode);
     return path.join(pathBaseName, briefcaseId.toString(), "bc.bim");
   }
 
   private static findFixedVersionBriefcaseInCache(iModelId: GuidString, changeSetId: string): BriefcaseEntry | undefined {
-    return this._cache.findFixedVersionBriefcase(iModelId, changeSetId);
+    return this._cache.findBriefcaseByChangeSetId(iModelId, changeSetId);
   }
 
   private static initializeFixedVersionBriefcaseOnDisk(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): BriefcaseEntry | undefined {
@@ -459,18 +468,18 @@ export class BriefcaseManager {
     return briefcase;
   }
 
-  private static findPullAndPushBriefcaseInCache(iModelId: GuidString, hubBriefcases: HubBriefcase[]): BriefcaseEntry | undefined {
+  private static findVariableVersionBriefcaseInCache(iModelId: GuidString, hubBriefcases: HubBriefcase[], openParams: OpenParams): BriefcaseEntry | undefined {
     for (const hubBriefcase of hubBriefcases) {
-      const briefcase = this._cache.findPullAndPushBriefcase(iModelId, hubBriefcase.briefcaseId!);
+      const briefcase = this._cache.findBriefcaseByBriefcaseId(iModelId, hubBriefcase.briefcaseId!, openParams);
       if (briefcase)
         return briefcase;
     }
     return undefined;
   }
 
-  private static findPullAndPushBriefcaseOnDisk(iModelId: GuidString, hubBriefcases: HubBriefcase[]): { pathname: string, briefcaseId: number } | undefined {
+  private static findVariableVersionBriefcaseOnDisk(iModelId: GuidString, hubBriefcases: HubBriefcase[], syncMode: SyncMode): { pathname: string, briefcaseId: number } | undefined {
     for (const hubBriefcase of hubBriefcases) {
-      const pathname = this.buildPullAndPushBriefcasePath(iModelId, hubBriefcase.briefcaseId!);
+      const pathname = this.buildVariableVersionBriefcasePath(iModelId, hubBriefcase.briefcaseId!, syncMode);
       if (IModelJsFs.existsSync(pathname))
         return { pathname, briefcaseId: hubBriefcase.briefcaseId! };
     }
@@ -609,21 +618,23 @@ export class BriefcaseManager {
   public static async download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry> {
     requestContext.enter();
 
-    if (openParams.openMode === OpenMode.Readonly)
+    if (openParams.syncMode === SyncMode.FixedVersion)
       return this.downloadFixedVersion(requestContext, contextId, iModelId, changeSetId);
 
     const unlock = await this._asyncMutex.lock();
     try {
       // Note: It's important that the code below is called only once at a time - see docs with the method for more info
-      return await this.downloadPullAndPush(requestContext, contextId, iModelId, changeSetId);
+      return await this.downloadVariableVersion(requestContext, contextId, iModelId, changeSetId, openParams);
     } finally {
       unlock();
     }
   }
+
   public static getBriefcases(requestContext: AuthorizedClientRequestContext): BriefcaseProps[] {
     this.initializeDiskCache(requestContext);
     return BriefcaseManager._cache.getBriefcases();
   }
+
   /** Open a downloaded briefcase */
   public static openBriefcase(briefcase: BriefcaseEntry) {
     const res: DbResult = briefcase.nativeDb!.openIModel(briefcase.pathname, briefcase.openParams.openMode);
@@ -664,7 +675,7 @@ export class BriefcaseManager {
    * Note: It's important that this method ibe made atomic - i.e., there should never be a case where there are two asynchronous calls to this method
    * being processed at the same time. Otherwise there may be multiple briefcases that are acquired and downloaded for the same user.
    */
-  private static async downloadPullAndPush(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<BriefcaseEntry> {
+  private static async downloadVariableVersion(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, openParams: OpenParams): Promise<BriefcaseEntry> {
     requestContext.enter();
 
     const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe().selectDownloadUrl());
@@ -673,39 +684,46 @@ export class BriefcaseManager {
     let briefcaseId: number | undefined;
     if (hubBriefcases.length > 0) {
       /** Find any of the briefcases in cache */
-      const cachedBriefcase = this.findPullAndPushBriefcaseInCache(iModelId, hubBriefcases);
+      const cachedBriefcase = this.findVariableVersionBriefcaseInCache(iModelId, hubBriefcases, openParams);
       if (cachedBriefcase) {
         if (cachedBriefcase.isPending !== undefined) {
-          Logger.logTrace(loggerCategory, "BriefcaseManager.downloadPullAndPush - found briefcase in cache", () => cachedBriefcase.getDebugInfo());
-          return cachedBriefcase;
-        }
-        const { isValid, shouldRefetch } = this.validateBriefcase(cachedBriefcase, changeSetId, cachedBriefcase.briefcaseId);
-        if (isValid) {
-          Logger.logTrace(loggerCategory, "BriefcaseManager.downloadPullAndPush - found briefcase in cache", () => cachedBriefcase.getDebugInfo());
-          return cachedBriefcase;
-        }
-        if (!shouldRefetch)
-          return cachedBriefcase;
-        if (cachedBriefcase.isOpen /* && shouldRefetch */) {
-          Logger.logError(loggerCategory, "BriefcaseManager.downloadPullAndPush - cannot refetch an open briefcase", cachedBriefcase.getDebugInfo());
+          Logger.logTrace(loggerCategory, "BriefcaseManager.downloadVariableVersion - found briefcase in cache", () => cachedBriefcase.getDebugInfo());
           return cachedBriefcase;
         }
 
-        // Remove the briefcase from cache and local disk so that it can be refetched
-        briefcaseId = cachedBriefcase.briefcaseId; // Reuse the briefcase id
-        BriefcaseManager.closeBriefcase(cachedBriefcase, false);
+        const briefcaseValidity = this.validateBriefcase(cachedBriefcase, changeSetId, cachedBriefcase.briefcaseId);
+        if (briefcaseValidity === BriefcaseValidity.Reuse) {
+          Logger.logTrace(loggerCategory, "BriefcaseManager.downloadVariableVersion - reusing briefcase in cache", () => cachedBriefcase.getDebugInfo());
+          return cachedBriefcase;
+        }
+
+        if (cachedBriefcase.isOpen) {
+          Logger.logError(loggerCategory, "Briefcase found is not of the required version, but is already open. Cannot update or recreate it!", ({ ...cachedBriefcase.getDebugInfo(), requiredChangeSetId: changeSetId }));
+          return cachedBriefcase;
+        }
+
+        assert(!cachedBriefcase.isOpen);
+
+        // Remove the briefcase from cache so that it can be re-located or re-created and re-added to the cache
         BriefcaseManager.deleteBriefcaseFromCache(cachedBriefcase);
-        BriefcaseManager.deleteBriefcaseFromLocalDisk(cachedBriefcase);
+
+        // Remove the briefcase from the local disk so that it can be re-created
+        if (briefcaseValidity === BriefcaseValidity.Recreate) {
+          briefcaseId = cachedBriefcase.briefcaseId; // Reuse the briefcase id if it gets re-created
+          BriefcaseManager.deleteBriefcaseFromLocalDisk(cachedBriefcase);
+        }
       }
 
       /** Find matching briefcase on disk if available (and add it to the cache) */
-      const foundEntry: { pathname: string, briefcaseId: number } | undefined = this.findPullAndPushBriefcaseOnDisk(iModelId, hubBriefcases);
-      if (foundEntry !== undefined) {
-        briefcaseId = foundEntry.briefcaseId; // Reuse the briefcase id
-        const diskBriefcase = this.initializeBriefcase(requestContext, contextId, iModelId, changeSetId, foundEntry.pathname, OpenParams.pullAndPush(), briefcaseId);
-        if (diskBriefcase) {
-          Logger.logTrace(loggerCategory, "BriefcaseManager.downloadPullAndPush - opening briefcase from disk", () => diskBriefcase.getDebugInfo());
-          return diskBriefcase;
+      if (briefcaseId === undefined) { // i.e., it's not the case of re-creating a briefcase
+        const foundEntry: { pathname: string, briefcaseId: number } | undefined = this.findVariableVersionBriefcaseOnDisk(iModelId, hubBriefcases, openParams.syncMode!);
+        if (foundEntry !== undefined) {
+          briefcaseId = foundEntry.briefcaseId; // Reuse the briefcase id
+          const diskBriefcase = this.initializeBriefcase(requestContext, contextId, iModelId, changeSetId, foundEntry.pathname, openParams, briefcaseId);
+          if (diskBriefcase) {
+            Logger.logTrace(loggerCategory, "BriefcaseManager.downloadVariableVersion - opening briefcase from disk", () => diskBriefcase.getDebugInfo());
+            return diskBriefcase;
+          }
         }
       }
     }
@@ -718,39 +736,30 @@ export class BriefcaseManager {
     }
 
     // Set up the briefcase and add it to the cache
-    const newBriefcase = this.createPullAndPushBriefcase(requestContext, contextId, iModelId, changeSetId, briefcaseId);
-    Logger.logTrace(loggerCategory, "BriefcaseManager.downloadPullAndPush - creating a new briefcase.", () => newBriefcase.getDebugInfo());
+    const newBriefcase = this.createVariableVersionBriefcase(requestContext, contextId, iModelId, changeSetId, briefcaseId, openParams);
+    Logger.logTrace(loggerCategory, "BriefcaseManager.downloadVariableVersion - creating a new briefcase.", () => newBriefcase.getDebugInfo());
     return newBriefcase;
   }
 
-  private static validateBriefcase(briefcase: BriefcaseEntry, requiredChangeSetId: GuidString, requiredBriefcaseId: number): { isValid: boolean, shouldRefetch: boolean } {
+  private static validateBriefcase(briefcase: BriefcaseEntry, requiredChangeSetId: GuidString, requiredBriefcaseId: number): BriefcaseValidity {
     if (briefcase.briefcaseId !== requiredBriefcaseId) {
-      Logger.logError(loggerCategory, "Briefcase found does not have the expected briefcase id. Should fetch it again.", () => ({ ...briefcase.getDebugInfo(), requiredBriefcaseId }));
-      return { isValid: false, shouldRefetch: true };
-    }
-    if (briefcase.currentChangeSetId === requiredChangeSetId) {
-      Logger.logTrace(loggerCategory, "Briefcase found is of the required version and briefcaseId.", () => ({ ...briefcase.getDebugInfo(), requiredChangeSetId, requiredBriefcaseId }));
-      return { isValid: true, shouldRefetch: false };
-    }
-    if (briefcase.openParams.syncMode === SyncMode.FixedVersion) {
-      Logger.logError(loggerCategory, "Briefcase found is not of the required version. Should fetch it again.", () => ({ ...briefcase.getDebugInfo(), requiredChangeSetId }));
-      return { isValid: false, shouldRefetch: true };
+      Logger.logError(loggerCategory, "Briefcase found does not have the expected briefcase id. Must recreate it.", () => ({ ...briefcase.getDebugInfo(), requiredBriefcaseId }));
+      return BriefcaseValidity.Recreate;
     }
 
-    // For pull and push cases, if the required version doesn't match, fetch briefcase again only if there aren't any local changes
-    // (there's a risk of losing those changes otherwise)
-    assert(briefcase.openParams.syncMode === SyncMode.PullAndPush);
-    const isOpen = briefcase.isOpen;
-    if (!isOpen)
-      this.openBriefcase(briefcase);
-    let shouldRefetch: boolean = true;
-    if (briefcase.nativeDb!.hasUnsavedChanges() || briefcase.nativeDb!.hasSavedChanges()) {
-      Logger.logError(loggerCategory, "Briefcase found is not of the required version, but cannot fetch again since it has local changes. Ignoring required version", () => ({ ...briefcase.getDebugInfo(), requiredChangeSetId }));
-      shouldRefetch = false;
+    if (briefcase.currentChangeSetId === requiredChangeSetId) {
+      Logger.logTrace(loggerCategory, "Briefcase found is of the required version and briefcaseId.", () => ({ ...briefcase.getDebugInfo(), requiredChangeSetId, requiredBriefcaseId }));
+      return BriefcaseValidity.Reuse;
     }
-    if (!isOpen)
-      this.closeBriefcase(briefcase, false);
-    return { isValid: false, shouldRefetch };
+
+    if (briefcase.openParams.syncMode === SyncMode.FixedVersion) {
+      Logger.logError(loggerCategory, "Briefcase found is not of the required version. Must recreate it.", () => ({ ...briefcase.getDebugInfo(), requiredChangeSetId }));
+      return BriefcaseValidity.Recreate;
+    }
+
+    // PullOnly or PullAndPush, and the required version doesn't match the current version
+    Logger.logWarning(loggerCategory, "Briefcase found is not of the required version. Must be updated before use", ({ ...briefcase.getDebugInfo(), requiredChangeSetId }));
+    return BriefcaseValidity.Update;
   }
 
   private static initializeBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, pathname: string, openParams: OpenParams, briefcaseId: number): BriefcaseEntry | undefined {
@@ -763,39 +772,52 @@ export class BriefcaseManager {
     briefcase.setNativeDb(nativeDb); // Note: Sets briefcaseId, currentChangeSetId in BriefcaseEntry by reading the values from nativeDb
     assert(briefcase.isOpen);
 
-    const { shouldRefetch } = this.validateBriefcase(briefcase, briefcase.targetChangeSetId, briefcaseId);
-    if (shouldRefetch) {
+    const briefcaseValidity = this.validateBriefcase(briefcase, briefcase.targetChangeSetId, briefcaseId);
+
+    if (briefcaseValidity === BriefcaseValidity.Recreate) {
       BriefcaseManager.closeBriefcase(briefcase, false);
       BriefcaseManager.deleteBriefcaseFromLocalDisk(briefcase);
       return undefined;
     }
 
-    const cachedBriefcase = this._cache.findBriefcase(briefcase);
-    if (cachedBriefcase) {
-      // TODO: Turn this into an assertion, after ensuring this doesn't happen in deployments
-      Logger.logError(loggerCategory, "Attempting to open and/or create briefcase twice", () => briefcase.getDebugInfo());
-      return cachedBriefcase;
-    }
+    assert(!this._cache.findBriefcase(briefcase), "Attempting to open or create briefcase twice");
     BriefcaseManager._cache.addBriefcase(briefcase);
+
     briefcase.isPending = this.finishInitializeBriefcase(requestContext, briefcase);
     return briefcase;
   }
 
   private static async finishInitializeBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
     requestContext.enter();
+
+    const briefcaseHasChanges = briefcase.nativeDb!.hasSavedChanges();
     try {
       await this.initBriefcaseChangeSetIndexes(requestContext, briefcase);
       requestContext.enter();
       await this.initBriefcaseFileId(requestContext, briefcase);
       requestContext.enter();
 
-      // Finished initialization - close the briefcase to complete download
+      // Apply change sets if necessary
+      if (briefcase.currentChangeSetId !== briefcase.targetChangeSetId) {
+        const backupOpenParams = briefcase.openParams;
+        if (briefcase.openParams.openMode !== OpenMode.ReadWrite)
+          briefcase.openParams = new OpenParams(OpenMode.ReadWrite, backupOpenParams.syncMode); // Set briefcase to rewrite to be able to process change sets
+        await BriefcaseManager.processChangeSets(requestContext, briefcase, briefcase.targetChangeSetId, briefcase.targetChangeSetIndex!);
+        requestContext.enter();
+        briefcase.openParams = backupOpenParams;
+      }
+
+      // Close the briefcase to complete the download/initialization
       BriefcaseManager.closeBriefcase(briefcase, false);
     } catch (error) {
-      Logger.logError(loggerCategory, "Initializing a briefcase fails. Deleting it to allow retries", () => briefcase.getDebugInfo());
-      await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
       requestContext.enter();
-      throw error;
+      if (briefcaseHasChanges && briefcase.openParams.syncMode === SyncMode.PullAndPush)
+        Logger.logError(loggerCategory, "Unable to update existing briefcase to the required version. Since it has changes that may have to be pushed, leaving it as is.", () => briefcase.getDebugInfo());
+      else {
+        Logger.logError(loggerCategory, "Initializing a briefcase fails. Deleting it to allow retries", () => briefcase.getDebugInfo());
+        await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
+        requestContext.enter();
+      }
     }
   }
 
@@ -829,20 +851,15 @@ export class BriefcaseManager {
 
     briefcase.isPending = this.finishCreateBriefcase(requestContext, briefcase);
 
-    const cachedBriefcase = this._cache.findBriefcase(briefcase);
-    if (cachedBriefcase) {
-      // TODO: Turn this into an assertion, after ensuring this doesn't happen in deployments
-      Logger.logError(loggerCategory, "Attempting to open and/or create briefcase twice", () => briefcase.getDebugInfo());
-      return cachedBriefcase;
-    }
+    assert(!this._cache.findBriefcase(briefcase), "Attempting to open or create briefcase twice");
     BriefcaseManager._cache.addBriefcase(briefcase);
 
     return briefcase;
   }
 
-  private static createPullAndPushBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, briefcaseId: number): BriefcaseEntry {
-    const pathname = this.buildPullAndPushBriefcasePath(iModelId, briefcaseId);
-    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, OpenParams.pullAndPush(), briefcaseId);
+  private static createVariableVersionBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, briefcaseId: number, openParams: OpenParams): BriefcaseEntry {
+    const pathname = this.buildVariableVersionBriefcasePath(iModelId, briefcaseId, openParams.syncMode!);
+    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, openParams, briefcaseId);
 
     briefcase.isPending = this.finishCreateBriefcase(requestContext, briefcase);
 
@@ -1242,48 +1259,67 @@ export class BriefcaseManager {
     await this.purgeDiskCache(requestContext);
   }
 
+  private static purgeFixedVersionBriefcases(iModelId: GuidString): boolean {
+    const fixedVersionPath = this.getFixedVersionBriefcasePath(iModelId);
+    if (!IModelJsFs.existsSync(fixedVersionPath))
+      return true;
+
+    let status = true;
+    for (const csetId of IModelJsFs.readdirSync(fixedVersionPath)) {
+      const briefcaseDir = path.join(fixedVersionPath, csetId);
+      try {
+        this.deleteFolderAndContents(briefcaseDir);
+      } catch (_error) {
+        status = false;
+        continue;
+      }
+    }
+
+    if (status)
+      this.deleteFolderAndContents(fixedVersionPath);
+
+    return status;
+  }
+
+  private static async purgeVariableVersionBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, syncMode: SyncMode): Promise<boolean> {
+    const variableVersionPath = this.getVariableVersionBriefcasePath(iModelId, syncMode);
+    if (!IModelJsFs.existsSync(variableVersionPath))
+      return true;
+
+    // Delete all briefcases from the server
+    for (const bIdString of IModelJsFs.readdirSync(variableVersionPath)) {
+      const briefcaseId = +bIdString;
+      try {
+        await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().byId(briefcaseId));
+        requestContext.enter();
+        await BriefcaseManager.imodelClient.briefcases.delete(requestContext, iModelId, briefcaseId);
+        requestContext.enter();
+      } catch (error) {
+        // Best effort - it could well be that the iModel has been deleted
+        continue;
+      }
+    }
+
+    try {
+      this.deleteFolderAndContents(variableVersionPath);
+    } catch (error) {
+      return false;
+    }
+    return true;
+  }
+
   /** Purges the disk cache for a specific iModel starting with the briefcases.
    * Returns true if successful in deleting the entire folder, and false otherwise
    */
   private static async purgeDiskCacheForIModel(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<boolean> {
     requestContext.enter();
 
-    const fixedVersionPath = this.getFixedVersionBriefcasePath(iModelId);
-    let deletedFixedVersionBriefcases = true;
-    if (IModelJsFs.existsSync(fixedVersionPath)) {
-      for (const csetId of IModelJsFs.readdirSync(fixedVersionPath)) {
-        const briefcaseDir = path.join(fixedVersionPath, csetId);
-        try {
-          this.deleteFolderAndContents(briefcaseDir);
-        } catch (_error) {
-          deletedFixedVersionBriefcases = false;
-          continue;
-        }
-      }
-      if (deletedFixedVersionBriefcases)
-        this.deleteFolderAndContents(fixedVersionPath);
-    }
-
-    const pullAndPushPath = this.getPullAndPushBriefcasePath(iModelId);
-    let deletedPullAndPushBriefcases = true;
-    if (IModelJsFs.existsSync(pullAndPushPath)) {
-      for (const bIdString of IModelJsFs.readdirSync(pullAndPushPath)) {
-        const briefcaseId = +bIdString;
-        try {
-          await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().byId(briefcaseId));
-          requestContext.enter();
-          await BriefcaseManager.imodelClient.briefcases.delete(requestContext, iModelId, briefcaseId);
-          requestContext.enter();
-        } catch (error) {
-          deletedPullAndPushBriefcases = false;
-          continue;
-        }
-      }
-      if (deletedPullAndPushBriefcases)
-        this.deleteFolderAndContents(pullAndPushPath);
-    }
-
-    if (!deletedFixedVersionBriefcases || !deletedPullAndPushBriefcases)
+    const deletedFixedVersionBriefcases = this.purgeFixedVersionBriefcases(iModelId);
+    const deletedPullAndPushBriefcases = await this.purgeVariableVersionBriefcases(requestContext, iModelId, SyncMode.PullAndPush);
+    requestContext.enter();
+    const deletedPullOnlyBriefcases = await this.purgeVariableVersionBriefcases(requestContext, iModelId, SyncMode.PullOnly);
+    requestContext.enter();
+    if (!deletedFixedVersionBriefcases || !deletedPullAndPushBriefcases || !deletedPullOnlyBriefcases)
       return false; // Don't do additional deletes - the folders are being used
 
     const iModelPath = this.getIModelPath(iModelId);
@@ -1305,7 +1341,7 @@ export class BriefcaseManager {
         deletedAllCacheDirs = false;
     }
     if (deletedAllCacheDirs) {
-      this.deleteFolderAndContents(this._cacheRootDir!);
+      this.deleteFolderContents(this._cacheRootDir!);
     }
     return deletedAllCacheDirs;
   }
@@ -1772,9 +1808,8 @@ export class BriefcaseManager {
   /** Attempt to push a ChangeSet to iModel Hub */
   private static async pushChangeSet(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean): Promise<void> {
     requestContext.enter();
-    if (briefcase.openParams.openMode !== OpenMode.ReadWrite) {
-      throw new IModelError(BriefcaseStatus.CannotUpload, "Cannot push from an IModelDb that's opened ReadOnly", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
-    }
+    if (briefcase.openParams.syncMode !== SyncMode.PullAndPush)
+      throw new IModelError(BentleyStatus.ERROR, "Invalid to call pushChanges when the briefcase was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
 
     const changeSetToken: ChangeSetToken = BriefcaseManager.startCreateChangeSet(briefcase);
     const changeSet = new ChangeSet();
