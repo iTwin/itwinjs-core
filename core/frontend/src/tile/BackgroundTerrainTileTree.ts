@@ -17,8 +17,6 @@ import {
   Angle,
   AxisOrder,
   BilinearPatch,
-  ClipShape,
-  ClipVector,
   EllipsoidPatch,
   LongitudeLatitudeNumber,
   Matrix3d,
@@ -52,20 +50,19 @@ import {
   MapTilingScheme,
   QuadId,
   RealityTile,
+  RealityTileDrawArgs,
   TerrainTileLoaderBase,
   Tile,
   TileContent,
   TileDrawArgs,
   TileParams,
   TileTree,
-  TileTreeLoadStatus,
   TileTreeOwner,
   TileTreeParams,
   TileTreeReference,
   TileTreeSet,
   TileTreeSupplier,
   TraversalSelectionContext,
-  WebMapDrawArgs,
   WebMapTileLoader,
   WebMapTileTreeProps,
   getCesiumWorldTerrainLoader,
@@ -117,6 +114,10 @@ class PlanarTilePatch {
 
     return result;
   }
+  public getClipShape(): Point3d[] {
+    return [this.corners[0], this.corners[1], this.corners[3], this.corners[2]];
+  }
+
   public setReprojectedCorners(reprojectedCorners: Point3d[], reprojectionRange: Range3d): void {
     assert(this.corners.length === 4 && reprojectedCorners.length === 4);
     for (let i = 0; i < 4; i++)
@@ -132,7 +133,6 @@ export abstract class MapTileProjection {
   abstract get localRange(): Range3d;
   abstract get transformFromLocal(): Transform;
   public abstract getPoint(u: number, v: number, height: number, result?: Point3d): Point3d;
-  public abstract get clip(): ClipVector | undefined;
 }
 
 class EllipsoidProjection extends MapTileProjection {
@@ -150,18 +150,16 @@ class EllipsoidProjection extends MapTileProjection {
     const ray = this._patch.anglesToUnitNormalRay(angles, EllipsoidProjection._scratchRay);
     return Point3d.createFrom(ray!.origin, result);
   }
-  public get clip(): ClipVector | undefined { return undefined; }
-
 }
 
 class PlanarProjection extends MapTileProjection {
   private _bilinearPatch: BilinearPatch;
   public transformFromLocal: Transform;
   public localRange: Range3d;
-  constructor(private _patch: PlanarTilePatch, heightRange: Range1d) {
+  constructor(patch: PlanarTilePatch, heightRange: Range1d) {
     super();
-    this.transformFromLocal = Transform.createOriginAndMatrix(_patch.corners[0], Matrix3d.createRigidHeadsUp(_patch.normal, AxisOrder.ZYX));
-    const planeCorners = this.transformFromLocal.multiplyInversePoint3dArray([_patch.corners[0], _patch.corners[1], _patch.corners[2], _patch.corners[3]])!;
+    this.transformFromLocal = Transform.createOriginAndMatrix(patch.corners[0], Matrix3d.createRigidHeadsUp(patch.normal, AxisOrder.ZYX));
+    const planeCorners = this.transformFromLocal.multiplyInversePoint3dArray([patch.corners[0], patch.corners[1], patch.corners[2], patch.corners[3]])!;
     this.localRange = Range3d.createArray(planeCorners);
     this.localRange.low.z = heightRange.low;
     this.localRange.high.z = heightRange.high;
@@ -171,11 +169,6 @@ class PlanarProjection extends MapTileProjection {
     result = this._bilinearPatch.uvFractionToPoint(u, v, result);
     result.z = z;
     return result;
-  }
-  public get clip(): ClipVector | undefined {
-    const corners = this._patch.corners;
-    const points = this.transformFromLocal.multiplyInversePoint3dArray([corners[0], corners[1], corners[3], corners[2]]);
-    return ClipVector.createCapture([ClipShape.createShape(points, undefined, undefined, this.transformFromLocal)!]);
   }
 }
 
@@ -204,6 +197,9 @@ export class TerrainMapTile extends MapTile {
       for (const drapeTile of this.drapeTiles)
         drapeTile.setLastUsed(lastUsed);
 
+  }
+  public getClipShape(): Point3d[] {
+    return (this._patch instanceof PlanarTilePatch) ? this._patch.getClipShape() : super.getClipShape();
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
@@ -371,22 +367,14 @@ export class TerrainMapTile extends MapTile {
     super.disposeContents();
     this._geometry = dispose(this._geometry);
     this._mesh = undefined;
-
-    // If this is a leaf, dispose of upsampled children.
-    if (this._children && this._children.length > 0 && (this._children[0] instanceof BackgroundTerrainMapUpsampledChild)) {
-      for (const child of this._children)
-        dispose(child);
-
-      this._children = undefined;
-      this._childrenLoadStatus = TileTreeLoadStatus.NotLoaded;
-    }
   }
 }
 
 /** @internal */
-class BackgroundTerrainMapUpsampledChild extends TerrainMapTile {
+class TerrainMapUpsampledChild extends TerrainMapTile {
   public get isLoadable() { return false; }
   public get isUpsampled() { return true; }
+  public get isEmpty() { return false; }
   public get loadableTile(): RealityTile {
     let parent = this.parent as TerrainMapTile;
     for (; parent && parent.isUpsampled; parent = parent.parent as TerrainMapTile)
@@ -419,13 +407,13 @@ class BackgroundTerrainMapUpsampledChild extends TerrainMapTile {
   public get isLoading(): boolean { return this.loadableTile.isLoading; }
   public get isQueued(): boolean { return this.loadableTile.isQueued; }
   public get isNotFound(): boolean { return this.loadableTile.isNotFound; }
-  public get isReady(): boolean { return this.loadableTile.loadStatus === TileLoadStatus.Ready && this.drapesAreReady; }
+  public get isReady(): boolean { return (this._geometry !== undefined || this.loadableTile.loadStatus === TileLoadStatus.Ready) && this.drapesAreReady; }
 }
 
 /** @internal */
 class BackgroundTerrainTileTree extends MapTileTree {
   constructor(params: TileTreeParams, ecefToDb: Transform, bimElevationBias: number, public geodeticOffset: number, gcsConverterAvailable: boolean, tilingScheme: MapTilingScheme, globeMode: GlobeMode, public exaggeration: number, maxDepth: number) {
-    super(params, ecefToDb, bimElevationBias, gcsConverterAvailable, tilingScheme, maxDepth, globeMode, true);
+    super(params, ecefToDb, bimElevationBias, gcsConverterAvailable, tilingScheme, maxDepth, globeMode, true, true);
   }
   public settings?: TerrainSettings;
   public drapeTree?: MapTileTree;
@@ -434,7 +422,7 @@ class BackgroundTerrainTileTree extends MapTileTree {
   public createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile {
     const patch = new PlanarTilePatch(corners, normal, chordHeight);
     const cornerNormals = this.getCornerRays(rectangle);
-    return this.mapLoader.isTileAvailable(quadId) ? new TerrainMapTile(params, quadId, patch, rectangle, heightRange, cornerNormals) : new BackgroundTerrainMapUpsampledChild(params, quadId, patch, rectangle, heightRange, cornerNormals);
+    return this.mapLoader.isTileAvailable(quadId) ? new TerrainMapTile(params, quadId, patch, rectangle, heightRange, cornerNormals) : new TerrainMapUpsampledChild(params, quadId, patch, rectangle, heightRange, cornerNormals);
   }
 
   public createGlobeChild(params: TileParams, quadId: QuadId, _rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, heightRange?: Range1d): MapTile {
@@ -532,6 +520,10 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
   /** Terrain  tiles do not contribute to the range used by "fit view". */
   public unionFitRange(_range: Range3d): void { }
 
+  public get castsShadows() {
+    return false;
+  }
+
   public get treeOwner(): TileTreeOwner {
     const id = {
       providerName: this.settings.terrainSettings.providerName,
@@ -581,7 +573,7 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     if (undefined === args)
       return undefined;
 
-    args = new WebMapDrawArgs(args);
+    args = new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes);
     args.getTileGraphics = (tile: Tile) => {
       if (!(tile instanceof TerrainMapTile))
         return undefined;

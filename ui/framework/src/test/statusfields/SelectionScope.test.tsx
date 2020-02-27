@@ -9,7 +9,7 @@ import { render, cleanup, fireEvent } from "@testing-library/react";
 
 import { Presentation } from "@bentley/presentation-frontend";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { initializeAsync as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
+import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
 import { WidgetState } from "@bentley/ui-abstract";
 
 import TestUtils from "../TestUtils";

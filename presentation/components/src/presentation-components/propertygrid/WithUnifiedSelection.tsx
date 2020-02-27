@@ -68,9 +68,6 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
     /** Get selection handler used by this property grid */
     public get selectionHandler(): SelectionHandler | undefined { return this._selectionHandler; }
 
-    /** Get ID of the ruleset used by this unified selection property grid */
-    public get rulesetId() { return this.props.dataProvider.rulesetId; }
-
     /** Get imodel used by this property grid to query property data */
     public get imodel() { return this.props.dataProvider.imodel; }
 
@@ -86,7 +83,7 @@ export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(Pr
       const imodel = this.props.dataProvider.imodel;
       const rulesetId = this.props.dataProvider.rulesetId;
       this._selectionHandler = this.props.selectionHandler
-        ? this.props.selectionHandler : new SelectionHandler(Presentation.selection, name, imodel, rulesetId);
+        ? this.props.selectionHandler : new SelectionHandler({ manager: Presentation.selection, name, imodel, rulesetId });
       this._selectionHandler!.onSelect = this.onSelectionChanged;
       this.updateDataProviderSelection();
     }

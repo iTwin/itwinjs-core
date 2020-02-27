@@ -26,7 +26,6 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { ButtonProps } from '@bentley/ui-core';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
-import { CheckBoxInfo } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommandHandler } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';
@@ -38,6 +37,8 @@ import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
 import { CustomDefinition } from '@bentley/ui-abstract';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
+import { DialogItem } from '@bentley/ui-abstract';
+import { DialogItemsManager } from '@bentley/ui-abstract';
 import { DialogProps } from '@bentley/ui-core';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
@@ -47,7 +48,6 @@ import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
-import { Face } from '@bentley/ui-core';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
@@ -60,7 +60,6 @@ import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IOidcFrontendClient } from '@bentley/imodeljs-clients';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
-import { Matrix3d } from '@bentley/geometry-core';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
@@ -90,11 +89,9 @@ import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PlaybackSettings } from '@bentley/ui-components';
 import { Point } from '@bentley/ui-core';
-import { Point2d } from '@bentley/geometry-core';
-import { Point3d } from '@bentley/geometry-core';
 import { PointProps } from '@bentley/ui-core';
-import { PropertyDescription } from '@bentley/imodeljs-frontend';
-import { PropertyRecord } from '@bentley/imodeljs-frontend';
+import { PropertyDescription } from '@bentley/ui-abstract';
+import { PropertyRecord } from '@bentley/ui-abstract';
 import { PropertyUpdatedArgs } from '@bentley/ui-components';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
@@ -130,9 +127,8 @@ import { ToolbarItemsManager } from '@bentley/ui-abstract';
 import { ToolbarOrientation } from '@bentley/ui-abstract';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolbarUsage } from '@bentley/ui-abstract';
-import { ToolSettingsPropertyItem } from '@bentley/imodeljs-frontend';
-import { ToolSettingsPropertyRecord } from '@bentley/imodeljs-frontend';
-import { ToolSettingsPropertySyncItem } from '@bentley/imodeljs-frontend';
+import { ToolSettingsPropertyRecord } from '@bentley/ui-abstract';
+import { ToolSettingsPropertySyncItem } from '@bentley/ui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
@@ -141,11 +137,9 @@ import { TreeNodeItem } from '@bentley/ui-components';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
-import { Vector3d } from '@bentley/geometry-core';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
-import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
@@ -331,7 +325,7 @@ export class AppNotificationManager extends NotificationManager {
     outputMessage(message: NotifyMessageDetails): void;
     outputPrompt(prompt: string): void;
     outputPromptByKey(key: string): void;
-    // @alpha
+    // @beta
     setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     setupActivityMessage(details: ActivityMessageDetails): boolean;
     protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void;
@@ -694,35 +688,50 @@ export interface CardSelectedEventArgs {
     index: number;
 }
 
-// @alpha
+// @internal (undocumented)
+export interface Category {
+    // (undocumented)
+    children?: string[];
+    // (undocumented)
+    key: string;
+}
+
+// @public
 export const CategoryTree: React.FC<CategoryTreeProps>;
 
-// @alpha
+// @public
 export interface CategoryTreeProps {
     activeView?: Viewport;
     allViewports?: boolean;
-    clearAll?: boolean;
     // @internal
+    categoryVisibilityHandler?: CategoryVisibilityHandler;
+    clearAll?: boolean;
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     iModel: IModelConnection;
     selectAll?: boolean;
     showSearchBox?: boolean;
-    useControlledTree?: boolean;
 }
 
-// @alpha @deprecated
-export interface CategoryTreeState {
+// @internal (undocumented)
+export class CategoryVisibilityHandler {
+    constructor(imodel: IModelConnection, categories: Category[], filteredProvider?: IPresentationTreeDataProvider, allViewports?: boolean);
     // (undocumented)
-    activeView?: Viewport;
+    allViewports?: boolean;
     // (undocumented)
     categories: Category[];
+    enableCategory(ids: string[], enabled: boolean, enableAllSubCategories?: boolean): void;
+    enableSubCategory(key: string, enabled: boolean): void;
     // (undocumented)
-    checkboxInfo: (node: TreeNodeItem) => CheckBoxInfo | Promise<CheckBoxInfo>;
+    filteredProvider?: IPresentationTreeDataProvider;
     // (undocumented)
-    dataProvider?: IPresentationTreeDataProvider;
+    getParent(key: string): Category | undefined;
     // (undocumented)
-    filterInfo?: FilterInfo;
+    isCategoryVisible(id: string, activeView?: Viewport): boolean;
+    // (undocumented)
+    isSubCategoryVisible(id: string, activeView?: Viewport): boolean;
+    // (undocumented)
+    setEnableAll(enable: boolean): Promise<void>;
 }
 
 // @internal
@@ -1178,47 +1187,13 @@ export function createAction<T extends string>(type: T): Action<T>;
 // @public
 export function createAction<T extends string, P>(type: T, payload: P): ActionWithPayload<T, DeepReadonly<P>>;
 
-// @internal (undocumented)
-export enum CubeHover {
-    // (undocumented)
-    Active = 2,
-    // (undocumented)
-    Hover = 1,
-    // (undocumented)
-    None = 0
-}
-
-// @alpha
-export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, CubeNavigationAidState> {
-    // @internal (undocumented)
-    componentDidMount(): void;
-    // @internal (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React.ReactNode;
-    // (undocumented)
-    readonly state: Readonly<CubeNavigationAidState>;
-}
-
-// @alpha
+// @beta
 export class CubeNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
     // (undocumented)
     static navigationAidId: string;
-}
-
-// @alpha
-export interface CubeNavigationAidProps extends CommonProps {
-    // @internal (undocumented)
-    animationTime?: number;
-    // @internal (undocumented)
-    contentControlOverride?: ContentControl | undefined;
-    // (undocumented)
-    iModelConnection: IModelConnection;
-    // @internal (undocumented)
-    onAnimationEnd?: () => void;
 }
 
 // @beta
@@ -1458,6 +1433,12 @@ export type DeepReadonlyObject<T> = {
     readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
+// @beta
+export interface DefaultDisplayProps {
+    // (undocumented)
+    readonly itemsManager: DialogItemsManager;
+}
+
 // @beta @deprecated
 export interface DefaultNavigationProps {
     prefixHorizontalItems?: ItemList;
@@ -1471,6 +1452,21 @@ export class DefaultNavigationWidget extends React.Component<DefaultNavigationPr
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @beta
+export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, DefaultDisplayState> {
+    constructor(props: DefaultDisplayProps);
+    // (undocumented)
+    componentDidMount(): void;
+    // (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    static hasAssociatedLockProperty(record: DialogItem): boolean;
+    get itemsManager(): DialogItemsManager;
+    set itemsManager(itemsManager: DialogItemsManager);
+    // (undocumented)
+    render(): React.ReactNode;
+}
 
 // @internal
 export class DefaultToolSettingsProvider extends ToolUiProvider {
@@ -1622,92 +1618,13 @@ export interface DragDropLayerRendererProps extends CommonProps {
     };
 }
 
-// @alpha
-export class DrawingNavigationAid extends React.Component<DrawingNavigationAidProps, DrawingNavigationAidState> {
-    constructor(props: DrawingNavigationAidProps);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // @internal (undocumented)
-    static findRotatedWindowDimensions: (extents: Vector3d, rotation: Matrix3d) => Vector3d;
-    // @internal (undocumented)
-    static getDefaultClosedMapSize: () => Vector3d;
-    // @internal (undocumented)
-    static getDefaultOpenedMapSize: (paddingX?: number, paddingY?: number) => Vector3d;
-    // @internal (undocumented)
-    render(): React.ReactNode;
-    // @internal (undocumented)
-    readonly state: Readonly<DrawingNavigationAidState>;
-    }
-
-// @alpha
+// @beta
 export class DrawingNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     getSize(): string | undefined;
     // (undocumented)
     static navigationAidId: string;
-}
-
-// @alpha
-export interface DrawingNavigationAidProps extends CommonProps {
-    // @internal (undocumented)
-    animationTime?: number;
-    // @internal (undocumented)
-    closeSize?: Vector3d;
-    // @internal (undocumented)
-    contentControlOverride?: ContentControl | undefined;
-    // (undocumented)
-    iModelConnection: IModelConnection;
-    // @internal (undocumented)
-    initialMapMode?: MapMode;
-    // @internal (undocumented)
-    initialRotateMinimapWithView?: boolean;
-    // @internal (undocumented)
-    initialView?: ViewState;
-    // @internal (undocumented)
-    onAnimationEnd?: () => void;
-    // @internal (undocumented)
-    openSize?: Vector3d;
-    // @internal (undocumented)
-    screenViewportOverride?: typeof ScreenViewport;
-    // @internal (undocumented)
-    viewManagerOverride?: ViewManager;
-}
-
-// @internal (undocumented)
-export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCanvasProps> {
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentDidUpdate(oldProps: DrawingNavigationCanvasProps): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React.ReactNode;
-    }
-
-// @internal (undocumented)
-export interface DrawingNavigationCanvasProps {
-    // (undocumented)
-    canvasSizeOverride?: boolean;
-    // (undocumented)
-    extents: Vector3d;
-    // (undocumented)
-    origin: Point3d;
-    // (undocumented)
-    rotation: Matrix3d;
-    // (undocumented)
-    screenViewportOverride?: typeof ScreenViewport;
-    // (undocumented)
-    view: ViewState | undefined;
-    // (undocumented)
-    viewId?: string;
-    // (undocumented)
-    viewManagerOverride?: ViewManager;
-    // (undocumented)
-    zoom: number;
 }
 
 // @internal (undocumented)
@@ -1773,42 +1690,6 @@ export interface ExtensibleToolbarProps {
     orientation: ToolbarOrientation;
     // (undocumented)
     usage: ToolbarUsage;
-}
-
-// @internal (undocumented)
-export class FaceCell extends React.Component<FaceCellProps> {
-    // (undocumented)
-    render(): React.ReactNode;
-    }
-
-// @internal (undocumented)
-export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
-    // (undocumented)
-    center?: boolean;
-    // (undocumented)
-    face: Face;
-    // (undocumented)
-    hoverMap: {
-        [key: string]: CubeHover;
-    };
-    // (undocumented)
-    onFaceCellClick: (vector: Vector3d, face: Face) => void;
-    // (undocumented)
-    onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
-    // (undocumented)
-    vector: Vector3d;
-}
-
-// @alpha @deprecated
-export interface FilterInfo {
-    // (undocumented)
-    activeMatchIndex?: number;
-    // (undocumented)
-    filter?: string;
-    // (undocumented)
-    filtering?: boolean;
-    // (undocumented)
-    matchesCount?: number;
 }
 
 // @public
@@ -2460,36 +2341,6 @@ export interface GroupItemProps extends ItemProps {
     panelLabelKey?: string;
 }
 
-// @internal (undocumented)
-export enum HitBoxX {
-    // (undocumented)
-    Left = -1,
-    // (undocumented)
-    None = 0,
-    // (undocumented)
-    Right = 1
-}
-
-// @internal (undocumented)
-export enum HitBoxY {
-    // (undocumented)
-    Back = 1,
-    // (undocumented)
-    Front = -1,
-    // (undocumented)
-    None = 0
-}
-
-// @internal (undocumented)
-export enum HitBoxZ {
-    // (undocumented)
-    Bottom = -1,
-    // (undocumented)
-    None = 0,
-    // (undocumented)
-    Top = 1
-}
-
 // @alpha
 export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
     // (undocumented)
@@ -2533,14 +2384,14 @@ export type IconSpec = IconSpec_2;
 // @beta
 export const IModelConnectedCategoryTree: any;
 
-// @beta
-export const IModelConnectedCubeNavigationAid: any;
-
 // @alpha
 export const IModelConnectedModelsTree: any;
 
 // @beta @deprecated
 export const IModelConnectedNavigationWidget: any;
+
+// @beta
+export const IModelConnectedSpatialContainmentTree: any;
 
 // @beta
 export const IModelConnectedViewport: any;
@@ -2550,9 +2401,6 @@ export const IModelConnectedViewSelector: any;
 
 // @beta
 export const IModelConnectedVisibilityComponent: any;
-
-// @beta @deprecated
-export const IModelConnectedVisibilityTree: any;
 
 // @internal
 export interface IModelInfo {
@@ -3088,14 +2936,6 @@ export interface ListPickerPropsExtended extends ListPickerProps {
     invertFunc?: () => void;
 }
 
-// @alpha
-export enum MapMode {
-    // (undocumented)
-    Closed = "map-closed",
-    // (undocumented)
-    Opened = "map-opened"
-}
-
 // @public
 export class MarkupTools {
     // (undocumented)
@@ -3222,12 +3062,12 @@ export class MessageManager {
     // (undocumented)
     static readonly onInputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent;
     static readonly onMessageAddedEvent: MessageAddedEvent;
-    // @alpha
+    // @beta
     static readonly onToolAssistanceChangedEvent: ToolAssistanceChangedEvent;
     static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
     static outputPrompt(prompt: string): void;
     static setMaxCachedMessages(max: number): void;
-    // @alpha
+    // @beta
     static setToolAssistance(instructions: ToolAssistanceInstructions | undefined): void;
     static setupActivityMessageDetails(details: ActivityMessageDetails): boolean;
     static setupActivityMessageValues(message: HTMLElement | string, percentage: number, restored?: boolean): boolean;
@@ -3352,7 +3192,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
 }
 
-// @alpha
+// @public
 export const ModelsTree: React.FC<ModelsTreeProps>;
 
 // @alpha
@@ -3369,7 +3209,7 @@ export enum ModelsTreeNodeType {
     Unknown = 0
 }
 
-// @alpha
+// @public
 export interface ModelsTreeProps {
     activeView?: Viewport;
     // @internal
@@ -3378,8 +3218,8 @@ export interface ModelsTreeProps {
     imodel: IModelConnection;
     rootElementRef?: React.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
+    // @alpha
     selectionPredicate?: ModelsTreeSelectionPredicate;
-    useControlledTree?: boolean;
     // @internal
     visibilityHandler?: VisibilityHandler;
 }
@@ -3401,30 +3241,6 @@ export interface MouseDownChangedEventArgs {
 export interface NameToReducerMap {
     // (undocumented)
     [name: string]: (state: any, action: any) => any;
-}
-
-// @internal (undocumented)
-export class NavCubeFace extends React.Component<NavCubeFaceProps> {
-    // (undocumented)
-    static faceCellToPos: (face: Face, x: number, y: number) => Vector3d;
-    // (undocumented)
-    render(): React.ReactNode;
-}
-
-// @internal (undocumented)
-export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
-    // (undocumented)
-    face: Face;
-    // (undocumented)
-    hoverMap: {
-        [key: string]: CubeHover;
-    };
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    onFaceCellClick: (vector: Vector3d, face: Face) => void;
-    // (undocumented)
-    onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
 }
 
 // @public
@@ -3765,22 +3581,6 @@ export interface ProjectServices {
 // @public @deprecated
 export const PromptField: any;
 
-// @alpha
-export interface PropertyChangeResult {
-    // (undocumented)
-    errorMsg?: string;
-    // (undocumented)
-    status: PropertyChangeStatus;
-}
-
-// @alpha
-export enum PropertyChangeStatus {
-    // (undocumented)
-    Error = 2,
-    // (undocumented)
-    Success = 0
-}
-
 // @public
 export class PropsHelper {
     static getIcon(iconSpec: string | ConditionalStringValue | React.ReactNode): JSX.Element | undefined;
@@ -3855,6 +3655,15 @@ export interface RotationData {
     // (undocumented)
     label: string;
 }
+
+// @internal
+export const RULESET_CATEGORIES: Ruleset;
+
+// @internal
+export const RULESET_MODELS: Ruleset;
+
+// @internal
+export const RULESET_SPATIAL_BREAKDOWN: Ruleset;
 
 // @alpha
 export const SafeAreaContext: React.Context<SafeAreaInsets>;
@@ -4208,23 +4017,15 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     protected _viewState: ViewState;
 }
 
-// @alpha
+// @public
 export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps>;
 
-// @alpha
+// @public
 export interface SpatialContainmentTreeProps {
-    // @internal
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     // (undocumented)
     iModel: IModelConnection;
-    useControlledTree?: boolean;
-}
-
-// @alpha @deprecated
-export interface SpatialContainmentTreeState {
-    // (undocumented)
-    dataProvider?: IPresentationTreeDataProvider;
 }
 
 // @public
@@ -4612,16 +4413,6 @@ export interface SupportsViewSelectorChange {
     supportsViewSelectorChange: boolean;
 }
 
-// @alpha
-export class SyncPropertiesChangeEvent extends UiEvent<SyncPropertiesChangeEventArgs> {
-}
-
-// @alpha
-export interface SyncPropertiesChangeEventArgs {
-    // (undocumented)
-    properties: ToolSettingsPropertyItem[];
-}
-
 // @public
 export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPropertiesEventArgs> {
 }
@@ -4795,11 +4586,11 @@ export interface ToolActivatedEventArgs {
     toolId: string;
 }
 
-// @alpha
+// @beta
 export class ToolAssistanceChangedEvent extends UiEvent<ToolAssistanceChangedEventArgs> {
 }
 
-// @alpha
+// @beta
 export interface ToolAssistanceChangedEventArgs {
     // (undocumented)
     instructions: ToolAssistanceInstructions | undefined;
@@ -5114,17 +4905,6 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
     verticalToolbar?: React.ReactNode;
 }
 
-// @alpha
-export abstract class UiDataProvider {
-    // (undocumented)
-    onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
-    processChangesInUi(_properties: ToolSettingsPropertyItem[]): PropertyChangeResult;
-    supplyAvailableProperties(): ToolSettingsPropertyItem[];
-    // @internal
-    syncPropertiesInUi(properties: ToolSettingsPropertyItem[]): void;
-    validateProperty(_item: ToolSettingsPropertyItem): PropertyChangeResult;
-}
-
 // @public
 export class UiFramework {
     // @beta (undocumented)
@@ -5219,7 +4999,7 @@ export class UiFramework {
     static get widgetManager(): WidgetManager;
     }
 
-// @alpha
+// @beta
 export class UiShowHideManager {
     // (undocumented)
     static get autoHideUi(): boolean;
@@ -5446,7 +5226,7 @@ export class ViewUtilities {
 }
 
 // @alpha
-export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState_2> {
+export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
     constructor(props: any);
     // (undocumented)
     componentDidMount(): Promise<void>;
@@ -5481,7 +5261,6 @@ export interface VisibilityComponentProps {
     config?: VisibilityComponentConfig;
     enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
     iModelConnection: IModelConnection;
-    useControlledTree?: boolean;
 }
 
 // @internal (undocumented)
@@ -5516,36 +5295,6 @@ export interface VisibilityStatus {
     isDisplayed: boolean;
     // (undocumented)
     tooltip?: string;
-}
-
-// @public @deprecated
-export class VisibilityTree extends React.PureComponent<VisibilityTreeProps, VisibilityTreeState> {
-    constructor(props: VisibilityTreeProps);
-    // (undocumented)
-    componentDidUpdate(prevProps: VisibilityTreeProps, _prevState: VisibilityTreeState): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    static getDerivedStateFromProps(nextProps: VisibilityTreeProps, state: VisibilityTreeState): Partial<VisibilityTreeState> | null;
-    // (undocumented)
-    render(): JSX.Element;
-    // @internal
-    static readonly RULESET: Ruleset;
-    }
-
-// @public @deprecated
-export interface VisibilityTreeProps {
-    activeView?: Viewport;
-    // @internal
-    dataProvider?: IPresentationTreeDataProvider;
-    // @alpha
-    enablePreloading?: boolean;
-    imodel: IModelConnection;
-    // @alpha
-    rootElementRef?: React.Ref<HTMLDivElement>;
-    selectionMode?: SelectionMode;
-    // @internal
-    visibilityHandler?: VisibilityHandler;
 }
 
 // @alpha
@@ -5705,7 +5454,7 @@ export interface WidgetInfo {
     widgetDef: WidgetDef;
 }
 
-// @alpha
+// @beta
 export class WidgetManager {
     addWidgetDef(widgetDef: WidgetDef, stageId: string | undefined, stageUsage: string | undefined, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): boolean;
     addWidgetProvider(widgetProvider: WidgetProvider): void;
@@ -5761,7 +5510,7 @@ export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent
     tooltipKey?: string;
 }
 
-// @alpha
+// @beta
 export interface WidgetProvider {
     getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): ReadonlyArray<WidgetDef> | undefined;
     readonly id: string;

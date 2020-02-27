@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { PropertyRecord, PropertyValue } from "@bentley/imodeljs-frontend";
+import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValue } from "@bentley/ui-abstract";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 import "./EditorContainer.scss";
@@ -169,8 +170,12 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     if (this._propertyEditor && this.props.propertyRecord) {
       const validateResult = await this._propertyEditor.validateValue(value, this.props.propertyRecord);
       if (validateResult.encounteredError) {
-        // this.setState({ isInvalid: validateResult.encounteredError });
-        // TODO - display InputField
+        const errorMessage = validateResult.errorMessage;
+        if (errorMessage && this._editorRef) {
+          const details = new NotifyMessageDetails(errorMessage.priority, errorMessage.briefMessage, errorMessage.detailedMessage);
+          details.setInputFieldTypeDetails(this._editorRef);
+          IModelApp.notifications.outputMessage(details);
+        }
         return !validateResult.encounteredError;
       }
     }

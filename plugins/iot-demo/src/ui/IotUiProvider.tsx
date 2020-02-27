@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
-import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, ToolbarItemUtilities, CommonToolbarItem } from "@bentley/ui-abstract";
-import { ModelessDialogManager, UiDataProvider, PropertyChangeStatus, PropertyChangeResult } from "@bentley/ui-framework";
+import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, ToolbarItemUtilities, CommonToolbarItem, ToolSettingsPropertyItem, ToolSettingsValue, UiDataProvider, PropertyChangeStatus, PropertyChangeResult } from "@bentley/ui-abstract";
+import { ModelessDialogManager } from "@bentley/ui-framework";
 
 import { IotSettingsDialog } from "./IotSettingsDialog";
 import iotButtonSvg from "./iot-button.svg";

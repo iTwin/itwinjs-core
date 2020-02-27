@@ -3,38 +3,43 @@
 exports[`NodePathElement fromJSON creates valid NodePathElement from JSON 1`] = `
 Object {
   "children": Array [],
-  "filteringData": Object {
-    "childMatchesCount": 53454,
-    "matchesCount": 54078,
-  },
-  "index": 333,
+  "index": 540,
   "isMarked": false,
   "node": Object {
-    "backColor": undefined,
+    "backColor": "rgb(
+    39,
+    53,
+    195
+  )",
     "description": undefined,
     "foreColor": undefined,
-    "hasChildren": false,
-    "isCheckboxEnabled": false,
-    "isCheckboxVisible": true,
-    "isChecked": true,
+    "hasChildren": true,
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": false,
+    "isChecked": false,
     "isEditable": false,
     "isExpanded": true,
-    "isSelectionDisabled": false,
+    "isSelectionDisabled": true,
     "key": Object {
-      "instanceKey": Object {
-        "className": "Infrastructure",
-        "id": "0x114e90000003608",
-      },
+      "instanceKeys": Array [
+        Object {
+          "className": "Infrastructure",
+          "id": "0x114e90000003608",
+        },
+        Object {
+          "className": "pink",
+          "id": "0xb29b000000c034",
+        },
+      ],
       "pathFromRoot": Array [
         "5420fd61-9e00-4e93-b72c-0df8e5c6cd1a",
         "1b99c1db-1774-4d7c-a453-fb2306df0849",
       ],
-      "type": "ECInstanceNode",
+      "type": "ECInstancesNode",
     },
-    "label": "Corners",
-    "labelDefinition": Object {
-      "displayValue": "Corners",
-      "rawValue": "Kids",
+    "label": Object {
+      "displayValue": "Small",
+      "rawValue": "payment",
       "typeName": "string",
     },
   },
@@ -44,36 +49,42 @@ Object {
 exports[`NodePathElement fromJSON creates valid NodePathElement from serialized JSON 1`] = `
 Object {
   "children": Array [],
-  "filteringData": Object {
-    "childMatchesCount": 46073,
-    "matchesCount": 75986,
-  },
-  "index": 540,
-  "isMarked": false,
+  "index": 423,
   "node": Object {
-    "foreColor": "#0B8631",
-    "hasChildren": false,
+    "backColor": "rgb(
+    111,
+    85,
+    138
+  )",
+    "description": "Quisquam perspiciatis voluptate.",
+    "foreColor": "#1A3BA5",
+    "hasChildren": true,
     "isCheckboxEnabled": false,
-    "isCheckboxVisible": false,
-    "isChecked": false,
+    "isCheckboxVisible": true,
+    "isChecked": true,
     "isEditable": true,
     "isExpanded": false,
-    "isSelectionDisabled": true,
+    "isSelectionDisabled": false,
     "key": Object {
-      "instanceKey": Object {
-        "className": "Chair",
-        "id": "0x101a10000005b91",
-      },
+      "instanceKeys": Array [
+        Object {
+          "className": "Chair",
+          "id": "0x101a10000005b91",
+        },
+        Object {
+          "className": "Mouse",
+          "id": "0xc831000000bfd2",
+        },
+      ],
       "pathFromRoot": Array [
         "5fe7c75a-2781-41e4-9a84-e5a017d93c3d",
         "35fbe933-627c-4856-9e2e-acbc14ddc316",
       ],
-      "type": "ECInstanceNode",
+      "type": "ECInstancesNode",
     },
-    "label": "Bedfordshire",
-    "labelDefinition": Object {
-      "displayValue": "Bedfordshire",
-      "rawValue": "Central",
+    "label": Object {
+      "displayValue": "cyan",
+      "rawValue": "Park",
       "typeName": "string",
     },
   },
@@ -84,71 +95,89 @@ exports[`NodePathElement listFromJSON creates valid NodePathElement[] from JSON 
 Array [
   Object {
     "children": Array [],
-    "index": 805,
+    "filteringData": Object {
+      "childMatchesCount": 33600,
+      "matchesCount": 16394,
+    },
+    "index": 392,
+    "isMarked": true,
     "node": Object {
-      "backColor": "rgb(
-    249,
-    200,
-    205
-  )",
-      "description": undefined,
-      "foreColor": "#ECBA67",
-      "hasChildren": true,
-      "isCheckboxEnabled": true,
+      "backColor": undefined,
+      "description": "Temporibus quisquam soluta molestiae rem sequi aut repellendus et at.",
+      "foreColor": undefined,
+      "hasChildren": false,
+      "isCheckboxEnabled": false,
       "isCheckboxVisible": false,
-      "isChecked": false,
-      "isEditable": true,
-      "isExpanded": false,
-      "isSelectionDisabled": true,
+      "isChecked": true,
+      "isEditable": false,
+      "isExpanded": true,
+      "isSelectionDisabled": false,
       "key": Object {
-        "instanceKey": Object {
-          "className": "Seychelles Rupee",
-          "id": "0x13368000000d08b",
-        },
+        "instanceKeys": Array [
+          Object {
+            "className": "Seychelles Rupee",
+            "id": "0x13368000000d08b",
+          },
+          Object {
+            "className": "North Dakota",
+            "id": "0x111de0000018031",
+          },
+        ],
         "pathFromRoot": Array [
           "04505a69-e21d-4351-a5c7-f920978feb8f",
           "55981cb4-9872-4dc4-a9bf-aa6788c2a2d7",
         ],
-        "type": "ECInstanceNode",
+        "type": "ECInstancesNode",
       },
-      "label": "hub",
-      "labelDefinition": Object {
-        "displayValue": "hub",
-        "rawValue": "Soap",
+      "label": Object {
+        "displayValue": "Incredible Granite Mouse",
+        "rawValue": "Home Loan Account",
         "typeName": "string",
       },
     },
   },
   Object {
     "children": Array [],
-    "index": 862,
-    "isMarked": true,
+    "filteringData": Object {
+      "childMatchesCount": 55137,
+      "matchesCount": 85448,
+    },
+    "index": 665,
     "node": Object {
-      "backColor": undefined,
-      "description": "Repellat harum voluptatem saepe et unde rerum qui dolores.",
-      "foreColor": undefined,
+      "backColor": "rgb(
+    116,
+    175,
+    134
+  )",
+      "description": "Qui nulla quam non veniam alias.",
+      "foreColor": "#8AD9D0",
       "hasChildren": false,
       "isCheckboxEnabled": true,
       "isCheckboxVisible": true,
       "isChecked": false,
-      "isEditable": false,
-      "isExpanded": false,
+      "isEditable": true,
+      "isExpanded": true,
       "isSelectionDisabled": false,
       "key": Object {
-        "instanceKey": Object {
-          "className": "Creative",
-          "id": "0x71550000008d27",
-        },
-        "pathFromRoot": Array [
-          "6aed2582-9532-4178-9af6-dff8fd98ef6b",
-          "b8799c5b-b37b-4cde-ae3a-8095be3e45bf",
+        "instanceKeys": Array [
+          Object {
+            "className": "Sleek Granite Computer",
+            "id": "0x533e0000008898",
+          },
+          Object {
+            "className": "mobile",
+            "id": "0x3a78000000f703",
+          },
         ],
-        "type": "ECInstanceNode",
+        "pathFromRoot": Array [
+          "82953217-85af-46df-b8fd-98ef6bb8799c",
+          "5bb37bcd-e2e3-4a80-95be-3e45bffd542a",
+        ],
+        "type": "ECInstancesNode",
       },
-      "label": "Borders",
-      "labelDefinition": Object {
-        "displayValue": "Borders",
-        "rawValue": "Plastic",
+      "label": Object {
+        "displayValue": "Forward",
+        "rawValue": "Timor-Leste",
         "typeName": "string",
       },
     },
@@ -160,37 +189,46 @@ exports[`NodePathElement listFromJSON creates valid NodePathElement[] from seria
 Array [
   Object {
     "children": Array [],
-    "index": 776,
+    "filteringData": Object {
+      "childMatchesCount": 41993,
+      "matchesCount": 42140,
+    },
+    "index": 446,
     "node": Object {
       "backColor": "rgb(
-    67,
-    86,
-    243
+    161,
+    70,
+    67
   )",
-      "description": "Dolorem qui accusantium iure.",
-      "foreColor": "#987A4A",
-      "hasChildren": true,
-      "isCheckboxEnabled": false,
-      "isCheckboxVisible": false,
-      "isChecked": true,
-      "isEditable": false,
-      "isExpanded": true,
-      "isSelectionDisabled": false,
+      "description": "Sed dolorem qui.",
+      "foreColor": "#65987A",
+      "hasChildren": false,
+      "isCheckboxEnabled": true,
+      "isCheckboxVisible": true,
+      "isChecked": false,
+      "isEditable": true,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
       "key": Object {
-        "instanceKey": Object {
-          "className": "compress",
-          "id": "0xace7000000266a",
-        },
+        "instanceKeys": Array [
+          Object {
+            "className": "compress",
+            "id": "0xace7000000266a",
+          },
+          Object {
+            "className": "deposit",
+            "id": "0x8b8b0000011878",
+          },
+        ],
         "pathFromRoot": Array [
           "7aacd814-57d2-46c1-a268-44b886bc4b70",
           "df7f4363-4276-4e71-933f-e9e95dc28f6c",
         ],
-        "type": "ECInstanceNode",
+        "type": "ECInstancesNode",
       },
-      "label": "Small",
-      "labelDefinition": Object {
-        "displayValue": "Small",
-        "rawValue": "Manager",
+      "label": Object {
+        "displayValue": "Avon",
+        "rawValue": "Industrial",
         "typeName": "string",
       },
     },
@@ -198,39 +236,39 @@ Array [
   Object {
     "children": Array [],
     "filteringData": Object {
-      "childMatchesCount": 48882,
-      "matchesCount": 13008,
+      "childMatchesCount": 70084,
+      "matchesCount": 80015,
     },
-    "index": 96,
-    "isMarked": true,
+    "index": 236,
     "node": Object {
-      "backColor": "rgb(
-    205,
-    218,
-    57
-  )",
-      "hasChildren": true,
+      "description": "Inventore at quidem laboriosam.",
+      "hasChildren": false,
       "isCheckboxEnabled": false,
-      "isCheckboxVisible": false,
-      "isChecked": false,
-      "isEditable": true,
-      "isExpanded": true,
-      "isSelectionDisabled": false,
+      "isCheckboxVisible": true,
+      "isChecked": true,
+      "isEditable": false,
+      "isExpanded": false,
+      "isSelectionDisabled": true,
       "key": Object {
-        "instanceKey": Object {
-          "className": "open-source",
-          "id": "0x345c000000a46e",
-        },
+        "instanceKeys": Array [
+          Object {
+            "className": "open-source",
+            "id": "0x345c000000a46e",
+          },
+          Object {
+            "className": "sensor",
+            "id": "0x11327000000960a",
+          },
+        ],
         "pathFromRoot": Array [
           "7cfaaf4d-16b1-47d8-9d24-b5b125e76533",
           "d9bbd6f3-5fb5-4d9e-b170-f7c7ed87d78c",
         ],
-        "type": "ECInstanceNode",
+        "type": "ECInstancesNode",
       },
-      "label": "mint green",
-      "labelDefinition": Object {
-        "displayValue": "mint green",
-        "rawValue": "Steel",
+      "label": Object {
+        "displayValue": "zero defect",
+        "rawValue": "Diverse",
         "typeName": "string",
       },
     },
@@ -242,38 +280,47 @@ exports[`NodePathElement toJSON serializes NodePathElement 1`] = `
 Object {
   "children": Array [],
   "filteringData": Object {
-    "childrenOccurances": 64421,
-    "occurances": 36084,
+    "childrenOccurances": 27771,
+    "occurances": 87606,
   },
-  "index": 976,
+  "index": 644,
   "isMarked": true,
   "node": Object {
-    "backColor": undefined,
-    "description": "Dolor ullam accusantium quo vero minima officiis sit sit.",
+    "backColor": "rgb(
+    69,
+    116,
+    92
+  )",
+    "description": "Vero minima officiis sit sit ea et eum.",
     "foreColor": undefined,
-    "hasChildren": false,
-    "imageId": "Innovative",
+    "hasChildren": true,
+    "imageId": undefined,
     "isCheckboxEnabled": false,
-    "isCheckboxVisible": false,
-    "isChecked": false,
+    "isCheckboxVisible": true,
+    "isChecked": true,
     "isEditable": false,
-    "isExpanded": true,
+    "isExpanded": false,
     "isSelectionDisabled": false,
     "key": Object {
-      "instanceKey": Object {
-        "className": "e-tailers",
-        "id": "0x11def0000000023",
-      },
-      "pathFromRoot": Array [
-        "ccbe474a-f05d-4fe9-bf2b-bc0fbbd16d4c",
-        "3d32d8df-acc0-4337-aad1-b790108333b5",
+      "instanceKeys": Array [
+        Object {
+          "className": "black",
+          "id": "0x1812400000172a9",
+        },
+        Object {
+          "className": "1080p",
+          "id": "0x16a8b0000011c4c",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "474af05d-fe93-4f2b-bc0f-bbd16d4c3d32",
+        "d8dfacc0-337a-4ad1-b790-108333b5640b",
+      ],
+      "type": "ECInstancesNode",
     },
-    "label": "black",
     "labelDefinition": Object {
-      "displayValue": "black",
-      "rawValue": "Metrics",
+      "displayValue": "Synergistic",
+      "rawValue": "virtual",
       "typeName": "string",
     },
   },
@@ -283,38 +330,43 @@ Object {
 exports[`NodePathElement toJSON serializes NodePathElement with undefined \`isMarked\` flag 1`] = `
 Object {
   "children": Array [],
-  "index": 281,
+  "filteringData": Object {
+    "childrenOccurances": 69445,
+    "occurances": 32771,
+  },
+  "index": 204,
   "node": Object {
-    "backColor": "rgb(
-    194,
-    176,
-    8
-  )",
-    "description": "Rerum distinctio eaque aut hic.",
-    "foreColor": undefined,
+    "backColor": undefined,
+    "description": "Hic qui repudiandae.",
+    "foreColor": "#473FA6",
     "hasChildren": false,
-    "imageId": undefined,
+    "imageId": "synthesize",
     "isCheckboxEnabled": true,
-    "isCheckboxVisible": false,
+    "isCheckboxVisible": true,
     "isChecked": true,
     "isEditable": false,
-    "isExpanded": true,
+    "isExpanded": false,
     "isSelectionDisabled": false,
     "key": Object {
-      "instanceKey": Object {
-        "className": "Universal",
-        "id": "0x1e33000000d6d9",
-      },
-      "pathFromRoot": Array [
-        "248bceac-fde5-4a91-a643-5a77370c91fc",
-        "73b80ac2-30fa-48b3-b64e-44126dad53e9",
+      "instanceKeys": Array [
+        Object {
+          "className": "compressing",
+          "id": "0x16deb0000012feb",
+        },
+        Object {
+          "className": "Ball",
+          "id": "0x1148a000000c782",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "ceacfde5-a912-4643-9a77-370c91fc73b8",
+        "0ac230fa-8b33-464e-8412-6dad53e94e81",
+      ],
+      "type": "ECInstancesNode",
     },
-    "label": "compressing",
     "labelDefinition": Object {
-      "displayValue": "compressing",
-      "rawValue": "solid state",
+      "displayValue": "harness",
+      "rawValue": "SMTP",
       "typeName": "string",
     },
   },
@@ -324,34 +376,44 @@ Object {
 exports[`NodePathElement toJSON serializes NodePathElement with undefined filtering data 1`] = `
 Object {
   "children": Array [],
-  "index": 5,
+  "index": 663,
+  "isMarked": false,
   "node": Object {
-    "backColor": undefined,
+    "backColor": "rgb(
+    37,
+    61,
+    128
+  )",
     "description": undefined,
     "foreColor": undefined,
-    "hasChildren": true,
-    "imageId": "copying",
+    "hasChildren": false,
+    "imageId": undefined,
     "isCheckboxEnabled": true,
     "isCheckboxVisible": false,
     "isChecked": false,
     "isEditable": false,
-    "isExpanded": true,
-    "isSelectionDisabled": false,
+    "isExpanded": false,
+    "isSelectionDisabled": true,
     "key": Object {
-      "instanceKey": Object {
-        "className": "interface",
-        "id": "0xad25000001764f",
-      },
-      "pathFromRoot": Array [
-        "84574f94-369a-4601-aeae-22d2e7a064d4",
-        "03a7ecee-2025-4756-af76-faccdd1e5efb",
+      "instanceKeys": Array [
+        Object {
+          "className": "Steel",
+          "id": "0x13ec80000017064",
+        },
+        Object {
+          "className": "Bedfordshire",
+          "id": "0xc0b30000007d73",
+        },
       ],
-      "type": "ECInstanceNode",
+      "pathFromRoot": Array [
+        "4f94369a-6012-4eae-a2d2-e7a064d403a7",
+        "ecee2025-756a-4f76-bacc-dd1e5efbb6f7",
+      ],
+      "type": "ECInstancesNode",
     },
-    "label": "Steel",
     "labelDefinition": Object {
-      "displayValue": "Steel",
-      "rawValue": "Creative",
+      "displayValue": "Dynamic",
+      "rawValue": "copying",
       "typeName": "string",
     },
   },

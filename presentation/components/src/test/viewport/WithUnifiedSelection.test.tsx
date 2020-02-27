@@ -22,7 +22,6 @@ import {
   Presentation, SelectionManager, SelectionChangeEvent,
   SelectionChangeEventArgs, SelectionChangeType, HiliteSet, SelectionScopesManager,
 } from "@bentley/presentation-frontend";
-import { HILITE_RULESET } from "@bentley/presentation-frontend/lib/presentation-frontend/selection/HiliteSetProvider";
 import { ViewportComponent } from "@bentley/ui-components";
 import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";
 import { ViewportSelectionHandler } from "../../presentation-components/viewport/WithUnifiedSelection";
@@ -79,15 +78,6 @@ describe("Viewport withUnifiedSelection", () => {
     expect(component.imodel).to.equal(imodelMock.object);
   });
 
-  it("uses HILITE_RULESET id", () => {
-    const component = shallow(<PresentationViewport
-      imodel={imodelMock.object}
-      viewDefinitionId={viewDefinitionId}
-      selectionHandler={selectionHandlerMock.object}
-    />).instance() as any as IUnifiedSelectionComponent;
-    expect(component.rulesetId).to.equal(HILITE_RULESET.id);
-  });
-
   it("renders correctly", () => {
     expect(shallow(<PresentationViewport
       imodel={imodelMock.object}
@@ -101,7 +91,7 @@ describe("Viewport withUnifiedSelection", () => {
     it("creates default implementation when not provided through props", () => {
       const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
-      Presentation.selection = selectionManagerMock.object;
+      Presentation.setSelectionManager(selectionManagerMock.object);
 
       const viewport = shallow(<PresentationViewport
         imodel={imodelMock.object}
@@ -173,7 +163,7 @@ describe("ViewportSelectionHandler", () => {
 
   before(() => {
     NoRenderApp.startup();
-    Presentation.selection = new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object });
+    Presentation.setSelectionManager(new SelectionManager({ scopes: moq.Mock.ofType<SelectionScopesManager>().object }));
     const defaultClassName = faker.random.word();
     classNameGenerator = () => defaultClassName;
   });
@@ -184,7 +174,7 @@ describe("ViewportSelectionHandler", () => {
 
   beforeEach(() => {
     mockIModel(imodelMock);
-    handler = new ViewportSelectionHandler(imodelMock.object);
+    handler = new ViewportSelectionHandler({ imodel: imodelMock.object });
   });
 
   afterEach(() => {

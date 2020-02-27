@@ -9,9 +9,9 @@
 /**
  * Sub-specification to hide / display specified ECInstance properties.
  * @public
- * @deprecated Use `PropertySpecification` instead
+ * @deprecated Use `PropertySpecification` instead. Will be removed in iModel.js 3.0
  */
-export interface PropertiesDisplaySpecification {
+export interface DEPRECATED_PropertiesDisplaySpecification { // tslint:disable-line: naming-convention class-name
   /** List of ECProperty names which should be hidden or shown */
   propertyNames: string[];
 

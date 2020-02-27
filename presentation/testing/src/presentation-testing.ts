@@ -8,7 +8,7 @@
  * @docs-group-description Hierarchies
  * Types for testing hierarchies.
  */
-export { HierarchyBuilder, HierarchyNode, MappedNode, NodeMappingFunc } from "./presentation-testing/HierarchyBuilder";
+export { HierarchyBuilder, HierarchyBuilderProps, HierarchyNode, MappedNode, NodeMappingFunc } from "./presentation-testing/HierarchyBuilder";
 
 /**
  * @module Content
@@ -16,7 +16,7 @@ export { HierarchyBuilder, HierarchyNode, MappedNode, NodeMappingFunc } from "./
  * @docs-group-description Content
  * Types for testing content.
  */
-export { ContentBuilder, ContentBuilderResult, IContentBuilderDataProvider } from "./presentation-testing/ContentBuilder";
+export { ContentBuilder, ContentBuilderProps, ContentBuilderResult, IContentBuilderDataProvider } from "./presentation-testing/ContentBuilder";
 
 /**
  * @module Helpers

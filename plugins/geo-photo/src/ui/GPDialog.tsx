@@ -3,11 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { useCallback } from "react"; // tslint:disable-line: no-duplicate-imports
 import { I18N } from "@bentley/imodeljs-i18n";
-import { Dialog, DialogButtonType, LabeledInput, LoadingBar, Spinner, Checkbox, CheckBoxState, SpinnerSize, DialogButtonDef } from "@bentley/ui-core";
-import { ModelessDialogManager, SyncPropertiesChangeEventArgs } from "@bentley/ui-framework";
+import { Dialog, DialogButtonType, LabeledInput, LoadingBar, Spinner, Checkbox, SpinnerSize, DialogButtonDef, CheckBoxState } from "@bentley/ui-core";
+import { ModelessDialogManager } from "@bentley/ui-framework";
+import { SyncPropertiesChangeEventArgs } from "@bentley/ui-abstract";
 import { GPDialogUiProvider, SyncTreeDataEventArgs, SyncTitleEventArgs } from "./GPDialogUiProvider";
-import { ITreeDataProvider, Tree, TreeNodeItem } from "@bentley/ui-components";
+import {
+  ITreeDataProvider, ControlledTree, useTreeNodeLoader, useTreeModelSource, useTreeEventsHandler,
+  TreeEventHandler, useVisibleTreeNodes, SelectionMode, TreeEventHandlerParams,
+  TreeCheckboxStateChangeEventArgs, MutableTreeModel, TreeModelNode, TreeNodeItem,
+} from "@bentley/ui-components";
 import { PhotoFolder } from "../PhotoTree";
 import { GeoPhotoPlugin, GeoPhotoSettings } from "../geoPhoto";
 
@@ -290,41 +296,17 @@ export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhot
     );
   }
 
-  // event triggered when a checkbox is clicked.
-  private checkBoxClicked(stateChanges: Array<{ node: TreeNodeItem, newState: CheckBoxState }>) {
-    const changedNodes: PhotoFolder[] = [];
-    for (const stateChange of stateChanges) {
-      if (!(stateChange.node instanceof PhotoFolder))
-        continue;
-      const photoFolder: PhotoFolder = stateChange.node as PhotoFolder;
-      photoFolder.visible = (stateChange.newState === CheckBoxState.On);
-      changedNodes.push(photoFolder);
-      // need all the subnodes, too.
-      const subNodes = photoFolder.getSubFolders();
-      for (const subNode of subNodes) {
-        changedNodes.push(subNode);
-      }
-    }
-
-    // raise the changed event.
-    if (changedNodes.length > 0) {
-      changedNodes[0].photoTree.onTreeNodeChanged.raiseEvent(changedNodes);
-      this.props.dataProvider.markerVisibilityChange();
-    }
+  private _onFoldersChecked = (changes: Array<{ folder: PhotoFolder, state: CheckBoxState }>) => {
+    changes.forEach((change) => {
+      change.folder.visible = (change.state === CheckBoxState.On);
+    });
+    this.props.dataProvider.markerVisibilityChange();
   }
 
   private renderFolderSettings() {
     if (!this.state.treeDataProvider)
       return;
-
-    return (
-      <div className="gp-load-div-phase2" >
-        <Tree
-          dataProvider={this.state.treeDataProvider}
-          onCheckboxClick={this.checkBoxClicked.bind(this)}
-        />
-      </div>
-    );
+    return (<FolderSettings treeDataProvider={this.state.treeDataProvider} onFoldersChecked={this._onFoldersChecked} />);
   }
 
   private _onMaxDistChanged(e: React.ChangeEvent<HTMLInputElement>) {
@@ -454,3 +436,76 @@ export class GeoPhotoDialog extends React.Component<GeoPhotoDialogProps, GeoPhot
     );
   }
 }
+
+interface FolderSettingsTreeEventsHandlerProps extends TreeEventHandlerParams {
+  onNodesCheckboxStatusChanged: (changes: Array<{ item: TreeNodeItem, state: CheckBoxState }>) => void;
+}
+class FolderSettingsTreeEventsHandler extends TreeEventHandler {
+  private _onNodesCheckboxStatusChanged: (changes: Array<{ item: TreeNodeItem, state: CheckBoxState }>) => void;
+
+  public constructor(props: FolderSettingsTreeEventsHandlerProps) {
+    super(props);
+    this._onNodesCheckboxStatusChanged = props.onNodesCheckboxStatusChanged;
+  }
+
+  /** Changes nodes checkbox states. */
+  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs) {
+    const baseHandling = super.onCheckboxStateChanged({ stateChanges });
+    const changedItems = new Array<{ item: TreeNodeItem, state: CheckBoxState }>();
+    const childNodesCheckboxesHandling = stateChanges.subscribe({
+      next: (changes) => {
+        this.modelSource.modifyModel((model) => {
+          changes.forEach((change) => {
+            const node = model.getNode(change.nodeItem.id)!;
+            const children = FolderSettingsTreeEventsHandler.carryDownCheckboxState(model, node);
+            changedItems.push({ item: change.nodeItem, state: change.newState }, ...children.map((item) => ({ item, state: change.newState })));
+          });
+        });
+      },
+      complete: () => {
+        this._onNodesCheckboxStatusChanged(changedItems);
+      },
+    });
+    baseHandling?.add(childNodesCheckboxesHandling);
+    return baseHandling;
+  }
+
+  private static carryDownCheckboxState(model: MutableTreeModel, parent: TreeModelNode): TreeNodeItem[] {
+    const changedItems = new Array<TreeNodeItem>();
+    for (const node of model.iterateTreeModelNodes(parent.id)) {
+      if (node.checkbox.state === parent.checkbox.state)
+        continue;
+
+      node.checkbox.state = parent.checkbox.state;
+      changedItems.push(node.item);
+    }
+    return changedItems;
+  }
+}
+
+// tslint:disable-next-line: variable-name
+const FolderSettings = (props: { treeDataProvider: ITreeDataProvider, onFoldersChecked: (changes: Array<{ folder: PhotoFolder, state: CheckBoxState }>) => void }) => {
+  const modelSource = useTreeModelSource(props.treeDataProvider);
+  const nodeLoader = useTreeNodeLoader(props.treeDataProvider, modelSource);
+  const onFoldersChecked = useCallback((changes: Array<{ item: TreeNodeItem, state: CheckBoxState }>) => {
+    props.onFoldersChecked(changes.map((change) => ({
+      folder: change.item as PhotoFolder,
+      state: change.state,
+    })));
+  }, [props.onFoldersChecked]);
+  const eventsHandler = useTreeEventsHandler(useCallback(
+    () => new FolderSettingsTreeEventsHandler({ modelSource, nodeLoader, onNodesCheckboxStatusChanged: onFoldersChecked }),
+    [modelSource, nodeLoader, onFoldersChecked],
+  ));
+  const visibleNodes = useVisibleTreeNodes(modelSource);
+  return (
+    <div className="gp-load-div-phase2" >
+      <ControlledTree
+        nodeLoader={nodeLoader}
+        visibleNodes={visibleNodes}
+        treeEvents={eventsHandler}
+        selectionMode={SelectionMode.None}
+      />
+    </div>
+  );
+};

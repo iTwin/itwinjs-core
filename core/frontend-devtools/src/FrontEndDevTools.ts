@@ -15,6 +15,10 @@ import {
   SetVolClassIntersectOn,
   SetVolClassIntersectOff,
   ToggleDrapeFrustumTool,
+  ToggleRealityTileBounds,
+  ToggleRealityTilePreload,
+  ToggleRealityTileLogging,
+  ToggleRealityTileFreeze,
 } from "./tools/RenderTargetTools";
 import {
   CompileShadersTool,
@@ -65,6 +69,7 @@ import {
   OverrideSubCategoryPriorityTool,
 } from "./tools/PlanProjectionTools";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
+import { ClipColorTool } from "./tools/ClipColorTool";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta
@@ -96,6 +101,7 @@ export class FrontendDevTools {
       ChangeUnitsTool,
       ChangeViewFlagsTool,
       ClearIsolatedElementsTool,
+      ClipColorTool,
       CompileShadersTool,
       DefaultTileSizeModifierTool,
       DumpPlanProjectionSettingsTool,
@@ -128,6 +134,10 @@ export class FrontendDevTools {
       ToggleTileTreeBoundsDecorationTool,
       ToggleToolTipsTool,
       ToggleWiremeshTool,
+      ToggleRealityTileBounds,
+      ToggleRealityTilePreload,
+      ToggleRealityTileLogging,
+      ToggleRealityTileFreeze,
       ViewportAddRealityModel,
       ViewportTileSizeModifierTool,
     ];

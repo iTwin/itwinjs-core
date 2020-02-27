@@ -6,11 +6,12 @@
 
 @mixin uicore-inputs-radio {
 
-    display:                block;
+    display:                flex;
     position:               relative;
     padding:                0 0 0 $uicore-line-height;
     margin:                 $uicore-unbordered-padding 0;
     cursor:                 pointer;
+    align-items:            center;
 
     > input {
 
@@ -25,13 +26,17 @@
         text-align:         left;
 
         cursor:             pointer;
+
+        &[disabled] {
+          cursor:             not-allowed;
+        }
     }
 
-    > .label {
+    > .uicore-label {
 
         display:            inline;
         position:           relative;
-        left:               0;
+        left:               6px;
 
         padding:            0;
         margin:             0;
@@ -46,13 +51,13 @@
         color:              $buic-text-color;
     }
 
-    &.disabled {
+    &.uicore-disabled {
 
         cursor:             not-allowed;
     }
 
-    &.success > .label {    color: $uicore-green; }
-    &.warning > .label {    color: $uicore-orange; }
-    &.error > .label {      color: $uicore-red; }
-    &.disabled > .label {   color: $buic-text-color-disabled; }
+    &.success > .uicore-label {    color: $uicore-green; }
+    &.warning > .uicore-label {    color: $uicore-orange; }
+    &.error > .uicore-label {      color: $uicore-red; }
+    &.uicore-disabled > .uicore-label {   color: $buic-text-color-disabled; }
 }

@@ -45,7 +45,7 @@ describe("RulesetTesting", () => {
   });
 
   it("generates correct hierarchy for 'Items' ruleset", async () => {
-    const builder = new HierarchyBuilder(imodel);
+    const builder = new HierarchyBuilder({ imodel });
     // generate the hierarchy using a ruleset id
     const hierarchy = await builder.createHierarchy("Items");
     // verify through snapshot
@@ -55,7 +55,7 @@ describe("RulesetTesting", () => {
   // VSTS#156270
   // tslint:disable-next-line:only-arrow-functions
   it.skip("generates correct content for 'Items' ruleset", async function () {
-    const builder = new ContentBuilder(imodel);
+    const builder = new ContentBuilder({ imodel });
     // generate content using ruleset id
     const instances = await builder.createContentForInstancePerClass("Items");
 
@@ -71,7 +71,7 @@ describe("RulesetTesting", () => {
   });
 
   it("generates correct hierarchy for 'default' ruleset", async () => {
-    const builder = new HierarchyBuilder(imodel);
+    const builder = new HierarchyBuilder({ imodel });
     // import ruleset from file
     const ruleset = require("../../test-rulesets/Rulesets/default.json");
     // generate the hierarchy

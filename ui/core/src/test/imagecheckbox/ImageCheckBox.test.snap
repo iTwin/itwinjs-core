@@ -12,8 +12,12 @@ exports[`<ImageCheckBox /> disabled renders correctly 1`] = `
     type="checkbox"
   />
   <span
-    className="image icon icon-visibility-hide-2"
-  />
+    className="image"
+  >
+    <Component
+      iconSpec="icon-visibility-hide-2"
+    />
+  </span>
 </label>
 `;
 
@@ -28,7 +32,11 @@ exports[`<ImageCheckBox /> renders correctly 1`] = `
     type="checkbox"
   />
   <span
-    className="image icon icon-visibility-hide-2"
-  />
+    className="image"
+  >
+    <Component
+      iconSpec="icon-visibility-hide-2"
+    />
+  </span>
 </label>
 `;

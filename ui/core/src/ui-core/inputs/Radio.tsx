@@ -26,13 +26,13 @@ export class Radio extends React.PureComponent<RadioProps> {
     return (
       <label style={style} className={classnames(
         "uicore-inputs-radio",
-        disabled && "disabled",
+        disabled && "uicore-disabled",
         status,
         className,
       )}>
         <input disabled={this.props.disabled} type={"radio"} className={inputClassName} style={inputStyle} {...props} />
         {label &&
-          <span className={"label"}> {this.props.label} </span>
+          <span className={"uicore-label"}> {this.props.label} </span>
         }
       </label>
     );

@@ -6,6 +6,10 @@
  * @module Tools
  */
 
+import {
+  ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
+  PrimitiveValue, PropertyDescription,
+} from "@bentley/ui-abstract";
 import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d, GrowableXYZArray, PolylineOps, AxisOrder } from "@bentley/geometry-core";
 import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels, IModelError } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -20,9 +24,6 @@ import { AccuDrawHintBuilder, AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
 import { GraphicType, GraphicBuilder } from "../render/GraphicBuilder";
 import { HitDetail } from "../HitDetail";
-import { PropertyDescription } from "../properties/Description";
-import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
-import { PrimitiveValue } from "../properties/Value";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { IModelConnection } from "../IModelConnection";
 import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";

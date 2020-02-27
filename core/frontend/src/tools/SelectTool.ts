@@ -6,16 +6,17 @@
  * @module SelectionSet
  */
 
+import {
+  PropertyEditorParamTypes, ButtonGroupEditorParams, SuppressLabelEditorParams,
+  ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
+  PrimitiveValue, PropertyDescription,
+} from "@bentley/ui-abstract";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { PropertyDescription } from "../properties/Description";
-import { PropertyEditorParamTypes, ButtonGroupEditorParams, SuppressLabelEditorParams } from "../properties/EditorParams";
-import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue } from "../properties/ToolSettingsValue";
-import { PrimitiveValue } from "../properties/Value";
 import { Pixel } from "../render/Pixel";
 import { DecorateContext } from "../ViewContext";
 import { ViewRect } from "../ViewRect";

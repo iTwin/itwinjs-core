@@ -9,11 +9,14 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { CommonDivProps } from "../utils/Props";
+import { Icon } from "../icons/IconComponent";
 
-/** @alpha */
+/** Properties for the [[Tile]] component
+ * @beta
+ */
 export interface TileProps extends CommonDivProps {
   title: string;
-  icon?: React.ReactNode;
+  icon?: string | React.ReactNode;
   featured?: boolean;
   minimal?: boolean;
   href?: string;
@@ -25,7 +28,9 @@ export interface TileProps extends CommonDivProps {
 /** @internal */
 export type TileDefaultProps = Pick<TileProps, "stepNum">;
 
-/** @alpha */
+/** The Tile React component is a container for rendering elements that can be grouped together.
+ * @beta
+ */
 export class Tile extends React.Component<TileProps> {
 
   /** @internal */
@@ -48,11 +53,13 @@ export class Tile extends React.Component<TileProps> {
       this.props.minimal && "uicore-minimal",
     );
 
+    const icon: React.ReactNode = (typeof this.props.icon === "string") ? <Icon iconSpec={this.props.icon} /> : this.props.icon;
+
     return (
       <div className={classNames} style={this.props.style}>
         <a className="uicore-link" href={this.props.href} onClick={this.props.onClick}>
           <div className="uicore-icon">
-            {this.props.icon}
+            {icon}
           </div>
           <p className="uicore-title">{this.props.title}</p>
         </a>

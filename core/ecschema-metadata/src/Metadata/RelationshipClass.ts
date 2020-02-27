@@ -66,11 +66,6 @@ export class RelationshipClass extends ECClass {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this RelationshipClass's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -95,11 +90,6 @@ export class RelationshipClass extends ECClass {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(relationshipClassProps: RelationshipClassProps) {
-    this.fromJSONSync(relationshipClassProps);
-  }
-
   public fromJSONSync(relationshipClassProps: RelationshipClassProps) {
     super.fromJSONSync(relationshipClassProps);
 
@@ -113,11 +103,6 @@ export class RelationshipClass extends ECClass {
 
     this._strength = strength;
     this._strengthDirection = strengthDirection;
-  }
-
-  /** @deprecated */
-  public async deserialize(relationshipClassProps: RelationshipClassProps) {
-    await this.fromJSON(relationshipClassProps);
   }
 
   public async fromJSON(relationshipClassProps: RelationshipClassProps) {

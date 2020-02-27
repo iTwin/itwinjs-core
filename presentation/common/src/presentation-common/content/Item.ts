@@ -24,8 +24,6 @@ import { LabelDefinition, LabelDefinitionJSON } from "../LabelDefinition";
  */
 export interface ItemJSON {
   primaryKeys: InstanceKeyJSON[];
-  /** @deprecated use labelDefinition instead */
-  label?: string;
   labelDefinition: LabelDefinitionJSON;
   imageId: string;
   classInfo?: ClassInfoJSON;
@@ -42,12 +40,8 @@ export interface ItemJSON {
 export class Item {
   /** Keys of instances whose data is contained in this item */
   public primaryKeys: InstanceKey[];
-  /** Display label of the item
-   * @deprecated use 'labelDefinition' instead
-   */
-  public label: string;
-  /** Definition of item display label */
-  public labelDefinition: LabelDefinition;
+  /** Display label of the item */
+  public label: LabelDefinition;
   /** ID of the image associated with this item */
   public imageId: string;
   /** For cases when item consists only of same class instances, information about the ECClass */
@@ -81,8 +75,7 @@ export class Item {
     this.displayValues = displayValues;
     this.mergedFieldNames = mergedFieldNames;
     this.extendedData = extendedData;
-    this.label = typeof label === "string" ? label : label.displayValue;
-    this.labelDefinition = typeof label === "string" ? LabelDefinition.fromLabelString(label) : label;
+    this.label = (typeof label === "string") ? LabelDefinition.fromLabelString(label) : label;
   }
 
   /**
@@ -94,13 +87,12 @@ export class Item {
 
   /** @internal */
   public toJSON(): ItemJSON {
-    const { labelDefinition, ...content } = this;
-    return Object.assign({}, content, {
+    const { label, ...baseItem } = this;
+    return Object.assign({}, baseItem, {
       classInfo: this.classInfo ? ClassInfo.toJSON(this.classInfo) : undefined,
       values: Value.toJSON(this.values) as ValuesMapJSON,
       displayValues: DisplayValue.toJSON(this.displayValues) as DisplayValuesMapJSON,
-      labelDefinition: LabelDefinition.toJSON(labelDefinition),
-      label: labelDefinition.displayValue,
+      labelDefinition: LabelDefinition.toJSON(label),
     });
   }
 
@@ -117,13 +109,13 @@ export class Item {
     if (typeof json === "string")
       return JSON.parse(json, Item.reviver);
     const item = Object.create(Item.prototype);
-    return Object.assign(item, json, {
+    const { labelDefinition, ...baseJson } = json;
+    return Object.assign(item, baseJson, {
       primaryKeys: json.primaryKeys.map((pk) => InstanceKey.fromJSON(pk)),
       classInfo: json.classInfo ? ClassInfo.fromJSON(json.classInfo) : undefined,
       values: Value.fromJSON(json.values),
       displayValues: DisplayValue.fromJSON(json.displayValues),
-      labelDefinition: LabelDefinition.fromJSON(json.labelDefinition),
-      label: json.labelDefinition.displayValue,
+      label: LabelDefinition.fromJSON(labelDefinition),
     } as Partial<Item>);
   }
 

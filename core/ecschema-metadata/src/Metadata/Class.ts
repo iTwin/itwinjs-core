@@ -330,11 +330,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return primitiveType;
   }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this Classes properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -391,11 +386,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(classProps: ClassProps) {
-    this.fromJSONSync(classProps);
-  }
-
   public fromJSONSync(classProps: ClassProps) {
     super.fromJSONSync(classProps);
 
@@ -418,11 +408,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
           return baseClass;
         });
     }
-  }
-
-  /** @deprecated */
-  public async deserialize(classProps: ClassProps): Promise<void> {
-    await this.fromJSON(classProps);
   }
 
   public async fromJSON(classProps: ClassProps): Promise<void> {

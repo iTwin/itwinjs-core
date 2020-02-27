@@ -9,9 +9,9 @@
 /**
  * Sub-specification to specify custom property editor
  * @public
- * @deprecated Use `PropertySpecification` instead
+ * @deprecated Use `PropertySpecification` instead. Will be removed in iModel.js 3.0
  */
-export interface PropertyEditorsSpecification extends PropertyEditorSpecification {
+export interface DEPRECATED_PropertyEditorsSpecification extends PropertyEditorSpecification { // tslint:disable-line: naming-convention class-name
   /** Name of the property which custom editor should be used for */
   propertyName: string;
 }
@@ -32,7 +32,7 @@ export interface PropertyEditorSpecification {
 }
 
 /**
- * Parameters for [[PropertyEditorsSpecification]]
+ * Parameters for [[PropertyEditorSpecification]]
  * @public
  */
 export declare type PropertyEditorParameters = PropertyEditorJsonParameters

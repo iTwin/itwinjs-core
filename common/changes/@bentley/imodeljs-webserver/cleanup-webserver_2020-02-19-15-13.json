@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-webserver",
+      "comment": "Simplify the webserver to only host the static assets provided",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-webserver",
+  "email": "31107829+calebmshafer@users.noreply.github.com"
+}

@@ -53,10 +53,10 @@ export abstract class ItemDefBase {
   public iconElement?: React.ReactNode;
 
   public static initializeDef(me: ItemDefBase, itemProps: ItemProps): void {
-    me.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true;  // deprecated
-    me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;  // deprecated
-    me.isHidden = (itemProps.isHidden === undefined && itemProps.isVisible !== undefined) ? !itemProps.isVisible : itemProps.isHidden;
-    me.isDisabled = (itemProps.isDisabled === undefined && itemProps.isEnabled !== undefined) ? !itemProps.isEnabled : itemProps.isDisabled;
+    me.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true; // tslint:disable-line:deprecation
+    me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true; // tslint:disable-line:deprecation
+    me.isHidden = (itemProps.isHidden === undefined && itemProps.isVisible !== undefined) ? !itemProps.isVisible : itemProps.isHidden; // tslint:disable-line:deprecation
+    me.isDisabled = (itemProps.isDisabled === undefined && itemProps.isEnabled !== undefined) ? !itemProps.isEnabled : itemProps.isDisabled; // tslint:disable-line:deprecation
 
     me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
     me.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
@@ -76,12 +76,12 @@ export abstract class ItemDefBase {
     me._description = PropsHelper.getStringSpec(itemProps.description, itemProps.descriptionKey);
 
     // deprecated
-    if (itemProps.stateFunc)
-      me.stateFunc = itemProps.stateFunc;
+    if (itemProps.stateFunc) // tslint:disable-line:deprecation
+      me.stateFunc = itemProps.stateFunc; // tslint:disable-line:deprecation
 
     // deprecated
-    if (itemProps.stateSyncIds)
-      me.stateSyncIds = itemProps.stateSyncIds.map((value: string) => value.toLowerCase());
+    if (itemProps.stateSyncIds) // tslint:disable-line:deprecation
+      me.stateSyncIds = itemProps.stateSyncIds.map((value: string) => value.toLowerCase()); // tslint:disable-line:deprecation
   }
 
   constructor(itemProps: ItemProps) {

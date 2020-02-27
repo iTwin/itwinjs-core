@@ -9,10 +9,13 @@ import {
   OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType, OutputMessageAlert,
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity, SvgSprite, SvgPath } from "@bentley/ui-core";
-import { BackstageItem, StatusBarSection, UiItemsManager, CommonStatusBarItem, StageUsage, UiItemsProvider, ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
+import {
+  BackstageItem, StatusBarSection, UiItemsManager, CommonStatusBarItem, StageUsage, UiItemsProvider,
+  ConditionalBooleanValue, ConditionalStringValue, BackstageItemUtilities,
+} from "@bentley/ui-abstract";
 import {
   CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager,
-  SyncUiEventId, Backstage, BackstageItemUtilities, StatusBarItemUtilities, withStatusFieldProps, SyncUiEventDispatcher,
+  SyncUiEventId, Backstage, StatusBarItemUtilities, withStatusFieldProps, SyncUiEventDispatcher,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../";
 import { Tool1 } from "../tools/Tool1";

@@ -16,12 +16,8 @@ import { LabelDefinitionJSON, LabelDefinition } from "../LabelDefinition";
 export interface Node {
   /** A key that uniquely identifies a node. */
   key: NodeKey;
-  /** Display label
-   * @deprecated use 'labelDefinition' instead
-   */
-  label: string;
   /** Definition of node display label */
-  labelDefinition?: LabelDefinition;
+  label: LabelDefinition;
   /** Extensive description */
   description?: string;
   /** Image ID */
@@ -56,8 +52,6 @@ export interface Node {
  */
 export interface NodeJSON {
   key: NodeKeyJSON;
-  /** @deprecated use labelDefinition instead */
-  label?: string;
   labelDefinition: LabelDefinitionJSON;
   description?: string;
   imageId?: string;
@@ -80,11 +74,11 @@ export namespace Node {
    * @internal
    */
   export function toJSON(node: Node): NodeJSON {
+    const { label, ...baseNode } = node;
     return {
-      ...node,
+      ...baseNode,
       key: NodeKey.toJSON(node.key),
-      labelDefinition: LabelDefinition.toJSON(node.labelDefinition ? node.labelDefinition : LabelDefinition.fromLabelString(node.label)),
-      label: (node.labelDefinition && node.labelDefinition.displayValue) || node.label,
+      labelDefinition: LabelDefinition.toJSON(label),
     };
   }
 
@@ -98,10 +92,10 @@ export namespace Node {
   export function fromJSON(json: NodeJSON | string): Node {
     if (typeof json === "string")
       return JSON.parse(json, reviver);
-    return Object.assign({}, json, {
+    const { labelDefinition, ...baseJson } = json;
+    return Object.assign({}, baseJson, {
       key: NodeKey.fromJSON(json.key),
-      labelDefinition: LabelDefinition.fromJSON(json.labelDefinition),
-      label: json.labelDefinition.displayValue,
+      label: LabelDefinition.fromJSON(labelDefinition),
     });
   }
 

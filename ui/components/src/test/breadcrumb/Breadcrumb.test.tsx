@@ -7,11 +7,15 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { waitForUpdate } from "../test-helpers/misc";
 import { render, cleanup, fireEvent, RenderResult, waitForElement } from "@testing-library/react";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../ui-components";
 import { mockRawTreeDataProvider, mockInterfaceTreeDataProvider, mockMutableInterfaceTreeDataProvider, mockRawTreeDataProvider2 } from "./mockTreeDataProvider";
 import TestUtils from "../TestUtils";
 import { BreadcrumbNodeProps, BreadcrumbNode } from "../../ui-components/breadcrumb/Breadcrumb";
 import { TreeNodeItem } from "../../ui-components/tree/TreeDataProvider";
+import { getPropertyRecordAsString } from "../../ui-components/common/getPropertyRecordAsString";
+
+// tslint:disable:deprecation
 
 describe("Breadcrumb", () => {
   let renderSpy: sinon.SinonSpy;
@@ -59,7 +63,7 @@ describe("Breadcrumb", () => {
     describe("with current prop", () => {
       it("should render with current", async () => {
         await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} initialCurrent={mockRawTreeDataProvider[0]} dataProvider={mockRawTreeDataProvider} />), renderSpy, 2);
-        expect(renderedComponent.getAllByText(mockRawTreeDataProvider[0].label as string)[0]).to.exist;
+        expect(renderedComponent.getAllByText(getPropertyRecordAsString(mockRawTreeDataProvider[0].label))[0]).to.exist;
       });
     });
 
@@ -67,10 +71,10 @@ describe("Breadcrumb", () => {
       it("should rerender from raw dataProvider to interface dataProvider", async () => {
         const nodeRaw = mockRawTreeDataProvider[1];
         await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialCurrent={nodeRaw} />), renderSpy, 2);
-        expect(await waitForElement(() => renderedComponent.getAllByText(nodeRaw.label as string)[0])).to.exist;
+        expect(await waitForElement(() => renderedComponent.getAllByText(getPropertyRecordAsString(nodeRaw.label))[0])).to.exist;
         const nodeInterface = (await mockInterfaceTreeDataProvider.getNodes())[0];
         await waitForUpdate(() => renderedComponent.rerender(<Breadcrumb onRender={renderSpy} dataProvider={mockInterfaceTreeDataProvider} initialCurrent={nodeInterface} />), renderSpy, 2);
-        expect(await waitForElement(() => renderedComponent.getAllByText(nodeInterface.label as string)[0])).to.exist;
+        expect(await waitForElement(() => renderedComponent.getAllByText(getPropertyRecordAsString(nodeInterface.label))[0])).to.exist;
       });
 
       describe("listening to `ITreeDataProvider.onTreeNodeChanged` events", () => {
@@ -78,7 +82,7 @@ describe("Breadcrumb", () => {
           const node = (await mockInterfaceTreeDataProvider.getNodes())[0];
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockInterfaceTreeDataProvider} initialCurrent={node} />), renderSpy, 2);
           expect(renderedComponent.getAllByTestId("components-breadcrumb-node").length).to.eq(2);
-          node.label = "test";
+          node.label = PropertyRecord.fromString("test");
           await waitForUpdate(() => mockInterfaceTreeDataProvider.onTreeNodeChanged!.raiseEvent([node]), renderSpy, 1);
 
           expect(renderedComponent.getAllByText("test")[0]).to.not.be.undefined;
@@ -90,7 +94,7 @@ describe("Breadcrumb", () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockInterfaceTreeDataProvider} />), renderSpy, 1);
           mockInterfaceTreeDataProvider.onTreeNodeChanged!.raiseEvent([node]);
 
-          expect(renderedComponent.queryByText(node.label as string)).to.be.null;
+          expect(renderedComponent.queryByText(getPropertyRecordAsString(node.label))).to.be.null;
         });
 
         it("rerenders when `onTreeNodeChanged` is broadcasted with undefined", async () => {
@@ -138,10 +142,10 @@ describe("Breadcrumb", () => {
       it("should rerender from raw DataProvider to raw dataProvider", async () => {
         await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} />), renderSpy, 2);
         const rootNode = mockRawTreeDataProvider[1];
-        expect(await waitForElement(() => renderedComponent.getByText(rootNode.label as string))).to.exist;
+        expect(await waitForElement(() => renderedComponent.getByText(getPropertyRecordAsString(rootNode.label)))).to.exist;
         await waitForUpdate(() => renderedComponent.rerender(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider2} />), renderSpy, 2);
         const rootNode2 = mockRawTreeDataProvider2[1];
-        expect(await waitForElement(() => renderedComponent.getByText(rootNode2.label as string))).to.exist;
+        expect(await waitForElement(() => renderedComponent.getByText(getPropertyRecordAsString(rootNode2.label)))).to.exist;
       });
       it("should have one child in parent element", async () => {
         await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} />), renderSpy, 2);
@@ -175,7 +179,7 @@ describe("Breadcrumb", () => {
       });
       it("should not change to input mode when dropdown background is clicked", async () => {
         await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} staticOnly={true} initialCurrent={mockRawTreeDataProvider[0]} />), renderSpy, 2);
-        expect(renderedComponent.getByText(mockRawTreeDataProvider[0].label as string)).to.exist;
+        expect(renderedComponent.getByText(getPropertyRecordAsString(mockRawTreeDataProvider[0].label))).to.exist;
       });
     });
 
@@ -187,22 +191,22 @@ describe("Breadcrumb", () => {
       it("should update path to node", async () => {
         await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} path={path} />), renderSpy, 2);
         const rootNode = mockRawTreeDataProvider[1];
-        expect(await waitForElement(() => renderedComponent.getAllByText(rootNode.label as string)[0])).to.exist;
+        expect(await waitForElement(() => renderedComponent.getAllByText(getPropertyRecordAsString(rootNode.label))[0])).to.exist;
         const node = mockRawTreeDataProvider[1].children![0];
         path.setCurrentNode(node);
-        expect(await waitForElement(() => renderedComponent.getAllByText(node.label as string)[0])).to.exist;
+        expect(await waitForElement(() => renderedComponent.getAllByText(getPropertyRecordAsString(node.label))[0])).to.exist;
       });
       it("should not update if node isn't found", async () => {
         await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} path={path} />), renderSpy, 2);
         const node = { ...mockRawTreeDataProvider[1].children![0], id: "INVALID ID" };
         path.setCurrentNode(node);
-        expect(renderedComponent.queryByText(node.label as string)).to.not.exist;
+        expect(renderedComponent.queryByText(getPropertyRecordAsString(node.label))).to.not.exist;
       });
       it("should update path to root", async () => {
         await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} path={path} />), renderSpy, 2);
         const node = mockRawTreeDataProvider[1].children![0];
         path.setCurrentNode(node);
-        expect(await waitForElement(() => renderedComponent.getAllByText(node.label as string)[0])).to.exist;
+        expect(await waitForElement(() => renderedComponent.getAllByText(getPropertyRecordAsString(node.label))[0])).to.exist;
         path.setCurrentNode(undefined);
         const list = await waitForElement(() => renderedComponent.getByTestId("components-breadcrumb-crumb-list"));
         expect(list).to.exist;
@@ -236,53 +240,53 @@ describe("Breadcrumb", () => {
         it("should submit node", async () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} delimiter={"\\"} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
           const breadcrumbInput = renderedComponent.getByTestId("components-breadcrumb-input") as HTMLInputElement;
-          const label = mockRawTreeDataProvider[1].label as string;
-          breadcrumbInput.value = label + "\\";
+          const label = mockRawTreeDataProvider[1].label;
+          breadcrumbInput.value = getPropertyRecordAsString(label) + "\\";
           const l = breadcrumbInput.value.length;
           breadcrumbInput.setSelectionRange(l, l);
           fireEvent.click(breadcrumbInput);
           await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 2);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
-          expect(renderedComponent.getAllByText(label)[0]).to.exist;
+          expect(renderedComponent.getAllByText(getPropertyRecordAsString(label))[0]).to.exist;
         });
         it("should submit node without trailing slash", async () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} delimiter={"\\"} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
           const breadcrumbInput = renderedComponent.getByTestId("components-breadcrumb-input") as HTMLInputElement;
-          const label = mockRawTreeDataProvider[1].label as string;
-          breadcrumbInput.value = label;
+          const label = mockRawTreeDataProvider[1].label;
+          breadcrumbInput.value = getPropertyRecordAsString(label);
           const l = breadcrumbInput.value.length;
           breadcrumbInput.setSelectionRange(l, l);
           fireEvent.click(breadcrumbInput);
           await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 2);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
-          expect(renderedComponent.getAllByText(label)[0]).to.exist;
+          expect(renderedComponent.getAllByText(getPropertyRecordAsString(label))[0]).to.exist;
         });
         it("should submit node with parentsOnly={false}", async () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} delimiter={"\\"} dataProvider={mockRawTreeDataProvider} parentsOnly={false} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
           const breadcrumbInput = renderedComponent.getByTestId("components-breadcrumb-input") as HTMLInputElement;
-          const label1 = mockRawTreeDataProvider[1].label as string;
-          const label2 = mockRawTreeDataProvider[1].children![1].label as string;
-          breadcrumbInput.value = label1 + "\\" + label2;
+          const label1 = mockRawTreeDataProvider[1].label;
+          const label2 = mockRawTreeDataProvider[1].children![1].label;
+          breadcrumbInput.value = getPropertyRecordAsString(label1) + "\\" + getPropertyRecordAsString(label2);
           const l = breadcrumbInput.value.length;
           breadcrumbInput.setSelectionRange(l, l);
           fireEvent.click(breadcrumbInput);
           await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 2);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
-          expect(renderedComponent.getAllByText(label1)[0]).to.exist;
-          expect(renderedComponent.getAllByText(label2)[0]).to.exist;
+          expect(renderedComponent.getAllByText(getPropertyRecordAsString(label1))[0]).to.exist;
+          expect(renderedComponent.getAllByText(getPropertyRecordAsString(label2))[0]).to.exist;
         });
         it("should submit node from preselected node", async () => {
           const node = mockRawTreeDataProvider[0];
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} delimiter={"\\"} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} initialCurrent={node} />), renderSpy, 2);
           const breadcrumbInput = renderedComponent.getByTestId("components-breadcrumb-input") as HTMLInputElement;
-          const label = mockRawTreeDataProvider[1].label as string;
-          breadcrumbInput.value = label + "\\";
+          const label = mockRawTreeDataProvider[1].label;
+          breadcrumbInput.value = getPropertyRecordAsString(label) + "\\";
           const l = breadcrumbInput.value.length;
           breadcrumbInput.setSelectionRange(l, l);
           fireEvent.click(breadcrumbInput);
           await waitForUpdate(() => fireEvent.keyUp(breadcrumbInput, { keyCode: 13 /* <Return> */ }), renderSpy, 2);
           expect(renderedComponent.getByTestId("components-breadcrumb-dropdown-background")).to.exist;
-          expect(renderedComponent.getAllByText(label)[0]).to.exist;
+          expect(renderedComponent.getAllByText(getPropertyRecordAsString(label))[0]).to.exist;
         });
         it("should submit invalid node", async () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} delimiter={"\\"} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
@@ -339,7 +343,7 @@ describe("Breadcrumb", () => {
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} />), renderSpy, 2);
           const menuItem = renderedComponent.getAllByTestId("core-context-menu-item");
           fireEvent.click(menuItem[0]);
-          expect(await waitForElement(() => renderedComponent.getByDisplayValue(mockRawTreeDataProvider[1].label as string + "\\"))).to.exist;
+          expect(await waitForElement(() => renderedComponent.getByDisplayValue(getPropertyRecordAsString(mockRawTreeDataProvider[1].label) + "\\"))).to.exist;
         });
         describe("Keyboard Navigation", () => {
           it("Should close context menu on <Esc>", async () => {
@@ -375,10 +379,10 @@ describe("Breadcrumb", () => {
         it("should set current to root/undefined", async () => {
           const node = mockRawTreeDataProvider[0];
           await waitForUpdate(() => renderedComponent = render(<Breadcrumb onRender={renderSpy} dataProvider={mockRawTreeDataProvider} initialCurrent={node} />), renderSpy, 2);
-          expect(await waitForElement(() => renderedComponent.getByText(node.label as string))).to.exist;
+          expect(await waitForElement(() => renderedComponent.getByText(getPropertyRecordAsString(node.label)))).to.exist;
           const menuItems = renderedComponent.getAllByTestId("core-context-menu-item");
           await waitForUpdate(() => fireEvent.click(menuItems[0]), renderSpy, 1);
-          expect(renderedComponent.queryByText(node.label as string)).to.not.exist;
+          expect(renderedComponent.queryByText(getPropertyRecordAsString(node.label))).to.not.exist;
         });
         it("should set current to root/undefined from split button press", async () => {
           const node = mockRawTreeDataProvider[0];

@@ -5,10 +5,9 @@
 import * as React from "react";
 
 import { StopWatch } from "@bentley/bentleyjs-core";
-import { ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/imodeljs-frontend";
-import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities } from "@bentley/ui-abstract";
+import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities, ToolSettingsPropertyItem, ToolSettingsValue, UiDataProvider } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
-import { ModelessDialogManager, UiDataProvider } from "@bentley/ui-framework";
+import { ModelessDialogManager } from "@bentley/ui-framework";
 import { ITreeDataProvider } from "@bentley/ui-components";
 
 import { GeoPhotoDialog } from "./GPDialog";

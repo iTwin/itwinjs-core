@@ -26,9 +26,6 @@ import { NoRenderApp, IModelApp, IModelAppOptions } from "@bentley/imodeljs-fron
 import {
   Presentation as PresentationFrontend,
   PresentationManagerProps as PresentationFrontendProps,
-  FavoritePropertiesManager,
-  IFavoritePropertiesStorage,
-  FavoriteProperties,
 } from "@bentley/presentation-frontend";
 
 import { OidcAgentClientConfiguration, OidcAgentClient } from "@bentley/imodeljs-clients-backend";
@@ -52,7 +49,6 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
 }
 
 let isInitialized = false;
-let isFrontendAppInitialized = false;
 
 /** @public */
 export interface PresentationTestingInitProps {
@@ -74,13 +70,28 @@ export interface PresentationTestingInitProps {
  *
  * @public
  */
-export const initializeAsync = async (props?: PresentationTestingInitProps) => {
+export const initialize = async (props?: PresentationTestingInitProps) => {
+  if (isInitialized)
+    return;
+
   if (!props)
     props = {};
+
+  // init backend
+  // make sure backend gets assigned an id which puts its resources into a unique directory
+  props.backendProps = props.backendProps ?? {};
+  if (!props.backendProps.id)
+    props.backendProps.id = `test-${Guid.createValue()}`;
+  IModelHost.startup();
+  PresentationBackend.initialize(props.backendProps);
+
+  // set up rpc interfaces
+  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
+
+  // init frontend
   if (!props.frontendApp)
     props.frontendApp = NoRenderApp;
-
-  if (!isFrontendAppInitialized && props.useClientServices) {
+  if (props.useClientServices) {
     const agentConfiguration: OidcAgentClientConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
@@ -89,53 +100,15 @@ export const initializeAsync = async (props?: PresentationTestingInitProps) => {
     const authorizationClient = new OidcAgentClient(agentConfiguration);
     await authorizationClient.getAccessToken();
     props.frontendApp.startup({ authorizationClient });
-    isFrontendAppInitialized = true;
+  } else {
+    props.frontendApp.startup();
   }
-
-  await initialize(props.backendProps, props.frontendProps, props.frontendApp);
-};
-
-const initialize = async (backendProps?: PresentationBackendProps, frontendProps?: PresentationFrontendProps, frontendApp: { startup: (opts?: IModelAppOptions) => void } = NoRenderApp) => {
-  if (isInitialized)
-    return;
-
-  // make sure backend gets assigned an id which puts its resources into a unique directory
-  backendProps = backendProps || {};
-  if (!backendProps.id)
-    backendProps.id = `test-${Guid.createValue()}`;
-
-  // init backend
-  IModelHost.startup();
-  PresentationBackend.initialize(backendProps);
-
-  // set up rpc interfaces
-  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface]);
-
-  if (!isFrontendAppInitialized) {
-    // init frontend
-    frontendApp.startup();
-    setCustomFavoritePropertiesManager();
-    isFrontendAppInitialized = true;
-  }
-
   const defaultFrontendProps: PresentationFrontendProps = {
     activeLocale: IModelApp.i18n.languageList()[0],
   };
-  await PresentationFrontend.initialize({ ...defaultFrontendProps, ...frontendProps });
+  await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });
 
   isInitialized = true;
-};
-
-const setCustomFavoritePropertiesManager = () => {
-  const storage: IFavoritePropertiesStorage = {
-    loadProperties: async (_projectId?: string, _imodelId?: string) => ({
-      nestedContentInfos: new Set<string>(),
-      propertyInfos: new Set<string>(),
-      baseFieldInfos: new Set<string>(),
-    }),
-    async saveProperties(_properties: FavoriteProperties, _projectId?: string, _imodelId?: string) { },
-  };
-  PresentationFrontend.favoriteProperties = new FavoritePropertiesManager({ storage });
 };
 
 /**
@@ -165,5 +138,4 @@ export const terminate = (frontendApp = IModelApp) => {
   frontendApp.shutdown();
 
   isInitialized = false;
-  isFrontendAppInitialized = false;
 };

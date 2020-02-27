@@ -11,28 +11,31 @@ import { Orientation } from "@bentley/ui-core";
 import { PropertyList } from "../propertygrid/component/PropertyList";
 import { PropertyData } from "../propertygrid/PropertyDataProvider";
 import "./Tooltip.scss";
-import { getLabelString } from "../tree/TreeDataProvider";
+import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
 
 /** Properties for [[Tooltip]] React component
  * @alpha
  */
 export interface TooltipProps {
   propertyData: PropertyData;
+  propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 /** Tooltip React component
  * @alpha
  */
 export class Tooltip extends React.Component<TooltipProps> {
-
   public render() {
+    const propertyRendererManager = this.props.propertyValueRendererManager ?? PropertyValueRendererManager.defaultManager;
     return (
       <div className="components-element-tooltip">
-        {getLabelString(this.props.propertyData.label)}
+        {propertyRendererManager.render(this.props.propertyData.label)}
         <PropertyList
           orientation={Orientation.Horizontal}
           properties={this.props.propertyData.records.Favorite}
-          columnRatio={1 / 3} />
+          columnRatio={1 / 3}
+          propertyValueRendererManager={propertyRendererManager}
+        />
       </div>
     );
   }

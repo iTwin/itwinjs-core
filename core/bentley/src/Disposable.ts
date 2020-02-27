@@ -28,6 +28,14 @@ export interface IDisposable {
   dispose(): void;
 }
 
+/**
+ * A type guard that checks whether the given argument implements `IDisposable` interface
+ * @public
+ */
+export function isIDisposable(obj: unknown): obj is IDisposable {
+  return !!obj && (obj instanceof Object) && !!(obj as IDisposable).dispose && (typeof (obj as IDisposable).dispose === "function");
+}
+
 /** Convenience function for disposing of a disposable object that may be undefined.
  * This is primarily used to simplify implementations of [[IDisposable.dispose]].
  * As a simple example:

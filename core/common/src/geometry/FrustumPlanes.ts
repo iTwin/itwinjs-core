@@ -59,7 +59,7 @@ export class FrustumPlanes {
     let allInside = true;
     for (const plane of this._planes) {
       if (sphere) { // if sphere provide detect total inside and outside without using corners.
-        const centerDistance = plane.evaluatePoint(sphere.center);
+        const centerDistance = plane.altitude(sphere.center);
         const tolerancePlusRadius = tolerance + sphere.radius;
         if (centerDistance < -tolerancePlusRadius)
           return FrustumPlanes.Containment.Outside;
@@ -68,7 +68,7 @@ export class FrustumPlanes {
       }
       let nOutside = 0;
       for (const point of points) {
-        if (plane.evaluatePoint(point) + tolerance < 0.0) {
+        if (plane.altitude(point) + tolerance < 0.0) {
           ++nOutside;
           allInside = false;
         }
@@ -92,8 +92,8 @@ export class FrustumPlanes {
     let tNear = -tFar;
 
     for (const plane of this._planes) {
-      const vD = plane.dotProductVector(direction);
-      const vN = plane.evaluatePoint(origin);
+      const vD = plane.velocity(direction);
+      const vN = plane.altitude(origin);
       if (0.0 === vD) {
         // ray is parallel... no need to continue testing if outside halfspace.
         if (vN < 0.0) {

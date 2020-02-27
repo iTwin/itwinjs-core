@@ -211,7 +211,7 @@ describe("SyncUiEventDispatcher", () => {
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
     handleSyncUiEvent.resetHistory();
-    Backstage.onBackstageEvent.emit({} as BackstageEventArgs);
+    Backstage.onBackstageEvent.emit({} as BackstageEventArgs); // tslint:disable-line:deprecation
     await TestUtils.tick(timeToWaitForUiSyncCallback);
     expect(handleSyncUiEvent.calledOnce).to.be.true;
 
@@ -279,7 +279,7 @@ describe("SyncUiEventDispatcher", () => {
 
       baseSelection = generateSelection();
 
-      Presentation.selection = new SelectionManager({ scopes: getManager() });
+      Presentation.setSelectionManager(new SelectionManager({ scopes: getManager() }));
     });
 
     it("clearConnectionEvents with no intervening initializeConnectionEvents", () => {

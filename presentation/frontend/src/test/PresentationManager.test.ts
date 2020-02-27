@@ -10,10 +10,8 @@ import sinon from "sinon";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   createRandomDescriptor,
-  createRandomECInstanceNode, createRandomECInstanceNodeKey, createRandomNodePathElement,
-  createRandomECInstanceKey,
-  createRandomRuleset,
-  createRandomLabelDefinition,
+  createRandomECInstancesNode, createRandomECInstancesNodeKey, createRandomNodePathElement,
+  createRandomECInstanceKey, createRandomRuleset, createRandomLabelDefinition,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelToken } from "@bentley/imodeljs-common";
@@ -55,7 +53,7 @@ describe("PresentationManager", () => {
 
   const mockI18N = () => {
     i18nMock.reset();
-    Presentation.i18n = i18nMock.object;
+    Presentation.setI18nManager(i18nMock.object);
     const resolvedPromise = new Promise<void>((resolve) => resolve());
     i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns((name: string) => new I18NNamespace(name, resolvedPromise));
     i18nMock.setup((x) => x.translate(moq.It.isAny(), moq.It.isAny())).returns((stringId) => stringId);
@@ -140,13 +138,12 @@ describe("PresentationManager", () => {
       manager.activeLocale = locale;
       await manager.getNodesCount({
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       });
       rpcRequestsHandlerMock.verify((x) => x.getNodesCount({
         imodel: testData.imodelToken,
-        rulesetId: testData.rulesetId,
-        locale,
         rulesetOrId: testData.rulesetId,
+        locale,
         rulesetVariables: [],
       }, undefined), moq.Times.once());
     });
@@ -155,14 +152,13 @@ describe("PresentationManager", () => {
       const locale = faker.random.locale();
       await manager.getNodesCount({
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
         locale,
       });
       rpcRequestsHandlerMock.verify((x) => x.getNodesCount({
         imodel: testData.imodelToken,
-        rulesetId: testData.rulesetId,
-        locale,
         rulesetOrId: testData.rulesetId,
+        locale,
         rulesetVariables: [],
       }, undefined), moq.Times.once());
     });
@@ -193,10 +189,10 @@ describe("PresentationManager", () => {
   describe("getNodesAndCount", () => {
 
     it("requests root nodes from proxy", async () => {
-      const result = { nodes: [createRandomECInstanceNode(), createRandomECInstanceNode()], count: 2 };
+      const result = { nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 };
       const options: Paged<HierarchyRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
@@ -209,11 +205,11 @@ describe("PresentationManager", () => {
     });
 
     it("requests child nodes from proxy", async () => {
-      const parentNodeKey = createRandomECInstanceNodeKey();
-      const result = { nodes: [createRandomECInstanceNode(), createRandomECInstanceNode()], count: 2 };
+      const parentNodeKey = createRandomECInstancesNodeKey();
+      const result = { nodes: [createRandomECInstancesNode(), createRandomECInstancesNode()], count: 2 };
       const options: Paged<HierarchyRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
@@ -230,10 +226,10 @@ describe("PresentationManager", () => {
   describe("getNodes", () => {
 
     it("requests root nodes from proxy", async () => {
-      const result = [createRandomECInstanceNode(), createRandomECInstanceNode()];
+      const result = [createRandomECInstancesNode(), createRandomECInstancesNode()];
       const options: Paged<HierarchyRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
@@ -246,11 +242,11 @@ describe("PresentationManager", () => {
     });
 
     it("requests child nodes from proxy", async () => {
-      const parentNodeKey = createRandomECInstanceNodeKey();
-      const result = [createRandomECInstanceNode(), createRandomECInstanceNode()];
+      const parentNodeKey = createRandomECInstancesNodeKey();
+      const result = [createRandomECInstancesNode(), createRandomECInstancesNode()];
       const options: Paged<HierarchyRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
@@ -270,7 +266,7 @@ describe("PresentationManager", () => {
       const result = faker.random.number();
       const options: HierarchyRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
         .setup((x) => x.getNodesCount(prepareOptions(options), undefined))
@@ -282,11 +278,11 @@ describe("PresentationManager", () => {
     });
 
     it("requests child nodes count from proxy", async () => {
-      const parentNodeKey = createRandomECInstanceNodeKey();
+      const parentNodeKey = createRandomECInstancesNodeKey();
       const result = faker.random.number();
       const options: HierarchyRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
         .setup((x) => x.getNodesCount(prepareOptions(options), NodeKey.toJSON(parentNodeKey)))
@@ -305,7 +301,7 @@ describe("PresentationManager", () => {
       const value = [createRandomNodePathElement(0), createRandomNodePathElement(0)];
       const options: HierarchyRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock.setup((x) => x.getFilteredNodePaths(prepareOptions(options), "filter"))
         .returns(async () => value.map(NodePathElement.toJSON))
@@ -324,7 +320,7 @@ describe("PresentationManager", () => {
       const keyArray = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
       const options: HierarchyRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock.setup((x) => x.getNodePaths(prepareOptions(options), keyArray.map((k) => k.map(InstanceKey.toJSON)), 1))
         .returns(async () => value.map(NodePathElement.toJSON))
@@ -341,7 +337,7 @@ describe("PresentationManager", () => {
     it("calls loadHierarchy through proxy with default 'preload' priority", async () => {
       const options: HierarchyRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock.setup((x) => x.loadHierarchy({ ...prepareOptions(options), priority: RequestPriority.Preload }))
         .returns(() => Promise.resolve())
@@ -353,7 +349,7 @@ describe("PresentationManager", () => {
     it("calls loadHierarchy through proxy with specified priority", async () => {
       const options: HierarchyRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
         priority: 999,
       };
       rpcRequestsHandlerMock.setup((x) => x.loadHierarchy({ ...prepareOptions(options), priority: 999 }))
@@ -372,7 +368,7 @@ describe("PresentationManager", () => {
       const result = createRandomDescriptor();
       const options: ContentRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
         .setup((x) => x.getContentDescriptor(prepareOptions(options), "test", keyset.toJSON(), undefined))
@@ -388,7 +384,7 @@ describe("PresentationManager", () => {
       const keyset = new KeySet();
       const options: ContentRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
         .setup((x) => x.getContentDescriptor(prepareOptions(options), "test", keyset.toJSON(), undefined))
@@ -409,7 +405,7 @@ describe("PresentationManager", () => {
       const result = faker.random.number();
       const options: ContentRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
         .setup((x) => x.getContentSetSize(prepareOptions(options), moq.deepEquals(descriptor.createStrippedDescriptor()), keyset.toJSON()))
@@ -427,7 +423,7 @@ describe("PresentationManager", () => {
       const result = faker.random.number();
       const options: ContentRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getContentSetSize(prepareOptions(options), overrides, keyset.toJSON()))
@@ -448,7 +444,7 @@ describe("PresentationManager", () => {
       const result = new Content(descriptor, []);
       const options: Paged<ContentRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
@@ -469,7 +465,7 @@ describe("PresentationManager", () => {
       const result = new Content(descriptor, []);
       const options: Paged<ContentRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
@@ -488,7 +484,7 @@ describe("PresentationManager", () => {
       const descriptor = createRandomDescriptor();
       const options: Paged<ContentRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getContent(prepareOptions(options), moq.deepEquals(descriptor.createStrippedDescriptor()), keyset.toJSON()))
@@ -512,7 +508,7 @@ describe("PresentationManager", () => {
       };
       const options: Paged<ContentRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
@@ -534,7 +530,7 @@ describe("PresentationManager", () => {
       };
       const options: Paged<ContentRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
         paging: testData.pageOptions,
       };
       rpcRequestsHandlerMock
@@ -555,14 +551,14 @@ describe("PresentationManager", () => {
       };
       const options: Paged<ContentRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
         .setup(async (x) => x.getContentAndSize(prepareOptions(options), moq.deepEquals(descriptor.createStrippedDescriptor()), keyset.toJSON()))
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getContentAndSize(options, descriptor, keyset);
-      expect(actualResult).to.deep.eq(result);
+      expect(actualResult).to.be.undefined;
       rpcRequestsHandlerMock.verifyAll();
     });
 
@@ -578,7 +574,7 @@ describe("PresentationManager", () => {
       const result = [faker.random.word(), faker.random.word()];
       const options: ContentRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
         .setup((x) => x.getDistinctValues(prepareOptions(options),
@@ -594,7 +590,7 @@ describe("PresentationManager", () => {
     it("passes 0 for maximumValueCount by default", async () => {
       const options: ContentRequestOptions<IModelConnection> = {
         imodel: testData.imodelMock.object,
-        rulesetId: testData.rulesetId,
+        rulesetOrId: testData.rulesetId,
       };
       rpcRequestsHandlerMock
         .setup((x) => x.getDistinctValues(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAnyString(), 0))
@@ -602,44 +598,6 @@ describe("PresentationManager", () => {
       await manager.getDistinctValues(options, createRandomDescriptor(), new KeySet(), "");
       rpcRequestsHandlerMock.verifyAll();
     });
-  });
-
-  describe("getDisplayLabel", () => {
-
-    it("requests display label", async () => {
-      const key = createRandomECInstanceKey();
-      const result = faker.random.word();
-      const options: LabelRequestOptions<IModelConnection> = {
-        imodel: testData.imodelMock.object,
-      };
-      rpcRequestsHandlerMock
-        .setup(async (x) => x.getDisplayLabel(toIModelTokenOptions(options), key))
-        .returns(async () => result)
-        .verifiable();
-      const actualResult = await manager.getDisplayLabel(options, key);
-      expect(actualResult).to.eq(result);
-      rpcRequestsHandlerMock.verifyAll();
-    });
-
-  });
-
-  describe("getDisplayLabels", () => {
-
-    it("requests display labels", async () => {
-      const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
-      const result = [faker.random.word(), faker.random.word()];
-      const options: LabelRequestOptions<IModelConnection> = {
-        imodel: testData.imodelMock.object,
-      };
-      rpcRequestsHandlerMock
-        .setup(async (x) => x.getDisplayLabels(toIModelTokenOptions(options), keys))
-        .returns(async () => result)
-        .verifiable();
-      const actualResult = await manager.getDisplayLabels(options, keys);
-      expect(actualResult).to.deep.eq(result);
-      rpcRequestsHandlerMock.verifyAll();
-    });
-
   });
 
   describe("getDisplayLabelDefinition", () => {
@@ -661,7 +619,7 @@ describe("PresentationManager", () => {
 
   });
 
-  describe("getDisplayLabelsDefinitions", () => {
+  describe("getDisplayLabelDefinitions", () => {
 
     it("requests display labels definitions", async () => {
       const keys = [createRandomECInstanceKey(), createRandomECInstanceKey()];
@@ -670,10 +628,10 @@ describe("PresentationManager", () => {
         imodel: testData.imodelMock.object,
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getDisplayLabelsDefinitions(toIModelTokenOptions(options), keys))
+        .setup(async (x) => x.getDisplayLabelDefinitions(toIModelTokenOptions(options), keys))
         .returns(async () => result)
         .verifiable();
-      const actualResult = await manager.getDisplayLabelsDefinitions(options, keys);
+      const actualResult = await manager.getDisplayLabelDefinitions(options, keys);
       expect(actualResult).to.deep.eq(result);
       rpcRequestsHandlerMock.verifyAll();
     });
@@ -698,9 +656,7 @@ describe("PresentationManager", () => {
         paging: testData.pageOptions,
         rulesetOrId: testRuleset.id,
       };
-
       const expectedOptions = { ...options, rulesetOrId: testRuleset, rulesetVariables: [testRulesetVariable] };
-
       rpcRequestsHandlerMock
         .setup((x) => x.getNodesCount(toIModelTokenOptions(expectedOptions), undefined))
         .returns(async () => 0)
@@ -730,10 +686,9 @@ describe("PresentationManager", () => {
       const options: Paged<HierarchyRequestOptions<IModelConnection>> = {
         imodel: testData.imodelMock.object,
         paging: testData.pageOptions,
+        rulesetOrId: "",
       };
-
-      const expectedOptions = { ...options, rulesetOrId: "", rulesetVariables: [] };
-
+      const expectedOptions = { ...options, rulesetVariables: [] };
       rpcRequestsHandlerMock
         .setup((x) => x.getNodesCount(toIModelTokenOptions(expectedOptions), undefined))
         .returns(async () => 0)

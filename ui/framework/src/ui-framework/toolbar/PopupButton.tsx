@@ -79,8 +79,8 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       this._label = UiFramework.i18n.translate(props.labelKey);
 
     this.state = {
-      isVisible: undefined !== props.isVisible ? props.isVisible : true,
-      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true,
+      isVisible: undefined !== props.isVisible ? props.isVisible : true, // tslint:disable-line:deprecation
+      isEnabled: undefined !== props.isEnabled ? props.isEnabled : true, // tslint:disable-line:deprecation
       isActive: undefined !== props.isActive ? props.isActive : false,
       isPressed: undefined !== props.isPressed ? props.isPressed : false,
     };
@@ -106,14 +106,14 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     let newState: BaseItemState = { ...this.state };
 
     // istanbul ignore else
-    if (this.props.stateSyncIds && this.props.stateSyncIds.length > 0)
-      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+    if (this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // tslint:disable-line:deprecation
+      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // tslint:disable-line:deprecation
 
     // istanbul ignore else
     if (refreshState) {
       // istanbul ignore else
-      if (this.props.stateFunc)
-        newState = this.props.stateFunc(newState);
+      if (this.props.stateFunc) // tslint:disable-line:deprecation
+        newState = this.props.stateFunc(newState); // tslint:disable-line:deprecation
       // istanbul ignore next
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         if (this._isMounted)

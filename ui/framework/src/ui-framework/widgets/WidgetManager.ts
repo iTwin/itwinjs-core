@@ -49,7 +49,7 @@ export interface WidgetProvidersChangedEventArgs {
 export class WidgetsChangedEvent extends BeUiEvent<WidgetsChangedEventArgs> { }
 
 /** Widget Provider interface.
- * @alpha
+ * @beta
  */
 export interface WidgetProvider {
   /** Id of provider */
@@ -59,7 +59,7 @@ export interface WidgetProvider {
 }
 
 /** Widget Manager class.
- * @alpha
+ * @beta
  */
 export class WidgetManager {
   private _widgets: ReadonlyArray<WidgetInfo> = [];

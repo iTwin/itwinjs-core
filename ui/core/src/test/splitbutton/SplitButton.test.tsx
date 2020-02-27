@@ -19,6 +19,10 @@ describe("<SplitButton />", () => {
     shallow(<SplitButton label="test" icon="icon-placeholder" />).should.matchSnapshot();
   });
 
+  it("renders with drawBorder correctly", () => {
+    shallow(<SplitButton label="test" drawBorder />).should.matchSnapshot();
+  });
+
   it("handles keydown correctly", () => {
     const wrapper = mount(<SplitButton label="test" />);
     // does not yet have expects, but does test that the onKeyUp code runs.

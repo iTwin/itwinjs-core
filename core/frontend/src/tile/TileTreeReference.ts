@@ -175,4 +175,6 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
   }
 
   public getTerrainHeight(_terrainHeights: Range1d): void { }
+
+  public abstract get castsShadows(): boolean;
 }

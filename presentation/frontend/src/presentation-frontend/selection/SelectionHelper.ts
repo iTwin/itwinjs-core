@@ -25,8 +25,6 @@ export class SelectionHelper {
       if (Key.isNodeKey(key)) {
         if (NodeKey.isInstancesNodeKey(key))
           result.push(...key.instanceKeys);
-        else if (NodeKey.isInstanceNodeKey(key))
-          result.push(key.instanceKey);
         else
           result.push(key);
       } else {

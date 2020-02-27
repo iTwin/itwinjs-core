@@ -8,13 +8,15 @@
  * @docs-group-description Core
  * Common types used for retrieving presentation data from iModels.
  */
-export { PersistenceHelper } from "./presentation-frontend/PersistenceHelper";
 export { Presentation } from "./presentation-frontend/Presentation";
 export { PresentationManager, PresentationManagerProps } from "./presentation-frontend/PresentationManager";
 export { RulesetManager } from "./presentation-frontend/RulesetManager";
 export { RulesetVariablesManager } from "./presentation-frontend/RulesetVariablesManager";
-export { FavoritePropertiesManager, FavoriteProperties } from "./presentation-frontend/favorite-properties/FavoritePropertiesManager";
-export { IFavoritePropertiesStorage, IModelAppFavoritePropertiesStorage } from "./presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+export {
+  FavoritePropertiesManager, PropertyFullName, FavoritePropertiesOrderInfo,
+  FavoritePropertiesScope, getFieldInfos, createFieldOrderInfos,
+} from "./presentation-frontend/favorite-properties/FavoritePropertiesManager";
+export { IFavoritePropertiesStorage } from "./presentation-frontend/favorite-properties/FavoritePropertiesStorage";
 
 /**
  * @module UnifiedSelection
@@ -28,8 +30,8 @@ export {
 export { ISelectionProvider } from "./presentation-frontend/selection/ISelectionProvider";
 export { SelectionManager, SelectionManagerProps } from "./presentation-frontend/selection/SelectionManager";
 export { SelectionScopesManager, SelectionScopesManagerProps, getScopeId } from "./presentation-frontend/selection/SelectionScopesManager";
-export { SelectionHandler } from "./presentation-frontend/selection/SelectionHandler";
-export { HiliteSet, HiliteSetProvider } from "./presentation-frontend/selection/HiliteSetProvider";
+export { SelectionHandler, SelectionHandlerProps } from "./presentation-frontend/selection/SelectionHandler";
+export { HiliteSet, HiliteSetProvider, HiliteSetProviderProps } from "./presentation-frontend/selection/HiliteSetProvider";
 export { SelectionHelper } from "./presentation-frontend/selection/SelectionHelper";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.

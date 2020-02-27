@@ -11,6 +11,7 @@ import { Cartographic, IModelCoordinatesResponseProps, GeoCoordStatus } from "@b
 import { JpegTagReader, ImageTags, ImageTagValue, ImageTagsMap } from "./JpegTagReader";
 import { ITreeDataProvider, TreeNodeItem, TreeDataChangesListener, PageOptions, DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 export const loggerCategory = "Plugins.GeoPhoto";
 
@@ -123,8 +124,8 @@ export abstract class PhotoFolder extends FolderEntry implements DelayLoadedTree
     return this.name;
   }
 
-  get label(): string {
-    return this.name;
+  get label(): PropertyRecord {
+    return PropertyRecord.fromString(this.name);
   }
 
   public get hasChildren(): boolean {

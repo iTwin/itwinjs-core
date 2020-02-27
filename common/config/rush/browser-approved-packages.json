@@ -7,6 +7,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@babel/core",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@bentley/bentleyjs-core",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
@@ -132,7 +136,7 @@
     },
     {
       "name": "@bentley/ui-abstract",
-      "allowedCategories": [ "frontend", "internal", "plugins" ]
+      "allowedCategories": [ "frontend", "internal", "plugins", "tools" ]
     },
     {
       "name": "@bentley/ui-components",
@@ -171,6 +175,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@svgr/webpack",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@testing-library/dom",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -184,7 +192,7 @@
     },
     {
       "name": "@typescript-eslint/parser",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "@ungap/url-search-params",
@@ -199,8 +207,20 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "babel-loader",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "babel-plugin-named-asset-import",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "babel-preset-react-app",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "body-parser",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "bunyan",
@@ -209,6 +229,10 @@
     {
       "name": "bunyan-seq",
       "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "cache-loader",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "cache-require-paths",
@@ -364,11 +388,11 @@
     },
     {
       "name": "eslint",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "eslint-plugin-react-hooks",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
     },
     {
       "name": "event-stream",
@@ -535,6 +559,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "micro-memoize",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "mini-css-extract-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -625,6 +653,18 @@
     {
       "name": "postcss-loader",
       "allowedCategories": [ "internal", "tools" ]
+    },
+    {
+      "name": "postcss-normalize",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "postcss-preset-env",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "postcss-safe-parser",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "promise",
@@ -767,6 +807,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "resolve-url-loader",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "rimraf",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "plugins", "tools" ]
     },
@@ -849,6 +893,14 @@
     {
       "name": "tar",
       "allowedCategories": [ "backend", "tools" ]
+    },
+    {
+      "name": "terser-webpack-plugin",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "thread-loader",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "tooltip.js",
@@ -972,6 +1024,10 @@
     },
     {
       "name": "webpack-node-externals",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "webpack-sources",
       "allowedCategories": [ "tools" ]
     },
     {

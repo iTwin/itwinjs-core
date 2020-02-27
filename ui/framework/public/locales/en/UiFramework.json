@@ -36,18 +36,6 @@
     "isoLeft": "Iso Left",
     "isoRight": "Iso Right"
   },
-  "cube": {
-    "front": "FRONT",
-    "back": "BACK",
-    "top": "TOP",
-    "bottom": "BOTTOM",
-    "left": "LEFT",
-    "right": "RIGHT"
-  },
-  "drawing": {
-    "unrotate": "Un-Rotate",
-    "rotateStyle": "Toggle background-rotate"
-  },
   "messageCenter": {
     "messages": "Messages",
     "all": "All",

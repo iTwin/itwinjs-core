@@ -6,6 +6,7 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import * as faker from "faker";
 import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import {
   MutableTreeModel, MutableTreeModelNode, isTreeModelNodePlaceholder,
   TreeModelNodeInput, TreeModelRootNode, TreeModelNode, isTreeModelNode, TreeModelNodePlaceholder, isTreeModelRootNode,
@@ -158,10 +159,10 @@ describe("MutableTreeModel", () => {
       const input: TreeModelNodeInput = {
         id: faker.random.uuid(),
         isExpanded: faker.random.boolean(),
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
         isLoading: faker.random.boolean(),
         isSelected: faker.random.boolean(),
-        item: { id: faker.random.uuid(), label: faker.random.word() },
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
       };
 
       treeMock.setup((x) => x.setChildren(undefined, [createTreeModelNode(treeModel.getRootNode(), input)], 0)).verifiable(moq.Times.once());
@@ -209,10 +210,10 @@ describe("MutableTreeModel", () => {
       const input: TreeModelNodeInput = {
         id: faker.random.uuid(),
         isExpanded: faker.random.boolean(),
-        label: faker.random.word(),
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
         isLoading: faker.random.boolean(),
         isSelected: faker.random.boolean(),
-        item: { id: faker.random.uuid(), label: faker.random.word() },
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
       };
 
       treeMock.setup((x) => x.insertChild(undefined, createTreeModelNode(treeModel.getRootNode(), input), 0)).verifiable(moq.Times.once());

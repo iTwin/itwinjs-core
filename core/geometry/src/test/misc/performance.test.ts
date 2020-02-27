@@ -7,7 +7,7 @@ import { Geometry } from "../../Geometry";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-/* tslint:disable:no-console no-unused-variable */
+/* tslint:disable:no-console */
 
 function inverseCalculationLoop(numTest: number, usingCache: boolean, usingResult: boolean) {
   const savedFlag = Matrix3d.useCachedInverse;
@@ -468,7 +468,7 @@ describe("Geometry.ComputeBreakdown", () => {
 });
 
 describe("Geometry.RotInverseCalculations", () => {
-  it("RotmatrixInverse with (Cache*New) variants", () => {
+  it("Matrix3dInverse with (Cache*New) variants", () => {
     const myCount = numTestGlobal / 2;
     TimingTests.runTestC(myCount);
     TimingTests.runTestC(myCount);
@@ -483,7 +483,7 @@ describe("Geometry.Hypotenuse", () => {
 });
 
 describe("Geometry.HypotenuseSquared", () => {
-  it("Various runtimes of Geometry's hypotenuse squared functions", () => {
+  it("Various run times of Geometry's hypotenuse squared functions", () => {
     TimingTests.runTestE(numTestGlobal);
   });
 });

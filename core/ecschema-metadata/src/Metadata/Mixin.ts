@@ -47,11 +47,6 @@ export class Mixin extends ECClass {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this Mixin's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -97,11 +92,6 @@ export class Mixin extends ECClass {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(mixinProps: MixinProps) {
-    this.fromJSONSync(mixinProps);
-  }
-
   public fromJSONSync(mixinProps: MixinProps) {
     super.fromJSONSync(mixinProps);
     const entityClassSchemaItemKey = this.schema.getSchemaItemKey(mixinProps.appliesTo);
@@ -114,11 +104,6 @@ export class Mixin extends ECClass {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
         return appliesTo;
       });
-  }
-
-  /** @deprecated */
-  public async deserialize(mixinProps: MixinProps) {
-    await this.fromJSON(mixinProps);
   }
 
   public async fromJSON(mixinProps: MixinProps) {

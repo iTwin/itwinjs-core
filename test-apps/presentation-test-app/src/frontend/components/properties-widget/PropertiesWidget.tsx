@@ -5,16 +5,16 @@
 
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
-import { useCallback } from "react";
-import { useAsync } from "react-async-hook";
-import { IModelApp, IModelConnection, PropertyRecord } from "@bentley/imodeljs-frontend";
+import { useMemo } from "react";
+import { PropertyRecord } from "@bentley/ui-abstract";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   PresentationPropertyDataProvider, propertyGridWithUnifiedSelection,
   IPresentationPropertyDataProvider,
 } from "@bentley/presentation-components";
 import { Field } from "@bentley/presentation-common";
 import { GlobalContextMenu, ContextMenuItem, ContextMenuItemProps, Orientation } from "@bentley/ui-core";
-import { PropertyGrid, PropertyData, PropertyCategory, PropertyGridContextMenuArgs, ActionButtonRendererProps } from "@bentley/ui-components";
+import { PropertyGrid, PropertyData, PropertyCategory, PropertyGridContextMenuArgs, ActionButtonRendererProps, useAsyncValue } from "@bentley/ui-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import "./PropertiesWidget.css";
 
@@ -136,8 +136,8 @@ export default class PropertiesWidget extends React.Component<Props, State> {
 
   private _favoriteActionButtonRenderer = (props: ActionButtonRendererProps) => {
     const { dataProvider } = this.state;
-    const getFieldByPropertyRecordCallback = useCallback((property: PropertyRecord) => dataProvider.getFieldByPropertyRecord(property), [dataProvider]);
-    const { result: field } = useAsync(getFieldByPropertyRecordCallback, [props.property]);
+    const { property } = props;
+    const field = useAsyncValue(useMemo(() => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
 
     return (
       <div>
@@ -236,5 +236,5 @@ class AutoExpandingPropertyDataProvider extends PresentationPropertyDataProvider
 }
 
 function createDataProvider(imodel: IModelConnection, rulesetId: string): PresentationPropertyDataProvider {
-  return new AutoExpandingPropertyDataProvider(imodel, rulesetId);
+  return new AutoExpandingPropertyDataProvider({ imodel, ruleset: rulesetId });
 }

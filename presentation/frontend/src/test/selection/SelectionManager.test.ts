@@ -778,7 +778,7 @@ describe("SelectionManager", () => {
 
   describe("getHiliteSet", () => {
 
-    let factory: sinon.SinonStub<[IModelConnection], HiliteSetProvider>;
+    let factory: sinon.SinonStub<[{ imodel: IModelConnection }], HiliteSetProvider>;
 
     beforeEach(() => {
       const providerMock = moq.Mock.ofType<HiliteSetProvider>();
@@ -796,7 +796,7 @@ describe("SelectionManager", () => {
 
       // call for the first with an imodel should create a provider
       await selectionManager.getHiliteSet(imodelMock1.object);
-      expect(factory).to.be.calledOnceWith(imodelMock1.object);
+      expect(factory).to.be.calledOnceWith({ imodel: imodelMock1.object });
       factory.resetHistory();
 
       // second call with same imodel shouldn't create a new provider
@@ -805,7 +805,7 @@ describe("SelectionManager", () => {
 
       // another imodel - new provider
       await selectionManager.getHiliteSet(imodelMock2.object);
-      expect(factory).to.be.calledOnceWith(imodelMock2.object);
+      expect(factory).to.be.calledOnceWith({ imodel: imodelMock2.object });
       factory.resetHistory();
 
       // make sure we still have provider for the first imodel

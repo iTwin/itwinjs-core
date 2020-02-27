@@ -128,22 +128,18 @@ export class PresentationManager implements IDisposable {
     });
   }
 
-  private async addRulesetAndVariablesToOptions<TOptions extends { rulesetId?: string, rulesetOrId?: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
-    const { rulesetId, rulesetOrId, rulesetVariables } = options;
-
+  private async addRulesetAndVariablesToOptions<TOptions extends { rulesetOrId: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
+    const { rulesetOrId, rulesetVariables } = options;
     let foundRulesetOrId: Ruleset | string;
     if (typeof rulesetOrId === "object") {
       foundRulesetOrId = rulesetOrId;
     } else {
-      const lookupId = rulesetOrId || rulesetId || "";
-      const foundRuleset = await this._rulesets.get(lookupId);
-      foundRulesetOrId = foundRuleset ? foundRuleset.toJSON() : lookupId;
+      const foundRuleset = await this._rulesets.get(rulesetOrId);
+      foundRulesetOrId = foundRuleset ? foundRuleset.toJSON() : rulesetOrId;
     }
-
-    const foundRulesetId = typeof foundRulesetOrId === "object" ? foundRulesetOrId.id : foundRulesetOrId;
-    const variablesManager = this.vars(foundRulesetId);
+    const rulesetId = (typeof foundRulesetOrId === "object") ? foundRulesetOrId.id : foundRulesetOrId;
+    const variablesManager = this.vars(rulesetId);
     const variables = [...(rulesetVariables || []), ...await variablesManager.getAllVariables()];
-
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
@@ -225,7 +221,7 @@ export class PresentationManager implements IDisposable {
    * Loads the whole hierarchy.
    * @param requestOptions options for the request. If `requestOptions.priority` is not set, it defaults to `RequestPriority.Preload`.
    * @return A promise object that resolves as soon as the load request is queued (not when loading finishes)
-   * @beta
+   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
    */
   public async loadHierarchy(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void> {
     await this.onConnection(requestOptions.imodel);
@@ -290,12 +286,13 @@ export class PresentationManager implements IDisposable {
    * @param keys                    Keys of ECInstances to get the content for.
    * @returns A promise object that returns either content and content set size on success or an error string on error.
    */
-  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet) {
+  public async getContentAndSize(requestOptions: Paged<ContentRequestOptions<IModelConnection>>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<{ content: Content, size: number } | undefined> {
     await this.onConnection(requestOptions.imodel);
 
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getContentAndSize(this.toIModelTokenOptions(options), this.createDescriptorParam(descriptorOrOverrides), keys.toJSON());
-    return { ...result, content: this._localizationHelper.getLocalizedContent(Content.fromJSON(result.content)) };
+    const localizedContent = this._localizationHelper.getLocalizedContent(Content.fromJSON(result.content));
+    return localizedContent ? { content: localizedContent, size: result.size } : undefined;
   }
 
   private createDescriptorParam(descriptorOrOverrides: Descriptor | DescriptorOverrides) {
@@ -321,27 +318,6 @@ export class PresentationManager implements IDisposable {
   }
 
   /**
-   * Retrieves display label of specific item
-   * @param requestOptions options for the request
-   * @param key Key of instance to get label for
-   * @deprecated use 'getDisplayLabelDefinition' instead
-   */
-  public async getDisplayLabel(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<string> {
-    await this.onConnection(requestOptions.imodel);
-    return this._requestsHandler.getDisplayLabel(this.toIModelTokenOptions(requestOptions), InstanceKey.toJSON(key));
-  }
-  /**
-   * Retrieves display label of specific items
-   * @param requestOptions options for the request
-   * @param keys Keys of instances to get labels for
-   * @deprecated use 'getDisplayLabelsDefinitions' instead
-   */
-  public async getDisplayLabels(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<string[]> {
-    await this.onConnection(requestOptions.imodel);
-    return this._requestsHandler.getDisplayLabels(this.toIModelTokenOptions(requestOptions), keys.map(InstanceKey.toJSON));
-  }
-
-  /**
    * Retrieves display label definition of specific item
    * @param requestOptions options for the request
    * @param key Key of instance to get label for
@@ -356,9 +332,9 @@ export class PresentationManager implements IDisposable {
    * @param requestOptions options for the request
    * @param keys Keys of instances to get labels for
    */
-  public async getDisplayLabelsDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]> {
+  public async getDisplayLabelDefinitions(requestOptions: LabelRequestOptions<IModelConnection>, keys: InstanceKey[]): Promise<LabelDefinition[]> {
     await this.onConnection(requestOptions.imodel);
-    const result = await this._requestsHandler.getDisplayLabelsDefinitions(this.toIModelTokenOptions(requestOptions), keys.map(InstanceKey.toJSON));
+    const result = await this._requestsHandler.getDisplayLabelDefinitions(this.toIModelTokenOptions(requestOptions), keys.map(InstanceKey.toJSON));
     return this._localizationHelper.getLocalizedLabelDefinitions(result.map(LabelDefinition.fromJSON));
   }
 

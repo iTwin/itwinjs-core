@@ -1,0 +1,156 @@
+{
+  "errors": {
+    "UnableToParseLength": "Unable to parse into a length value",
+    "UnableToParseAngle": "Unable to parse into an angle value"
+  },
+  "Header": {
+    "welcome": "Welcome to UI Test App"
+  },
+  "IModelListHeader": {
+    "projects": "Projects"
+  },
+  "IModelList": {
+    "noIModels": "There are no IModels in Project {{projectName}}"
+  },
+  "ContentLayoutDef": {
+    "OneView": "Single View",
+    "TwoAlongside": "Side by Side",
+    "TwoStacked": "Stacked",
+    "ThreeRightStacked": "Three Right Stacked",
+    "ThreeLeftStacked": "Three Left Stacked",
+    "FourQuadrants": "Four Quadrants",
+    "TwoHalvesHorizontal": "Two Halves Horizontal",
+    "TwoHalvesVertical": "Two Halves Vertical",
+    "SingleContent": "Single Content"
+  },
+  "Test": {
+    "my-label": "My Label",
+    "loading": "Loading..."
+  },
+  "settingsStage": {
+    "settings": "Settings",
+    "light": "Light",
+    "dark": "Dark",
+    "themeTitle": "Theme",
+    "themeDescription": "Toggle the theme between light and dark",
+    "autoHideTitle": "Auto-Hide UI",
+    "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
+    "dragInteractionTitle": "Drag Interaction",
+    "dragInteractionDescription": "Toggle the toolbar interaction between click and drag"
+  },
+  "backstage": {
+    "command": "Command",
+    "viewIModel": "View iModel",
+    "testFrontstage6": "Settings",
+    "iModelStage": "Review iModel",
+    "task1": "Test 1 Frontstage via Task",
+    "task2": "View iModel via Task",
+    "exit": "Exit",
+    "imodelopen": "IModel Open",
+    "imodelindex": "IModel Index",
+    "fileSelect": "Open Local File",
+    "custom": "Custom"
+  },
+  "toolAssist": {
+    "startPoint": "Start Point",
+    "title": "Tool Assistance"
+  },
+  "buttons": {
+    "cmdKeyinDialog": "Command Key-in",
+    "opencmdKeyinDialog": "Open command key-in dialog",
+    "misc": "tools",
+    "showCalculator": "Calculator"
+  },
+  "tools": {
+    "PlaceBlockTool": {
+      "keyin": "place block",
+      "description": "Place block",
+      "flyover": "Place block",
+      "prompts": {
+        "firstPoint": "First point",
+        "nextPoint": "Next point (Ctrl for polygon)",
+        "additionalPoint": "Additional point"
+      },
+      "ToolSettings": {
+        "heigh": "Height"
+      }
+    },
+    "DeleteElementTool": {
+      "keyin": "Test DeleteElementTool",
+      "description": "Delete element tool",
+      "flyover": "Delete Element"
+    },
+    "Tool2": {
+      "keyin": "Test Tool2",
+      "description": "Test2 tool",
+      "flyover": "Tool2",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit"
+      }
+    },
+    "Measure": {
+      "Points": {
+        "keyin": "Measure Points",
+        "description": "Measure distance between points",
+        "flyover": "Measure ByPoints",
+        "Prompts": {
+          "FirstPoint": "Enter first point",
+          "NextPoint": "Select next point / Reset"
+        }
+      }
+    },
+    "AppSelect": {
+      "keyin": "App Select Element",
+      "description": "Element Selection",
+      "flyover": "Select"
+    },
+    "select": "Select",
+    "fitView": "Fit View",
+    "windowArea": "Window Area",
+    "rotate": "Rotate",
+    "zoom": "Zoom",
+    "pan": "Pan",
+    "walk": "Walk",
+    "fly": "Fly",
+    "toggleCamera": "Toggle Camera"
+  },
+  "widgets": {
+    "NavigationTree": "Navigation Tree",
+    "VisibilityTree": "Visibility Tree",
+    "ModelSelector": "Model Selector",
+    "StatusBar": "Status Bar",
+    "VerticalPropertyGrid": "Vertical PropertyGrid",
+    "HorizontalPropertyGrid": "Horizontal PropertyGrid",
+    "UnifiedSelectPropertyGrid": "Unified Selection PropertyGrid",
+    "UnifiedSelectionTable": "Unified Selection Table",
+    "ActiveSettings": "Active Settings",
+    "ModelCreation": "Create Models"
+  },
+  "localFileStage": {
+    "localFile": "Local File",
+    "selectFile": "Select Local File"
+  },
+  "statusFields": {
+    "displayStyle": "Display Style",
+    "pushButtonTitle": "Push",
+    "pushButtonDisabledTitle": "No local changes to push.",
+    "pullButtonTitle": "Pull",
+    "pullButtonDisabledTitle": "No server changes to pull.",
+    "pullMergePushFailed": "Pull or push failed.",
+    "pullMergeFailed": "Failed to pull changes from server",
+    "sampleButton": "Sample Button",
+    "unnamedDisplayStyle": "unnamed"
+  },
+  "properties": {
+    "context-menu": {
+      "add-favorite": {
+        "label": "Add to Favorite",
+        "description": "Add this property to Favorite category"
+      },
+      "remove-favorite": {
+        "label": "Remove from Favorite",
+        "description": "Remove this property from Favorite category"
+      }
+    }
+  }
+}

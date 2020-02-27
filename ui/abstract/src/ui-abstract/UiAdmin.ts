@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Admin
+ * @module UiAdmin
  */
 
 import { XAndY } from "@bentley/geometry-core";

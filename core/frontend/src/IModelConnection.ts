@@ -8,7 +8,7 @@
 
 import {
   assert, BeEvent, BentleyStatus, BeTimePoint, DbResult, Dictionary, dispose, Id64, Id64Arg, Id64Array, Id64Set,
-  Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence, DbOpcode,
+  Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence, DbOpcode, GuidString,
 } from "@bentley/bentleyjs-core";
 import { Angle, Point3d, Range3dProps, XYAndZ, XYZProps, Range3d } from "@bentley/geometry-core";
 import {
@@ -971,6 +971,7 @@ export namespace IModelConnection {
       val.set(thumbnail.image, 24); // image data at offset 24
       return IModelWriteRpcInterface.getClient().saveThumbnail(this._iModel.iModelToken.toJSON(), val);
     }
+
   }
 
   /** Provides access to tiles associated with an IModelConnection
@@ -1307,7 +1308,7 @@ export namespace IModelConnection {
        * @param doPush Pass false if you only want to pull and merge. Pass true to pull, merge, and push. The default is true (do the push).
        * @alpha
        */
-      public async pullMergePush(comment: string, doPush: boolean = true): Promise<void> {
+      public async pullMergePush(comment: string, doPush: boolean = true): Promise<GuidString> {
         return this._rpc.pullMergePush(this.iModelToken, comment, doPush);
       }
     }

@@ -10,7 +10,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 import * as _ from "lodash";
 import { IModelConnection, findAvailableUnattachedRealityModels, IModelApp, Viewport, ContextRealityModelState, SpatialViewState, ScreenViewport, SpatialModelState } from "@bentley/imodeljs-frontend";
-import { ContextRealityModelProps, BackgroundMapType, CartographicRange } from "@bentley/imodeljs-common";
+import { ContextRealityModelProps, BackgroundMapSettings, BackgroundMapType, CartographicRange } from "@bentley/imodeljs-common";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import { LoadingSpinner, SpinnerSize, SearchBox, ContextMenu, ContextMenuItem, ContextMenuDirection } from "@bentley/ui-core";
 import { RealityDataEntry, AttachedRealityModel } from "./RealityData";
@@ -471,13 +471,13 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
     this._vp!.viewFlags = newFlags;
 
     if (isEnabled) {
-      (this._vp!.view as SpatialViewState).getDisplayStyle3d().setBackgroundMap({
+      (this._vp!.view as SpatialViewState).getDisplayStyle3d().changeBackgroundMapProps(BackgroundMapSettings.fromJSON({
         groundBias: view.getDisplayStyle3d().settings.backgroundMap.groundBias,
         providerName: "BingProvider",
         providerData: {
           mapType: this.state.bingMapType,
         },
-      });
+      }));
       this._vp!.synchWithView();
     }
 
@@ -723,13 +723,13 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
     const isMapEnabled = this._vp!.viewFlags.backgroundMap;
 
     if (isMapEnabled) {
-      (this._vp!.view as SpatialViewState).getDisplayStyle3d().setBackgroundMap({
+      (this._vp!.view as SpatialViewState).getDisplayStyle3d().changeBackgroundMapProps(BackgroundMapSettings.fromJSON({
         groundBias: view.getDisplayStyle3d().settings.backgroundMap.groundBias,
         providerName: "BingProvider",
         providerData: {
           mapType: this.state.bingMapType,
         },
-      });
+      }));
       this._vp!.synchWithView();
     }
 
@@ -756,4 +756,4 @@ export class RealityDataPicker extends React.Component<RealityDataPickerProps, R
 
 export default RealityDataPicker;
 
-ConfigurableUiManager.registerControl("RealityDataPicker", RealityDataPickerControl);
+ConfigurableUiManager.registerControl("RealityDataPicker", RealityDataPickerControl); // tslint:disable-line:deprecation

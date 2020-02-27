@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { PropertyRecord, PropertyDescription, Primitives } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyDescription, Primitives } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
 import { ItemColorOverrides, ItemStyle } from "../properties/ItemStyle";
 import { DistinctValueCollection, CompositeFilterDescriptorCollection } from "./columnfiltering/ColumnFiltering";
@@ -18,7 +18,7 @@ import { DistinctValueCollection, CompositeFilterDescriptorCollection } from "./
 export type HorizontalAlignment = "left" | "center" | "right" | "justify";
 
 /** Filter Renderer for a Table column
- * @alpha
+ * @beta
  */
 export enum FilterRenderer {
   Numeric = 1,
@@ -48,7 +48,7 @@ export interface ColumnDescription {
   sortIgnoreCase?: boolean;             /* Defaults to false */
 
   filterable?: boolean;                 /* Defaults to false */
-  /** @alpha */
+  /** @beta */
   filterRenderer?: FilterRenderer;
 
   // Not implemented yet
@@ -109,7 +109,9 @@ export declare type TableDataChangesListener = () => void;
  */
 export class TableDataChangeEvent extends BeEvent<TableDataChangesListener> { }
 
-/** @alpha */
+/** Table Distinct Value for Table filtering purposes
+ * @beta
+ */
 export interface TableDistinctValue {
   value: Primitives.Value;
   label: string;
@@ -133,16 +135,16 @@ export interface TableDataProvider {
   // Column Filtering methods
 
   /** Apply a filter descriptor collection
-   * @alpha
+   * @beta
    */
   applyFilterDescriptors?: (filterDescriptors: CompositeFilterDescriptorCollection) => Promise<void>;
 
   /** Gets distinct values in a column
-   * @alpha
+   * @beta
    */
   getDistinctValues?: (columnKey: string, maximumValueCount?: number) => Promise<DistinctValueCollection>;
 
-  /** Gets ECExpression to get property display value.
+  /** Gets property display value expression
    * @alpha
    */
   getPropertyDisplayValueExpression?: (property: string) => string;

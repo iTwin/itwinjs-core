@@ -24,6 +24,7 @@ $node-font-size: $uicore-font-size;
   > .contents {
     display: flex;
     align-items: center;
+    width: 100%;
 
     > .loader {
       margin: auto 4px;

@@ -7,7 +7,7 @@ import { expect } from "chai";
 
 import { Ruleset, RegisteredRuleset, InstanceKey, KeySet, Descriptor, PresentationRpcInterface } from "@bentley/presentation-common";
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
-import { IModelTokenProps, RpcManager } from "@bentley/imodeljs-common";
+import { RpcManager } from "@bentley/imodeljs-common";
 
 import { Presentation } from "@bentley/presentation-frontend";
 import { using, Id64 } from "@bentley/bentleyjs-core";
@@ -22,7 +22,7 @@ import * as getRelatedDistinctValues from "./rulesets/DistinctValues/getRelatedD
 describe("PresentationRpcInterface tests", () => {
   let iModel: IModelConnection;
   let ruleset: Ruleset;
-  let client: PresentationRpcInterface;
+  let client: PresentationRpcInterface; // tslint:disable-line:no-unused-variable
 
   before(async function () {
     const testContext = await TestContext.instance();
@@ -42,7 +42,7 @@ describe("PresentationRpcInterface tests", () => {
 
   it("getNodes works as expected", async () => {
     ruleset = defaultRuleset as any;
-    const props = { imodel: iModel, rulesetId: ruleset.id };
+    const props = { imodel: iModel, rulesetOrId: ruleset.id };
     await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const rootNodes1 = await Presentation.presentation.getNodes(props);
       expect(rootNodes1.length).to.be.equal(1);
@@ -51,17 +51,16 @@ describe("PresentationRpcInterface tests", () => {
 
   it("getNodesAndCount works as expected", async () => {
     ruleset = defaultRuleset as any;
-    const props = { imodel: iModel, rulesetId: ruleset.id };
+    const props = { imodel: iModel, rulesetOrId: ruleset.id };
     await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const nodesAndCount = await Presentation.presentation.getNodesAndCount(props);
-      expect(nodesAndCount.count).to.not.be.undefined;
       expect(nodesAndCount.count).to.not.be.undefined;
     });
   });
 
   it("getNodesCount works as expected", async () => {
     ruleset = defaultRuleset as any;
-    const props = { imodel: iModel, rulesetId: ruleset.id };
+    const props = { imodel: iModel, rulesetOrId: ruleset.id };
     await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const count = await Presentation.presentation.getNodesCount(props);
       expect(count).to.not.be.undefined;
@@ -70,7 +69,7 @@ describe("PresentationRpcInterface tests", () => {
 
   it("getNodePath works as expected", async () => {
     ruleset = getNodePaths as any;
-    const props = { imodel: iModel, rulesetId: ruleset.id };
+    const props = { imodel: iModel, rulesetOrId: ruleset.id };
     await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
       const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:RepositoryModel" };
       const key2: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
@@ -85,7 +84,7 @@ describe("PresentationRpcInterface tests", () => {
 
   it("getFilteredNodePaths works as expected", async () => {
     ruleset = getFilteredNodePaths as any;
-    const props = { imodel: iModel, rulesetId: ruleset.id };
+    const props = { imodel: iModel, rulesetOrId: ruleset.id };
     await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
       const result = await Presentation.presentation.getFilteredNodePaths(props, "filter");
       expect(result).to.not.be.undefined;
@@ -94,7 +93,7 @@ describe("PresentationRpcInterface tests", () => {
 
   it("loadHierarchy works as expected", async () => {
     ruleset = defaultRuleset as any;
-    const props = { imodel: iModel, rulesetId: ruleset.id };
+    const props = { imodel: iModel, rulesetOrId: ruleset.id };
     await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
       let success = true;
       try {
@@ -103,14 +102,6 @@ describe("PresentationRpcInterface tests", () => {
         success = false;
       }
       expect(success).to.be.true;
-    });
-  });
-
-  it("syncClientState works as expected", async () => {
-    ruleset = defaultRuleset as any;
-    await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
-      const result = await client.syncClientState(iModel.iModelToken.toJSON() as IModelTokenProps, { state: { rulesets: [ruleset] } });
-      expect(result).to.not.be.undefined;
     });
   });
 
@@ -128,7 +119,7 @@ describe("PresentationRpcInterface tests", () => {
         this.skip();
 
       ruleset = getRelatedDistinctValues as any;
-      props = { imodel: iModel, rulesetId: ruleset.id };
+      props = { imodel: iModel, rulesetOrId: ruleset.id };
     });
 
     it("getContentDescriptor works as expected", async () => {
@@ -167,20 +158,6 @@ describe("PresentationRpcInterface tests", () => {
       });
     });
 
-    it("getDisplayLabel works as expected", async () => {
-      await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
-        const displayLabel = await Presentation.presentation.getDisplayLabel(props, key1);
-        expect(displayLabel).to.not.be.undefined;
-      });
-    });
-
-    it("getDisplayLabels works as expected", async () => {
-      await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
-        const displayLabels = await Presentation.presentation.getDisplayLabels(props, [key1, key2]);
-        expect(displayLabels).to.not.be.undefined;
-      });
-    });
-
     it("getDisplayLabelDefinition works as expected", async () => {
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
         const displayLabel = await Presentation.presentation.getDisplayLabelDefinition(props, key1);
@@ -190,7 +167,7 @@ describe("PresentationRpcInterface tests", () => {
 
     it("getDisplayLabelDefinitions works as expected", async () => {
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
-        const displayLabels = await Presentation.presentation.getDisplayLabelsDefinitions(props, [key1, key2]);
+        const displayLabels = await Presentation.presentation.getDisplayLabelDefinitions(props, [key1, key2]);
         expect(displayLabels).to.not.be.undefined;
       });
     });

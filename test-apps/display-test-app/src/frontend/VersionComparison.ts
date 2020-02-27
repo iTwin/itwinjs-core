@@ -223,6 +223,10 @@ class Reference extends TileTreeReference {
     this._provider = provider;
   }
 
+  public get castsShadows() {
+    return this._ref.castsShadows;
+  }
+
   public get treeOwner() { return this._ref.treeOwner; }
 
   protected getSymbologyOverrides(_tree: TileTree) {

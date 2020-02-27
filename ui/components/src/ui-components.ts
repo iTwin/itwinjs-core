@@ -22,6 +22,7 @@ export * from "./ui-components/common/selection/SelectionHandler";
 export * from "./ui-components/common/showhide/ShowHideDialog";
 export * from "./ui-components/common/showhide/ShowHideItem";
 export * from "./ui-components/common/showhide/ShowHideMenu";
+export * from "./ui-components/common/UseAsyncValue";
 
 export * from "./ui-components/converters/TypeConverter";
 export * from "./ui-components/converters/TypeConverterManager";
@@ -56,6 +57,9 @@ export * from "./ui-components/editors/IconEditor";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
+
+export * from "./ui-components/navigationaids/CubeNavigationAid";
+export * from "./ui-components/navigationaids/DrawingNavigationAid";
 
 export * from "./ui-components/oidc/SignIn";
 
@@ -119,15 +123,14 @@ export * from "./ui-components/table/hocs/withDragDrop";
 export * from "./ui-components/tooltip/UITooltipRenderer";
 
 export * from "./ui-components/tree/TreeDataProvider";
-export * from "./ui-components/tree/HighlightingEngine";
-export * from "./ui-components/tree/component/Tree";
-export * from "./ui-components/tree/component/BeInspireTree";
-export * from "./ui-components/tree/component/Node";
-export * from "./ui-components/tree/CellEditingEngine";
-export * from "./ui-components/tree/ImageLoader";
-export * from "./ui-components/tree/hocs/withDragDrop";
 export * from "./ui-components/tree/SimpleTreeDataProvider";
-
+export * from "./ui-components/tree/HighlightingEngine";
+export * from "./ui-components/tree/ImageLoader";
+export * from "./ui-components/tree/deprecated/component/Tree";
+export * from "./ui-components/tree/deprecated/component/BeInspireTree";
+export * from "./ui-components/tree/deprecated/component/Node";
+export * from "./ui-components/tree/deprecated/CellEditingEngine";
+export * from "./ui-components/tree/deprecated/hocs/withDragDrop";
 export * from "./ui-components/tree/controlled/TreeActions";
 export * from "./ui-components/tree/controlled/TreeEventDispatcher";
 export * from "./ui-components/tree/controlled/TreeEventHandler";
@@ -155,6 +158,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 
 /** @docs-package-description
  * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.
+ * For more information, see [learning about ui-components]($docs/learning/ui/components/index.md).
  */
 /**
  * @docs-group-description Common
@@ -162,11 +166,11 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Breadcrumb
- * Classes for working with a Breadcrumb.
+ * Classes and components for working with a Breadcrumb.
  */
 /**
  * @docs-group-description Color
- * Classes for working with and picking a Color.
+ * Classes and components for working with and picking a Color.
  */
 /**
  * @docs-group-description DragDrop
@@ -174,11 +178,15 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Filtering
- * Classes for working with filtering.
+ * Classes and components for working with filtering.
  */
 /**
  * @docs-group-description LineWeight
- * Classes for working with and picking a Line Weight.
+ * Classes and components for working with and picking a Line Weight.
+ */
+/**
+ * @docs-group-description NavigationAids
+ * Classes and components for working with Navigation Aids.
  */
 /**
  * @docs-group-description OIDC
@@ -186,23 +194,23 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Properties
- * Classes for working with Properties.
+ * Classes and components for working with Properties.
  */
 /**
  * @docs-group-description PropertyEditors
- * Classes for working with Property Editors.
+ * Classes and components for working with Property Editors.
  */
 /**
  * @docs-group-description PropertyGrid
- * Classes for working with a PropertyGrid.
+ * Classes and components for working with a PropertyGrid.
  */
 /**
  * @docs-group-description Table
- * Classes for working with a Table.
+ * Classes and components for working with a Table.
  */
 /**
  * @docs-group-description Tree
- * Classes for working with a Tree.
+ * Classes and components for working with a Tree.
  */
 /**
  * @docs-group-description TypeConverters
@@ -210,5 +218,5 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Viewport
- * Classes for working with a Viewport.
+ * Classes and components for working with a Viewport.
  */

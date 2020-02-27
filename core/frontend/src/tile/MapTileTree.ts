@@ -49,6 +49,7 @@ import {
   Tile,
   TileContent,
   TileDrawArgs,
+  TileGraphicType,
   TileParams,
   TileTreeLoadStatus,
   TileTreeParams,
@@ -69,7 +70,6 @@ import { RenderMemory } from "../render/RenderMemory";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
-import { ViewState3d } from "../ViewState";
 
 const scratchNormal = Vector3d.create();
 const scratchViewZ = Vector3d.create();
@@ -111,6 +111,9 @@ export abstract class MapTile extends RealityTile {
       stats.addTexture(this.texture.bytesUsed);
   }
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
+    if (!this.isDisplayable)
+      return;
+
     const heightRange = (this.heightRange === undefined) ? Range1d.createXX(-1, 1) : this.heightRange;
     const lows = [], highs = [], reorder = [0, 1, 3, 2, 0];
     const cornerRays = this._cornerRays!;
@@ -127,11 +130,15 @@ export abstract class MapTile extends RealityTile {
 
     const inColor = new ColorDef(ColorByName.cornflowerBlue);
     const outColor = new ColorDef(ColorByName.chartreuse);
-    const inPoints = [], outPoints = [];
+    const transitionColor = new ColorDef(ColorByName.aquamarine);
+
+    const inPoints = [], outPoints = [], transitionPoints = [];
 
     for (const point of highs)
       if (this.mapTree.cartesianRange.containsPoint(point))
         inPoints.push(point);
+      else if (this.mapTree.cartesianRange.distanceToPoint(point) < this.mapTree.cartesianTransitionDistance)
+        transitionPoints.push(point);
       else
         outPoints.push(point);
 
@@ -139,18 +146,30 @@ export abstract class MapTile extends RealityTile {
     builder.addPointString(inPoints);
     builder.setSymbology(outColor, outColor, 15);
     builder.addPointString(outPoints);
+    builder.setSymbology(transitionColor, transitionColor, 31);
+    builder.addPointString(transitionPoints);
   }
 
-  public getContentClip(): ClipVector | undefined {
+  public getClipShape(): Point3d[] {
     const cornerRays = this._cornerRays!;
-    const points = [cornerRays[0].origin, cornerRays[1].origin, cornerRays[3].origin, cornerRays[2].origin];
-    if (this.mapTree.globeMode === GlobeMode.ThreeD) {
+    return [cornerRays[0].origin, cornerRays[1].origin, cornerRays[3].origin, cornerRays[2].origin];
+  }
+  public getContentClip(): ClipVector | undefined {
+    const points = this.getClipShape();
+    if (points.length < 3)
+      return undefined;
+    if (this.mapTree.globeMode === GlobeMode.Ellipsoid) {
+      const normal = PolygonOps.areaNormal(points);
       const globeOrigin = this.mapTree.globeOrigin;
+      const globeNormal = Vector3d.createStartEnd(globeOrigin, points[0]);
+      const negate = normal.dotProduct(globeNormal) < 0;
       const clipPlanes = [];
       for (let i = 0; i < 4; i++) {
         const point = points[i];
-        const normal = point.crossProductToPoints(globeOrigin, points[(i + 1) % 4], scratchNormal);
-        const clipPlane = ClipPlane.createNormalAndPoint(normal, point, false, false, scratchClipPlanes[i]);
+        const clipNormal = globeOrigin.crossProductToPoints(point, points[(i + 1) % 4], scratchNormal);
+        if (negate)
+          clipNormal.negate(clipNormal);
+        const clipPlane = ClipPlane.createNormalAndPoint(clipNormal, point, false, false, scratchClipPlanes[i]);
         if (clipPlane !== undefined)      // Undefined at pole tiles...
           clipPlanes.push(clipPlane);
       }
@@ -186,7 +205,7 @@ export abstract class MapTile extends RealityTile {
    * @internal
    */
   public get isDisplayable() {
-    return this.mapTree.globeMode === GlobeMode.ThreeD ? (this.depth >= MapTileTree.minDisplayableDepth) : super.isDisplayable;
+    return this.mapTree.globeMode === GlobeMode.Ellipsoid ? (this.depth >= MapTileTree.minDisplayableDepth) : super.isDisplayable;
   }
   public setReprojectedCorners(reprojectedCorners: Point3d[]): void {
     const cartesianRange = this.mapTree.cartesianRange;
@@ -205,7 +224,7 @@ export abstract class MapTile extends RealityTile {
   }
 
   public isOccluded(viewingSpace: ViewingSpace): boolean {
-    if (undefined === this._cornerRays || this.mapTree.globeMode !== GlobeMode.ThreeD)
+    if (undefined === this._cornerRays || this.mapTree.globeMode !== GlobeMode.Ellipsoid)
       return false;
 
     if (viewingSpace.eyePoint !== undefined) {
@@ -305,7 +324,7 @@ export abstract class MapTile extends RealityTile {
         normal.normalizeInPlace();
         const heightRange = this.mapTree.getChildHeightRange(quadId, rectangle, this);
         const diagonal = Math.max(corners[0].distance(corners[3]), corners[1].distance(corners[2])) / 2.0;
-        const chordHeight = globeMode === GlobeMode.ThreeD ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
+        const chordHeight = globeMode === GlobeMode.Ellipsoid ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
         const range = Range3d.createArray(PlanarMapTile.computeRangeCorners(corners, normal!, chordHeight, scratchCorners, heightRange));
         this._children.push(this.mapTree.createPlanarChild({ root: mapTree, contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal!, rectangle, chordHeight, heightRange));
       }
@@ -420,6 +439,9 @@ export class PlanarMapTile extends MapTile {
   public getTransformFromPlane(result?: Transform) {
     return Transform.createOriginAndMatrix(undefined, Matrix3d.createRigidHeadsUp(this._normal, AxisOrder.ZYX), result);
   }
+  public getClipShape(): Point3d[] {
+    return [this.corners[0], this.corners[1], this.corners[3], this.corners[2]];
+  }
 }
 
 /** @internal */
@@ -427,6 +449,8 @@ class GlobeMapTile extends MapTile {
   constructor(params: TileParams, public quadId: QuadId, private _rangeCorners: Point3d[], rectangle: MapCartoRectangle, private _ellipsoidPatch: EllipsoidPatch, cornerNormals: Ray3d[] | undefined) {
     super(params, quadId, rectangle, cornerNormals);
   }
+  public get graphicType(): TileGraphicType | undefined { return TileGraphicType.Scene; }     // We can't allow these to be (undepthbuffered) BackgroundMapType so override here.
+
   public setReprojectedCorners(_reprojectedCorners: Point3d[]) {
     assert(false);   // Globe tiles should never be reprojected.
   }
@@ -449,8 +473,9 @@ class GlobeMapTile extends MapTile {
     builder.setSymbology(color, color, 1);
     if (doMesh) {
       const delta = 1.0 / (MapTile.globeMeshDimension - 1);
+      const dimensionM1 = MapTile.globeMeshDimension - 1;
 
-      for (let iRow = 0; iRow < MapTile.globeMeshDimension - 1; iRow++) {
+      for (let iRow = 0; iRow < dimensionM1; iRow++) {
         for (let iColumn = 0; iColumn < MapTile.globeMeshDimension - 1; iColumn++) {
           const points = [];
           const jColumn = iColumn + 1;
@@ -468,7 +493,6 @@ class GlobeMapTile extends MapTile {
     }
   }
 
-  private static _meshArgs = new MeshArgs();
   private static _scratchMeshPoints = new Array<Point3d>();
   private static _scratchEllipsoid = Ellipsoid.create(Transform.createIdentity());
 
@@ -479,41 +503,46 @@ class GlobeMapTile extends MapTile {
     const dimensionM1 = MapTile.globeMeshDimension - 1, dimensionM2 = MapTile.globeMeshDimension - 2;
     const bordersSouthPole = this.quadId.bordersSouthPole(this.mapTree.sourceTilingScheme);
     const bordersNorthPole = this.quadId.bordersNorthPole(this.mapTree.sourceTilingScheme);
+    const wantSkirts = this.mapTree.wantSkirts;
+    const rowMin = (bordersNorthPole || wantSkirts) ? 0 : 1;
+    const rowMax = (bordersSouthPole || wantSkirts) ? dimensionM1 : dimensionM2;
+    const colMin = wantSkirts ? 0 : 1;
+    const colMax = wantSkirts ? dimensionM1 : dimensionM2;
+    const meshArgs = new MeshArgs();
 
-    if (undefined === GlobeMapTile._meshArgs.vertIndices) {
-      const vertIndices = new Array<number>();
-      for (let iRow = 0; iRow < MapTile.globeMeshDimension - 1; iRow++) {
-        for (let iColumn = 0; iColumn < MapTile.globeMeshDimension - 1; iColumn++) {
-          const base = iRow * MapTile.globeMeshDimension + iColumn;
-          const top = base + MapTile.globeMeshDimension;
-          vertIndices.push(base);
-          vertIndices.push(base + 1);
-          vertIndices.push(top);
-          vertIndices.push(top);
-          vertIndices.push(base + 1);
-          vertIndices.push(top + 1);
-        }
+    const vertIndices = new Array<number>();
+    for (let iRow = rowMin; iRow < rowMax; iRow++) {
+      for (let iColumn = colMin; iColumn < colMax; iColumn++) {
+        const base = iRow * MapTile.globeMeshDimension + iColumn;
+        const top = base + MapTile.globeMeshDimension;
+        vertIndices.push(base);
+        vertIndices.push(base + 1);
+        vertIndices.push(top);
+        vertIndices.push(top);
+        vertIndices.push(base + 1);
+        vertIndices.push(top + 1);
       }
-
-      const uvParams = new Array<Point2d>();
-      for (let iRow = 0; iRow < MapTile.globeMeshDimension; iRow++) {
-        const y = (iRow ? (Math.min(dimensionM2, iRow) - 1) : 0) * delta;
-        for (let iColumn = 0; iColumn < MapTile.globeMeshDimension; iColumn++) {
-          const x = (iColumn ? (Math.min(dimensionM2, iColumn) - 1) : 0) * delta;
-          uvParams.push(Point2d.create(x, y));
-        }
-      }
-
-      GlobeMapTile._meshArgs.hasBakedLighting = true;
-      GlobeMapTile._meshArgs.vertIndices = vertIndices;
-      GlobeMapTile._meshArgs.textureUv = uvParams;
-      GlobeMapTile._meshArgs.points = new QPoint3dList();
-
-      for (let i = 0; i < nTotal; i++)
-        GlobeMapTile._scratchMeshPoints.push(Point3d.createZero());
     }
 
-    const qPoints = GlobeMapTile._meshArgs.points!;
+    const uvParams = new Array<Point2d>();
+    for (let iRow = 0; iRow < MapTile.globeMeshDimension; iRow++) {
+      const y = (iRow ? (Math.min(dimensionM2, iRow) - 1) : 0) * delta;
+      for (let iColumn = 0; iColumn < MapTile.globeMeshDimension; iColumn++) {
+        const x = (iColumn ? (Math.min(dimensionM2, iColumn) - 1) : 0) * delta;
+        uvParams.push(Point2d.create(x, y));
+      }
+    }
+
+    meshArgs.hasBakedLighting = true;
+    meshArgs.vertIndices = vertIndices;
+    meshArgs.textureUv = uvParams;
+    meshArgs.points = new QPoint3dList();
+
+    if (0 === GlobeMapTile._scratchMeshPoints.length)
+      for (let i = 0; i < nTotal; i++)
+        GlobeMapTile._scratchMeshPoints.push(Point3d.createZero());
+
+    const qPoints = meshArgs.points!;
     ellipsoidPatch.ellipsoid.transformRef.clone(GlobeMapTile._scratchEllipsoid.transformRef);
     const scaleFactor = Math.max(.99, 1 - Math.sin(ellipsoidPatch.longitudeSweep.sweepRadians * delta));
     GlobeMapTile._scratchEllipsoid.transformRef.matrix.scaleColumnsInPlace(scaleFactor, scaleFactor, scaleFactor);
@@ -547,16 +576,11 @@ class GlobeMapTile extends MapTile {
     }
 
     qPoints.params.setFromRange(pointRange);
-    if (qPoints.list.length === 0) {
-      for (const point of GlobeMapTile._scratchMeshPoints)
-        qPoints.add(point);
-    } else {
-      for (let index = 0; index < nTotal; index++)
-        qPoints.list[index].init(GlobeMapTile._scratchMeshPoints[index], qPoints.params);
-    }
+    for (const point of GlobeMapTile._scratchMeshPoints)
+      qPoints.add(point);
 
-    GlobeMapTile._meshArgs.texture = texture;
-    const graphic = system.createMesh(MeshParams.create(GlobeMapTile._meshArgs))!;
+    meshArgs.texture = texture;
+    const graphic = system.createMesh(MeshParams.create(meshArgs))!;
     const branch = new GraphicBranch();
     branch.add(graphic);
     const transform = Transform.createTranslation(patchCenter);
@@ -598,7 +622,6 @@ export async function calculateEcefToDb(iModel: IModelConnection, bimElevationBi
 
 const scratchCorner = Point3d.createZero();
 const scratchZNormal = Vector3d.create(0, 0, 1);
-const scratchCarto = new Cartographic();
 
 /**
  * A specialization of TileTree for map quadTrees.  This overrides the default tile selection to simplified traversal that preloads ancestors to avoid
@@ -613,6 +636,7 @@ export class MapTileTree extends RealityTileTree {
   public globeMode: GlobeMode;
   public globeOrigin: Point3d;
   public cartesianRange: Range3d;
+  public cartesianTransitionDistance: number;
   private _gcsConverter: GeoConverter | undefined;
   private _mercatorTilingScheme: MapTilingScheme;
 
@@ -621,24 +645,11 @@ export class MapTileTree extends RealityTileTree {
   public static minDisplayableDepth = 3;
   public get mapLoader() { return this.loader as MapTileLoaderBase; }
   public getBaseRealityDepth(sceneContext: SceneContext) {
-    const view = sceneContext.viewport.view;
-
-    if (!(view instanceof ViewState3d))
-      return -1
-        ;
-    let h = 0.0;
-    if (view.isCameraOn) {
-      const carto = view.rootToCartographic(view.getEyePoint(), scratchCarto);
-      h = (undefined === carto ? 0.0 : carto.height);
-    } else {
-      h = view.extents.magnitudeXY();
-    }
-
-    const loadThreshold = 10E4;   // Start loading when we hit 10KM altitude or width.
-    return h > loadThreshold ? MapTileTree.minDisplayableDepth : -1;
+    // If the view has ever had global scope then preload low level (global) tiles.
+    return (sceneContext.viewport.view.maxGlobalScopeFactor > 1) ? MapTileTree.minDisplayableDepth : -1;
   }
 
-  constructor(params: TileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, gcsConverterAvailable: boolean, public sourceTilingScheme: MapTilingScheme, protected _maxDepth: number, globeMode: GlobeMode, includeTerrain: boolean) {
+  constructor(params: TileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, gcsConverterAvailable: boolean, public sourceTilingScheme: MapTilingScheme, protected _maxDepth: number, globeMode: GlobeMode, includeTerrain: boolean, public wantSkirts: boolean) {
     super(params);
 
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
@@ -649,6 +660,7 @@ export class MapTileTree extends RealityTileTree {
     this.earthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
     const globalHeightRange = includeTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(0, 0);
     const globalRectangle = new MapCartoRectangle(-Angle.piRadians, - Angle.piOver2Radians, Angle.piRadians, Angle.piOver2Radians);
+    this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
     if (includeTerrain) {
       this.minEarthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator + globalHeightRange.low, Constant.earthRadiusWGS84.equator + globalHeightRange.low, Constant.earthRadiusWGS84.polar + globalHeightRange.low);
       this.maxEarthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator + globalHeightRange.high, Constant.earthRadiusWGS84.equator + globalHeightRange.high, Constant.earthRadiusWGS84.polar + globalHeightRange.high);
@@ -659,7 +671,7 @@ export class MapTileTree extends RealityTileTree {
 
     const rootPatch = EllipsoidPatch.createCapture(this.maxEarthEllipsoid, AngleSweep.createStartSweepRadians(0, Angle.pi2Radians), AngleSweep.createStartSweepRadians(-Angle.piOver2Radians, Angle.piRadians));
     let range;
-    if (globeMode === GlobeMode.ThreeD) {
+    if (globeMode === GlobeMode.Ellipsoid) {
       range = rootPatch.range();
     } else {
       const corners = this.getFractionalTileCorners(quadId);
@@ -676,7 +688,7 @@ export class MapTileTree extends RealityTileTree {
   public getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined { return undefined; }
 
   public doCreateGlobeChildren(tile: Tile): boolean {
-    if (this.globeMode !== GlobeMode.ThreeD)
+    if (this.globeMode !== GlobeMode.Ellipsoid)
       return false;
 
     const childDepth = tile.depth + 1;
@@ -699,7 +711,7 @@ export class MapTileTree extends RealityTileTree {
 
   public getCornerRays(rectangle: MapCartoRectangle): Ray3d[] | undefined {
     const rays = new Array<Ray3d>();
-    if (this.globeMode === GlobeMode.ThreeD) {
+    if (this.globeMode === GlobeMode.Ellipsoid) {
       rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))!);
       rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))!);
       rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))!);
@@ -785,11 +797,14 @@ export class MapTileTree extends RealityTileTree {
     const gridPoints = this.getMercatorFractionChildGridPoints(tile, columnCount, rowCount);
     for (const gridPoint of gridPoints) {
       this._mercatorFractionToDb.multiplyPoint3d(gridPoint, scratchCorner);
-      if (this.globeMode !== GlobeMode.ThreeD || this.cartesianRange.containsPoint(scratchCorner)) {
+      if (this.globeMode !== GlobeMode.Ellipsoid || this.cartesianRange.containsPoint(scratchCorner)) {
         scratchCorner.clone(gridPoint);
       } else {
         this._mercatorTilingScheme.fractionToCartographic(gridPoint.x, gridPoint.y, MapTileTree._scratchCarto);
         this.earthEllipsoid.radiansToPoint(MapTileTree._scratchCarto.longitude, Cartographic.parametricLatitudeFromGeodeticLatitude(MapTileTree._scratchCarto.latitude), gridPoint);
+        const cartesianDistance = this.cartesianRange.distanceToPoint(scratchCorner);
+        if (cartesianDistance < this.cartesianTransitionDistance)
+          scratchCorner.interpolate(cartesianDistance / this.cartesianTransitionDistance, gridPoint, gridPoint);
       }
     }
 

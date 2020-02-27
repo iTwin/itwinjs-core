@@ -26,7 +26,11 @@ describe("DataProvidersFactory", () => {
   let props: DataProvidersFactoryProps | undefined;
 
   before(() => {
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
+  });
+
+  after(() => {
+    Presentation.terminate();
   });
 
   beforeEach(() => {
@@ -87,7 +91,7 @@ describe("DataProvidersFactory", () => {
       const rulesetsFactoryMock = moq.Mock.ofType<RulesetsFactory>();
       props = { rulesetsFactory: rulesetsFactoryMock.object };
       rulesetsFactoryMock
-        .setup(async (x) => x.createSimilarInstancesRulesetAsync(field, contentItem, moq.It.isAny()))
+        .setup(async (x) => x.createSimilarInstancesRuleset(field, contentItem, moq.It.isAny()))
         .returns(async (_f, _c, cb) => ({ ruleset, description: await cb("a", "b", "c") }));
 
       const dataProvider = await getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {});
@@ -116,7 +120,7 @@ describe("DataProvidersFactory", () => {
       const rulesetsFactoryMock = moq.Mock.ofType<RulesetsFactory>();
       props = { rulesetsFactory: rulesetsFactoryMock.object };
       rulesetsFactoryMock
-        .setup(async (x) => x.createSimilarInstancesRulesetAsync(field, contentItem, moq.It.isAny()))
+        .setup(async (x) => x.createSimilarInstancesRuleset(field, contentItem, moq.It.isAny()))
         .returns(async (_f, _c, cb) => ({ ruleset, description: await cb("navigation", "b", "c") }));
 
       const dataProvider = await getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {});
@@ -143,7 +147,7 @@ describe("DataProvidersFactory", () => {
       const rulesetsFactoryMock = moq.Mock.ofType<RulesetsFactory>();
       props = { rulesetsFactory: rulesetsFactoryMock.object };
       rulesetsFactoryMock
-        .setup(async (x) => x.createSimilarInstancesRulesetAsync(field, contentItem, moq.It.isAny()))
+        .setup(async (x) => x.createSimilarInstancesRuleset(field, contentItem, moq.It.isAny()))
         .returns(async (_f, _c, cb) => ({ ruleset, description: await cb("double", rawValue, displayValue) }));
 
       const dataProvider = await getFactory().createSimilarInstancesTableDataProvider(propertiesProvider.object, record, {});

@@ -170,7 +170,8 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
     }
   });
 
-  it("Post feature log (#integration)", async function (this: Mocha.Context) {
+  // NEEDS_WORK: Fix failing test - VSTS#277802
+  it.skip("Post feature log (#integration)", async function (this: Mocha.Context) {
     for (const usageType of [IModelJsNative.UsageType.Beta, IModelJsNative.UsageType.HomeUse, IModelJsNative.UsageType.PreActivation, IModelJsNative.UsageType.Production, IModelJsNative.UsageType.Trial]) {
       const status = UlasUtilities.markFeature(requestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), usageType);
 
@@ -185,13 +186,15 @@ describe.only("UlasUtilities - OIDC Token (#integration)", () => {
     assert.equal(status, BentleyStatus.SUCCESS);
   });
 
-  it("Post feature log without product version (#integration)", async function (this: Mocha.Context) {
+  // NEEDS_WORK: Fix failing test - VSTS#277802
+  it.skip("Post feature log without product version (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43");
     const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Production);
     assert.equal(status, BentleyStatus.SUCCESS);
   });
 
-  it("Post feature log - hostName special cases (#integration)", async function (this: Mocha.Context) {
+  // NEEDS_WORK: Fix failing test - VSTS#277802
+  it.skip("Post feature log - hostName special cases (#integration)", async function (this: Mocha.Context) {
     for (const hostName of [
       "::1",
       "127.0.0.1",

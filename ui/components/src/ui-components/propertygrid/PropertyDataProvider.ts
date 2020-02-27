@@ -7,7 +7,8 @@
  */
 
 import { BeEvent, Id64String } from "@bentley/bentleyjs-core";
-import { PropertyRecord, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 /**
  * Contains metadata about a group of Properties.
@@ -24,9 +25,7 @@ export interface PropertyCategory {
  * @public
  */
 export interface PropertyData {
-  label: string;
-  /** @alpha temporary property */
-  labelDefinition?: PropertyRecord;
+  label: PropertyRecord;
   description?: string;
   categories: PropertyCategory[];
   records: { [categoryName: string]: PropertyRecord[] };

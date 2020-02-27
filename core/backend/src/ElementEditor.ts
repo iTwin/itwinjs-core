@@ -2,8 +2,11 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module iModels */
+/** @packageDocumentation
+ * @module iModels
+ */
 
+import * as deepAssign from "deep-assign";
 import { GeometryStreamBuilder, GeometricElement3dProps, Placement3d } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { DbOpcode, BentleyError, IModelStatus, Id64Array, Id64, Logger } from "@bentley/bentleyjs-core";
@@ -13,10 +16,6 @@ import { GeometricElement3d } from "./Element";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 const loggingCategory = BackendLoggerCategory.Editing;
-
-function deepCopy(obj: any): any {
-  return JSON.parse(JSON.stringify(obj));
-}
 
 export interface IElementEditor {
   readonly iModel: IModelDb;
@@ -116,7 +115,10 @@ export class GeometricElement3dEditor implements IElementEditor {
       if (geometry !== undefined) {
         const builder = new GeometryStreamBuilder();
         this.buildGeometry(builder, geometry);
-        // TODO ask builder to compute placement using origin, angles, and geometry
+        if (origin)
+          newGeom3d.placement.origin = origin;
+        if (angles !== undefined && angles.yaw !== undefined)
+          newGeom3d.placement.angles = angles;
         newGeom3d.geom = builder.geometryStream;
       }
       newElements = [newGeom3d];
@@ -143,7 +145,9 @@ export class GeometricElement3dEditor implements IElementEditor {
   }
 
   public pushState() {
-    this._stateStack.push(deepCopy(this._targets));
+    const t: GeometricElement3dEditor.Target[] = [];
+    deepAssign(t, this._targets);
+    this._stateStack.push(t);
   }
 
   public popState() {

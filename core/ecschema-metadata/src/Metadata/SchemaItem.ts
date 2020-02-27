@@ -37,11 +37,6 @@ export abstract class SchemaItem {
 
   get description() { return this._description; }
 
-  /** @deprecated @internal */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this SchemaItem's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -80,11 +75,6 @@ export abstract class SchemaItem {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(schemaItemProps: SchemaItemProps) {
-    this.fromJSONSync(schemaItemProps);
-  }
-
   public fromJSONSync(schemaItemProps: SchemaItemProps) {
     if (undefined !== schemaItemProps.label)
       this._label = schemaItemProps.label;
@@ -100,11 +90,6 @@ export abstract class SchemaItem {
       if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
     }
-  }
-
-  /** @deprecated */
-  public async deserialize(schemaItemProps: SchemaItemProps) {
-    await this.fromJSON(schemaItemProps);
   }
 
   public async fromJSON(schemaItemProps: SchemaItemProps) {

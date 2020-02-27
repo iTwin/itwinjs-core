@@ -104,7 +104,7 @@ describe("<Toggle />", () => {
     const input = wrapper.find("input.core-toggle-input");
     input.length.should.eq(1);
     input.getDOMNode().hasAttribute("disabled").should.true;
-    const label = wrapper.find("label.core-toggle.disabled");
+    const label = wrapper.find("label.core-toggle.uicore-disabled");
     label.length.should.eq(1);
 
     wrapper.unmount();

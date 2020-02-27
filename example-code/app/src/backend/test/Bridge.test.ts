@@ -85,7 +85,7 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
   // I. Import the schema.
-  await briefcase.importSchema(requestContext, path.join(assetsDir, "RobotWorld.ecschema.xml"));
+  await briefcase.importSchemas(requestContext, [path.join(assetsDir, "RobotWorld.ecschema.xml")]);
   //    You must acquire all locks reserve all Codes used before saving or pushing.
   await briefcase.concurrencyControl.request(requestContext);
   //    You *must* push this to the iModel right now.
@@ -159,7 +159,7 @@ describe.skip("Bridge", async () => {
   before(async () => {
     IModelHost.startup();
     requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
-    testProjectId = (await queryProjectIdByName(requestContext, "iModelJsTest")).wsgId;
+    testProjectId = (await queryProjectIdByName(requestContext, "iModelJsIntegrationTest")).wsgId;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);
     IModelHost.shutdown();

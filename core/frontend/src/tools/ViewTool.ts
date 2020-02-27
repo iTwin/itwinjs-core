@@ -6,6 +6,11 @@
  * @module Tools
  */
 
+import {
+  PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
+  ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem,
+  PrimitiveValue,
+} from "@bentley/ui-abstract";
 import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry, Constant, Arc3d, AngleSweep, Plane3dByOriginAndUnitNormal, XAndY } from "@bentley/geometry-core";
 import { ColorDef, Frustum, Npc, NpcCenter, LinePixels, Cartographic } from "@bentley/imodeljs-common";
 import { BeTimePoint, BeDuration } from "@bentley/bentleyjs-core";
@@ -22,11 +27,7 @@ import { AccuDraw } from "../AccuDraw";
 import { StandardViewId } from "../StandardView";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { PrimitiveTool } from "./PrimitiveTool";
-import { PropertyDescription } from "../properties/Description";
-import { PropertyEditorParamTypes, SuppressLabelEditorParams } from "../properties/EditorParams";
-import { ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 import { LengthDescription } from "../properties/LengthDescription";
-import { PrimitiveValue } from "../properties/Value";
 import { ToolAssistance, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceSection } from "./ToolAssistance";
 import { BingLocationProvider } from "../BingLocation";
 import { viewGlobalLocation, GlobalLocation, ViewGlobalLocationConstants, rangeToCartographicArea, queryTerrainElevationOffset, eyeToCartographicOnGlobe } from "../ViewGlobalLocation";

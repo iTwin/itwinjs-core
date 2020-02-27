@@ -41,7 +41,7 @@ export const BackstageAppButton: React.FC<BackstageAppButtonProps> = (props) => 
 
   return (
     <AppButton
-      onClick={Backstage.backstageToggleCommand.execute}
+      onClick={Backstage.backstageToggleCommand.execute} // tslint:disable-line:deprecation
       icon={
         <Icon iconSpec={icon} />
       }

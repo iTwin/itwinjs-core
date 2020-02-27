@@ -13,10 +13,11 @@ import { SchemasSpecification } from "../SchemasSpecification";
  * [[supportedSchemas]] properties of the specification or the ruleset.
  *
  * @public
+ * @deprecated Use `InstanceNodesOfSpecificClassesSpecification`. Will be removed in iModel.js 3.0
  */
-export interface AllInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
+export interface DEPRECATED_AllInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer { // tslint:disable-line: naming-convention class-name
   /** Used for serializing to JSON. */
-  specType: ChildNodeSpecificationTypes.AllInstanceNodes;
+  specType: ChildNodeSpecificationTypes.DEPRECATED_AllInstanceNodes;
 
   /**
    * Specification of schemas whose instances should be returned.

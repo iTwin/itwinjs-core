@@ -89,13 +89,8 @@ export class OpenParams {
   /** Returns true if the OpenParams open a briefcase iModel */
   public get isBriefcase(): boolean { return this.syncMode !== undefined; }
 
-  /** Returns true if the OpenParams open a standalone iModel
-   * @deprecated Use [[isSnapshot]] instead as *standalone* has been replaced by *snapshot*.
-   */
-  public get isStandalone(): boolean { return this.syncMode === undefined; }
-
   /** Returns true if the OpenParams open a snapshot iModel */
-  public get isSnapshot(): boolean { return this.isStandalone; } // tslint:disable-line: deprecation
+  public get isSnapshot(): boolean { return this.syncMode === undefined; } // tslint:disable-line: deprecation
 
   private validate() {
     if (this.isSnapshot && this.syncMode !== undefined)
@@ -219,15 +214,6 @@ export class IModelDb extends IModel {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
     super.initialize(name, props);
-  }
-
-  /** @deprecated @internal */
-  public static performUpgrade(pathname: string): DbResult {
-    const nativeDb = new IModelHost.platform.DgnDb();
-    const res = nativeDb.openIModel(pathname, OpenMode.ReadWrite, IModelJsNative.UpgradeOptions.Upgrade);
-    if (DbResult.BE_SQLITE_OK === res)
-      nativeDb.closeIModel();
-    return res;
   }
 
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
@@ -480,13 +466,6 @@ export class IModelDb extends IModel {
     return this.briefcase.openParams.isBriefcase;
   }
 
-  /** Returns true if this is a standalone iModel
-   * @deprecated Use [[isSnapshot]] instead as *standalone* has been replaced by *snapshot* iModels.
-   */
-  public get isStandalone(): boolean {
-    return this.briefcase.openParams.isStandalone; // tslint:disable-line: deprecation
-  }
-
   /** Returns true if this is a *snapshot* iModel
    * @see [[openSnapshot]]
    */
@@ -501,7 +480,7 @@ export class IModelDb extends IModel {
    * @internal
    */
   public closeStandalone(): void {
-    if (!this.isStandalone)
+    if (!this.isSnapshot)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use to close a managed iModel. Use IModelDb.close() instead");
     BriefcaseManager.closeStandalone(this.briefcase);
     this.clearBriefcaseEntry();
@@ -525,7 +504,7 @@ export class IModelDb extends IModel {
    */
   public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     requestContext.enter();
-    if (this.isStandalone)
+    if (this.isSnapshot)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a snapshot iModel. Use IModelDb.closeSnapshot() instead");
 
     if (this.needsConcurrencyControl) {
@@ -815,40 +794,6 @@ export class IModelDb extends IModel {
 
     } while (result.status !== QueryResponseStatus.Done);
   }
-  /** Execute a query against this IModelDb.
-   * The result of the query is returned as an array of JavaScript objects where every array element represents an
-   * [ECSQL row]($docs/learning/ECSQLRowFormat).
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL SELECT statement to execute
-   * @param bindings The values to bind to the parameters (if the ECSQL has any).
-   * Pass an *array* of values if the parameters are *positional*.
-   * Pass an *object of the values keyed on the parameter name* for *named parameters*.
-   * The values in either the array or object must match the respective types of the parameters.
-   * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
-   * @returns Returns the query result as an array of the resulting rows or an empty array if the query has returned no rows.
-   * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If the statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
-   * @see [IModelDb.withPreparedStatement]($backend), [IModelDb.query]($backend)
-   * @deprecated Use [[withPreparedStatement]] or [[query]] instead.
-   */
-  public executeQuery(ecsql: string, bindings?: any[] | object): any[] {
-    return this.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
-      if (bindings)
-        stmt.bindValues(bindings);
-      const rows: any[] = [];
-      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        rows.push(stmt.getRow());
-        if (rows.length > IModelDb.maxLimit) {
-          throw new IModelError(IModelStatus.BadRequest, "Max LIMIT exceeded in SELECT statement", Logger.logError, loggerCategory);
-        }
-      }
-      return rows;
-    });
-  }
 
   /** Use a prepared SQLite SQL statement. This function takes care of preparing the statement and then releasing it.
    * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
@@ -1088,14 +1033,6 @@ export class IModelDb extends IModel {
     }
   }
 
-  /** Import a single ECSchema.
-   * @see importSchemas
-   * @deprecated use [[importSchemas]] instead as it is better to import a collection of schemas together rather than individually.
-   */
-  public async importSchema(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileName: string): Promise<void> {
-    return this.importSchemas(requestContext, [schemaFileName]);
-  }
-
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -1107,7 +1044,7 @@ export class IModelDb extends IModel {
    */
   public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void> {
     requestContext.enter();
-    if (this.isStandalone) {
+    if (this.isSnapshot) {
       const status = this.briefcase.nativeDb.importSchemas(schemaFileNames);
       if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
@@ -1290,11 +1227,12 @@ export class IModelDb extends IModel {
   /** Query if this iModel contains the definition of the specified class.
    * @param classFullName The full name of the class, for example, SomeSchema:SomeClass
    * @returns true if the iModel contains the class definition or false if not.
+   * @see querySchemaVersion
    * @see importSchema
    */
   public containsClass(classFullName: string): boolean {
-    const className = classFullName.split(":");
-    return className.length === 2 && this.nativeDb.getECClassMetaData(className[0], className[1]).error === undefined;
+    const classNameParts: string[] = classFullName.replace(".", ":").split(":");
+    return classNameParts.length === 2 && this.nativeDb.getECClassMetaData(classNameParts[0], classNameParts[1]).error === undefined;
   }
 
   /** Query for a schema of the specified name in this iModel.
@@ -1880,14 +1818,15 @@ export namespace IModelDb {
     /** Query for aspects of a particular class (polymorphically) associated with this element.
      * @throws [[IModelError]]
      */
-    private _queryAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
-      const sql = `SELECT * FROM ${aspectClassName} WHERE Element.Id=:elementId`;
+    private _queryAspects(elementId: Id64String, fromClassFullName: string): ElementAspect[] {
+      const sql = `SELECT ECInstanceId,ECClassId FROM ${fromClassFullName} WHERE Element.Id=:elementId`;
       return this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): ElementAspect[] => {
         statement.bindId("elementId", elementId);
         const aspects: ElementAspect[] = [];
         while (DbResult.BE_SQLITE_ROW === statement.step()) {
-          const row: any = statement.getRow();
-          aspects.push(this._queryAspect(row.id, row.className.replace(".", ":")));
+          const aspectInstanceId: Id64String = statement.getValue(0).getId();
+          const aspectClassFullName: string = statement.getValue(1).getClassNameForClassId().replace(".", ":");
+          aspects.push(this._queryAspect(aspectInstanceId, aspectClassFullName));
         }
         return aspects;
       });
@@ -1912,6 +1851,21 @@ export namespace IModelDb {
         throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggerCategory, () => ({ aspectInstanceId, aspectClassName }));
       }
       return this._iModel.constructEntity<ElementAspect>(aspect);
+    }
+
+    /** Get a single ElementAspect by its instance Id.
+     * @throws [[IModelError]]
+     */
+    public getAspect(aspectInstanceId: Id64String): ElementAspect {
+      const sql = `SELECT ECClassId FROM ${ElementAspect.classFullName} WHERE ECInstanceId=:aspectInstanceId`;
+      const aspectClassFullName = this._iModel.withPreparedStatement(sql, (statement: ECSqlStatement): string | undefined => {
+        statement.bindId("aspectInstanceId", aspectInstanceId);
+        return (DbResult.BE_SQLITE_ROW === statement.step()) ? statement.getValue(0).getClassNameForClassId().replace(".", ":") : undefined;
+      });
+      if (undefined === aspectClassFullName) {
+        throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggerCategory, () => ({ aspectInstanceId }));
+      }
+      return this._queryAspect(aspectInstanceId, aspectClassFullName);
     }
 
     /** Get the ElementAspect instances that are owned by the specified element.

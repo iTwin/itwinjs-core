@@ -7,12 +7,13 @@
  */
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { IDisposable } from "@bentley/bentleyjs-core";
 
 /**
  * Interface for a presentation data provider
  * @public
  */
-export interface IPresentationDataProvider {
+export interface IPresentationDataProvider extends IDisposable {
   /**
    * [[IModelConnection]] used by this data provider
    */

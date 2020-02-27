@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module NativeApp */
 import { BeEvent, IModelStatus, BentleyStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { NativeAppRpcInterface, InternetConnectivityStatus, OverriddenBy, Events, RpcRegistry, IModelError, IModelVersion, IModelToken, IModelReadRpcInterface, BriefcaseProps, StorageValue } from "@bentley/imodeljs-common";
+import { NativeAppRpcInterface, InternetConnectivityStatus, OverriddenBy, Events, RpcRegistry, IModelError, IModelVersion, IModelToken, BriefcaseProps, StorageValue } from "@bentley/imodeljs-common";
 import { EventSourceManager } from "./EventSource";
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
@@ -17,18 +17,26 @@ import { NativeAppLogger } from "./NativeAppLogger";
  */
 export class NativeApp {
   private static _storages = new Map<string, Storage>();
+  private static _onOnline = async () => {
+    await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
+  }
+  private static _onOffline = async () => {
+    await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
+  }
   private constructor() {
     EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onMemoryWarning, () => { NativeApp.onMemoryWarning.raiseEvent(); });
     EventSourceManager.global.on(Events.NativeApp.namespace, Events.NativeApp.onInternetConnectivityChanged, (args: any) => { NativeApp.onInternetConnectivityChanged.raiseEvent(args.status); });
   }
-  private static hookBrowserInternetConnectivityEvents() {
-    if (typeof window !== undefined && window.ononline && window.onoffline) {
-      window.addEventListener("online", async () => {
-        await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Online);
-      });
-      window.addEventListener("offline", async () => {
-        await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, InternetConnectivityStatus.Offline);
-      });
+  private static hookBrowserConnectivityEvents() {
+    if (typeof window === "object" && window.ononline && window.onoffline) {
+      window.addEventListener("online", this._onOnline);
+      window.addEventListener("offline", this._onOffline);
+    }
+  }
+  private static unhookBrowserConnectivityEvents() {
+    if (typeof window === "object" && window.ononline && window.onoffline) {
+      window.removeEventListener("online", this._onOnline);
+      window.removeEventListener("offline", this._onOffline);
     }
   }
   public static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void> = new BeEvent<(status: InternetConnectivityStatus) => void>();
@@ -50,10 +58,15 @@ export class NativeApp {
     (IModelApp as any)._nativeApp = true;
     const backendConfig = await NativeAppRpcInterface.getClient().getConfig();
     Config.App.merge(backendConfig);
-    NativeApp.hookBrowserInternetConnectivityEvents();
+    NativeApp.hookBrowserConnectivityEvents();
+    // initialize current state.
+    if (typeof window === "object" && typeof window.navigator === "object" && window.navigator.onLine) {
+      await NativeAppRpcInterface.getClient().overrideInternetConnectivity(OverriddenBy.Browser, window.navigator.onLine ? InternetConnectivityStatus.Online : InternetConnectivityStatus.Offline);
+    }
   }
 
   public static async shutdown() {
+    NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
     IModelApp.shutdown();
   }
@@ -74,19 +87,12 @@ export class NativeApp {
     await NativeAppRpcInterface.getClient().downloadBriefcase(iModelToken.toJSON());
   }
 
-  public static async openBriefcase(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<IModelConnection> {
+  public static async openBriefcase(contextId: string, iModelId: string, changeSetId: string, openMode: OpenMode = OpenMode.Readonly): Promise<IModelConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
-
-    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
-    requestContext.enter();
-
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
-
-    const token = await IModelReadRpcInterface.getClient().openForRead(iModelToken.toJSON());
+    const token = await NativeAppRpcInterface.getClient().openBriefcase(iModelToken.toJSON());
     return IModelConnection.create(token, openMode);
   }
 
@@ -98,8 +104,6 @@ export class NativeApp {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
     return NativeAppRpcInterface.getClient().getBriefcases();
   }
 

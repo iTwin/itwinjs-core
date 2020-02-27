@@ -18,7 +18,7 @@ describe("Example Code", () => {
   const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken);
 
   before(async () => {
-    iModel = IModelTestUtils.openIModel("test.bim");
+    iModel = IModelTestUtils.openIModelForWrite("test.bim");
   });
 
   after(() => {

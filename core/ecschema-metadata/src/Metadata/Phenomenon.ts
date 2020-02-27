@@ -22,11 +22,6 @@ export class Phenomenon extends SchemaItem {
 
   get definition(): string { return this._definition; }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this Phenomenon's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -45,22 +40,12 @@ export class Phenomenon extends SchemaItem {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(phenomenonProps: PhenomenonProps) {
-    this.fromJSONSync(phenomenonProps);
-  }
-
   public fromJSONSync(phenomenonProps: PhenomenonProps) {
     super.fromJSONSync(phenomenonProps);
     if (this._definition !== "" && phenomenonProps.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${this.name} has an invalid 'definition' attribute.`);
     else if (this._definition === "")
       this._definition = phenomenonProps.definition;
-  }
-
-  /** @deprecated */
-  public async deserialize(phenomenonProps: PhenomenonProps) {
-    await this.fromJSON(phenomenonProps);
   }
 
   public async fromJSON(phenomenonProps: PhenomenonProps) {

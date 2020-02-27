@@ -7,7 +7,7 @@ import * as React from "react";
 import { TableArrayValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/ArrayValueRenderer";
 import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../../../TestUtils";
-import { ArrayValue } from "@bentley/imodeljs-frontend";
+import { ArrayValue } from "@bentley/ui-abstract";
 
 describe("ArrayValueRenderer", () => {
   it("renders correctly", () => {

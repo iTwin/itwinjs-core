@@ -63,6 +63,18 @@
     "TogglePrimitiveVisibility": {
       "keyin": "fdt visibility"
     },
+    "ToggleRealityTileBounds": {
+      "keyin": "fdt reality bounds"
+    },
+    "ToggleRealityTilePreload": {
+      "keyin": "fdt toggle reality preload"
+    },
+    "ToggleRealityTileFreeze": {
+      "keyin": "fdt toggle reality freeze"
+    },
+    "ToggleRealityTileLogging": {
+      "keyin": "fdt toggle reality logging"
+    },
     "SetAspectRatioSkew": {
       "keyin": "fdt aspect skew"
     },
@@ -125,6 +137,9 @@
     },
     "OverrideSubCategoryPriority": {
       "keyin": "fdt subcat priority"
+    },
+    "ClipColorTool": {
+      "keyin": "fdt clip color"
     }
   }
 }

@@ -83,8 +83,7 @@ export * from "./ui-framework/hooks/useFrameworkVersion";
 
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
-export * from "./ui-framework/imodel-components/visibility-tree/VisibilityTree";
-export * from "./ui-framework/imodel-components/visibility-tree/ModelsTree";
+export * from "./ui-framework/imodel-components/models-tree/ModelsTree";
 
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
@@ -95,10 +94,10 @@ export * from "./ui-framework/messages/MessageManager";
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/Pointer";
 
+export * from "./ui-framework/navigationaids/CubeNavigationAidControl";
+export * from "./ui-framework/navigationaids/DrawingNavigationAidControl";
 export * from "./ui-framework/navigationaids/NavigationAidControl";
-export * from "./ui-framework/navigationaids/CubeNavigationAid";
 export * from "./ui-framework/navigationaids/SheetNavigationAid";
-export * from "./ui-framework/navigationaids/DrawingNavigationAid";
 export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
 export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 
@@ -198,6 +197,8 @@ export * from "./ui-framework/toolbar/useUiItemsProviderToolbarItems";
 export * from "./ui-framework/toolbar/useDefaultToolbarItems";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
+
+export * from "./ui-framework/uiprovider/DefaultReactDisplay";
 
 export * from "./ui-framework/utils/ViewUtilities";
 export * from "./ui-framework/utils/PropsHelper";

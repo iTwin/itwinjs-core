@@ -59,7 +59,7 @@ export class Select extends React.PureComponent<SelectProps> {
         className={classnames("uicore-inputs-select", this.props.className)}
         style={this.props.style}>
         {showPlaceholder &&
-          <option className="placeholder" disabled key="" value="">{this.props.placeholder}</option>
+          <option className="placeholder" disabled selected key="" value="">{this.props.placeholder}</option>
         }
         {options instanceof Array ?
           options.map((value, index) => <option key={index} value={value}>{value}</option>)

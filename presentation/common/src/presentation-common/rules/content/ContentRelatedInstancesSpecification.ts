@@ -18,7 +18,7 @@ import { RepeatableRelationshipPathSpecification } from "../RelationshipPathSpec
  *
  * @public
  */
-export type ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew;
+export type ContentRelatedInstancesSpecification = DEPRECATED_ContentRelatedInstancesSpecification | ContentRelatedInstancesSpecificationNew; // tslint:disable-line:deprecation
 
 /**
  * @public

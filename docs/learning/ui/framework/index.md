@@ -12,15 +12,13 @@ There are numerous React components and TypeScript classes in the ui&#8209;frame
 * [Content Views and Layouts](./ContentViews.md)
 * [Widgets](./Widgets.md)
 * [Status Bar and Fields](./StatusBar.md)
-* [Navigation Aids]($ui-framework:NavigationAids)
-  * A user interface control that moves the user's perspective around within a specific Content View.
+* [Navigation Aids]($ui-framework:NavigationAids) - A user interface control that moves the user's perspective around within a specific Content View.
 * [Tool Settings](./ToolSettings.md)
 * [Stage Panels](./StagePanels.md)
 * [Backstage](./Backstage.md)
 * [Workflows and Tasks](./TasksWorkflows.md)
 * [Notifications and Messages](./Notifications.md)
-* [KeyboardShortcut]($ui-framework)
-  * A keystroke or combination of keystrokes used to launch a command or tool.
+* [KeyboardShortcut]($ui-framework:KeyboardShortcut) - A keystroke or combination of keystrokes used to launch a command or tool.
 * [Dialogs](./Dialogs.md)
 
 ## Other Topics

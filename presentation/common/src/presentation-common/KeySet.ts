@@ -13,14 +13,6 @@ import { EntityProps } from "@bentley/imodeljs-common";
 import { PresentationError, PresentationStatus } from "./Error";
 
 /**
- * Default keyset batch size for cases when it needs to be sent over HTTP. Sending
- * keys in batches helps avoid HTTP413 error.
- *
- * @alpha
- */
-export const DEFAULT_KEYS_BATCH_SIZE = 5000;
-
-/**
  * A single key that identifies something in iModel.js application
  * @public
  */

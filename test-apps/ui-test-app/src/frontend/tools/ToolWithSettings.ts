@@ -7,10 +7,16 @@
 import {
   IModelApp, PrimitiveTool,
   BeButtonEvent, EventHandled,
-  ToolSettingsPropertyRecord, PropertyDescription, PrimitiveValue, ToolSettingsValue, ToolSettingsPropertySyncItem,
-  NotifyMessageDetails, OutputMessagePriority, PropertyEditorParamTypes, QuantityType, ToolAssistance, ToolAssistanceImage,
-  ColorEditorParams, InputEditorSizeParams, SuppressLabelEditorParams, AngleDescription, LengthDescription, SurveyLengthDescription,
+  AngleDescription, LengthDescription, SurveyLengthDescription,
+  NotifyMessageDetails, OutputMessagePriority,
+  QuantityType, ToolAssistance, ToolAssistanceImage,
 } from "@bentley/imodeljs-frontend";
+import {
+  ToolSettingsPropertyRecord, PropertyDescription, PrimitiveValue, ToolSettingsValue, ToolSettingsPropertySyncItem,
+  PropertyEditorParamTypes,
+  ColorEditorParams, InputEditorSizeParams, SuppressLabelEditorParams,
+} from "@bentley/ui-abstract";
+
 import { Logger } from "@bentley/bentleyjs-core";
 import { Point3d } from "@bentley/geometry-core";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";

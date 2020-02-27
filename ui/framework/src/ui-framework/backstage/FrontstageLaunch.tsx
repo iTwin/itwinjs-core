@@ -26,7 +26,7 @@ const BackstageItem = withSafeArea(NZ_BackstageItem);
 /** Properties for a [[FrontstageLaunchBackstageItem]] component
  * @public
  */
-export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
+export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps { // tslint:disable-line:deprecation
   /** id of the frontstage */
   frontstageId: string;
 }
@@ -34,10 +34,9 @@ export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
 /** Backstage item that activates a Frontstage
  * @public
  */
-export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> {
-
+export class FrontstageLaunchBackstageItem extends React.PureComponent<FrontstageLaunchBackstageItemProps, BackstageItemState> { // tslint:disable-line:deprecation
   /** @internal */
-  public readonly state: Readonly<BackstageItemState>;
+  public readonly state: Readonly<BackstageItemState>; // tslint:disable-line:deprecation
   private _componentUnmounting = false;  // used to ensure _handleSyncUiEvent callback is not processed after componentWillUnmount is called
   private _stateSyncIds: string[] = [];  // local version of syncId that are lower cased
 
@@ -86,7 +85,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
   }
 
   public execute = (): void => {
-    Backstage.hide();
+    Backstage.hide(); // tslint:disable-line:deprecation
 
     const frontstageDef = FrontstageManager.findFrontstageDef(this.props.frontstageId);
     if (frontstageDef)

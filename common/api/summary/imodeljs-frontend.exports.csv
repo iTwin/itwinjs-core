@@ -34,7 +34,6 @@ internal;AnimationBranchState
 internal;AnimationBranchStates = Map
 beta;Animator
 beta;AppearanceOverrideProps
-beta;ArrayValue 
 internal;class Attachment
 internal;AttachmentList
 internal;enum AttachmentSceneState
@@ -48,9 +47,6 @@ internal;BackgroundMapGeometry
 internal;BackgroundMapTileTreeReference 
 internal;BackgroundMapTreeId
 internal;BackgroundTerrainTileTreeReference 
-beta;BasePropertyEditorParams
-beta;BasePropertyValue
-beta;class BaseQuantityDescription 
 internal;BatchedTileIdMap
 public;BeButton
 public;BeButtonEvent 
@@ -63,7 +59,6 @@ public;BeWheelEvent
 public;BeWheelEventProps 
 internal;BingElevationProvider
 beta;BlankConnectionProps
-beta;ButtonGroupEditorParams 
 internal;CachedIModelCoordinatesResponseProps
 internal;calculateEcefToDb(iModel: IModelConnection, bimElevationBias: number): Promise
 beta;calculateSolarAngles(date: Date, location: Cartographic):
@@ -77,13 +72,11 @@ public;CategorySelectorState
 beta;ChangeFlag
 beta;ChangeFlags
 public;ChangeViewedModel2dOptions
-alpha;CheckBoxIconsEditorParams 
 alpha;ClipEventType
 beta;enum ClippingType
 internal;ClipResult
 internal;Clips
 public;Cluster
-beta;ColorEditorParams 
 internal;CompassMode
 internal;ContextMode
 internal;ContextRealityModelState
@@ -98,10 +91,9 @@ internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, clas
 internal;createDefaultViewFlagOverrides(options:
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
-internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, iModel: IModelConnection, forDrape?: boolean): Promise
+internal;createTileTreeFromImageryProvider(imageryProvider: ImageryProvider, bimElevationBias: number, filterTextures: boolean, globeMode: GlobeMode, useDepthBuffer: boolean, iModel: IModelConnection, forDrape?: boolean): Promise
 internal;CurrentInputState
 internal;CurrentState
-beta;CustomFormattedNumberParams 
 public;DecorateContext 
 public;Decorations 
 public;Decorator
@@ -120,7 +112,6 @@ public;DrawingModelState
 public;DrawingViewState 
 public;DynamicsContext 
 alpha;EditManipulator
-beta;EditorPosition
 internal;ElementAgenda
 alpha;ElementEditor3d
 public;ElementLocateManager
@@ -132,8 +123,6 @@ beta;EmphasizeElements
 beta;EmphasizeElementsProps
 beta;EngineeringLengthDescription 
 public;EntityState 
-beta;EnumerationChoice
-beta;EnumerationChoicesInfo
 public;Environment 
 internal;ErrorNums
 public;EventController
@@ -155,6 +144,11 @@ alpha;findAvailableUnattachedRealityModels(projectid: string, iModel?: IModelCon
 public;FitViewTool 
 internal;Flags
 public;FlyViewTool 
+beta;class FormattedQuantityDescription 
+internal;FrameBeforeRenderData
+internal;FrameCameraFrustumData
+internal;FrameCameraViewData
+internal;FrameRenderData
 public;FrontendLoggerCategory
 public;FrontendRequestContext 
 public;FuzzySearch
@@ -185,7 +179,6 @@ public;GraphicList = RenderGraphic[]
 internal;GraphicsCollector
 internal;GraphicsCollectorDrawArgs 
 public;GraphicType
-public;GridOrientationType
 internal;GroupMark
 internal;HilitedState
 internal;Hilites
@@ -199,9 +192,6 @@ public;HitParentGeomType
 public;HitPriority
 public;HitSource
 internal;I3dmReader 
-beta;IconDefinition
-beta;IconEditorParams 
-beta;IconListEditorParams 
 public;IconSprites
 public;IdleTool 
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
@@ -219,19 +209,17 @@ public;IModelConnection
 alpha;EditingFunctions
 alpha;EditingFunctions
 internal;Tiles
+internal;IModelFrameLifecycle
 internal;IModelTileLoader 
 public;class InputCollector 
-beta;InputEditorSizeParams 
 public;InputSource
 internal;InstancedGraphicParams
 public;class InteractiveTool 
 public;IntersectDetail 
 alpha;ItemField
-alpha;JsonEditorParams 
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-beta;LinkElementsInfo
 internal;LoadSavedPluginsResult
 internal;LoadSavedPluginsStatus
 public;LocateAction
@@ -274,7 +262,6 @@ internal;ModalReturn
 public;ModelSelectorState 
 public;ModelState 
 internal;ModifyElementSource
-alpha;MultilineTextEditorParams 
 internal;NativeApp
 internal;NativeAppLogger
 internal;NoRenderApp
@@ -294,7 +281,6 @@ public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
 public;PanViewTool 
-beta;ParseResults
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
 public;PhysicalModelState 
@@ -305,29 +291,19 @@ internal;PlanarMapTile
 beta;class Plugin
 beta;PluginAdmin
 beta;PluginLoadResults = Plugin | undefined | string | string[]
-beta;Primitives
 public;class PrimitiveTool 
-beta;PrimitiveValue 
 alpha;enum PrimitiveVisibility
-beta;PropertyDescription
-beta;PropertyEditorInfo
-beta;PropertyEditorParams = BasePropertyEditorParams
-beta;PropertyEditorParamTypes
-beta;PropertyRecord
-beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
-beta;PropertyValueFormat
 internal;QuadId
 alpha;QuantityFormatter 
 beta;QuantityType
-alpha;RangeEditorParams 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
 internal;RealityTile 
+internal;RealityTileDrawArgs 
 internal;RealityTileTree 
-public;RelativePosition
 beta;class RenderClipVolume 
 public;RenderContext
 internal;enum RenderDiagnostics
@@ -381,7 +357,6 @@ internal;SkyBoxParams = Promise
 public;SkyCube 
 public;SkyGradient 
 public;SkySphere 
-alpha;SliderEditorParams 
 public;SnapDetail 
 public;SnapHeat
 public;SnapMode
@@ -400,12 +375,9 @@ public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
 internal;Storage
-beta;StructValue 
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
-beta;SuppressLabelEditorParams 
-alpha;SuppressUnitLabelEditorParams 
 beta;SurveyLengthDescription 
 internal;SuspendedToolState
 internal;class Target 
@@ -459,11 +431,7 @@ beta;ToolAssistanceSection
 public;ToolList = ToolType[]
 public;ToolRegistry
 public;ToolSettings
-beta;ToolSettingsPropertyItem
-beta;ToolSettingsPropertyRecord 
-beta;ToolSettingsPropertySyncItem 
 internal;ToolSettingsState
-beta;ToolSettingsValue 
 internal;ToolState
 public;ToolTipOptions
 internal;ToolTipProvider
@@ -521,7 +489,6 @@ internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | 
 beta;WebGLFeature
 beta;WebGLRenderCompatibilityInfo
 beta;WebGLRenderCompatibilityStatus
-internal;WebMapDrawArgs 
 internal;WebMapTileLoader 
 internal;WebMapTileTreeProps 
 internal;WebMercatorProjection

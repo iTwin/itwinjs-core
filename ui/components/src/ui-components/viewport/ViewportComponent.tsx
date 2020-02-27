@@ -90,7 +90,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       throw new UiError(UiComponents.loggerCategory(this), `Parent <div> failed to load`);
 
     const viewState = await this.getViewState();
-    /* istanbul ignore else */
+    /* istanbul ignore next */
     if (!this._mounted)
       return;
 

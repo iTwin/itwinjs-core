@@ -13,11 +13,11 @@ export class ProjectExtentsExample {
     const shape: Cartographic[] = [];
 
     // convert extents to an 8 point array
-    const projectFrust = Frustum.fromRange(iModel.projectExtents);
+    const pts = Frustum.fromRange(iModel.projectExtents).points;
 
     // the first 4 points are on the front plane
     for (let i = 0; i < 4; ++i) {
-      shape[i] = await iModel.spatialToCartographic(projectFrust.points[i]);
+      shape[i] = await iModel.spatialToCartographic(pts[i]);
       shape[i].height = 0; // set at ground level
     }
 

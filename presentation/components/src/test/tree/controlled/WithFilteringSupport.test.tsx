@@ -18,9 +18,11 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { NodePathElement } from "@bentley/presentation-common";
 import { ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
-import { controlledTreeWithFilteringSupport } from "../../../presentation-components/tree/controlled/WithFilteringSupport";
-import { controlledTreeWithVisibleNodes } from "../../../presentation-components/tree/controlled/WithVisibleNodes";
+import { DEPRECATED_controlledTreeWithFilteringSupport as controlledTreeWithFilteringSupport } from "../../../presentation-components/tree/controlled/WithFilteringSupport";
+import { DEPRECATED_controlledTreeWithVisibleNodes as controlledTreeWithVisibleNodes } from "../../../presentation-components/tree/controlled/WithVisibleNodes";
 import { IPresentationTreeDataProvider } from "../../../presentation-components/tree/IPresentationTreeDataProvider";
+
+// tslint:disable:deprecation
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationTree = controlledTreeWithFilteringSupport(controlledTreeWithVisibleNodes(ControlledTree));
@@ -54,7 +56,7 @@ describe("ControlledTree withFilteringSupport", () => {
     filteredPathsPromise = new ResolvablePromise<NodePathElement[]>();
     modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<[TreeModel, TreeModelChanges]>());
     modelSourceMock.setup((x) => x.getVisibleNodes()).returns(() => visibleNodes);
-    nodeLoaderMock.setup((x) => x.getDataProvider()).returns(() => dataProviderMock.object);
+    nodeLoaderMock.setup((x) => x.dataProvider).returns(() => dataProviderMock.object);
     nodeLoaderMock.setup((x) => x.modelSource).returns(() => modelSourceMock.object);
     dataProviderMock.setup((x) => x.imodel).returns(() => imodelMock.object);
     dataProviderMock.setup((x) => x.rulesetId).returns(() => "TestRuleset");

@@ -501,7 +501,7 @@ export class FrustumDecorator implements Decorator {
     // (undocumented)
     decorate(context: DecorateContext): void;
     static disable(): void;
-    static enable(vp: Viewport): void;
+    static enable(vp: Viewport, options?: FrustumDecorationOptions): void;
     // (undocumented)
     static get isEnabled(): boolean;
 }
@@ -949,7 +949,7 @@ export class ToggleFrustumSnapshotTool extends Tool {
     // (undocumented)
     parseAndRun(...args: string[]): boolean;
     // (undocumented)
-    run(enable?: boolean): boolean;
+    run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersecctions?: boolean): boolean;
     // (undocumented)
     static toolId: string;
 }
@@ -995,6 +995,38 @@ export class ToggleProjectExtentsTool extends Tool {
 
 // @beta
 export class ToggleReadPixelsTool extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTileBounds extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTileFreeze extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTileLogging extends RenderTargetDebugControlTool {
+    // (undocumented)
+    execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
+export class ToggleRealityTilePreload extends RenderTargetDebugControlTool {
     // (undocumented)
     execute(control: RenderTargetDebugControl, vp: ScreenViewport): void;
     // (undocumented)

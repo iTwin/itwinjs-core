@@ -96,7 +96,7 @@ class WMSTreeSupplier implements TileTreeSupplier {
 
   /** The first time a tree of a particular imagery type is requested, this function creates it. */
   public async createTileTree(type: WMSImageryType, iModel: IModelConnection): Promise<TileTree | undefined> {
-    return createTileTreeFromImageryProvider(this._plugin.imageryProviders[type], 0.0, false, GlobeMode.Columbus, iModel);
+    return createTileTreeFromImageryProvider(this._plugin.imageryProviders[type], 0.0, false, GlobeMode.Plane, false, iModel);
   }
 }
 
@@ -117,6 +117,10 @@ class WMSTreeRef extends MapTileTreeReference {
   protected get _groundBias() { return 0.0; }
   protected get _imageryProvider() { return this._plugin.currentImageryProvider; }
   protected get _transparency() { return 0.7; }
+
+  public get castsShadows() {
+    return false;
+  }
 
   /** Return the owner of the TileTree to draw. */
   public get treeOwner(): TileTreeOwner {

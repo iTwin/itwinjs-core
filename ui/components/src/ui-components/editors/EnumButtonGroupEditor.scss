@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/index";
 
 $desktop-tool-stripe-width: 2px;
 $desktop-tool-stripe-height: 22px;
@@ -75,7 +75,9 @@ $components-enumbuttongroup-editor-space-between-toolbar-items: 1px;
   border-color: $buic-background-control-stroke;
   border-style: solid;
   cursor: pointer;
-  transition: all 500ms ease;
+  transition-property: background-color, color;
+  transition-duration: 500ms;
+  transition-timing-function: ease;
   position: relative;
   background: $buic-background-control linear-gradient(to bottom, $buic-button-gradient1, $buic-button-gradient2);
   height: $components-enumbuttongroup-editor-item-height;

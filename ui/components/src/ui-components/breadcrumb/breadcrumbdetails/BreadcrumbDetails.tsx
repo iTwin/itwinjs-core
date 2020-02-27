@@ -13,11 +13,14 @@ import { using } from "@bentley/bentleyjs-core";
 import { TableDataProvider, RowItem, ColumnDescription } from "../../table/TableDataProvider";
 import { Table, TableProps } from "../../table/component/Table";
 import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
-import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, getLabelString } from "../../tree/TreeDataProvider";
+import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
-import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/component/BeInspireTree";
+import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/deprecated/component/BeInspireTree";
 import { UiComponents } from "../../UiComponents";
+import { getPropertyRecordAsString } from "../../common/getPropertyRecordAsString";
 import { CommonProps } from "@bentley/ui-core";
+
+// tslint:disable:deprecation
 
 /** Properties for the [[BreadcrumbDetails]] component
  * @beta
@@ -163,7 +166,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   private static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>): BeInspireTreeNodeConfig {
     const node: BeInspireTreeNodeConfig = {
       id: item.id,
-      text: getLabelString(item.label),
+      text: getPropertyRecordAsString(item.label),
       itree: {
         state: { collapsed: false },
       },

@@ -1,7 +1,5 @@
 sep=;
 Release Tag;API Item
-public;AllInstanceNodesSpecification 
-public;AllRelatedInstanceNodesSpecification 
 public;ArrayTypeDescription 
 internal;AsyncTasksTracker
 public;BaseNodeKey
@@ -10,7 +8,6 @@ public;CalculatedPropertiesSpecification
 public;CategoryDescription
 public;CheckBoxRule 
 public;ChildNodeRule 
-public;ChildNodeSpecification = AllInstanceNodesSpecification | AllRelatedInstanceNodesSpecification | CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification
 public;ChildNodeSpecificationBase
 public;ChildNodeSpecificationTypes
 public;ClassGroup 
@@ -19,7 +16,6 @@ public;ClassInfo
 public;ClassInfo
 internal;fromJSON(json: ClassInfoJSON): ClassInfo
 internal;toJSON(info: ClassInfo): ClassInfoJSON
-internal;ClientStateSyncRequestOptions = PresentationRpcRequestOptions &
 public;ConditionContainer
 public;Content
 public;ContentFlags
@@ -36,9 +32,13 @@ public;ContentSpecificationTypes
 public;CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
-alpha;DEFAULT_KEYS_BATCH_SIZE = 5000
+public;DEFAULT_KEYS_BATCH_SIZE = 5000
 public;DefaultContentDisplayTypes
 public;DefaultGroupingPropertiesContainer
+public;DEPRECATED_AllInstanceNodesSpecification 
+public;DEPRECATED_AllRelatedInstanceNodesSpecification 
+public;DEPRECATED_PropertiesDisplaySpecification
+public;DEPRECATED_PropertyEditorsSpecification 
 public;Descriptor 
 public;DescriptorOverrides
 public;DescriptorSource
@@ -50,8 +50,6 @@ internal;toJSON(value: DisplayValue): DisplayValueJSON
 public;DisplayValuesArray 
 public;DisplayValuesMap 
 public;ECClassGroupingNodeKey 
-public;ECInstanceNodeKey 
-public;ECInstanceNodeKeyJSON 
 public;ECInstancesNodeKey 
 public;ECInstancesNodeKeyJSON 
 public;ECPropertyGroupingNodeKey 
@@ -129,12 +127,11 @@ internal;listReviver(key: string, value: any): any
 internal;reviver(key: string, value: any): any
 internal;toJSON(node: Node): NodeJSON
 public;NodeArtifactsRule 
-public;NodeKey = BaseNodeKey | ECInstanceNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
+public;NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKey
 internal;fromJSON(json: NodeKeyJSON): NodeKey
-deprecated;isInstanceNodeKey(key: NodeKey): key is ECInstanceNodeKey
 internal;toJSON(key: NodeKey): NodeKeyJSON
-public;NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
+public;NodeKeyJSON = BaseNodeKey | ECInstancesNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey
 public;NodeKeyPath = NodeKey[]
 public;NodePathElement
 public;NodePathElement
@@ -147,13 +144,11 @@ public;NodePathFilteringData
 public;Omit
 public;Paged
 public;PageOptions
-public;PersistentKeysContainer
 public;PresentationError 
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
 public;PresentationStatus
 public;PrimitiveTypeDescription 
-public;PropertiesDisplaySpecification
 public;PropertiesField 
 public;Property
 public;Property
@@ -167,17 +162,16 @@ public;PropertyEditorParameterTypes
 public;PropertyEditorRangeParameters 
 public;PropertyEditorSliderParameters 
 public;PropertyEditorSpecification
-public;PropertyEditorsSpecification 
 public;PropertyGroup 
 public;PropertyGroupingValue
 public;PropertyInfo
 public;PropertyInfo
 internal;fromJSON(json: PropertyInfoJSON): PropertyInfo
 internal;toJSON(info: PropertyInfo): PropertyInfoJSON
-beta;PropertyOverrides
+public;PropertyOverrides
 public;PropertyRangeGroupSpecification
 public;PropertySortingRule 
-beta;PropertySpecification 
+public;PropertySpecification 
 public;PropertyValueFormat
 public;QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification
 public;QuerySpecificationBase
@@ -196,28 +190,24 @@ public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
 public;RelationshipPath
 internal;reverse(path: RelationshipPath): RelationshipPath
-beta;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
-beta;RelationshipStepSpecification
-beta;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[]
-beta;RepeatableRelationshipStepSpecification 
+public;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
+public;RelationshipStepSpecification
+public;RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[]
+public;RepeatableRelationshipStepSpecification 
 public;RequestOptions
 public;RequestOptionsWithRuleset
-beta;RequestPriority
+public;RequestPriority
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier
 public;RuleBase
 public;Ruleset
-internal;RulesetManagerState = Ruleset[]
-internal;RulesetManagerState
 public;RulesetsFactory
-beta;RulesetVariable
-internal;RulesetVariablesState
-internal;RulesetVariablesState
+public;RulesetVariable
 public;RuleTypes
 public;SameLabelInstanceGroup 
-beta;SameLabelInstanceGroupApplicationStage
+public;SameLabelInstanceGroupApplicationStage
 public;SchemasSpecification
 public;SelectClassInfo
 public;SelectedNodeInstancesSpecification 
@@ -247,6 +237,6 @@ public;ValuesDictionary
 public;ValuesMap 
 public;Variable
 public;VariablesGroup
-beta;VariableValue = boolean | string | number | number[] | Id64String[]
+public;VariableValue = boolean | string | number | number[] | Id64String[]
 public;VariableValueType
-beta;VariableValueTypes
+public;VariableValueTypes

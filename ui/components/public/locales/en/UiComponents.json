@@ -116,5 +116,17 @@
   },
   "filteringInput": {
     "placeholder": "Search..."
+  },
+  "cube": {
+    "front": "Front",
+    "back": "Back",
+    "top": "Top",
+    "bottom": "Bottom",
+    "left": "Left",
+    "right": "Right"
+  },
+  "drawing": {
+    "unrotate": "Un-Rotate",
+    "rotateStyle": "Toggle background-rotate"
   }
 }

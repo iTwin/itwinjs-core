@@ -2,14 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module PresentationRules */
+/** @packageDocumentation
+ * @module PresentationRules
+ */
 
 import { RelationshipDirection } from "./RelationshipDirection";
 import { SingleSchemaClassSpecification } from "./ClassSpecifications";
 
 /**
  * Specification of a single relationship path step.
- * @beta
+ * @public
  */
 export interface RelationshipStepSpecification {
   /** Specification of the relationship to use for joining the related instance. */
@@ -27,7 +29,7 @@ export interface RelationshipStepSpecification {
 
 /**
  * Specification of a single relationship path step.
- * @beta
+ * @public
  */
 export interface RepeatableRelationshipStepSpecification extends RelationshipStepSpecification {
   /**
@@ -40,12 +42,12 @@ export interface RepeatableRelationshipStepSpecification extends RelationshipSte
 
 /**
  * Specification of a relationship path.
- * @beta
+ * @public
  */
 export type RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[];
 
 /**
  * Specification of a repeatable relationship path.
- * @beta
+ * @public
  */
 export type RepeatableRelationshipPathSpecification = RepeatableRelationshipStepSpecification | RepeatableRelationshipStepSpecification[];

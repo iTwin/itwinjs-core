@@ -1,0 +1,86 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+$component-examples-leftpanel-width: 225px;
+$component-examples-rightpanel-width: 200px;
+
+.component-examples {
+  width: auto;
+  height: 100%;
+
+  color: $buic-text-color;
+  font-size: $uicore-font-size;
+
+  display: grid;
+  grid-template-columns: 200px auto;
+  column-gap: 8px;
+
+  .component-examples-categories {
+    background: $buic-background-dialog;
+
+    height: 100%;
+    overflow-y: auto;
+
+    @include uicore-touch-scrolling;
+    @include uicore-scrollbar();
+  }
+
+  .component-examples-items {
+    background: $buic-background-dialog;
+
+    height: 100%;
+    overflow-y: auto;
+
+    @include uicore-touch-scrolling;
+    @include uicore-scrollbar();
+
+    display: flex;
+    flex-direction: column;
+
+    .component-examples-item {
+      display: flex;
+
+      > .panel {
+        flex: 1;
+        display: flex;
+        box-sizing: border-box;
+      }
+
+      > .left-panel {
+        flex-direction: column;
+        width: $component-examples-leftpanel-width;
+        padding: 15px;
+
+        > .title {
+          font-size: 18px;
+        }
+
+        > .description {
+          margin-top: 10px;
+          font-size: 12px;
+          color: $buic-text-color-muted;
+        }
+      }
+
+      > .right-panel {
+        align-items: center;
+        width: $component-examples-rightpanel-width;
+        padding: 15px;
+
+        .toggle {
+          margin-right: 10px;
+        }
+      }
+    }
+
+    .component-examples-items-separator {
+      width: 100%;
+      color: $buic-inputs-border;
+    }
+
+  }
+
+}

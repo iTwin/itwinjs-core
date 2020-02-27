@@ -11,7 +11,7 @@ exports[`<LabeledToggle /> renders correctly 1`] = `
     showCheckmark={false}
   />
   <div
-    className="label"
+    className="uicore-label"
   >
     toggle test
   </div>
@@ -20,7 +20,7 @@ exports[`<LabeledToggle /> renders correctly 1`] = `
 
 exports[`<LabeledToggle /> renders disabled correctly 1`] = `
 <label
-  className="core-inputs-labeled-toggle disabled"
+  className="core-inputs-labeled-toggle uicore-disabled"
 >
   <Toggle
     buttonType={1}
@@ -30,7 +30,7 @@ exports[`<LabeledToggle /> renders disabled correctly 1`] = `
     showCheckmark={false}
   />
   <div
-    className="label"
+    className="uicore-label"
   >
     toggle test
   </div>

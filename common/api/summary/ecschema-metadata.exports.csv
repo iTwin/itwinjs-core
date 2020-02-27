@@ -74,7 +74,6 @@ alpha;EnumeratorChanges
 alpha;EnumeratorDelta 
 alpha;EnumeratorMissing 
 beta;EnumeratorProps
-alpha;FileSchemaKey 
 beta;Format 
 alpha;FormatChanges 
 beta;class FormatDiagnosticReporter 
@@ -188,7 +187,6 @@ alpha;SchemaCompareDirection
 alpha;SchemaComparer
 beta;SchemaContext 
 beta;class SchemaDiagnostic
-alpha;class SchemaFileLocater
 internal;SchemaGraphUtil
 beta;class SchemaItem
 alpha;class SchemaItemChange 
@@ -200,7 +198,6 @@ beta;SchemaItemProps
 beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
 internal;schemaItemTypeToXmlString(value: SchemaItemType): string
-alpha;SchemaJsonFileLocater 
 beta;SchemaKey
 beta;SchemaMap 
 beta;SchemaMatchType
@@ -212,7 +209,6 @@ alpha;SchemaReferenceMissing
 beta;SchemaReferenceProps
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
-alpha;SchemaXmlFileLocater 
 beta;ScientificType
 internal;scientificTypeToString(scientificType: ScientificType): string
 beta;ShowSignOption

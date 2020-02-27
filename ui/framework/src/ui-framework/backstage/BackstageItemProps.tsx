@@ -20,7 +20,7 @@ export interface BackstageItemProps extends IconProps {
   /** if set, component will be shown with as the active item - defaults to false */
   isActive?: boolean;
   /** optional function to set state of backstage item */
-  stateFunc?: (state: Readonly<BackstageItemState>) => BackstageItemState;
+  stateFunc?: (state: Readonly<BackstageItemState>) => BackstageItemState; // tslint:disable-line:deprecation
   /** optional SyncUi event ids that will trigger the state function to run. */
   stateSyncIds?: string[];
   /** if set, it is used to explicitly set the label shown by a component. */
@@ -56,6 +56,6 @@ export interface BackstageItemState {
  * @deprecated - use BackstageItem in bentley/ui-abstract instead
  */
 // istanbul ignore next
-export const getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => {
+export const getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => { // tslint:disable-line:deprecation
   return BackstageItemUtilities.getBackstageItemStateFromProps(props);
 };

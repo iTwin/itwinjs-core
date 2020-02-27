@@ -165,9 +165,7 @@ export class KeyinField {
       return Promise.resolve();
 
     // NB: History list is ordered by most to least recent so moving "backwards" means incrementing the index.
-    const upArrow = 38;
-    const downArrow = 40;
-    const direction = ev.keyCode === downArrow ? 1 : (ev.keyCode === upArrow ? 1 : 0);
+    const direction = ev.key === "ArrowDown" ? 1 : (ev.key === "ArrowUp" ? 1 : 0);
     if (0 === direction)
       return Promise.resolve();
 

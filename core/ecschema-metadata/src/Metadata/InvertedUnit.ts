@@ -32,11 +32,6 @@ export class InvertedUnit extends SchemaItem {
   get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
   get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this InvertedUnit's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -68,11 +63,6 @@ export class InvertedUnit extends SchemaItem {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(invertedUnitProps: InvertedUnitProps) {
-    this.fromJSONSync(invertedUnitProps);
-  }
-
   public fromJSONSync(invertedUnitProps: InvertedUnitProps) {
     super.fromJSONSync(invertedUnitProps);
     const unitSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.invertsUnit);
@@ -94,11 +84,6 @@ export class InvertedUnit extends SchemaItem {
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
         return unitSystem;
       });
-  }
-
-  /** @deprecated */
-  public async deserialize(invertedUnitProps: InvertedUnitProps) {
-    await this.fromJSON(invertedUnitProps);
   }
 
   public async fromJSON(invertedUnitProps: InvertedUnitProps) {

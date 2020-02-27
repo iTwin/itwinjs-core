@@ -45,7 +45,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
     super(info, options);
 
     this.reactElement = (
-      <ModelSelectorWidget iModelConnection={options.iModelConnection} />
+      <ModelSelectorWidget iModelConnection={options.iModelConnection} /> // tslint:disable-line:deprecation
     );
   }
 }
@@ -360,7 +360,7 @@ export class ModelSelectorWidget extends React.Component<
 
   private _getTabContent = () => {
     return (
-      <CategoryModelTree
+      <CategoryModelTree // tslint:disable-line:deprecation
         key={this.state.activeGroup!.id}
         iModelConnection={this.props.iModelConnection}
         activeGroup={this.state.activeGroup!}

@@ -22,6 +22,7 @@ import { desync, sync } from "./Sync";
 import { UniformHandle } from "./Handle";
 import { Matrix4 } from "./Matrix";
 import { Target } from "./Target";
+import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
 
 /** @internal */
 export const enum FrustumUniformType { // tslint:disable-line:no-const-enum
@@ -163,6 +164,22 @@ export class FrustumUniforms {
 
       lookIn(cameraPosition, viewX, viewY, viewZ, this.viewMatrix);
       frustum(frustumLeft, frustumRight, frustumBottom, frustumTop, frustumFront, frustumBack, this.projectionMatrix);
+
+      IModelFrameLifecycle.onChangeCameraView.raiseEvent({
+        cameraPosition,
+        viewX,
+        viewY,
+        viewZ,
+      });
+      IModelFrameLifecycle.onChangeCameraFrustum.raiseEvent({
+        type: FrustumUniformType.Perspective,
+        left: frustumLeft,
+        right: frustumRight,
+        bottom: frustumBottom,
+        top: frustumTop,
+        front: frustumFront,
+        back: frustumBack,
+      });
 
       this._nearPlaneCenter.setFrom(nearLowerLeft);
       this._nearPlaneCenter.interpolate(0.5, nearUpperRight, this._nearPlaneCenter);

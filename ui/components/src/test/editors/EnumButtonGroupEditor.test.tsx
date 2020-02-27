@@ -10,7 +10,7 @@ import sinon from "sinon";
 import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
 import { PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
-import { PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue } from "@bentley/ui-abstract";
 
 describe("<EnumButtonGroupEditor />", () => {
   afterEach(cleanup);

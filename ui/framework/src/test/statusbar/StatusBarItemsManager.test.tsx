@@ -12,14 +12,14 @@ describe("StatusBarItemsManager", () => {
 
   describe("items", () => {
     it("should contain 0 items by default", () => {
-      const sut = new StatusBarItemsManager();
+      const sut = new StatusBarItemsManager(); // tslint:disable-line:deprecation
       expect(sut.items.length).to.eq(0);
     });
   });
 
   describe("add & remove", () => {
     it("should add & remove one item", () => {
-      const sut = new StatusBarItemsManager();
+      const sut = new StatusBarItemsManager(); // tslint:disable-line:deprecation
 
       const item = StatusBarItemUtilities.createStatusBarItem("test", StatusBarSection.Left, 1, <div />);
 
@@ -31,7 +31,7 @@ describe("StatusBarItemsManager", () => {
     });
 
     it("attempt to set duplicate items ignores it", () => {
-      const sut = new StatusBarItemsManager();
+      const sut = new StatusBarItemsManager(); // tslint:disable-line:deprecation
 
       const item = StatusBarItemUtilities.createStatusBarItem("test", StatusBarSection.Left, 1, <div />);
 
@@ -43,7 +43,7 @@ describe("StatusBarItemsManager", () => {
     });
 
     it("add ignores duplicate items", () => {
-      const sut = new StatusBarItemsManager();
+      const sut = new StatusBarItemsManager(); // tslint:disable-line:deprecation
 
       const item1 = StatusBarItemUtilities.createStatusBarItem("test", StatusBarSection.Left, 1, <div />);
       const item2 = StatusBarItemUtilities.createStatusBarItem("test", StatusBarSection.Left, 1, <div />);
@@ -53,7 +53,7 @@ describe("StatusBarItemsManager", () => {
     });
 
     it("attempt to add duplicate item ignores it", () => {
-      const sut = new StatusBarItemsManager();
+      const sut = new StatusBarItemsManager(); // tslint:disable-line:deprecation
 
       const item = StatusBarItemUtilities.createStatusBarItem("test", StatusBarSection.Left, 1, <div />);
 
@@ -65,7 +65,7 @@ describe("StatusBarItemsManager", () => {
     });
 
     it("should add & remove multiple items to StatusBarManager items", () => {
-      const sut = new StatusBarItemsManager();
+      const sut = new StatusBarItemsManager(); // tslint:disable-line:deprecation
 
       const items: StatusBarItem[] = [
         StatusBarItemUtilities.createStatusBarItem("test1", StatusBarSection.Left, 1, <div />),

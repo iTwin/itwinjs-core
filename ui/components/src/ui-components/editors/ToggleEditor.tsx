@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/imodeljs-frontend";
+import { PropertyValueFormat, PrimitiveValue, PropertyValue } from "@bentley/ui-abstract";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { Toggle } from "@bentley/ui-core";
@@ -103,7 +103,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 
   /** @internal */
   public render() {
-    const className = classnames("cell", "components-cell-editor", this.props.className);
+    const className = classnames("components-cell-editor", this.props.className);
     const inOn = this.state.toggleValue;
 
     return (

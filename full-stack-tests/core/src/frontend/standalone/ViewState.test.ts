@@ -4,7 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Geometry, Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d, DeepCompare } from "@bentley/geometry-core";
-import { AmbientOcclusion, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
+import {
+  AmbientOcclusion,
+  BackgroundMapSettings,
+  BackgroundMapType,
+  ColorDef,
+  HiddenLine,
+  RenderMode,
+  SpatialViewDefinitionProps,
+  ViewDefinitionProps,
+} from "@bentley/imodeljs-common";
 import * as path from "path";
 import {
   AuxCoordSystemSpatialState,
@@ -157,17 +166,17 @@ describe("ViewState", () => {
     const oldBackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
     if (undefined !== oldBackgroundMap) {
       const mt = oldBackgroundMap.mapType === BackgroundMapType.Aerial ? BackgroundMapType.Hybrid : BackgroundMapType.Hybrid;
-      vs0DisplayStyle3d.setBackgroundMap({
+      vs0DisplayStyle3d.changeBackgroundMapProps(BackgroundMapSettings.fromJSON({
         providerName: oldBackgroundMap.providerName === "BingProvider" ? "MapBoxProvider" : "BingProvider",
         providerData: { mapType: mt },
-      });
+      }));
     } else {
-      vs0DisplayStyle3d.setBackgroundMap({
+      vs0DisplayStyle3d.changeBackgroundMapProps(BackgroundMapSettings.fromJSON({
         providerName: "BingProvider",
         providerData: {
           mapType: BackgroundMapType.Aerial,
         },
-      });
+      }));
     }
     const vs0BackgroundMap = vs0DisplayStyle3d.settings.backgroundMap;
 

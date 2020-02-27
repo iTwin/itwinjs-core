@@ -15,6 +15,11 @@
   display: flex;
   color: $buic-foreground-body;
   background-color: $buic-background-control;
+  box-sizing: border-box;
+
+  &.core-split-button-border {
+    border: 1px solid $buic-inputs-border;
+  }
 
   > .core-split-button-label {
     &:hover {
@@ -22,6 +27,14 @@
     }
 
     @include uicore-text(body);
+  }
+
+  > .core-split-button-divider {
+    width: 2px;
+
+    &.core-split-button-border {
+      border-right: 1px solid $buic-inputs-border;
+    }
   }
 
   > .core-split-button-arrow {
@@ -49,7 +62,7 @@
 
     width: $uicore-line-height;
     height: $uicore-line-height;
-    margin-left: 4px;
+    margin-left: 3px;
 
     > .context-menu {
       top: $uicore-inputs-padding-bordered;

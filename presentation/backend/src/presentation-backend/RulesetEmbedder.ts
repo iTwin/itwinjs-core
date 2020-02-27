@@ -30,23 +30,31 @@ export enum DuplicateRulesetHandlingStrategy {
 }
 
 /**
+ * Properties for creating a `RulesetEmbedder` instance.
+ * @public
+ */
+export interface RulesetEmbedderProps {
+  /** iModel to embed rulesets to */
+  imodel: IModelDb;
+}
+
+/**
  * An API for embedding presentation rulesets into iModels.
  * @beta
  */
 export class RulesetEmbedder {
 
-  private _iModelDb: IModelDb;
+  private _imodel: IModelDb;
   private readonly _schemaPath = path.join(KnownLocations.nativeAssetsDir, "ECSchemas/Domain/PresentationRules.ecschema.xml");
   private readonly _rulesetModelName = "PresentationRules";
   private readonly _rulesetSubjectName = "PresentationRules";
 
   /**
    * Constructs RulesetEmbedder
-   * @param iModelDb db to insert rulesets to
    */
-  public constructor(iModelDb: IModelDb) {
+  public constructor(props: RulesetEmbedderProps) {
     PresentationRules.registerSchema();
-    this._iModelDb = iModelDb;
+    this._imodel = props.imodel;
   }
 
   /**
@@ -59,8 +67,8 @@ export class RulesetEmbedder {
     await this.handleElementOperationPrerequisites();
 
     const model = this.getOrCreateRulesetModel();
-    const rulesetCode = RulesetElements.Ruleset.createRulesetCode(model.id, ruleset.id, this._iModelDb);
-    const rulesetId = this._iModelDb.elements.queryElementIdByCode(rulesetCode);
+    const rulesetCode = RulesetElements.Ruleset.createRulesetCode(model.id, ruleset.id, this._imodel);
+    const rulesetId = this._imodel.elements.queryElementIdByCode(rulesetCode);
     if (rulesetId !== undefined)
       return this.handleDuplicateRuleset(ruleset, duplicateHandlingStrategy, rulesetId);
 
@@ -73,7 +81,7 @@ export class RulesetEmbedder {
 
     let rulesetElement;
     try {
-      rulesetElement = this._iModelDb.elements.getElement<DefinitionElement>(rulesetId);
+      rulesetElement = this._imodel.elements.getElement<DefinitionElement>(rulesetId);
     } catch (err) {
       return Id64.invalid;
     }
@@ -90,21 +98,21 @@ export class RulesetEmbedder {
       classFullName: RulesetElements.Ruleset.classFullName,
       jsonProperties: { jsonProperties: ruleset },
     };
-    return this._iModelDb.elements.insertElement(props);
+    return this._imodel.elements.insertElement(props);
   }
 
   /**
    * Get all rulesets embedded in the iModel.
    */
   public async getRulesets(): Promise<Ruleset[]> {
-    if (!this._iModelDb.containsClass(RulesetElements.Ruleset.classFullName))
+    if (!this._imodel.containsClass(RulesetElements.Ruleset.classFullName))
       return [];
 
     const rulesetList: Ruleset[] = [];
-    this._iModelDb.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${RulesetElements.Ruleset.classFullName}`, (statement: ECSqlStatement) => {
+    this._imodel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${RulesetElements.Ruleset.classFullName}`, (statement: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const row = statement.getRow();
-        const rulesetElement = this._iModelDb.elements.getElement({ id: row.id }) as RulesetElements.Ruleset;
+        const rulesetElement = this._imodel.elements.getElement({ id: row.id }) as RulesetElements.Ruleset;
         const ruleset = rulesetElement.jsonProperties.jsonProperties as Ruleset;
         rulesetList.push(ruleset);
       }
@@ -128,7 +136,7 @@ export class RulesetEmbedder {
     if (undefined === definitionPartition)
       return undefined;
 
-    return this._iModelDb.models.getSubModel(definitionPartition.id);
+    return this._imodel.models.getSubModel(definitionPartition.id);
   }
 
   private queryDefinitionPartition(): DefinitionPartition | undefined {
@@ -136,12 +144,12 @@ export class RulesetEmbedder {
     if (undefined === subject)
       return undefined;
 
-    return this._iModelDb.elements.getElement(DefinitionPartition.createCode(this._iModelDb, subject.id, this._rulesetModelName));
+    return this._imodel.elements.getElement(DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName));
   }
 
   private querySubject(): DefinitionPartition | undefined {
-    const root = this._iModelDb.elements.getRootSubject();
-    const codeSpec: CodeSpec = this._iModelDb.codeSpecs.getByName(BisCodeSpec.subject);
+    const root = this._imodel.elements.getRootSubject();
+    const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const code = new Code({
       spec: codeSpec.id,
       scope: root.id,
@@ -149,7 +157,7 @@ export class RulesetEmbedder {
     });
 
     try {
-      return this._iModelDb.elements.getElement(code);
+      return this._imodel.elements.getElement(code);
     } catch {
       return undefined;
     }
@@ -162,13 +170,13 @@ export class RulesetEmbedder {
       classFullName: DefinitionModel.classFullName,
     };
 
-    const model = this._iModelDb.models.createModel(modelProps);
-    this._iModelDb.models.insertModel(model);
+    const model = this._imodel.models.createModel(modelProps);
+    this._imodel.models.insertModel(model);
     return model;
   }
 
   private insertDefinitionPartition(rulesetSubject: Subject): DefinitionPartition {
-    const partitionCode = DefinitionPartition.createCode(this._iModelDb, rulesetSubject.id, this._rulesetModelName);
+    const partitionCode = DefinitionPartition.createCode(this._imodel, rulesetSubject.id, this._rulesetModelName);
     const definitionPartitionProps: InformationPartitionElementProps = {
       parent: {
         id: rulesetSubject.id,
@@ -178,13 +186,13 @@ export class RulesetEmbedder {
       code: partitionCode,
       classFullName: DefinitionPartition.classFullName,
     };
-    const id = this._iModelDb.elements.insertElement(definitionPartitionProps);
-    return this._iModelDb.elements.getElement(id) as DefinitionPartition;
+    const id = this._imodel.elements.insertElement(definitionPartitionProps);
+    return this._imodel.elements.getElement(id) as DefinitionPartition;
   }
 
   private insertSubject(): Subject {
-    const root = this._iModelDb.elements.getRootSubject();
-    const codeSpec: CodeSpec = this._iModelDb.codeSpecs.getByName(BisCodeSpec.subject);
+    const root = this._imodel.elements.getRootSubject();
+    const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const subjectCode = new Code({
       spec: codeSpec.id,
       scope: root.id,
@@ -199,8 +207,8 @@ export class RulesetEmbedder {
       },
       code: subjectCode,
     };
-    const id = this._iModelDb.elements.insertElement(subjectProps);
-    return this._iModelDb.elements.getElement(id) as Subject;
+    const id = this._imodel.elements.insertElement(subjectProps);
+    return this._imodel.elements.getElement(id) as Subject;
   }
 
   private insertCodeSpecs(): void {
@@ -208,16 +216,16 @@ export class RulesetEmbedder {
   }
 
   private insertCodeSpec(name: string, scopeType: CodeScopeSpec.Type): Id64String {
-    const codeSpec = CodeSpec.create(this._iModelDb, name, scopeType);
-    return this._iModelDb.codeSpecs.insert(codeSpec);
+    const codeSpec = CodeSpec.create(this._imodel, name, scopeType);
+    return this._imodel.codeSpecs.insert(codeSpec);
   }
 
   private async handleElementOperationPrerequisites(): Promise<void> {
-    if (this._iModelDb.containsClass(RulesetElements.Ruleset.classFullName))
+    if (this._imodel.containsClass(RulesetElements.Ruleset.classFullName))
       return;
 
-    await this._iModelDb.importSchema(ClientRequestContext.current, this._schemaPath);
+    await this._imodel.importSchemas(ClientRequestContext.current, [this._schemaPath]);
     this.insertCodeSpecs();
-    this._iModelDb.saveChanges();
+    this._imodel.saveChanges();
   }
 }

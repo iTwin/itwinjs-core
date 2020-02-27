@@ -61,7 +61,10 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 
     // istanbul ignore else
     if (!this._navigationAidControl && this._navigationAidId) {
-      this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel }) as NavigationAidControl;
+      const activeContentControl = ContentViewManager.getActiveContentControl();
+      const viewport = activeContentControl ? activeContentControl.viewport : undefined;
+
+      this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel, viewport }) as NavigationAidControl;
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
         throw new UiError(UiFramework.loggerCategory(this), `renderCornerItem: navigationAidId '${this._navigationAidId}' is registered to a control that is NOT a NavigationAid`);
       }
@@ -106,21 +109,21 @@ export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonPr
  * @internal
  */
 interface NavigationWidgetState {
-  navigationWidgetDef: NavigationWidgetDef;
+  navigationWidgetDef: NavigationWidgetDef; // tslint:disable-line:deprecation
 }
 
 /** Navigation Widget React component.
  *  @public @deprecated use NavigationWidgetComposer instead
  */
-export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
+export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> { // tslint:disable-line:deprecation
 
   /** @internal */
   public readonly state: Readonly<NavigationWidgetState>;
 
-  constructor(props: NavigationWidgetPropsEx) {
+  constructor(props: NavigationWidgetPropsEx) { // tslint:disable-line:deprecation
     super(props);
 
-    this.state = { navigationWidgetDef: new NavigationWidgetDef(props) };
+    this.state = { navigationWidgetDef: new NavigationWidgetDef(props) }; // tslint:disable-line:deprecation
   }
 
   /** Adds listeners */
@@ -154,9 +157,9 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
     });
   }
 
-  public componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) {
+  public componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) { // tslint:disable-line:deprecation
     if (this.props !== prevProps) {
-      this.setState((_, props) => ({ navigationWidgetDef: new NavigationWidgetDef(props) }));
+      this.setState((_, props) => ({ navigationWidgetDef: new NavigationWidgetDef(props) })); // tslint:disable-line:deprecation
     }
   }
 
@@ -176,7 +179,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 /** Properties for the [[NavigationWidgetWithDef]] component.
  */
 interface Props extends CommonProps {
-  navigationWidgetDef: NavigationWidgetDef;
+  navigationWidgetDef: NavigationWidgetDef; // tslint:disable-line:deprecation
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;
 }

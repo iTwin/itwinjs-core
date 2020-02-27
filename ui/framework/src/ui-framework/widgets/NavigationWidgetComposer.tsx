@@ -18,14 +18,14 @@ import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@ben
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
 
-function createNavigationAidControl(activeContentControl: ContentControl | undefined): NavigationAidControl | undefined {
+function createNavigationAidControl(activeContentControl: ContentControl | undefined, navigationAidId: string): NavigationAidControl | undefined {
   // istanbul ignore else
-  if (!activeContentControl || !activeContentControl.navigationAidControl)
+  if (!activeContentControl || !navigationAidId)
     return undefined;
 
-  const imodel = activeContentControl.viewport ? activeContentControl.viewport.iModel : UiFramework.getIModelConnection();
-  const navigationAidControl = ConfigurableUiManager.createControl(activeContentControl.navigationAidControl,
-    activeContentControl.navigationAidControl, { imodel }) as NavigationAidControl;
+  const viewport = activeContentControl.viewport;
+  const imodel = viewport ? viewport.iModel : UiFramework.getIModelConnection();
+  const navigationAidControl = ConfigurableUiManager.createControl(navigationAidId, navigationAidId, { imodel, viewport }) as NavigationAidControl;
 
   navigationAidControl.initialize();
   return navigationAidControl;
@@ -48,10 +48,12 @@ export interface NavigationAidHostProps {
 // tslint:disable-next-line: variable-name
 export const NavigationAidHost: React.FC<NavigationAidHostProps> = (props) => {
   const [activeContentControl, setActiveContentControl] = React.useState(() => ContentViewManager.getActiveContentControl());
+  const [navigationAidId, setNavigationAidId] = React.useState(() => activeContentControl ? activeContentControl.navigationAidControl : "");
 
   React.useEffect(() => {
     const handleContentControlActivated = (args: ContentControlActivatedEventArgs) => {
       setActiveContentControl(args.activeContentControl);
+      setNavigationAidId(args.activeContentControl.navigationAidControl);
     };
 
     FrontstageManager.onContentControlActivatedEvent.addListener(handleContentControlActivated);
@@ -78,7 +80,7 @@ export const NavigationAidHost: React.FC<NavigationAidHostProps> = (props) => {
     };
   }, [activeViewClass]);
 
-  const navigationAidControl = React.useMemo(() => createNavigationAidControl(activeContentControl), [activeContentControl]);
+  const navigationAidControl = React.useMemo(() => createNavigationAidControl(activeContentControl, navigationAidId), [activeContentControl, navigationAidId]);
 
   const divStyle: React.CSSProperties = { minWidth: props.minWidth ? props.minWidth : "64px", minHeight: props.minHeight ? props.minHeight : "64px" };
   return (

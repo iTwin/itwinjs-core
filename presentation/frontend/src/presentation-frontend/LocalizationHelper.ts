@@ -34,32 +34,28 @@ export class LocalizationHelper {
     return labelDefinition;
   }
 
-  public getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[] {
-    for (const labelDefinition of labelDefinitions)
-      this.translateLabelDefinition(labelDefinition);
+  public getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]) {
+    labelDefinitions.forEach((labelDefinition) => this.translateLabelDefinition(labelDefinition));
     return labelDefinitions;
   }
 
-  public getLocalizedContent(content: Content | undefined): Content | undefined {
-    if (content !== undefined) {
-      for (const contentItem of content.contentSet)
-        this.translateContentItem(contentItem);
-    }
+  public getLocalizedContent(content: Content | undefined) {
+    if (content !== undefined)
+      content.contentSet.forEach((item) => this.translateContentItem(item));
     return content;
   }
 
   private translateContentItem(item: Item) {
-    this.translateLabelDefinition(item.labelDefinition!);
+    this.translateLabelDefinition(item.label);
   }
 
   private translateNode(node: Node) {
-    this.translateLabelDefinition(node.labelDefinition!);
+    this.translateLabelDefinition(node.label);
   }
 
   private translateLabelDefinition(labelDefinition: LabelDefinition) {
     const translateComposite = (compositeValue: LabelCompositeValue) => {
-      for (const value of compositeValue.values)
-        this.translateLabelDefinition(value);
+      compositeValue.values.map((value) => this.translateLabelDefinition(value));
     };
 
     if (labelDefinition.typeName === "composite")

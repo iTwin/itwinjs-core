@@ -6,6 +6,7 @@
  * @module Tree
  */
 
+import memoize from "micro-memoize";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodePathElement, NodeKey } from "@bentley/presentation-common";
 import {
@@ -15,7 +16,13 @@ import {
 } from "@bentley/ui-components";
 import { createTreeNodeItem } from "./Utils";
 import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
-import { memoize } from "lodash";
+
+/** @internal */
+export interface FilteredPresentationTreeDataProviderProps {
+  parentDataProvider: IPresentationTreeDataProvider;
+  filter: string;
+  paths: ReadonlyArray<Readonly<NodePathElement>>;
+}
 
 /**
  * Rules-driven presentation tree data provider that returns filtered results.
@@ -27,13 +34,16 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
   private _filter: string;
   private _filteredResultMatches: Array<{ id: string, matchesCount: number }> = [];
 
-  public constructor(parentDataProvider: IPresentationTreeDataProvider, filter: string, paths: ReadonlyArray<Readonly<NodePathElement>>) {
-    this._parentDataProvider = parentDataProvider;
-    this._filter = filter;
+  public constructor(props: FilteredPresentationTreeDataProviderProps) {
+    this._parentDataProvider = props.parentDataProvider;
+    this._filter = props.filter;
     const hierarchy: SimpleTreeDataProviderHierarchy = new Map<string | undefined, TreeNodeItem[]>();
-    this.createHierarchy(paths, hierarchy);
+    this.createHierarchy(props.paths, hierarchy);
     this._filteredDataProvider = new SimpleTreeDataProvider(hierarchy);
   }
+
+  // istanbul ignore next - only here to meet interface's requirements, nothing to test
+  public dispose() { }
 
   public get rulesetId(): string { return this._parentDataProvider.rulesetId; }
 
@@ -114,7 +124,7 @@ export class FilteredPresentationTreeDataProvider implements IPresentationTreeDa
     return this._parentDataProvider.getNodeKey(node);
   }
 
-  /** @alpha */
+  /** @alpha Hierarchy loading performance needs to be improved before this becomes publicly available. */
   // istanbul ignore next
   public async loadHierarchy() {
     // the hierarchy is already loaded when this provider is created

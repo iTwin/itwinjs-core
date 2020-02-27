@@ -7,7 +7,7 @@
  */
 
 /** Available Stage Panel locations.
- * @alpha
+ * @beta
  */
 export enum StagePanelLocation {
   Top = 101,
@@ -19,7 +19,7 @@ export enum StagePanelLocation {
 }
 
 /** Enum for Stage Panel Sections
- * @alpha
+ * @beta
  */
 export enum StagePanelSection {
   Start,

@@ -13,11 +13,9 @@ import { XAndY } from "@bentley/geometry-core";
 import {
   OnNumberCommitFunc, OnCancelFunc, OnItemExecutedFunc,
   AbstractToolbarProps, RelativePosition,
-} from "@bentley/ui-abstract";
-import {
   PrimitiveValue, PropertyValueFormat, PropertyRecord,
   PropertyDescription,
-} from "@bentley/imodeljs-frontend";
+} from "@bentley/ui-abstract";
 
 import { UiEvent, Rectangle, Point, SizeProps, Orientation } from "@bentley/ui-core";
 import { offsetAndContainInContainer } from "@bentley/ui-ninezone";

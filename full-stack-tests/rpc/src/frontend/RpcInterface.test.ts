@@ -16,6 +16,7 @@ import {
   WipRpcInterface,
   RpcOperationPolicy,
   RpcRequestStatus,
+  RpcSerializedValue,
 } from "@bentley/imodeljs-common";
 import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import {
@@ -493,5 +494,89 @@ describe("RpcInterface", () => {
     await check("key1", "context1", "imodel1", "", OpenMode.Readonly);
     await check("", "context1", "imodel1", "change1", OpenMode.Readonly);
     await check(undefined, "context1", "imodel1", "change1", OpenMode.Readonly);
+  });
+
+  it("should recover when the underlying transport is replaced, resend all active requests, and disregard any zombie responses", async () => {
+    class TestInterface extends RpcInterface {
+      public static interfaceName = "TestInterface";
+      public static interfaceVersion = "0.0.0";
+      public req1() { }
+      public req2() { }
+      public req3() { }
+    }
+
+    RpcManager.initializeInterface(TestInterface);
+
+    class Resolver<T> {
+      public promise: Promise<T>;
+      public resolve() { }
+      constructor(private _value: () => T) { this.promise = new Promise((callback, _) => this.resolve = () => callback(this._value())); }
+    }
+
+    const backend: Map<string, Resolver<number>> = new Map();
+    const frontend = RpcRequest.activeRequests;
+    const pending: Set<Promise<void>> = new Set();
+    let replaced = 0;
+    let completed = 0;
+
+    class TestRequest extends RpcRequest {
+      protected setHeader(_name: string, _value: string): void { }
+
+      protected async send(): Promise<number> {
+        assert.isFalse(backend.has(this.id));
+
+        const resolver = new Resolver(() => RpcRequestStatus.Resolved);
+        assert(frontend.has(this.id));
+        backend.set(this.id, resolver);
+
+        if (replaced) {
+          resolver.resolve();
+          backend.delete(this.id);
+        } else if (backend.size === 3) {
+          assert(frontend.has(requests[0].id) && frontend.has(requests[1].id) && frontend.has(requests[2].id));
+          frontend.forEach((req) => req.cancel());
+          backend.forEach((completer) => completer.resolve()); // should be ignored on the frontend...no load call will happen
+          backend.clear();
+          ++replaced;
+        }
+
+        return resolver.promise;
+      }
+
+      protected async load(): Promise<RpcSerializedValue> {
+        assert.equal(1, replaced);
+        return RpcSerializedValue.create(this.parameters[0]);
+      }
+
+      public dispose(): void {
+        ++completed;
+        assert.equal(this.parameters[0], (this as any)._raw);
+        super.dispose();
+      }
+    }
+
+    const client = new TestInterface();
+    const requests = [new TestRequest(client, "req1", ["1"]), new TestRequest(client, "req2", ["2"]), new TestRequest(client, "req3", ["3"])];
+
+    assert.equal(replaced, 0);
+    assert.equal(frontend.size, 0);
+    assert.equal(backend.size, 0);
+    assert.equal(completed, 0);
+
+    await Promise.all(requests.map((r) => r.submit()));
+    pending.clear();
+
+    assert.equal(replaced, 1);
+    assert.equal(frontend.size, 0);
+    assert.equal(backend.size, 0);
+    assert.equal(completed, 0);
+
+    await Promise.all(requests.map((r) => r.submit()));
+    pending.clear();
+
+    assert.equal(replaced, 1);
+    assert.equal(frontend.size, 0);
+    assert.equal(backend.size, 0);
+    assert.equal(completed, 3);
   });
 });

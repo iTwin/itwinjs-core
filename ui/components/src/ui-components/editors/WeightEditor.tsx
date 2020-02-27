@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord } from "@bentley/imodeljs-frontend"; // , PropertyEditorParams, PropertyEditorParamTypes, WeightEditorParams
+import { PropertyValueFormat, PropertyValue, PrimitiveValue, PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { WeightPickerButton } from "../lineweight/WeightPickerButton";
 import { PropertyEditorManager, PropertyEditorBase } from "./PropertyEditorManager";

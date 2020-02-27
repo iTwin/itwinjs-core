@@ -16,7 +16,8 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { IModelConnection, PropertyRecord, PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PrimitiveValue } from "@bentley/ui-abstract";
 import {
   ValuesDictionary, Descriptor, Field,
   CategoryDescription, Content, ContentFlags, Item,
@@ -25,7 +26,7 @@ import {
   PresentationError,
   RegisteredRuleset,
 } from "@bentley/presentation-common";
-import { Presentation, PresentationManager, FavoritePropertiesManager, RulesetManager } from "@bentley/presentation-frontend";
+import { Presentation, PresentationManager, FavoritePropertiesManager, RulesetManager, FavoritePropertiesScope } from "@bentley/presentation-frontend";
 import { IModelToken } from "@bentley/imodeljs-common";
 import { PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
@@ -43,7 +44,13 @@ class Provider extends PresentationPropertyDataProvider {
   public isFieldHidden(field: Field) { return super.isFieldHidden(field); }
   public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
   public sortCategories(categories: CategoryDescription[]) { return super.sortCategories(categories); }
-  public sortFields(category: CategoryDescription, fields: Field[]) { return super.sortFields(category, fields); }
+
+  public get sortFields() {
+    return super.sortFields;
+  }
+  public set sortFields(value) {
+    super.sortFields = value;
+  }
 
   public get isFieldFavorite() {
     return super.isFieldFavorite;
@@ -53,15 +60,10 @@ class Provider extends PresentationPropertyDataProvider {
   }
 }
 
-interface MemoizedCacheSpies {
-  getData: any;
-}
-
 describe("PropertyDataProvider", () => {
 
   let rulesetId: string;
   let provider: Provider;
-  let memoizedCacheSpies: MemoizedCacheSpies;
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   const rulesetsManagerMock = moq.Mock.ofType<RulesetManager>();
   const favoritePropertiesManagerMock = moq.Mock.ofType<FavoritePropertiesManager>();
@@ -69,12 +71,16 @@ describe("PropertyDataProvider", () => {
 
   before(async () => {
     rulesetId = faker.random.word();
-    Presentation.presentation = presentationManagerMock.object;
-    Presentation.favoriteProperties = favoritePropertiesManagerMock.object;
-    Presentation.i18n = new I18N("", {
+    Presentation.setPresentationManager(presentationManagerMock.object);
+    Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
+    Presentation.setI18nManager(new I18N("", {
       urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    });
+    }));
     await initializeLocalization();
+  });
+
+  after(() => {
+    Presentation.terminate();
   });
 
   beforeEach(() => {
@@ -82,15 +88,8 @@ describe("PropertyDataProvider", () => {
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
     favoritePropertiesManagerMock.reset();
     favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => moq.Mock.ofType<BeEvent<() => void>>().object);
-    provider = new Provider(imodelMock.object, rulesetId);
-    resetMemoizedCacheSpies();
+    provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
   });
-
-  const resetMemoizedCacheSpies = () => {
-    memoizedCacheSpies = {
-      getData: sinon.spy((provider as any).getMemoizedData.cache, "clear"),
-    };
-  };
 
   describe("constructor", () => {
 
@@ -105,7 +104,7 @@ describe("PropertyDataProvider", () => {
     it("subscribes to `Presentation.favoriteProperties.onFavoritesChanged` to invalidate cache", () => {
       const onFavoritesChanged = new BeEvent<() => void>();
       favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => onFavoritesChanged);
-      provider = new Provider(imodelMock.object, rulesetId);
+      provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
 
       const s = sinon.spy(provider, "invalidateCache");
       onFavoritesChanged.raiseEvent();
@@ -119,7 +118,7 @@ describe("PropertyDataProvider", () => {
     it("unsubscribes from `Presentation.favoriteProperties.onFavoritesChanged` event", () => {
       const onFavoritesChanged = new BeEvent<() => void>();
       favoritePropertiesManagerMock.setup((x) => x.onFavoritesChanged).returns(() => onFavoritesChanged);
-      provider = new Provider(imodelMock.object, rulesetId);
+      provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
 
       expect(onFavoritesChanged.numberOfListeners).to.eq(1);
       provider.dispose();
@@ -129,11 +128,6 @@ describe("PropertyDataProvider", () => {
   });
 
   describe("invalidateCache", () => {
-
-    it("resets memoized data", () => {
-      provider.invalidateCache({});
-      expect(memoizedCacheSpies.getData).to.be.calledOnce;
-    });
 
     it("raises onDataChanged event", () => {
       const s = sinon.spy(provider.onDataChanged, "raiseEvent");
@@ -209,15 +203,15 @@ describe("PropertyDataProvider", () => {
       imodelTokenMock.setup((x) => x.contextId).returns(() => projectId);
       imodelMock.setup((x) => x.iModelToken).returns(() => imodelTokenMock.object);
 
-      favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), moq.It.isAny(), moq.It.isAny())).returns(() => false);
+      favoritePropertiesManagerMock.setup((x) => x.has(moq.It.isAny(), imodelMock.object, moq.It.isAny())).returns(() => false);
     });
 
     it("calls FavoritePropertiesManager", () => {
-      provider = new Provider(imodelMock.object, rulesetId);
+      provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
 
       const field = createRandomPropertiesField();
       provider.isFieldFavorite(field);
-      favoritePropertiesManagerMock.verify((x) => x.has(field, projectId, imodelId), moq.Times.once());
+      favoritePropertiesManagerMock.verify((x) => x.has(field, imodelMock.object, FavoritePropertiesScope.IModel), moq.Times.once());
     });
 
   });
@@ -299,7 +293,7 @@ describe("PropertyDataProvider", () => {
     };
 
     it("registers default ruleset once if `rulesetId` not specified when creating the provider", async () => {
-      provider = new Provider(imodelMock.object, undefined);
+      provider = new Provider({ imodel: imodelMock.object });
       rulesetsManagerMock.setup((x) => x.add(moq.It.isAny())).returns(async (x) => new RegisteredRuleset(x, Guid.createValue(), () => { }));
 
       // verify ruleset is registered on first call
@@ -311,7 +305,7 @@ describe("PropertyDataProvider", () => {
       rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
 
       // verify ruleset is not registered on subsequent calls on different providers
-      const provider2 = new Provider(imodelMock.object, undefined);
+      const provider2 = new Provider({ imodel: imodelMock.object });
       await provider2.getData();
       rulesetsManagerMock.verify((x) => x.add(moq.It.isAny()), moq.Times.once());
     });
@@ -319,7 +313,7 @@ describe("PropertyDataProvider", () => {
     it("returns empty data object when receives undefined content", async () => {
       (provider as any).getContent = async () => undefined;
       expect(await provider.getData()).to.deep.eq({
-        label: "",
+        label: PropertyRecord.fromString("", "label"),
         categories: [],
         records: {},
       });
@@ -328,7 +322,7 @@ describe("PropertyDataProvider", () => {
     it("returns empty data object when receives content with no values", async () => {
       (provider as any).getContent = async () => new Content(createRandomDescriptor(), []);
       expect(await provider.getData()).to.deep.eq({
-        label: "",
+        label: PropertyRecord.fromString("", "label"),
         categories: [],
         records: {},
       });

@@ -22,3 +22,26 @@ exports[`<Tile /> renders correctly 1`] = `
   </a>
 </div>
 `;
+
+exports[`<Tile /> renders string icon correctly 1`] = `
+<div
+  className="uicore-tiles-tile uicore-step-0"
+>
+  <a
+    className="uicore-link"
+  >
+    <div
+      className="uicore-icon"
+    >
+      <Component
+        iconSpec="icon-placeholder"
+      />
+    </div>
+    <p
+      className="uicore-title"
+    >
+      Test
+    </p>
+  </a>
+</div>
+`;

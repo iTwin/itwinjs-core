@@ -13,9 +13,9 @@ import { ConfigurableUiControlType, ConfigurableCreateInfo } from "../configurab
 import { ContentControl, SupportsViewSelectorChange } from "./ContentControl";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import { ContentViewManager } from "./ContentViewManager";
+import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAidControl";
+import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAidControl";
 import { SheetNavigationAidControl } from "../navigationaids/SheetNavigationAid";
-import { DrawingNavigationAidControl } from "../navigationaids/DrawingNavigationAid";
-import { CubeNavigationAidControl } from "../navigationaids/CubeNavigationAid";
 
 /** The base class for Frontstage Viewport content controls.
  * @public
@@ -42,6 +42,7 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
 
   /** Returns true if this control is a Viewport control. */
   public get isViewport(): boolean { return true; }
+
   /** The underlying ScreenViewport */
   public get viewport(): ScreenViewport | undefined { return this._viewport; }
   public set viewport(v: ScreenViewport | undefined) {
@@ -115,8 +116,8 @@ export class ViewportContentControl extends ContentControl implements SupportsVi
         this.viewport.changeView(viewState);
     } else {
       this.reactElement = this.getReactElementForViewSelectorChange(iModel, viewDefinitionId, viewState, name);
-      ContentViewManager.refreshActiveContent(this.reactElement);
     }
+    ContentViewManager.refreshActiveContent(this.reactElement);
   }
 
   /** Get the React.Element for a ViewSelector change. */

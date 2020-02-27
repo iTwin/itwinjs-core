@@ -1169,7 +1169,7 @@ export class PannellumViewer {
     this._config.roll = 0;
 
     // Record key pressed
-    const keyNumber = event.keyCode;
+    const keyNumber = event.keyCode; // tslint:disable-line:deprecation
 
     // Override default action for keys that are used
     if (this._config.capturedKeyNumbers.indexOf(keyNumber) < 0)
@@ -1209,7 +1209,7 @@ export class PannellumViewer {
    */
   private onDocumentKeyUp(event: KeyboardEvent) {
     // Record key pressed
-    const keyNumber = event.keyCode;
+    const keyNumber = event.keyCode; // tslint:disable-line:deprecation
 
     // Override default action for keys that are used
     if (this._config.capturedKeyNumbers.indexOf(keyNumber) < 0)
@@ -1667,7 +1667,7 @@ export class PannellumViewer {
     // Apply world transform
     quaternion = quaternion.multiply(new Quaternion(Math.sqrt(0.5), -Math.sqrt(0.5), 0, 0));
     // Apply screen transform
-    const angle = window.orientation ? -window.orientation * Math.PI / 180 / 2 : 0;
+    const angle = window.orientation ? -window.orientation * Math.PI / 180 / 2 : 0; // tslint:disable-line:deprecation
     return quaternion.multiply(new Quaternion(Math.cos(angle), 0, -Math.sin(angle), 0));
   }
 
@@ -1937,7 +1937,7 @@ export class PannellumViewer {
       if (hs.scale) {
         transform += " scale(" + (this._origHfov / this._config.hfov) / z + ")";
       }
-      hs.div!.style.webkitTransform = transform;
+      hs.div!.style.webkitTransform = transform; // tslint:disable-line:deprecation
       hs.div!.style.transform = transform;
       // allow callback to affect style.
       if (hs.styleFunc)

@@ -73,26 +73,26 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
  * @internal
  */
 interface ToolWidgetState {
-  toolWidgetDef: ToolWidgetDef;
+  toolWidgetDef: ToolWidgetDef; // tslint:disable-line:deprecation
 }
 
 /** ToolWidget React component.
  *  @public @deprecated use ToolWidgetComposer instead
  */
-export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> {
+export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> { // tslint:disable-line:deprecation
 
   /** @internal */
   public readonly state: Readonly<ToolWidgetState>;
 
-  constructor(props: ToolWidgetPropsEx) {
+  constructor(props: ToolWidgetPropsEx) { // tslint:disable-line:deprecation
     super(props);
 
-    this.state = { toolWidgetDef: new ToolWidgetDef(props) };
+    this.state = { toolWidgetDef: new ToolWidgetDef(props) }; // tslint:disable-line:deprecation
   }
 
-  public componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) {
+  public componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) { // tslint:disable-line:deprecation
     if (this.props !== prevProps) {
-      this.setState((_, props) => ({ toolWidgetDef: new ToolWidgetDef(props) }));
+      this.setState((_, props) => ({ toolWidgetDef: new ToolWidgetDef(props) })); // tslint:disable-line:deprecation
     }
   }
 
@@ -113,7 +113,7 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
 /** Properties for the Tool Widget React component.
  */
 interface Props extends CommonProps {
-  toolWidgetDef: ToolWidgetDef;
+  toolWidgetDef: ToolWidgetDef; // tslint:disable-line:deprecation
   button?: React.ReactNode;
   horizontalToolbar?: React.ReactNode;
   verticalToolbar?: React.ReactNode;

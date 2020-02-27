@@ -6,7 +6,7 @@
  * @module Utilities
  */
 
-/** Various IconSpec utilities.
+/** Creates an IconSpec with an SVG source and gets the SVG source from an IconSpec.
  * @beta
  */
 export class IconSpecUtilities {

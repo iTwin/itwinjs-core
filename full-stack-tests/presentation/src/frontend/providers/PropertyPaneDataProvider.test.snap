@@ -3,7 +3,18 @@
 exports[`PropertyDataProvider creates empty result when properties requested for 0 instances 1`] = `
 Object {
   "categories": Array [],
-  "label": "",
+  "label": PropertyRecord {
+    "property": Object {
+      "displayLabel": "label",
+      "name": "label",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": "",
+      "valueFormat": 0,
+    },
+  },
   "records": Object {},
 }
 `;
@@ -263,11 +274,10 @@ Object {
     },
   ],
   "description": "Physical Object",
-  "label": "Physical Object [0-39]",
-  "labelDefinition": PropertyRecord {
+  "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
-      "name": "content_item_name",
+      "name": "label",
       "typename": "composite",
     },
     "value": Object {
@@ -1603,11 +1613,10 @@ Object {
     },
   ],
   "description": "Physical Model",
-  "label": "Properties_60InstancesWithUrl2",
-  "labelDefinition": PropertyRecord {
+  "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
-      "name": "content_item_name",
+      "name": "label",
       "typename": "string",
     },
     "value": Object {
@@ -1652,11 +1661,10 @@ Object {
     },
   ],
   "description": "Physical Model",
-  "label": "Properties_60InstancesWithUrl2",
-  "labelDefinition": PropertyRecord {
+  "label": PropertyRecord {
     "property": Object {
       "displayLabel": "Label",
-      "name": "content_item_name",
+      "name": "label",
       "typename": "string",
     },
     "value": Object {

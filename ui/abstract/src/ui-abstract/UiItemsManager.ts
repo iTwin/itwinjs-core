@@ -8,7 +8,7 @@
 
 import { Logger, BeEvent } from "@bentley/bentleyjs-core";
 import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
-import { StageUsage } from "./stage/Stage";
+import { StageUsage } from "./items/StageUsage";
 import { CommonToolbarItem, ToolbarUsage, ToolbarOrientation } from "./toolbars/ToolbarItem";
 import { BackstageItem } from "./backstage/BackstageItem";
 import { StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
@@ -16,17 +16,20 @@ import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 
 const loggerCategory = "imodeljs-frontend.Plugin";
 
-/** Action taken by the application on item provided by UiItemsProvider
- * @alpha
+/** Action taken by the application on item provided by a UiItemsProvider
+ * @beta
  */
 export enum UiItemsApplicationAction {
+  /** Allow the change to the item */
   Allow,
+  /** Disallow the change to the item */
   Disallow,
+  /** Update the item during the change */
   Update,
 }
 
-/** Describes interface of objects that want to provide UI component to the running Ninezone-based IModelApp.
- * @alpha
+/** Describes interface of objects that want to provide UI component to the running IModelApp.
+ * @beta
  */
 export interface UiItemsProvider {
   /** id of provider */
@@ -52,7 +55,7 @@ export interface UiItemsProvider {
 }
 
 /** UIProvider Registered Event Args interface.
- * @alpha
+ * @beta
  */
 export interface UiItemProviderRegisteredEventArgs {
   providerId: string;
@@ -60,7 +63,7 @@ export interface UiItemProviderRegisteredEventArgs {
 
 /**
  * Controls registering of UiItemsProviders and calls the provider's methods when populating different parts of the User Interface.
- * @alpha
+ * @beta
  */
 export class UiItemsManager {
   private static _registeredUiItemsProviders: Map<string, UiItemsProvider> = new Map<string, UiItemsProvider>();

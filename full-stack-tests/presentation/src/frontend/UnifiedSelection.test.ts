@@ -64,7 +64,7 @@ describe("Unified Selection", () => {
 
     beforeEach(() => {
       Presentation.selection.clearSelection("", imodel);
-      handler = new ViewportSelectionHandler(imodel);
+      handler = new ViewportSelectionHandler({ imodel });
 
       // add something to selection set so we can check later
       // if the contents changed

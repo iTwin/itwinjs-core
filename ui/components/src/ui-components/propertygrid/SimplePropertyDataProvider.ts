@@ -6,7 +6,7 @@
  * @module PropertyGrid
  */
 
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { IPropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChangeEvent } from "./PropertyDataProvider";
 
 /**
@@ -14,7 +14,7 @@ import { IPropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChan
  * @public
  */
 export class SimplePropertyDataProvider implements IPropertyDataProvider, PropertyData {
-  public label: string = "";
+  public label: PropertyRecord = PropertyRecord.fromString("");
   public description?: string;
   public categories: PropertyCategory[] = [];
   public records: { [categoryName: string]: PropertyRecord[] } = {};

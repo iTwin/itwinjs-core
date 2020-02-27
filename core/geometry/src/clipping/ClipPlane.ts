@@ -8,7 +8,7 @@
  */
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range1d, Range3d } from "../geometry3d/Range";
+import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
@@ -22,7 +22,7 @@ import { Arc3d } from "../curve/Arc3d";
 import { Clipper, ClipUtilities } from "./ClipUtils";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { Point3dArrayPolygonOps, IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
+import { IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 
 /** A ClipPlane is a single plane represented as
  * * An inward unit normal (u,v,w)
@@ -266,15 +266,6 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
   }
 
   /**
-   * Evaluate the distance from the plane to a point in space, i.e. (dot product with inward normal) minus distance
-   * @param point space point to test
-   * @deprecated Instead of `clipPlane.evaluatePoint(spacePoint)` use `clipPlane.altitude(spacePoint)` (for compatibility with interface `PlaneAltitudeEvaluator`)
-   */
-  public evaluatePoint(point: Point3d): number {
-    return point.x * this._inwardNormal.x + point.y * this._inwardNormal.y + point.z * this._inwardNormal.z - this._distanceFromOrigin;
-  }
-
-  /**
    * Evaluate the altitude in weighted space, i.e. (dot product with inward normal) minus distance, with point.w scale applied to distance)
    * @param point space point to test
    */
@@ -297,12 +288,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
   public altitudeXYZ(x: number, y: number, z: number): number {
     return x * this._inwardNormal.x + y * this._inwardNormal.y + z * this._inwardNormal.z - this._distanceFromOrigin;
   }
-  /** Return the dot product of the plane normal with the vector (NOT using the plane's distanceFromOrigin).
-   * @deprecated Instead of `clipPlane.dotProduct (vector)` use `clipPlane.velocity(vector)` for compatibility with interface `PlaneAltitudeEvaluator`
-   */
-  public dotProductVector(vector: Vector3d): number {
-    return vector.x * this._inwardNormal.x + vector.y * this._inwardNormal.y + vector.z * this._inwardNormal.z;
-  }
+
   /** Return the dot product of the plane normal with the vector (NOT using the plane's distanceFromOrigin).
    */
   public velocity(vector: Vector3d): number {
@@ -427,16 +413,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
   public offsetDistance(offset: number) {
     this._distanceFromOrigin += offset;
   }
-  /**
-   * Clip a polygon, returning the clip result in the same object.
-   * @param xyz input/output polygon
-   * @param work scratch object
-   * @param tolerance tolerance for on-plane decision.
-   * @deprecated Instead of `clipPlane.convexPolygonClipInPlace (xyz, work, tolerance)` use `PolygonOps.clipConvexPoint3dPolygonInPlace (clipPlane, xyz, work, tolerance)`
-   */
-  public convexPolygonClipInPlace(xyz: Point3d[], work: Point3d[], tolerance: number = Geometry.smallMetricDistance) {
-    return Point3dArrayPolygonOps.convexPolygonClipInPlace(this, xyz, work, tolerance);
-  }
+
   /**
    * Clip a polygon to the inside or outside of the plane.
    * * Results with 2 or fewer points are ignored.
@@ -447,30 +424,6 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
    */
   public clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, inside: boolean = true, tolerance: number = Geometry.smallMetricDistance) {
     return IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(this, xyz, work, inside, tolerance);
-  }
-  /**
-   * Split a (convex) polygon into 2 parts.
-   * @param xyz original polygon
-   * @param xyzIn array to receive inside part
-   * @param xyzOut array to receive outside part
-   * @param altitudeRange min and max altitudes encountered.
-   * @deprecated instead of `plane.convexPolygonSplitInsideOutside (xyz, xyzIn, xyzOut, altitudeRange)` use `PolygonOops.splitConvexPolygonInsideOutsidePlane(this, xyz, xyzIn, xyzOut, altitudeRange)`
-   */
-  public convexPolygonSplitInsideOutside(xyz: Point3d[], xyzIn: Point3d[], xyzOut: Point3d[], altitudeRange: Range1d) {
-    Point3dArrayPolygonOps.convexPolygonSplitInsideOutsidePlane(this, xyz, xyzIn, xyzOut, altitudeRange);
-
-  }
-
-  /**
-   * Split a (convex) polygon into 2 parts.
-   * @param xyz original polygon
-   * @param xyzIn array to receive inside part
-   * @param xyzOut array to receive outside part
-   * @param altitudeRange min and max altitudes encountered.
-   * @deprecated instead of `plane.convexPolygonSplitInsideOutsideGrowableArrays (xyz, xyzIn, xyzOut, altitudeRange)` use `PolygonOops.splitConvexPoint3dArrayolygonInsideOutsidePlane(this, xyz, xyzIn, xyzOut, altitudeRange)`
-   */
-  public convexPolygonSplitInsideOutsideGrowableArrays(xyz: GrowableXYZArray, xyzIn: GrowableXYZArray, xyzOut: GrowableXYZArray, altitudeRange: Range1d) {
-    IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(this, xyz, xyzIn, xyzOut, altitudeRange);
   }
 
   /**
@@ -498,14 +451,6 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
       matrix.multiplyPoint4d(plane, plane);
     this.setPlane4d(plane);
     return true;
-  }
-  /** Return an array containing
-   * * All points that are exactly on the plane.
-   * * Crossing points between adjacent points that are (strictly) on opposite sides.
-   * @deprecated ClipPlane method `clipPlane.polygonCrossings(polygonPoints, crossings)` is deprecated.  Use Point3dArrayPolygonOps.polygonPlaneCrossings (clipPlane, polygonPoints, crossings)`
-   */
-  public polygonCrossings(xyz: Point3d[], crossings: Point3d[]) {
-    return Point3dArrayPolygonOps.polygonPlaneCrossings(this, xyz, crossings);
   }
 
   /** announce the interval (if any) where a line is within the clip plane half space. */
@@ -571,14 +516,5 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     if (addClosurePoint)
       xyzOut.pushWrap(1);
     return xyzOut;
-  }
-  /**
-   * Return the intersection of the plane with a range cube.
-   * @deprecated `ClipPlane.intersectRangeConvexPolygonInPlace` is deprecated. Use `IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace`
-   * @param range
-   * @param xyzOut intersection polygon.  This is convex.
-   */
-  public static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray) {
-    return IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace(range, xyz);
   }
 }

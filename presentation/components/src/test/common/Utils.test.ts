@@ -12,7 +12,7 @@ import {
   createRandomDescriptor, createRandomPropertiesField, createRandomNestedContentField,
   createRandomLabelDefinition, createRandomLabelCompositeValue,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PrimitiveValue, Primitives } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue, Primitives } from "@bentley/ui-abstract";
 import { LabelCompositeValue } from "@bentley/presentation-common";
 import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 import * as utils from "../../presentation-components/common/Utils";
@@ -109,7 +109,7 @@ describe("Utils", () => {
 
     beforeEach(() => {
       i18nMock.setup((x) => x.registerNamespace(moq.It.isAny())).returns(() => ({ name: "namespace", readFinished: Promise.resolve() }));
-      Presentation.i18n = i18nMock.object;
+      Presentation.setI18nManager(i18nMock.object);
     });
 
     afterEach(() => {

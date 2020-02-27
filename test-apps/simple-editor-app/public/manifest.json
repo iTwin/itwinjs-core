@@ -1,10 +1,10 @@
 {
-  "short_name": "simple-editor-app",
-  "name": "Simple Editor App",
+  "short_name": "SampleApp",
+  "name": "Imodeljs-ui Sample App",
   "icons": [
     {
       "src": "favicon.ico",
-      "sizes": "192x192",
+      "sizes": "48x48",
       "type": "image/png"
     }
   ],

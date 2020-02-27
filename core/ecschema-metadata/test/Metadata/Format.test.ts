@@ -746,38 +746,6 @@ describe("Format", () => {
 
   }); // deserialize properly formatted ECJSON
 
-  describe("toJson (deprecated)", () => {
-    let context: SchemaContext;
-    beforeEach(() => {
-      context = new SchemaContext();
-      context.addLocater(new TestSchemaLocater());
-    });
-
-    it("Basic test I", () => {
-      const testFormatJson = {
-        schemaItemType: "Format",
-        type: "Fractional",
-        precision: 4,
-        composite: {
-          includeZero: false,
-          spacer: "-",
-          units: [
-            {
-              name: "Formats.MILE",
-              label: "mile(s)",
-            },
-          ],
-        },
-      };
-      const ecSchema = Schema.fromJsonSync(createSchemaJson(testFormatJson), context);
-      assert.isDefined(ecSchema);
-      const testFormat = ecSchema.getItemSync<Format>("TestFormat");
-      assert.isDefined(testFormat);
-      const formatSerialization = testFormat!.toJson(false, true);
-      expect(formatSerialization).to.deep.equal(testFormatJson);
-    });
-  }); // toJson
-
   describe("toJSON", () => {
     let context: SchemaContext;
     beforeEach(() => {

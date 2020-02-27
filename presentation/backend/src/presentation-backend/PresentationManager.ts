@@ -24,7 +24,7 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 
 /**
  * Presentation manager working mode.
- * @beta
+ * @public
  */
 export enum PresentationManagerMode {
   /**
@@ -101,8 +101,6 @@ export interface PresentationManagerProps {
    *
    * **Warning:** Tasks with priority higher than maximum priority in the slots allocation map will never
    * be handled.
-   *
-   * @alpha
    */
   taskAllocationsMap?: { [priority: number]: number };
 
@@ -111,8 +109,6 @@ export interface PresentationManagerProps {
    * use `ReadWrite`, others might want to set to `ReadOnly` for better performance.
    *
    * Defaults to `ReadWrite`.
-   *
-   * @beta
    */
   mode?: PresentationManagerMode;
 
@@ -231,35 +227,28 @@ export class PresentationManager {
       this.getNativePlatform().setupRulesetDirectories(props.rulesetDirectories);
   }
 
-  private ensureRulesetRegistered<TOptions extends { rulesetOrId?: Ruleset | string, rulesetId?: string }>(options: TOptions) {
-    const { rulesetOrId, rulesetId, ...strippedOptions } = options;
-
-    if (!rulesetOrId && !rulesetId)
-      throw new PresentationError(PresentationStatus.InvalidArgument, "Neither ruleset nor ruleset id are supplied");
-
+  private ensureRulesetRegistered<TOptions extends { rulesetOrId: Ruleset | string }>(options: TOptions) {
+    const { rulesetOrId, ...strippedOptions } = options;
     let nativeRulesetId: string;
     if (rulesetOrId && typeof rulesetOrId === "object") {
       const rulesetNativeId = `${rulesetOrId.id}-${hash.MD5(rulesetOrId)}`;
       const rulesetWithNativeId = { ...rulesetOrId, id: rulesetNativeId };
       nativeRulesetId = this._rulesets.add(rulesetWithNativeId).id;
     } else {
-      nativeRulesetId = rulesetOrId || rulesetId!;
+      nativeRulesetId = rulesetOrId;
     }
-
     return { rulesetId: nativeRulesetId, ...strippedOptions };
   }
 
-  private handleOptions<TOptions extends { rulesetOrId?: Ruleset | string, rulesetId?: string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
+  private handleOptions<TOptions extends { rulesetOrId: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
     const { rulesetVariables, ...strippedOptions } = options;
     const optionsWithRulesetId = this.ensureRulesetRegistered(strippedOptions);
-
     if (rulesetVariables) {
       const variablesManager = this.vars(optionsWithRulesetId.rulesetId);
       for (const variable of rulesetVariables) {
         variablesManager.setValue(variable.id, variable.type, variable.value);
       }
     }
-
     return optionsWithRulesetId;
   }
 
@@ -360,7 +349,7 @@ export class PresentationManager {
    * @param requestContext The client request context
    * @param requestOptions options for the request
    * @return A promise object that resolves when the hierarchy is fully loaded
-   * @beta
+   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
    */
   public async loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void> {
     requestContext.enter();
@@ -481,50 +470,6 @@ export class PresentationManager {
   }
 
   /**
-   * Retrieves display label of specific item
-   * @param requestContext The client request context
-   * @param requestOptions options for the request
-   * @param key Key of an instance to get label for
-   * @deprecated Use 'getDisplayLabelDefinition' instead
-   */
-  public async getDisplayLabel(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<string> {
-    requestContext.enter();
-    const params = this.createRequestParams(NativePlatformRequestTypes.GetDisplayLabel, requestOptions, { key });
-    const labelDefinition = await this.request<LabelDefinition>(requestContext, requestOptions.imodel, params, LabelDefinition.reviver);
-    requestContext.enter();
-    return labelDefinition.displayValue;
-  }
-
-  /**
-   * Retrieves display labels of specific items
-   * @param requestContext The client request context
-   * @param requestOptions options for the request
-   * @param instanceKeys Keys of instances to get labels for
-   * @deprecated Use 'getDisplayLabelDefinitions' instead
-   */
-  public async getDisplayLabels(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<string[]> {
-    instanceKeys = instanceKeys.map((k) => {
-      if (k.className === "BisCore:Element")
-        return this.getElementKey(requestOptions.imodel, k.id);
-      return k;
-    }).filter<InstanceKey>((k): k is InstanceKey => (undefined !== k));
-    const rulesetId = "RulesDrivenECPresentationManager_RulesetId_DisplayLabel";
-    const overrides: DescriptorOverrides = {
-      displayType: DefaultContentDisplayTypes.List,
-      contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
-      hiddenFieldNames: [],
-    };
-    const content = await this.getContent(requestContext, { ...requestOptions, rulesetId }, overrides, new KeySet(instanceKeys));
-    requestContext.enter();
-    return instanceKeys.map((key) => {
-      const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
-      if (!item)
-        return "";
-      return item.label;
-    });
-  }
-
-  /**
    * Retrieves display label definition of specific item
    * @param requestContext The client request context
    * @param requestOptions options for the request
@@ -542,7 +487,7 @@ export class PresentationManager {
    * @param requestOptions options for the request
    * @param instanceKeys Keys of instances to get labels for
    */
-  public async getDisplayLabelsDefinitions(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<LabelDefinition[]> {
+  public async getDisplayLabelDefinitions(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, instanceKeys: InstanceKey[]): Promise<LabelDefinition[]> {
     instanceKeys = instanceKeys.map((k) => {
       if (k.className === "BisCore:Element")
         return this.getElementKey(requestOptions.imodel, k.id);
@@ -554,13 +499,13 @@ export class PresentationManager {
       contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
       hiddenFieldNames: [],
     };
-    const content = await this.getContent(requestContext, { ...requestOptions, rulesetId }, overrides, new KeySet(instanceKeys));
+    const content = await this.getContent(requestContext, { ...requestOptions, rulesetOrId: rulesetId }, overrides, new KeySet(instanceKeys));
     requestContext.enter();
     return instanceKeys.map((key) => {
       const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
-      if (!item || !item.labelDefinition)
+      if (!item)
         return { displayValue: "", rawValue: "", typeName: "" };
-      return item.labelDefinition;
+      return item.label;
     });
   }
 
@@ -768,7 +713,7 @@ export class PresentationManager {
       let keyToAdd = assemblyKey;
       if (is3d && keyToAdd) {
         // if we're computing scope for a 3d element, try to switch to its related functional element
-        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, id);
+        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, keyToAdd.id);
         if (relatedFunctionalKey)
           keyToAdd = relatedFunctionalKey;
       }
@@ -793,7 +738,7 @@ export class PresentationManager {
       let keyToAdd = topAssemblyKey;
       if (is3d && keyToAdd) {
         // if we're computing scope for a 3d element, try to switch to its related functional element
-        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, id);
+        const relatedFunctionalKey = this.getRelatedFunctionalElementKey(requestOptions.imodel, keyToAdd.id);
         if (relatedFunctionalKey)
           keyToAdd = relatedFunctionalKey;
       }

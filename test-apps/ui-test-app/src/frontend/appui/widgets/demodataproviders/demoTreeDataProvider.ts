@@ -9,6 +9,7 @@ import {
   DelayLoadedTreeNodeItem, MutableTreeDataProvider,
   DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps, DropStatus, DropEffects,
 } from "@bentley/ui-components";
+import { PropertyRecord } from "@bentley/ui-abstract";
 
 export enum TreeDragTypes {
   Parent = "parent",
@@ -30,36 +31,36 @@ export type DemoTreeDragDropType = DelayLoadedTreeNodeItem | TreeDataProvider | 
 
 export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [
   {
-    label: "Root 1", id: "66640415289992", description: "First root node", icon: "icon-placeholder", hasChildren: true,
+    label: PropertyRecord.fromString("Root 1"), id: "66640415289992", description: "First root node", icon: "icon-placeholder", hasChildren: true,
     extendedData: {
       type: TreeDragTypes.Parent,
       children: [
-        { label: "Child 1.1", id: "14056415405179", extendedData: { type: TreeDragTypes.Child }, description: "First child node to first root node.", parentId: "66640415289992", icon: "icon-placeholder" },
-        { label: "Child 1.2", id: "13613905720638", extendedData: { type: TreeDragTypes.Child }, description: "Second child node to first root node.", parentId: "66640415289992", icon: "icon-placeholder" },
-        { label: "Child 1.3", id: "37567272482330", extendedData: { type: TreeDragTypes.Child }, description: "Third child node to first root node.", parentId: "66640415289992", icon: "icon-placeholder" },
-        { label: "Child 1.4", id: "76545451605244", extendedData: { type: TreeDragTypes.Child }, description: "Fourth child node to first root node.", parentId: "66640415289992", icon: "icon-placeholder" },
-        { label: "Child 1.5", id: "59874551327032", extendedData: { type: TreeDragTypes.Child }, description: "Fifth child node to first root node.", parentId: "66640415289992", icon: "icon-placeholder" },
-      ],
+        { label: PropertyRecord.fromString("Child 1.1"), id: "14056415405179", extendedData: { type: TreeDragTypes.Child }, description: "First child node to first root node.", parentId: "66640415289992", icon: "icon-placeholder" },
+        { label: PropertyRecord.fromString("Child 1.2"), id: "13613905720638", extendedData: { type: TreeDragTypes.Child }, description: "Second child node to first root node.", parentId: "66640415289992", icon: "icon-placeholder" },
+        { label: PropertyRecord.fromString("Child 1.3"), id: "37567272482330", extendedData: { type: TreeDragTypes.Child }, description: "Third child node to first root node.", parentId: "66640415289992", icon: "icon-placeholder" },
+        { label: PropertyRecord.fromString("Child 1.4"), id: "76545451605244", extendedData: { type: TreeDragTypes.Child }, description: "Fourth child node to first root node.", parentId: "66640415289992", icon: "icon-placeholder" },
+        { label: PropertyRecord.fromString("Child 1.5"), id: "59874551327032", extendedData: { type: TreeDragTypes.Child }, description: "Fifth child node to first root node.", parentId: "66640415289992", icon: "icon-placeholder" },
+      ] as DelayLoadedTreeNodeItem[],
     },
   }, {
-    label: "Root 2", id: "66097988616707", description: "Second root node", icon: "icon-placeholder", hasChildren: true,
+    label: PropertyRecord.fromString("Root 2"), id: "66097988616707", description: "Second root node", icon: "icon-placeholder", hasChildren: true,
     extendedData: {
       type: TreeDragTypes.Parent,
       children: [
-        { label: "Child 2.1", id: "50938067331247", extendedData: { type: TreeDragTypes.Child }, description: "First child node to second root node.", parentId: "66097988616707", icon: "icon-placeholder" },
-        { label: "Child 2.2", id: "48370230776108", extendedData: { type: TreeDragTypes.Child }, description: "Second child node to second root node.", parentId: "66097988616707", icon: "icon-placeholder" },
+        { label: PropertyRecord.fromString("Child 2.1"), id: "50938067331247", extendedData: { type: TreeDragTypes.Child }, description: "First child node to second root node.", parentId: "66097988616707", icon: "icon-placeholder" },
+        { label: PropertyRecord.fromString("Child 2.2"), id: "48370230776108", extendedData: { type: TreeDragTypes.Child }, description: "Second child node to second root node.", parentId: "66097988616707", icon: "icon-placeholder" },
         {
-          label: "Child 2.3", id: "91325646187787", description: "Third child node to second root node.", parentId: "66097988616707", icon: "icon-placeholder", hasChildren: true,
+          label: PropertyRecord.fromString("Child 2.3"), id: "91325646187787", description: "Third child node to second root node.", parentId: "66097988616707", icon: "icon-placeholder", hasChildren: true,
           extendedData: {
             type: TreeDragTypes.Child,
             children: [
-              { label: "Child 2.3.1", id: "1199839571660", extendedData: { type: TreeDragTypes.Child }, description: "First child node to third child node of first root node.", parentId: "91325646187787", icon: "icon-placeholder" },
-            ],
+              { label: PropertyRecord.fromString("Child 2.3.1"), id: "1199839571660", extendedData: { type: TreeDragTypes.Child }, description: "First child node to third child node of first root node.", parentId: "91325646187787", icon: "icon-placeholder" },
+            ] as DelayLoadedTreeNodeItem[],
           },
         } as DelayLoadedTreeNodeItem,
-        { label: "Child 2.4", id: "17293005347680", extendedData: { type: TreeDragTypes.Child }, description: "Fourth child node to second root node.", parentId: "66097988616707", icon: "icon-placeholder" },
-        { label: "Child 2.5", id: "13263543111312", extendedData: { type: TreeDragTypes.Child }, description: "Fifth child node to second root node.", parentId: "66097988616707", icon: "icon-placeholder" },
-      ],
+        { label: PropertyRecord.fromString("Child 2.4"), id: "17293005347680", extendedData: { type: TreeDragTypes.Child }, description: "Fourth child node to second root node.", parentId: "66097988616707", icon: "icon-placeholder" },
+        { label: PropertyRecord.fromString("Child 2.5"), id: "13263543111312", extendedData: { type: TreeDragTypes.Child }, description: "Fifth child node to second root node.", parentId: "66097988616707", icon: "icon-placeholder" },
+      ] as DelayLoadedTreeNodeItem[],
     },
   },
 ];
@@ -257,7 +258,7 @@ export const treeDropTargetDropCallback = (args: DropTargetArguments<DemoTreeDra
       id = originalId; // Link means keep ID and old node, Move means keep ID and delete old node.
     }
     const dragNode: DelayLoadedTreeNodeItem = {
-      id, label, description, icon, hasChildren: children !== undefined && children.length > 0,
+      id, label: PropertyRecord.fromString(label), description, icon, hasChildren: children !== undefined && children.length > 0,
       parentId: typeof parentId === "string" ? parentId : undefined,
       extendedData: { id, label, description, icon, parentId: typeof parentId === "string" ? parentId : undefined, type, children },
     };
@@ -287,7 +288,7 @@ export const treeDragSourceEndCallback = (args: DragSourceArguments<DemoTreeDrag
   if (args.dataObject && "id" in args.dataObject && "type" in args.dataObject) {
     const { id, label, description, icon, children, type, parentId } = args.dataObject;
     const dragNode: DelayLoadedTreeNodeItem = {
-      id, label, description, icon, hasChildren: children !== undefined && children.length > 0,
+      id, label: PropertyRecord.fromString(label), description, icon, hasChildren: children !== undefined && children.length > 0,
       parentId: typeof parentId === "string" ? parentId : undefined,
       extendedData: { id, label, description, icon, parentId: typeof parentId === "string" ? parentId : undefined, type, children },
     };
@@ -309,7 +310,7 @@ export const treeCanDropTargetDropCallback = (args: DropTargetArguments<DemoTree
       id = originalId; // Link means keep ID and old node, Move means keep ID and delete old node.
     }
     const dragNode: DelayLoadedTreeNodeItem = {
-      id, label, description, hasChildren: children !== undefined && children.length > 0,
+      id, label: PropertyRecord.fromString(label), description, hasChildren: children !== undefined && children.length > 0,
       parentId: typeof parentId === "string" ? parentId : undefined,
       extendedData: { id, label, description, icon, parentId: typeof parentId === "string" ? parentId : undefined, type, children },
     };

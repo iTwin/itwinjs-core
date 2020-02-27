@@ -27,6 +27,7 @@ import {
   Frustum,
   GlobeMode,
   GraphicParams,
+  GridOrientationType,
   Npc,
   RenderMaterial,
   SpatialViewDefinitionProps,
@@ -57,23 +58,6 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { Viewport } from "./Viewport";
 import { GlobalLocation, areaToEyeHeight } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-
-/** Describes the orientation of the grid displayed within a [[Viewport]].
- * @public
- * @deprecated use GridOrientationType from imodeljs-common.
- */
-export enum GridOrientationType {
-  /** Oriented with the view. */
-  View = 0,
-  /** Top */
-  WorldXY = 1,
-  /** Right */
-  WorldYZ = 2,
-  /** Front */
-  WorldXZ = 3,
-  /** Oriented by the [[AuxCoordSystem]] */
-  AuxCoord = 4,
-}
 
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]].
  * @public
@@ -642,6 +626,7 @@ export abstract class ViewState extends ElementState {
     this.setOrigin(viewOrg);
     this.setExtents(viewDelta);
     this.setRotation(viewRot);
+    this._updateMaxGlobalScopeFactor();
     return ViewStatus.Success;
   }
 
@@ -666,9 +651,6 @@ export abstract class ViewState extends ElementState {
   public abstract get defaultExtentLimits(): ExtentLimits;
 
   public setDisplayStyle(style: DisplayStyleState) { this.displayStyle = style; }
-
-  /** @deprecated Use the type-safe ViewState.details API instead. */
-  public getDetails(): any { return this.details.getJSON(); }
 
   /** Adjust the y dimension of this ViewState so that its aspect ratio matches the supplied value.
    * @internal
@@ -1019,7 +1001,7 @@ export abstract class ViewState extends ElementState {
   }
 
   public getUpVector(point: Point3d): Vector3d {
-    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.ThreeD)
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)
       return Vector3d.unitZ();
 
     const earthCenter = this.iModel.ecefLocation!.getTransform().inverse()!.origin;
@@ -1028,6 +1010,23 @@ export abstract class ViewState extends ElementState {
 
     return normal;
   }
+
+  /** A value that represents the global scope of the view -- a value greater than one indicates that the scope of this view is global (viewing most of Earth). */
+  public get globalScopeFactor(): number {
+    return this.getExtents().magnitudeXY() / Constant.earthRadiusWGS84.equator;
+  }
+
+  private _maxGlobalScopeFactor = 0;
+  /** The maximum global scope is not persistent, but maintained as highest historal global scope factor.  this can be used to  determine
+   * if the view is of a limited area or if it has ever viewed the entire globe and therefore may be assumed to view it again
+   * and therefore may warrant resources for displaying the globe, such as an expanded viewing frustum and preloading globe map tiles.
+   * A value greater than one indicates that the viewport has been used to view globally at least once.
+   * @alpha
+   */
+  public get maxGlobalScopeFactor() { return this._maxGlobalScopeFactor; }
+
+  protected _updateMaxGlobalScopeFactor() { this._maxGlobalScopeFactor = Math.max(this._maxGlobalScopeFactor, this.globalScopeFactor); }
+
 }
 
 /** Defines the state of a view of 3d models.
@@ -1082,6 +1081,7 @@ export abstract class ViewState3d extends ViewState {
       this.centerEyePoint();
 
     this._details = new ViewDetails3d(this.jsonProperties);
+    this._updateMaxGlobalScopeFactor();
   }
 
   /** @internal */
@@ -1094,6 +1094,7 @@ export abstract class ViewState3d extends ViewState {
     this.setExtents(val.extents);
     this.rotation.setFrom(val.rotation);
     this.camera.setFrom(val.camera);
+    this._updateMaxGlobalScopeFactor();
     return this;
   }
 
@@ -1116,10 +1117,13 @@ export abstract class ViewState3d extends ViewState {
     if (undefined === this.iModel.ecefLocation)
       return false;
 
-    if (this.isCameraOn)
-      return this.isEyePointGlobalView(this.getEyePoint());
-    else
-      return this.extents.magnitudeXY() > Constant.earthRadiusWGS84.equator;
+    return this.globalScopeFactor >= 1;
+  }
+
+  /** A value that represents the global scope of the view -- a value greater than one indicates that the scope of this view is global. */
+  public get globalScopeFactor(): number {
+    const eyeHeight = this.getEyeCartographicHeight();
+    return (undefined === eyeHeight) ? (this.extents.magnitudeXY() / Constant.earthRadiusWGS84.equator) : (eyeHeight / ViewState3d._minGlobeEyeHeight);
   }
 
   public globalViewTransition(): number {
@@ -1142,13 +1146,21 @@ export abstract class ViewState3d extends ViewState {
       return (h - startTransition) / (ViewState3d._minGlobeEyeHeight - startTransition);
   }
 
-  public isEyePointGlobalView(eyePoint: XYAndZ) {
+  public getCartographicHeight(point: XYAndZ): number | undefined {
     const ecefLocation = this.iModel.ecefLocation;
     if (undefined === ecefLocation)
-      return false;
+      return undefined;
 
-    const carto = this.rootToCartographic(eyePoint, ViewState3d._scratchGlobeCarto);
-    return carto !== undefined && carto.height > ViewState3d._minGlobeEyeHeight;
+    const carto = this.rootToCartographic(point, ViewState3d._scratchGlobeCarto);
+    return carto === undefined ? undefined : carto.height;
+  }
+  public getEyeCartographicHeight(): number | undefined {
+    return this.isCameraOn ? this.getCartographicHeight(this.getEyePoint()) : undefined;
+  }
+
+  public isEyePointGlobalView(eyePoint: XYAndZ) {
+    const cartoHeight = this.getCartographicHeight(eyePoint);
+    return undefined === cartoHeight ? false : cartoHeight > ViewState3d._minGlobeEyeHeight;
   }
 
   /** Look at a global location, placing the camera's eye at the specified eye height above a viewed location.
@@ -1179,7 +1191,7 @@ export abstract class ViewState3d extends ViewState {
     targetPointCartographic.latitude += 10.0;
     const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
     let upVector = northOfEyePoint.unitVectorTo(lEyePoint)!;
-    if (this.globeMode === GlobeMode.Columbus)
+    if (this.globeMode === GlobeMode.Plane)
       upVector = Vector3d.create(Math.abs(upVector.x), Math.abs(upVector.y), Math.abs(upVector.z));
 
     if (0 !== pitchAngleRadians) {
@@ -1250,6 +1262,7 @@ export abstract class ViewState3d extends ViewState {
     this.setExtents(viewDelta);
     this.setLensAngle(this.calcLensAngle());
     this.enableCamera();
+    this._updateMaxGlobalScopeFactor();
     return ViewStatus.Success;
   }
 
@@ -1371,6 +1384,7 @@ export abstract class ViewState3d extends ViewState {
     this.setExtents(delta);
     this.setLensAngle(this.calcLensAngle());
     this.enableCamera();
+    this._updateMaxGlobalScopeFactor();
     return ViewStatus.Success;
   }
 

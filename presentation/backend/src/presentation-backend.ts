@@ -12,4 +12,4 @@ export { Presentation, PresentationProps } from "./presentation-backend/Presenta
 export { PresentationManager, PresentationManagerProps, PresentationManagerMode } from "./presentation-backend/PresentationManager";
 export { RulesetManager } from "./presentation-backend/RulesetManager";
 export { RulesetVariablesManager } from "./presentation-backend/RulesetVariablesManager";
-export { RulesetEmbedder, DuplicateRulesetHandlingStrategy } from "./presentation-backend/RulesetEmbedder";
+export { RulesetEmbedder, RulesetEmbedderProps, DuplicateRulesetHandlingStrategy } from "./presentation-backend/RulesetEmbedder";

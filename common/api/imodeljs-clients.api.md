@@ -1573,6 +1573,8 @@ export class RequestGlobalOptions {
     // (undocumented)
     static httpsProxy?: https.Agent;
     // (undocumented)
+    static maxRetries: number;
+    // (undocumented)
     static timeout: RequestTimeoutOptions;
 }
 

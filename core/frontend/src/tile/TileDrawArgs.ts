@@ -20,7 +20,7 @@ import {
   FrustumPlanes,
   ViewFlag,
 } from "@bentley/imodeljs-common";
-import { Tile, TileTree } from "./internal";
+import { Tile, TileGraphicType, TileTree } from "./internal";
 import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
 import { FeatureSymbology } from "../render/FeatureSymbology";
@@ -45,7 +45,7 @@ export class TileDrawArgs {
   public readonly graphics: GraphicBranch = new GraphicBranch();
   public readonly now: BeTimePoint;
   public readonly purgeOlderThan: BeTimePoint;
-  private readonly _frustumPlanes?: FrustumPlanes;
+  protected _frustumPlanes?: FrustumPlanes;
   public planarClassifier?: RenderPlanarClassifier;
   public drape?: RenderTextureDrape;
   public readonly viewClip?: ClipVector;
@@ -68,7 +68,7 @@ export class TileDrawArgs {
   public get frustumPlanes(): FrustumPlanes {
     return this._frustumPlanes !== undefined ? this._frustumPlanes : this.context.frustumPlanes;
   }
-  protected get worldToViewMap(): Map4d {
+  public get worldToViewMap(): Map4d {
     return this.viewingSpace.worldToViewMap;
   }
 
@@ -81,7 +81,9 @@ export class TileDrawArgs {
   public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = true, symbologyOverrides?: FeatureSymbology.Overrides) {
     this.location = location;
     this.root = root;
-    this.clipVolume = clip;
+    if (undefined !== clip && !clip.hasOutsideClipColor)
+      this.clipVolume = clip;
+
     this.context = context;
 
     this.now = now;
@@ -99,7 +101,7 @@ export class TileDrawArgs {
 
     // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
     if (context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
-      this.viewClip = context.viewport.view.getViewClip();
+      this.viewClip = undefined === context.viewport.outsideClipColor ? context.viewport.view.getViewClip() : undefined;
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
   }
@@ -119,19 +121,27 @@ export class TileDrawArgs {
 
   public get clip(): ClipVector | undefined { return undefined !== this.clipVolume ? this.clipVolume.clipVector : undefined; }
 
-  public produceGraphics(): RenderGraphic | undefined {
-    if (this.graphics.isEmpty)
+  public produceGraphics(): RenderGraphic | undefined { return this._produceGraphicBranch(this.graphics); }
+
+  private _produceGraphicBranch(graphics: GraphicBranch): RenderGraphic | undefined {
+    if (graphics.isEmpty)
       return undefined;
 
     const classifierOrDrape = undefined !== this.planarClassifier ? this.planarClassifier : this.drape;
     const opts = { iModel: this.root.iModel, clipVolume: this.clipVolume, classifierOrDrape };
-    return this.context.createGraphicBranch(this.graphics, this.location, opts);
+    return this.context.createGraphicBranch(graphics, this.location, opts);
   }
 
   public drawGraphics(): void {
     const graphics = this.produceGraphics();
     if (undefined !== graphics)
       this.context.outputGraphic(graphics);
+  }
+
+  public drawGraphicsWithType(graphicType: TileGraphicType, graphics: GraphicBranch): void {
+    const branch = this._produceGraphicBranch(graphics);
+    if (undefined !== branch)
+      this.context.withGraphicType(graphicType, () => this.context.outputGraphic(branch));
   }
 
   public insertMissing(tile: Tile): void {

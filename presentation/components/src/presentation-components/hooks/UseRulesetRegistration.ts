@@ -6,27 +6,15 @@
  * @module Core
  */
 
-import { useRef, useEffect } from "react";
-import { Ruleset, RegisteredRuleset } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { useCallback } from "react";
+import { useDisposable } from "@bentley/ui-core";
+import { Ruleset } from "@bentley/presentation-common";
+import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 
-/** Custom hook which registers supplied Ruleset on mount and removes on unmount.
- * @alpha
+/**
+ * Custom hook which registers supplied Ruleset on mount and removes on unmount.
+ * @public
  */
 export function useRulesetRegistration(ruleset: Ruleset) {
-  const registeredRuleset = useRef<RegisteredRuleset>();
-
-  useEffect(() => {
-    const register = async () => {
-      registeredRuleset.current = await Presentation.presentation.rulesets().add(ruleset);
-    };
-
-    register(); // tslint:disable-line:no-floating-promises
-
-    return () => {
-      // istanbul ignore else
-      if (registeredRuleset.current)
-        Presentation.presentation.rulesets().remove(registeredRuleset.current); // tslint:disable-line:no-floating-promises
-    };
-  }, []);
+  useDisposable(useCallback(() => new RulesetRegistrationHelper(ruleset), [ruleset]));
 }

@@ -23,7 +23,7 @@ export * from "./RealityTile";
 export * from "./TileParams";
 export * from "./TileContent";
 export * from "./TileDrawArgs";
-export * from "./WebMapDrawArgs";
+export * from "./RealityTileDrawArgs";
 export * from "./GraphicsCollector";
 export * from "./BatchedTileIdMap";
 export * from "./TileTreeParams";

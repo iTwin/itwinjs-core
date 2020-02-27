@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/ui-core/lib/ui-core/index.scss";
-@import "@bentley/ui-core/lib/ui-core/style/colors";
-@import "@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/index.scss";
+@import "~@bentley/ui-core/lib/ui-core/style/colors";
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 
 .reality-data-item {
   display: flex;

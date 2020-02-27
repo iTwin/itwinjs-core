@@ -54,10 +54,10 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
     return (
       <div className="core-loadingprompt">
         <span className="title">{this.props.title}</span>
-        <span className="message">{this.props.message}</span>
+        {this.props.message && <span className="message">{this.props.message}</span>}
         {this.props.isDeterministic && <LoadingBar style={{ width: "100%" }} percent={this.props.percent} showPercentage={this.props.showPercentage} />}
         {(this.props.isDeterministic && this.props.showStatus) &&
-          <LoadingStatus style={{ marginTop: ".5em", width: "100%", fontSize: ".75em" }} percent={this.props.percent} message={this.props.message} />}
+          <LoadingStatus style={{ marginTop: ".5em", width: "100%", fontSize: ".75em" }} percent={this.props.percent} message={this.props.status} />}
         {!this.props.isDeterministic && <LoadingSpinner />}
         {this.props.showCancel && <button className="loading-prompt-cancel" type="button" onClick={this.props.onCancel}>Cancel</button>}
       </div>

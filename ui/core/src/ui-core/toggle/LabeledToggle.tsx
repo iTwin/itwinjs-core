@@ -33,12 +33,12 @@ export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
     return (
       <label style={this.props.style} className={classnames(
         "core-inputs-labeled-toggle",
-        this.props.disabled && "disabled",
+        this.props.disabled && "uicore-disabled",
         this.props.className,
       )}>
         <Toggle className={className} style={style} {...props} />
         {label &&
-          <div className={classnames("label", labelClassName)}>{label}</div>
+          <div className={classnames("uicore-label", labelClassName)}>{label}</div>
         }
       </label>
     );

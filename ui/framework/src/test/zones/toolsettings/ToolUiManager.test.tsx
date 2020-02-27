@@ -9,8 +9,9 @@ import TestUtils from "../../TestUtils";
 import { ToolUiManager, SyncToolSettingsPropertiesEventArgs, SyncUiEventDispatcher } from "../../../ui-framework";
 import {
   ToolSettingsValue, ToolSettingsPropertyRecord, PrimitiveValue, PropertyDescription, PropertyEditorParamTypes,
-  SuppressLabelEditorParams, ToolSettingsPropertySyncItem, IModelApp, NoRenderApp,
-} from "@bentley/imodeljs-frontend";
+  SuppressLabelEditorParams, ToolSettingsPropertySyncItem,
+} from "@bentley/ui-abstract";
+import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 
 // cSpell:Ignore USELENGTH
 

@@ -10,6 +10,7 @@ import { IModelHost, IModelHostConfiguration, ApplicationType } from "./IModelHo
 import { EventSinkManager, EmitStrategy } from "./EventSink";
 import * as path from "path";
 import * as os from "os";
+import { IModelJsFs } from "./IModelJsFs";
 
 /**
  * Used by desktop/mobile native application
@@ -38,13 +39,25 @@ export class NativeAppBackend {
     }
     /** Override applicationType to NativeApp */
     configuration!.applicationType = ApplicationType.NativeApp;
-
-    /** Set briefcase cache to home directory */
-    if (configuration.isDefaultBriefcaseCacheDir) {
-      configuration.briefcaseCacheDir = path.normalize(path.join(this.cacheFolder, "bentley/imodeljs/cache/"));
-    }
-    if (!configuration.nativeAppCacheDir) {
-      configuration.nativeAppCacheDir = path.normalize(path.join(this.cacheFolder, "bentley/imodeljs-native-app/storage"));
+    /** Do not override default on a build server */
+    if (!process.env.TF_BUILD) {
+      /** find platform dependent cache folder and verify if path exist or can be created */
+      let cacheFolder = this.getCacheFolder();
+      try {
+        if (cacheFolder) {
+          IModelJsFs.recursiveMkDirSync(cacheFolder);
+        }
+      } catch {
+        cacheFolder = undefined;
+      }
+      if (cacheFolder) {
+        if (configuration.isDefaultBriefcaseCacheDir) {
+          configuration.briefcaseCacheDir = path.normalize(path.join(cacheFolder, "bentley/imodeljs/cache/"));
+        }
+        if (configuration.isDefaultNativeAppCacheDir) {
+          configuration.nativeAppCacheDir = path.normalize(path.join(cacheFolder, "bentley/imodeljs-native-app/storage"));
+        }
+      }
     }
     IModelHost.startup(configuration);
   }
@@ -52,7 +65,7 @@ export class NativeAppBackend {
   /**
    * Gets cache folder for the native application.
    */
-  private static get cacheFolder(): string {
+  private static getCacheFolder(): string | undefined {
     const homedir = os.homedir();
     const platform = os.platform() as string;
     switch (platform) {
@@ -64,7 +77,7 @@ export class NativeAppBackend {
       case "linux":
         return path.join(homedir, ".cache");
     }
-    throw new Error("Could not determine cache folder");
+    return undefined;
   }
 
   /**

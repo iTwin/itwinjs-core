@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { CurveLocationDetailArrayPair } from "../../curve/CurveCurveIntersectXY";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { LineString3d } from "../../curve/LineString3d";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -48,36 +47,34 @@ function captureEyeStroke(allGeometry: GeometryQuery[], map: Map4d, pointA: Poin
 function testIntersectionsXY(
   ck: Checker,
   worldToLocal: Matrix4d | undefined,
-  intersections: CurveLocationDetailArrayPair | undefined, minExpected: number, maxExpected: number,
+  intersections: CurveLocationDetailPair[] | undefined, minExpected: number, maxExpected: number,
   testCoordinates: boolean = false): boolean {
   const baseErrorCount = ck.getNumErrors();
   if (!intersections) {
     ck.testExactNumber(0, minExpected, "No intersections found but " + minExpected + " expected");
 
   } else {
-    if (ck.testExactNumber(intersections.dataA.length, intersections.dataB.length, "intersections A B match")) {
-      const n = intersections.dataA.length;
-      if (n < minExpected || n > maxExpected) {
-        ck.announceError("intersection count out of range", n, minExpected, maxExpected);
-      }
-      if (testCoordinates) {
-        for (let i = 0; i < n; i++) {
-          if (worldToLocal) {
-            const pointA = worldToLocal.multiplyPoint3d(intersections.dataA[i].point, 1);
-            const pointB = worldToLocal.multiplyPoint3d(intersections.dataB[i].point, 1);
-            ck.testCoordinate(0, pointA.realDistanceXY(pointB)!, "projected intersections match");
-          } else {
-            ck.testPoint3dXY(intersections.dataA[i].point, intersections.dataB[i].point, "CLD coordinate match");
-          }
-          const fA = intersections.dataA[i].fraction;
-          const fB = intersections.dataB[i].fraction;
-          const cpA = intersections.dataA[i].curve;
-          const cpB = intersections.dataB[i].curve;
-          if (ck.testPointer(cpA) && cpA
-            && ck.testPointer(cpB) && cpB) {
-            ck.testPoint3d(cpA.fractionToPoint(fA), intersections.dataA[i].point);
-            ck.testPoint3d(cpB.fractionToPoint(fB), intersections.dataB[i].point);
-          }
+    const n = intersections.length;
+    if (n < minExpected || n > maxExpected) {
+      ck.announceError("intersection count out of range", n, minExpected, maxExpected);
+    }
+    if (testCoordinates) {
+      for (let i = 0; i < n; i++) {
+        if (worldToLocal) {
+          const pointA = worldToLocal.multiplyPoint3d(intersections[i].detailA.point, 1);
+          const pointB = worldToLocal.multiplyPoint3d(intersections[i].detailB.point, 1);
+          ck.testCoordinate(0, pointA.realDistanceXY(pointB)!, "projected intersections match");
+        } else {
+          ck.testPoint3dXY(intersections[i].detailB.point, intersections[i].detailB.point, "CLD coordinate match");
+        }
+        const fA = intersections[i].detailA.fraction;
+        const fB = intersections[i].detailB.fraction;
+        const cpA = intersections[i].detailA.curve;
+        const cpB = intersections[i].detailB.curve;
+        if (ck.testPointer(cpA) && cpA
+          && ck.testPointer(cpB) && cpB) {
+          ck.testPoint3d(cpA.fractionToPoint(fA), intersections[i].detailA.point);
+          ck.testPoint3d(cpB.fractionToPoint(fB), intersections[i].detailB.point);
         }
       }
     }
@@ -155,10 +152,10 @@ describe("CurveCurveXY", () => {
       const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
       const segment0 = LineSegment3d.createXYXY(1, 2, 4, 2);
       const segment1 = LineSegment3d.createXYXY(4, 1, 2, 3);
-      const intersectionsAB = CurveCurve.intersectionProjectedXY(worldToLocal, segment0, false, segment1, false);
+      const intersectionsAB = CurveCurve.intersectionProjectedXYPairs(worldToLocal, segment0, false, segment1, false);
       testIntersectionsXY(ck, worldToLocal, intersectionsAB, 1, 1);
 
-      const intersectionsBA = CurveCurve.intersectionProjectedXY(worldToLocal, segment1, false, segment0, false);
+      const intersectionsBA = CurveCurve.intersectionProjectedXYPairs(worldToLocal, segment1, false, segment0, false);
       testIntersectionsXY(ck, worldToLocal, intersectionsBA, 1, 1);
 
     }
@@ -260,10 +257,10 @@ describe("CurveCurveXY", () => {
         pointA.z += dz;
         pointB.z += 0.1 * dz;
         const segment0 = LineSegment3d.create(pointA, pointB);
-        const intersectionsAB = CurveCurve.intersectionProjectedXY(worldToLocal, segment0, true, arc1, true);
+        const intersectionsAB = CurveCurve.intersectionProjectedXYPairs(worldToLocal, segment0, true, arc1, true);
         testIntersectionsXY(ck, worldToLocal, intersectionsAB, 2, 2);
 
-        const intersectionsBA = CurveCurve.intersectionProjectedXY(worldToLocal, arc1, true, segment0, true);
+        const intersectionsBA = CurveCurve.intersectionProjectedXYPairs(worldToLocal, arc1, true, segment0, true);
         testIntersectionsXY(ck, worldToLocal, intersectionsBA, 2, 2);
 
       }
@@ -280,18 +277,18 @@ describe("CurveCurveXY", () => {
       const linestring0 = LineString3d.create(Point3d.create(1, 1), Point3d.create(3, 0), Point3d.create(3, 5));
       const linestring1 = LineString3d.create(Point3d.create(2, 4, 2), Point3d.create(4, 1, 0), Point3d.create(2, 5, 0));
 
-      const intersections = CurveCurve.intersectionProjectedXY(worldToLocal, segment0, false, linestring0, false);
+      const intersections = CurveCurve.intersectionProjectedXYPairs(worldToLocal, segment0, false, linestring0, false);
       testIntersectionsXY(ck, worldToLocal, intersections, 1, 1);
-      const intersections1 = CurveCurve.intersectionProjectedXY(worldToLocal, linestring0, false, segment0, false);
+      const intersections1 = CurveCurve.intersectionProjectedXYPairs(worldToLocal, linestring0, false, segment0, false);
       testIntersectionsXY(ck, worldToLocal, intersections1, 1, 1);
 
-      const intersections2 = CurveCurve.intersectionProjectedXY(worldToLocal, linestring0, false, linestring1, false);
+      const intersections2 = CurveCurve.intersectionProjectedXYPairs(worldToLocal, linestring0, false, linestring1, false);
       testIntersectionsXY(ck, worldToLocal, intersections2, 2, 2);
 
-      const intersections2r = CurveCurve.intersectionProjectedXY(worldToLocal, linestring1, false, linestring0, false);
+      const intersections2r = CurveCurve.intersectionProjectedXYPairs(worldToLocal, linestring1, false, linestring0, false);
       testIntersectionsXY(ck, worldToLocal, intersections2r, 2, 2);
 
-      const intersectionsX = CurveCurve.intersectionProjectedXY(worldToLocal, segment0, true, linestring0, true);
+      const intersectionsX = CurveCurve.intersectionProjectedXYPairs(worldToLocal, segment0, true, linestring0, true);
       testIntersectionsXY(ck, worldToLocal, intersectionsX, 2, 2);
     }
     expect(ck.getNumErrors()).equals(0);
@@ -303,10 +300,10 @@ describe("CurveCurveXY", () => {
       const worldToLocal = map.transform0;    // that's world to local.  The perspective frustum forced that.  Seems backwards.
       const arcA = Arc3d.create(Point3d.create(1, 2, 0), Vector3d.create(4, 0, 0), Vector3d.create(0, 1, 0));
       const arcB = Arc3d.create(Point3d.create(0, 1, 1), Vector3d.create(2, 0, 0), Vector3d.create(0, 4, 0));
-      const intersectionsAB = CurveCurve.intersectionProjectedXY(worldToLocal, arcA, true, arcB, true);
+      const intersectionsAB = CurveCurve.intersectionProjectedXYPairs(worldToLocal, arcA, true, arcB, true);
       testIntersectionsXY(ck, worldToLocal, intersectionsAB, 4, 4);
 
-      const intersectionsBA = CurveCurve.intersectionProjectedXY(worldToLocal, arcB, true, arcA, true);
+      const intersectionsBA = CurveCurve.intersectionProjectedXYPairs(worldToLocal, arcB, true, arcA, true);
       testIntersectionsXY(ck, worldToLocal, intersectionsBA, 4, 4);
 
     }
@@ -322,10 +319,10 @@ describe("CurveCurveXY", () => {
       const bspline1 = BSplineCurve3d.createUniformKnots(
         [Point3d.create(1, 2, 0), Point3d.create(1, 1, 0), Point3d.create(1, 0, 0), Point3d.create(0, -1, 0), Point3d.create(0, -2, 0)], 3)!;
 
-      const intersectionsAB = CurveCurve.intersectionProjectedXY(worldToLocal, segment0, false, bspline1, false);
+      const intersectionsAB = CurveCurve.intersectionProjectedXYPairs(worldToLocal, segment0, false, bspline1, false);
       testIntersectionsXY(ck, worldToLocal, intersectionsAB, 1, 1);
 
-      const intersectionsBA = CurveCurve.intersectionProjectedXY(worldToLocal, bspline1, false, segment0, false);
+      const intersectionsBA = CurveCurve.intersectionProjectedXYPairs(worldToLocal, bspline1, false, segment0, false);
       testIntersectionsXY(ck, worldToLocal, intersectionsBA, 1, 1);
 
     }
@@ -343,10 +340,10 @@ describe("CurveCurveXY", () => {
       const bspline1 = BSplineCurve3d.createUniformKnots(
         [Point3d.create(1, 2, 0), Point3d.create(1, 1, 0), Point3d.create(1, 0, 0), Point3d.create(0, -1, 0), Point3d.create(0, -2, 0)], 3)!;
 
-      const intersectionsAB = CurveCurve.intersectionProjectedXY(worldToLocal, g0, false, bspline1, false);
+      const intersectionsAB = CurveCurve.intersectionProjectedXYPairs(worldToLocal, g0, false, bspline1, false);
       testIntersectionsXY(ck, worldToLocal, intersectionsAB, 2, 2);
 
-      const intersectionsBA = CurveCurve.intersectionProjectedXY(worldToLocal, bspline1, false, g0, false);
+      const intersectionsBA = CurveCurve.intersectionProjectedXYPairs(worldToLocal, bspline1, false, g0, false);
       testIntersectionsXY(ck, worldToLocal, intersectionsBA, 2, 2);
 
     }
@@ -365,10 +362,10 @@ describe("CurveCurveXY", () => {
         const bspline1 = BSplineCurve3d.createUniformKnots(
           [Point3d.create(-1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(2, 2, 0), Point3d.create(3, 3, 0), Point3d.create(4, 3, 0)], order)!;
 
-        const intersectionsAB = CurveCurve.intersectionProjectedXY(worldToLocal, g0, false, bspline1, false);
+        const intersectionsAB = CurveCurve.intersectionProjectedXYPairs(worldToLocal, g0, false, bspline1, false);
         testIntersectionsXY(ck, worldToLocal, intersectionsAB, 1, 1);
 
-        const intersectionsBA = CurveCurve.intersectionProjectedXY(worldToLocal, bspline1, false, g0, false);
+        const intersectionsBA = CurveCurve.intersectionProjectedXYPairs(worldToLocal, bspline1, false, g0, false);
         testIntersectionsXY(ck, worldToLocal, intersectionsBA, 1, 1);
       }
 
@@ -414,19 +411,19 @@ describe("CurveCurveXY", () => {
             const point1 = bspline1.fractionToPoint(fraction1);
             bspline1.tryTranslateInPlace(point0.x - point1.x, point0.y - point1.y);
             GeometryCoreTestIO.captureGeometry(allGeometry, bspline1.clone(), dx, dy);
-            let intersectionsAB = CurveCurve.intersectionProjectedXY(worldToLocal, bspline0, false, bspline1, false);
+            let intersectionsAB = CurveCurve.intersectionProjectedXYPairs(worldToLocal, bspline0, false, bspline1, false);
             if (!testIntersectionsXY(ck, worldToLocal, intersectionsAB, 1, 1))
-              intersectionsAB = CurveCurve.intersectionProjectedXY(worldToLocal, bspline0, false, bspline1, false);
-            for (let i = 0; i < intersectionsAB.dataA.length; i++) {
-              GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(intersectionsAB.dataA[i].point, rA), dx, dy);
-              GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(intersectionsAB.dataB[i].point, rB), dx, dy);
-              captureEyeStroke(allGeometry, map, intersectionsAB.dataA[i].point, intersectionsAB.dataB[i].point, 2.0 * z0, dx, dy);
+              intersectionsAB = CurveCurve.intersectionProjectedXYPairs(worldToLocal, bspline0, false, bspline1, false);
+            for (const pair of intersectionsAB) {
+              GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(pair.detailA.point, rA), dx, dy);
+              GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(pair.detailB.point, rB), dx, dy);
+              captureEyeStroke(allGeometry, map, pair.detailA.point, pair.detailB.point, 2.0 * z0, dx, dy);
             }
 
             /* Reverse order test -- but skip it.  The loop does reversed order combinations.
                     const rA1 = 0.07;
                     const rB1 = 0.09;
-                         const intersectionsBA = CurveCurve.IntersectionProjectedXY(worldToLocal, bspline1, false, bspline0, false);
+                         const intersectionsBA = CurveCurve.intersectionProjectedXYPairs(worldToLocal, bspline1, false, bspline0, false);
                         testIntersectionsXY(ck, worldToLocal, intersectionsBA, 1, 1);
                         for (let i = 0; i < intersectionsBA.dataA.length; i++) {
                           GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(intersectionsBA.dataA[i].point, rA1), dx, dy);

@@ -12,8 +12,8 @@ import { BackstageItem } from "./backstage/BackstageItem";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 import { UiItemsApplicationAction, UiItemsManager } from "./UiItemsManager";
 
-/** Application for items provided by UiItemsProvider
- * @alpha
+/** Application for items provided by a UiItemsProvider
+ * @beta
  */
 export interface UiItemsApplication {
   /** Validate and optionally update a Toolbar button item */
@@ -26,8 +26,8 @@ export interface UiItemsApplication {
   validateWidget?: (widget: AbstractWidgetProps) => { updatedWidget: AbstractWidgetProps, action: UiItemsApplicationAction };
 }
 
-/** Arbitrates between the UiItemsApplication and the UiItemsProvider
- * @alpha
+/** Arbitrates between the UiItemsApplication and a UiItemsProvider
+ * @beta
  */
 export class UiItemsArbiter {
   private static _uiItemsApplication?: UiItemsApplication;

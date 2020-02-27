@@ -143,22 +143,13 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient, this.rpcClient.getDistinctValues, this.createRequestOptions(options), descriptor, keys, fieldName, maximumValueCount);
   }
 
-  public async getDisplayLabel(options: LabelRequestOptions<IModelToken>, key: InstanceKeyJSON): Promise<string> {
-    return this.request<string, LabelRequestOptions<IModelToken>, any>(
-      this.rpcClient, this.rpcClient.getDisplayLabel, this.createRequestOptions(options), key);
-  }
-  public async getDisplayLabels(options: LabelRequestOptions<IModelToken>, keys: InstanceKeyJSON[]): Promise<string[]> {
-    return this.request<string[], LabelRequestOptions<IModelToken>, any>(
-      this.rpcClient, this.rpcClient.getDisplayLabels, this.createRequestOptions(options), keys);
-  }
-
   public async getDisplayLabelDefinition(options: LabelRequestOptions<IModelToken>, key: InstanceKeyJSON): Promise<LabelDefinitionJSON> {
     return this.request<LabelDefinitionJSON, LabelRequestOptions<IModelToken>, any>(
       this.rpcClient, this.rpcClient.getDisplayLabelDefinition, this.createRequestOptions(options), key);
   }
-  public async getDisplayLabelsDefinitions(options: LabelRequestOptions<IModelToken>, keys: InstanceKeyJSON[]): Promise<LabelDefinitionJSON[]> {
+  public async getDisplayLabelDefinitions(options: LabelRequestOptions<IModelToken>, keys: InstanceKeyJSON[]): Promise<LabelDefinitionJSON[]> {
     return this.request<LabelDefinitionJSON[], LabelRequestOptions<IModelToken>, any>(
-      this.rpcClient, this.rpcClient.getDisplayLabelsDefinitions, this.createRequestOptions(options), keys);
+      this.rpcClient, this.rpcClient.getDisplayLabelDefinitions, this.createRequestOptions(options), keys);
   }
 
   public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelToken>): Promise<SelectionScope[]> {

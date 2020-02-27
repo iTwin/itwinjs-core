@@ -94,6 +94,10 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
 
   public get classifiers(): SpatialClassifiers { return this._classifiers; }
 
+  public get castsShadows() {
+    return false;
+  }
+
   public get treeOwner(): TileTreeOwner {
     const newId = this.createId(this._classifiers, this._source);
     if (0 !== compareIds(this._id, newId)) {

@@ -17,6 +17,10 @@ describe("<Tile />", () => {
     shallow(<Tile title="Test" icon={icon} />).should.matchSnapshot();
   });
 
+  it("renders string icon correctly", () => {
+    shallow(<Tile title="Test" icon="icon-placeholder" />).should.matchSnapshot();
+  });
+
   it("has correct className", () => {
     const wrapper = mount(<Tile title="Test" icon={icon} />);
     wrapper.find(".uicore-tiles-tile").length.should.eq(1);

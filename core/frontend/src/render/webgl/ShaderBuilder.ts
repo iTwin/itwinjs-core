@@ -33,6 +33,7 @@ export const enum VariableType {
   Mat4, // mat4
   Sampler2D, // sampler2D
   SamplerCube, // samplerCube
+  Uint, // uint
 
   COUNT,
 }
@@ -74,6 +75,7 @@ namespace Convert {
       case VariableType.Mat4: return "mat4";
       case VariableType.Sampler2D: return "sampler2D";
       case VariableType.SamplerCube: return "samplerCube";
+      case VariableType.Uint: return "uint";
       default: assert(false); return "undefined";
     }
   }
@@ -215,6 +217,13 @@ export class ShaderVariables {
 
   public addConstant(name: string, type: VariableType, value: string) {
     this.addGlobal(name, type, value, true);
+  }
+
+  public addBitFlagConstant(name: string, value: number) {
+    if (System.instance.capabilities.isWebGL2)
+      this.addGlobal(name, VariableType.Uint, (2 ** value).toFixed(0) + "u", true);
+    else
+      this.addGlobal(name, VariableType.Float, value.toFixed(0) + ".0", true);
   }
 
   /** Constructs the lines of glsl code declaring all of the variables. */
@@ -917,19 +926,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       main.addline("  if (checkForEarlyDiscard()) { discard; return; }");
     }
 
-    const applyClipping = this.get(FragmentShaderComponent.ApplyClipping);
-    if (undefined !== applyClipping) {
-      prelude.addFunction("void applyClipping()", applyClipping);
-      main.addline("  applyClipping();");
-    }
-
     main.addline("  vec4 baseColor = computeBaseColor();");
-
-    const applyMaterialOverrides = this.get(FragmentShaderComponent.ApplyMaterialOverrides);
-    if (undefined !== applyMaterialOverrides) {
-      prelude.addFunction("vec4 applyMaterialOverrides(vec4 baseColor)", applyMaterialOverrides);
-      main.addline("  baseColor = applyMaterialOverrides(baseColor);");
-    }
 
     const finalizeDepth = this.get(FragmentShaderComponent.FinalizeDepth);
     if (undefined !== finalizeDepth) {
@@ -941,39 +938,60 @@ export class FragmentShaderBuilder extends ShaderBuilder {
         main.addline("  gl_FragDepthEXT = finalDepth;");
     }
 
+    let clipIndent = "";
+    const applyClipping = this.get(FragmentShaderComponent.ApplyClipping);
+    if (undefined !== applyClipping) {
+      prelude.addline("vec3 g_clipColor;");
+      prelude.addFunction("bool applyClipping(vec4 baseColor)", applyClipping);
+      main.addline("  bool hasClipColor = applyClipping(baseColor);");
+      main.addline("  if (hasClipColor) { baseColor.rgb = g_clipColor; } else {");
+      clipIndent = "  ";
+    }
+
+    const applyMaterialOverrides = this.get(FragmentShaderComponent.ApplyMaterialOverrides);
+    if (undefined !== applyMaterialOverrides) {
+      prelude.addFunction("vec4 applyMaterialOverrides(vec4 baseColor)", applyMaterialOverrides);
+      main.addline(clipIndent + "  baseColor = applyMaterialOverrides(baseColor);");
+    }
+
     const applyPlanarClassifier = this.get(FragmentShaderComponent.ApplyPlanarClassifier);
     if (undefined !== applyPlanarClassifier) {
       if (undefined === finalizeDepth) {
         if (this.findFunction(volClassOpaqueColor))
-          main.addline("  float finalDepth = gl_FragCoord.z;");
+          main.addline(clipIndent + "  float finalDepth = gl_FragCoord.z;");
         else
-          main.addline("  float finalDepth = 1.0;");
+          main.addline(clipIndent + "  float finalDepth = 1.0;");
       }
       prelude.addFunction("vec4 applyPlanarClassifications(vec4 baseColor, float depth)", applyPlanarClassifier);
-      main.addline("  baseColor = applyPlanarClassifications(baseColor, finalDepth);");
+      main.addline(clipIndent + "  baseColor = applyPlanarClassifications(baseColor, finalDepth);");
     }
+
     const applySolarShadowMap = this.get(FragmentShaderComponent.ApplySolarShadowMap);
     if (undefined !== applySolarShadowMap) {
       prelude.addFunction("vec4 applySolarShadowMap(vec4 baseColor)", applySolarShadowMap);
-      main.addline("  baseColor = applySolarShadowMap(baseColor);");
+      main.addline(clipIndent + "  baseColor = applySolarShadowMap(baseColor);");
     }
+
     const finalize = this.get(FragmentShaderComponent.FinalizeBaseColor);
     if (undefined !== finalize) {
       prelude.addFunction("vec4 finalizeBaseColor(vec4 baseColor)", finalize);
-      main.addline("  baseColor = finalizeBaseColor(baseColor);");
+      main.addline(clipIndent + "  baseColor = finalizeBaseColor(baseColor);");
     }
 
     const checkForDiscard = this.get(FragmentShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard(vec4 baseColor)", checkForDiscard);
-      main.addline("  if (checkForDiscard(baseColor)) { discard; return; }");
+      main.addline(clipIndent + "  if (checkForDiscard(baseColor)) { discard; return; }");
     }
 
     const discardByAlpha = this.get(FragmentShaderComponent.DiscardByAlpha);
     if (undefined !== discardByAlpha) {
       prelude.addFunction("bool discardByAlpha(float alpha)", discardByAlpha);
-      main.addline("  if (discardByAlpha(baseColor.a)) { discard; return; }");
+      main.addline(clipIndent + "  if (discardByAlpha(baseColor.a)) { discard; return; }");
     }
+
+    if (undefined !== applyClipping)
+      main.addline("  }");
 
     if (undefined !== applyLighting) {
       prelude.addFunction("vec4 applyLighting(vec4 baseColor)", applyLighting);

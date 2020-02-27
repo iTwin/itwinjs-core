@@ -7,7 +7,7 @@ import { mount, shallow } from "enzyme";
 
 import { LoadingPrompt } from "../../ui-core";
 
-describe("<LoadingBar />", () => {
+describe("<LoadingPrompt />", () => {
   it("should render", () => {
     const wrapper = mount(
       <LoadingPrompt />,

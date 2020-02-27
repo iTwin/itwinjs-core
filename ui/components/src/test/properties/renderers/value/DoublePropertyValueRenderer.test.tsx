@@ -8,7 +8,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import TestUtils from "../../../TestUtils";
 import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
-import { PrimitiveValue } from "@bentley/imodeljs-frontend";
+import { PrimitiveValue } from "@bentley/ui-abstract";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
 
 function createDoubleProperty(value: number, displayValue?: string) {

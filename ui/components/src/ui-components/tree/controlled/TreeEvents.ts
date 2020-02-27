@@ -15,7 +15,7 @@ import { TreeNodeItem } from "../TreeDataProvider";
  *
  * **Note:** Selection and checkbox state change events payload is an Observable.
  * Observable is a stream of data over time (e.g. in case of selection replaced event
- * it is a stream of selected node items arrays). To access data inside stream '.subscribe()' method
+ * it is a stream of selected node items arrays). To access data inside stream `subscribe()` method
  * should be called. This method accepts any subset of 'next', 'error' and 'complete' callbacks.
  * Once subscribe is called observable will start emitting data and calls 'next' callback each time new
  * data is emitted. If some selected nodes are not loaded yet they will be loaded and observable will
@@ -26,33 +26,36 @@ import { TreeNodeItem } from "../TreeDataProvider";
  */
 export interface TreeEvents {
   /** Called when tree node is expanded. */
-  onNodeExpanded?(event: TreeNodeEvent): void;
+  onNodeExpanded?(event: TreeNodeEventArgs): void;
   /** Called when tree node is collapsed. */
-  onNodeCollapsed?(event: TreeNodeEvent): void;
+  onNodeCollapsed?(event: TreeNodeEventArgs): void;
 
   /** Called when selected tree node is clicked. */
-  onDelayedNodeClick?(event: TreeNodeEvent): void;
+  onDelayedNodeClick?(event: TreeNodeEventArgs): void;
 
-  /** Called when tree selection is modified.
-   * If Subscription is returned it can be used to stop event handling by calling '.unsubscribe()'.
+  /**
+   * Called when tree selection is modified.
+   * If Subscription is returned it can be used to stop event handling by calling `unsubscribe()`.
    */
-  onSelectionModified?(event: TreeSelectionModificationEvent): Subscription | undefined;
-  /** Called when tree selection is replaced.
-   * If Subscription is returned it can be used to stop event handling by calling '.unsubscribe()'.
+  onSelectionModified?(event: TreeSelectionModificationEventArgs): Subscription | undefined;
+  /**
+   * Called when tree selection is replaced.
+   * If Subscription is returned it can be used to stop event handling by calling `unsubscribe()`.
    */
-  onSelectionReplaced?(event: TreeSelectionReplacementEvent): Subscription | undefined;
+  onSelectionReplaced?(event: TreeSelectionReplacementEventArgs): Subscription | undefined;
 
-  /** Called when checkbox states for nodes are changed.
-   * If Subscription is returned it can be used to stop event handling by calling '.unsubscribe()'.
+  /**
+   * Called when checkbox states for nodes are changed.
+   * If Subscription is returned it can be used to stop event handling by calling `unsubscribe()`.
    */
-  onCheckboxStateChanged?(event: TreeCheckboxStateChangeEvent): Subscription | undefined;
+  onCheckboxStateChanged?(event: TreeCheckboxStateChangeEventArgs): Subscription | undefined;
 }
 
 /**
  * Data structure that describes tree node event payload.
  * @beta
  */
-export interface TreeNodeEvent {
+export interface TreeNodeEventArgs {
   /** Id of node that is affected by event. */
   nodeId: string;
 }
@@ -61,7 +64,7 @@ export interface TreeNodeEvent {
  * Data structure that describes tree selection modification event payload.
  * @beta
  */
-export interface TreeSelectionModificationEvent {
+export interface TreeSelectionModificationEventArgs {
   /**
    * An observable that emits tree selection changes.
    * It starts emitting values when '.subscribe()' is called.
@@ -84,7 +87,7 @@ export interface TreeSelectionChange {
  * Data structure that describes tree selection replacement event payload.
  * @beta
  */
-export interface TreeSelectionReplacementEvent {
+export interface TreeSelectionReplacementEventArgs {
   /**
    * An observable that emits tree selection replacements containing selected tree node items.
    * It starts emitting values when '.subscribe()' is called.
@@ -96,7 +99,7 @@ export interface TreeSelectionReplacementEvent {
  * Data structure that describes tree checkbox state change event payload.
  * @beta
  */
-export interface TreeCheckboxStateChangeEvent {
+export interface TreeCheckboxStateChangeEventArgs {
   /**
    * An observable that emits checkbox state changes.
    * It starts emitting values when '.subscribe()' is called.

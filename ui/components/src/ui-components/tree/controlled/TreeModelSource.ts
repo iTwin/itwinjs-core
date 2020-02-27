@@ -10,7 +10,8 @@ import { produce, Patch } from "immer";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { MutableTreeModel, TreeModel, VisibleTreeNodes } from "./TreeModel";
 
-/** Data structure that describes changes which happened to the tree model
+/**
+ * Data structure that describes changes which happened to the tree model
  * @beta
  */
 export interface TreeModelChanges {
@@ -57,7 +58,6 @@ export class TreeModelSource {
     if (!this._visibleNodes) {
       this._visibleNodes = this._model.computeVisibleNodes();
     }
-
     return this._visibleNodes;
   }
 

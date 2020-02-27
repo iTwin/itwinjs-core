@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { IPropertyValueRenderer, PropertyValueRendererContext, PropertyContainerType } from "../../ValueRendererManager";
-import { PropertyRecord, PropertyValueFormat, ArrayValue } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat, ArrayValue } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
 import { TableArrayValueRenderer } from "./table/ArrayValueRenderer";
 import { withContextStyle } from "./WithContextStyle";

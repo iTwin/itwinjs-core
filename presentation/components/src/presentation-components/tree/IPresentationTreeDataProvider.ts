@@ -27,7 +27,7 @@ export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPrese
 
   /**
    * Loads the hierarchy so on-demand requests and filtering works quicker
-   * @alpha
+   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
    */
   loadHierarchy?(): Promise<void>;
 }

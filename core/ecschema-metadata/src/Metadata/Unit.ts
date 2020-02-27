@@ -45,10 +45,6 @@ export class Unit extends SchemaItem {
   get offset(): number { return this._offset; }
   get denominator(): number { return this._denominator; }
 
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this Unit's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -90,11 +86,6 @@ export class Unit extends SchemaItem {
     itemElement.setAttribute("offset", this.offset.toString());
 
     return itemElement;
-  }
-
-  /** @deprecated */
-  public deserializeSync(unitProps: UnitProps) {
-    this.fromJSONSync(unitProps);
   }
 
   public fromJSONSync(unitProps: UnitProps) {
@@ -141,11 +132,6 @@ export class Unit extends SchemaItem {
       if (unitProps.offset !== this._offset)
         this._offset = unitProps.offset;
     }
-  }
-
-  /** @deprecated */
-  public async deserialize(unitProps: UnitProps) {
-    await this.fromJSON(unitProps);
   }
 
   public async fromJSON(unitProps: UnitProps) {

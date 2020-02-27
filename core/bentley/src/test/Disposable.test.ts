@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { using, IDisposable, DisposableList } from "../bentleyjs-core";
+import { isIDisposable } from "../Disposable";
 
 class CallbackDisposable implements IDisposable {
   private _callback: () => void;
@@ -16,6 +17,30 @@ class CallbackDisposable implements IDisposable {
 }
 
 describe("Disposable", () => {
+
+  describe("isIDisposable", () => {
+
+    it("returns true when given an object with `dispose` function", () => {
+      assert.isTrue(isIDisposable({ dispose: () => { } }));
+    });
+
+    it("returns false when given an object without `dispose` function", () => {
+      assert.isFalse(isIDisposable({}));
+    });
+
+    it("returns false when given an object with `dispose` attribute which is not a function", () => {
+      assert.isFalse(isIDisposable({ dispose: true }));
+    });
+
+    it("returns false when given a non-object argument", () => {
+      assert.isFalse(isIDisposable(null));
+      assert.isFalse(isIDisposable(undefined));
+      assert.isFalse(isIDisposable(123));
+      assert.isFalse(isIDisposable("123"));
+      assert.isFalse(isIDisposable([]));
+    });
+
+  });
 
   describe("using IDisposable", () => {
 

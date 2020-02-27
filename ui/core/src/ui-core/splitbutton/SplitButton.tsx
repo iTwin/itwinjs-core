@@ -31,6 +31,8 @@ export interface SplitButtonProps extends CommonProps {
   onClick?: (event: any) => any;
   /** specifies icon for Splitbutton component */
   icon?: string;
+  /** Indicates whether to draw a border around the button */
+  drawBorder?: boolean;
 }
 
 /** @internal */
@@ -61,12 +63,20 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
         <span className={classnames("icon", this.props.icon)} />
       );
     }
+
+    const classNames = classnames(
+      "core-split-button",
+      this.props.className,
+      this.state.expanded && "expanded",
+      this.props.drawBorder && "core-split-button-border");
+
     return (
       <div data-testid="core-split-button-root"
-        className={classnames("core-split-button", this.props.className, { expanded: this.state.expanded })}
+        className={classNames}
         style={this.props.style}
       >
         <div data-testid="core-split-button-label" onClick={this.props.onClick} className={"core-split-button-label"}>{icon} {this.props.label}</div>
+        <div className={classnames("core-split-button-divider", this.props.drawBorder && "core-split-button-border")} />
         <div className={"core-split-button-arrow"} ref={(el) => { this._arrowElement = el; }} onClick={this._handleClick} tabIndex={0} onKeyUp={this._handleKeyUp}>
           <div className={classnames("core-split-button-arrow-icon", "icon", "icon-chevron-down")} >
           </div>

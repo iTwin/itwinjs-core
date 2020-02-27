@@ -102,6 +102,10 @@ beta;TogglePrimitiveVisibilityTool
 beta;toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean
 beta;ToggleProjectExtentsTool 
 beta;ToggleReadPixelsTool 
+alpha;ToggleRealityTileBounds 
+alpha;ToggleRealityTileFreeze 
+alpha;ToggleRealityTileLogging 
+alpha;ToggleRealityTilePreload 
 beta;ToggleSelectedViewFrustumTool 
 beta;ToggleShadowFrustumTool 
 beta;ToggleSkyboxTool 

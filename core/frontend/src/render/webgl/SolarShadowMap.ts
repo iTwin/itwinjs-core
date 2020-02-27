@@ -40,7 +40,7 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
         return this._mapFrustumPlanes;
     }
 
-    protected get worldToViewMap(): Map4d {
+    public get worldToViewMap(): Map4d {
       if (true === this._useViewportMap)
         return super.worldToViewMap;
       else
@@ -327,7 +327,10 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     // Limit the map to only displayed models.
     const viewTileRange = Range3d.createNull();
-    view.forEachModelTreeRef((ref) => ref.accumulateTransformedRange(viewTileRange, worldToMap, undefined));
+    view.forEachTileTreeRef((ref) => {
+      if (ref.castsShadows)
+        ref.accumulateTransformedRange(viewTileRange, worldToMap, undefined);
+    });
 
     if (!viewTileRange.isNull)
       viewTileRange.clone(shadowRange);
@@ -362,13 +365,16 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     const tileRange = Range3d.createNull();
     scratchFrustumPlanes.init(this._shadowFrustum);
-    view.forEachModelTreeRef(((ref) => {
+    view.forEachTileTreeRef(((ref) => {
+      if (!ref.castsShadows)
+        return;
+
       const drawArgs = createDrawArgs(context, this, ref, scratchFrustumPlanes);
       if (undefined === drawArgs)
         return;
 
       const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(drawArgs.location, this._scratchTransform);
-      const selectedTiles = drawArgs.root.selectTiles(drawArgs);
+      const selectedTiles = drawArgs.root.selectTilesForScene(drawArgs);
 
       for (const selectedTile of selectedTiles) {
         tileRange.extendRange(tileToMapTransform.multiplyRange(selectedTile.range, this._scratchRange));

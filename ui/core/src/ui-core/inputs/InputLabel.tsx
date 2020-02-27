@@ -31,12 +31,12 @@ export class InputLabel extends React.PureComponent<InputLabelProps> {
     return (
       <label style={style} className={classnames(
         "uicore-inputs-labeled-input",
-        { disabled: this.props.disabled },
+        this.props.disabled && "uicore-disabled",
         status,
         className,
       )}>
         {label &&
-          <div className={classnames("label", labelClassName)} style={labelStyle}> {label} </div>
+          <div className={classnames("uicore-label", labelClassName)} style={labelStyle}> {label} </div>
         }
         <div className={classnames("input", { "with-icon": !!status })}>
           {this.props.children}
@@ -45,7 +45,7 @@ export class InputLabel extends React.PureComponent<InputLabelProps> {
           }
         </div>
         {message &&
-          <div className={classnames("message", messageClassName)} style={messageStyle}>{message}</div>
+          <div className={classnames("uicore-message", messageClassName)} style={messageStyle}>{message}</div>
         }
       </label>
     );

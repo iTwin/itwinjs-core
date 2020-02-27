@@ -230,6 +230,7 @@ class MoveHandle extends ModifyHandle {
   }
   public onClick(_ev: BeButtonEvent) {
     const el = this.handles.el;
+    // tslint:disable-next-line:deprecation
     if (el instanceof MarkupText || (el instanceof G && el.node.className.baseVal === MarkupApp.boxedTextClass)) // if they click on the move handle of a text element, start the text editor
       new EditTextTool(el).run();
   }

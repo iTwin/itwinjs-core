@@ -62,6 +62,7 @@ class SettingsPageComponent extends React.Component<SettingsPageProps> {
           </div>
           <div className="panel right-panel">
             <Toggle isOn={isLightTheme} showCheckmark={false} onChange={this._onThemeChange} />
+            &nbsp;&nbsp;
             {_theme}
           </div>
         </div>

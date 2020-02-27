@@ -459,6 +459,8 @@ export class SceneContext extends RenderContext {
     return undefined !== this._viewingSpace ? this._viewingSpace : this.viewport.viewingSpace;
   }
 
+  public get graphicType() { return this._graphicType; }
+
   public outputGraphic(graphic: RenderGraphic): void {
     switch (this._graphicType) {
       case TileGraphicType.BackgroundMap:

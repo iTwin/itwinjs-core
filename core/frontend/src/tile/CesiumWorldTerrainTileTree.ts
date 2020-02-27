@@ -13,6 +13,8 @@ import {
   Id64String,
   JsonUtils,
   utf8ToString,
+  BeDuration,
+  BeTimePoint,
 } from "@bentley/bentleyjs-core";
 import {
   TerrainMapTile,
@@ -48,15 +50,10 @@ enum QuantizedMeshExtensionIds {
 }
 
 /** @internal */
-export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, wantSkirts: boolean, exaggeration: number): Promise<TerrainTileLoaderBase | undefined> {
+export async function getCesiumAccessTokenAndEndpointUrl(): Promise<{ token?: string, url?: string }> {
   const _requestContext = new ClientRequestContext("");
-  const _requestTemplate = "https://api.cesium.com/v1/assets/1/endpoint?access_token={CesiumRequestToken}";
-  const requestNormals = false;   // We currently are not supporting terrain lighting - omit normals to reduce tile payload.
-  // TBD... this key is generated for RBB personal account - change to enterprise license from Cesium.
   const _requestKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkZWIxNzk1OC0wNmVjLTQ1NDItOTBlYS1lOTViMDljNzQyNWUiLCJpZCI6MTQwLCJzY29wZXMiOlsiYXNsIiwiYXNyIiwiYXN3IiwiZ2MiXSwiaWF0IjoxNTYyMDA0NTYwfQ.VyMP5TPl--eX2bCQjIY7ijfPCd-J0sSPnEFj_mfPC3k";
-  let _endPointUrl;
-  let _accessToken;
-  let layers;
+  const _requestTemplate = "https://api.cesium.com/v1/assets/1/endpoint?access_token={CesiumRequestToken}";
   const apiUrl: string = _requestTemplate.replace("{CesiumRequestToken}", _requestKey);
   const apiRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
 
@@ -64,13 +61,28 @@ export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, mode
     const apiResponse: Response = await request(_requestContext, apiUrl, apiRequestOptions);
     if (undefined === apiResponse || undefined === apiResponse.body || undefined === apiResponse.body.url) {
       assert(false);
-      return undefined;
+      return {};
     }
-    _endPointUrl = apiResponse.body.url;
-    _accessToken = apiResponse.body.accessToken;
+    return { token: apiResponse.body.accessToken, url: apiResponse.body.url };
+  } catch (error) {
+    assert(false);
+    return {};
+  }
+}
 
-    const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: "Bearer " + _accessToken } };
-    const layerUrl = _endPointUrl + "layer.json";
+/** @internal */
+export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, modelId: Id64String, groundBias: number, wantSkirts: boolean, exaggeration: number): Promise<TerrainTileLoaderBase | undefined> {
+  const _requestContext = new ClientRequestContext("");
+  const requestNormals = false;   // We currently are not supporting terrain lighting - omit normals to reduce tile payload.
+  let layers;
+
+  const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
+  if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url)
+    return undefined;
+
+  try {
+    const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: "Bearer " + accessTokenAndEndpointUrl.token } };
+    const layerUrl = accessTokenAndEndpointUrl.url + "layer.json";
     const layerResponse = await request(_requestContext, layerUrl, layerRequestOptions);
     if (undefined === layerResponse) {
       assert(false);
@@ -99,14 +111,14 @@ export async function getCesiumWorldTerrainLoader(iModel: IModelConnection, mode
     }
   }
 
-  let tileUrlTemplate = _endPointUrl + layers.tiles[0].replace("{version}", layers.version);
+  let tileUrlTemplate = accessTokenAndEndpointUrl.url + layers.tiles[0].replace("{version}", layers.version);
   if (requestNormals)
     tileUrlTemplate = tileUrlTemplate.replace("?", "?extensions=octvertexnormals-watermask-metadata&");
 
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
 
   // TBD -- When we have  an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
-  return new CesiumWorldTerrainTileLoader(iModel, modelId, groundBias, _requestContext, _accessToken, tileUrlTemplate, maxDepth, wantSkirts, tilingScheme, tileAvailability, layers.metadataAvailability, exaggeration);
+  return new CesiumWorldTerrainTileLoader(iModel, modelId, groundBias, _requestContext, accessTokenAndEndpointUrl.token, tileUrlTemplate, maxDepth, wantSkirts, tilingScheme, tileAvailability, layers.metadataAvailability, exaggeration);
 }
 function zigZagDecode(value: number) {
   return (value >> 1) ^ (-(value & 1));
@@ -148,6 +160,8 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   private static _scratchPoint = Point3d.createZero();
   private static _scratchNormal = Vector3d.createZero();
   private static _scratchHeightRange = Range1d.createNull();
+  private static _tokenTimeoutInterval = BeDuration.fromSeconds(60 * 30);      // Request a new access token every 30 minutes...
+  private _tokenTimeOut: BeTimePoint;
 
   public forceTileLoad(tile: Tile): boolean {
     // Force loading of the metadata availability tiles as these are required for determining the availability of descendants.
@@ -157,6 +171,7 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   constructor(iModel: IModelConnection, modelId: Id64String, groundBias: number, private _requestContext: ClientRequestContext, private _accessToken: string, private _tileUrlTemplate: string,
     private _maxDepth: number, private readonly _wantSkirts: boolean, tilingScheme: MapTilingScheme, private _tileAvailability: TileAvailability | undefined, private _metaDataAvailableLevel: number | undefined, private _exaggeration: number) {
     super(iModel, modelId, groundBias, tilingScheme);
+    this._tokenTimeOut = BeTimePoint.now().plus(CesiumWorldTerrainTileLoader._tokenTimeoutInterval);
   }
 
   public getGeometryLogo(_tileProvider: MapTileTreeReference): HTMLTableRowElement {
@@ -177,6 +192,16 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
   public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
+
+    if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
+      const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
+      if (!accessTokenAndEndpointUrl.token) {
+        assert(false);
+        return {};
+      }
+      this._accessToken = accessTokenAndEndpointUrl.token;
+      this._tokenTimeOut = BeTimePoint.now().plus(CesiumWorldTerrainTileLoader._tokenTimeoutInterval);
+    }
 
     assert(data instanceof Uint8Array);
     assert(tile instanceof TerrainMapTile);

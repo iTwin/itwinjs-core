@@ -65,7 +65,7 @@ import { RelationshipPathSpecification } from "./RelationshipPathSpecification";
  *
  * @public
  */
-export type RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew;
+export type RelatedInstanceSpecification = DEPRECATED_RelatedInstanceSpecification | RelatedInstanceSpecificationNew; // tslint:disable-line:deprecation
 
 /**
  * Deprecated [[RelatedInstanceSpecification]] specification.

@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode, Cartographic } from "@bentley/imodeljs-common";
+import { IModelError, TileTreeProps, TileProps, Cartographic } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import {
   assert,
@@ -23,6 +23,7 @@ import {
   BatchedTileIdMap,
   ContextTileLoader,
   createClassifierTileTreeReference,
+  createDefaultViewFlagOverrides,
   RealityTileTree,
   SpatialClassifierTileTreeReference,
   Tile,
@@ -217,8 +218,8 @@ class FindChildResult {
   constructor(public id: string, public json: any, public transformToRoot?: Transform) { }
 }
 
-const realityModelViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
-realityModelViewFlagOverrides.clearClipVolume();
+// Smooth shade, no lighting or clip volume, shadows if enabled for view.
+const realityModelViewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false, lighting: false });
 
 /** @internal */
 class RealityModelTileLoader extends ContextTileLoader {
@@ -361,7 +362,7 @@ export namespace RealityModelTileTree {
     if (!url)
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     const accessToken = await getAccessToken();
-    const tileClient = new RealityModelTileClient(url, accessToken);
+    const tileClient = new RealityModelTileClient(url, accessToken, iModel.iModelToken.contextId);
     const json = await tileClient.getRootDocument(url);
     const ecefLocation = iModel.ecefLocation;
     let rootTransform = ecefLocation ? ecefLocation.getTransform().inverse()! : Transform.createIdentity();
@@ -416,6 +417,10 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
 
     if (undefined !== props.classifiers)
       this._classifier = createClassifierTileTreeReference(props.classifiers, this, props.iModel, props.source);
+  }
+
+  public get castsShadows() {
+    return true;
   }
 
   public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -497,8 +502,10 @@ export class RealityModelTileClient {
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
   // But if the present can also be used by non PW Context Share stored data then the url is required and token is not. Possibly two classes inheriting from common interface.
-  constructor(url: string, accessToken?: AccessToken) {
+  constructor(url: string, accessToken?: AccessToken, contextId?: string) {
     this.rdsProps = this.parseUrl(url); // Note that returned is undefined if url does not refer to a PW Context Share reality data.
+    if (contextId && this.rdsProps)
+      this.rdsProps!.projectId = contextId;
     this._token = accessToken;
   }
 

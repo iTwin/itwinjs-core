@@ -9,7 +9,7 @@
 import { TimeFormat } from "@bentley/ui-core";
 import { TypeConverter, LessGreaterOperatorProcessor, StandardTypeConverterTypeNames } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Primitives } from "@bentley/imodeljs-frontend";
+import { Primitives } from "@bentley/ui-abstract";
 
 /**
  * DateTime Type Converter.

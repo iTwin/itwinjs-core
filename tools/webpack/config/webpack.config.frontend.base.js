@@ -16,19 +16,6 @@ const plugins = require("@bentley/webpack-tools-core");
 const paths = require("./paths");
 const helpers = require("./helpers");
 
-// NEEDSWORK: Normally, sass-loader passes a very expensive custom "importer" function as a node-sass option.
-// That custom importer tries to hook into webpack's module resolution system, but it's just not worth the
-// massive hit to build performance (about 6x slower frontend builds).
-// Instead of forking node-sass, I'm just going to add this monkey patch for now:
-const backup = require("sass-loader/lib/normalizeOptions");
-require.cache[require.resolve("sass-loader/lib/normalizeOptions")] = {
-  exports: (...args) => {
-    const opts = backup(...args);
-    delete opts.importer;
-    return opts;
-  }
-};
-
 //======================================================================================================================================
 // This is the BASE configuration.
 // It contains settings which are common to both PRODUCTION and DEVELOPMENT configs.

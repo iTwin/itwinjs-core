@@ -25,7 +25,7 @@ describe("HiliteSetProvider", () => {
     imodelMock.reset();
     presentationManagerMock.reset();
     rulesetsManagerMock.reset();
-    Presentation.presentation = presentationManagerMock.object;
+    Presentation.setPresentationManager(presentationManagerMock.object);
     presentationManagerMock.setup((x) => x.rulesets()).returns(() => rulesetsManagerMock.object);
   });
 
@@ -36,7 +36,7 @@ describe("HiliteSetProvider", () => {
   describe("create", () => {
 
     it("creates a new HiliteSetProvider instance", () => {
-      const result = HiliteSetProvider.create(imodelMock.object);
+      const result = HiliteSetProvider.create({ imodel: imodelMock.object });
       expect(result).to.not.be.undefined;
       expect(result instanceof HiliteSetProvider).to.be.true;
     });
@@ -48,7 +48,7 @@ describe("HiliteSetProvider", () => {
     let provider: HiliteSetProvider;
 
     beforeEach(() => {
-      provider = HiliteSetProvider.create(imodelMock.object);
+      provider = HiliteSetProvider.create({ imodel: imodelMock.object });
     });
 
     it("registers ruleset only on first call", async () => {

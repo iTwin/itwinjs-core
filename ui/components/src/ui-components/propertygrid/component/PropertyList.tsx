@@ -10,7 +10,7 @@ import * as React from "react";
 import classnames from "classnames";
 
 import { Orientation, CommonProps } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/imodeljs-frontend";
+import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 
 import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
 import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";

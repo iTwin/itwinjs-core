@@ -31,12 +31,6 @@ import { PresentationStatus } from "./Error";
 export interface PresentationRpcRequestOptions {
   /** ID of the client requesting data */
   clientId?: string;
-  /**
-   * Client state identifier. Backend requests client to synchronize state
-   * if client state ID doesn't match what's stored on the backend.
-   * @deprecated Will be dropped in 2.0.0
-   */
-  clientStateId?: string;
 }
 
 /**
@@ -77,12 +71,6 @@ export type SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions & Om
  * @public
  */
 export type RulesetVariableRpcRequestOptions = PresentationRpcRequestOptions & { rulesetId: string };
-/**
- * Data structure for synchronizing backend with frontend state.
- * @internal Sync is done by presentation framework - no need to expose that
- * @deprecated Will be dropped in 2.0.0
- */
-export type ClientStateSyncRequestOptions = PresentationRpcRequestOptions & { state: { [id: string]: unknown } };
 
 /**
  * Interface used for communication between Presentation backend and frontend.
@@ -94,7 +82,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // tslint:disable-line: naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "1.4.0";
+  public static interfaceVersion = "2.0.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -106,7 +94,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getNodesCount(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _parentKey?: NodeKeyJSON): PresentationRpcResponse<number> { return this.forward(arguments); }
   public async getNodePaths(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _paths: InstanceKeyJSON[][], _markedIndex: number): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
   public async getFilteredNodePaths(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions, _filterText: string): PresentationRpcResponse<NodePathElementJSON[]> { return this.forward(arguments); }
-  /** @beta */
+  /** @alpha Hierarchy loading performance needs to be improved before this becomes publicly available. */
   public async loadHierarchy(_token: IModelTokenProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<void> { return this.forward(arguments); }
 
   public async getContentDescriptor(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _displayType: string, _keys: KeySetJSON, _selection: SelectionInfo | undefined): PresentationRpcResponse<DescriptorJSON | undefined> { return this.forward(arguments); }
@@ -115,20 +103,9 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getContentAndSize(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<{ content?: ContentJSON, size: number }> { return this.forward(arguments); }
   public async getDistinctValues(_token: IModelTokenProps, _options: ContentRpcRequestOptions, _descriptor: DescriptorJSON, _keys: KeySetJSON, _fieldName: string, _maximumValueCount: number): PresentationRpcResponse<string[]> { return this.forward(arguments); }
 
-  /** @deprecated use 'getDisplayLabelDefinition' instead */
-  public async getDisplayLabel(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<string> { return this.forward(arguments); }
-  /** @deprecated use 'getDisplayLabelsDefinitions' instead */
-  public async getDisplayLabels(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<string[]> { return this.forward(arguments); }
-
   public async getDisplayLabelDefinition(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON> { return this.forward(arguments); }
-  public async getDisplayLabelsDefinitions(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]> { return this.forward(arguments); }
+  public async getDisplayLabelDefinitions(_token: IModelTokenProps, _options: LabelRpcRequestOptions, _keys: InstanceKeyJSON[]): PresentationRpcResponse<LabelDefinitionJSON[]> { return this.forward(arguments); }
 
   public async getSelectionScopes(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> { return this.forward(arguments); }
   public async computeSelection(_token: IModelTokenProps, _options: SelectionScopeRpcRequestOptions, _ids: Id64String[], _scopeId: string): PresentationRpcResponse<KeySetJSON> { return this.forward(arguments); }
-
-  /**
-   * @internal Used internally to sync backend with frontend state
-   * @deprecated Will be dropped in 2.0.0
-   */
-  public async syncClientState(_token: IModelTokenProps, _options: ClientStateSyncRequestOptions): PresentationRpcResponse { return this.forward(arguments); }
 }

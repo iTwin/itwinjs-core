@@ -23,11 +23,6 @@ export class PropertyCategory extends SchemaItem {
     this._priority = 0;
   }
 
-  /** @deprecated */
-  public toJson(standalone: boolean, includeSchemaVersion: boolean) {
-    return this.toJSON(standalone, includeSchemaVersion);
-  }
-
   /**
    * Save this PropertyCategory's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
@@ -46,19 +41,9 @@ export class PropertyCategory extends SchemaItem {
     return itemElement;
   }
 
-  /** @deprecated */
-  public deserializeSync(propertyCategoryProps: PropertyCategoryProps) {
-    this.fromJSONSync(propertyCategoryProps);
-  }
-
   public fromJSONSync(propertyCategoryProps: PropertyCategoryProps) {
     super.fromJSONSync(propertyCategoryProps);
     this._priority = propertyCategoryProps.priority;
-  }
-
-  /** @deprecated */
-  public async deserialize(propertyCategoryProps: PropertyCategoryProps) {
-    await this.fromJSON(propertyCategoryProps);
   }
 
   public async fromJSON(propertyCategoryProps: PropertyCategoryProps) {

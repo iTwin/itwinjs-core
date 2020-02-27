@@ -11,8 +11,9 @@ import { PropertyRenderer } from "../../../ui-components/properties/renderers/Pr
 import TestUtils from "../../TestUtils";
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
-import { PropertyRecord } from "@bentley/imodeljs-frontend";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
+import { LinksRenderer } from "../../../ui-components/properties/LinkHandler";
 
 describe("PropertyRenderer", () => {
   describe("getLabelOffset", () => {
@@ -51,19 +52,19 @@ describe("PropertyRenderer", () => {
     await TestUtils.flushAsyncOperations();
     propertyRenderer.update();
 
-    expect(propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")).to.be.equal(originalValue);
+    expect(propertyRenderer.find(LinksRenderer).prop("value")).to.be.equal(originalValue);
 
     propertyRenderer.setProps({ propertyRecord: TestUtils.createPrimitiveStringProperty("Label", recordValue) });
 
     await TestUtils.flushAsyncOperations();
     propertyRenderer.update();
 
-    expect(propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")).to.be.equal(recordValue);
+    expect(propertyRenderer.find(LinksRenderer).prop("value")).to.be.equal(recordValue);
   });
 
   it("renders value differently if provided with custom propertyValueRendererManager", async () => {
     class RendererManager extends PropertyValueRendererManager {
-      public async render({ }) {
+      public render({ }) {
         return ("Test");
       }
     }
@@ -197,7 +198,7 @@ describe("PropertyRenderer", () => {
 
     const myCustomRenderer = {
       canRender: () => true,
-      render: async () => Promise.resolve(<div>My value</div>),
+      render: () => <div>My value</div>,
     };
 
     PropertyValueRendererManager.defaultManager.registerRenderer("mycustom", myCustomRenderer);

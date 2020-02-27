@@ -5,7 +5,7 @@ exports[`<LabeledSelect /> renders array options correctly 1`] = `
   className="uicore-inputs-labeled-select"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     select test
@@ -28,7 +28,7 @@ exports[`<LabeledSelect /> renders correctly 1`] = `
   className="uicore-inputs-labeled-select"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     select test
@@ -45,7 +45,7 @@ exports[`<LabeledSelect /> renders message correctly 1`] = `
   className="uicore-inputs-labeled-select"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     select test
@@ -55,7 +55,7 @@ exports[`<LabeledSelect /> renders message correctly 1`] = `
     options={Array []}
   />
   <div
-    className="message"
+    className="uicore-message"
   >
     Test message
   </div>
@@ -67,7 +67,7 @@ exports[`<LabeledSelect /> renders object options correctly 1`] = `
   className="uicore-inputs-labeled-select"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     select test
@@ -90,7 +90,7 @@ exports[`<LabeledSelect /> renders status correctly 1`] = `
   className="uicore-inputs-labeled-select success"
 >
   <div
-    className="label"
+    className="uicore-label"
   >
      
     select test

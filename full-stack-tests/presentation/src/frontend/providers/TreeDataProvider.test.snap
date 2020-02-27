@@ -13,8 +13,7 @@ Array [
     "description": "child description",
     "icon": "child image id",
     "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
-    "label": "child label",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -44,8 +43,7 @@ Array [
     "description": "child description",
     "icon": "child image id",
     "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
-    "label": "child label",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -78,8 +76,7 @@ Array [
     "id": "3da8ffb01a263e88441398a167bf117c",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "root label",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",
@@ -119,8 +116,7 @@ Array [
     "id": "3da8ffb01a263e88441398a167bf117c",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
-    "label": "root label",
-    "labelDefinition": PropertyRecord {
+    "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
         "name": "node_label",

@@ -19,6 +19,10 @@ export interface TemporaryStorageProps<T> {
   /** A method that's called for every value before it's removed from storage */
   cleanupHandler?: (value: T) => void;
 
+  onCreated?: (id: string) => void;
+  onDisposedSingle?: (id: string) => void;
+  onDisposedAll?: () => void;
+
   /**
    * An interval at which the storage attempts to clean up its values.
    * When `0` or `undefined` is specified, values are not cleaned up
@@ -74,10 +78,12 @@ export class TemporaryStorage<T> implements IDisposable {
       clearInterval(this._timer);
 
     if (this.props.cleanupHandler) {
-      for (const v of this._values.values())
-        this.props.cleanupHandler(v.value);
+      this._values.forEach((v) => {
+        this.props.cleanupHandler!(v.value);
+      });
     }
     this._values.clear();
+    this.props.onDisposedAll && this.props.onDisposedAll();
   }
 
   /**
@@ -95,6 +101,7 @@ export class TemporaryStorage<T> implements IDisposable {
       if (this.props.cleanupHandler)
         this.props.cleanupHandler(this._values.get(id)!.value);
       this._values.delete(id);
+      this.props.onDisposedSingle && this.props.onDisposedSingle(id);
     }
   }
 
@@ -114,6 +121,7 @@ export class TemporaryStorage<T> implements IDisposable {
 
     const value = this.props.factory(id);
     this._values.set(id, { value, lastUsed: new Date() });
+    this.props.onCreated && this.props.onCreated(id);
     return value;
   }
 

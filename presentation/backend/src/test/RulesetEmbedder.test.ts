@@ -51,7 +51,7 @@ describe("RulesetEmbedder", () => {
     rulesetModelMock.setup((x) => x.id).returns(() => modelId);
     setupCodeSpecsMock();
 
-    embedder = new RulesetEmbedder(imodelMock.object);
+    embedder = new RulesetEmbedder({ imodel: imodelMock.object });
     ruleset = await createRandomRuleset();
 
     rulesetProperties = {
@@ -263,7 +263,7 @@ describe("RulesetEmbedder", () => {
       expect(rulesetId).to.be.equal(insertId);
 
       // Assert pre
-      imodelMock.verify((x) => x.importSchema(moq.It.isAny(), moq.It.isAnyString()), moq.Times.once());
+      imodelMock.verify((x) => x.importSchemas(moq.It.isAny(), moq.It.isAny()), moq.Times.once());
       codeSpecsMock.verify((x) => x.insert(rulesetCodeSpec), moq.Times.once());
       modelsMock.verify((x) => x.insertModel(moq.It.isAny()), moq.Times.once());
       imodelMock.verify((x) => x.saveChanges(), moq.Times.once());

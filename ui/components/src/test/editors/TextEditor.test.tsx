@@ -8,7 +8,7 @@ import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import { TextEditor } from "../../ui-components/editors/TextEditor";
 import TestUtils from "../TestUtils";
-import { PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams, PropertyEditorInfo } from "@bentley/imodeljs-frontend";
+import { PropertyEditorParamTypes, InputEditorSizeParams, IconEditorParams, PropertyEditorInfo } from "@bentley/ui-abstract";
 
 describe("<TextEditor />", () => {
   it("should render", () => {

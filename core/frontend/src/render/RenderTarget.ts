@@ -73,6 +73,14 @@ export interface RenderTargetDebugControl {
    * @internal
    */
   devicePixelRatioOverride?: number;
+  /** @internal */
+  displayRealityTilePreload: boolean;
+  /** @internal */
+  displayRealityTileRanges: boolean;
+  /** @internal */
+  logRealityTiles: boolean;
+  /** @internal */
+  freezeRealityTiles: boolean;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
@@ -128,6 +136,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
   public setHiliteSet(_hilited: HiliteSet): void { }
   public setFlashed(_elementId: Id64String, _intensity: number): void { }
+  public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void { }
   public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
   public onResized(): void { }
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw

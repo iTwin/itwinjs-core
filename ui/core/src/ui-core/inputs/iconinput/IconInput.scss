@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "../../index.scss";
 
 .core-iconInput-container {
   position: relative;
@@ -19,13 +20,14 @@
     left:     0;
     width:    30px;
     height:   100%;
-    display:  flex;
-    align-items: center;
-    justify-content: center;
+    @include uicore-centered;
 
     .icon {
       width:  16px;
       height: 16px;
+
+      margin-top: 2px;
+      @include uicore-centered;
     }
   }
 

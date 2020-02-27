@@ -2791,17 +2791,17 @@ export class AccuDraw {
       return;
 
     const worldToView = this.currentView.worldToViewMap.transform0;
-    const detail = CurveCurve.intersectionProjectedXY(worldToView, usePointOnSnap ? curveSegment : curve, true, usePointOnSnap ? curve : curveSegment, true);
-    if (0 === detail.dataA.length)
+    const detail = CurveCurve.intersectionProjectedXYPairs(worldToView, usePointOnSnap ? curveSegment : curve, true, usePointOnSnap ? curve : curveSegment, true);
+    if (0 === detail.length)
       return;
 
     let closeIndex = 0;
-    if (detail.dataA.length > 1) {
+    if (detail.length > 1) {
       const snapPt = worldToView.multiplyPoint3d(snap.getPoint(), 1);
       let lastDist: number | undefined;
 
-      for (let i = 0; i < detail.dataA.length; i++) {
-        const testPt = worldToView.multiplyPoint3d(detail.dataA[i].point, 1);
+      for (let i = 0; i < detail.length; i++) {
+        const testPt = worldToView.multiplyPoint3d(detail[i].detailA.point, 1);
         const testDist = snapPt.realDistanceXY(testPt);
 
         if (undefined !== testDist && (undefined === lastDist || testDist < lastDist)) {
@@ -2811,7 +2811,7 @@ export class AccuDraw {
       }
     }
 
-    snap.setSnapPoint(detail.dataA[closeIndex].point, SnapHeat.NotInRange);
+    snap.setSnapPoint(detail[closeIndex].detailA.point, SnapHeat.NotInRange);
   }
 
   private intersectLine(snap: SnapDetail, linePt: Point3d, unitVec: Vector3d) {

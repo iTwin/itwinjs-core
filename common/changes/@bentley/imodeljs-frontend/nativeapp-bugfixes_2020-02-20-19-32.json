@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "initialize connectivity status on NativeApp.startup() and unregister callback on NativeApp.shutdown()",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Affan.Khan@Bentley.com"
+}

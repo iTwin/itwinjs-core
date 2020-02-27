@@ -22,7 +22,7 @@ import { addUnpackAndNormalize2Bytes, unquantize2d, decodeDepthRgb } from "./Dec
 import { addColor } from "./Color";
 import { addLighting } from "./Lighting";
 import { addMaxAlpha, addSurfaceDiscard, FeatureSymbologyOptions, addFeatureSymbology, addSurfaceHiliter } from "./FeatureSymbology";
-import { addShaderFlags, extractNthBit } from "./Common";
+import { addShaderFlags, addExtractNthBit } from "./Common";
 import { SurfaceFlags, TextureUnit } from "../RenderFlags";
 import { Texture } from "../Texture";
 import { Material } from "../Material";
@@ -137,7 +137,10 @@ function addMaterial(builder: ProgramBuilder, hasMaterialAtlas: HasMaterialAtlas
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
   vert.addGlobal("use_material", VariableType.Boolean);
-  vert.addInitializer("use_material = 0.0 == extractNthBit(floor(u_surfaceFlags + 0.5), kSurfaceBit_IgnoreMaterial);");
+  if (System.instance.capabilities.isWebGL2)
+    vert.addInitializer("use_material = (0u == (uint(u_surfaceFlags) & kSurfaceBit_IgnoreMaterial));");
+  else
+    vert.addInitializer("use_material = 0.0 == extractNthBit(floor(u_surfaceFlags + 0.5), kSurfaceBit_IgnoreMaterial);");
 
   if (vert.usesInstancedGeometry) {
     // ###TODO: Remove combination of technique flags - instances never use material atlases.
@@ -232,24 +235,30 @@ export function createSurfaceHiliter(instanced: IsInstanced, classified: IsClass
 const extractSurfaceBit = `
 float extractSurfaceBit(float flag) { return extractNthBit(floor(v_surfaceFlags + 0.5), flag); }
 `;
+const extractSurfaceBit2 = `
+float extractSurfaceBit(uint flag) { return mix(0.0, 1.0, 0u != (uint(v_surfaceFlags + 0.5) & flag)); }
+`;
 
 const isSurfaceBitSet = `
 bool isSurfaceBitSet(float flag) { return 0.0 != extractSurfaceBit(flag); }
 `;
+const isSurfaceBitSet2 = `
+bool isSurfaceBitSet(uint flag) { return 0u != (uint(v_surfaceFlags + 0.5) & flag); }
+`;
 
 /** @internal */
-export function addSurfaceFlagsLookup(builder: ShaderBuilder) {
-  builder.addConstant("kSurfaceBit_HasTexture", VariableType.Float, "0.0");
-  builder.addConstant("kSurfaceBit_ApplyLighting", VariableType.Float, "1.0");
-  builder.addConstant("kSurfaceBit_HasNormals", VariableType.Float, "2.0");
-  builder.addConstant("kSurfaceBit_IgnoreMaterial", VariableType.Float, "3.0");
-  builder.addConstant("kSurfaceBit_TransparencyThreshold", VariableType.Float, "4.0");
-  builder.addConstant("kSurfaceBit_BackgroundFill", VariableType.Float, "5.0");
-  builder.addConstant("kSurfaceBit_HasColorAndNormal", VariableType.Float, "6.0");
-  builder.addConstant("kSurfaceBit_OverrideAlpha", VariableType.Float, "7.0");
-  builder.addConstant("kSurfaceBit_OverrideRgb", VariableType.Float, "8.0");
-  builder.addConstant("kSurfaceBit_NoFaceFront", VariableType.Float, "9.0");
-  builder.addConstant("kSurfaceBit_MultiplyAlpha", VariableType.Float, "10.0");
+function addSurfaceFlagsLookup(builder: ShaderBuilder) {
+  builder.addBitFlagConstant("kSurfaceBit_HasTexture", 0);
+  builder.addBitFlagConstant("kSurfaceBit_ApplyLighting", 1);
+  builder.addBitFlagConstant("kSurfaceBit_HasNormals", 2);
+  builder.addBitFlagConstant("kSurfaceBit_IgnoreMaterial", 3);
+  builder.addBitFlagConstant("kSurfaceBit_TransparencyThreshold", 4);
+  builder.addBitFlagConstant("kSurfaceBit_BackgroundFill", 5);
+  builder.addBitFlagConstant("kSurfaceBit_HasColorAndNormal", 6);
+  builder.addBitFlagConstant("kSurfaceBit_OverrideAlpha", 7);
+  builder.addBitFlagConstant("kSurfaceBit_OverrideRgb", 8);
+  builder.addBitFlagConstant("kSurfaceBit_NoFaceFront", 9);
+  builder.addBitFlagConstant("kSurfaceBit_MultiplyAlpha", 10);
   // MultiplyAlpha must be highest value - insert additional above it, not here.
 
   builder.addConstant("kSurfaceMask_None", VariableType.Float, "0.0");
@@ -266,9 +275,14 @@ export function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceMask_MultiplyAlpha", VariableType.Float, "1024.0");
   // MultiplyAlpha must be highest value - insert additional above it, not here.
 
-  builder.addFunction(extractNthBit);
-  builder.addFunction(extractSurfaceBit);
-  builder.addFunction(isSurfaceBitSet);
+  if (System.instance.capabilities.isWebGL2) {
+    builder.addFunction(extractSurfaceBit2);
+    builder.addFunction(isSurfaceBitSet2);
+  } else {
+    addExtractNthBit(builder);
+    builder.addFunction(extractSurfaceBit);
+    builder.addFunction(isSurfaceBitSet);
+  }
 }
 
 const getSurfaceFlags = "return u_surfaceFlags;";

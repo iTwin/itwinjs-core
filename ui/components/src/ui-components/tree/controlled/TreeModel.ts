@@ -9,6 +9,7 @@
 import _ from "lodash";
 import { immerable } from "immer";
 import { CheckBoxState } from "@bentley/ui-core";
+import { PropertyRecord } from "@bentley/ui-abstract";
 import { SparseTree, SparseArray } from "./internal/SparseTree";
 import { DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, TreeNodeItem } from "../TreeDataProvider";
 
@@ -26,7 +27,7 @@ export interface TreeModelNode {
 
   readonly description: string | undefined;
   readonly isExpanded: boolean;
-  readonly label: string;
+  readonly label: PropertyRecord;
   readonly isSelected: boolean;
 
   /** Specifies that node is in editing mode. It holds callbacks that are used by node editor. */
@@ -44,7 +45,6 @@ export interface TreeModelNode {
 export interface CheckBoxInfo {
   readonly state: CheckBoxState;
   readonly tooltip?: string;
-
   readonly isDisabled: boolean;
   readonly isVisible: boolean;
 }
@@ -58,7 +58,7 @@ export interface MutableTreeModelNode extends TreeModelNode {
 
   description: string;
   isExpanded: boolean;
-  label: string;
+  label: PropertyRecord;
   isSelected: boolean;
 
   /** Specifies that node is in editing mode. It holds callbacks that are used by node editor. */
@@ -85,7 +85,6 @@ export interface TreeModelNodeEditingInfo {
 export interface MutableCheckBoxInfo extends CheckBoxInfo {
   state: CheckBoxState;
   tooltip?: string;
-
   isDisabled: boolean;
   isVisible: boolean;
 }
@@ -107,7 +106,6 @@ export interface TreeModelNodePlaceholder {
 export interface TreeModelRootNode {
   readonly depth: -1;
   readonly id: undefined;
-
   readonly numChildren: number | undefined;
 }
 
@@ -120,7 +118,7 @@ export interface TreeModelNodeInput {
   readonly isExpanded: boolean;
   readonly id: string;
   readonly item: TreeNodeItem;
-  readonly label: string;
+  readonly label: PropertyRecord;
   readonly isLoading: boolean;
   readonly numChildren?: number;
   readonly isSelected: boolean;
