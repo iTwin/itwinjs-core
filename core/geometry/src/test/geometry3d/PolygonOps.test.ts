@@ -47,12 +47,12 @@ describe("PolygonOps", () => {
         // reduce size for next pass . ..
         range1.scaleAboutCenterInPlace(0.9);
         range1.low.y = holeYFraction * range1.low.y;
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3dFromVariantData(loops), x0, y0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3d(loops), x0, y0);
         y0 += b;
         const outputPolygons = PolygonOps.sortOuterAndHoleLoopsXY(loops);
         const outputRegions = RegionOps.sortOuterAndHoleLoopsXY(loops);
         for (const region of outputPolygons) {
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3dFromVariantData(region), x0, y0);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3d(region), x0, y0);
           y0 += b;
         }
         if (outputRegions !== undefined) {
@@ -93,12 +93,12 @@ describe("PolygonOps", () => {
         // reduce size for next pass . ..
         range1.scaleAboutCenterInPlace(0.9);
         range1.low.y = holeYFraction * range1.low.y;
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3dFromVariantData(loops), x0, y0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3d(loops), x0, y0);
         y0 += b;
         const outputPolygons = PolygonOps.sortOuterAndHoleLoopsXY(loops);
         const outputRegions = RegionOps.sortOuterAndHoleLoopsXY(loops);
         for (const region of outputPolygons) {
-          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3dFromVariantData(region), x0, y0);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.createArrayOfLineString3d(region), x0, y0);
           y0 += b;
         }
         if (outputRegions !== undefined) {
@@ -148,13 +148,13 @@ describe("PolygonOps", () => {
         }
       }
       let y0 = 0.0;
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.createArrayOfLineString3dFromVariantData(loops), x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.createArrayOfLineString3d(loops), x0, y0);
       y0 += 1.5 * b;
       const outputPolygons = PolygonOps.sortOuterAndHoleLoopsXY(loops);
       const outputRegions = RegionOps.sortOuterAndHoleLoopsXY(loops);
       for (const polygon of outputPolygons) {
         // GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(-0.5 * a, 0, (numHole + 0.5) * a, 0), x0, y0);
-        // GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.createArrayOfLineString3dFromVariantData(region), x0, y0);
+        // GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.createArrayOfLineString3d(region), x0, y0);
         if (polygon.length > 1) {
           const parityLoops = [];
           for (const loopA of polygon)

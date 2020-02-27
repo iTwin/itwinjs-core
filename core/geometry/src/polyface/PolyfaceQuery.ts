@@ -81,15 +81,17 @@ export class PolyfaceQuery {
     return result;
   }
   /** Return the sum of all facets areas. */
-  public static sumFacetAreas(source: Polyface | PolyfaceVisitor): number {
+  public static sumFacetAreas(source: Polyface | PolyfaceVisitor | undefined): number {
     let s = 0;
-    if (source instanceof Polyface)
-      return PolyfaceQuery.sumFacetAreas(source.createVisitor(1));
+    if (source !== undefined) {
+      if (source instanceof Polyface)
+        return PolyfaceQuery.sumFacetAreas(source.createVisitor(1));
 
-    const visitor = source as PolyfaceVisitor;
-    visitor.reset();
-    while (visitor.moveToNextFacet()) {
-      s += PolygonOps.sumTriangleAreas(visitor.point.getPoint3dArray());
+      const visitor = source as PolyfaceVisitor;
+      visitor.reset();
+      while (visitor.moveToNextFacet()) {
+        s += PolygonOps.sumTriangleAreas(visitor.point.getPoint3dArray());
+      }
     }
     return s;
   }
@@ -274,7 +276,9 @@ export class PolyfaceQuery {
   * If not, extract the boundary edges as lines.
   * @param source
   */
-  public static boundaryEdges(source: Polyface, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
+  public static boundaryEdges(source: Polyface | undefined, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
+    if (source === undefined)
+      return undefined;
     const edges = new IndexedEdgeMatcher();
     const visitor = source.createVisitor(1) as PolyfaceVisitor;
     visitor.reset();
@@ -577,7 +581,7 @@ export class PolyfaceQuery {
   /** Clone the facets, inserting vertices (within edges) where points not part of each facet's vertex indices impinge within edges.
    *
    */
-  public static cloneWithTVertexFixup(polyface: Polyface): Polyface {
+  public static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface {
     const oldFacetVisitor = polyface.createVisitor(1);  // This is to visit the existing facets.
     const newFacetVisitor = polyface.createVisitor(0); // This is to build the new facets.
     const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30)!;

@@ -1249,7 +1249,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    *   * data with no point is an empty array.
    *   * "deep" data is flattened to a single array of linestrings, losing structure.
    */
-  public static createArrayOfLineString3dFromVariantData(data: MultiLineStringDataVariant): LineString3d[] {
+  public static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[] {
     const collector = new PointStreamGrowableXYZArrayCollector();
     VariantPointDataStream.streamXYZ(data, collector);
     const growableArrays = collector.claimArrayOfGrowableXYZArray();
@@ -1259,14 +1259,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         result.push(LineString3d.createCapture(points));
     }
     return result;
-  }
-  /**
-   * This method name is deprecated. Use `LineString3d.createArrayOfLineString3dFromVariantData`
-   * @deprecated use LineString3d.createArrayOfLineString3dFromVariantData
-   */
-  public static createArrayOfLineString3d(data: MultiLineStringDataVariant): LineString3d[] {
-    return this.createArrayOfLineString3dFromVariantData(data);
-
   }
 }
 /** An AnnotatedLineString3d is a linestring with additional surface-related data attached to each point

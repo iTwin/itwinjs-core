@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Complex } from "../../numerics/Complex";
-import { Range1d, Range2d } from "../../geometry3d/Range";
+import { Range1d, Range2d, Range3d } from "../../geometry3d/Range";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -19,6 +19,7 @@ import { SineCosinePolynomial } from "../../numerics/Polynomials";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { LineString3d } from "../../curve/LineString3d";
+import { Arc3d } from "../../curve/Arc3d";
 
 /* tslint:disable:no-console */
 class AngleTests {
@@ -886,6 +887,18 @@ describe("MiscAngles", () => {
       ck.testAngleNoShift(angleA, angleRa);
       ck.testAngleNoShift(angleA, angleDe);
     }
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("SmallSweep", () => {
+    const ck = new Checker();
+    const sweep = AngleSweep.createStartEndRadians(0.14859042783429374, 0.14859042783429377);
+    const q = sweep.radiansToPositivePeriodicFraction(3.2901830814240864, 3);
+    console.log(q);
+
+    const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, sweep);
+    const range = Range3d.createNull();
+    arc.extendRange(range);
+
     expect(ck.getNumErrors()).equals(0);
   });
 

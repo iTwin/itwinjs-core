@@ -227,7 +227,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper {
         clipPlane.appendIntersectionRadians(arc, breaks);
       }
     }
-    arc.sweep.radiansArraytoPositivePeriodicFractions(breaks);
+    arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
   }
 

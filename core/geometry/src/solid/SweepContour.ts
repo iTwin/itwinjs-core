@@ -7,7 +7,7 @@
  * @module Solid
  */
 
-import { Vector3d } from "../geometry3d/Point3dVector3d";
+import { Vector3d, Point3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
 
 import { CurveCollection } from "../curve/CurveCollection";
@@ -24,6 +24,9 @@ import { StrokeOptions } from "../curve/StrokeOptions";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { HalfEdgeGraphSearch } from "../topology/HalfEdgeGraphSearch";
 import { RegionOps } from "../curve/RegionOps";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
+import { ClipPlane } from "../clipping/ClipPlane";
 
 /**
  * Sweepable contour with Transform for local to world interaction.
@@ -66,7 +69,7 @@ export class SweepContour {
         if (localToWorld.matrix.dotColumnZ(defaultNormal))
           localToWorld.matrix.scaleColumnsInPlace(1.0, -1.0, -1.0);
       }
-      const linestrings = LineString3d.createArrayOfLineString3dFromVariantData(points);
+      const linestrings = LineString3d.createArrayOfLineString3d(points);
       const loops = [];
       for (const ls of linestrings) {
         ls.addClosurePoint();
@@ -137,10 +140,9 @@ export class SweepContour {
 
   /**
    * build the (cached) internal facets.
-   * @param _builder (NOT USED -- an internal builder is constructed for the triangulation)
    * @param options options for stroking the curves.
    */
-  public buildFacets(_builder: PolyfaceBuilder, options: StrokeOptions | undefined): void {
+  public buildFacets(options: StrokeOptions | undefined): void {
     if (!this._facets) {
       if (this.curves instanceof Loop) {
         this._xyStrokes = this.curves.cloneStroked(options);
@@ -202,8 +204,50 @@ export class SweepContour {
    * This method may cache and reuse facets over multiple calls.
    */
   public emitFacets(builder: PolyfaceBuilder, reverse: boolean, transform?: Transform) {
-    this.buildFacets(builder, builder.options);
+    this.buildFacets(builder.options);
     if (this._facets)
       builder.addIndexedPolyface(this._facets, reverse, transform);
+  }
+
+  /** Emit facets to a function
+   * This method may cache and reuse facets over multiple calls.
+   */
+  public announceFacets(announce: (facets: IndexedPolyface) => void, options: StrokeOptions | undefined) {
+    this.buildFacets(options);
+    if (this._facets)
+      announce(this._facets);
+  }
+
+  /**
+   * Triangulate the region.
+   * Create a UnionOfConvexClipPlaneSets that clips to the swept region.
+   */
+  public sweepToUnionOfConvexClipPlaneSets(): UnionOfConvexClipPlaneSets | undefined {
+    const builder = PolyfaceBuilder.create();
+    // It's a trip around the barn, but it's easy to make a polyface and scan it . . .
+    this.buildFacets(builder.options);
+    const vectorZ = this.localToWorld.matrix.columnZ();
+    const facets = this._facets;
+    const point0 = Point3d.create();
+    const point1 = Point3d.create();
+    if (facets) {
+      const result = UnionOfConvexClipPlaneSets.createEmpty();
+      const visitor = facets.createVisitor(1);
+      for (visitor.reset(); visitor.moveToNextFacet();) {
+        const numEdges = visitor.point.length - 1;
+        const clipper = ConvexClipPlaneSet.createEmpty();
+        for (let i = 0; i < numEdges; i++) {
+          visitor.point.getPoint3dAtUncheckedPointIndex(i, point0);
+          visitor.point.getPoint3dAtUncheckedPointIndex(i + 1, point1);
+          const plane = ClipPlane.createEdgeAndUpVector(point1, point0, vectorZ);
+          const visible = visitor.edgeVisible[i];
+          plane?.setFlags(!visible, !visible);
+          clipper.addPlaneToConvexSet(plane);
+        }
+        result.addConvexSet(clipper);
+      }
+      return result;
+    }
+    return undefined;
   }
 }
