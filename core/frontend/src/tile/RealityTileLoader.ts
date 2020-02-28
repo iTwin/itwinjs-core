@@ -17,43 +17,27 @@ import {
 import {
   BatchType,
   CompositeTileHeader,
-  RenderMode,
   TileFormat,
-  TileProps,
   ViewFlag,
-  ViewFlags,
 } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
-import { TileRequest, TileContent, TileDrawArgs, TileParams, BatchedTileIdMap, readPointCloudTileContent, GltfReader, B3dmReader, I3dmReader, ImdlReader, Tile, TileLoadPriority } from "./internal";
+import {
+  B3dmReader,
+  BatchedTileIdMap,
+  createDefaultViewFlagOverrides,
+  GltfReader,
+  I3dmReader,
+  RealityTile,
+  Tile,
+  TileContent,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileRequest,
+  readPointCloudTileContent,
+} from "./internal";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
-
-/** Create ViewFlag.Overrides suitable for most non-iModel tile trees (reality/map tiles).
- * @param options Customize the overrides. Any properties left unspecified use the current view settings.
- * @internal
- */
-export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean }): ViewFlag.Overrides {
-  const noLights = undefined !== options.lighting ? !options.lighting : undefined;
-  const ovrs = new ViewFlag.Overrides(ViewFlags.fromJSON({
-    renderMode: RenderMode.SmoothShade,
-    noCameraLights: noLights,
-    noSourceLights: noLights,
-    noSolarLight: noLights,
-    clipVol: options.clipVolume,
-    shadows: options.shadows,
-  }));
-
-  if (undefined === options.clipVolume)
-    ovrs.clearPresent(ViewFlag.PresenceFlag.ClipVolume);
-
-  if (undefined === options.shadows)
-    ovrs.clearPresent(ViewFlag.PresenceFlag.Shadows);
-
-  if (undefined === options.lighting)
-    ovrs.clearPresent(ViewFlag.PresenceFlag.Lighting);
-
-  return ovrs;
-}
+import { IModelApp } from "../IModelApp";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false, lighting: false });
 
@@ -63,28 +47,33 @@ const scratchTileCenterView = new Point3d();
 /** Serves as a "handler" for a specific type of [[TileTree]]. Its primary responsibilities involve loading tile content.
  * @internal
  */
-export abstract class TileLoader {
+export abstract class RealityTileLoader {
   private _containsPointClouds = false;
+  public readonly preloadRealityParentDepth: number;
+  public readonly preloadRealityParentSkip: number;
 
-  public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
+  public constructor() {
+    this.preloadRealityParentDepth = IModelApp.tileAdmin.contextPreloadParentDepth;
+    this.preloadRealityParentSkip = IModelApp.tileAdmin.contextPreloadParentSkip;
+  }
+
+  public computeTilePriority(tile: Tile, viewports: Iterable<Viewport>): number {
+    // ###TODO: Handle case where tile tree reference(s) have a transform different from tree's (background map with ground bias).
+    return RealityTileLoader.computeTileClosestToEyePriority(tile, viewports, tile.tree.iModelTransform);
+  }
+
+  public abstract async loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
   public abstract async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
   public abstract get priority(): TileLoadPriority;
   protected get _batchType(): BatchType { return BatchType.Primary; }
   protected get _loadEdges(): boolean { return true; }
-  public abstract tileRequiresLoading(params: TileParams): boolean;
   public getBatchIdMap(): BatchedTileIdMap | undefined { return undefined; }
   public get isContentUnbounded(): boolean { return false; }
   public get containsPointClouds(): boolean { return this._containsPointClouds; }
-  public get preloadRealityParentDepth(): number { return 0; }
-  public get preloadRealityParentSkip(): number { return 0; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
   public forceTileLoad(_tile: Tile): boolean { return false; }
   public onActiveRequestCanceled(_tile: Tile): void { }
-
-  public computeTilePriority(tile: Tile, _viewports: Iterable<Viewport>): number {
-    return tile.depth;
-  }
 
   public processSelectedTiles(selected: Tile[], _args: TileDrawArgs): Tile[] { return selected; }
 
@@ -93,10 +82,10 @@ export abstract class TileLoader {
     assert(data instanceof Uint8Array);
     const blob = data as Uint8Array;
     const streamBuffer = new ByteStream(blob.buffer);
-    return this.loadTileContentFromStream(tile, streamBuffer, system, isCanceled);
+    return this.loadTileContentFromStream(tile as RealityTile, streamBuffer, system, isCanceled);
   }
 
-  public async loadTileContentFromStream(tile: Tile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
+  public async loadTileContentFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     const position = streamBuffer.curPos;
     const format = streamBuffer.nextUint32;
     streamBuffer.curPos = position;
@@ -104,20 +93,18 @@ export abstract class TileLoader {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 
+    const { is3d, yAxisUp, iModel, modelId } = tile.realityRoot;
     let reader: GltfReader | undefined;
     switch (format) {
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-        return { graphic: readPointCloudTileContent(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, system, tile.yAxisUp) };
+        return { graphic: readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp) };
 
       case TileFormat.B3dm:
-        reader = B3dmReader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, system, tile.yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap());
-        break;
-      case TileFormat.IModel:
-        reader = ImdlReader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, system, this._batchType, this._loadEdges, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined, tile.contentId);
+        reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap());
         break;
       case TileFormat.I3dm:
-        reader = I3dmReader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.contentRange, system, tile.yAxisUp, tile.isLeaf, isCanceled);
+        reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled);
         break;
       case TileFormat.Cmpt:
         const header = new CompositeTileHeader(streamBuffer);
@@ -133,7 +120,7 @@ export abstract class TileLoader {
             branch.add(result.graphic);
           streamBuffer.curPos = tilePosition + tileBytes;
         }
-        return { graphic: branch.isEmpty ? undefined : system.createBranch(branch, Transform.createIdentity()), isLeaf: tile.isLeaf, sizeMultiplier: tile.sizeMultiplier };
+        return { graphic: branch.isEmpty ? undefined : system.createBranch(branch, Transform.createIdentity()), isLeaf: tile.isLeaf };
 
       default:
         assert(false, "unknown tile format " + format);
@@ -154,7 +141,6 @@ export abstract class TileLoader {
   }
 
   public get viewFlagOverrides(): ViewFlag.Overrides { return defaultViewFlagOverrides; }
-  public adjustContentIdSizeMultiplier(contentId: string, _sizeMultiplier: number): string { return contentId; }
 
   public static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number {
     // Prioritize tiles closer to eye.

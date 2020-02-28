@@ -26,7 +26,6 @@ import { showError, showStatus } from "./Utils";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
 import { VersionComparisonTool } from "./VersionComparison";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
-import { ToggleFrustumIntersectionTool } from "./FrustumIntersectionDecoration";
 import { MarkupTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { RecordFpsTool } from "./FpsMonitor";
@@ -271,7 +270,6 @@ export class DisplayTestApp {
       ShutDownTool,
       SVTSelectionTool,
       Toggle3dManipulationsTool,
-      ToggleFrustumIntersectionTool,
       ToggleShadowMapTilesTool,
       VersionComparisonTool,
       ZoomToSelectedElementsTool,

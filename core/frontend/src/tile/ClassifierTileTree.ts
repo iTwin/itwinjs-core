@@ -15,7 +15,16 @@ import {
 import { SpatialClassifiers } from "../SpatialClassifiers";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
-import { TileTreeReference, IModelTileLoader, TileTreeSupplier, TileTreeOwner, tileTreeParamsFromJSON, TileTree, TileTreeSet, TileTreeLoadStatus } from "./internal";
+import {
+  IModelTileTree,
+  iModelTileTreeParamsFromJSON,
+  TileTree,
+  TileTreeLoadStatus,
+  TileTreeOwner,
+  TileTreeReference,
+  TileTreeSet,
+  TileTreeSupplier,
+} from "./internal";
 import { ViewState } from "../ViewState";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { GeometricModelState } from "../ModelState";
@@ -55,10 +64,15 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     const idStr = iModelTileTreeIdToString(id.modelId, id, IModelApp.tileAdmin);
     const props = await iModel.tiles.getTileTreeProps(idStr);
 
-    const loader = new IModelTileLoader(iModel, props.formatVersion, id.type, false, false, model.geometryGuid);
-    props.rootTile.contentId = loader.rootContentId;
-    const params = tileTreeParamsFromJSON(props, iModel, true, loader, id.modelId);
-    return new TileTree(params);
+    const options = {
+      edgesRequired: false,
+      allowInstancing: false,
+      is3d: true,
+      batchType: id.type,
+    };
+
+    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, model.geometryGuid, options);
+    return new IModelTileTree(params);
   }
 
   public getOwner(id: ClassifierTreeId, iModel: IModelConnection): TileTreeOwner {

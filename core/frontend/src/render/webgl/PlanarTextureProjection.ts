@@ -67,7 +67,7 @@ export class PlanarTextureProjection {
     for (const rangePoint of rangePoints)
       drapeHeightRange.extendX(rangePoint.x);
 
-    if (drapeTileTree.loader.isContentUnbounded) {
+    if (drapeTileTree.isContentUnbounded) {
       drapeHeightRange.extendX(texturePlane.getOriginRef().z - epsilon);
       drapeHeightRange.extendX(texturePlane.getOriginRef().z + epsilon);
     } else {

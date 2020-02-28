@@ -6065,7 +6065,7 @@ export interface TileOptions {
     readonly useProjectExtents: boolean;
 }
 
-// @internal (undocumented)
+// @internal
 export interface TileProps {
     contentId: string;
     contentRange?: Range3dProps;
@@ -6073,7 +6073,6 @@ export interface TileProps {
     maximumSize: number;
     range: Range3dProps;
     sizeMultiplier?: number;
-    transformToRoot?: TransformProps;
 }
 
 // @internal
@@ -6121,7 +6120,7 @@ export interface TileTreeMetadata {
     readonly modelId: Id64String;
 }
 
-// @internal (undocumented)
+// @internal
 export interface TileTreeProps {
     contentIdQualifier?: string;
     contentRange?: Range3dProps;
@@ -6131,7 +6130,6 @@ export interface TileTreeProps {
     maxInitialTilesToSkip?: number;
     maxTilesToSkip?: number;
     rootTile: TileProps;
-    yAxisUp?: boolean;
 }
 
 // @beta

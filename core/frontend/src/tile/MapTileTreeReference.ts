@@ -46,7 +46,7 @@ export abstract class MapTileTreeReference extends TileTreeReference {
 
     let tiles: Tile[] = [];
     if (undefined !== args)
-      tiles = args.root.selectTilesForScene(args);
+      tiles = args.tree.selectTiles(args);
 
     return tiles;
   }
@@ -72,7 +72,7 @@ export abstract class MapTileTreeReference extends TileTreeReference {
 
   /** Draw the tiles into the viewport. */
   public draw(args: TileDrawArgs): void {
-    args.context.withGraphicType(this._graphicType, () => args.root.draw(args));
+    args.context.withGraphicType(this._graphicType, () => args.tree.draw(args));
   }
 
   protected getViewFlagOverrides(_tree: TileTree) {

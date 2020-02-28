@@ -18,6 +18,7 @@ import {
   MapTileTreeReference,
   TileGraphicType,
   TileTreeOwner,
+  RealityTileTree,
   RealityTileDrawArgs,
   WebMapTileLoader,
   getBackgroundMapTreeSupplier,
@@ -69,7 +70,7 @@ export class BackgroundMapTileTreeReference extends MapTileTreeReference {
   }
 
   protected get _imageryProvider(): ImageryProvider | undefined {
-    const tree = this.treeOwner.tileTree;
+    const tree = this.treeOwner.tileTree as RealityTileTree;
     return undefined !== tree ? (tree.loader as WebMapTileLoader).imageryProvider : undefined;
   }
 

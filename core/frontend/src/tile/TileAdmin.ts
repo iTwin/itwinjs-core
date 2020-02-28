@@ -394,7 +394,7 @@ export namespace TileAdmin {
 }
 
 function comparePriorities(lhs: TileRequest, rhs: TileRequest): number {
-  let diff = lhs.tile.loader.priority - rhs.tile.loader.priority;
+  let diff = lhs.tile.tree.loadPriority - rhs.tile.tree.loadPriority;
   if (0 === diff)
     diff = lhs.priority - rhs.priority;
 
@@ -645,7 +645,7 @@ class Admin extends TileAdmin {
 
     // Recompute priority of each request.
     for (const req of this._pendingRequests)
-      req.priority = req.tile.loader.computeTilePriority(req.tile, req.viewports);
+      req.priority = req.tile.computeLoadPriority(req.viewports);
 
     // Sort pending requests by priority.
     this._pendingRequests.sort();
@@ -851,16 +851,16 @@ class Admin extends TileAdmin {
     if (undefined === this._canceledRequests)
       return;
 
-    let iModelEntry = this._canceledRequests.get(tile.root.iModel.iModelToken);
+    let iModelEntry = this._canceledRequests.get(tile.tree.iModel.iModelToken);
     if (undefined === iModelEntry) {
       iModelEntry = new Map<string, Set<string>>();
-      this._canceledRequests.set(tile.root.iModel.iModelToken, iModelEntry);
+      this._canceledRequests.set(tile.tree.iModel.iModelToken, iModelEntry);
     }
 
-    let contentIds = iModelEntry.get(tile.root.id);
+    let contentIds = iModelEntry.get(tile.tree.id);
     if (undefined === contentIds) {
       contentIds = new Set<string>();
-      iModelEntry.set(tile.root.id, contentIds);
+      iModelEntry.set(tile.tree.id, contentIds);
     }
 
     contentIds.add(tile.contentId);

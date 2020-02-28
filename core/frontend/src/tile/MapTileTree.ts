@@ -47,12 +47,11 @@ import {
   RealityTile,
   RealityTileTree,
   Tile,
-  TileContent,
+  WebMapTileContent,
   TileDrawArgs,
   TileGraphicType,
   TileParams,
-  TileTreeLoadStatus,
-  TileTreeParams,
+  RealityTileTreeParams,
   TileVisibility,
   WebMercatorTilingScheme,
 } from "./internal";
@@ -64,7 +63,6 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
 import { MeshArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../render/primitives/VertexTable";
-import { IModelApp } from "../IModelApp";
 import { ApproximateTerrainHeights } from "../ApproximateTerrainHeights";
 import { RenderMemory } from "../render/RenderMemory";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
@@ -86,16 +84,16 @@ export abstract class MapTile extends RealityTile {
   public readonly rectangle: MapCartoRectangle;
   public static globeMeshDimension = 10;
 
-  public get mapTree() { return this.root as MapTileTree; }
+  public get mapTree() { return this.tree as MapTileTree; }
   public get heightRange(): Range1d | undefined { return undefined; }
-  public get mapLoader() { return this.root.loader as MapTileLoaderBase; }
+  public get mapLoader() { return this.realityRoot.loader as MapTileLoaderBase; }
   public get isUpsampled() { return false; }
   public get texture(): RenderTexture | undefined {
     return this._texture;
   }
 
-  constructor(params: TileParams, public quadId: QuadId, rectangle: MapCartoRectangle, protected _cornerRays: Ray3d[] | undefined) {
-    super(params);
+  constructor(params: TileParams, tree: MapTileTree, public quadId: QuadId, rectangle: MapCartoRectangle, protected _cornerRays: Ray3d[] | undefined) {
+    super(params, tree);
     this.rectangle = rectangle;
   }
 
@@ -183,19 +181,12 @@ export abstract class MapTile extends RealityTile {
     }
   }
 
-  /** Some imagery providers (Bing) do not explicitly specify tile availability but instead return a "not available" tile image when a
-   * request is made for a non-availale tile.   In this case we set the parent to e a leaf so we not continue to request the tile (or its silings)
-   * @internal
-   */
-  private setLeaf() {
-    this._isLeaf = true;
-    this._children = undefined;
-    this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
-  }
-
   public setNotFound(): void {
     super.setNotFound();
-    (this.parent! as MapTile).setLeaf();      // For map tiles assume that an unfound tile implies descendants and siblings will also be unfound.
+
+    // For map tiles assume that an unfound tile implies descendants and siblings will also be unfound.
+    if (undefined !== this.parent)
+      this.parent.setLeaf();
   }
 
   public abstract getRangeCorners(result: Point3d[]): Point3d[];
@@ -213,14 +204,6 @@ export abstract class MapTile extends RealityTile {
       for (let i = 0; i < 4; i++)
         if (cartesianRange.containsPoint(this._cornerRays[i].origin))
           this._cornerRays[i].origin = reprojectedCorners[i];
-  }
-
-  public computeVisibility(args: TileDrawArgs): TileVisibility {
-    let visibility = super.computeVisibility(args);
-    if (visibility === TileVisibility.Visible && !this.root.debugForcedDepth && this.isOccluded(args.viewingSpace))
-      visibility = TileVisibility.OutsideFrustum;
-
-    return visibility;
   }
 
   public isOccluded(viewingSpace: ViewingSpace): boolean {
@@ -246,43 +229,38 @@ export abstract class MapTile extends RealityTile {
     return true;
   }
 
-  protected loadChildren(): TileTreeLoadStatus {
-    if (TileTreeLoadStatus.NotLoaded === this._childrenLoadStatus) {
-      if (undefined === this._children) {
-        this._childrenLoadStatus = TileTreeLoadStatus.Loading;
-        const mapTree = this.mapTree;
-        const rowCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesY : 2;
-        const columnCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesX : 2;
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
+    try {
+      const mapTree = this.mapTree;
+      const rowCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesY : 2;
+      const columnCount = (this.quadId.level === 0) ? mapTree.sourceTilingScheme.numberOfLevelZeroTilesX : 2;
 
-        if (mapTree.doCreateGlobeChildren(this)) {
-          this.createGlobeChildren(columnCount, rowCount);
-          this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
-        } else {
-          this.createPlanarChildren(mapTree.getChildCorners(this, columnCount, rowCount), columnCount, rowCount);
+      const resolveChildren = (children: Tile[]) => {
+        const childrenRange = Range3d.createNull();
+        for (const child of children)
+          childrenRange.extendRange(child.range);
 
-          if (mapTree.doReprojectChildren(this)) {
-            mapTree.reprojectTileCorners(this, columnCount, rowCount).then(() => {
-              this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
-              IModelApp.viewManager.onNewTilesReady();
-            }).catch((_err) => {
-              assert(false);
-              IModelApp.viewManager.onNewTilesReady();
-              this._childrenLoadStatus = TileTreeLoadStatus.NotFound;
-            });
-          } else {
-            this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
-          }
-        }
-        if (this._children) {
-          const childrenRange = Range3d.createNull();
-          for (const child of this._children!)
-            childrenRange.extendRange(child.range);
-          if (!this.range.containsRange(childrenRange))
-            this.range.extendRange(childrenRange);
-        }
+        if (!this.range.containsRange(childrenRange))
+          this.range.extendRange(childrenRange);
+
+        resolve(children);
+      };
+
+      const doGlobe = mapTree.doCreateGlobeChildren(this);
+      const kids = doGlobe ? this.createGlobeChildren(columnCount, rowCount) : this.createPlanarChildren(mapTree.getChildCorners(this, columnCount, rowCount), columnCount, rowCount);
+      if (doGlobe || !mapTree.doReprojectChildren(this)) {
+        resolveChildren(kids);
+        return;
       }
+
+      mapTree.reprojectTileCorners(this, columnCount, rowCount).then(() => {
+        resolveChildren(kids);
+      }).catch((err) => {
+        reject(err);
+      });
+    } catch (err) {
+      reject(err);
     }
-    return this._childrenLoadStatus;
   }
 
   private createGlobeChildren(columnCount: number, rowCount: number) {
@@ -290,7 +268,8 @@ export abstract class MapTile extends RealityTile {
     const column = this.quadId.column * 2;
     const row = this.quadId.row * 2;
     const mapTree = this.mapTree;
-    this._children = [];
+    const children = [];
+
     for (let j = 0; j < rowCount; j++) {
       for (let i = 0; i < columnCount; i++) {
         const quadId = new QuadId(level, column + i, row + j);
@@ -301,9 +280,12 @@ export abstract class MapTile extends RealityTile {
         const heightRange = this.mapTree.getChildHeightRange(quadId, rectangle, this);
         if (undefined !== heightRange)
           range.expandInPlace(heightRange.high - heightRange.low);
-        this._children.push(this.mapTree.createGlobeChild({ root: mapTree, contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: false }, quadId, range.corners(), rectangle, ellipsoidPatch, heightRange));
+
+        children.push(this.mapTree.createGlobeChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: false }, quadId, range.corners(), rectangle, ellipsoidPatch, heightRange));
       }
     }
+
+    return children;
   }
 
   protected createPlanarChildren(childCorners: Point3d[][], columnCount: number, rowCount: number) {
@@ -311,24 +293,27 @@ export abstract class MapTile extends RealityTile {
     const column = this.quadId.column * 2;
     const row = this.quadId.row * 2;
     const mapTree = this.mapTree;
-    this._children = [];
+    const children = [];
     const childrenAreLeaves = (this.depth + 1) === mapTree.loader.maxDepth;
     const globeMode = this.mapTree.globeMode;
-    this._children = [];
     for (let j = 0; j < rowCount; j++) {
       for (let i = 0; i < columnCount; i++) {
         const quadId = new QuadId(level, column + i, row + j);
         const corners = childCorners[j * columnCount + i];
         const rectangle = mapTree.getTileRectangle(quadId);
+
         const normal = PolygonOps.areaNormal([corners[0], corners[1], corners[3], corners[2]]);
         normal.normalizeInPlace();
+
         const heightRange = this.mapTree.getChildHeightRange(quadId, rectangle, this);
         const diagonal = Math.max(corners[0].distance(corners[3]), corners[1].distance(corners[2])) / 2.0;
         const chordHeight = globeMode === GlobeMode.Ellipsoid ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
         const range = Range3d.createArray(PlanarMapTile.computeRangeCorners(corners, normal!, chordHeight, scratchCorners, heightRange));
-        this._children.push(this.mapTree.createPlanarChild({ root: mapTree, contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal!, rectangle, chordHeight, heightRange));
+        children.push(this.mapTree.createPlanarChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal!, rectangle, chordHeight, heightRange));
       }
     }
+
+    return children;
   }
 
   public isRegionCulled(args: TileDrawArgs): boolean {
@@ -338,18 +323,15 @@ export abstract class MapTile extends RealityTile {
     return FrustumPlanes.Containment.Outside === args.frustumPlanes.computeContainment(this.getRangeCorners(scratchCorners));
   }
 
-  public setContent(content: TileContent): void {
-    // This should never happen but paranoia.
-    this._graphic = dispose(this._graphic);
-    this._texture = dispose(this._texture);
-
-    this._graphic = content.graphic;
+  public setContent(content: WebMapTileContent): void {
+    this.setGraphic(content.graphic);
+    dispose(this._texture);
     this._texture = content.imageryTexture;
 
     if (undefined !== content.contentRange)
       this._contentRange = content.contentRange;
 
-    if (!this._graphic && !this._texture)
+    if (undefined === content.graphic && undefined === content.imageryTexture)
       (this.parent! as MapTile).setLeaf();   // Avoid traversing bing branches after no graphics is found.
 
     this.setIsReady();
@@ -360,12 +342,10 @@ export abstract class MapTile extends RealityTile {
       drapeTiles.push(this);
       return;
     }
-    const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
-    if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
-      assert(false);      // This should never happen.... we are not reprojecting for imagery tiles.
-      return;
-    }
+
+    this.loadChildren(); // NB: asynchronous
     this._childrenLastUsed = args.now;
+
     if (undefined !== this.children) {
       for (const child of this.children) {
         const mapChild = child as MapTile;
@@ -379,8 +359,8 @@ export abstract class MapTile extends RealityTile {
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 /** @internal */
 export class PlanarMapTile extends MapTile {
-  constructor(params: TileParams, quadId: QuadId, public corners: Point3d[], private readonly _normal: Vector3d, rectangle: MapCartoRectangle, private _chordHeight: number, cornerNormals: Ray3d[] | undefined) {
-    super(params, quadId, rectangle, cornerNormals);
+  constructor(params: TileParams, tree: MapTileTree, quadId: QuadId, public corners: Point3d[], private readonly _normal: Vector3d, rectangle: MapCartoRectangle, private _chordHeight: number, cornerNormals: Ray3d[] | undefined) {
+    super(params, tree, quadId, rectangle, cornerNormals);
   }
 
   public getGraphic(system: RenderSystem, texture: RenderTexture): RenderGraphic {
@@ -446,8 +426,8 @@ export class PlanarMapTile extends MapTile {
 
 /** @internal */
 class GlobeMapTile extends MapTile {
-  constructor(params: TileParams, public quadId: QuadId, private _rangeCorners: Point3d[], rectangle: MapCartoRectangle, private _ellipsoidPatch: EllipsoidPatch, cornerNormals: Ray3d[] | undefined) {
-    super(params, quadId, rectangle, cornerNormals);
+  constructor(params: TileParams, tree: MapTileTree, public quadId: QuadId, private _rangeCorners: Point3d[], rectangle: MapCartoRectangle, private _ellipsoidPatch: EllipsoidPatch, cornerNormals: Ray3d[] | undefined) {
+    super(params, tree, quadId, rectangle, cornerNormals);
   }
   public get graphicType(): TileGraphicType | undefined { return TileGraphicType.Scene; }     // We can't allow these to be (undepthbuffered) BackgroundMapType so override here.
 
@@ -649,7 +629,7 @@ export class MapTileTree extends RealityTileTree {
     return (sceneContext.viewport.view.maxGlobalScopeFactor > 1) ? MapTileTree.minDisplayableDepth : -1;
   }
 
-  constructor(params: TileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, gcsConverterAvailable: boolean, public sourceTilingScheme: MapTilingScheme, protected _maxDepth: number, globeMode: GlobeMode, includeTerrain: boolean, public wantSkirts: boolean) {
+  constructor(params: RealityTileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, gcsConverterAvailable: boolean, public sourceTilingScheme: MapTilingScheme, protected _maxDepth: number, globeMode: GlobeMode, includeTerrain: boolean, public wantSkirts: boolean) {
     super(params);
 
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
@@ -678,7 +658,7 @@ export class MapTileTree extends RealityTileTree {
       this._mercatorFractionToDb.multiplyPoint3dArrayInPlace(corners);
       range = Range3d.createArray(PlanarMapTile.computeRangeCorners(corners, Vector3d.create(0, 0, 1), 0, scratchCorners, globalHeightRange));
     }
-    this._rootTile = new GlobeMapTile({ root: this, contentId: quadId.contentId, maximumSize: 0, range }, quadId, range.corners(), globalRectangle, rootPatch, undefined);
+    this._rootTile = new GlobeMapTile({  contentId: quadId.contentId, maximumSize: 0, range }, this, quadId, range.corners(), globalRectangle, rootPatch, undefined);
     this._gcsConverter = gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
     this.globeMode = globeMode; this.yAxisUp;
   }
@@ -839,10 +819,10 @@ export class MapTileTree extends RealityTileTree {
   }
 
   public createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, _heightRange?: Range1d): MapTile {
-    return new PlanarMapTile(params, quadId, corners, normal, rectangle, chordHeight, this.getCornerRays(rectangle));
+    return new PlanarMapTile(params, this, quadId, corners, normal, rectangle, chordHeight, this.getCornerRays(rectangle));
   }
 
   public createGlobeChild(params: TileParams, quadId: QuadId, rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, _heightRange?: Range1d): MapTile {
-    return new GlobeMapTile(params, quadId, rangeCorners, rectangle, ellipsoidPatch, this.getCornerRays(rectangle));
+    return new GlobeMapTile(params, this, quadId, rangeCorners, rectangle, ellipsoidPatch, this.getCornerRays(rectangle));
   }
 }

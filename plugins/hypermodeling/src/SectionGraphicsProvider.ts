@@ -15,7 +15,6 @@ import {
   Placement3d,
   RelatedElement,
   SectionLocationProps,
-  TileProps,
   ViewAttachmentProps,
   ViewFlag,
 } from "@bentley/imodeljs-common";
@@ -24,16 +23,15 @@ import {
   GeometricModel2dState,
   HitDetail,
   IModelConnection,
+  RenderSystem,
   Tile,
+  TileContent,
   TileDrawArgs,
   TiledGraphicsProvider,
-  TileLoader,
   TileLoadPriority,
-  TileParams,
   TileRequest,
   TileTree,
   TileTreeOwner,
-  tileTreeParamsFromJSON,
   TileTreeReference,
   TileTreeSet,
   TileTreeSupplier,
@@ -117,29 +115,9 @@ class ProxyTreeReference extends TileTreeReference {
 }
 
 /** A proxy for a 2d tile tree to be drawn in the context of a spatial view. */
-class ProxyLoader extends TileLoader {
-  private readonly _viewFlagOverrides: ViewFlag.Overrides;
-
-  public constructor(view: ViewState2d) {
-    super();
-    this._viewFlagOverrides = new ViewFlag.Overrides(view.viewFlags);
-    this._viewFlagOverrides.setApplyLighting(false);
-    this._viewFlagOverrides.setShowClipVolume(false);
-  }
-
-  public get viewFlagOverrides(): ViewFlag.Overrides {
-    return this._viewFlagOverrides;
-  }
-
-  public async getChildrenProps(_parent: Tile): Promise<TileProps[]> { return Promise.resolve([]); }
-  public async requestTileContent(_tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> { return Promise.resolve(undefined); }
-  public tileRequiresLoading(_params: TileParams): boolean { return false; }
-  public get maxDepth(): number { return 1; }
-  public get priority(): TileLoadPriority { return TileLoadPriority.Primary; }
-}
-
-/** A proxy for a 2d tile tree to be drawn in the context of a spatial view. */
 class ProxyTree extends TileTree {
+  private readonly _rootTile: ProxyTile;
+  private readonly _viewFlagOverrides: ViewFlag.Overrides;
   public readonly tree: TileTree;
   public readonly ref: TileTreeReference;
   public readonly symbologyOverrides: FeatureSymbology.Overrides;
@@ -157,23 +135,13 @@ class ProxyTree extends TileTree {
       location.origin.setFrom(origin);
     }
 
-    const json = {
-      id: tree.modelId,
+    super({
+      id: tree.modelId + "_hypermodeling",
+      modelId: tree.modelId,
+      iModel: tree.iModel,
       location,
-      rootTile: {
-        contentId: "",
-        maximumSize: 512,
-        isLeaf: true,
-        range: {
-          low: { x: 0, y: 0, z: 0 },
-          high: { x: 0, y: 0, z: 0 },
-        },
-      },
-    };
-
-    const loader = new ProxyLoader(view);
-    const params = tileTreeParamsFromJSON(json, tree.iModel, false, loader, tree.modelId);
-    super(params);
+      priority: TileLoadPriority.Primary,
+    });
 
     this.tree = tree;
     this.ref = ref;
@@ -184,29 +152,48 @@ class ProxyTree extends TileTree {
     if (undefined !== inverse)
       inverse.multiplyRange(range, range);
 
+    this._viewFlagOverrides = new ViewFlag.Overrides(view.viewFlags);
+    this._viewFlagOverrides.setApplyLighting(false);
+    this._viewFlagOverrides.setShowClipVolume(false);
+
     this._rootTile = new ProxyTile(this, range);
+  }
+
+  public get rootTile(): ProxyTile { return this._rootTile; }
+  public get viewFlagOverrides() { return this._viewFlagOverrides; }
+  public get is3d() { return false; }
+  public get isContentUnbounded() { return false; }
+  public get maxDepth() { return 1; }
+
+  public draw(args: TileDrawArgs): void {
+    const tiles = this.selectTiles(args);
+    for (const tile of tiles)
+      tile.drawGraphics(args);
+
+    args.drawGraphics();
+  }
+
+  protected _selectTiles(_args: TileDrawArgs): Tile[] {
+    return [ this.rootTile ];
   }
 }
 
 /** The single Tile belonging to a ProxyTree, serving as a proxy for all of the proxied tree's tiles. */
 class ProxyTile extends Tile {
   public constructor(tree: ProxyTree, range: Range3d) {
-    super({
-      root: tree,
-      contentId: "",
-      range,
-      maximumSize: 512,
-      isLeaf: true,
-    });
-
+    super({ contentId: "", range, maximumSize: 512, isLeaf: true }, tree);
     this.setIsReady();
   }
 
   public get hasChildren() { return false; }
   public get hasGraphics() { return true; }
 
+  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> { return undefined; }
+  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return { }; }
+  protected _loadChildren(_resolve: (children: Tile[]) => void, _reject: (error: Error) => void): void { }
+
   public drawGraphics(args: TileDrawArgs) {
-    const myTree = this.root as ProxyTree;
+    const myTree = this.tree as ProxyTree;
     const sectionTree = myTree.tree;
 
     const location = myTree.iModelTransform.multiplyTransformTransform(sectionTree.iModelTransform);

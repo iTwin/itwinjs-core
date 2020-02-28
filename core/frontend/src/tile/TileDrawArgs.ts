@@ -38,7 +38,7 @@ const scratchRange = new Range3d();
  */
 export class TileDrawArgs {
   public readonly location: Transform;
-  public readonly root: TileTree;
+  public readonly tree: TileTree;
   public clipVolume?: RenderClipVolume;
   public readonly context: SceneContext;
   public viewingSpace: ViewingSpace;
@@ -62,7 +62,7 @@ export class TileDrawArgs {
   }
 
   public getTileGraphics(tile: Tile) {
-    return tile.graphics;
+    return tile.produceGraphics();
   }
 
   public get frustumPlanes(): FrustumPlanes {
@@ -72,15 +72,15 @@ export class TileDrawArgs {
     return this.viewingSpace.worldToViewMap;
   }
 
-  public static fromTileTree(context: SceneContext, location: Transform, root: TileTree, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = false, symbologyOverrides?: FeatureSymbology.Overrides) {
+  public static fromTileTree(context: SceneContext, location: Transform, tree: TileTree, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = false, symbologyOverrides?: FeatureSymbology.Overrides) {
     const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(root.expirationTime);
-    return new TileDrawArgs(context, location, root, now, purgeOlderThan, viewFlagOverrides, clip, parentsAndChildrenExclusive, symbologyOverrides);
+    const purgeOlderThan = now.minus(tree.expirationTime);
+    return new TileDrawArgs(context, location, tree, now, purgeOlderThan, viewFlagOverrides, clip, parentsAndChildrenExclusive, symbologyOverrides);
   }
 
-  public constructor(context: SceneContext, location: Transform, root: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = true, symbologyOverrides?: FeatureSymbology.Overrides) {
+  public constructor(context: SceneContext, location: Transform, tree: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = true, symbologyOverrides?: FeatureSymbology.Overrides) {
     this.location = location;
-    this.root = root;
+    this.tree = tree;
     if (undefined !== clip && !clip.hasOutsideClipColor)
       this.clipVolume = clip;
 
@@ -91,16 +91,16 @@ export class TileDrawArgs {
 
     this.graphics.setViewFlagOverrides(viewFlagOverrides);
     this.graphics.symbologyOverrides = symbologyOverrides;
-    this.graphics.animationId = root.modelId;
+    this.graphics.animationId = tree.modelId;
 
     this.viewingSpace = context.viewingSpace;
     this._frustumPlanes = new FrustumPlanes(this.viewingSpace.getFrustum());
 
-    this.planarClassifier = context.getPlanarClassifierForModel(root.modelId);
-    this.drape = context.getTextureDrapeForModel(root.modelId);
+    this.planarClassifier = context.getPlanarClassifierForModel(tree.modelId);
+    this.drape = context.getTextureDrapeForModel(tree.modelId);
 
     // NB: Culling is currently feature-gated - ignore view clip if feature not enabled.
-    if (context.viewFlags.clipVolume && false !== root.viewFlagOverrides.clipVolumeOverride)
+    if (context.viewFlags.clipVolume && false !== tree.viewFlagOverrides.clipVolumeOverride)
       this.viewClip = undefined === context.viewport.outsideClipColor ? context.viewport.view.getViewClip() : undefined;
 
     this.parentsAndChildrenExclusive = parentsAndChildrenExclusive;
@@ -116,7 +116,7 @@ export class TileDrawArgs {
   public getTileRadius(tile: Tile): number {
     let range: Range3d = tile.range.clone(scratchRange);
     range = this.location.multiplyRange(range, range);
-    return 0.5 * (tile.root.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
+    return 0.5 * (tile.tree.is3d ? range.low.distance(range.high) : range.low.distanceXY(range.high));
   }
 
   public get clip(): ClipVector | undefined { return undefined !== this.clipVolume ? this.clipVolume.clipVector : undefined; }
@@ -128,7 +128,7 @@ export class TileDrawArgs {
       return undefined;
 
     const classifierOrDrape = undefined !== this.planarClassifier ? this.planarClassifier : this.drape;
-    const opts = { iModel: this.root.iModel, clipVolume: this.clipVolume, classifierOrDrape };
+    const opts = { iModel: this.tree.iModel, clipVolume: this.clipVolume, classifierOrDrape };
     return this.context.createGraphicBranch(graphics, this.location, opts);
   }
 

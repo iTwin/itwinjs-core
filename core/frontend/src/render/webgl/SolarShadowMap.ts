@@ -30,7 +30,7 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
     private _useViewportMap?: boolean;
 
     constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, args: TileDrawArgs) {
-      super(args.context, args.location, args.root, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
+      super(args.context, args.location, args.tree, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
     }
 
     public get frustumPlanes(): FrustumPlanes {
@@ -374,12 +374,13 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
         return;
 
       const tileToMapTransform = worldToMapTransform.multiplyTransformTransform(drawArgs.location, this._scratchTransform);
-      const selectedTiles = drawArgs.root.selectTilesForScene(drawArgs);
+      const selectedTiles = drawArgs.tree.selectTiles(drawArgs);
 
       for (const selectedTile of selectedTiles) {
         tileRange.extendRange(tileToMapTransform.multiplyRange(selectedTile.range, this._scratchRange));
         selectedTile.drawGraphics(drawArgs);
       }
+
       drawArgs.drawGraphics();
     }));
 
