@@ -759,7 +759,9 @@ describe("PolyfaceClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const builder = PolyfaceBuilder.create();
-    builder.addBox(Box.createRange(Range3d.create(Point3d.create(-1, -1, -0.2), Point3d.create(1, 1, 0.2)), true)!);
+    const boxZ0 = 0.01;
+    const boxZ1 = 0.3;
+    builder.addBox(Box.createRange(Range3d.create(Point3d.create(-1, -1, boxZ0), Point3d.create(1, 1, boxZ1)), true)!);
     const facets = builder.claimPolyface();
     const xA = 0.2;
     const xB = 0.4;
@@ -768,25 +770,33 @@ describe("PolyfaceClip", () => {
     const yB = -0.1;
     const yC = 1.2;
     const yD = 0.4;
+    const clipData = [];
     const contourP0 = SweepContour.createForPolygon(
       [Point3d.create(xA, yA), Point3d.create(xB, yA), Point3d.create(xA, yB), Point3d.create(xA, yA)])!;
     const clipperP0 = contourP0.sweepToUnionOfConvexClipPlaneSets()!;
-
     const contourP1 = SweepContour.createForPolygon(
       [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xA, yC), Point3d.create(xA, yA)])!;
     const clipperP1 = contourP1.sweepToUnionOfConvexClipPlaneSets()!;
 
+    const dxB = 0.3;
     const contourQ0 = SweepContour.createForPolygon(
-      [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xC, yB), Point3d.create(xB, yB), Point3d.create(xB, yC), Point3d.create(xA, yC), Point3d.create(xA, yA)])!;
+      [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xC, yB), Point3d.create(xB + dxB, yB), Point3d.create(xB, yC), Point3d.create(xA, yC), Point3d.create(xA, yA)])!;
     const clipperQ0 = contourQ0.sweepToUnionOfConvexClipPlaneSets()!;
 
     const contourQ1 = SweepContour.createForPolygon(
-      [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xC, yB), Point3d.create(xB, yB), Point3d.create(xB, yD), Point3d.create(xA, yD), Point3d.create(xA, yA)])!;
+      [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xC, yB), Point3d.create(xB + dxB, yB), Point3d.create(xB, yD), Point3d.create(xA, yD), Point3d.create(xA, yA)])!;
     const clipperQ1 = contourQ1.sweepToUnionOfConvexClipPlaneSets()!;
 
     let x0 = 0;
+    clipData.push([contourP0, clipperP0]);
+    clipData.push([contourP1, clipperP1]);
+    clipData.push([contourQ0, clipperQ0]);
+    clipData.push([contourQ1, clipperQ1]);
 
-    for (const clipper of [clipperP0, clipperP0, clipperP1, clipperQ0, clipperQ1]) {
+    for (const cd of clipData) {
+      const clipper = cd[1] as UnionOfConvexClipPlaneSets;
+      const sweepContour = cd[0] as SweepContour;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweepContour.curves, x0, 0, boxZ1 + 0.01);
       const clipBuilders = ClippedPolyfaceBuilders.create(true, true, true);
       PolyfaceClip.clipPolyfaceInsideOutside(facets, clipper, clipBuilders);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, 0);
