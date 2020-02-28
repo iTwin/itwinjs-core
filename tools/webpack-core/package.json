@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools-core",
-  "version": "2.0.0-dev.17",
+  "version": "2.0.0-dev.18",
   "description": "Set of Webpack Plugins and Loaders used for building iModel.js applications",
   "license": "MIT",
   "repository": {
@@ -31,7 +31,7 @@
     "webpack": "^4.20.2"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.17",
+    "@bentley/build-tools": "2.0.0-dev.18",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/node": "10.14.1",
