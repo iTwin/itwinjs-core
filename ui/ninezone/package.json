@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "2.0.0-dev.18",
+  "version": "2.0.0-dev.19",
   "description": "iModel.js Nine-zone React UI components",
   "license": "MIT",
   "repository": {
@@ -57,17 +57,17 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-core": "^2.0.0-dev.18"
+    "@bentley/ui-core": "^2.0.0-dev.19"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.18",
+    "@bentley/build-tools": "2.0.0-dev.19",
     "@bentley/icons-generic-webfont": "^1.0.0",
-    "@bentley/ui-core": "2.0.0-dev.18",
-    "@bentley/webpack-tools": "2.0.0-dev.18",
+    "@bentley/ui-core": "2.0.0-dev.19",
+    "@bentley/webpack-tools": "2.0.0-dev.19",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
