@@ -494,8 +494,7 @@ export class BriefcaseManager {
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     static dumpChangeSet(briefcase: BriefcaseEntry, changeSetToken: ChangeSetToken): void;
     static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined;
-    // (undocumented)
-    static getBriefcases(requestContext: AuthorizedClientRequestContext): BriefcaseProps[];
+    static getBriefcasesFromDisk(): Promise<BriefcaseProps[]>;
     // (undocumented)
     static getChangeCachePathName(iModelId: GuidString): string;
     // (undocumented)
@@ -504,6 +503,7 @@ export class BriefcaseManager {
     static getChangeSetsPath(iModelId: GuidString): string;
     static get imodelClient(): IModelClient;
     static initialize(cacheRootDir: string, iModelClient?: IModelClient): void;
+    static initializeBriefcaseCacheFromDisk(requestContext: AuthorizedClientRequestContext): Promise<void>;
     static openBriefcase(briefcase: BriefcaseEntry): void;
     static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry;
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;

@@ -3701,6 +3701,7 @@ export interface ModelSelectorProps extends DefinitionElementProps {
 export abstract class NativeAppRpcInterface extends RpcInterface {
     cancelTileContentRequests(_iModelToken: IModelTokenProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
+    closeBriefcase(_iModelToken: IModelTokenProps): Promise<boolean>;
     downloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps>;
     fetchEvents(_iModelToken: IModelTokenProps, _maxToFetch: number): Promise<QueuedEvent[]>;
     getBriefcases(): Promise<BriefcaseProps[]>;

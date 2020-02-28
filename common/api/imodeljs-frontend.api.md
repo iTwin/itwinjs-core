@@ -3743,10 +3743,10 @@ export class IModelConnection extends IModel {
     closeSnapshot(): Promise<void>;
     readonly codeSpecs: IModelConnection.CodeSpecs;
     static connectionTimeout: number;
-    // @internal
-    static create(iModel: IModelProps, openMode: OpenMode): IModelConnection;
     // @beta
     static createBlank(props: BlankConnectionProps): IModelConnection;
+    // @internal
+    static createForNativeAppBriefcase(iModel: IModelProps, openMode: OpenMode): IModelConnection;
     // @internal
     detachChangeCache(): Promise<void>;
     // @internal

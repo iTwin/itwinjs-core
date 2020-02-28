@@ -18,7 +18,7 @@ import {
   QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcNotFoundResponse, RpcOperation, RpcRequest,
   RpcRequestEvent, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, ThumbnailProps, TileTreeProps,
   ViewDefinitionProps, ViewQueryParams, WipRpcInterface, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  EcefLocationProps, FontMapProps, EcefLocation, SubCategoryAppearance, CodeProps, BisCodeSpec,
+  EcefLocationProps, FontMapProps, EcefLocation, SubCategoryAppearance, CodeProps, BisCodeSpec, NativeAppRpcInterface,
 } from "@bentley/imodeljs-common";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
@@ -95,6 +95,8 @@ export class IModelConnection extends IModel {
   public static connectionTimeout: number = 10 * 60 * 1000;
 
   private _editing: IModelConnection.EditingFunctions | undefined;
+
+  private _isNativeAppBriefcase: boolean; // Set to true if it's a connection over a briefcase in a native application
 
   /**
    * General editing functions
@@ -192,11 +194,12 @@ export class IModelConnection extends IModel {
     return ctor; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
   }
 
-  private constructor(iModel: IModelProps, openMode: OpenMode) {
+  private constructor(iModel: IModelProps, openMode: OpenMode, isNativeAppBriefcase: boolean) {
     super(iModel.iModelToken ? IModelToken.fromJSON(iModel.iModelToken) : undefined);
     super.initialize(iModel.name!, iModel);
     this.isBlank = undefined === iModel.iModelToken; // to differentiate between previously-open-but-now-closed vs. blank
     this.openMode = openMode;
+    this._isNativeAppBriefcase = isNativeAppBriefcase;
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
@@ -213,12 +216,13 @@ export class IModelConnection extends IModel {
   }
 
   /**
-   * Creates imodel connection
+   * Creates iModel Connection over a local briefcase for a native application
    * @internal
    */
-  public static create(iModel: IModelProps, openMode: OpenMode): IModelConnection {
-    return new this(iModel, openMode);
+  public static createForNativeAppBriefcase(iModel: IModelProps, openMode: OpenMode): IModelConnection {
+    return new this(iModel, openMode, true);
   }
+
   /** Create a new [Blank IModelConnection]($docs/learning/frontend/BlankConnection).
    * @param props The properties of the new blank IModelConnection.
    * @beta
@@ -229,7 +233,7 @@ export class IModelConnection extends IModel {
       projectExtents: props.extents,
       globalOrigin: props.globalOrigin,
       ecefLocation: props.location instanceof Cartographic ? EcefLocation.createFromCartographicOrigin(props.location) : props.location,
-    }, OpenMode.Readonly);
+    }, OpenMode.Readonly, false);
   }
 
   /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
@@ -248,7 +252,7 @@ export class IModelConnection extends IModel {
     const openResponse: IModelProps = await IModelConnection.callOpen(requestContext, iModelToken, openMode);
     requestContext.enter();
 
-    const connection = new IModelConnection(openResponse, openMode);
+    const connection = new IModelConnection(openResponse, openMode, false);
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
 
     IModelConnection.onOpen.raiseEvent(connection);
@@ -372,7 +376,13 @@ export class IModelConnection extends IModel {
 
     RpcRequest.notFoundHandlers.removeListener(this._reopenConnectionHandler);
     requestContext.useContextForRpc = true;
-    const closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't awaited right away.
+
+    let closePromise;
+    if (this._isNativeAppBriefcase)
+      closePromise = NativeAppRpcInterface.getClient().closeBriefcase(this.iModelToken.toJSON());
+    else
+      closePromise = IModelReadRpcInterface.getClient().close(this.iModelToken.toJSON()); // Ensure the method isn't awaited right away.
+
     if (this.eventSource) {
       EventSourceManager.delete(this.iModelToken.key!);
     }
@@ -391,7 +401,7 @@ export class IModelConnection extends IModel {
   public static async openSnapshot(fileName: string): Promise<IModelConnection> {
     const openResponse: IModelProps = await SnapshotIModelRpcInterface.getClient().openSnapshot(fileName);
     Logger.logTrace(loggerCategory, "IModelConnection.openSnapshot", () => ({ fileName }));
-    const connection = new IModelConnection(openResponse, OpenMode.Readonly);
+    const connection = new IModelConnection(openResponse, OpenMode.Readonly, false);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }

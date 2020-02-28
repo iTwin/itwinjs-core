@@ -93,7 +93,7 @@ export class NativeApp {
 
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
     const token = await NativeAppRpcInterface.getClient().openBriefcase(iModelToken.toJSON());
-    return IModelConnection.create(token, openMode);
+    return IModelConnection.createForNativeAppBriefcase(token, openMode);
   }
 
   /**
