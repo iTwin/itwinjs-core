@@ -13,7 +13,7 @@ import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType } 
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
-  IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
+  IModel, IModelEncryptionProps, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
   ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority,
   QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps, SpatialViewDefinitionProps,
@@ -229,7 +229,7 @@ export class IModelDb extends IModel {
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    * @beta
    */
-  public static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb {
+  public static createSnapshot(snapshotFile: string, args: CreateIModelProps & IModelEncryptionProps): IModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, args);
     const openMode = briefcaseEntry.openParams.openMode;
     const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
@@ -244,9 +244,24 @@ export class IModelDb extends IModel {
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    * @beta
    */
-  public createSnapshot(snapshotFile: string): IModelDb {
+  public createSnapshot(snapshotFile: string, encryptionProps?: IModelEncryptionProps): IModelDb {
+    if (this.nativeDb.isEncrypted()) {
+      throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel", Logger.logError, loggerCategory);
+    }
     IModelJsFs.copySync(this.briefcase.pathname, snapshotFile);
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, false);
+    const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
+    if (encryptionPropsString) {
+      const status: DbResult = IModelHost.platform.DgnDb.encryptDb(snapshotFile, encryptionPropsString);
+      if (DbResult.BE_SQLITE_OK !== status) {
+        throw new IModelError(status, "Problem encrypting snapshot iModel", Logger.logError, loggerCategory);
+      }
+    } else {
+      const status: DbResult = IModelHost.platform.DgnDb.vacuum(snapshotFile);
+      if (DbResult.BE_SQLITE_OK !== status) {
+        throw new IModelError(status, "Error initializing snapshot iModel", Logger.logError, loggerCategory);
+      }
+    }
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, false, encryptionPropsString);
     const isSeedFileMaster: boolean = BriefcaseId.Master === briefcaseEntry.briefcaseId;
     const isSeedFileSnapshot: boolean = BriefcaseId.Snapshot === briefcaseEntry.briefcaseId;
     // Replace iModelId if seedFile is a master or snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
@@ -263,7 +278,7 @@ export class IModelDb extends IModel {
     } else {
       snapshotDb.setAsMaster(briefcaseEntry.iModelId);
     }
-    snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId);
+    snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId, encryptionPropsString);
     return snapshotDb;
   }
 
@@ -297,8 +312,11 @@ export class IModelDb extends IModel {
    * @throws [IModelError]($common) If the file is not found or is not a valid *snapshot*.
    * @beta
    */
-  public static openSnapshot(filePath: string): IModelDb {
-    const iModelDb: IModelDb = this.openStandalone(filePath, OpenMode.Readonly, false);
+  public static openSnapshot(filePath: string, encryptionProps?: IModelEncryptionProps): IModelDb {
+    const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(filePath, OpenMode.Readonly, false, encryptionPropsString);
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, OpenMode.Readonly);
+    const iModelDb: IModelDb = new IModelDb(briefcaseEntry, iModelToken, OpenParams.standalone(OpenMode.Readonly));
     const briefcaseId: number = iModelDb.getBriefcaseId().value;
     if ((BriefcaseId.Snapshot === briefcaseId) || (BriefcaseId.Master === briefcaseId)) {
       return iModelDb;

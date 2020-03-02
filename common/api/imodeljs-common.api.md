@@ -3057,6 +3057,11 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
+// @beta
+export interface IModelEncryptionProps {
+    password?: string;
+}
+
 // @public
 export class IModelError extends BentleyError {
     constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);

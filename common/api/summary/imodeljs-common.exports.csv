@@ -198,6 +198,7 @@ internal;ImdlHeader
 public;class IModel 
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
+beta;IModelEncryptionProps
 public;IModelError 
 public;IModelNotFoundResponse 
 public;IModelProps

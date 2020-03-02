@@ -163,6 +163,14 @@ export interface CreateIModelProps extends IModelProps {
   thumbnail?: ThumbnailProps;
 }
 
+/** Encryption-related properties that can be supplied when creating or opening snapshot iModels.
+ * @beta
+ */
+export interface IModelEncryptionProps {
+  /** The password used to encrypt/decrypt the snapshot iModel. */
+  password?: string;
+}
+
 /** @public */
 export interface FilePropertyProps {
   namespace: string;

@@ -41,7 +41,7 @@ import * as path from "path";
 import {
   AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCoreSchema, Category, ClassRegistry, DefinitionModel, DefinitionPartition,
   DictionaryModel, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementGroupsMembers, ElementOwnsChildElements, Entity,
-  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, InformationPartitionElement,
+  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, RenderMaterialElement, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject, BackendRequestContext, BriefcaseId,
 } from "../../imodeljs-backend";
@@ -1800,6 +1800,10 @@ describe("iModel", () => {
     assert.equal(snapshotDb2.briefcase.briefcaseId, BriefcaseId.Snapshot);
     assert.equal(snapshotDb3.briefcase.briefcaseId, BriefcaseId.Snapshot);
     assert.equal(imodel1.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
+    assert.isFalse(snapshotDb2.nativeDb.isEncrypted());
+    assert.isFalse(snapshotDb3.nativeDb.isEncrypted());
+    assert.isFalse(imodel1.nativeDb.isEncrypted());
     const iModelGuid1: GuidString = snapshotDb1.getGuid();
     const iModelGuid2: GuidString = snapshotDb2.getGuid();
     const iModelGuid3: GuidString = snapshotDb3.getGuid();
@@ -1812,6 +1816,44 @@ describe("iModel", () => {
     assert.equal(rootSubjectName1, snapshotRootSubjectName);
     assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
     assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
+    snapshotDb1.closeSnapshot();
+    snapshotDb2.closeSnapshot();
+    snapshotDb3.closeSnapshot();
+  });
+
+  it("Password-protected Snapshot iModels", () => {
+    const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "pws1.bim");
+    const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "pws2.bim");
+    const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "pws3.bim");
+    const snapshotFile4: string = IModelTestUtils.prepareOutputFile("IModel", "pws4.bim");
+
+    // create snapshot from scratch without a password, then unnecessarily specify a password to open
+    let snapshotDb1: IModelDb = imodel1.createSnapshot(snapshotFile1);
+    assert.equal(snapshotDb1.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    snapshotDb1.closeSnapshot();
+    snapshotDb1 = IModelDb.openSnapshot(snapshotFile1, { password: "unnecessaryPassword" });
+    assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
+
+    // create snapshot from scratch and give it a password
+    let snapshotDb2: IModelDb = IModelDb.createSnapshot(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password" });
+    assert.equal(snapshotDb2.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    snapshotDb2.closeSnapshot();
+    snapshotDb2 = IModelDb.openSnapshot(snapshotFile2, { password: "password" });
+    assert.isTrue(snapshotDb2.nativeDb.isEncrypted());
+
+    // create a new snapshot from a non-password-protected snapshot and then give it a password
+    let snapshotDb3: IModelDb = imodel1.createSnapshot(snapshotFile3, { password: "password" });
+    assert.equal(snapshotDb3.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    snapshotDb3.closeSnapshot();
+    snapshotDb3 = IModelDb.openSnapshot(snapshotFile3, { password: "password" });
+    assert.isTrue(snapshotDb3.nativeDb.isEncrypted());
+
+    // it is invalid to create a snapshot from a password-protected iModel
+    assert.throws(() => snapshotDb2.createSnapshot(snapshotFile4), IModelError);
+    assert.isFalse(IModelJsFs.existsSync(snapshotFile4));
+    assert.throws(() => snapshotDb2.createSnapshot(snapshotFile4, { password: "password" }), IModelError);
+    assert.isFalse(IModelJsFs.existsSync(snapshotFile4));
+
     snapshotDb1.closeSnapshot();
     snapshotDb2.closeSnapshot();
     snapshotDb3.closeSnapshot();

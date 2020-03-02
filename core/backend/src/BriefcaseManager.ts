@@ -17,7 +17,7 @@ import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
   BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration, Guid,
 } from "@bentley/bentleyjs-core";
-import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps, MobileRpcConfiguration, BriefcaseProps } from "@bentley/imodeljs-common";
+import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps, MobileRpcConfiguration, BriefcaseProps, IModelEncryptionProps } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelDb, OpenParams, SyncMode } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -1143,14 +1143,16 @@ export class BriefcaseManager {
     return changeSets;
   }
 
-  /** Open a standalone iModel from the local disk */
-  public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry {
+  /** Open a standalone iModel from the local disk
+   * @param encryptionPropsString `JSON.stringify(IModelEncryptionProps) | undefined`
+   */
+  public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean, encryptionPropsString?: string): BriefcaseEntry {
     if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname, undefined, undefined, undefined, openMode)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open standalone iModel at ${pathname} again - it has already been opened once`, Logger.logError, loggerCategory);
 
     const nativeDb = new IModelHost.platform.DgnDb();
 
-    const res = nativeDb.openIModel(pathname, openMode);
+    const res = nativeDb.openIModel(pathname, openMode, undefined, encryptionPropsString);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, "Could not open standalone iModel", Logger.logError, loggerCategory, () => ({ pathname }));
 
@@ -1158,7 +1160,7 @@ export class BriefcaseManager {
     if (enableTransactions) {
       if (briefcaseId === BriefcaseId.Illegal || briefcaseId === BriefcaseId.Master) {
         briefcaseId = BriefcaseId.Standalone;
-        nativeDb.setBriefcaseId(briefcaseId);
+        nativeDb.setBriefcaseId(briefcaseId, encryptionPropsString);
       }
       assert(nativeDb.getBriefcaseId() !== BriefcaseId.Illegal || nativeDb.getBriefcaseId() !== BriefcaseId.Master);
     }
@@ -1171,17 +1173,18 @@ export class BriefcaseManager {
   }
 
   /** Create a standalone iModel from the local disk */
-  public static createStandalone(fileName: string, args: CreateIModelProps): BriefcaseEntry {
+  public static createStandalone(fileName: string, args: CreateIModelProps & IModelEncryptionProps): BriefcaseEntry {
     if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(fileName, undefined, undefined, undefined, OpenMode.ReadWrite)))
       throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, "Could not create standalone iModel. File already exists", Logger.logError, loggerCategory, () => ({ fileName }));
 
     const nativeDb = new IModelHost.platform.DgnDb();
+    const argsString = JSON.stringify(args);
 
-    let res: DbResult = nativeDb.createIModel(fileName, JSON.stringify(args));
+    let res: DbResult = nativeDb.createIModel(fileName, argsString);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, "Could not create standalone iModel", Logger.logError, loggerCategory, () => ({ fileName }));
 
-    res = nativeDb.setBriefcaseId(BriefcaseId.Standalone);
+    res = nativeDb.setBriefcaseId(BriefcaseId.Standalone, argsString); // setBriefcaseId can close/reopen nativeDb, so must pass encryption props
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, "Could not set briefcaseId for standalone iModel", Logger.logError, loggerCategory, () => ({ fileName }));
 
