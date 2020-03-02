@@ -122,9 +122,6 @@ describe("UiFramework", () => {
     UiFramework.setAccessToken(mockToken);    // tslint:disable-line: deprecation
     expect(UiFramework.getAccessToken()!.getUserInfo()!.id).to.eq(mockToken.getUserInfo()!.id); // tslint:disable-line: deprecation
 
-    UiFramework.setDefaultRulesetId("TestRuleSet");
-    expect(UiFramework.getDefaultRulesetId()).to.eq("TestRuleSet");
-
     UiFramework.setDefaultIModelViewportControlId("DefaultIModelViewportControlId");
     expect(UiFramework.getDefaultIModelViewportControlId()).to.eq("DefaultIModelViewportControlId");
 

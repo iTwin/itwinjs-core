@@ -51,7 +51,6 @@ export class AppUi {
 
   public static initialize() {
     ConfigurableUiManager.initialize();
-    UiFramework.setDefaultRulesetId("Items");
 
     AppUi.defineFrontstages();
     AppUi.defineContentGroups();

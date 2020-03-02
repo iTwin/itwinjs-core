@@ -48,7 +48,6 @@ export enum SessionStateActionId {
   SetDefaultIModelViewportControlId = "sessionstate:set-default-viewportid",
   SetDefaultViewId = "sessionstate:set-default-viewid",
   SetDefaultViewState = "sessionstate:set-default-view-state",
-  SetDefaultRulesetId = "sessionstate:set-default-rulesetid",
   UpdateCursorMenu = "sessionstate:update-cursor-menu",
 }
 
@@ -63,7 +62,6 @@ export interface SessionState {
   defaultIModelViewportControlId: string | undefined;
   defaultViewId: string | undefined;
   defaultViewState: any | undefined;
-  defaultRulesetId: string | undefined;
   iModelConnection: any | undefined;
   accessToken: any | undefined;
   cursorMenuData: CursorMenuData | undefined;
@@ -84,7 +82,6 @@ const initialState: SessionState = {
   defaultIModelViewportControlId: undefined,
   defaultViewId: undefined,
   defaultViewState: undefined,
-  defaultRulesetId: undefined,
   iModelConnection: undefined,
   accessToken: undefined,
   cursorMenuData: undefined,
@@ -98,7 +95,6 @@ export interface SessionStateActionsProps {
   setActiveIModelId: (typeof SessionStateActions.setActiveIModelId);
   setAvailableSelectionScopes: (typeof SessionStateActions.setAvailableSelectionScopes);
   setDefaultIModelViewportControlId: (typeof SessionStateActions.setDefaultIModelViewportControlId);
-  setDefaultRulesetId: (typeof SessionStateActions.setDefaultRulesetId);
   setDefaultViewId: (typeof SessionStateActions.setDefaultViewId);
   setDefaultViewState: (typeof SessionStateActions.setDefaultViewState);
   setIModelConnection: (typeof SessionStateActions.setIModelConnection);
@@ -115,7 +111,6 @@ export const SessionStateActions = {  // tslint:disable-line:variable-name
   setActiveIModelId: (iModelId: string) => createAction(SessionStateActionId.SetActiveIModelId, iModelId),
   setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => createAction(SessionStateActionId.SetAvailableSelectionScopes, availableSelectionScopes),
   setDefaultIModelViewportControlId: (iModelViewportControlId: string) => createAction(SessionStateActionId.SetDefaultIModelViewportControlId, iModelViewportControlId),
-  setDefaultRulesetId: (rulesetid: string) => createAction(SessionStateActionId.SetDefaultRulesetId, rulesetid),
   setDefaultViewId: (viewId: string) => createAction(SessionStateActionId.SetDefaultViewId, viewId),
   setDefaultViewState: (viewState: any) => createAction(SessionStateActionId.SetDefaultViewState, viewState),
   setNumItemsSelected: (numSelected: number) => createAction(SessionStateActionId.SetNumItemsSelected, numSelected),
@@ -179,9 +174,6 @@ export function SessionStateReducer(state: SessionState = initialState, action: 
     }
     case SessionStateActionId.SetDefaultViewState: {
       return { ...state, defaultViewState: action.payload };
-    }
-    case SessionStateActionId.SetDefaultRulesetId: {
-      return { ...state, defaultRulesetId: action.payload };
     }
     case SessionStateActionId.SetIModelConnection: {
       return { ...state, iModelConnection: action.payload };

@@ -335,13 +335,6 @@ export class UiFramework {
   public static getDefaultViewState(): ViewState | undefined {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultViewState : /* istanbul ignore next */  undefined;
   }
-  public static setDefaultRulesetId(viewId: string, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetDefaultRulesetId, viewId, immediateSync);
-  }
-
-  public static getDefaultRulesetId(): string | undefined {
-    return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.defaultRulesetId : /* istanbul ignore next */  undefined;
-  }
 
   /** @beta */
   public static getAvailableSelectionScopes(): PresentationSelectionScope[] {

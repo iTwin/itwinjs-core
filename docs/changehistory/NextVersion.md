@@ -156,6 +156,9 @@ A couple of types were renamed to better match their intention:
 
   The components now always use controlled tree as the internal tree implementation.
 
+* Removed `UiFramework.getDefaultRulesetId()` and `UiFramework.setDefaultRulesetId()`. Each component
+should decide what ruleset it wants to use.
+
 ### API changes in `presentation-common` package
 
 #### RPC Changes
