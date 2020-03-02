@@ -2017,6 +2017,9 @@ export function useDisposable<TDisposable extends IDisposable>(createDisposable:
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 
 // @public
+export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined;
+
+// @public
 export enum VerticalAlignment {
     // (undocumented)
     Bottom = 3,
