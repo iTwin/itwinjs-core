@@ -10,33 +10,31 @@ import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcEndpoint, RpcMobilePlatform } from "../core/RpcConstants";
 import { interop, MobileRpcProtocol } from "./MobileRpcProtocol";
-import { IModelError } from "../../IModelError";
-import { BentleyStatus } from "@bentley/bentleyjs-core";
 /** Holds configuration for the RpcInterfaces used by the application.
  * @beta
  */
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
   public abstract protocol: MobileRpcProtocol;
+  private static _args: any;
   private static getArgs(): any {
-    if (typeof window === "undefined") {
-      return {};
+    if (typeof window !== "object" || typeof window.location !== "object" || typeof window.location.hash !== "string") {
+      return Object.freeze({});
     }
-
     const queryArgs: any = {};
-    const matches = window.location.hash.match(/([^#=&]+)(=([^&]*))?/g);
-    if (matches) {
-      for (const comp of matches) {
-        const array = comp.split("=");
-        if (array.length === 2) {
-          const key = decodeURIComponent(array[0]);
-          const val = decodeURIComponent(array[1]);
-          queryArgs[key] = val;
-        } else {
-          throw new IModelError(BentleyStatus.ERROR, "Unexpected parameters");
+    try {
+      const matches = window.location.hash.match(/([^#=&]+)(=([^&]*))?/g);
+      if (matches) {
+        for (const comp of matches) {
+          const array = comp.split("=");
+          if (array.length === 2) {
+            const key = decodeURIComponent(array[0]);
+            const val = decodeURIComponent(array[1]);
+            queryArgs[key] = val;
+          }
         }
       }
-    }
-    return queryArgs;
+    } catch { }
+    return Object.freeze(queryArgs);
   }
   private static getMobilePlatform(): RpcMobilePlatform {
     if (!MobileRpcConfiguration.args.platform)
@@ -54,10 +52,15 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
     return RpcMobilePlatform.Unknown;
   }
   /** Read the mobile rpc args */
-  public static readonly args: any = MobileRpcConfiguration.getArgs();
+  public static get args(): any {
+    if (!this._args) {
+      this._args = MobileRpcConfiguration.getArgs();
+    }
+    return this._args;
+  }
 
   /** Return type of mobile platform using browser userAgent */
-  public static readonly platform: RpcMobilePlatform = MobileRpcConfiguration.getMobilePlatform();
+  public static get platform(): RpcMobilePlatform { return MobileRpcConfiguration.getMobilePlatform(); }
 
   /** Check if running backend running on mobile */
   public static get isMobileBackend() { return interop !== null; }
