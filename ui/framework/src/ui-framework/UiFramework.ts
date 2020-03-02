@@ -105,7 +105,7 @@ export class UiFramework {
     // istanbul ignore next
     if (oidcConfig) {
       const oidcClient = isElectronRenderer ? new OidcDesktopClientRenderer(oidcConfig as OidcDesktopClientConfiguration) : new OidcBrowserClient(oidcConfig as OidcFrontendClientConfiguration);
-      UiFramework.oidcClient = oidcClient;
+      UiFramework.oidcClient = oidcClient;  // tslint:disable-line: deprecation
       const initOidcPromise = oidcClient.initialize(new ClientRequestContext());
       return Promise.all([readFinishedPromise, initOidcPromise]);
     }
@@ -128,11 +128,12 @@ export class UiFramework {
 
   private static _oidcClient: IOidcFrontendClient | undefined;
   private static _removeUserStateListener: () => void;
-  /** @beta */
+
+  /** @deprecated Use IModelApp.authorizationClient and isIOidcFrontendClient instead */
+  // istanbul ignore next
   public static get oidcClient(): IOidcFrontendClient | undefined {
     return UiFramework._oidcClient;
   }
-
   // istanbul ignore next
   public static set oidcClient(oidcClient: IOidcFrontendClient | undefined) {
     if (UiFramework._removeUserStateListener)
@@ -309,6 +310,7 @@ export class UiFramework {
     UiFramework.dispatchActionToStore(SessionStateActionId.SetAccessToken, accessToken, immediateSync);
   }
 
+  /** @deprecated Use IModelApp.authorizationClient.getAccessToken() instead */
   public static getAccessToken(): AccessToken | undefined {
     return UiFramework.frameworkState ? UiFramework.frameworkState.sessionState.accessToken : /* istanbul ignore next */  undefined;
   }

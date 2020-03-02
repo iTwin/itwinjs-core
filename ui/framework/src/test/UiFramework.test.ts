@@ -143,9 +143,6 @@ describe("UiFramework", () => {
     const viewState = moq.Mock.ofType<ViewState>();
     UiFramework.setDefaultViewState(viewState.object);
     expect(UiFramework.getDefaultViewState()).not.to.be.undefined;
-
-    UiFramework.oidcClient = undefined;
-    expect(UiFramework.oidcClient).to.be.undefined;
   });
 
 });

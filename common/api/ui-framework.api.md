@@ -4910,7 +4910,7 @@ export class UiFramework {
     static get frameworkState(): FrameworkState | undefined;
     // @beta (undocumented)
     static get frameworkStateKey(): string;
-    // (undocumented)
+    // @deprecated (undocumented)
     static getAccessToken(): AccessToken | undefined;
     // (undocumented)
     static getAccudrawSnapMode(): SnapMode;
@@ -4947,7 +4947,7 @@ export class UiFramework {
     static isMobile(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
-    // @beta (undocumented)
+    // @deprecated (undocumented)
     static get oidcClient(): IOidcFrontendClient | undefined;
     static set oidcClient(oidcClient: IOidcFrontendClient | undefined);
     // @beta
