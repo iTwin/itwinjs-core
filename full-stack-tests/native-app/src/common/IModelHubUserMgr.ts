@@ -4,17 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelAuthorizationClient } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
-import { UserInfo, AccessToken, ImsActiveSecureTokenClient, IModelHubClient } from "@bentley/imodeljs-clients/lib/imodeljs-clients";
+import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
+import { getAccessTokenFromBackend } from "./SideChannels";
 
 export class IModelHubUserMgr implements IModelAuthorizationClient {
   private _token: AccessToken | undefined;
 
   public async authorizeUser(requestContext: ClientRequestContext, _userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
     requestContext.enter();
-    const authToken = await (new ImsActiveSecureTokenClient()).getToken(new ClientRequestContext(), userCredentials);
-    requestContext.enter();
-    const client = new IModelHubClient(undefined);
-    this._token = await client.getAccessToken(requestContext, authToken);
+    this._token = await getAccessTokenFromBackend(userCredentials);
     return this._token;
   }
 

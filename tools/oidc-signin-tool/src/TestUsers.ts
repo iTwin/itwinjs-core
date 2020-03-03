@@ -2,8 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Config, AccessToken, IAuthorizationClient, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { TestUserCredentials, TestOidcClient, TestOidcConfiguration } from "./TestOidcClient";
+import { AccessToken, IAuthorizationClient, Config } from "@bentley/imodeljs-clients";
+import { BentleyError, AuthStatus } from "@bentley/bentleyjs-core";
+
+// Keep the dependencies of this file to only ones that can be used from both the frontend and backend.  This allows the same class for
+// test users to be used in either case.
+
+/**
+ * Interface for test user credentials
+ * @alpha
+ */
+export interface TestUserCredentials {
+  email: string;
+  password: string;
+}
+
+/**
+ * Configuration used by [[TestOidcClient]]
+ * @alpha
+ */
+export interface TestOidcConfiguration {
+  clientId: string;
+  redirectUri: string;
+  scope: string;
+}
 
 /**
  * Test users with various permissions for the iModel.js integration tests
@@ -42,60 +64,48 @@ export class TestUsers {
     };
   }
 
-  private static _clients = new Map<string, IAuthorizationClient>();
-
   /**
-   * Gets the default iModel.js internal OIDC SPA client registration
+   * Gets the default iModel.js OIDC SPA client registration available at the config variables:
+   *
+   *  - imjs_oidc_browser_test_client_id
+   *  - imjs_oidc_browser_test_redirect_uri
+   *  - imjs_oidc_browser_test_scopes
    */
-  private static getTestOidcConfiguration(): TestOidcConfiguration {
+  public static getTestOidcConfiguration(): TestOidcConfiguration {
     return {
       clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
       scope: Config.App.getString("imjs_oidc_browser_test_scopes"),
     };
   }
+}
 
-  /**
-   * Gets the authorization client for the specified iModel.js test user.
-   * - Caches the client for future use.
-   * - Uses the default iModel.js internal OIDC SPA client registration
-   * @param user Test user credentials
-   * @internal
-   */
-  public static getAuthorizationClient(user: TestUserCredentials): IAuthorizationClient {
-    let client = this._clients.get(user.email);
-    if (client !== undefined)
-      return client;
+/**
+ * Basic AuthorizationClient to use with an already created access token.
+ * @internal
+ */
+export class TestAuthorizationClient implements IAuthorizationClient {
+  constructor(private _accessToken?: AccessToken) { }
 
-    const config = this.getTestOidcConfiguration();
-    client = new TestOidcClient(config, user);
-    this._clients.set(user.email, client);
-    return client;
+  public get isAuthorized(): boolean {
+    return !!this._accessToken;
   }
 
-  /**
-   * Get the access token for the specified iModel.js test user.
-   * - Retrieves a previously cached token if that's available, or otherwise uses [[TestOidcClient]]
-   * to signin the user through a headless browser.
-   * - Uses the default iModel.js internal OIDC SPA client registration
-   * @param user Test user credentials
-   * @internal
-   */
-  public static async getAccessToken(user: TestUserCredentials): Promise<AccessToken> {
-    const client = this.getAuthorizationClient(user);
-    return client.getAccessToken();
+  public get hasExpired(): boolean {
+    return !this._accessToken;
   }
 
-  /**
-   * Create or retrieve the client request context for the specified iModel.js test user
-   * - A previously cached token is reused if available to construct the context, or otherwise uses [[TestOidcClient]]
-   * to signin the user through a headless browser.
-   * - Uses the default iModel.js internal OIDC SPA client registration
-   * @param user Test user credentials
-   * @internal
-   */
-  public static async getAuthorizedClientRequestContext(user: TestUserCredentials): Promise<AuthorizedClientRequestContext> {
-    const accessToken = await this.getAccessToken(user);
-    return new AuthorizedClientRequestContext(accessToken);
+  public get hasSignedIn(): boolean {
+    return !!this._accessToken;
+  }
+
+  public async getAccessToken(): Promise<AccessToken> {
+    if (!this._accessToken)
+      throw new BentleyError(AuthStatus.Error, "Cannot get access token");
+    return this._accessToken;
+  }
+
+  public setAccessToken(accessToken?: AccessToken) {
+    this._accessToken = accessToken;
   }
 }

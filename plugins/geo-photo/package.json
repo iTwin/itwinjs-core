@@ -74,6 +74,7 @@
     "@bentley/config-loader": "2.0.0-dev.21",
     "@bentley/express-server": "2.0.0-dev.21",
     "@bentley/imodeljs-backend": "2.0.0-dev.21",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.21",
     "ui-test-app": "0.0.0",
     "@types/node": "10.14.1",
     "@types/chai": "^4.1.4",

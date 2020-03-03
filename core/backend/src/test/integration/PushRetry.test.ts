@@ -7,7 +7,7 @@ import * as path from "path";
 import { Id64String, Id64, DbResult, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
 import { HubIModel, IModelQuery, ChangeSetPostPushEvent, NamedVersionCreatedEvent, RequestGlobalOptions, RequestTimeoutOptions, Config } from "@bentley/imodeljs-clients";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, AuthorizedBackendRequestContext,
   ECSqlStatement, ChangeSummary, ConcurrencyControl, IModelJsFs,
@@ -36,7 +36,7 @@ describe("PushRetry", () => {
   let backupTimeout: RequestTimeoutOptions;
 
   before(async () => {
-    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, TestConfig.projectName);
 
     backupTimeout = RequestGlobalOptions.timeout;

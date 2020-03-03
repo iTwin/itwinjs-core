@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { OpenMode, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { BriefcaseQuery, Briefcase as HubBriefcase, AuthorizedClientRequestContext, HubIModel } from "@bentley/imodeljs-clients";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import {
   KeepBriefcase, IModelDb, OpenParams, Element, IModelJsFs,
@@ -60,14 +60,14 @@ describe("BriefcaseManager (#integration)", () => {
     IModelTestUtils.setupLogging();
     // IModelTestUtils.setupDebugLogLevels();
 
-    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
     noVersionsTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "NoVersionsTest");
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadWriteTest");
 
     // Purge briefcases that are close to reaching the acquire limit
-    managerRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
+    managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "NoVersionsTest");
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadWriteTest");
@@ -476,8 +476,8 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should reuse a briefcaseId when re-opening iModel-s of different versions for pullAndPush and pullOnly workflows", async () => {
-    const userContext1 = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
-    const userContext2 = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager);
+    const userContext1 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
+    const userContext2 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, "BriefcaseReuseTest");
@@ -517,8 +517,8 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should be able to edit PullOnly briefcases and upgrade versions on re-open as necessary, but not be able to push changes", async () => {
-    const userContext1 = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager); // User1 is just used to create and update the iModel
-    const userContext2 = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager); // User2 is used for the test
+    const userContext1 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager); // User1 is just used to create and update the iModel
+    const userContext2 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // User2 is used for the test
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, "PullOnlyTest");
@@ -604,8 +604,8 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should be able to edit a PullAndPush briefcase, reopen it as of a new version, and then push changes", async () => {
-    const userContext1 = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager); // User1 is just used to create and update the iModel
-    const userContext2 = await TestUsers.getAuthorizedClientRequestContext(TestUsers.superManager); // User2 is used for the test
+    const userContext1 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager); // User1 is just used to create and update the iModel
+    const userContext2 = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager); // User2 is used for the test
 
     // User1 creates an iModel on the Hub
     const testUtility = new TestChangeSetUtility(userContext1, "PullAndPushTest");

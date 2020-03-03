@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ClientRequestContext, OpenMode, using } from "@bentley/bentleyjs-core";
-import { ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
+import { OpenMode, using } from "@bentley/bentleyjs-core";
 import { NativeApp, IModelApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
-import { TestUsers } from "./TestUsers";
-import { TestUtility } from "./TestUtility";
 import { BriefcaseProps } from "@bentley/imodeljs-common";
+import { Config } from "@bentley/imodeljs-clients";
+import { TestUsers, TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUtility } from "./TestUtility";
 import { OfflineScope } from "./HttpRequestHook";
+
 describe("NativeApp (#integration)", () => {
   before(async () => {
     await NativeApp.startup({
@@ -18,9 +19,8 @@ describe("NativeApp (#integration)", () => {
       sessionId: "testsessionid",
     });
 
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
+    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
   });
 
   after(async () => {
@@ -31,8 +31,8 @@ describe("NativeApp (#integration)", () => {
   it("Download Briefcase (#integration)", async () => {
     // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
-    const testProjectName = "iModelJsIntegrationTest";
-    const testIModelName = "Stadium Dataset 1";
+    const testProjectName = Config.App.get("imjs_test_project_name");
+    const testIModelName = Config.App.get("imjs_test_imodel_name");
 
     await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
 
@@ -49,7 +49,6 @@ describe("NativeApp (#integration)", () => {
       assert(rs[0].fileSize! > 0);
       const conn = await NativeApp.openBriefcase("", rs[0].iModelId!, rs[0].changeSetId!, OpenMode.Readonly);
       const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
-      // tslint:disable-next-line:no-console
       assert.notEqual(rowCount, 0);
       assert.equal(scope.rejected.length, 0);
     });
@@ -58,8 +57,8 @@ describe("NativeApp (#integration)", () => {
   it("Download Briefcase Offline (#integration)", async () => {
     // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
-    const testProjectName = "iModelJsIntegrationTest";
-    const testIModelName = "Stadium Dataset 1";
+    const testProjectName = Config.App.get("imjs_test_project_name");
+    const testIModelName = Config.App.get("imjs_test_imodel_name");
 
     await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
     const testProjectId = await TestUtility.getTestProjectId(testProjectName);

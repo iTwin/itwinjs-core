@@ -5,9 +5,11 @@
 
 import {
   IModelHubClient, AccessToken, GlobalEventSubscription, AuthorizationToken,
-  ImsActiveSecureTokenClient, IModelHubGlobalEvent, GlobalEventSAS, GetEventOperationType,
-  AuthorizedClientRequestContext, ImsUserCredentials,
+  IModelHubGlobalEvent, GlobalEventSAS, GetEventOperationType,
+  AuthorizedClientRequestContext,
+  Config,
 } from "@bentley/imodeljs-clients";
+import { OidcAgentClient, OidcBackendClientConfiguration } from "@bentley/imodeljs-clients-backend";
 import { Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
 
 class MockAccessToken extends AccessToken {
@@ -15,18 +17,19 @@ class MockAccessToken extends AccessToken {
   public toTokenString() { return ""; }
 }
 
-const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
-const imodelHubClient: IModelHubClient = new IModelHubClient();
-const userCredentials: ImsUserCredentials = {
-  email: "",
-  password: "",
+const clientConfig: OidcBackendClientConfiguration = {
+  clientId: Config.App.get("imjs_agent_test_client_id"),
+  clientSecret: Config.App.get("imjs_agent_test_client_secret"),
+  scope: Config.App.get("imjs_oidc_browser_test_scopes"),
 };
+
+const authorizationClient = new OidcAgentClient(clientConfig);
+const imodelHubClient: IModelHubClient = new IModelHubClient();
 
 // __PUBLISH_EXTRACT_START__ GlobalEventHandler.createListener.authenticate.example-code
 async function authenticate(): Promise<AccessToken> {
   const requestContext = new ClientRequestContext();
-  const authorizationToken: AuthorizationToken = await authorizationClient
-    .getToken(requestContext, userCredentials);
+  const authorizationToken: AuthorizationToken = await authorizationClient.getAccessToken(requestContext);
   return imodelHubClient.getAccessToken(requestContext, authorizationToken);
 }
 // __PUBLISH_EXTRACT_END__

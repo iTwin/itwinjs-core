@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { TestUtility } from "./TestUtility";
-import { TestUsers } from "./TestUsers";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelConnection, MockRender, IModelApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
 
@@ -37,7 +37,6 @@ describe("ChangeSummary (#integration)", () => {
     };
     MockRender.App.startup(options);
 
-    assert(IModelApp.authorizationClient);
     assert(IModelApp.authorizationClient);
 
     testProjectId = await TestUtility.getTestProjectId(testProjectName);

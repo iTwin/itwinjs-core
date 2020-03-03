@@ -3,18 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Project, IModelQuery, Briefcase as HubBriefcase, BriefcaseQuery, ImsUserCredentials, AccessToken, AuthorizedClientRequestContext, LockLevel, LockQuery } from "@bentley/imodeljs-clients";
+import { Project, IModelQuery, Briefcase as HubBriefcase, BriefcaseQuery, AccessToken, AuthorizedClientRequestContext, LockLevel, LockQuery } from "@bentley/imodeljs-clients";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Logger, ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
+import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
+
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
 
+import { getAccessTokenFromBackend } from "../../common/SideChannels";
+
 export class TestUtility {
   public static imodelCloudEnv: IModelCloudEnvironment;
 
-  public static async initializeTestProject(testProjectName: string, user: ImsUserCredentials): Promise<AccessToken> {
+  public static async getAuthorizedClientRequestContext(user: TestUserCredentials): Promise<AuthorizedClientRequestContext> {
+    const accessToken = await getAccessTokenFromBackend(user);
+    return new AuthorizedClientRequestContext(accessToken);
+  }
+
+  public static async initializeTestProject(testProjectName: string, user: TestUserCredentials): Promise<AccessToken> {
     const cloudParams = await TestRpcInterface.getClient().getCloudEnv();
     if (cloudParams.iModelBank) {
       this.imodelCloudEnv = new IModelBankCloudEnv(cloudParams.iModelBank.url, false);

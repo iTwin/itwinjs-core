@@ -7,7 +7,6 @@
   "license": "MIT",
   "scripts": {
     "build": "buildIModelJsModule",
-    "build:module": "buildIModelJsModule",
     "clean": "rimraf lib .rush package-deps.json",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=imodeljs-clients",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=imodeljs-clients.ts --onlyJson %TYPEDOC_THEME%",
@@ -56,6 +55,7 @@
     "@bentley/bentleyjs-core": "2.0.0-dev.21",
     "@bentley/build-tools": "2.0.0-dev.21",
     "@bentley/config-loader": "2.0.0-dev.21",
+    "@bentley/oidc-signin-tool": "2.0.0-dev.21",
     "@bentley/geometry-core": "2.0.0-dev.21",
     "@bentley/webpack-tools": "2.0.0-dev.21",
     "@types/chai": "^4.1.4",

@@ -8,7 +8,7 @@ import { Code } from "@bentley/imodeljs-common";
 import { Point3d, LineSegment3d, IModelJson, YawPitchRollAngles } from "@bentley/geometry-core";
 import { OpenMode, Id64String } from "@bentley/bentleyjs-core";
 import { TestUtility } from "./TestUtility";
-import { TestUsers } from "./TestUsers";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { PlacementTestTool } from "./TestPrimitiveTools";
 import { LockLevel } from "@bentley/imodeljs-clients";
 

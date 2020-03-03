@@ -4,15 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import {
   IModelReadRpcInterface, IModelTileRpcInterface,
-  IModelWriteRpcInterface, SnapshotIModelRpcInterface, WipRpcInterface,
-  DevToolsRpcInterface,
 } from "@bentley/imodeljs-common";
 
 export const rpcInterfaces = [
   IModelReadRpcInterface,
   IModelTileRpcInterface,
-  IModelWriteRpcInterface,
-  SnapshotIModelRpcInterface,
-  WipRpcInterface,
-  DevToolsRpcInterface,
 ];
