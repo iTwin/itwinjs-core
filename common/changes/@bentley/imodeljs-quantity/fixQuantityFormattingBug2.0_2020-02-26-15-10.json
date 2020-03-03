@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-quantity",
+      "comment": "Fix quantity formatting bug for composite formats when precision is set low.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-quantity",
+  "email": "bill.steinbock@bentley.com"
+}
