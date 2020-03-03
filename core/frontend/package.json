@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "2.0.0-dev.20",
+  "version": "2.0.0-dev.21",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -66,27 +66,27 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0-dev.20",
-    "@bentley/geometry-core": "^2.0.0-dev.20",
-    "@bentley/imodeljs-clients": "^2.0.0-dev.20",
-    "@bentley/imodeljs-common": "^2.0.0-dev.20",
-    "@bentley/imodeljs-i18n": "^2.0.0-dev.20",
-    "@bentley/imodeljs-quantity": "^2.0.0-dev.20"
+    "@bentley/bentleyjs-core": "^2.0.0-dev.21",
+    "@bentley/geometry-core": "^2.0.0-dev.21",
+    "@bentley/imodeljs-clients": "^2.0.0-dev.21",
+    "@bentley/imodeljs-common": "^2.0.0-dev.21",
+    "@bentley/imodeljs-i18n": "^2.0.0-dev.21",
+    "@bentley/imodeljs-quantity": "^2.0.0-dev.21"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.20",
-    "@bentley/build-tools": "2.0.0-dev.20",
-    "@bentley/certa": "2.0.0-dev.20",
-    "@bentley/geometry-core": "2.0.0-dev.20",
-    "@bentley/imodeljs-clients": "2.0.0-dev.20",
-    "@bentley/imodeljs-common": "2.0.0-dev.20",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.20",
-    "@bentley/imodeljs-quantity": "2.0.0-dev.20",
-    "@bentley/webpack-tools": "2.0.0-dev.20",
+    "@bentley/bentleyjs-core": "2.0.0-dev.21",
+    "@bentley/build-tools": "2.0.0-dev.21",
+    "@bentley/certa": "2.0.0-dev.21",
+    "@bentley/geometry-core": "2.0.0-dev.21",
+    "@bentley/imodeljs-clients": "2.0.0-dev.21",
+    "@bentley/imodeljs-common": "2.0.0-dev.21",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.21",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.21",
+    "@bentley/webpack-tools": "2.0.0-dev.21",
     "@types/chai": "^4.1.4",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
@@ -108,7 +108,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/ui-abstract": "2.0.0-dev.20",
+    "@bentley/ui-abstract": "2.0.0-dev.21",
     "fuse.js": "^3.3.0",
     "js-base64": "^2.4.5",
     "ldclient-js": "^2.6.0",
