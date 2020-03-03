@@ -288,6 +288,8 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
       <>
         <ReactResizeDetector handleWidth handleHeight onResize={this._onResize} />
         <NZ_Toolbar
+          style={this.props.style}
+          className={this.props.className}
           expandsTo={this.props.expandsTo}
           panelAlignment={this.props.panelAlignment}
           items={
