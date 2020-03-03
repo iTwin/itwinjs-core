@@ -8,6 +8,42 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
+import { Ruleset, RuleTypes, ChildNodeSpecificationTypes } from "@bentley/presentation-common";
+
+const RULESET: Ruleset = {
+  id: "SimpleHierarchy",
+  supportedSchemas: { schemaNames: ["Generic", "BisCore"] },
+  rules: [{
+    ruleType: RuleTypes.RootNodes,
+    specifications: [{
+      specType: ChildNodeSpecificationTypes.CustomNode,
+      type: "root",
+      label: "root label",
+      description: "root description",
+      imageId: "root image id",
+    }],
+    customizationRules: [{
+      ruleType: RuleTypes.CheckBox,
+      defaultValue: true,
+      isEnabled: false,
+    }, {
+      ruleType: RuleTypes.StyleOverride,
+      foreColor: "\"Red\"",
+      backColor: "\"Green\"",
+      fontStyle: "\"Italic Bold\"",
+    }],
+  }, {
+    ruleType: RuleTypes.ChildNodes,
+    condition: "ParentNode.Type = \"root\"",
+    specifications: [{
+      specType: ChildNodeSpecificationTypes.CustomNode,
+      type: "child",
+      label: "child label",
+      description: "child description",
+      imageId: "child image id",
+    }],
+  }],
+};
 
 describe("TreeDataProvider", async () => {
 
@@ -19,7 +55,7 @@ describe("TreeDataProvider", async () => {
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
     imodel = await IModelConnection.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
-    provider = new PresentationTreeDataProvider({ imodel, ruleset: "SimpleHierarchy" });
+    provider = new PresentationTreeDataProvider({ imodel, ruleset: RULESET });
   });
 
   after(async () => {

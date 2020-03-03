@@ -8,11 +8,35 @@ import { expect } from "chai";
 import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { Ruleset } from "@bentley/presentation-common";
+import { Ruleset, RuleTypes, ChildNodeSpecificationTypes } from "@bentley/presentation-common";
 import { Presentation, RulesetEmbedder, DuplicateRulesetHandlingStrategy, PresentationManagerMode } from "@bentley/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
 import { tweakRuleset } from "./Helpers";
 import { initialize, terminate } from "../IntegrationTests";
+
+const RULESET_1: Ruleset = {
+  id: "ruleset_1",
+  rules: [{
+    ruleType: RuleTypes.RootNodes,
+    specifications: [{
+      specType: ChildNodeSpecificationTypes.CustomNode,
+      type: "test 1",
+      label: "label 1",
+    }],
+  }],
+};
+
+const RULESET_2: Ruleset = {
+  id: "ruleset_2",
+  rules: [{
+    ruleType: RuleTypes.RootNodes,
+    specifications: [{
+      specType: ChildNodeSpecificationTypes.CustomNode,
+      type: "test 2",
+      label: "label 2",
+    }],
+  }],
+};
 
 describe("RulesEmbedding", () => {
   let imodel: IModelDb;
@@ -113,30 +137,28 @@ describe("RulesEmbedding", () => {
 
   it("locates rulesets", async () => {
     // Create a ruleset and insert it
-    const rulesetToLocate = require("../../test-rulesets/Rulesets/default");
-    const insertId = await embedder.insertRuleset(rulesetToLocate);
+    const insertId = await embedder.insertRuleset(RULESET_1);
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    const rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: rulesetToLocate.id });
+    const rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
   it("locates rulesets correctly if rules are updated", async () => {
     // Create a ruleset and insert it
-    const rulesetToLocate = require("../../test-rulesets/Rulesets/default");
-    const insertId = await embedder.insertRuleset(rulesetToLocate);
+    const insertId = await embedder.insertRuleset(RULESET_1);
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
-    let rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: rulesetToLocate.id });
+    let rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
 
     const rulesetElement = imodel.elements.getElement(insertId);
     rulesetElement.setJsonProperty("id", faker.random.uuid());
     imodel.elements.updateElement(rulesetElement);
 
-    rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: rulesetToLocate.id });
+    rootNodes = await Presentation.getManager().getNodes(ClientRequestContext.current, { imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
 
@@ -155,8 +177,7 @@ describe("RulesEmbedding", () => {
     const insertId1 = await embedder.insertRuleset(ruleset, DuplicateRulesetHandlingStrategy.Skip);
     expect(Id64.isValid(insertId1)).true;
 
-    const rulesetChanged = require("../../test-rulesets/Rulesets/other");
-    rulesetChanged.id = ruleset.id;
+    const rulesetChanged = { ...RULESET_2, id: ruleset.id };
     expectRulesetsToNotBeDeepEqual(ruleset, rulesetChanged);
     expect(ruleset.id).to.be.equal(rulesetChanged.id);
 
@@ -174,8 +195,7 @@ describe("RulesEmbedding", () => {
     const insertId1 = await embedder.insertRuleset(ruleset, DuplicateRulesetHandlingStrategy.Replace);
     expect(Id64.isValid(insertId1)).true;
 
-    const rulesetChanged = require("../../test-rulesets/Rulesets/other");
-    rulesetChanged.id = ruleset.id;
+    const rulesetChanged = { ...RULESET_2, id: ruleset.id };
     expectRulesetsToNotBeDeepEqual(ruleset, rulesetChanged);
     expect(ruleset.id).to.be.equal(rulesetChanged.id);
 

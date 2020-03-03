@@ -5,14 +5,14 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "3da8ffb01a263e88441398a167bf117c",
-        "2033788ebe3f7658c6897097d06760fe",
+        "4857d2918371f8a37fde18b59b74879f",
+        "9270c80e6796b26452cf4ad580f2661b",
       ],
       "type": "child",
     },
     "description": "child description",
     "icon": "child image id",
-    "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
+    "id": "9270c80e6796b26452cf4ad580f2661b/4857d2918371f8a37fde18b59b74879f",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -25,7 +25,7 @@ Array [
         "valueFormat": 0,
       },
     },
-    "parentId": "3da8ffb01a263e88441398a167bf117c",
+    "parentId": "4857d2918371f8a37fde18b59b74879f",
   },
 ]
 `;
@@ -35,14 +35,14 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "3da8ffb01a263e88441398a167bf117c",
-        "2033788ebe3f7658c6897097d06760fe",
+        "4857d2918371f8a37fde18b59b74879f",
+        "9270c80e6796b26452cf4ad580f2661b",
       ],
       "type": "child",
     },
     "description": "child description",
     "icon": "child image id",
-    "id": "2033788ebe3f7658c6897097d06760fe/3da8ffb01a263e88441398a167bf117c",
+    "id": "9270c80e6796b26452cf4ad580f2661b/4857d2918371f8a37fde18b59b74879f",
     "label": PropertyRecord {
       "property": Object {
         "displayLabel": "Label",
@@ -55,7 +55,7 @@ Array [
         "valueFormat": 0,
       },
     },
-    "parentId": "3da8ffb01a263e88441398a167bf117c",
+    "parentId": "4857d2918371f8a37fde18b59b74879f",
   },
 ]
 `;
@@ -65,7 +65,7 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "3da8ffb01a263e88441398a167bf117c",
+        "4857d2918371f8a37fde18b59b74879f",
       ],
       "type": "root",
     },
@@ -73,7 +73,7 @@ Array [
     "description": "root description",
     "hasChildren": true,
     "icon": "root image id",
-    "id": "3da8ffb01a263e88441398a167bf117c",
+    "id": "4857d2918371f8a37fde18b59b74879f",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": PropertyRecord {
@@ -105,7 +105,7 @@ Array [
   Object {
     "__presentation-components/key": Object {
       "pathFromRoot": Array [
-        "3da8ffb01a263e88441398a167bf117c",
+        "4857d2918371f8a37fde18b59b74879f",
       ],
       "type": "root",
     },
@@ -113,7 +113,7 @@ Array [
     "description": "root description",
     "hasChildren": true,
     "icon": "root image id",
-    "id": "3da8ffb01a263e88441398a167bf117c",
+    "id": "4857d2918371f8a37fde18b59b74879f",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": PropertyRecord {

@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
+  "id": "SelectedNodeContent",
+  "rules": [
+    {
+      "ruleType": "Content",
+      "specifications": [
+        {
+          "specType": "SelectedNodeInstances"
+        }
+      ]
+    }
+  ]
+}

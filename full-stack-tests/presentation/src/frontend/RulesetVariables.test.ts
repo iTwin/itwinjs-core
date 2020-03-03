@@ -5,16 +5,32 @@
 // tslint:disable:no-direct-imports
 import { expect } from "chai";
 import * as faker from "faker";
-import { initialize, terminate } from "../IntegrationTests";
+import { initialize, terminate, resetBackend } from "../IntegrationTests";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { Ruleset } from "@bentley/presentation-common";
-import { Presentation, RulesetVariablesManager } from "@bentley/presentation-frontend";
+import { Ruleset, RuleTypes, ChildNodeSpecificationTypes } from "@bentley/presentation-common";
+import { Presentation, RulesetVariablesManager, PresentationManager } from "@bentley/presentation-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+
+const RULESET: Ruleset = {
+  id: "ruleset vars test",
+  rules: [{
+    ruleType: RuleTypes.RootNodes,
+    specifications: [{
+      specType: ChildNodeSpecificationTypes.CustomNode,
+      type: "root",
+      label: "root",
+    }],
+  }, {
+    ruleType: RuleTypes.LabelOverride,
+    condition: "ThisNode.Type = \"root\"",
+    label: "GetVariableStringValue(\"variable_id\")",
+  }],
+};
 
 describe("Ruleset Variables", async () => {
 
   let variables: RulesetVariablesManager;
-  const ruleset: Ruleset = require("../../test-rulesets/RulesetVariables/default");
 
   before(async () => {
     await initialize();
@@ -25,17 +41,8 @@ describe("Ruleset Variables", async () => {
   });
 
   beforeEach(() => {
-    variables = Presentation.presentation.vars(ruleset.id);
+    variables = Presentation.presentation.vars(RULESET.id);
   });
-
-  /* note: at this moment backend variable values can't be accessed from frontend
-  it("get variable value added through ruleset", async () => {
-    await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
-      const actualValue = await variables.getString(ruleset.vars![0].vars![0].id);
-      expect(actualValue).to.be.equal(ruleset.vars![0].vars![0].defaultValue);
-    });
-  });
-  */
 
   it("adds and modifies string variable", async () => {
     const value = faker.random.word();
@@ -249,6 +256,73 @@ describe("Ruleset Variables", async () => {
 
     const stringValue = await variables.getString(variableId);
     expect(stringValue).to.equal("");
+  });
+
+  describe("Multiple frontends for one backend", async () => {
+
+    let imodel: IModelConnection;
+    let frontends: PresentationManager[];
+
+    beforeEach(async () => {
+      const testIModelName = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+      imodel = await IModelConnection.openSnapshot(testIModelName);
+      frontends = [0, 1].map(() => PresentationManager.create());
+    });
+
+    afterEach(async () => {
+      await imodel.closeSnapshot();
+      frontends.forEach((f) => f.dispose());
+    });
+
+    it("handles multiple simultaneous requests from different frontends with ruleset variables", async () => {
+      for (let i = 0; i < 100; ++i) {
+        frontends.forEach(async (f, fi) => f.vars(RULESET.id).setString("variable_id", `${i}_${fi}`));
+        const nodes = await Promise.all(frontends.map(async (f) => f.getNodes({ imodel, rulesetOrId: RULESET })));
+        frontends.forEach((_f, fi) => {
+          expect(nodes[fi][0].label.displayValue).to.eq(`${i}_${fi}`);
+        });
+      }
+    });
+
+  });
+
+  describe("Multiple backends for one frontend", async () => {
+
+    let imodel: IModelConnection;
+    let frontend: PresentationManager;
+
+    beforeEach(async () => {
+      const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
+      imodel = await IModelConnection.openSnapshot(testIModelName);
+      expect(imodel).is.not.null;
+      frontend = PresentationManager.create();
+    });
+
+    afterEach(async () => {
+      await imodel.closeSnapshot();
+      frontend.dispose();
+    });
+
+    it("can use the same frontend-registered ruleset variables after backend is reset", async () => {
+      const vars = frontend.vars("AnyRulesetId");
+      const var1: [string, string] = [faker.random.uuid(), faker.random.words()];
+      const var2: [string, number] = [faker.random.uuid(), faker.random.number()];
+
+      await vars.setString(var1[0], var1[1]);
+      expect(await vars.getString(var1[0])).to.eq(var1[1]);
+
+      resetBackend();
+
+      expect(await vars.getString(var1[0])).to.eq(var1[1]);
+      await vars.setInt(var2[0], var2[1]);
+      expect(await vars.getInt(var2[0])).to.eq(var2[1]);
+
+      resetBackend();
+
+      expect(await vars.getString(var1[0])).to.eq(var1[1]);
+      expect(await vars.getInt(var2[0])).to.eq(var2[1]);
+    });
+
   });
 
 });
