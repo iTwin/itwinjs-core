@@ -74,6 +74,7 @@ import { NineZoneManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneStagePanelManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneState } from '@bentley/ui-ninezone';
 import { NoChildrenProps } from '@bentley/ui-core';
+import { NodeCheckboxRenderProps } from '@bentley/ui-core';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { NotificationManager } from '@bentley/imodeljs-frontend';
@@ -133,11 +134,18 @@ import { ToolSettingsPropertySyncItem } from '@bentley/ui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
+import { TreeCheckboxStateChangeEventArgs } from '@bentley/ui-components';
 import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
+import { TreeNodeRendererProps } from '@bentley/ui-components';
+import { TreeRendererProps } from '@bentley/ui-components';
+import { TreeSelectionModificationEventArgs } from '@bentley/ui-components';
+import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
+import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
+import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
@@ -706,33 +714,63 @@ export interface CategoryTreeProps {
     allViewports?: boolean;
     // @internal
     categoryVisibilityHandler?: CategoryVisibilityHandler;
-    clearAll?: boolean;
+    // @internal
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
+    // @alpha
+    hideAll?: BeUiEvent<void>;
     iModel: IModelConnection;
-    selectAll?: boolean;
+    // @alpha
+    showAll?: BeUiEvent<void>;
     showSearchBox?: boolean;
 }
 
 // @internal (undocumented)
-export class CategoryVisibilityHandler {
-    constructor(imodel: IModelConnection, categories: Category[], filteredProvider?: IPresentationTreeDataProvider, allViewports?: boolean);
+export class CategoryVisibilityHandler implements IVisibilityHandler {
+    constructor(params: CategoryVisibilityHandlerParams);
+    // (undocumented)
+    activeView?: Viewport;
     // (undocumented)
     allViewports?: boolean;
     // (undocumented)
     categories: Category[];
+    // (undocumented)
+    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
+    // (undocumented)
+    dispose(): void;
     enableCategory(ids: string[], enabled: boolean, enableAllSubCategories?: boolean): void;
     enableSubCategory(key: string, enabled: boolean): void;
     // (undocumented)
-    filteredProvider?: IPresentationTreeDataProvider;
-    // (undocumented)
     getParent(key: string): Category | undefined;
     // (undocumented)
-    isCategoryVisible(id: string, activeView?: Viewport): boolean;
+    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus;
     // (undocumented)
-    isSubCategoryVisible(id: string, activeView?: Viewport): boolean;
+    hideAll(filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
     // (undocumented)
-    setEnableAll(enable: boolean): Promise<void>;
+    isCategoryVisible(id: string): boolean;
+    // (undocumented)
+    isSubCategoryVisible(id: string): boolean;
+    // (undocumented)
+    get onVisibilityChange(): (() => void) | undefined;
+    set onVisibilityChange(callback: (() => void) | undefined);
+    // (undocumented)
+    setEnableAll(enable: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
+    // (undocumented)
+    showAll(filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
+}
+
+// @internal (undocumented)
+export interface CategoryVisibilityHandlerParams {
+    // (undocumented)
+    activeView?: Viewport;
+    // (undocumented)
+    allViewports?: boolean;
+    // (undocumented)
+    categories: Category[];
+    // (undocumented)
+    imodel: IModelConnection;
+    // (undocumented)
+    onVisibilityChange?: () => void;
 }
 
 // @internal
@@ -1187,6 +1225,9 @@ export function createAction<T extends string>(type: T): Action<T>;
 
 // @public
 export function createAction<T extends string, P>(type: T, payload: P): ActionWithPayload<T, DeepReadonly<P>>;
+
+// @alpha
+export const createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element;
 
 // @beta
 export class CubeNavigationAidControl extends NavigationAidControl {
@@ -2677,6 +2718,16 @@ export interface ItemProps extends IconProps_2 {
     tooltipKey?: string;
 }
 
+// @alpha
+export interface IVisibilityHandler extends IDisposable {
+    // (undocumented)
+    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
+    // (undocumented)
+    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
+    // (undocumented)
+    onVisibilityChange?: () => void;
+}
+
 // @public
 export class KeyboardShortcut extends ItemDefBase {
     constructor(props: KeyboardShortcutProps);
@@ -3216,13 +3267,13 @@ export interface ModelsTreeProps {
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
-    imodel: IModelConnection;
+    iModel: IModelConnection;
+    // @internal
+    modelsVisibilityHandler?: VisibilityHandler;
     rootElementRef?: React.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
     // @alpha
     selectionPredicate?: ModelsTreeSelectionPredicate;
-    // @internal
-    visibilityHandler?: VisibilityHandler;
 }
 
 // @alpha
@@ -5085,6 +5136,9 @@ export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2
 // @beta
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
 
+// @alpha
+export const useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element;
+
 // @internal (undocumented)
 export function useWidgetDef(): WidgetDef | undefined;
 
@@ -5253,30 +5307,28 @@ export interface VisibilityComponentProps {
 }
 
 // @internal (undocumented)
-export class VisibilityHandler implements IDisposable {
+export class VisibilityHandler implements IVisibilityHandler {
     constructor(props: VisibilityHandlerProps);
     // (undocumented)
-    changeVisibility(node: TreeNodeItem, on: boolean): Promise<void>;
+    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, on: boolean): Promise<void>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    getDisplayStatus(node: TreeNodeItem): VisibilityStatus | Promise<VisibilityStatus>;
+    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
-    get onVisibilityChange(): () => void;
-    set onVisibilityChange(callback: () => void);
+    get onVisibilityChange(): (() => void) | undefined;
+    set onVisibilityChange(callback: (() => void) | undefined);
     }
 
 // @internal (undocumented)
 export interface VisibilityHandlerProps {
     // (undocumented)
-    dataProvider: IPresentationTreeDataProvider;
-    // (undocumented)
-    onVisibilityChange: () => void;
+    onVisibilityChange?: () => void;
     // (undocumented)
     viewport: Viewport;
 }
 
-// @internal (undocumented)
+// @alpha
 export interface VisibilityStatus {
     // (undocumented)
     isDisabled?: boolean;
@@ -5285,6 +5337,33 @@ export interface VisibilityStatus {
     // (undocumented)
     tooltip?: string;
 }
+
+// @alpha
+export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler {
+    constructor(params: VisibilityTreeEventHandlerParams);
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    onCheckboxStateChanged(event: TreeCheckboxStateChangeEventArgs): undefined;
+    // (undocumented)
+    onSelectionModified({ modifications }: TreeSelectionModificationEventArgs): import("@bentley/ui-components").Subscription | undefined;
+    // (undocumented)
+    onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): import("@bentley/ui-components").Subscription | undefined;
+    }
+
+// @alpha
+export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEventHandlerParams {
+    // (undocumented)
+    selectionPredicate?: VisibilityTreeSelectionPredicate;
+    // (undocumented)
+    visibilityHandler: IVisibilityHandler | undefined;
+}
+
+// @alpha
+export const visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element;
+
+// @alpha
+export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
 // @alpha
 export class VisibilityWidget extends WidgetControl {

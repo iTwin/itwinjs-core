@@ -65,7 +65,8 @@ alpha;CardSelectedEventArgs
 internal;Category
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
-internal;CategoryVisibilityHandler
+internal;CategoryVisibilityHandler 
+internal;CategoryVisibilityHandlerParams
 internal;ChangeSetInfo
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
@@ -114,6 +115,7 @@ public;ContentViewManager
 public;CoreTools
 public;createAction
 public;createAction
+alpha;createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element
 beta;CubeNavigationAidControl 
 beta;CursorDirection
 beta;CursorDirectionParts
@@ -256,6 +258,7 @@ public;class ItemDefBase
 public;ItemList 
 public;ItemMap 
 public;ItemProps 
+alpha;IVisibilityHandler 
 public;KeyboardShortcut 
 public;KeyboardShortcutContainer
 public;KeyboardShortcutManager
@@ -519,6 +522,7 @@ public;UserProfileBackstageItemProps
 internal;useToolSettings(): React.ReactNode
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
+alpha;useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element
 internal;useWidgetDef(): WidgetDef | undefined
 alpha;ValidationTextbox 
 internal;VersionInfo
@@ -537,7 +541,11 @@ public;VisibilityComponentHierarchy
 alpha;VisibilityComponentProps
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps
-internal;VisibilityStatus
+alpha;VisibilityStatus
+alpha;VisibilityTreeEventHandler 
+alpha;VisibilityTreeEventHandlerParams 
+alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element
+alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
 alpha;VisibilityWidget 
 public;Widget 
 beta;WIDGET_OPACITY_DEFAULT = 0.9

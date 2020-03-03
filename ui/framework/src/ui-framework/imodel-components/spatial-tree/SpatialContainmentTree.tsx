@@ -7,20 +7,19 @@
  */
 
 import * as React from "react";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
-import {
-  usePresentationTreeNodeLoader, useRulesetRegistration,
-  IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler,
-} from "@bentley/presentation-components";
-import { ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
-import { useDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../redux/connectIModel";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
+import { usePresentationTreeNodeLoader, IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler } from "@bentley/presentation-components";
+import { useDisposable } from "@bentley/ui-core";
 
 import "./SpatialContainmentTree.scss";
 
 const PAGING_SIZE = 20;
-/** Presentation rules used by ControlledSpatialContainmentTree
+
+/**
+ * Presentation rules used by ControlledSpatialContainmentTree
  * @internal
  */
 export const RULESET_SPATIAL_BREAKDOWN: Ruleset = require("./SpatialBreakdown.json"); // tslint:disable-line: no-var-requires
@@ -46,27 +45,27 @@ export interface SpatialContainmentTreeProps {
  * @public
  */
 export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
-  useRulesetRegistration(RULESET_SPATIAL_BREAKDOWN);
   const nodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModel,
-    ruleset: RULESET_SPATIAL_BREAKDOWN.id,
+    dataProvider: props.dataProvider,
+    ruleset: RULESET_SPATIAL_BREAKDOWN,
     pageSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,
-    dataProvider: props.dataProvider,
   });
-  const createEventHandler = React.useCallback(() => new UnifiedSelectionTreeEventHandler({
+
+  const eventHandler = useDisposable(React.useCallback(() => new UnifiedSelectionTreeEventHandler({
     nodeLoader,
     collapsedChildrenDisposalEnabled: true,
-  }), [nodeLoader]);
-  const eventHandler = useDisposable(createEventHandler);
+  }), [nodeLoader]));
   const visibleNodes = useVisibleTreeNodes(nodeLoader.modelSource);
+
   return (
-    <div className="uifw-spatial-tree">
+    <div className="ui-fw-spatial-tree">
       <ControlledTree
         visibleNodes={visibleNodes}
         nodeLoader={nodeLoader}
         treeEvents={eventHandler}
-        selectionMode={SelectionMode.None}
+        selectionMode={SelectionMode.Extended}
       />
     </div>
   );

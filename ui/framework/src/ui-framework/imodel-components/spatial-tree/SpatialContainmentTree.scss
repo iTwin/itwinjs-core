@@ -2,22 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/index";
+@import "../VisibilityTreeBase";
 
-.uifw-spatial-tree {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  position: relative;
-
-  .components-tree-errormessage {
-    position: absolute;
-    top: 40%;
-    left: 50%;
-    width: 75%;
-    text-align: center;
-    transform: translate(-50%,-50%);
-    font-style: italic;
-    color: $buic-foreground-muted;
-  }
-};
+.ui-fw-spatial-tree {
+  @include ui-fw-visibility-tree-base;
+}

@@ -84,6 +84,8 @@ export * from "./ui-framework/hooks/useFrameworkVersion";
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
 export * from "./ui-framework/imodel-components/models-tree/ModelsTree";
+export * from "./ui-framework/imodel-components/VisibilityTreeEventHandler";
+export * from "./ui-framework/imodel-components/VisibilityTreeRenderer";
 
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";

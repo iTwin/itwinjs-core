@@ -18,7 +18,7 @@ import { IPresentationTreeDataProvider } from "@bentley/presentation-components"
 import { SelectionManager, SelectionChangeEvent, Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { NodeKey, KeySet, ECInstancesNodeKey, StandardNodeTypes, InstanceKey, BaseNodeKey } from "@bentley/presentation-common";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting, HierarchyBuilder } from "@bentley/presentation-testing";
-import { ModelsTree, VisibilityHandler, ModelsTreeNodeType, RULESET_MODELS, VisibilityHandlerProps } from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
+import { ModelsTree, VisibilityHandler, RULESET_MODELS, VisibilityHandlerProps, ModelsTreeNodeType } from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
 import TestUtils from "../../TestUtils";
 
 describe("ModelsTree", () => {
@@ -161,16 +161,16 @@ describe("ModelsTree", () => {
 
       it("should match snapshot", async () => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node"), isCheckboxVisible: true }]);
-        visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
-        const result = render(<ModelsTree imodel={imodelMock.object} dataProvider={dataProvider} visibilityHandler={visibilityHandlerMock.object} />);
+        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        const result = render(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider} modelsVisibilityHandler={visibilityHandlerMock.object} />);
         await waitForElement(() => result.getByText("test-node"), { container: result.container });
         expect(result.baseElement).to.matchSnapshot();
       });
 
       it("requests data provider to load the hierarchy if `enablePreloading` is set in props", async () => {
         const spy = sinon.spy(dataProvider, "loadHierarchy");
-        render(<ModelsTree imodel={imodelMock.object} dataProvider={dataProvider}
-          visibilityHandler={visibilityHandlerMock.object} enablePreloading={true} />);
+        render(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider}
+          modelsVisibilityHandler={visibilityHandlerMock.object} enablePreloading={true} />);
         expect(spy).to.be.calledOnce;
       });
 
@@ -178,18 +178,18 @@ describe("ModelsTree", () => {
         setupDataProvider([createElementNode()]);
         dataProvider.getNodeKey = (): BaseNodeKey => ({ type: "test", pathFromRoot: [] });
 
-        visibilityHandlerMock.setup((x) => x.getDisplayStatus(moq.It.isAny())).returns(() => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: false }));
 
-        const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         const renderedNode = await waitForElement(() => result.getByText("element"));
         expect(renderedNode.querySelectorAll("input").length).to.eq(0);
       });
 
       it("renders nodes as unchecked when they're not displayed", async () => {
         setupDataProviderForEachNodeType();
-        visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
-        const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
         const nodes = result.getAllByTestId("tree-node");
         expect(nodes.length).to.eq(4);
@@ -198,9 +198,9 @@ describe("ModelsTree", () => {
 
       it("renders nodes as checked when they're displayed", async () => {
         setupDataProviderForEachNodeType();
-        visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: true }));
+        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: true }));
 
-        const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
         const nodes = result.getAllByTestId("tree-node");
         expect(nodes.length).to.eq(4);
@@ -213,8 +213,8 @@ describe("ModelsTree", () => {
 
         let cb: undefined | (() => void);
         visibilityHandlerMock.setup((x) => x.onVisibilityChange = moq.It.isAny()).callback((value) => cb = value).verifiable();
-        visibilityHandlerMock.setup((x) => x.getDisplayStatus(moq.It.isAny())).returns(() => ({ isDisplayed: false })).verifiable(moq.Times.exactly(1));
-        const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: false, isDisabled: false })).verifiable(moq.Times.exactly(3));
+        const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => {
           const renderedNode = result.getByTestId("tree-node");
           if (isNodeChecked(renderedNode))
@@ -224,7 +224,7 @@ describe("ModelsTree", () => {
         visibilityHandlerMock.verifyAll();
 
         visibilityHandlerMock.reset();
-        visibilityHandlerMock.setup((x) => x.getDisplayStatus(moq.It.isAny())).returns(() => ({ isDisplayed: true })).verifiable(moq.Times.exactly(1));
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: true, isDisabled: false })).verifiable(moq.Times.exactly(2));
         cb!();
         await waitForElement(() => {
           const renderedNode = result.getByTestId("tree-node");
@@ -239,12 +239,12 @@ describe("ModelsTree", () => {
         const node = createModelNode();
         setupDataProvider([node]);
 
-        visibilityHandlerMock.setup((x) => x.getDisplayStatus(moq.It.isAny())).returns(() => ({ isDisplayed: true }));
-        const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ isDisplayed: true }));
+        const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         const renderedNode = await waitForElement(() => result.getByTestId("tree-node"));
         expect(renderedNode.querySelectorAll("input").length).to.eq(1);
 
-        result.rerender(<ModelsTree imodel={imodelMock.object} dataProvider={dataProvider} />);
+        result.rerender(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider} />);
         const rerenderedNode = await waitForElement(() => result.getByTestId("tree-node"));
         expect(rerenderedNode.querySelectorAll("input").length).to.eq(0);
       });
@@ -252,10 +252,10 @@ describe("ModelsTree", () => {
       it("calls visibility handler's `changeVisibility` on node checkbox state changes to 'checked'", async () => {
         const node = createModelNode();
         setupDataProvider([node]);
-        visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
-        visibilityHandlerMock.setup(async (x) => x.changeVisibility(node, true)).verifiable();
+        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup(async (x) => x.changeVisibility(node, moq.It.isAny(), true)).returns(async () => Promise.resolve()).verifiable();
 
-        const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
         const renderedNode = result.getByTestId("tree-node");
         const cb = renderedNode.querySelector("input");
@@ -268,9 +268,9 @@ describe("ModelsTree", () => {
         const modelNode = createModelNode();
         setupDataProvider([modelNode]);
 
-        visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
-        const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
 
         const subjectNode = createSubjectNode();
@@ -286,7 +286,7 @@ describe("ModelsTree", () => {
           loadHierarchy: async () => { },
         };
 
-        result.rerender(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={newDataProvider} />);
+        result.rerender(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={newDataProvider} />);
         await waitForElement(() => result.getByText("subject"));
       });
 
@@ -294,15 +294,15 @@ describe("ModelsTree", () => {
         const node = createModelNode();
         setupDataProvider([node]);
 
-        visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
         const newVisibilityHandlerMock = moq.Mock.ofType<VisibilityHandler>();
-        newVisibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        newVisibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
-        const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
+        const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
 
-        result.rerender(<ModelsTree imodel={imodelMock.object} visibilityHandler={newVisibilityHandlerMock.object} dataProvider={dataProvider} />);
+        result.rerender(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={newVisibilityHandlerMock.object} dataProvider={dataProvider} />);
         await waitForElement(() => result.getByText("model"));
 
         visibilityHandlerMock.verify((x) => x.dispose(), moq.Times.once());
@@ -313,9 +313,9 @@ describe("ModelsTree", () => {
         it("adds node to unified selection", async () => {
           const element = createElementNode();
           setupDataProvider([element]);
-          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
-          const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} />);
+          const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} />);
           await waitForElement(() => result.getByText("element"));
 
           const renderedNode = result.getByTestId("tree-node");
@@ -326,11 +326,11 @@ describe("ModelsTree", () => {
         it("adds element node to unified selection according selectionPredicate", async () => {
           const element = createElementNode();
           setupDataProvider([element]);
-          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element;
 
-          const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
           await waitForElement(() => result.getByText("element"));
 
           const renderedNode = result.getByTestId("tree-node");
@@ -343,11 +343,11 @@ describe("ModelsTree", () => {
           const node2 = createModelNode();
           node2.id = "model2";
           setupDataProvider([node1, node2]);
-          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Model;
 
-          const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
           await waitForElement(() => result.getAllByText("model"));
 
           const renderedNodes = result.queryAllByTestId("tree-node");
@@ -362,11 +362,11 @@ describe("ModelsTree", () => {
         it("adds subject node to unified selection according selectionPredicate", async () => {
           const subject = createSubjectNode();
           setupDataProvider([subject]);
-          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Subject;
 
-          const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
           await waitForElement(() => result.getByText("subject"));
 
           const renderedNode = result.getByTestId("tree-node");
@@ -378,11 +378,11 @@ describe("ModelsTree", () => {
           const node = createElementNode();
           (node as any).extendedData = undefined;
           setupDataProvider([node]);
-          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Unknown;
 
-          const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
           await waitForElement(() => result.getByText("element"));
 
           const renderedNode = result.getByTestId("tree-node");
@@ -393,11 +393,11 @@ describe("ModelsTree", () => {
         it("does not add category node to unified selection according selectionPredicate", async () => {
           const node = createCategoryNode();
           setupDataProvider([node]);
-          visibilityHandlerMock.setup(async (x) => x.getDisplayStatus(moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
 
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Model;
 
-          const result = render(<ModelsTree imodel={imodelMock.object} visibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
+          const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} dataProvider={dataProvider} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
           await waitForElement(() => result.getByText("category"));
 
           const renderedNode = result.getByTestId("tree-node");
@@ -454,7 +454,6 @@ describe("ModelsTree", () => {
           partialProps = {};
         const props: VisibilityHandlerProps = {
           viewport: partialProps.viewport || mockViewport().object,
-          dataProvider: partialProps.dataProvider || dataProvider,
           onVisibilityChange: partialProps.onVisibilityChange || sinon.stub(),
         };
         return new VisibilityHandler(props);
@@ -512,6 +511,18 @@ describe("ModelsTree", () => {
 
       });
 
+      describe("onVisibilityChange", () => {
+
+        it("sets onVisibilityChange callback", async () => {
+          const callback = () => { };
+          await using(createHandler({}), async (handler) => {
+            handler.onVisibilityChange = callback;
+            expect(callback).to.be.eq(handler.onVisibilityChange);
+          });
+        });
+
+      });
+
       describe("getDisplayStatus", () => {
 
         it("returns disabled when node is not an instance node", async () => {
@@ -527,7 +538,7 @@ describe("ModelsTree", () => {
           const vpMock = mockViewport();
 
           await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-            const result = handler.getDisplayStatus(node);
+            const result = handler.getVisibilityStatus(node, node.__key);
             expect(isPromiseLike(result)).to.be.false;
             expect(result).to.include({ isDisplayed: false, isDisabled: true });
           });
@@ -539,7 +550,7 @@ describe("ModelsTree", () => {
             const node = createSubjectNode();
             const vpMock = mockViewport();
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
               if (isPromiseLike(result))
                 expect(await result).to.include({ isDisplayed: false, isDisabled: true });
@@ -567,7 +578,7 @@ describe("ModelsTree", () => {
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
               if (isPromiseLike(result))
                 expect(await result).to.include({ isDisplayed: false });
@@ -595,7 +606,7 @@ describe("ModelsTree", () => {
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
               if (isPromiseLike(result))
                 expect(await result).to.include({ isDisplayed: true });
@@ -625,7 +636,7 @@ describe("ModelsTree", () => {
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.true;
               if (isPromiseLike(result))
                 expect(await result).to.include({ isDisplayed: true });
@@ -648,7 +659,7 @@ describe("ModelsTree", () => {
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              await Promise.all([handler.getDisplayStatus(node), handler.getDisplayStatus(node)]);
+              await Promise.all([handler.getVisibilityStatus(node, node.__key), handler.getVisibilityStatus(node, node.__key)]);
               // expect the `query` to be called only twice (once for subjects and once for models)
               imodelMock.verify((x) => x.query(moq.It.isAnyString()), moq.Times.exactly(2));
             });
@@ -662,7 +673,7 @@ describe("ModelsTree", () => {
             const node = createModelNode();
             const vpMock = mockViewport();
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false, isDisabled: true });
             });
@@ -678,7 +689,7 @@ describe("ModelsTree", () => {
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: true });
             });
@@ -694,7 +705,7 @@ describe("ModelsTree", () => {
 
             const vpMock = mockViewport({ viewState: viewStateMock.object });
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false });
             });
@@ -716,7 +727,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(categoryNode);
+              const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false, isDisabled: true });
             });
@@ -739,7 +750,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object, perModelCategoryVisibility: perModelCategoryVisibilityMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(categoryNode);
+              const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: true });
             });
@@ -759,7 +770,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(categoryNode);
+              const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: true });
             });
@@ -782,7 +793,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object, perModelCategoryVisibility: perModelCategoryVisibilityMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(categoryNode);
+              const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false });
             });
@@ -802,7 +813,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(categoryNode);
+              const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false });
             });
@@ -818,7 +829,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(categoryNode);
+              const result = handler.getVisibilityStatus(categoryNode, categoryNode.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false });
             });
@@ -837,7 +848,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false, isDisabled: true });
             });
@@ -852,7 +863,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false, isDisabled: true });
             });
@@ -872,7 +883,7 @@ describe("ModelsTree", () => {
             vpMock.setup((x) => x.alwaysDrawn).returns(() => undefined);
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false });
             });
@@ -892,7 +903,7 @@ describe("ModelsTree", () => {
             vpMock.setup((x) => x.alwaysDrawn).returns(() => alwaysDrawn);
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: true });
             });
@@ -910,7 +921,7 @@ describe("ModelsTree", () => {
             vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: true });
             });
@@ -928,7 +939,7 @@ describe("ModelsTree", () => {
             vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false });
             });
@@ -947,7 +958,7 @@ describe("ModelsTree", () => {
             vpMock.setup((x) => x.neverDrawn).returns(() => undefined);
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false });
             });
@@ -965,7 +976,7 @@ describe("ModelsTree", () => {
             vpMock.setup((x) => x.neverDrawn).returns(() => new Set());
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              const result = handler.getDisplayStatus(node);
+              const result = handler.getVisibilityStatus(node, node.__key);
               expect(isPromiseLike(result)).to.be.false;
               expect(result).to.include({ isDisplayed: false });
             });
@@ -991,7 +1002,7 @@ describe("ModelsTree", () => {
           vpMock.setup((x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
 
           await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-            await handler.changeVisibility(node, true);
+            await handler.changeVisibility(node, node.__key, true);
             vpMock.verifyAll();
           });
         });
@@ -1011,7 +1022,7 @@ describe("ModelsTree", () => {
               // note: need to override to avoid running a query on the imodel
               (handler as any).getSubjectModelIds = async () => ["0x1", "0x2"];
 
-              await handler.changeVisibility(node, true);
+              await handler.changeVisibility(node, node.__key, true);
               vpMock.verifyAll();
             });
           });
@@ -1030,7 +1041,7 @@ describe("ModelsTree", () => {
               // note: need to override to avoid running a query on the imodel
               (handler as any).getSubjectModelIds = async () => subjectModelIds;
 
-              await handler.changeVisibility(node, true);
+              await handler.changeVisibility(node, node.__key, true);
               vpMock.verifyAll();
             });
           });
@@ -1049,7 +1060,7 @@ describe("ModelsTree", () => {
               // note: need to override to avoid running a query on the imodel
               (handler as any).getSubjectModelIds = async () => subjectModelIds;
 
-              await handler.changeVisibility(node, false);
+              await handler.changeVisibility(node, node.__key, false);
               vpMock.verifyAll();
             });
           });
@@ -1068,7 +1079,7 @@ describe("ModelsTree", () => {
             vpMock.setup((x) => x.addViewedModels(moq.It.isAny())).verifiable(moq.Times.never());
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              await handler.changeVisibility(node, true);
+              await handler.changeVisibility(node, node.__key, true);
               vpMock.verifyAll();
             });
           });
@@ -1084,7 +1095,7 @@ describe("ModelsTree", () => {
             vpMock.setup((x) => x.addViewedModels([key.id])).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              await handler.changeVisibility(node, true);
+              await handler.changeVisibility(node, node.__key, true);
               vpMock.verifyAll();
             });
           });
@@ -1100,7 +1111,7 @@ describe("ModelsTree", () => {
             vpMock.setup((x) => x.changeModelDisplay([key.id], false)).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              await handler.changeVisibility(node, false);
+              await handler.changeVisibility(node, node.__key, false);
               vpMock.verifyAll();
             });
           });
@@ -1123,7 +1134,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object, perModelCategoryVisibility: perModelCategoryVisibilityMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              await handler.changeVisibility(categoryNode, true);
+              await handler.changeVisibility(categoryNode, categoryNode.__key, true);
               perModelCategoryVisibilityMock.verify((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.Show), moq.Times.once());
               vpMock.verify((x) => x.changeCategoryDisplay(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
             });
@@ -1143,7 +1154,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object, perModelCategoryVisibility: perModelCategoryVisibilityMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              await handler.changeVisibility(categoryNode, false);
+              await handler.changeVisibility(categoryNode, categoryNode.__key, false);
               perModelCategoryVisibilityMock.verify((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.Hide), moq.Times.once());
               vpMock.verify((x) => x.changeCategoryDisplay(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
             });
@@ -1163,7 +1174,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object, perModelCategoryVisibility: perModelCategoryVisibilityMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              await handler.changeVisibility(categoryNode, true);
+              await handler.changeVisibility(categoryNode, categoryNode.__key, true);
               perModelCategoryVisibilityMock.verify((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.None), moq.Times.once());
               vpMock.verify((x) => x.changeCategoryDisplay([categoryKey.id], true, true), moq.Times.once());
             });
@@ -1183,7 +1194,7 @@ describe("ModelsTree", () => {
             const vpMock = mockViewport({ viewState: viewStateMock.object, perModelCategoryVisibility: perModelCategoryVisibilityMock.object });
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              await handler.changeVisibility(categoryNode, false);
+              await handler.changeVisibility(categoryNode, categoryNode.__key, false);
               perModelCategoryVisibilityMock.verify((x) => x.setOverride(parentModelKey.id, categoryKey.id, PerModelCategoryVisibility.Override.None), moq.Times.once());
               vpMock.verify((x) => x.changeCategoryDisplay(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
             });
@@ -1195,7 +1206,7 @@ describe("ModelsTree", () => {
 
             const vpMock = mockViewport();
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              await handler.changeVisibility(categoryNode, true);
+              await handler.changeVisibility(categoryNode, categoryNode.__key, true);
               vpMock.verify((x) => x.changeCategoryDisplay([categoryKey.id], true, true), moq.Times.once());
             });
           });
@@ -1208,7 +1219,7 @@ describe("ModelsTree", () => {
             vpMock.setup((x) => x.changeCategoryDisplay([categoryKey.id], false)).verifiable();
 
             await using(createHandler({ viewport: vpMock.object }), async (handler) => {
-              await handler.changeVisibility(categoryNode, false);
+              await handler.changeVisibility(categoryNode, categoryNode.__key, false);
               vpMock.verify((x) => x.changeCategoryDisplay([categoryKey.id], false, false), moq.Times.once());
             });
           });
@@ -1241,7 +1252,7 @@ describe("ModelsTree", () => {
               // note: need to override to avoid running queries on the imodel
               (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
 
-              await handler.changeVisibility(node, true);
+              await handler.changeVisibility(node, node.__key, true);
               vpMock.verifyAll();
             });
           });
@@ -1274,7 +1285,7 @@ describe("ModelsTree", () => {
               // note: need to override to avoid running a query on the imodel
               (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
 
-              await handler.changeVisibility(node, true);
+              await handler.changeVisibility(node, node.__key, true);
               vpMock.verifyAll();
             });
           });
@@ -1303,7 +1314,7 @@ describe("ModelsTree", () => {
               // note: need to override to avoid running a query on the imodel
               (handler as any).getAssemblyElementIds = async () => [];
 
-              await handler.changeVisibility(node, true);
+              await handler.changeVisibility(node, node.__key, true);
               vpMock.verifyAll();
             });
           });
@@ -1332,7 +1343,7 @@ describe("ModelsTree", () => {
               // note: need to override to avoid running queries on the imodel
               (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
 
-              await handler.changeVisibility(node, false);
+              await handler.changeVisibility(node, node.__key, false);
               vpMock.verifyAll();
             });
           });
@@ -1365,7 +1376,7 @@ describe("ModelsTree", () => {
               // note: need to override to avoid running a query on the imodel
               (handler as any).getAssemblyElementIds = async () => assemblyChildrenIds;
 
-              await handler.changeVisibility(node, false);
+              await handler.changeVisibility(node, node.__key, false);
               vpMock.verifyAll();
             });
           });
@@ -1392,7 +1403,7 @@ describe("ModelsTree", () => {
               // note: need to override to avoid running a query on the imodel
               (handler as any).getAssemblyElementIds = async () => [];
 
-              await handler.changeVisibility(node, false);
+              await handler.changeVisibility(node, node.__key, false);
               vpMock.verifyAll();
             });
           });
@@ -1513,7 +1524,7 @@ describe("ModelsTree", () => {
     });
 
     it("renders component with real data and no active viewport", async () => {
-      const result = render(<ModelsTree imodel={imodel} />);
+      const result = render(<ModelsTree iModel={imodel} />);
       await waitForElement(() => result.getByText("Joe's house.bim"), { timeout: 60 * 1000 });
       expect(result.container).to.matchSnapshot();
     });
