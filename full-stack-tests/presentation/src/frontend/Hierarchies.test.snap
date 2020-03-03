@@ -123,7 +123,7 @@ Array [
 ]
 `;
 
-exports[`Hierarchies NodesPaths gets filtered node paths 1`] = `
+exports[`Hierarchies Getting node paths gets filtered node paths 1`] = `
 Array [
   Object {
     "children": Array [
@@ -136,12 +136,10 @@ Array [
         "index": 0,
         "isMarked": false,
         "node": Object {
-          "description": "description",
-          "imageId": "imageId",
           "key": Object {
             "pathFromRoot": Array [
-              "247eca1de00df6e49f5467ee69db2f91",
-              "86bc2e93bbfcfa542836ba8ede7b3033",
+              "1de420478da4173c2e11a1c9c46f6ba7",
+              "23f42679eb85674391c066f5542a1d84",
             ],
             "type": "nodeType",
           },
@@ -163,13 +161,11 @@ Array [
             "index": 0,
             "isMarked": false,
             "node": Object {
-              "description": "description",
-              "imageId": "imageId",
               "key": Object {
                 "pathFromRoot": Array [
-                  "247eca1de00df6e49f5467ee69db2f91",
-                  "a1fcb2fc6fd92f330d9f11685a4cdab5",
-                  "0f4517b8731a62e65c5d1ce1680a3df1",
+                  "1de420478da4173c2e11a1c9c46f6ba7",
+                  "bd8d127d003e34aad9bb7443ddb966c8",
+                  "09f92be79c4a98951226eb06074a9617",
                 ],
                 "type": "nodeType",
               },
@@ -188,13 +184,11 @@ Array [
         "index": 1,
         "isMarked": false,
         "node": Object {
-          "description": "description",
           "hasChildren": true,
-          "imageId": "imageId",
           "key": Object {
             "pathFromRoot": Array [
-              "247eca1de00df6e49f5467ee69db2f91",
-              "a1fcb2fc6fd92f330d9f11685a4cdab5",
+              "1de420478da4173c2e11a1c9c46f6ba7",
+              "bd8d127d003e34aad9bb7443ddb966c8",
             ],
             "type": "nodeType",
           },
@@ -213,12 +207,10 @@ Array [
     "index": 0,
     "isMarked": false,
     "node": Object {
-      "description": "description",
       "hasChildren": true,
-      "imageId": "imageId",
       "key": Object {
         "pathFromRoot": Array [
-          "247eca1de00df6e49f5467ee69db2f91",
+          "1de420478da4173c2e11a1c9c46f6ba7",
         ],
         "type": "nodeType",
       },
@@ -240,12 +232,10 @@ Array [
         "index": 0,
         "isMarked": false,
         "node": Object {
-          "description": "description",
-          "imageId": "imageId",
           "key": Object {
             "pathFromRoot": Array [
-              "fc89c0af4376bb60df14f648618e822d",
-              "06af315ac469b705ed23f5675daaff5a",
+              "58c6693cd33e65d23383a480c2ab12f1",
+              "8ca6607e95824e4400e35f89a6160d73",
             ],
             "type": "nodeType",
           },
@@ -264,12 +254,10 @@ Array [
     "index": 1,
     "isMarked": false,
     "node": Object {
-      "description": "description",
       "hasChildren": true,
-      "imageId": "imageId",
       "key": Object {
         "pathFromRoot": Array [
-          "fc89c0af4376bb60df14f648618e822d",
+          "58c6693cd33e65d23383a480c2ab12f1",
         ],
         "type": "nodeType",
       },
@@ -283,7 +271,7 @@ Array [
 ]
 `;
 
-exports[`Hierarchies NodesPaths gets node paths 1`] = `
+exports[`Hierarchies Getting node paths gets node paths based on instance key paths 1`] = `
 Array [
   Object {
     "children": Array [
@@ -308,11 +296,11 @@ Array [
                       },
                     ],
                     "pathFromRoot": Array [
-                      "679ccbb46ad76244084d352b5d7f7983",
-                      "2711094066a9995f601d286b6e6866e6",
-                      "44d4d5acfd7d3656dcb40a5281d67c61",
-                      "8b9e160f3866c7f4fadae569eba9ef25",
-                      "0efd370a8754de2427d0fd20b7714777",
+                      "066902d6baf274eca605cd4f58d6af1e",
+                      "afc60d6b140f93529367e6f17e4eb7d5",
+                      "df4a80c4b8398b7d500d5242742563bb",
+                      "4c608e20d5a7517ade4a100abcf81f1c",
+                      "9d3f3c1039db4b2eb60399253bc9355e",
                     ],
                     "type": "ECInstancesNode",
                   },
@@ -337,10 +325,10 @@ Array [
                 "className": "BisCore:DefinitionPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
-                  "679ccbb46ad76244084d352b5d7f7983",
-                  "2711094066a9995f601d286b6e6866e6",
-                  "44d4d5acfd7d3656dcb40a5281d67c61",
-                  "8b9e160f3866c7f4fadae569eba9ef25",
+                  "066902d6baf274eca605cd4f58d6af1e",
+                  "afc60d6b140f93529367e6f17e4eb7d5",
+                  "df4a80c4b8398b7d500d5242742563bb",
+                  "4c608e20d5a7517ade4a100abcf81f1c",
                 ],
                 "type": "ECClassGroupingNode",
               },
@@ -370,11 +358,11 @@ Array [
                       },
                     ],
                     "pathFromRoot": Array [
-                      "679ccbb46ad76244084d352b5d7f7983",
-                      "2711094066a9995f601d286b6e6866e6",
-                      "44d4d5acfd7d3656dcb40a5281d67c61",
-                      "93e5eef1bcd27c39e00b3f62d4df415b",
-                      "1554b13b284ed9a3ac984f4d0b885cfc",
+                      "066902d6baf274eca605cd4f58d6af1e",
+                      "afc60d6b140f93529367e6f17e4eb7d5",
+                      "df4a80c4b8398b7d500d5242742563bb",
+                      "587d489b7d1ad050cd3ffc14f910a001",
+                      "5c60b2e522262eb138e93e760146b6b9",
                     ],
                     "type": "ECInstancesNode",
                   },
@@ -399,10 +387,10 @@ Array [
                 "className": "BisCore:LinkPartition",
                 "groupedInstancesCount": 1,
                 "pathFromRoot": Array [
-                  "679ccbb46ad76244084d352b5d7f7983",
-                  "2711094066a9995f601d286b6e6866e6",
-                  "44d4d5acfd7d3656dcb40a5281d67c61",
-                  "93e5eef1bcd27c39e00b3f62d4df415b",
+                  "066902d6baf274eca605cd4f58d6af1e",
+                  "afc60d6b140f93529367e6f17e4eb7d5",
+                  "df4a80c4b8398b7d500d5242742563bb",
+                  "587d489b7d1ad050cd3ffc14f910a001",
                 ],
                 "type": "ECClassGroupingNode",
               },
@@ -430,9 +418,9 @@ Array [
               },
             ],
             "pathFromRoot": Array [
-              "679ccbb46ad76244084d352b5d7f7983",
-              "2711094066a9995f601d286b6e6866e6",
-              "44d4d5acfd7d3656dcb40a5281d67c61",
+              "066902d6baf274eca605cd4f58d6af1e",
+              "afc60d6b140f93529367e6f17e4eb7d5",
+              "df4a80c4b8398b7d500d5242742563bb",
             ],
             "type": "ECInstancesNode",
           },
@@ -460,8 +448,8 @@ Array [
           },
         ],
         "pathFromRoot": Array [
-          "679ccbb46ad76244084d352b5d7f7983",
-          "2711094066a9995f601d286b6e6866e6",
+          "066902d6baf274eca605cd4f58d6af1e",
+          "afc60d6b140f93529367e6f17e4eb7d5",
         ],
         "type": "ECInstancesNode",
       },

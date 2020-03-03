@@ -37,8 +37,6 @@ import {
   Placement2d,
   RenderMode,
   RenderTexture,
-  TileProps,
-  TileTreeProps,
   ViewAttachmentProps,
   ViewFlag,
   ViewFlags,
@@ -50,12 +48,13 @@ import { Scene } from "../render/Scene";
 import { RenderPlan } from "../render/RenderPlan";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderTarget } from "../render/RenderTarget";
+import { RenderSystem } from "../render/RenderSystem";
 import {
   SelectParent,
   Tile,
+  TileContent,
   TileDrawArgs,
   TileLoadPriority,
-  TileLoader,
   TileParams,
   TileRequest,
   TileTree,
@@ -63,7 +62,6 @@ import {
   TileTreeReference,
   TileTreeSet,
   TileVisibility,
-  tileTreeParamsFromJSON,
 } from "./internal";
 import { SceneContext } from "../ViewContext";
 import { ChangeFlags, CoordSystem, OffScreenViewport } from "../Viewport";
@@ -71,10 +69,6 @@ import { ViewRect } from "../ViewRect";
 import { SpatialViewState, ViewState, ViewState2d, ViewState3d } from "../ViewState";
 import { SheetViewState } from "../Sheet";
 
-/**
- * Describes the location of a tile within the range of a quad subdivided in four parts.
- * @internal
- */
 const enum Tile3dPlacement { // tslint:disable-line:no-const-enum
   UpperLeft,
   UpperRight,
@@ -83,8 +77,7 @@ const enum Tile3dPlacement { // tslint:disable-line:no-const-enum
   Root,   // root placement is for root tile of a tree: a single placement representing entire image (not subdivided)
 }
 
-/**
- * Describes the state of the scene for a given level of the tile tree. All tiles on a given level use the same scene to generate their graphics.
+/** Describes the state of the scene for a given level of the tile tree. All tiles on a given level use the same scene to generate their graphics.
  * @internal
  */
 export const enum AttachmentSceneState { // tslint:disable-line:no-const-enum
@@ -96,82 +89,57 @@ export const enum AttachmentSceneState { // tslint:disable-line:no-const-enum
 
 const pixelsPerSheetTile = 512;
 
-/** @internal */
-abstract class AttachmentTileLoader extends TileLoader {
-  public abstract get is3dAttachment(): boolean;
-  public tileRequiresLoading(_params: TileParams): boolean { return true; }
-  public get priority(): TileLoadPriority { return TileLoadPriority.Primary; }
-  public async getChildrenProps(_parent: Tile): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
-  public async requestTileContent(_tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
-    // ###TODO?
-    return Promise.resolve(undefined);
+abstract class SheetTile extends Tile {
+  public constructor(params: TileParams, tree: Tree) {
+    super(params, tree);
+  }
+
+  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+    return undefined;
+  }
+
+  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> {
+    return { };
   }
 }
 
-/** @internal */
-class TileLoader2d extends AttachmentTileLoader {
-  private readonly _viewFlagOverrides: ViewFlag.Overrides;
-
-  public constructor(view: ViewState) {
-    super();
-
-    // ###TODO: Why do 2d views have camera lights enabled?
-    this._viewFlagOverrides = new ViewFlag.Overrides(view.viewFlags);
-    this._viewFlagOverrides.setApplyLighting(false);
-  }
-
-  public get maxDepth() { return 1; }
-  public get viewFlagOverrides() { return this._viewFlagOverrides; }
-  public get is3dAttachment(): boolean { return false; }
-}
-
-/** @internal */
-class TileLoader3d extends AttachmentTileLoader {
-  /** DEBUG ONLY - Setting this to true will result in only sheet tile polys being drawn, and not the textures they contain. */
-  private static _DEBUG_NO_TEXTURES = false;
-  // ----------------------------------------------------------------------------------
-  private static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
-    renderMode: RenderMode.SmoothShade,
-    noCameraLights: true,
-    noSourceLights: true,
-    noSolarLight: true,
-    noTexture: TileLoader3d._DEBUG_NO_TEXTURES,
-  }));
-
-  public get maxDepth() { return 32; }
-  public get viewFlagOverrides() { return TileLoader3d._viewFlagOverrides; }
-  public get is3dAttachment(): boolean { return true; }
-}
-
-/** @internal */
-class Tile2d extends Tile {
+class Tile2d extends SheetTile {
   public constructor(root: Tree2d, range: ElementAlignedBox2d) {
     const params: TileParams = {
-      root,
       contentId: "",
       range: new Range3d(0, 0, -RenderTarget.frustumDepth2d, range.high.x, range.high.y, RenderTarget.frustumDepth2d),
       maximumSize: 512,  // does not matter... have no children
       isLeaf: true,
     };
 
-    super(params);
+    super(params, root);
     this.setIsReady();
   }
 
   public get hasChildren(): boolean { return false; }
   public get hasGraphics(): boolean { return true; }
 
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+    resolve(undefined);
+  }
+
+  public selectTiles(selected: Tile[], args: TileDrawArgs): SelectParent {
+    if (TileVisibility.OutsideFrustum !== this.computeVisibility(args))
+      selected.push(this);
+
+    return SelectParent.No;
+  }
+
   public drawGraphics(args: TileDrawArgs) {
-    const myRoot = this.root as Tree2d;
+    const myRoot = this.tree as Tree2d;
     const viewRoot = myRoot.viewRoot;
 
-    const drawArgs = TileDrawArgs.fromTileTree(args.context, myRoot.drawingToAttachment.clone(), viewRoot, this.root.viewFlagOverrides, myRoot.graphicsClip, args.parentsAndChildrenExclusive, myRoot.symbologyOverrides);
+    const drawArgs = TileDrawArgs.fromTileTree(args.context, myRoot.drawingToAttachment.clone(), viewRoot, this.tree.viewFlagOverrides, myRoot.graphicsClip, args.parentsAndChildrenExclusive, myRoot.symbologyOverrides);
     viewRoot.draw(drawArgs);
   }
 }
 
-/** @internal */
-class Tile3d extends Tile {
+class Tile3d extends SheetTile {
   /** DEBUG ONLY - This member will cause the sheet tile polyfaces to draw along with the underlying textures. */
   private static _DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;
   // ------------------------------------------------------------------------------------------
@@ -179,21 +147,20 @@ class Tile3d extends Tile {
 
   private constructor(root: Tree3d, parent: Tile3d | undefined, tileRange: ElementAlignedBox3d) {
     super({
-      root,
       contentId: "",
       range: tileRange,
       maximumSize: .5 * Math.sqrt(2 * pixelsPerSheetTile * pixelsPerSheetTile),
-      isLeaf: true,
+      isLeaf: false,
       parent,
-    });
+    }, root);
   }
 
-  public static create(root: Tree3d, parent: Tile3d | undefined, placement: Tile3dPlacement): Tile3d {
+  public static create(tree: Tree3d, parent: Tile3d | undefined, placement: Tile3dPlacement): Tile3d {
     let fullRange: Range3d;
     if (parent !== undefined)
       fullRange = parent.range.clone();
     else
-      fullRange = root.getRootRange();
+      fullRange = tree.getRootRange();
 
     const mid = fullRange.low.interpolate(0.5, fullRange.high);
     const range = new Range3d();
@@ -222,25 +189,20 @@ class Tile3d extends Tile {
     range.low.z = 0;
     range.high.z = 1;
 
-    return new Tile3d(root, parent, range);
+    return new Tile3d(tree, parent, range);
   }
 
   /** Get the root tile tree cast to a Tree3d. */
-  private get _rootAsTree3d(): Tree3d { return this.root as Tree3d; }
+  private get _rootAsTree3d(): Tree3d { return this.tree as Tree3d; }
   /** Get the load state from the owner attachment's array at this tile's depth. */
   private getState(): AttachmentSceneState { return this._rootAsTree3d.getState(this.depth - 1); }
   /** Set the load state of the owner attachment's array at this tile's depth. */
   private setState(state: AttachmentSceneState) { this._rootAsTree3d.setState(this.depth - 1, state); }
 
-  // override
   public get hasGraphics(): boolean { return this.isReady; }
-  // override
   public get hasChildren(): boolean { return true; }  // << means that "there are children and creation may be necessary"... NOT "definitely have children in children list"
 
-  // override
-  public selectTiles(selected: Tile[], args: TileDrawArgs, _numSkipped: number = 0): SelectParent { return this.select(selected, args); }
-
-  private select(selected: Tile[], args: TileDrawArgs, _numSkipped: number = 0): SelectParent {
+  public selectTiles(selected: Tile[], args: TileDrawArgs): SelectParent {
     if (this.depth === 1)
       this._rootAsTree3d.viewport.rendering = false;
 
@@ -254,7 +216,10 @@ class Tile3d extends Tile {
     }
 
     const tooCoarse = TileVisibility.TooCoarse === vis;
-    const children = tooCoarse ? this.prepareChildren() : undefined;
+    if (tooCoarse)
+      this.loadChildren();
+
+    const children = tooCoarse ? (this.children as Tile3d[] | undefined) : undefined;
 
     if (children !== undefined) {
       const initialSize = selected.length;
@@ -272,6 +237,7 @@ class Tile3d extends Tile {
           }
         }
       }
+
       return SelectParent.No;
     }
 
@@ -395,20 +361,23 @@ class Tile3d extends Tile {
     }
   }
 
-  public prepareChildren(): Tile[] | undefined {
-    if (this._children === undefined)
-      this._children = [];
-    if (this._children.length === 0) {
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
+    try {
       const childTileUL = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.UpperLeft);
       const childTileUR = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.UpperRight);
       const childTileLL = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.LowerLeft);
       const childTileLR = Tile3d.create(this._rootAsTree3d, this, Tile3dPlacement.LowerRight);
-      this._children.push(childTileUL);
-      this._children.push(childTileUR);
-      this._children.push(childTileLL);
-      this._children.push(childTileLR);
+
+      const children = [];
+      children.push(childTileUL);
+      children.push(childTileUR);
+      children.push(childTileLL);
+      children.push(childTileLR);
+
+      resolve(children);
+    } catch (err) {
+      reject(err);
     }
-    return this._children.length === 0 ? undefined : this._children;
   }
 
   public drawGraphics(args: TileDrawArgs) {
@@ -443,46 +412,66 @@ class Tile3d extends Tile {
   }
 }
 
-/** @internal */
 abstract class Tree extends TileTree {
+  private readonly _viewFlagOverrides: ViewFlag.Overrides;
   public graphicsClip?: RenderClipVolume;
+
+  protected constructor(iModel: IModelConnection, modelId: Id64String, vfOvrs: ViewFlag.Overrides) {
+    super({
+      id: modelId,
+      modelId,
+      iModel,
+      location: Transform.createIdentity(),
+      priority: TileLoadPriority.Primary,
+      expirationTime: BeDuration.fromSeconds(15),
+    });
+
+    this._viewFlagOverrides = vfOvrs;
+  }
 
   public dispose(): void {
     super.dispose();
     this.graphicsClip = dispose(this.graphicsClip);
   }
 
-  public constructor(loader: AttachmentTileLoader, iModel: IModelConnection, modelId: Id64String) {
-    // The root tile set here does not matter, as it will be overwritten by the Tree2d and Tree3d constructors
-    const isLeaf = loader.is3dAttachment;
-    const is3d = false; // NB: The attachment is 3d. The attachment tiles are 2d.
-    const props: TileTreeProps = {
-      id: modelId,
-      rootTile: {
-        contentId: "",
-        range: {
-          low: { x: 0, y: 0, z: 0 },
-          high: { x: 0, y: 0, z: 0 },
-        },
-        maximumSize: 512,
-        isLeaf,
-      },
-      location: Transform.identity.toJSON(),
-    };
-    const params = tileTreeParamsFromJSON(props, iModel, is3d, loader, modelId);
-    super(params);
+  public get rootSheetTile(): Tile2d | Tile3d { return this.rootTile as Tile2d | Tile3d; }
+
+  // The attachment may be 3d; the sheet tiles are all 2d.
+  public get is3d() { return false; }
+  public get isContentUnbounded() { return false; }
+  public get viewFlagOverrides() { return this._viewFlagOverrides; }
+
+  public draw(args: TileDrawArgs): void {
+    const tiles = this.selectTiles(args);
+    for (const tile of tiles)
+      tile.drawGraphics(args);
+
+    args.drawGraphics();
+    args.context.viewport.numSelectedTiles += tiles.length;
+  }
+
+  protected _selectTiles(args: TileDrawArgs): Tile[] {
+    const tiles: Tile[] = [];
+    this.rootSheetTile.selectTiles(tiles, args);
+    return tiles;
   }
 }
 
-/** @internal */
 class Tree2d extends Tree {
+  private readonly _rootTile: Tile2d;
   public readonly view: ViewState2d;
   public readonly viewRoot: TileTree;
   public readonly drawingToAttachment: Transform;
   public readonly symbologyOverrides: FeatureSymbology.Overrides;
 
+  public get rootTile(): Tile2d { return this._rootTile; }
+  public get maxDepth() { return 1; }
+
   private constructor(iModel: IModelConnection, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
-    super(new TileLoader2d(view), iModel, attachment.id);
+    const vfOvrs = new ViewFlag.Overrides(view.viewFlags);
+    vfOvrs.setApplyLighting(false);
+
+    super(iModel, attachment.id, vfOvrs);
 
     this.view = view;
     this.viewRoot = viewRoot;
@@ -514,14 +503,12 @@ class Tree2d extends Tree {
     translation.plus(viewOrgToAttachment, translation);
     this.drawingToAttachment.origin.setFrom(translation);
 
-    this.expirationTime = BeDuration.fromSeconds(15);
-
     // The renderer needs the unclipped range of the attachment to produce polys to be rendered as clip mask...
     // (Containment tests can also be more efficiently performed if boundary range is specified)
     const clipTf = location.inverse();
     if (clipTf !== undefined) {
       const clip = attachment.getOrCreateClip(clipTf);
-      this.clipVolume = IModelApp.renderSystem.createClipVolume(clip);
+      this._clipVolume = IModelApp.renderSystem.createClipVolume(clip);
       if (undefined !== this.clipVolume)
         clipTf.multiplyRange(attachRange, this.clipVolume.clipVector.boundingRange);
     }
@@ -561,7 +548,6 @@ class Tree2d extends Tree {
   }
 }
 
-/** @internal */
 class TileColorSequence {
   private _index: number = 0;
   private readonly _colors: number[] = [
@@ -589,8 +575,8 @@ class TileColorSequence {
 
 const tileColorSequence = new TileColorSequence();
 
-/** @internal */
 class Tree3d extends Tree {
+  private readonly _rootTile: Tile3d;
   public readonly tileColor: ColorDef;
   public readonly biasDistance: number; // distance in z to position tile in parent viewport's z-buffer (should be obtained by calling DepthFromDisplayPriority)
   public readonly viewport: AttachmentViewport;
@@ -598,8 +584,18 @@ class Tree3d extends Tree {
   public readonly attachment: Attachment3d;
   public readonly featureTable: PackedFeatureTable;
 
+  public get rootTile(): Tile3d { return this._rootTile; }
+  public get maxDepth() { return 32; }
+
   private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
-    super(new TileLoader3d(), view.iModel, Id64.invalid);
+    const vfOvrs = new ViewFlag.Overrides(ViewFlags.fromJSON({
+      renderMode: RenderMode.SmoothShade,
+      noCameraLights: true,
+      noSourceLights: true,
+      noSolarLight: true,
+    }));
+
+    super(view.iModel, Id64.invalid, vfOvrs);
 
     this.tileColor = tileColorSequence.next;
     const featureTable = new FeatureTable(1);
@@ -660,7 +656,6 @@ class Tree3d extends Tree {
     (this._rootTile as Tile3d).createPolyfaces(sceneContext);    // graphics clip must be set before creating polys (the polys that represent the tile)
 
     this.iModelTransform.setFrom(this.viewport.toParent.clone());
-    this.expirationTime = BeDuration.fromSeconds(15);
   }
 
   public static create(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext): Tree3d {
@@ -693,7 +688,6 @@ class Tree3d extends Tree {
   }
 }
 
-/** @internal */
 class AttachmentViewport {
   public readonly vp: OffScreenViewport;
   public rendering: boolean = false;
@@ -909,13 +903,12 @@ export abstract class Attachment {
   public draw(context: SceneContext): void {
     if (this.isReady && undefined !== this._tree) {
       const tree = this._tree;
-      const args = TileDrawArgs.fromTileTree(context, tree.iModelTransform, tree, tree.viewFlagOverrides, tree.clipVolume, tree.loader.parentsAndChildrenExclusive);
+      const args = TileDrawArgs.fromTileTree(context, tree.iModelTransform, tree, tree.viewFlagOverrides, tree.clipVolume, tree.parentsAndChildrenExclusive);
       tree.draw(args);
     }
   }
 }
 
-/** @internal */
 class Attachment2d extends Attachment {
   public treeRef?: TileTreeReference;
 
@@ -938,7 +931,6 @@ class Attachment2d extends Attachment {
   }
 }
 
-/** @internal */
 class Attachment3d extends Attachment {
   private _states: AttachmentSceneState[];  // per level of the tree
 

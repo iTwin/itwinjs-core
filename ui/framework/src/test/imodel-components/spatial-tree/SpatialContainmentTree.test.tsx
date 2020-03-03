@@ -61,7 +61,7 @@ describe("SpatialContainmentTree", () => {
         getFilteredNodePaths: async () => [],
         getNodeKey: (node: TreeNodeItem) => (node as any).__key,
         getNodesCount: async () => 1,
-        getNodes: async () => [{ __key: createKey("1"), label: PropertyRecord.fromString("test-node"), id: "1", isCheckboxVisible: true }],
+        getNodes: async () => [{ __key: createKey("1"), label: PropertyRecord.fromString("test-node"), id: "1" }],
         loadHierarchy: async () => { },
       };
 

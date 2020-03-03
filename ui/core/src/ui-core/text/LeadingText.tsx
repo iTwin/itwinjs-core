@@ -13,6 +13,6 @@ import { StyledText } from "./StyledText";
 /** Styled leading text React functional component
  * @public
  */
-export const LeadingText: React.FunctionComponent<TextProps> = (props: TextProps) => {  // tslint:disable-line:variable-name
+export function LeadingText(props: TextProps) {
   return <StyledText {...props} mainClassName="uicore-text-leading" />;
-};
+}

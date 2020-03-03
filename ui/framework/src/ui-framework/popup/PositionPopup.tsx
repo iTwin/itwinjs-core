@@ -61,7 +61,6 @@ export class PositionPopup extends React.PureComponent<PositionPopupProps> {
 /** PositionPopup content with padding
  * @alpha
  */
-// tslint:disable-next-line:variable-name
-export const PositionPopupContent: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function PositionPopupContent(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-position-popup-content" />;
-};
+}

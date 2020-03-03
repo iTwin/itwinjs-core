@@ -48,6 +48,13 @@ export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
   readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
 }
 
+/** IOidcFrontendClient type guard.
+ * @beta
+ */
+export const isIOidcFrontendClient = (client: IAuthorizationClient | undefined): client is IOidcFrontendClient => {
+  return client !== undefined && (client as IOidcFrontendClient).signIn !== undefined && (client as IOidcFrontendClient).signOut !== undefined;
+};
+
 /**
  * Client configuration to generate OIDC/OAuth tokens for browser applications
  * @beta

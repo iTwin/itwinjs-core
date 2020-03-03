@@ -8,7 +8,7 @@ import { Id64String, GuidString } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ImsUserCredentials } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps } from "@bentley/imodeljs-common";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, GeometricElement, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, AuthorizedBackendRequestContext,
@@ -35,7 +35,7 @@ export class TestPushUtility {
 
   /** Initializes the utility */
   public async initialize(projectName: string, iModelName: string, user: ImsUserCredentials = TestUsers.superManager) {
-    this._requestContext = await TestUsers.getAuthorizedClientRequestContext(user);
+    this._requestContext = await TestUtility.getAuthorizedClientRequestContext(user);
     this.iModelName = iModelName;
     this._projectId = await HubUtility.queryProjectIdByName(this._requestContext, projectName);
   }

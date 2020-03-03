@@ -86,6 +86,7 @@ import { ImageSourceFormat } from '@bentley/imodeljs-common';
 import { IModel } from '@bentley/imodeljs-common';
 import { IModelClient } from '@bentley/imodeljs-clients';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
+import { IModelEncryptionProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
 import { IModelStatus } from '@bentley/imodeljs-common';
@@ -494,7 +495,7 @@ export class BriefcaseManager {
     static closeStandalone(briefcase: BriefcaseEntry): void;
     static get connectClient(): ConnectClient;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string>;
-    static createStandalone(fileName: string, args: CreateIModelProps): BriefcaseEntry;
+    static createStandalone(fileName: string, args: CreateIModelProps & IModelEncryptionProps): BriefcaseEntry;
     static createStandaloneChangeSet(briefcase: BriefcaseEntry): ChangeSetToken;
     // (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
@@ -502,8 +503,7 @@ export class BriefcaseManager {
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     static dumpChangeSet(briefcase: BriefcaseEntry, changeSetToken: ChangeSetToken): void;
     static findBriefcaseByToken(iModelToken: IModelToken): BriefcaseEntry | undefined;
-    // (undocumented)
-    static getBriefcases(requestContext: AuthorizedClientRequestContext): BriefcaseProps[];
+    static getBriefcasesFromDisk(): Promise<BriefcaseProps[]>;
     // (undocumented)
     static getChangeCachePathName(iModelId: GuidString): string;
     // (undocumented)
@@ -512,8 +512,9 @@ export class BriefcaseManager {
     static getChangeSetsPath(iModelId: GuidString): string;
     static get imodelClient(): IModelClient;
     static initialize(cacheRootDir: string, iModelClient?: IModelClient): void;
+    static initializeBriefcaseCacheFromDisk(requestContext: AuthorizedClientRequestContext): Promise<void>;
     static openBriefcase(briefcase: BriefcaseEntry): void;
-    static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean): BriefcaseEntry;
+    static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean, encryptionPropsString?: string): BriefcaseEntry;
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
     static purgeCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
     static pushChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks?: boolean): Promise<void>;
@@ -2241,9 +2242,9 @@ export class IModelDb extends IModel {
     containsClass(classFullName: string): boolean;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb>;
     // @beta
-    static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb;
+    static createSnapshot(snapshotFile: string, args: CreateIModelProps & IModelEncryptionProps): IModelDb;
     // @beta
-    createSnapshot(snapshotFile: string): IModelDb;
+    createSnapshot(snapshotFile: string, encryptionProps?: IModelEncryptionProps): IModelDb;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
@@ -2298,7 +2299,7 @@ export class IModelDb extends IModel {
     static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<IModelDb>;
     readonly openParams: OpenParams;
     // @beta
-    static openSnapshot(filePath: string): IModelDb;
+    static openSnapshot(filePath: string, encryptionProps?: IModelEncryptionProps): IModelDb;
     // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
     // @internal
@@ -3250,6 +3251,7 @@ export class OpenParams {
     get isSnapshot(): boolean;
     readonly openMode: OpenMode;
     static pullAndPush(): OpenParams;
+    static pullOnly(): OpenParams;
     // @deprecated
     static standalone(openMode: OpenMode): OpenParams;
     readonly syncMode?: SyncMode | undefined;
@@ -3829,7 +3831,9 @@ export enum SyncMode {
     // (undocumented)
     FixedVersion = 1,
     // (undocumented)
-    PullAndPush = 2
+    PullAndPush = 2,
+    // (undocumented)
+    PullOnly = 3
 }
 
 // @internal

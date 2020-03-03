@@ -7,7 +7,7 @@ import * as ReactDOM from "react-dom";
 import { Store } from "redux";  // createStore,
 import { Provider, connect } from "react-redux";
 import { Id64String, OpenMode, Logger, LogLevel, isElectronRenderer } from "@bentley/bentleyjs-core";
-import { Config, OidcFrontendClientConfiguration, AccessToken } from "@bentley/imodeljs-clients";
+import { Config, OidcFrontendClientConfiguration, AccessToken, isIOidcFrontendClient } from "@bentley/imodeljs-clients";
 import {
   RpcConfiguration, RpcOperation, IModelToken, ElectronRpcManager,
   BentleyCloudRpcManager, OidcDesktopClientConfiguration,
@@ -498,7 +498,7 @@ export class SampleAppViewer extends React.Component<any> {
     super(props);
 
     AppUi.initialize();
-    this._initializeSignin(!!UiFramework.oidcClient && UiFramework.oidcClient.isAuthorized); // tslint:disable-line:no-floating-promises
+    this._initializeSignin(!!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized); // tslint:disable-line:no-floating-promises
   }
 
   private _initializeSignin = async (isAuthorized: boolean): Promise<void> => {
@@ -510,13 +510,15 @@ export class SampleAppViewer extends React.Component<any> {
   }
 
   public componentDidMount() {
-    if (UiFramework.oidcClient)
-      UiFramework.oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
+    const oidcClient = IModelApp.authorizationClient;
+    if (isIOidcFrontendClient(oidcClient))
+      oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   public componentWillUnmount() {
-    if (UiFramework.oidcClient)
-      UiFramework.oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
+    const oidcClient = IModelApp.authorizationClient;
+    if (isIOidcFrontendClient(oidcClient))
+      oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
   }
 
   public render(): JSX.Element {

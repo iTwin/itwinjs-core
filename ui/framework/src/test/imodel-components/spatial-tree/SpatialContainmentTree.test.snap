@@ -4,7 +4,7 @@ exports[`SpatialContainmentTree <SpatialContainmentTree /> renders 1`] = `
 <body>
   <div>
     <div
-      class="uifw-spatial-tree"
+      class="ui-fw-spatial-tree"
     >
       <div
         class="core-tree components-tree"
@@ -32,18 +32,6 @@ exports[`SpatialContainmentTree <SpatialContainmentTree /> renders 1`] = `
                     data-testid="tree-node-contents"
                     style="margin-left: 24px;"
                   >
-                    <label
-                      class="core-checkbox"
-                    >
-                      <input
-                        data-testid="tree-node-checkbox"
-                        label=""
-                        type="checkbox"
-                      />
-                      <span
-                        class="core-checkbox-label"
-                      />
-                    </label>
                     <div
                       class="components-tree-node-content"
                     >

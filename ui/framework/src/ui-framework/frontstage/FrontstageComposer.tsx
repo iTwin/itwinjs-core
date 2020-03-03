@@ -135,13 +135,20 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     const activeFrontstageId = FrontstageManager.activeFrontstageId;
     this._frontstageDef = FrontstageManager.findFrontstageDef(activeFrontstageId);
 
+    // Get the id and nineZoneProps for the current FrontstageDef
     const nineZone = this.determineNineZoneProps(this._frontstageDef);
+    const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? false : true;
+    const widgetTabs = this._frontstageDef ? this.determineWidgetTabs() : getDefaultWidgetTabs();
+
     this.state = {
       allowPointerUpSelection: false,
       nineZone,
       modalFrontstageCount: FrontstageManager.modalFrontstageCount,
-      widgetTabs: getDefaultWidgetTabs(),
+      widgetTabs,
     };
+
+    if (this._frontstageDef && needInitialLayout)
+      this.initializeFrontstageLayout(nineZone);
   }
 
   private determineNineZoneProps(frontstageDef?: FrontstageDef): NineZoneManagerProps {

@@ -654,7 +654,7 @@ export interface GroupButtonProps extends GroupItemProps, CommonProps { }
 /** Group Button React component
  * @public
  */
-export const GroupButton: React.FunctionComponent<GroupButtonProps> = (props) => {  // tslint:disable-line:variable-name
+export function GroupButton(props: GroupButtonProps) {
   const groupItemDef = new GroupItemDef(props);
   groupItemDef.resolveItems();
   return (
@@ -664,7 +664,7 @@ export const GroupButton: React.FunctionComponent<GroupButtonProps> = (props) =>
       key={groupItemDef.id}
     />
   );
-};
+}
 
 /** @internal */
 export const getFirstItem = (groupItemDef: GroupItemDef): AnyItemDef | undefined => {

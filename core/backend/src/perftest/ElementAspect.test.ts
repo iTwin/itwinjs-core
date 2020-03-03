@@ -5,7 +5,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, Config, IModelHubError } from "@bentley/imodeljs-clients";
 import { ElementAspectProps, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
@@ -49,7 +49,7 @@ describe("ElementAspectPerformance", () => {
     };
     Config.App.merge(myAppConfig);
 
-    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     iModelDbHub = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelDbHub);
   });

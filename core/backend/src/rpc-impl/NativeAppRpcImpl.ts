@@ -29,7 +29,7 @@ import { NativeAppBackend } from "../NativeAppBackend";
 import { Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Logger, LogLevel, ClientRequestContext, DbResult, assert } from "@bentley/bentleyjs-core";
 import { IModelDb, OpenParams } from "../IModelDb";
-import { BriefcaseManager } from "../BriefcaseManager";
+import { BriefcaseManager, KeepBriefcase } from "../BriefcaseManager";
 import { NativeAppStorage } from "../NativeAppStorage";
 
 /** The backend implementation of NativeAppRpcInterface.
@@ -103,8 +103,11 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    */
   public async downloadBriefcase(tokenProps: IModelTokenProps): Promise<IModelTokenProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+
+    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
+
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const openParams: OpenParams = OpenParams.fixedVersion();
+    const openParams: OpenParams = OpenParams.pullOnly();
     const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
     const db = await IModelDb.downloadBriefcase(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
     return db.toJSON();
@@ -117,9 +120,13 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    */
   public async openBriefcase(tokenProps: IModelTokenProps): Promise<IModelProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+
+    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
+
     const iModelToken = IModelToken.fromJSON(tokenProps);
     if (!tokenProps.key) {
-      const briefcases = BriefcaseManager.getBriefcases(requestContext).filter((v) => {
+      const allBriefcases = await BriefcaseManager.getBriefcasesFromDisk();
+      const briefcases = allBriefcases.filter((v) => {
         return v.changeSetId === iModelToken.changeSetId
           && v.iModelId === iModelToken.iModelId
           && v.openMode === iModelToken.openMode;
@@ -135,13 +142,25 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   }
 
   /**
+   * Closes briefcase on the backend
+   * @param tokenProps Identifies briefcase to be closed
+   */
+  public async closeBriefcase(tokenProps: IModelTokenProps): Promise<boolean> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    await IModelDb.find(iModelToken).close(requestContext, KeepBriefcase.Yes);
+    return Promise.resolve(true);
+  }
+
+  /**
    * Return list of briefcase available on disk
    * @returns briefcases
    * @note The ContextId in empty and should remain empty when pass to openBriefcase() call.
    */
   public async getBriefcases(): Promise<BriefcaseProps[]> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return BriefcaseManager.getBriefcases(requestContext);
+    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
+    return BriefcaseManager.getBriefcasesFromDisk();
   }
 
   /**

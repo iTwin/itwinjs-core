@@ -86,8 +86,7 @@ export interface SliderProps extends CommonProps {
  * Slider React component
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const Slider: React.FC<SliderProps> = (props) => {
+export function Slider(props: SliderProps) {
   const { className, style, min, max, values, step, mode, onChange, onUpdate,
     showTicks, showTickLabels, formatTick, getTickCount, getTickValues, includeTicksInWidth,
     reversed, disabled,
@@ -191,7 +190,7 @@ export const Slider: React.FC<SliderProps> = (props) => {
       }
     </div>
   );
-};
+}
 
 /** Properties for [[MinMax]] component */
 interface MinMaxProps {
@@ -201,8 +200,7 @@ interface MinMaxProps {
 }
 
 /** MinMax component for Slider */
-// tslint:disable-next-line: variable-name
-const MinMax: React.FC<MinMaxProps> = (props) => {
+function MinMax(props: MinMaxProps) {
   const { value, testId, image } = props;
   let element: React.ReactElement<any>;
 
@@ -212,7 +210,7 @@ const MinMax: React.FC<MinMaxProps> = (props) => {
     element = <BodyText data-testid={testId}>{value}</BodyText>;
 
   return element;
-};
+}
 
 /** Properties for [[Rails]] component */
 interface RailsProps {
@@ -220,8 +218,7 @@ interface RailsProps {
 }
 
 /** Rails component for Slider */
-// tslint:disable-next-line: variable-name
-const Rails: React.FC<RailsProps> = (props) => {
+function Rails(props: RailsProps) {
   const { getRailProps } = props;
 
   return (
@@ -229,7 +226,7 @@ const Rails: React.FC<RailsProps> = (props) => {
       <div className="core-slider-rail-inner" />
     </div>
   );
-};
+}
 
 /** Properties for [[TooltipTrack]] component */
 interface TooltipTrackProps {
@@ -249,8 +246,7 @@ interface TooltipTrackState {
 }
 
 /** TooltipTrack component for Slider */
-// tslint:disable-next-line: variable-name
-const TooltipTrack: React.FC<TooltipTrackProps> = (props) => {
+function TooltipTrack(props: TooltipTrackProps) {
   const { source, target, activeHandleID, showTooltip, multipleValues, formatTooltip, getTrackProps, getEventData } = props;
 
   const [percent, setPercent] = React.useState(null as number | null);
@@ -296,7 +292,7 @@ const TooltipTrack: React.FC<TooltipTrackProps> = (props) => {
       </div>
     </>
   );
-};
+}
 
 /** Properties for [[Tick]] component */
 interface TickProps {
@@ -308,8 +304,7 @@ interface TickProps {
 }
 
 /** Tick component for Slider */
-// tslint:disable-next-line: variable-name
-const Tick: React.FC<TickProps> = (props) => {
+function Tick(props: TickProps) {
   const { tick, count, showTickLabels, formatTick } = props;
   return (
     <div>
@@ -321,7 +316,7 @@ const Tick: React.FC<TickProps> = (props) => {
       }
     </div>
   );
-};
+}
 
 /** Properties for [[Handle]] component */
 interface HandleProps {
@@ -336,8 +331,7 @@ interface HandleProps {
 }
 
 /** Handle component for Slider */
-// tslint:disable-next-line: variable-name
-const Handle: React.FC<HandleProps> = (props) => {
+function Handle(props: HandleProps) {
   const {
     domain: [min, max],
     handle: { id, value, percent },
@@ -385,4 +379,4 @@ const Handle: React.FC<HandleProps> = (props) => {
       </div>
     </>
   );
-};
+}

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection, MockRender, ScreenViewport, SpatialViewState, StandardViewId, ViewClipDecorationProvider, ViewClipSettingsProvider, SavedClipEntry, IModelApp, ViewClipTool, Viewport, ClipEventType, ActiveClipStatus, EditManipulator } from "@bentley/imodeljs-frontend";
 import { assert } from "chai";
-import { SettingsStatus, ImsTestAuthorizationClient, ConnectSettingsClient } from "@bentley/imodeljs-clients";
-import { ClientRequestContext, LogLevel, Logger, GuidString } from "@bentley/bentleyjs-core";
-import { TestUsers } from "./TestUsers";
+import { SettingsStatus } from "@bentley/imodeljs-clients";
+import { LogLevel, Logger, GuidString } from "@bentley/bentleyjs-core";
+import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
 import { Point3d, Plane3dByOriginAndUnitNormal, ConvexClipPlaneSet, ClipPlane, ClipPrimitive, ClipVector } from "@bentley/geometry-core";
 
@@ -60,12 +60,8 @@ describe("ViewClipDecorationProvider (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    const settingsClient = new ConnectSettingsClient("");
-    const requestContext = new ClientRequestContext();
-    const baseUrl: string = await settingsClient.getUrl(requestContext);
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(requestContext, TestUsers.regular, baseUrl);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
+    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
 
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");

@@ -15,7 +15,6 @@ import betaBadgeIcon from "./technical-preview-badge.svg";
 /** Beta Badge React component
  * @internal
  */
-// tslint:disable-next-line:variable-name
-export const BetaBadge: React.FunctionComponent<CommonProps> = (props: CommonProps) => {
+export function BetaBadge(props: CommonProps) {
   return <Badge {...props} svg={betaBadgeIcon} />;
-};
+}

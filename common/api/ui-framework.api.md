@@ -51,6 +51,7 @@ import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
+import { Icon as Icon_2 } from '@bentley/ui-core';
 import { IconProps as IconProps_2 } from '@bentley/ui-core';
 import { IconSpec as IconSpec_2 } from '@bentley/ui-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
@@ -73,6 +74,7 @@ import { NineZoneManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneStagePanelManagerProps } from '@bentley/ui-ninezone';
 import { NineZoneState } from '@bentley/ui-ninezone';
 import { NoChildrenProps } from '@bentley/ui-core';
+import { NodeCheckboxRenderProps } from '@bentley/ui-core';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
 import { NotificationManager } from '@bentley/imodeljs-frontend';
@@ -132,11 +134,18 @@ import { ToolSettingsPropertySyncItem } from '@bentley/ui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
+import { TreeCheckboxStateChangeEventArgs } from '@bentley/ui-components';
 import { TreeDataChangesListener } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
+import { TreeNodeRendererProps } from '@bentley/ui-components';
+import { TreeRendererProps } from '@bentley/ui-components';
+import { TreeSelectionModificationEventArgs } from '@bentley/ui-components';
+import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
+import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
+import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-components';
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
@@ -177,7 +186,7 @@ export interface Action<T extends string> {
 }
 
 // @internal
-export const ActionButtonItem: React.FC<ActionButtonProps>;
+export function ActionButtonItem(props: ActionButtonProps): JSX.Element;
 
 // @public
 export abstract class ActionButtonItemDef extends ItemDefBase {
@@ -509,7 +518,7 @@ export interface BaseItemState {
 }
 
 // @beta
-export const BasicNavigationWidget: React.FC<BasicNavigationWidgetProps>;
+export function BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element;
 
 // @beta
 export interface BasicNavigationWidgetProps {
@@ -518,7 +527,7 @@ export interface BasicNavigationWidgetProps {
 }
 
 // @beta
-export const BasicToolWidget: React.FC<BasicToolWidgetProps>;
+export function BasicToolWidget(props: BasicToolWidgetProps): JSX.Element;
 
 // @beta
 export interface BasicToolWidgetProps {
@@ -697,7 +706,7 @@ export interface Category {
 }
 
 // @public
-export const CategoryTree: React.FC<CategoryTreeProps>;
+export function CategoryTree(props: CategoryTreeProps): JSX.Element;
 
 // @public
 export interface CategoryTreeProps {
@@ -705,33 +714,63 @@ export interface CategoryTreeProps {
     allViewports?: boolean;
     // @internal
     categoryVisibilityHandler?: CategoryVisibilityHandler;
-    clearAll?: boolean;
+    // @internal
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
+    // @alpha
+    hideAll?: BeUiEvent<void>;
     iModel: IModelConnection;
-    selectAll?: boolean;
+    // @alpha
+    showAll?: BeUiEvent<void>;
     showSearchBox?: boolean;
 }
 
 // @internal (undocumented)
-export class CategoryVisibilityHandler {
-    constructor(imodel: IModelConnection, categories: Category[], filteredProvider?: IPresentationTreeDataProvider, allViewports?: boolean);
+export class CategoryVisibilityHandler implements IVisibilityHandler {
+    constructor(params: CategoryVisibilityHandlerParams);
+    // (undocumented)
+    activeView?: Viewport;
     // (undocumented)
     allViewports?: boolean;
     // (undocumented)
     categories: Category[];
+    // (undocumented)
+    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
+    // (undocumented)
+    dispose(): void;
     enableCategory(ids: string[], enabled: boolean, enableAllSubCategories?: boolean): void;
     enableSubCategory(key: string, enabled: boolean): void;
     // (undocumented)
-    filteredProvider?: IPresentationTreeDataProvider;
-    // (undocumented)
     getParent(key: string): Category | undefined;
     // (undocumented)
-    isCategoryVisible(id: string, activeView?: Viewport): boolean;
+    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus;
     // (undocumented)
-    isSubCategoryVisible(id: string, activeView?: Viewport): boolean;
+    hideAll(filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
     // (undocumented)
-    setEnableAll(enable: boolean): Promise<void>;
+    isCategoryVisible(id: string): boolean;
+    // (undocumented)
+    isSubCategoryVisible(id: string): boolean;
+    // (undocumented)
+    get onVisibilityChange(): (() => void) | undefined;
+    set onVisibilityChange(callback: (() => void) | undefined);
+    // (undocumented)
+    setEnableAll(enable: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
+    // (undocumented)
+    showAll(filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
+}
+
+// @internal (undocumented)
+export interface CategoryVisibilityHandlerParams {
+    // (undocumented)
+    activeView?: Viewport;
+    // (undocumented)
+    allViewports?: boolean;
+    // (undocumented)
+    categories: Category[];
+    // (undocumented)
+    imodel: IModelConnection;
+    // (undocumented)
+    onVisibilityChange?: () => void;
 }
 
 // @internal
@@ -753,7 +792,7 @@ export interface ChangeSetInfo {
 }
 
 // @beta
-export const ClearEmphasisStatusField: React.FC<ClearEmphasisStatusFieldProps>;
+export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
 
 // @beta
 export const COLOR_THEME_DEFAULT = ColorTheme.Light;
@@ -1187,6 +1226,9 @@ export function createAction<T extends string>(type: T): Action<T>;
 // @public
 export function createAction<T extends string, P>(type: T, payload: P): ActionWithPayload<T, DeepReadonly<P>>;
 
+// @alpha
+export const createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element;
+
 // @beta
 export class CubeNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
@@ -1269,7 +1311,7 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
     }
 
 // @beta
-export const CursorPopupContent: React.FunctionComponent<CommonDivProps>;
+export function CursorPopupContent(props: CommonDivProps): JSX.Element;
 
 // @internal
 export class CursorPopupFadeOutEvent extends UiEvent<CursorPopupFadeOutEventArgs> {
@@ -1702,7 +1744,7 @@ export class FooterModeField extends React.PureComponent<StatusFieldProps> {
 export const FrameworkReducer: (state: import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
-}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAccessToken, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultRulesetId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
+}>, action: import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetSnapMode, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetTheme, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetToolPrompt, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("../configurableui/state").ConfigurableUiActionId.SetWidgetOpacity, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAccessToken, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetActiveIModelId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<import("./SessionState").PresentationSelectionScope>>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultIModelViewportControlId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewId, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetDefaultViewState, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetNumItemsSelected, number>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetIModelConnection, any>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.SetSelectionScope, string>> | import("./redux-ts").DeepReadonlyObject<import("./redux-ts").ActionWithPayload<import("./SessionState").SessionStateActionId.UpdateCursorMenu, import("./redux-ts").DeepReadonlyObject<import("./SessionState").CursorMenuData>>>) => import("./redux-ts").CombinedReducerState<{
     configurableUiState: typeof ConfigurableUiReducer;
     sessionState: typeof SessionStateReducer;
 }>;
@@ -2257,10 +2299,10 @@ export const getStagePanelType: (location: StagePanelLocation_2) => StagePanelTy
 export function getWidgetId(side: WidgetPanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
 
 // @public
-export const GroupButton: React.FunctionComponent<GroupButtonProps>;
+export function GroupButton(props: GroupButtonProps): JSX.Element;
 
 // @internal
-export const GroupButtonItem: React.FunctionComponent<GroupButtonProps_2>;
+export function GroupButtonItem(props: GroupButtonProps_2): JSX.Element;
 
 // @public
 export interface GroupButtonProps extends GroupItemProps, CommonProps {
@@ -2364,7 +2406,7 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
 }
 
 // @public @deprecated
-export const Icon: React.FunctionComponent<IconProps_2>;
+export const Icon: typeof Icon_2;
 
 // @beta
 export class IconHelper {
@@ -2674,6 +2716,16 @@ export interface ItemProps extends IconProps_2 {
     stateSyncIds?: string[];
     tooltip?: string | StringGetter | ConditionalStringValue;
     tooltipKey?: string;
+}
+
+// @alpha
+export interface IVisibilityHandler extends IDisposable {
+    // (undocumented)
+    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
+    // (undocumented)
+    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
+    // (undocumented)
+    onVisibilityChange?: () => void;
 }
 
 // @public
@@ -3193,7 +3245,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
 }
 
 // @public
-export const ModelsTree: React.FC<ModelsTreeProps>;
+export function ModelsTree(props: ModelsTreeProps): JSX.Element;
 
 // @alpha
 export enum ModelsTreeNodeType {
@@ -3215,13 +3267,13 @@ export interface ModelsTreeProps {
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
-    imodel: IModelConnection;
+    iModel: IModelConnection;
+    // @internal
+    modelsVisibilityHandler?: VisibilityHandler;
     rootElementRef?: React.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
     // @alpha
     selectionPredicate?: ModelsTreeSelectionPredicate;
-    // @internal
-    visibilityHandler?: VisibilityHandler;
 }
 
 // @alpha
@@ -3265,7 +3317,7 @@ export class NavigationAidControl extends ConfigurableUiControl {
     }
 
 // @beta
-export const NavigationAidHost: React.FC<NavigationAidHostProps>;
+export function NavigationAidHost(props: NavigationAidHostProps): JSX.Element;
 
 // @beta
 export interface NavigationAidHostProps {
@@ -3289,7 +3341,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 }
 
 // @beta
-export const NavigationWidgetComposer: React.FC<NavigationWidgetComposerProps>;
+export function NavigationWidgetComposer(props: NavigationWidgetComposerProps): JSX.Element;
 
 // @beta
 export interface NavigationWidgetComposerProps {
@@ -3523,7 +3575,7 @@ export class PositionPopup extends React.PureComponent<PositionPopupProps> {
     }
 
 // @alpha
-export const PositionPopupContent: React.FunctionComponent<CommonDivProps>;
+export function PositionPopupContent(props: CommonDivProps): JSX.Element;
 
 // @alpha (undocumented)
 export interface PositionPopupProps extends CommonProps {
@@ -3725,7 +3777,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
 
 // @beta
-export const SectionsStatusField: React.FC<SectionsStatusFieldProps>;
+export function SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element;
 
 // @beta
 export interface SectionsStatusFieldProps extends StatusFieldProps {
@@ -3805,8 +3857,6 @@ export interface SessionState {
     // (undocumented)
     defaultIModelViewportControlId: string | undefined;
     // (undocumented)
-    defaultRulesetId: string | undefined;
-    // (undocumented)
     defaultViewId: string | undefined;
     // (undocumented)
     defaultViewState: any | undefined;
@@ -3829,8 +3879,6 @@ export enum SessionStateActionId {
     // (undocumented)
     SetDefaultIModelViewportControlId = "sessionstate:set-default-viewportid",
     // (undocumented)
-    SetDefaultRulesetId = "sessionstate:set-default-rulesetid",
-    // (undocumented)
     SetDefaultViewId = "sessionstate:set-default-viewid",
     // (undocumented)
     SetDefaultViewState = "sessionstate:set-default-view-state",
@@ -3850,7 +3898,6 @@ export const SessionStateActions: {
     setActiveIModelId: (iModelId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
     setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
     setDefaultIModelViewportControlId: (iModelViewportControlId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultIModelViewportControlId, string>;
-    setDefaultRulesetId: (rulesetid: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultRulesetId, string>;
     setDefaultViewId: (viewId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewId, string>;
     setDefaultViewState: (viewState: any) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewState, any>;
     setNumItemsSelected: (numSelected: number) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetNumItemsSelected, number>;
@@ -3869,8 +3916,6 @@ export interface SessionStateActionsProps {
     setAvailableSelectionScopes: (typeof SessionStateActions.setAvailableSelectionScopes);
     // (undocumented)
     setDefaultIModelViewportControlId: (typeof SessionStateActions.setDefaultIModelViewportControlId);
-    // (undocumented)
-    setDefaultRulesetId: (typeof SessionStateActions.setDefaultRulesetId);
     // (undocumented)
     setDefaultViewId: (typeof SessionStateActions.setDefaultViewId);
     // (undocumented)
@@ -3894,7 +3939,6 @@ export const sessionStateMapDispatchToProps: {
     setActiveIModelId: (iModelId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetActiveIModelId, string>;
     setAvailableSelectionScopes: (availableSelectionScopes: PresentationSelectionScope[]) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetAvailableSelectionScopes, import("./redux-ts").DeepReadonlyArray<PresentationSelectionScope>>;
     setDefaultIModelViewportControlId: (iModelViewportControlId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultIModelViewportControlId, string>;
-    setDefaultRulesetId: (rulesetid: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultRulesetId, string>;
     setDefaultViewId: (viewId: string) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewId, string>;
     setDefaultViewState: (viewState: any) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetDefaultViewState, any>;
     setNumItemsSelected: (numSelected: number) => import("./redux-ts").ActionWithPayload<SessionStateActionId.SetNumItemsSelected, number>;
@@ -4018,7 +4062,7 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
 }
 
 // @public
-export const SpatialContainmentTree: React.FC<SpatialContainmentTreeProps>;
+export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element;
 
 // @public
 export interface SpatialContainmentTreeProps {
@@ -4311,10 +4355,10 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 }
 
 // @beta
-export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps>;
+export function StatusBarCenterSection(props: CommonDivProps): JSX.Element;
 
 // @beta
-export const StatusBarComposer: React.FC<StatusBarComposerProps>;
+export function StatusBarComposer(props: StatusBarComposerProps): JSX.Element;
 
 // @beta
 export interface StatusBarComposerProps {
@@ -4343,7 +4387,7 @@ export class StatusBarItemUtilities {
 }
 
 // @beta
-export const StatusBarLeftSection: React.FunctionComponent<CommonDivProps>;
+export function StatusBarLeftSection(props: CommonDivProps): JSX.Element;
 
 // @public
 export interface StatusBarProps extends CommonProps {
@@ -4354,10 +4398,10 @@ export interface StatusBarProps extends CommonProps {
 }
 
 // @beta
-export const StatusBarRightSection: React.FunctionComponent<CommonDivProps>;
+export function StatusBarRightSection(props: CommonDivProps): JSX.Element;
 
 // @beta
-export const StatusBarSpaceBetween: React.FunctionComponent<CommonDivProps>;
+export function StatusBarSpaceBetween(props: CommonDivProps): JSX.Element;
 
 // @public
 export abstract class StatusBarWidgetControl extends WidgetControl {
@@ -4647,7 +4691,7 @@ export class ToolbarButtonHelper {
 }
 
 // @beta
-export const ToolbarComposer: React.FC<ExtensibleToolbarProps>;
+export function ToolbarComposer(props: ExtensibleToolbarProps): JSX.Element;
 
 // @beta
 export const ToolbarDragInteractionContext: React.Context<boolean>;
@@ -4917,7 +4961,7 @@ export class UiFramework {
     static get frameworkState(): FrameworkState | undefined;
     // @beta (undocumented)
     static get frameworkStateKey(): string;
-    // (undocumented)
+    // @deprecated (undocumented)
     static getAccessToken(): AccessToken | undefined;
     // (undocumented)
     static getAccudrawSnapMode(): SnapMode;
@@ -4933,8 +4977,6 @@ export class UiFramework {
     static getCursorMenuData(): CursorMenuData | undefined;
     // (undocumented)
     static getDefaultIModelViewportControlId(): string | undefined;
-    // (undocumented)
-    static getDefaultRulesetId(): string | undefined;
     // (undocumented)
     static getDefaultViewId(): string | undefined;
     // (undocumented)
@@ -4956,7 +4998,7 @@ export class UiFramework {
     static isMobile(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
-    // @beta (undocumented)
+    // @deprecated (undocumented)
     static get oidcClient(): IOidcFrontendClient | undefined;
     static set oidcClient(oidcClient: IOidcFrontendClient | undefined);
     // @beta
@@ -4979,8 +5021,6 @@ export class UiFramework {
     static setColorTheme(theme: string): void;
     // (undocumented)
     static setDefaultIModelViewportControlId(iModelViewportControlId: string, immediateSync?: boolean): void;
-    // (undocumented)
-    static setDefaultRulesetId(viewId: string, immediateSync?: boolean): void;
     // (undocumented)
     static setDefaultViewId(viewId: string, immediateSync?: boolean): void;
     // (undocumented)
@@ -5095,6 +5135,9 @@ export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2
 
 // @beta
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
+
+// @alpha
+export const useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element;
 
 // @internal (undocumented)
 export function useWidgetDef(): WidgetDef | undefined;
@@ -5264,30 +5307,28 @@ export interface VisibilityComponentProps {
 }
 
 // @internal (undocumented)
-export class VisibilityHandler implements IDisposable {
+export class VisibilityHandler implements IVisibilityHandler {
     constructor(props: VisibilityHandlerProps);
     // (undocumented)
-    changeVisibility(node: TreeNodeItem, on: boolean): Promise<void>;
+    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, on: boolean): Promise<void>;
     // (undocumented)
     dispose(): void;
     // (undocumented)
-    getDisplayStatus(node: TreeNodeItem): VisibilityStatus | Promise<VisibilityStatus>;
+    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus>;
     // (undocumented)
-    get onVisibilityChange(): () => void;
-    set onVisibilityChange(callback: () => void);
+    get onVisibilityChange(): (() => void) | undefined;
+    set onVisibilityChange(callback: (() => void) | undefined);
     }
 
 // @internal (undocumented)
 export interface VisibilityHandlerProps {
     // (undocumented)
-    dataProvider: IPresentationTreeDataProvider;
-    // (undocumented)
-    onVisibilityChange: () => void;
+    onVisibilityChange?: () => void;
     // (undocumented)
     viewport: Viewport;
 }
 
-// @internal (undocumented)
+// @alpha
 export interface VisibilityStatus {
     // (undocumented)
     isDisabled?: boolean;
@@ -5296,6 +5337,33 @@ export interface VisibilityStatus {
     // (undocumented)
     tooltip?: string;
 }
+
+// @alpha
+export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler {
+    constructor(params: VisibilityTreeEventHandlerParams);
+    // (undocumented)
+    dispose(): void;
+    // (undocumented)
+    onCheckboxStateChanged(event: TreeCheckboxStateChangeEventArgs): undefined;
+    // (undocumented)
+    onSelectionModified({ modifications }: TreeSelectionModificationEventArgs): import("@bentley/ui-components").Subscription | undefined;
+    // (undocumented)
+    onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs): import("@bentley/ui-components").Subscription | undefined;
+    }
+
+// @alpha
+export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEventHandlerParams {
+    // (undocumented)
+    selectionPredicate?: VisibilityTreeSelectionPredicate;
+    // (undocumented)
+    visibilityHandler: IVisibilityHandler | undefined;
+}
+
+// @alpha
+export const visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element;
+
+// @alpha
+export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
 // @alpha
 export class VisibilityWidget extends WidgetControl {

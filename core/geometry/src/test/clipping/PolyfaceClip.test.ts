@@ -11,7 +11,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-import { PolyfaceClip } from "../../polyface/PolyfaceClip";
+import { PolyfaceClip, ClippedPolyfaceBuilders } from "../../polyface/PolyfaceClip";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
@@ -34,6 +34,9 @@ import * as fs from "fs";
 import { Geometry } from "../../Geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
+import { ClipUtilities } from "../../clipping/ClipUtils";
+import { SweepContour } from "../../solid/SweepContour";
 /* tslint:disable:no-console */
 describe("PolyfaceClip", () => {
   it("ClipPlane", () => {
@@ -78,30 +81,94 @@ describe("PolyfaceClip", () => {
 
   it("ConvexClipPlaneSet", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     const vectorU = Vector3d.create(1, -1, 0);
     const vectorV = Vector3d.create(1, 2, 0);
     const singleFacetArea = vectorU.crossProductMagnitude(vectorV);
     const xEdges = 4;
     const yEdges = 5;
-    const polyface = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), vectorU, vectorV, xEdges + 1, yEdges + 1);
-    const x0 = 2;
-    const y0 = 0.5;
+    const polyface = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0.5), vectorU, vectorV, xEdges + 1, yEdges + 1);
+    const clipX0 = 2;
+    const clipY0 = 0.5;
     const ax = 1.0;
     const ay = 2.0;
-    const clipper = ConvexClipPlaneSet.createXYBox(x0, y0, x0 + ax, y0 + ay);
+    const clipper = ConvexClipPlaneSet.createXYBox(clipX0, clipY0, clipX0 + ax, clipY0 + ay);
+    const displayRange = Range3d.createXYZXYZ(0, 0, -2, 10, 10, 2);
+    const clipperEdges = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipper, displayRange);
+    const x0 = 0;
+    const outputStep = 20.0;
+    const y0 = 0;
+    const y1 = y0 + outputStep;
 
-    // The mesh should be big enough to completely contain the clip -- hence output area is known .....
-    const insidePart = PolyfaceClip.clipPolyface(polyface, clipper)!;
+    const clippedOutput = PolyfaceClip.clipPolyface(polyface, clipper)!;
     const area = PolyfaceQuery.sumFacetAreas(polyface);
-    const insideArea = PolyfaceQuery.sumFacetAreas(insidePart);
     ck.testCoordinate(xEdges * yEdges * singleFacetArea, area);
-    const allGeometry: GeometryQuery[] = [];
-    GeometryCoreTestIO.captureGeometry(allGeometry, polyface, 0, 0, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, insidePart.clone()!, 0, 0, 0);
-    GeometryCoreTestIO.captureGeometry(allGeometry, insidePart, 0, 10, 0);
-
-    ck.testCoordinate(ax * ay, insideArea);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedOutput, x0, y1, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "ConvexClipPlaneSet");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("UnionOfConvexClipPlaneSet.Disjoint", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const edgeLength = 2.0;
+    const vectorU = Vector3d.create(edgeLength, 0, 0);
+    const vectorV = Vector3d.create(0, edgeLength, 0);
+    let x0 = 0;
+    const y0 = 0;
+    const xEdges = 4;
+    const yEdges = 5;
+    const polyfaceP3 = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), vectorU, vectorV, xEdges + 1, yEdges + 1);
+    const polyfaceP4 = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), vectorU, vectorV, xEdges + 1, yEdges + 1, false, false, false, false);
+    const polyfaceQ3 = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), vectorU.scale(xEdges), vectorV.scale(yEdges), 2, 2);
+    const polyfaceQ4 = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0), vectorU.scale(xEdges), vectorV.scale(yEdges), 2, 2, false, false, false, false);
+    for (const polyface of [polyfaceP3, polyfaceQ3, polyfaceP4, polyfaceQ4]) {
+      const range = polyface.range();
+      const dY = range.yLength() * 1.5;
+      const dX = range.xLength() * 2;
+      const dZ = 0.2;
+      const ax = 1.0;
+      const ay = 2.0;
+      const clipperX0 = 2;
+      const clipperY0 = 0.5;
+      const clipperX2 = clipperX0 + 2 * ax;
+      const clipPlane = ClipPlane.createNormalAndPointXYZXYZ(clipperX0, clipperY0, 0, 2, 1, 1)!;
+      const clipper0 = ConvexClipPlaneSet.createXYBox(clipperX0, clipperY0, clipperX0 + ax, clipperY0 + ay);
+      const clipper2 = ConvexClipPlaneSet.createXYBox(clipperX2, clipperY0, clipperX2 + ax, clipperY0 + ay);
+      const clipper02 = UnionOfConvexClipPlaneSets.createConvexSets([clipper2, clipper0]);
+      const clippers: Array<ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets> = [clipper0, clipper2, clipper02, clipPlane];
+      for (const clipper of clippers) {
+        const clipperEdges = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipper, range);
+        // The mesh should be big enough to completely contain the clip -- hence output area is known .....
+        const builders = ClippedPolyfaceBuilders.create(true, true);
+        PolyfaceClip.clipPolyfaceInsideOutside(polyface, clipper, builders);
+        const area = PolyfaceQuery.sumFacetAreas(polyface);
+        const polyfaceA = builders.claimPolyface(0, true);
+        const polyfaceB = builders.claimPolyface(1, true);
+        const areaA = PolyfaceQuery.sumFacetAreas(polyfaceA);
+        const areaB = PolyfaceQuery.sumFacetAreas(polyfaceB);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipperEdges, x0, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0 + dY, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB, x0, y0 + 2 * dY, 0);
+        const boundaryB = PolyfaceQuery.boundaryEdges(polyfaceB);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB, x0, y0 + 2 * dY, dZ);
+        if (polyfaceB) {
+          const polyfaceB1 = PolyfaceQuery.cloneWithTVertexFixup(polyfaceB);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceB1, x0, y0 + 3 * dY, 0);
+          const boundaryB1 = PolyfaceQuery.boundaryEdges(polyfaceB1);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, boundaryB1, x0, y0 + 3 * dY, dZ);
+
+        }
+        ck.testCoordinate(area, areaA + areaB, " sum of inside and outside clip areas");
+        x0 += dX;
+      }
+      x0 += dX;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "UnionOfConvexClipPlaneSet.Disjoint");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -204,7 +271,7 @@ describe("PolyfaceClip", () => {
         const clipPlanePoints = clipPlane.intersectRange(range)!;
         const frame = clipPlane.getFrame();
         const section = PolyfaceClip.sectionPolyfaceClipPlane(facets, clipPlane);
-        const clippedPolyface = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, insideClip, true);
+        const clippedPolyface = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, insideClip);
         const cutPlane = PolyfaceBuilder.polygonToTriangulatedPolyface(clipPlanePoints.getPoint3dArray());
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0, 0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutPlane, x0, y0, 0);
@@ -231,6 +298,7 @@ describe("PolyfaceClip", () => {
     builder.addBox(Box.createRange(Range3d.create(Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1)), true)!);
     const facets = builder.claimPolyface();
     const range = facets.range();
+    range.expandInPlace(0.5);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     const y0 = 0;
@@ -245,13 +313,16 @@ describe("PolyfaceClip", () => {
       const y1 = y0 + dy;
       const y2 = y1 + dy;
       const y3 = y2 + dy;
+      const y4 = y3 + dy;
       const section = PolyfaceClip.sectionPolyfaceClipPlane(facets, clipPlane);
-      const clippedPolyface = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, true, true);
+      const insideClip = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, true, true);
+      const outsideClip = PolyfaceClip.clipPolyfaceClipPlaneWithClosureFace(facets, clipPlane, false, true);
       const cutPlane = PolyfaceBuilder.polygonToTriangulatedPolyface(clipPlanePoints.getPoint3dArray());
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, y0, 0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, cutPlane, x0, y0, 0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y1, 0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedPolyface, x0, y3, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, insideClip, x0, y3, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, outsideClip, x0, y4, 0);
       for (const s of section) {
         if (s.isPhysicallyClosed) {
           const region = PolyfaceBuilder.polygonToTriangulatedPolyface(s.packedPoints.getPoint3dArray(), frame);
@@ -654,6 +725,87 @@ describe("PolyfaceClip", () => {
     }
     expect(ck.getNumErrors()).equals(0);
 
+  });
+  it("BoxClosure", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const builder = PolyfaceBuilder.create();
+    builder.addBox(Box.createRange(Range3d.create(Point3d.create(-1, -1, -1), Point3d.create(1, 1, 1)), true)!);
+    const facets = builder.claimPolyface();
+    const planes = [];
+    planes.push(ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 0.5, 0, 0)!);
+    planes.push(ClipPlane.createNormalAndPointXYZXYZ(2, 3, 2, 0.5, 0, 0)!);
+    planes.push(ClipPlane.createNormalAndPointXYZXYZ(-1, -0.5, -0.5, 1, 0.8, 0.8)!);
+    let x0 = 0;
+    for (const interior of [false, true]) {
+      const clipper = ConvexClipPlaneSet.createEmpty();
+      for (const p of planes) {
+        p.setFlags(interior, interior);
+        clipper.planes.push(p);
+        const clipBuilders = ClippedPolyfaceBuilders.create(true, true, true);
+        PolyfaceClip.clipPolyfaceInsideOutside(facets, clipper, clipBuilders);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipBuilders.claimPolyface(0, true), x0, 5);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipBuilders.claimPolyface(1, true), x0, 10);
+        x0 += 10.0;
+      }
+      x0 += 10;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "BoxClosure");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("BoxClosureNonConvex", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const builder = PolyfaceBuilder.create();
+    const boxZ0 = 0.01;
+    const boxZ1 = 0.3;
+    builder.addBox(Box.createRange(Range3d.create(Point3d.create(-1, -1, boxZ0), Point3d.create(1, 1, boxZ1)), true)!);
+    const facets = builder.claimPolyface();
+    const xA = 0.2;
+    const xB = 0.4;
+    const xC = 1.2;
+    const yA = -0.3;
+    const yB = -0.1;
+    const yC = 1.2;
+    const yD = 0.4;
+    const clipData = [];
+    const contourP0 = SweepContour.createForPolygon(
+      [Point3d.create(xA, yA), Point3d.create(xB, yA), Point3d.create(xA, yB), Point3d.create(xA, yA)])!;
+    const clipperP0 = contourP0.sweepToUnionOfConvexClipPlaneSets()!;
+    const contourP1 = SweepContour.createForPolygon(
+      [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xA, yC), Point3d.create(xA, yA)])!;
+    const clipperP1 = contourP1.sweepToUnionOfConvexClipPlaneSets()!;
+
+    const dxB = 0.3;
+    const contourQ0 = SweepContour.createForPolygon(
+      [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xC, yB), Point3d.create(xB + dxB, yB), Point3d.create(xB, yC), Point3d.create(xA, yC), Point3d.create(xA, yA)])!;
+    const clipperQ0 = contourQ0.sweepToUnionOfConvexClipPlaneSets()!;
+
+    const contourQ1 = SweepContour.createForPolygon(
+      [Point3d.create(xA, yA), Point3d.create(xC, yA), Point3d.create(xC, yB), Point3d.create(xB + dxB, yB), Point3d.create(xB, yD), Point3d.create(xA, yD), Point3d.create(xA, yA)])!;
+    const clipperQ1 = contourQ1.sweepToUnionOfConvexClipPlaneSets()!;
+
+    let x0 = 0;
+    clipData.push([contourP0, clipperP0]);
+    clipData.push([contourP1, clipperP1]);
+    clipData.push([contourQ0, clipperQ0]);
+    clipData.push([contourQ1, clipperQ1]);
+
+    for (const cd of clipData) {
+      const clipper = cd[1] as UnionOfConvexClipPlaneSets;
+      const sweepContour = cd[0] as SweepContour;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweepContour.curves, x0, 0, boxZ1 + 0.01);
+      const clipBuilders = ClippedPolyfaceBuilders.create(true, true, true);
+      PolyfaceClip.clipPolyfaceInsideOutside(facets, clipper, clipBuilders);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, facets, x0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipBuilders.claimPolyface(0, true), x0, 3);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipBuilders.claimPolyface(1, true), x0, 6);
+      x0 += 5;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceClip", "BoxClosureNonConvex");
+    expect(ck.getNumErrors()).equals(0);
   });
   it("PolyfaceClip", () => {
     const ck = new Checker();

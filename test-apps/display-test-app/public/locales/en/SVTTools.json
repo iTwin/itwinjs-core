@@ -56,9 +56,6 @@
     "ShutDown": {
       "keyin": "dta shutdown"
     },
-    "ToggleFrustumIntersection": {
-      "keyin": "dta frustum intersection"
-    },
     "ToggleShadowMapTiles": {
       "keyin": "dta shadow tiles"
     },

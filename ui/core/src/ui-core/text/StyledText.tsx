@@ -21,14 +21,12 @@ export interface StyledTextProps extends TextProps {
 /** Styled text
  * @internal
  */
-export class StyledText extends React.PureComponent<StyledTextProps> {
-  public render(): JSX.Element {
-    const { mainClassName, className, style, children, ...props } = this.props;
+export function StyledText(props: StyledTextProps) {
+  const { mainClassName, className, style, children, ...spanProps } = props;
 
-    return (
-      <span {...props} className={classnames(mainClassName, className)} style={style}>
-        {children}
-      </span>
-    );
-  }
+  return (
+    <span {...spanProps} className={classnames(mainClassName, className)} style={style}>
+      {children}
+    </span>
+  );
 }

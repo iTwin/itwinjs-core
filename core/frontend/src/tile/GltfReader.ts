@@ -189,9 +189,9 @@ export abstract class GltfReader {
   protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   protected get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
 
-  protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, sizeMultiplier?: number, instances?: InstancedGraphicParams): GltfReaderResult {
+  protected readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable, contentRange: ElementAlignedBox3d, transformToRoot?: Transform, pseudoRtcBias?: Vector3d, instances?: InstancedGraphicParams): GltfReaderResult {
     if (this._isCanceled)
-      return { readStatus: TileReadStatus.Canceled, isLeaf, sizeMultiplier };
+      return { readStatus: TileReadStatus.Canceled, isLeaf };
 
     if (this._returnToCenter !== undefined || (pseudoRtcBias !== undefined && pseudoRtcBias.magnitude() < 1.0E5))
       pseudoRtcBias = undefined;
@@ -250,7 +250,6 @@ export abstract class GltfReader {
     return {
       readStatus,
       isLeaf,
-      sizeMultiplier,
       contentRange,
       graphic: renderGraphic,
     };

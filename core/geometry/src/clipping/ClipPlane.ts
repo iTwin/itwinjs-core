@@ -357,7 +357,7 @@ export class ClipPlane implements Clipper, PlaneAltitudeEvaluator {
     const breaks = ClipPlane._clipArcFractionArray;
     breaks.clear();
     this.appendIntersectionRadians(arc, breaks);
-    arc.sweep.radiansArraytoPositivePeriodicFractions(breaks);
+    arc.sweep.radiansArrayToPositivePeriodicFractions(breaks);
     return ClipUtilities.selectIntervals01(arc, breaks, this, announce);
   }
   /**

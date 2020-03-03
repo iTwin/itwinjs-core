@@ -960,7 +960,7 @@ describe("PolygonAreas", () => {
     const dataB = Point3dArray.cloneDeepXYZPoint3dArrays(pointA);
     ck.testExactNumber(11, dataB.length, "Round Trip as Point3d[]");
     const dataABC = Point3dArray.cloneDeepJSONNumberArrays([pointA, pointB, pointC]);
-    const linestringsABC0 = LineString3d.createArrayOfLineString3dFromVariantData(dataABC);
+    const linestringsABC0 = LineString3d.createArrayOfLineString3d(dataABC);
 
     const lsA = LineString3d.create(pointA);
     const lsB = LineString3d.create(pointB);

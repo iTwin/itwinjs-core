@@ -45,8 +45,7 @@ export interface NavigationAidHostProps {
  * NavigationAidHost is a component that hosts a NavigationAid that is specific to the active content control.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const NavigationAidHost: React.FC<NavigationAidHostProps> = (props) => {
+export function NavigationAidHost(props: NavigationAidHostProps) {
   const [activeContentControl, setActiveContentControl] = React.useState(() => ContentViewManager.getActiveContentControl());
   const [navigationAidId, setNavigationAidId] = React.useState(() => activeContentControl ? activeContentControl.navigationAidControl : "");
 
@@ -88,7 +87,7 @@ export const NavigationAidHost: React.FC<NavigationAidHostProps> = (props) => {
       {navigationAidControl && navigationAidControl.reactElement}
     </div>
   );
-};
+}
 
 /** Properties for the [[NavigationWidgetComposer]] React components
  * @beta
@@ -107,8 +106,7 @@ export interface NavigationWidgetComposerProps {
  * and typically holds tools to visually navigate, orient, and zoom to specific content.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const NavigationWidgetComposer: React.FC<NavigationWidgetComposerProps> = (props) => {
+export function NavigationWidgetComposer(props: NavigationWidgetComposerProps) {
   const navigationAidHost = props.navigationAidHost ? props.navigationAidHost : <NavigationAidHost />;
 
   return (
@@ -120,4 +118,4 @@ export const NavigationWidgetComposer: React.FC<NavigationWidgetComposerProps> =
       onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
     />
   );
-};
+}

@@ -29,8 +29,7 @@ export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonE
 /** ColorSwatch Functional component
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) => {
+export function ColorSwatch(props: ColorSwatchProps) {
   const { b, g, r, t } = props.colorDef.colors as any;
 
   const rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
@@ -57,4 +56,4 @@ export const ColorSwatch: React.FunctionComponent<ColorSwatchProps> = (props) =>
   } = props as any;
 
   return <button {...otherProps} style={colorStyle} className={classes} onClick={handleClick} />;
-};
+}

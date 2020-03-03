@@ -27,8 +27,7 @@ interface ClearEmphasisStatusFieldProps extends StatusFieldProps {
 /** Clear Emphasis StatusField
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const ClearEmphasisStatusField: React.FC<ClearEmphasisStatusFieldProps> = (props) => {
+export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps) {
   const [toolTip] = useState(UiFramework.translate("tools.clearVisibility"));
   const activeViewport = useActiveViewport();
   const [showIndicator, setShowIndicator] = useState(false);
@@ -67,4 +66,4 @@ export const ClearEmphasisStatusField: React.FC<ClearEmphasisStatusFieldProps> =
     <Indicator toolTip={toolTip} className={classes} opened={false} onClick={clearEmphasize} iconName="icon-visibility"
       isInFooterMode={props.isInFooterMode} />
   );
-};
+}

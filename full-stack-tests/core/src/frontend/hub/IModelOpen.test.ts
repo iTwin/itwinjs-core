@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode, Logger, ClientRequestContext, GuidString, BeDuration } from "@bentley/bentleyjs-core";
+import { OpenMode, Logger, GuidString, BeDuration } from "@bentley/bentleyjs-core";
 
-import { ImsTestAuthorizationClient, ChangeSetQuery, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
+import { ChangeSetQuery, IModelHubClient, ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { TestUtility } from "./TestUtility";
-import { TestUsers } from "./TestUsers";
+import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { IModelConnection, MockRender, IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 
 describe("Opening IModelConnection (#integration)", () => {
@@ -25,10 +25,8 @@ describe("Opening IModelConnection (#integration)", () => {
 
     await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
 
-    const requestContext = new ClientRequestContext();
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(requestContext, TestUsers.regular);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
+    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
 
     // Setup a model with a large number of change sets
     testProjectId = await TestUtility.getTestProjectId(testProjectName);

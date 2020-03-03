@@ -33,7 +33,7 @@ exports[`<Tile /> renders string icon correctly 1`] = `
     <div
       className="uicore-icon"
     >
-      <Component
+      <Icon
         iconSpec="icon-placeholder"
       />
     </div>

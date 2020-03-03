@@ -444,7 +444,7 @@ exports[`CoreToolDefinitions should render KeyInBrowser 1`] = `
   <div>
     <Item
       icon={
-        <Unknown
+        <Icon
           iconSpec="icon-process"
         />
       }

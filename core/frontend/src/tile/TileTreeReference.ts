@@ -19,7 +19,6 @@ import {
   ViewFlag,
 } from "@bentley/imodeljs-common";
 import { HitDetail } from "../HitDetail";
-import { Viewport } from "../Viewport";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderMemory } from "../render/RenderMemory";
 import { FeatureSymbology } from "../render/FeatureSymbology";
@@ -76,7 +75,7 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
   }
 
   public draw(args: TileDrawArgs): void {
-    args.root.draw(args);
+    args.tree.draw(args);
   }
 
   /** Optionally return a tooltip describing the hit. */
@@ -116,7 +115,7 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
     const clipVolume = this.getClipVolume(tree);
     const viewFlagOverrides = this.getViewFlagOverrides(tree);
 
-    return new TileDrawArgs(context, transform, tree, now, purgeOlderThan, viewFlagOverrides, clipVolume, tree.loader.parentsAndChildrenExclusive, this.getSymbologyOverrides(tree));
+    return new TileDrawArgs(context, transform, tree, now, purgeOlderThan, viewFlagOverrides, clipVolume, tree.parentsAndChildrenExclusive, this.getSymbologyOverrides(tree));
   }
 
   /** Supply transform from this tile tree reference's location to iModel coordinate space.
@@ -141,14 +140,6 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
       this.computeTransform(tree).multiplyRange(tree.rootTile.contentRange, range);
 
     return range;
-  }
-
-  public computeTileRangeForFrustum(vp: Viewport): Range3d | undefined {
-    const tree = this.treeOwner.tileTree;
-    if (undefined === tree)
-      return undefined;
-
-    return tree.computeTileRangeForFrustum(this.computeTransform(tree), vp.viewingSpace);
   }
 
   protected getClipVolume(tree: TileTree): RenderClipVolume | undefined {

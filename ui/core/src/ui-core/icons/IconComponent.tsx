@@ -28,7 +28,7 @@ export interface IconProps {
 /** Icon Functional component
  * @public
  */
-export const Icon: React.FunctionComponent<IconProps> = (props: IconProps) => {  // tslint:disable-line:variable-name
+export function Icon(props: IconProps) {
   if (!props.iconSpec)
     return null;
   const iconString = (typeof props.iconSpec === "string" || props.iconSpec instanceof ConditionalStringValue) ?
@@ -53,4 +53,4 @@ export const Icon: React.FunctionComponent<IconProps> = (props: IconProps) => { 
       {props.iconSpec}
     </i>
   );
-};
+}

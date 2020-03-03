@@ -7,6 +7,6 @@ exports[`<CheckListBox /> renders correctly 1`] = `
   <CheckListBoxItem
     label="label"
   />
-  <Component />
+  <CheckListBoxSeparator />
 </ul>
 `;

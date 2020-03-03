@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Id64, OpenMode, Logger, LogLevel, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { Id64, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
-import { ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
 import { BisCodeSpec, CodeSpec, NavigationValue, RelatedElement, IModelVersion } from "@bentley/imodeljs-common";
+import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestUtility } from "./TestUtility";
-import { TestUsers } from "./TestUsers";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection,
   ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, MockRender, IModelApp,
@@ -32,9 +31,8 @@ describe("IModelConnection (#integration)", () => {
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
 
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
+    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
 
     const testProjectId = await TestUtility.getTestProjectId("iModelJsIntegrationTest");
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, "ConnectionReadTest");

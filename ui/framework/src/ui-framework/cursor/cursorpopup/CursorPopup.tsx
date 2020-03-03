@@ -196,7 +196,6 @@ export class CursorPopup extends React.Component<CursorPopupProps, CursorPopupSt
 /** CursorPopup content with padding
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const CursorPopupContent: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function CursorPopupContent(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-cursorpopup-content" />;
-};
+}

@@ -65,7 +65,10 @@
       "projectFolder": "core/clients",
       "reviewCategory": "common",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "versionPolicyName": "prerelease-monorepo-lockStep",
+      "cyclicDependencyProjects": [
+        "@bentley/oidc-signin-tool"
+      ]
     },
     {
       "packageName": "@bentley/imodeljs-clients-backend",

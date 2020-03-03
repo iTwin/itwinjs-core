@@ -2,7 +2,7 @@ sep=;
 Release Tag;API Item
 alpha;AccuDrawPopupManager
 public;Action
-internal;ActionButtonItem: React.FC
+internal;ActionButtonItem(props: ActionButtonProps): JSX.Element
 public;class ActionButtonItemDef 
 public;ActionCreatorsObject =
 public;ActionItemButton 
@@ -43,9 +43,9 @@ public;BackstageProps
 beta;BackstageStageLauncher 
 beta;BackstageToggledArgs
 public;BaseItemState
-beta;BasicNavigationWidget: React.FC
+beta;BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element
 beta;BasicNavigationWidgetProps
-beta;BasicToolWidget: React.FC
+beta;BasicToolWidget(props: BasicToolWidgetProps): JSX.Element
 beta;BasicToolWidgetProps
 public;BooleanListenerProps
 public;BooleanSyncUiListener 
@@ -63,11 +63,12 @@ alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
 internal;Category
-public;CategoryTree: React.FC
+public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
-internal;CategoryVisibilityHandler
+internal;CategoryVisibilityHandler 
+internal;CategoryVisibilityHandlerParams
 internal;ChangeSetInfo
-beta;ClearEmphasisStatusField: React.FC
+beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
 beta;ColorTheme
 public;CombinedReducerState
@@ -114,13 +115,14 @@ public;ContentViewManager
 public;CoreTools
 public;createAction
 public;createAction
+alpha;createVisibilityTreeNodeRenderer: (iconsEnabled: boolean, descriptionEnabled: boolean) => (props: TreeNodeRendererProps) => JSX.Element
 beta;CubeNavigationAidControl 
 beta;CursorDirection
 beta;CursorDirectionParts
 beta;CursorInformation
 beta;CursorMenuData
 beta;CursorPopup 
-beta;CursorPopupContent: React.FunctionComponent
+beta;CursorPopupContent(props: CommonDivProps): JSX.Element
 internal;CursorPopupFadeOutEvent 
 internal;CursorPopupFadeOutEventArgs
 beta;CursorPopupManager
@@ -209,8 +211,8 @@ internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStage
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
 internal;getWidgetId(side: WidgetPanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes
-public;GroupButton: React.FunctionComponent
-internal;GroupButtonItem: React.FunctionComponent
+public;GroupButton(props: GroupButtonProps): JSX.Element
+internal;GroupButtonItem(props: GroupButtonProps_2): JSX.Element
 public;GroupButtonProps 
 internal;GroupedItems = ReadonlyArray
 internal;GroupItem 
@@ -218,7 +220,7 @@ public;GroupItemDef
 public;GroupItemProps 
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
-public;Icon: React.FunctionComponent
+public;Icon: typeof Icon_2
 beta;IconHelper
 public;IconProps 
 public;IconSpec = IconSpec_2
@@ -256,6 +258,7 @@ public;class ItemDefBase
 public;ItemList 
 public;ItemMap 
 public;ItemProps 
+alpha;IVisibilityHandler 
 public;KeyboardShortcut 
 public;KeyboardShortcutContainer
 public;KeyboardShortcutManager
@@ -306,7 +309,7 @@ public;ModelessDialogProps
 public;ModelessDialogRenderer 
 internal;ModelSelectorWidget 
 internal;ModelSelectorWidgetControl 
-public;ModelsTree: React.FC
+public;ModelsTree(props: ModelsTreeProps): JSX.Element
 alpha;ModelsTreeNodeType
 public;ModelsTreeProps
 alpha;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
@@ -316,10 +319,10 @@ beta;NameToReducerMap
 public;NavigationAidActivatedEvent 
 public;NavigationAidActivatedEventArgs
 public;NavigationAidControl 
-beta;NavigationAidHost: React.FC
+beta;NavigationAidHost(props: NavigationAidHostProps): JSX.Element
 beta;NavigationAidHostProps
 public;NavigationWidget 
-beta;NavigationWidgetComposer: React.FC
+beta;NavigationWidgetComposer(props: NavigationWidgetComposerProps): JSX.Element
 beta;NavigationWidgetComposerProps
 public;NavigationWidgetDef 
 public;NavigationWidgetProps 
@@ -345,7 +348,7 @@ alpha;PopupRenderer
 alpha;PopupsChangedEvent 
 alpha;PopupsChangedEventArgs
 alpha;PositionPopup 
-alpha;PositionPopupContent: React.FunctionComponent
+alpha;PositionPopupContent(props: CommonDivProps): JSX.Element
 alpha;PositionPopupProps 
 beta;PresentationSelectionScope
 internal;ProjectInfo
@@ -373,7 +376,7 @@ beta;SavedViewLayout
 beta;SavedViewLayoutProps
 beta;SavedViewProps
 alpha;ScheduleAnimationTimelineDataProvider 
-beta;SectionsStatusField: React.FC
+beta;SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element
 beta;SectionsStatusFieldProps 
 beta;selectionContextStateFunc(state: Readonly
 beta;SelectionContextToolDefinitions
@@ -400,7 +403,7 @@ public;SignInProps
 public;SignOutModalFrontstage 
 public;SnapModeField: any
 alpha;SolarTimelineDataProvider 
-public;SpatialContainmentTree: React.FC
+public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
 public;SpecialKey
 internal;SplitterPaneTarget 
@@ -428,18 +431,18 @@ alpha;StandardRotationNavigationAidControl
 beta;StateManager
 public;StateType
 public;StatusBar 
-beta;StatusBarCenterSection: React.FunctionComponent
-beta;StatusBarComposer: React.FC
+beta;StatusBarCenterSection(props: CommonDivProps): JSX.Element
+beta;StatusBarComposer(props: StatusBarComposerProps): JSX.Element
 beta;StatusBarComposerProps
 internal;StatusBarContext: React.Context
 public;StatusBarFieldId = string | null
 beta;StatusBarItem 
 beta;StatusBarItemsManager 
 beta;StatusBarItemUtilities
-beta;StatusBarLeftSection: React.FunctionComponent
+beta;StatusBarLeftSection(props: CommonDivProps): JSX.Element
 public;StatusBarProps 
-beta;StatusBarRightSection: React.FunctionComponent
-beta;StatusBarSpaceBetween: React.FunctionComponent
+beta;StatusBarRightSection(props: CommonDivProps): JSX.Element
+beta;StatusBarSpaceBetween(props: CommonDivProps): JSX.Element
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
@@ -472,7 +475,7 @@ internal;ToolAssistanceFieldDefaultProps = Pick
 beta;ToolAssistanceFieldProps 
 internal;Toolbar 
 beta;ToolbarButtonHelper
-beta;ToolbarComposer: React.FC
+beta;ToolbarComposer(props: ExtensibleToolbarProps): JSX.Element
 beta;ToolbarDragInteractionContext: React.Context
 internal;ToolbarGroupItem 
 beta;ToolbarHelper
@@ -519,6 +522,7 @@ public;UserProfileBackstageItemProps
 internal;useToolSettings(): React.ReactNode
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
+alpha;useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element
 internal;useWidgetDef(): WidgetDef | undefined
 alpha;ValidationTextbox 
 internal;VersionInfo
@@ -537,7 +541,11 @@ public;VisibilityComponentHierarchy
 alpha;VisibilityComponentProps
 internal;VisibilityHandler 
 internal;VisibilityHandlerProps
-internal;VisibilityStatus
+alpha;VisibilityStatus
+alpha;VisibilityTreeEventHandler 
+alpha;VisibilityTreeEventHandlerParams 
+alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element
+alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
 alpha;VisibilityWidget 
 public;Widget 
 beta;WIDGET_OPACITY_DEFAULT = 0.9

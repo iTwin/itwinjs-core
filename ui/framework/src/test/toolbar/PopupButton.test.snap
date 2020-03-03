@@ -16,7 +16,7 @@ exports[`<PopupButton /> should invoke children as render prop 1`] = `
   <div>
     <Item
       icon={
-        <Unknown
+        <Icon
           iconSpec={undefined}
         />
       }
@@ -45,7 +45,7 @@ exports[`<PopupButton /> should render with no padding 1`] = `
   <div>
     <Item
       icon={
-        <Unknown
+        <Icon
           iconSpec={undefined}
         />
       }

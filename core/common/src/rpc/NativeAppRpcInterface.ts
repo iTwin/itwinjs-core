@@ -83,7 +83,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public static readonly interfaceName = "NativeAppRpcInterface";
 
   /** The version of the interface. */
-  public static interfaceVersion = "0.1.3";
+  public static interfaceVersion = "0.1.4";
 
   /*===========================================================================================
       NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -125,11 +125,17 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public async downloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps> { return this.forward(arguments); }
 
   /**
-   * Opens briefcase. This api can be called offline. It open briefcase on disk.
+   * Opens briefcase. This api can be called offline. It opens the briefcase on disk.
    * @param _iModelToken IModel context information.
    * @returns IModelTokenProps which allow to create IModelConnection.
    */
   public async openBriefcase(_iModelToken: IModelTokenProps): Promise<IModelProps> { return this.forward(arguments); }
+
+  /**
+   * Opens briefcase. This api can be called offline. It closes the briefcase on disk.
+   * @param _iModelToken Token that identifies the briefcase
+   */
+  public async closeBriefcase(_iModelToken: IModelTokenProps): Promise<boolean> { return this.forward(arguments); }
 
   /**
    * Gets briefcases properties that are available cache.

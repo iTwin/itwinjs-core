@@ -18,8 +18,7 @@ import "./NewBadge.scss";
 /** New Badge React component
  * @internal
  */
-// tslint:disable-next-line:variable-name
-export const NewBadge: React.FunctionComponent<CommonProps> = (props: CommonProps) => {
+export function NewBadge(props: CommonProps) {
   const { className, ...badgeProps } = props;
   return <Badge {...badgeProps} className={classnames("core-new-badge", className)} svg={newBadgeIcon} />;
-};
+}

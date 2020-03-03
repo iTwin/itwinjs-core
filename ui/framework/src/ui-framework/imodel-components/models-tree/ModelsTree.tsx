@@ -7,36 +7,29 @@
  */
 
 import * as React from "react";
-import { from } from "rxjs/internal/observable/from";
-import { map } from "rxjs/internal/operators/map";
 import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { useDisposable } from "@bentley/ui-core";
 import { IModelConnection, Viewport, PerModelCategoryVisibility } from "@bentley/imodeljs-frontend";
 import { NodeKey, Ruleset, InstanceKey, KeySet, DescriptorOverrides, ContentFlags } from "@bentley/presentation-common";
-import {
-  IPresentationTreeDataProvider, usePresentationTreeNodeLoader, useRulesetRegistration,
-  UnifiedSelectionTreeEventHandler, UnifiedSelectionTreeEventHandlerParams, ContentDataProvider,
-} from "@bentley/presentation-components";
-import { useEffectSkipFirst, NodeCheckboxRenderProps, ImageCheckBox, CheckBoxState, isPromiseLike, useDisposable } from "@bentley/ui-core";
-import {
-  useVisibleTreeNodes, ControlledTree, SelectionMode, TreeNodeRendererProps, TreeNodeRenderer, TreeRendererProps,
-  TreeRenderer, CheckBoxInfo, TreeCheckboxStateChangeEventArgs, CheckboxStateChange,
-  TreeModelNode, TreeImageLoader, TreeModelChanges, AbstractTreeNodeLoaderWithProvider, TreeNodeItem,
-  TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
-} from "@bentley/ui-components";
+import { ContentDataProvider, usePresentationTreeNodeLoader, IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { TreeNodeItem, ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
 import { UiFramework } from "../../../ui-framework/UiFramework";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
+import { IVisibilityHandler, VisibilityStatus, VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
+import { useVisibilityTreeRenderer } from "../VisibilityTreeRenderer";
 
 import "./ModelsTree.scss";
 
 const PAGING_SIZE = 20;
 
-/** Presentation rules used by [[ModelsTree]] component.
+/**
+ * Presentation rules used by [[ModelsTree]] component.
  * @internal
  */
 export const RULESET_MODELS: Ruleset = require("./Hierarchy.json"); // tslint:disable-line: no-var-requires
 
 /**
- * Types of nodes in Models tree
+ * Visibility tree node types.
  * @alpha
  */
 export enum ModelsTreeNodeType {
@@ -57,11 +50,13 @@ export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeTy
  * @public
  */
 export interface ModelsTreeProps {
-  /** An IModel to pull data from */
-  imodel: IModelConnection;
-  /** Active view used to determine and control visibility */
-  activeView?: Viewport;
-  /** Selection mode in the tree */
+  /**
+   * An IModel to pull data from
+   */
+  iModel: IModelConnection;
+  /**
+   * Selection mode in the tree
+   */
   selectionMode?: SelectionMode;
   /**
    * Predicate which indicates whether node can be selected or no
@@ -69,23 +64,25 @@ export interface ModelsTreeProps {
    */
   selectionPredicate?: ModelsTreeSelectionPredicate;
   /**
+   * Start loading hierarchy as soon as the component is created
+   */
+  enablePreloading?: boolean;
+  /**
    * Custom data provider to use for testing
    * @internal
    */
   dataProvider?: IPresentationTreeDataProvider;
+  /** Active view used to determine and control visibility */
+  activeView?: Viewport;
   /**
    * Custom visibility handler to use for testing
    * @internal
    */
-  visibilityHandler?: VisibilityHandler;
+  modelsVisibilityHandler?: VisibilityHandler;
   /**
    * Ref to the root HTML element used by this component
    */
   rootElementRef?: React.Ref<HTMLDivElement>;
-  /**
-   * Start loading hierarchy as soon as the component is created
-   */
-  enablePreloading?: boolean;
 }
 
 /**
@@ -94,39 +91,43 @@ export interface ModelsTreeProps {
  * the display of those instances.
  * @public
  */
-// tslint:disable-next-line:variable-name naming-convention
-export const ModelsTree: React.FC<ModelsTreeProps> = (props: ModelsTreeProps) => {
-  useRulesetRegistration(RULESET_MODELS);
-  const selectionMode = props.selectionMode || SelectionMode.None;
+export function ModelsTree(props: ModelsTreeProps) {
   const nodeLoader = usePresentationTreeNodeLoader({
-    imodel: props.imodel,
-    ruleset: RULESET_MODELS.id,
+    imodel: props.iModel,
+    dataProvider: props.dataProvider,
+    ruleset: RULESET_MODELS,
     pageSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,
-    dataProvider: props.dataProvider,
   });
-  const modelSource = nodeLoader.modelSource;
 
-  const visibilityHandler = useVisibilityHandler(props, nodeLoader.dataProvider);
+  const { activeView, modelsVisibilityHandler, selectionPredicate } = props;
+  const nodeSelectionPredicate = React.useCallback((key: NodeKey, node: TreeNodeItem) => {
+    return !selectionPredicate ? true : selectionPredicate(key, getNodeType(node));
+  }, [selectionPredicate]);
 
-  const eventHandler = useEventHandler(nodeLoader, visibilityHandler, props.selectionPredicate);
+  const visibilityHandler = useVisibilityHandler(activeView, modelsVisibilityHandler);
+  const eventHandler = useDisposable(React.useCallback(() => new VisibilityTreeEventHandler({
+    nodeLoader,
+    visibilityHandler,
+    collapsedChildrenDisposalEnabled: true,
+    selectionPredicate: nodeSelectionPredicate,
+  }), [nodeLoader, visibilityHandler, nodeSelectionPredicate]));
 
-  const visibleNodes = useVisibleTreeNodes(modelSource);
-
-  const treeRenderer = useTreeRenderer();
+  const visibleNodes = useVisibleTreeNodes(nodeLoader.modelSource);
+  const treeRenderer = useVisibilityTreeRenderer(true, false);
 
   return (
-    <div className="fw-visibility-tree" ref={props.rootElementRef}>
+    <div className="ui-fw-models-tree" ref={props.rootElementRef}>
       <ControlledTree
-        visibleNodes={visibleNodes}
         nodeLoader={nodeLoader}
+        visibleNodes={visibleNodes}
+        selectionMode={props.selectionMode || SelectionMode.None}
         treeEvents={eventHandler}
-        selectionMode={selectionMode}
         treeRenderer={treeRenderer}
       />
     </div>
   );
-};
+}
 
 /**
  * ModelsTree that is connected to the IModelConnection property in the Redux store. The
@@ -135,240 +136,44 @@ export const ModelsTree: React.FC<ModelsTreeProps> = (props: ModelsTreeProps) =>
  */
 export const IModelConnectedModelsTree = connectIModelConnection(null, null)(ModelsTree); // tslint:disable-line:variable-name
 
-const useTreeRenderer = () => {
-  const renderNodeCheckbox = React.useCallback((props: NodeCheckboxRenderProps): React.ReactNode => (
-    <ImageCheckBox
-      checked={props.checked}
-      disabled={props.disabled}
-      imageOn="icon-visibility"
-      imageOff="icon-visibility-hide-2"
-      onClick={props.onChange}
-      tooltip={props.title}
-    />
-  ), []);
+const useVisibilityHandler = (activeView?: Viewport, visibilityHandler?: VisibilityHandler) => {
+  const previous = React.useRef<IDisposable>();
 
-  const imageLoader = React.useMemo(() => new TreeImageLoader(), []);
-  const nodeRenderer = React.useCallback((props: TreeNodeRendererProps) => (
-    <TreeNodeRenderer
-      {...props}
-      checkboxRenderer={renderNodeCheckbox}
-      imageLoader={imageLoader}
-    />
-  ), [renderNodeCheckbox, imageLoader]);
+  React.useEffect(() => () => previous.current?.dispose(), []);
 
-  return React.useCallback((props: TreeRendererProps) => (
-    <TreeRenderer
-      {...props}
-      nodeRenderer={nodeRenderer}
-    />
-  ), [nodeRenderer]);
+  return React.useMemo(() => {
+    if (previous.current)
+      previous.current.dispose;
+
+    const handler = visibilityHandler ?? createVisibilityHandler(activeView);
+    previous.current = handler;
+    return handler;
+  }, [activeView, visibilityHandler]);
 };
 
-const useVisibilityHandler = (props: ModelsTreeProps, dataProvider: IPresentationTreeDataProvider) => {
-  const [handler, setHandler] = React.useState(() => createVisibilityHandler(props, dataProvider));
-
-  React.useEffect(() => {
-    return () => {
-      if (handler)
-        handler.dispose();
-    };
-  }, [handler]);
-
-  useEffectSkipFirst(() => {
-    setHandler(createVisibilityHandler(props, dataProvider));
-  }, [props.activeView, props.visibilityHandler, dataProvider]);
-
-  return handler;
-};
-
-const useEventHandler = (
-  nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,
-  visibilityHandler: VisibilityHandler | undefined,
-  selectionPredicate?: ModelsTreeSelectionPredicate) => {
-  const createEventHandler = React.useCallback(() => new EventHandler({
-    nodeLoader,
-    collapsedChildrenDisposalEnabled: true,
-    visibilityHandler,
-    selectionPredicate,
-  }), [nodeLoader, visibilityHandler, selectionPredicate]);
-
-  return useDisposable(createEventHandler);
-};
-
-const createVisibilityHandler = (props: ModelsTreeProps, dataProvider: IPresentationTreeDataProvider) => {
-  if (props.visibilityHandler)
-    return props.visibilityHandler;
-
+const createVisibilityHandler = (activeView?: Viewport): IVisibilityHandler | undefined => {
   // istanbul ignore else
-  if (!props.activeView)
+  if (!activeView)
     return undefined;
 
   // istanbul ignore next
   return new VisibilityHandler({
-    viewport: props.activeView,
-    dataProvider,
-    onVisibilityChange: () => { },
+    viewport: activeView,
   });
 };
 
-interface EventHandlerParams extends UnifiedSelectionTreeEventHandlerParams {
-  visibilityHandler: VisibilityHandler | undefined;
-  selectionPredicate?: ModelsTreeSelectionPredicate;
-}
+const getNodeType = (item: TreeNodeItem) => {
+  if (!item.extendedData)
+    return ModelsTreeNodeType.Unknown;
 
-class EventHandler extends UnifiedSelectionTreeEventHandler {
-  private _visibilityHandler: VisibilityHandler | undefined;
-  private _selectionPredicate?: ModelsTreeSelectionPredicate;
-
-  private _removeListener: () => void;
-
-  constructor(params: EventHandlerParams) {
-    super(params);
-    this._visibilityHandler = params.visibilityHandler;
-    this._selectionPredicate = params.selectionPredicate;
-
-    if (this._visibilityHandler) {
-      this._visibilityHandler.onVisibilityChange = () => this.updateCheckboxes();
-    }
-
-    this._removeListener = this.modelSource.onModelChanged.addListener((args) => this.updateCheckboxes(args[1]));
-    this.updateCheckboxes(); // tslint:disable-line: no-floating-promises
-  }
-
-  public dispose() {
-    super.dispose();
-    this._removeListener();
-  }
-
-  private getNodeType(item: TreeNodeItem) {
-    if (!item.extendedData)
-      return ModelsTreeNodeType.Unknown;
-
-    if (item.extendedData.isSubject)
-      return ModelsTreeNodeType.Subject;
-    if (item.extendedData.isModel)
-      return ModelsTreeNodeType.Model;
-    if (item.extendedData.isCategory)
-      return ModelsTreeNodeType.Category;
-    return ModelsTreeNodeType.Element;
-  }
-
-  private filterSelectionItems(items: TreeNodeItem[]) {
-    if (!this._selectionPredicate)
-      return items;
-
-    return items.filter((item) => this._selectionPredicate!(this.getNodeKey(item), this.getNodeType(item)));
-  }
-
-  public onSelectionModified({ modifications }: TreeSelectionModificationEventArgs) {
-    const filteredModification = from(modifications).pipe(
-      map(({ selectedNodeItems, deselectedNodeItems }) => {
-        return {
-          selectedNodeItems: this.filterSelectionItems(selectedNodeItems),
-          deselectedNodeItems: this.filterSelectionItems(deselectedNodeItems),
-        };
-      }),
-    );
-    return super.onSelectionModified({ modifications: filteredModification });
-  }
-
-  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs) {
-    const filteredReplacements = from(replacements).pipe(
-      map(({ selectedNodeItems }) => {
-        return {
-          selectedNodeItems: this.filterSelectionItems(selectedNodeItems),
-        };
-      }),
-    );
-    return super.onSelectionReplaced({ replacements: filteredReplacements });
-  }
-
-  public onCheckboxStateChanged(event: TreeCheckboxStateChangeEventArgs) {
-    event.stateChanges.subscribe({
-      next: (changes: CheckboxStateChange[]) => {
-        // istanbul ignore if
-        if (!this._visibilityHandler)
-          return;
-
-        for (const { nodeItem, newState } of changes) {
-          this._visibilityHandler.changeVisibility(nodeItem, newState === CheckBoxState.On); // tslint:disable-line: no-floating-promises
-        }
-      },
-      complete: () => {
-        this.updateCheckboxes(); // tslint:disable-line: no-floating-promises
-      },
-    });
-
-    return undefined;
-  }
-
-  private async updateCheckboxes(modelChanges?: TreeModelChanges) {
-    // if handling model change event only need to update newly added nodes
-    const nodeStates = await (modelChanges ? this.collectAddedNodesCheckboxInfos(modelChanges.addedNodeIds) : this.collectAllNodesCheckboxInfos());
-    if (nodeStates.size === 0)
-      return;
-
-    this.modelSource.modifyModel((model) => {
-      for (const [nodeId, checkboxInfo] of nodeStates.entries()) {
-        const node = model.getNode(nodeId);
-        // istanbul ignore else
-        if (node)
-          node.checkbox = checkboxInfo;
-      }
-    });
-  }
-
-  private async collectAddedNodesCheckboxInfos(addedNodeIds: string[]) {
-    const nodeStates = new Map<string, CheckBoxInfo>();
-    for (const nodeId of addedNodeIds) {
-      const node = this.modelSource.getModel().getNode(nodeId);
-      // istanbul ignore if
-      if (!node)
-        continue;
-
-      const info = await this.getNodeCheckBoxInfo(node);
-      if (info)
-        nodeStates.set(nodeId, info);
-    }
-    return nodeStates;
-  }
-
-  private async collectAllNodesCheckboxInfos() {
-    const nodeStates = new Map<string, CheckBoxInfo>();
-    for (const node of this.modelSource.getModel().iterateTreeModelNodes()) {
-      const info = await this.getNodeCheckBoxInfo(node);
-      if (info)
-        nodeStates.set(node.id, info);
-    }
-    return nodeStates;
-  }
-
-  private async getNodeCheckBoxInfo(node: TreeModelNode): Promise<CheckBoxInfo | undefined> {
-    if (!this._visibilityHandler)
-      return node.checkbox.isVisible ? { ...node.checkbox, isVisible: false } : undefined;
-
-    const result = this._visibilityHandler.getDisplayStatus(node.item);
-    if (isPromiseLike(result))
-      return this.createCheckboxInfo(node, await result);
-    return this.createCheckboxInfo(node, result);
-  }
-
-  private createCheckboxInfo(node: TreeModelNode, status: VisibilityStatus) {
-    const newInfo = {
-      state: status.isDisplayed ? CheckBoxState.On : CheckBoxState.Off,
-      isDisabled: status.isDisabled || false,
-      isVisible: true,
-      tooltip: status.tooltip,
-    };
-
-    if (node.checkbox.state !== newInfo.state || node.checkbox.isDisabled !== newInfo.isDisabled ||
-      node.checkbox.isVisible !== newInfo.isVisible || node.checkbox.tooltip !== newInfo.tooltip) {
-      return newInfo;
-    }
-
-    return undefined;
-  }
-}
+  if (isSubjectNode(item))
+    return ModelsTreeNodeType.Subject;
+  if (isModelNode(item))
+    return ModelsTreeNodeType.Model;
+  if (isCategoryNode(item))
+    return ModelsTreeNodeType.Category;
+  return ModelsTreeNodeType.Element;
+};
 
 const createTooltip = (status: "visible" | "hidden" | "disabled", tooltipStringId: string | undefined): string => {
   const statusStringId = `UiFramework:visibilityTree.status.${status}`;
@@ -386,26 +191,18 @@ const isModelNode = (node: TreeNodeItem) => (node.extendedData && node.extendedD
 const isCategoryNode = (node: TreeNodeItem) => (node.extendedData && node.extendedData.isCategory);
 
 /** @internal */
-export interface VisibilityStatus {
-  isDisplayed: boolean;
-  isDisabled?: boolean;
-  tooltip?: string;
-}
-
-/** @internal */
 export interface VisibilityHandlerProps {
   viewport: Viewport;
-  dataProvider: IPresentationTreeDataProvider;
-  onVisibilityChange: () => void;
+  onVisibilityChange?: () => void;
 }
 
 /** @internal */
-export class VisibilityHandler implements IDisposable {
+export class VisibilityHandler implements IVisibilityHandler {
 
   private _props: VisibilityHandlerProps;
-  private _onVisibilityChange: () => void;
   private _pendingVisibilityChange: any | undefined;
   private _subjectModelIdsCache: SubjectModelIdsCache;
+  private _onVisibilityChange?: () => void;
 
   constructor(props: VisibilityHandlerProps) {
     this._props = props;
@@ -428,22 +225,36 @@ export class VisibilityHandler implements IDisposable {
   }
 
   public get onVisibilityChange() { return this._onVisibilityChange; }
-  public set onVisibilityChange(callback: () => void) { this._onVisibilityChange = callback; }
+  public set onVisibilityChange(callback: (() => void) | undefined) { this._onVisibilityChange = callback; }
 
-  public getDisplayStatus(node: TreeNodeItem): VisibilityStatus | Promise<VisibilityStatus> {
-    const key = this._props.dataProvider.getNodeKey(node);
-    if (!NodeKey.isInstancesNodeKey(key))
+  public getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus | Promise<VisibilityStatus> {
+    if (!NodeKey.isInstancesNodeKey(nodeKey))
       return { isDisplayed: false, isDisabled: true };
 
     if (isSubjectNode(node)) {
       // note: subject nodes may be merged to represent multiple subject instances
-      return this.getSubjectDisplayStatus(key.instanceKeys.map((k) => k.id));
+      return this.getSubjectDisplayStatus(nodeKey.instanceKeys.map((k) => k.id));
     }
     if (isModelNode(node))
-      return this.getModelDisplayStatus(key.instanceKeys[0].id);
+      return this.getModelDisplayStatus(nodeKey.instanceKeys[0].id);
     if (isCategoryNode(node))
-      return this.getCategoryDisplayStatus(key.instanceKeys[0].id, this.getCategoryParentModelId(node));
-    return this.getElementDisplayStatus(key.instanceKeys[0].id, this.getElementModelId(node), this.getElementCategoryId(node));
+      return this.getCategoryDisplayStatus(nodeKey.instanceKeys[0].id, this.getCategoryParentModelId(node));
+    return this.getElementDisplayStatus(nodeKey.instanceKeys[0].id, this.getElementModelId(node), this.getElementCategoryId(node));
+  }
+
+  public async changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, on: boolean) {
+    if (!NodeKey.isInstancesNodeKey(nodeKey))
+      return;
+
+    if (isSubjectNode(node)) {
+      await this.changeSubjectState(nodeKey.instanceKeys.map((k) => k.id), on);
+    } else if (isModelNode(node)) {
+      await this.changeModelState(nodeKey.instanceKeys[0].id, on);
+    } else if (isCategoryNode(node)) {
+      this.changeCategoryState(nodeKey.instanceKeys[0].id, this.getCategoryParentModelId(node), on);
+    } else {
+      await this.changeElementState(nodeKey.instanceKeys[0].id, this.getElementModelId(node), this.getElementCategoryId(node), on);
+    }
   }
 
   private getCategoryParentModelId(categoryNode: TreeNodeItem): Id64String | undefined {
@@ -513,22 +324,6 @@ export class VisibilityHandler implements IDisposable {
     return { isDisplayed: false, tooltip: createTooltip("hidden", "element.hiddenThroughCategory") };
   }
 
-  public async changeVisibility(node: TreeNodeItem, on: boolean) {
-    const key = this._props.dataProvider.getNodeKey(node);
-    if (!NodeKey.isInstancesNodeKey(key))
-      return;
-
-    if (isSubjectNode(node)) {
-      await this.changeSubjectState(key.instanceKeys.map((k) => k.id), on);
-    } else if (isModelNode(node)) {
-      await this.changeModelState(key.instanceKeys[0].id, on);
-    } else if (isCategoryNode(node)) {
-      this.changeCategoryState(key.instanceKeys[0].id, this.getCategoryParentModelId(node), on);
-    } else {
-      await this.changeElementState(key.instanceKeys[0].id, this.getElementModelId(node), this.getElementCategoryId(node), on);
-    }
-  }
-
   private async changeSubjectState(ids: Id64String[], on: boolean) {
     if (!this._props.viewport.view.isSpatialView())
       return;
@@ -568,12 +363,12 @@ export class VisibilityHandler implements IDisposable {
   }
 
   private async changeElementState(id: Id64String, modelId: Id64String | undefined, categoryId: Id64String | undefined, on: boolean) {
+    const elementIds = [id, ...await this.getAssemblyElementIds(id)];
     const isDisplayedByDefault = modelId && this.getModelDisplayStatus(modelId).isDisplayed
       && categoryId && this.getCategoryDisplayStatus(categoryId, modelId).isDisplayed;
     const isHiddenDueToExclusiveAlwaysDrawnElements = this._props.viewport.isAlwaysDrawnExclusive && this._props.viewport.alwaysDrawn && 0 !== this._props.viewport.alwaysDrawn.size;
     const currNeverDrawn = new Set(this._props.viewport.neverDrawn ? this._props.viewport.neverDrawn : []);
     const currAlwaysDrawn = new Set(this._props.viewport.alwaysDrawn ? this._props.viewport.alwaysDrawn : []);
-    const elementIds = [id, ...await this.getAssemblyElementIds(id)];
     elementIds.forEach((elementId) => {
       if (on) {
         currNeverDrawn.delete(elementId);
@@ -594,7 +389,7 @@ export class VisibilityHandler implements IDisposable {
       return;
 
     this._pendingVisibilityChange = setTimeout(() => {
-      this._onVisibilityChange();
+      this._onVisibilityChange && this._onVisibilityChange();
       this._pendingVisibilityChange = undefined;
     }, 0);
   }

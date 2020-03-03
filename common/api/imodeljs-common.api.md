@@ -3057,6 +3057,11 @@ export interface IModelCoordinatesResponseProps {
     iModelCoords: PointWithStatus[];
 }
 
+// @beta
+export interface IModelEncryptionProps {
+    password?: string;
+}
+
 // @public
 export class IModelError extends BentleyError {
     constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
@@ -3627,11 +3632,11 @@ export type MobileRpcChunks = Array<string | Uint8Array>;
 
 // @beta
 export abstract class MobileRpcConfiguration extends RpcConfiguration {
-    static readonly args: any;
+    static get args(): any;
     static get isIOSFrontend(): any;
     static get isMobileBackend(): boolean;
     static get isMobileFrontend(): boolean;
-    static readonly platform: RpcMobilePlatform;
+    static get platform(): RpcMobilePlatform;
     // (undocumented)
     abstract protocol: MobileRpcProtocol;
 }
@@ -3701,6 +3706,7 @@ export interface ModelSelectorProps extends DefinitionElementProps {
 export abstract class NativeAppRpcInterface extends RpcInterface {
     cancelTileContentRequests(_iModelToken: IModelTokenProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
+    closeBriefcase(_iModelToken: IModelTokenProps): Promise<boolean>;
     downloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps>;
     fetchEvents(_iModelToken: IModelTokenProps, _maxToFetch: number): Promise<QueuedEvent[]>;
     getBriefcases(): Promise<BriefcaseProps[]>;
@@ -6065,7 +6071,7 @@ export interface TileOptions {
     readonly useProjectExtents: boolean;
 }
 
-// @internal (undocumented)
+// @internal
 export interface TileProps {
     contentId: string;
     contentRange?: Range3dProps;
@@ -6073,7 +6079,6 @@ export interface TileProps {
     maximumSize: number;
     range: Range3dProps;
     sizeMultiplier?: number;
-    transformToRoot?: TransformProps;
 }
 
 // @internal
@@ -6121,7 +6126,7 @@ export interface TileTreeMetadata {
     readonly modelId: Id64String;
 }
 
-// @internal (undocumented)
+// @internal
 export interface TileTreeProps {
     contentIdQualifier?: string;
     contentRange?: Range3dProps;
@@ -6131,7 +6136,6 @@ export interface TileTreeProps {
     maxInitialTilesToSkip?: number;
     maxTilesToSkip?: number;
     rootTile: TileProps;
-    yAxisUp?: boolean;
 }
 
 // @beta

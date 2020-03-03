@@ -25,15 +25,15 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import {
-  IModelTileLoader,
+  IModelTileTree,
+  IModelTileTreeParams,
+  iModelTileTreeParamsFromJSON,
   TileDrawArgs,
   TileGraphicType,
   TileTree,
   TileTreeOwner,
   TileTreeReference,
   TileTreeSupplier,
-  TileTreeParams,
-  tileTreeParamsFromJSON,
 } from "./internal";
 import {
   ViewState,
@@ -51,10 +51,10 @@ interface PrimaryTreeId {
   readonly isPlanProjection: boolean;
 }
 
-class PlanProjectionTileTree extends TileTree {
+class PlanProjectionTileTree extends IModelTileTree {
   public readonly baseElevation: number;
 
-  public constructor(params: TileTreeParams, baseElevation: number) {
+  public constructor(params: IModelTileTreeParams, baseElevation: number) {
     super(params);
     this.baseElevation = baseElevation;
   }
@@ -80,15 +80,16 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     const idStr = iModelTileTreeIdToString(id.modelId, treeId, IModelApp.tileAdmin);
     const props = await iModel.tiles.getTileTreeProps(idStr);
 
-    const allowInstancing = undefined === treeId.animationId && !treeId.enforceDisplayPriority;
-    const edgesRequired = treeId.edgesRequired;
+    const options = {
+      edgesRequired: treeId.edgesRequired,
+      allowInstancing: undefined === treeId.animationId && !treeId.enforceDisplayPriority,
+      is3d: id.is3d,
+      batchType: BatchType.Primary,
+    };
 
-    const loader = new IModelTileLoader(iModel, props.formatVersion, BatchType.Primary, edgesRequired, allowInstancing, id.guid);
-    props.rootTile.contentId = loader.rootContentId;
-    props.maxTilesToSkip = IModelApp.tileAdmin.maximumLevelsToSkip;
-    const params = tileTreeParamsFromJSON(props, iModel, id.is3d, loader, id.modelId);
+    const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, id.guid, options);
     if (!id.isPlanProjection)
-      return new TileTree(params);
+      return new IModelTileTree(params);
 
     let elevation = 0;
     try {
@@ -224,7 +225,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     if (undefined === settings || settings.enforceDisplayPriority || !settings.overlay)
       super.draw(args);
     else
-      args.context.withGraphicType(TileGraphicType.Overlay, () => args.root.draw(args));
+      args.context.withGraphicType(TileGraphicType.Overlay, () => args.tree.draw(args));
   }
 
   private getSettings() {

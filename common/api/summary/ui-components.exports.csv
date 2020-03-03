@@ -63,7 +63,7 @@ beta;ColorEditor
 beta;ColorPickerButton 
 beta;ColorPickerProps 
 beta;ColorPropertyEditor 
-beta;ColorSwatch: React.FunctionComponent
+beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
 beta;ColorSwatchProps 
 public;ColumnDescription
 beta;ColumnFilterDescriptor 
@@ -74,7 +74,7 @@ public;CompositeTypeConverter
 internal;ContextMenu 
 internal;ContextMenuItem 
 internal;ContextMenuProps 
-beta;ControlledTree: React.FC
+beta;ControlledTree(props: ControlledTreeProps): JSX.Element
 beta;ControlledTreeProps 
 public;ConvertedPrimitives
 internal;CubeHover
@@ -368,7 +368,7 @@ beta;TreeModelRootNode
 beta;TreeModelSource
 public;TreeNode 
 beta;TreeNodeEventArgs
-public;TreeNodeIcon: React.FunctionComponent
+public;TreeNodeIcon(props: TreeNodeIconProps): JSX.Element | null
 public;TreeNodeIconProps 
 public;TreeNodeItem
 beta;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
@@ -378,7 +378,7 @@ public;TreeNodeProps
 beta;TreeNodeRenderer: React.MemoExoticComponent
 beta;TreeNodeRendererProps 
 public;TreeProps 
-beta;TreeRenderer: React.FC
+beta;TreeRenderer(props: TreeRendererProps): JSX.Element
 beta;TreeRendererContext
 beta;TreeRendererProps
 beta;TreeSelectionChange

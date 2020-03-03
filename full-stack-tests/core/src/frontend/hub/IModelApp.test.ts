@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ImsTestAuthorizationClient } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { TestUsers } from "./TestUsers";
+import { TestAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUtility } from "./TestUtility";
 
 describe("IModelApp (#integration)", () => {
 
@@ -18,9 +19,8 @@ describe("IModelApp (#integration)", () => {
       sessionId: "testsessionid",
     });
 
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
+    const requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
   });
 
   after(async () => {

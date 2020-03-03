@@ -59,7 +59,7 @@ export interface ControlledTreeProps extends CommonProps {
  * React tree component which rendering is fully controlled from outside.
  * @beta
  */
-export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledTreeProps) => { // tslint:disable-line: variable-name
+export function ControlledTree(props: ControlledTreeProps) {
   const nodeHeight = useNodeHeight(!!props.descriptionsEnabled);
   const imageLoader = useMemo(() => new TreeImageLoader(), []);
   const nodeRenderer = useCallback((nodeProps: TreeNodeRendererProps) => (
@@ -88,7 +88,7 @@ export const ControlledTree: React.FC<ControlledTreeProps> = (props: ControlledT
       {props.treeRenderer ? props.treeRenderer(treeProps) : <TreeRenderer {...treeProps} />}
     </Loader>
   );
-};
+}
 
 function useRootNodeLoader(visibleNodes: VisibleTreeNodes, nodeLoader: ITreeNodeLoader): boolean {
   useEffect(() => {
@@ -123,8 +123,7 @@ interface LoaderProps {
   children: JSX.Element;
 }
 
-// tslint:disable-next-line: variable-name
-const Loader: React.FC<LoaderProps> = (props) => {
+function Loader(props: LoaderProps) {
   if (props.loading) {
     return props.spinnerRenderer
       ? props.spinnerRenderer()
@@ -145,7 +144,7 @@ const Loader: React.FC<LoaderProps> = (props) => {
   }
 
   return props.children;
-};
+}
 
 function useNodeHeight(
   descriptionsEnabled: boolean,

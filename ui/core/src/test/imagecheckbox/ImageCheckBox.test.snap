@@ -14,7 +14,7 @@ exports[`<ImageCheckBox /> disabled renders correctly 1`] = `
   <span
     className="image"
   >
-    <Component
+    <Icon
       iconSpec="icon-visibility-hide-2"
     />
   </span>
@@ -34,7 +34,7 @@ exports[`<ImageCheckBox /> renders correctly 1`] = `
   <span
     className="image"
   >
-    <Component
+    <Icon
       iconSpec="icon-visibility-hide-2"
     />
   </span>

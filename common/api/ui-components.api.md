@@ -829,7 +829,7 @@ export class ColorPropertyEditor extends PropertyEditorBase {
 }
 
 // @beta
-export const ColorSwatch: React.FunctionComponent<ColorSwatchProps>;
+export function ColorSwatch(props: ColorSwatchProps): JSX.Element;
 
 // @beta
 export interface ColorSwatchProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
@@ -948,7 +948,7 @@ export interface ContextMenuProps extends CommonProps {
 }
 
 // @beta
-export const ControlledTree: React.FC<ControlledTreeProps>;
+export function ControlledTree(props: ControlledTreeProps): JSX.Element;
 
 // @beta
 export interface ControlledTreeProps extends CommonProps {
@@ -3789,7 +3789,7 @@ export interface TreeNodeEventArgs {
 }
 
 // @public @deprecated
-export const TreeNodeIcon: React.FunctionComponent<TreeNodeIconProps>;
+export function TreeNodeIcon(props: TreeNodeIconProps): JSX.Element | null;
 
 // @public @deprecated
 export interface TreeNodeIconProps extends React.Attributes {
@@ -3933,7 +3933,7 @@ export interface TreeProps extends CommonProps {
 }
 
 // @beta
-export const TreeRenderer: React.FC<TreeRendererProps>;
+export function TreeRenderer(props: TreeRendererProps): JSX.Element;
 
 // @beta
 export interface TreeRendererContext {

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ClientRequestContext, GuidString, StopWatch } from "@bentley/bentleyjs-core";
+import { GuidString, StopWatch } from "@bentley/bentleyjs-core";
 import { Range3d, Point3d } from "@bentley/geometry-core";
 import {
-  AuthorizationToken, AuthorizedClientRequestContext,
+  AuthorizedClientRequestContext,
   ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareFolderQuery, ProjectShareFileQuery,
 } from "@bentley/imodeljs-clients";
 import { JpegTagReader, ImageTags } from "../../JpegTagReader";
@@ -20,10 +20,7 @@ describe("JpegTagReader (#integration)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    const authToken: AuthorizationToken = await TestConfig.login();
-    const accessToken = await projectShareClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
-
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
     const project = await TestConfig.queryProject(requestContext, "iModelJsGeoPhotoTestProject");
     projectId = project.wsgId;
   });

@@ -2,12 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module UiProvider */
+/** @packageDocumentation
+ * @module UiProvider
+ */
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { DialogItemsManager, DialogItem, DialogItemValue, DialogItemsSyncArgs, DialogRow, DialogSyncItem, PrimitiveValue,
-          PropertyValueFormat, PropertyRecord } from "@bentley/ui-abstract";
+import {
+  DialogItemsManager, DialogItem, DialogItemValue, DialogItemsSyncArgs, DialogRow, DialogSyncItem, PrimitiveValue,
+  PropertyValueFormat, PropertyRecord,
+} from "@bentley/ui-abstract";
 import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
 import { Logger } from "@bentley/bentleyjs-core";
 
@@ -46,7 +50,7 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
   }
   /** Get the Provider that generates and synchronizes UI for this Display */
   public get itemsManager(): DialogItemsManager { return this._itemsManager; }
-  public set itemsManager (itemsManager: DialogItemsManager) { this._itemsManager = itemsManager; }
+  public set itemsManager(itemsManager: DialogItemsManager) { this._itemsManager = itemsManager; }
 
   /** Process request to update one or more properties */
   private _handleSyncPropertiesChangeEvent = (args: DialogItemsSyncArgs): void => {
@@ -59,7 +63,7 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
       const dialogItem = newValueMap.get(syncItem.itemName);
       /* istanbul ignore else */
       if (dialogItem) {
-        const updatedDialogItem = {value: dialogItem.value, itemName: dialogItem.itemName, property: dialogItem.property, editorPosition: dialogItem.editorPosition, isDisabled: syncItem.isDisabled, lockProperty: dialogItem.lockProperty};
+        const updatedDialogItem = { value: dialogItem.value, itemName: dialogItem.itemName, property: dialogItem.property, editorPosition: dialogItem.editorPosition, isDisabled: syncItem.isDisabled, lockProperty: dialogItem.lockProperty };
         newValueMap.set(syncItem.itemName, updatedDialogItem);
         /** Update property items */
       }
@@ -96,11 +100,11 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
       if (dialogItem) {
         const propertyRecord = commit.propertyRecord;
         const newValueMap = new Map<string, DialogItem>(this.state.valueMap);
-        const updatedDialogItem = {value: commit.newValue as DialogItemValue, itemName: dialogItem.itemName,  property: propertyRecord.property, editorPosition: dialogItem.editorPosition, isDisabled: dialogItem.isDisabled, lockProperty: dialogItem.lockProperty};
+        const updatedDialogItem = { value: commit.newValue as DialogItemValue, itemName: dialogItem.itemName, property: propertyRecord.property, editorPosition: dialogItem.editorPosition, isDisabled: dialogItem.isDisabled, lockProperty: dialogItem.lockProperty };
         newValueMap.set(propertyName, updatedDialogItem);
         this.setState({ valueMap: newValueMap }, () => {
-          const syncItem: DialogSyncItem = { value: commit.newValue as DialogItemValue, itemName: updatedDialogItem.itemName, property: updatedDialogItem.property, editorPosition: updatedDialogItem.editorPosition, isDisabled: updatedDialogItem.isDisabled, lockProperty: updatedDialogItem.lockProperty};
-          this._itemsManager.onDataChanged.emit (syncItem);
+          const syncItem: DialogSyncItem = { value: commit.newValue as DialogItemValue, itemName: updatedDialogItem.itemName, property: updatedDialogItem.property, editorPosition: updatedDialogItem.editorPosition, isDisabled: updatedDialogItem.isDisabled, lockProperty: updatedDialogItem.lockProperty };
+          this._itemsManager.onDataChanged.emit(syncItem);
         });
       }
     }
@@ -116,7 +120,7 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
     // istanbul ignore next
     if (!dialogItem)
       throw (new Error("No record found in value map for tool setting."));
-    const record = new PropertyRecord (dialogItem.value, dialogItem.property);
+    const record = new PropertyRecord(dialogItem.value, dialogItem.property);
     const className = isLock ? "uifw-default-property-lock" : "uifw-default-editor";
     return (
       <div key={record.property.name} className={className} >

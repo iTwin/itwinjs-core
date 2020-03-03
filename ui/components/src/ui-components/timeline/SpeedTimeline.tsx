@@ -23,8 +23,7 @@ interface HandleProps {
   getHandleProps: GetHandleProps;
 }
 
-// tslint:disable-next-line: variable-name
-const Handle: React.FunctionComponent<HandleProps> = (props) => {
+function Handle(props: HandleProps) {
   const {
     domain: [min, max],
     handle: { id, value, percent },
@@ -34,7 +33,7 @@ const Handle: React.FunctionComponent<HandleProps> = (props) => {
   return <div className="scrubberHandle" role="slider" aria-valuemin={min}
     aria-valuemax={max} aria-valuenow={value} style={{ left: `${percent}%` }}
     {...getHandleProps(id)} />;
-};
+}
 
 // *******************************************************
 // RAIL COMPONENT
@@ -43,8 +42,7 @@ interface RailProps {
   getRailProps: GetRailProps;
 }
 
-// tslint:disable-next-line: variable-name
-const Rails: React.FunctionComponent<RailProps> = (props) => {
+function Rails(props: RailProps) {
   const { getRailProps } = props;
 
   return (
@@ -53,7 +51,7 @@ const Rails: React.FunctionComponent<RailProps> = (props) => {
       <div className="railInner" />
     </>
   );
-};
+}
 
 interface SpeedProps extends CommonProps {
   speed: number;
@@ -64,7 +62,7 @@ interface SpeedProps extends CommonProps {
  * @alpha
  */
 // tslint:disable-next-line: variable-name
-export const SpeedTimeline: React.FunctionComponent<SpeedProps> = (props) => {
+export function SpeedTimeline(props: SpeedProps) {
   // istanbul ignore next - WIP
   const onChange = (values: ReadonlyArray<number>) => {
     const value = values[0];
@@ -101,4 +99,4 @@ export const SpeedTimeline: React.FunctionComponent<SpeedProps> = (props) => {
       </Slider>
     </div>
   );
-};
+}

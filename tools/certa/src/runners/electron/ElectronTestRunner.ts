@@ -46,7 +46,7 @@ export class ElectronTestRunner {
     });
 
     ipcMain.on("certa-callback", async (event: any, msg: any) => {
-      event.returnValue = executeRegisteredCallback(msg.name, msg.args);
+      event.returnValue = await executeRegisteredCallback(msg.name, msg.args);
     });
 
     rendererWindow.webContents.once("did-finish-load", async () => {

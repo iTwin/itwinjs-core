@@ -42,7 +42,7 @@ class TreeDecoration {
   private drawBoundingBox(ref: TileTreeReference, context: DecorateContext): void {
     const tree = ref.treeOwner.tileTree;
     const location = ref.getLocation();
-    if (undefined === location || undefined === tree || tree.loader.isContentUnbounded || tree.range.isNull)
+    if (undefined === location || undefined === tree || tree.isContentUnbounded || tree.range.isNull)
       return;
 
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, location);

@@ -5,7 +5,7 @@
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, UserInfo, ConnectClient, Project, Asset, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUtility } from "@bentley/oidc-signin-tool";
 import { getImodelHubClient } from "./TestUtils";
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
@@ -32,7 +32,7 @@ class TestIModelHubUserMgr implements IModelAuthorizationClient {
 
   public async authorizeUser(requestContext: ClientRequestContext, _userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
     requestContext.enter();
-    this._token = await TestUsers.getAccessToken(userCredentials);
+    this._token = await TestUtility.getAccessToken(userCredentials);
     return Promise.resolve(this._token);
   }
 

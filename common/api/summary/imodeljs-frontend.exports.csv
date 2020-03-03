@@ -1,7 +1,5 @@
 sep=;
 Release Tag;API Item
-internal;A3xTile
-internal;A3xTileIO
 internal;AccuDraw
 internal;AccuDrawChangeModeTool 
 internal;AccudrawData
@@ -29,6 +27,7 @@ public;ACSType
 alpha;ActiveClipStatus
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
+internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
 beta;AngleDescription 
 internal;AnimationBranchState
 internal;AnimationBranchStates = Map
@@ -80,7 +79,6 @@ public;Cluster
 internal;CompassMode
 internal;ContextMode
 internal;ContextRealityModelState
-internal;class ContextTileLoader 
 alpha;ConversionData 
 public;CoordinateLockOverrides
 public;CoordSource
@@ -202,6 +200,7 @@ public;imageElementFromUrl(url: string): Promise
 internal;class ImageryProvider
 internal;class ImageryProviderEPSG3857 
 internal;ImdlReader 
+internal;ImdlReaderResult 
 public;IModelApp
 public;IModelAppOptions
 public;IModelConnection 
@@ -210,7 +209,14 @@ alpha;EditingFunctions
 alpha;EditingFunctions
 internal;Tiles
 internal;IModelFrameLifecycle
-internal;IModelTileLoader 
+internal;IModelTile 
+internal;IModelTileContent 
+internal;IModelTileParams 
+internal;iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | undefined): IModelTileParams
+internal;IModelTileTree 
+internal;IModelTileTreeOptions
+internal;IModelTileTreeParams 
+internal;iModelTileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConnection, modelId: Id64String, geometryGuid: string | undefined, options: IModelTileTreeOptions): IModelTileTreeParams
 public;class InputCollector 
 public;InputSource
 internal;InstancedGraphicParams
@@ -299,11 +305,15 @@ beta;QuantityType
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileClient
+internal;RealityModelTileTree 
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
 internal;RealityTile 
 internal;RealityTileDrawArgs 
+internal;class RealityTileLoader
+internal;RealityTileParams 
 internal;RealityTileTree 
+internal;RealityTileTreeParams 
 beta;class RenderClipVolume 
 public;RenderContext
 internal;enum RenderDiagnostics
@@ -386,11 +396,12 @@ public;TentativePoint
 internal;TerrainMapTile 
 internal;class TerrainProvider 
 internal;TerrainTexture
+internal;TerrainTileContent 
 internal;class TerrainTileLoaderBase 
 internal;TextureDrapeMap = Map
 internal;TextureImage
 internal;ThreeAxes
-internal;Tile 
+internal;class Tile
 alpha;class TileAdmin
 alpha;TileAdmin
 internal;ViewportSet 
@@ -400,19 +411,16 @@ internal;TileContent
 internal;TiledGraphicsProvider
 internal;TileDrawArgs
 internal;TileGraphicType
-internal;class TileLoader
 internal;enum TileLoadPriority
 internal;enum TileLoadStatus
 internal;TileParams
-internal;tileParamsFromJSON(props: TileProps, root: TileTree, parent?: Tile): TileParams
 internal;TileRequest
 internal;TileRequest
-internal;TileTree 
+internal;class TileTree
 internal;TileTreeDiscloser
 internal;TileTreeLoadStatus
 internal;TileTreeOwner
 internal;TileTreeParams
-internal;tileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String): TileTreeParams
 internal;class TileTreeReference 
 internal;TileTreeSet
 internal;TileTreeSupplier
@@ -489,6 +497,7 @@ internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | 
 beta;WebGLFeature
 beta;WebGLRenderCompatibilityInfo
 beta;WebGLRenderCompatibilityStatus
+internal;WebMapTileContent 
 internal;WebMapTileLoader 
 internal;WebMapTileTreeProps 
 internal;WebMercatorProjection

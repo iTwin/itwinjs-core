@@ -24,10 +24,10 @@ import {
   MapTileTreeReference,
   MapTilingScheme,
   QuadId,
+  TerrainTileContent,
   TerrainTileLoaderBase,
   Tile,
   TileAvailability,
-  TileContent,
   TileRequest,
 } from "./internal";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
@@ -189,7 +189,7 @@ class CesiumWorldTerrainTileLoader extends TerrainTileLoaderBase {
     return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level - 1, quadId.column, quadId.row) : true;
   }
 
-  public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
+  public async loadTileContent(tile: Tile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent> {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 

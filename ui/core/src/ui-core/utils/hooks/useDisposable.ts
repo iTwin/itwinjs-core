@@ -10,10 +10,21 @@ import { useEffect, useRef, useMemo } from "react";
 import { IDisposable } from "@bentley/bentleyjs-core";
 
 /**
- * Custom hook which creates a disposable object and manages it's disposal on unmount.
+ * A custom hook which creates a disposable object and manages it's disposal on unmount
+ * or factory method change.
  * @public
  */
-export function useDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable) {
+export function useDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable): TDisposable {
+  return useOptionalDisposable(createDisposable)!;
+}
+
+/**
+ * A custom hook which calls the factory method to create a disposable object
+ * which might as well be undefined. If the result was a disposable object, the
+ * hook takes care of disposing it when necessary.
+ * @public
+ */
+export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined {
   const previous = useRef<TDisposable>();
   const value = useMemo(() => {
     if (previous.current)

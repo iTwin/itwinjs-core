@@ -45,12 +45,11 @@ export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps>
 /** Separator added to a [[CheckListBox]].
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const CheckListBoxSeparator: React.FunctionComponent = () => {
+export function CheckListBoxSeparator() {
   return (
     <div className="core-chk-listbox-separator" />
   );
-};
+}
 
 /** React component showing a list of Checkbox items.
  * @beta

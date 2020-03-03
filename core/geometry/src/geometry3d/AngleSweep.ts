@@ -179,7 +179,7 @@ export class AngleSweep implements BeJSONFunctions {
    * Convert each value in an array from radians to fraction.
    * @param data array that is input as radians, output as fractions
    */
-  public radiansArraytoPositivePeriodicFractions(data: GrowableFloat64Array) {
+  public radiansArrayToPositivePeriodicFractions(data: GrowableFloat64Array) {
     const n = data.length;
     for (let i = 0; i < n; i++) {
       data.reassign(i, this.radiansToPositivePeriodicFraction(data.atUncheckedIndex(i)));
@@ -189,14 +189,14 @@ export class AngleSweep implements BeJSONFunctions {
    * Convert a radians value to a fraction that is always positive and can wrap.  See `angleToPositivePeriodicFraction` for detailed description.
    * @param radians
    */
-  public radiansToPositivePeriodicFraction(radians: number): number {
-    return AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, this._radians0, this._radians1);
+  public radiansToPositivePeriodicFraction(radians: number, zeroSweepDefault: number = 0.0): number {
+    return AngleSweep.radiansToPositivePeriodicFractionStartEnd(radians, this._radians0, this._radians1, zeroSweepDefault);
   }
   /**
    * Convert a radians value to a fraction that is always positive and can wrap.  See `angleToPositivePeriodicFraction` for detailed description.
    * @param radians
    */
-  public static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number): number {
+  public static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault: number = 0.0): number {
     if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0))
       return 0.0;
     if (Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians1))
@@ -205,11 +205,11 @@ export class AngleSweep implements BeJSONFunctions {
     const delta = radians - radians0;
     if (sweep > 0) {
       const delta1 = Angle.adjustRadians0To2Pi(delta);
-      const fraction1 = Geometry.safeDivideFraction(delta1, sweep, 0.0);
+      const fraction1 = Geometry.safeDivideFraction(delta1, sweep, zeroSweepDefault);
       return fraction1;
     }
     const delta2 = Angle.adjustRadians0To2Pi(-delta);
-    const fraction2 = Geometry.safeDivideFraction(delta2, -sweep, 0.0);
+    const fraction2 = Geometry.safeDivideFraction(delta2, -sweep, zeroSweepDefault);
     return fraction2;
   }
   /** map an angle to a fractional coordinate which is:
@@ -260,7 +260,7 @@ export class AngleSweep implements BeJSONFunctions {
 
     if (radians0 === radians1)
       return allowPeriodShift ? Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0) : Angle.isAlmostEqualRadiansNoPeriodShift(radians, radians0);
-    return allowPeriodShift ? this.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1) <= 1.0 : false;
+    return allowPeriodShift ? this.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1, 1000.0) <= 1.0 : false;
   }
 
   /** set this AngleSweep from various sources:

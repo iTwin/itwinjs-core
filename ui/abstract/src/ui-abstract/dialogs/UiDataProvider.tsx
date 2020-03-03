@@ -2,7 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module UiDataProvider */
+/** @packageDocumentation
+ * @module Dialog
+ */
+
 import { ToolSettingsPropertyItem, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 

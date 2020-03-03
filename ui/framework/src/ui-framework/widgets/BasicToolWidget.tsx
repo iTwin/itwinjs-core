@@ -32,8 +32,7 @@ export interface BasicToolWidgetProps {
  * This definition will also show a overflow button if there is not enough room to display all the toolbar buttons.
  * @beta
  */
-// tslint:disable-next-line: variable-name
-export const BasicToolWidget: React.FC<BasicToolWidgetProps> = (props) => {
+export function BasicToolWidget(props: BasicToolWidgetProps) {
 
   const getHorizontalToolbarItems = React.useCallback(
     (useCategoryAndModelsContextTools: boolean): CommonToolbarItem[] => {
@@ -91,4 +90,4 @@ export const BasicToolWidget: React.FC<BasicToolWidgetProps> = (props) => {
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Vertical} />}
     />
   );
-};
+}

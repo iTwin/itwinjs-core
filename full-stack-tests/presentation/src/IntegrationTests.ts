@@ -10,7 +10,7 @@ import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { LoggingNamespaces, RequestPriority } from "@bentley/presentation-common";
-import { PresentationProps as PresentationBackendProps } from "@bentley/presentation-backend";
+import { PresentationProps as PresentationBackendProps, Presentation as PresentationBackend } from "@bentley/presentation-backend";
 import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { NoRenderApp, IModelAppOptions } from "@bentley/imodeljs-frontend";
 import { initialize as initializeTesting, terminate as terminateTesting, PresentationTestingInitProps } from "@bentley/presentation-testing";
@@ -96,4 +96,10 @@ export const initializeWithClientServices = async () => {
 
 export const terminate = () => {
   terminateTesting();
+};
+
+export const resetBackend = () => {
+  const props = PresentationBackend.initProps;
+  PresentationBackend.terminate();
+  PresentationBackend.initialize(props);
 };

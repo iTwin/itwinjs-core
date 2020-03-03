@@ -586,6 +586,9 @@ export class HalfEdge {
   /** Returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
   public static testNodeMaskNotExterior(node: HalfEdge) { return !node.isMaskSet(HalfEdgeMask.EXTERIOR); }
 
+  /** Returns Returns true if the node does NOT have Mask.EXTERIOR_MASK set. */
+  public static testMateMaskExterior(node: HalfEdge) { return node.edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR); }
+
   /** Returns Returns true if the face has positive area in xy parts. */
   public static testFacePositiveAreaXY(node: HalfEdge) {
     return node.countEdgesAroundFace() > 2 && node.signedFaceArea() > 0.0;

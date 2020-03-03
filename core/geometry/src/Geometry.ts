@@ -181,6 +181,8 @@ export class Geometry {
    * * But note that the "allowed" result value is vastly larger than 1.
    */
   public static readonly largeFractionResult = 1.0e10;
+  /** numeric value that may considered zero  0..1 fractions. */
+  public static readonly smallFraction = 1.0e-10;
   /** numeric value that may considered huge for numbers expected to be coordinates.
    * * This allows larger results than `largeFractionResult`.
    */

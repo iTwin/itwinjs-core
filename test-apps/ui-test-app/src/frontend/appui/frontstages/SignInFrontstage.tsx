@@ -5,15 +5,21 @@
 import * as React from "react";
 import {
   CoreTools, ContentGroup, ContentControl, ConfigurableCreateInfo,
-  FrontstageProvider, FrontstageProps, Frontstage, SignIn, UiFramework,
+  FrontstageProvider, FrontstageProps, Frontstage, SignIn,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../../index";
+import { IModelApp } from "@bentley/imodeljs-frontend";
+import { isIOidcFrontendClient } from "@bentley/imodeljs-clients";
 
 class SignInControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <SignIn oidcClient={UiFramework.oidcClient} onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
+    const client = IModelApp.authorizationClient;
+    if (isIOidcFrontendClient(client))
+      this.reactElement = <SignIn oidcClient={client} onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
+    else
+      this.reactElement = null;
   }
 
   // user chose to work offline from the sign in page

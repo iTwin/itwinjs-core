@@ -54,7 +54,7 @@ exports[`WidgetStack should not render w/o tabs 1`] = `""`;
 
 exports[`WidgetStackTab should render with beta badge 1`] = `
 <Tab
-  badge={<Unknown />}
+  badge={<BetaBadge />}
   horizontalAnchor={0}
   isCollapsed={false}
   isProtruding={false}

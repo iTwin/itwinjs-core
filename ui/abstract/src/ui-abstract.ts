@@ -72,6 +72,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Abstractions used by ui-framework package to create and manage the display Backstage menu items.
  */
 /**
+ * @docs-group-description Dialog
+ * Interfaces and classes for generating UI items for Dialogs.
+ */
+/**
  * @docs-group-description Item
  * Classes for working with an Item in a Toolbar, Widget, Backstage or Context Menu
  */

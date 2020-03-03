@@ -3,21 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
-import { OpenMode, EnvMacroSubst, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { OpenMode, EnvMacroSubst } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
 
-// __PUBLISH_EXTRACT_START__ imodeljs-clients.getAccessToken
-import { AccessToken, AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, Config, AuthorizedClientRequestContext, ImsUserCredentials } from "@bentley/imodeljs-clients";
+import { AccessToken, Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 
-async function getUserAccessToken(userCredentials: ImsUserCredentials): Promise<AccessToken> {
-  const requestContext = new ClientRequestContext();
-  const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(requestContext, userCredentials);
+import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 
-  const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(requestContext, authToken!);
-
-  return accessToken;
+async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {
+  return TestUtility.getAccessToken(userCredentials);
 }
-// __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Service.readConfig
 export function readConfigParams(): any {

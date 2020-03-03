@@ -6,7 +6,7 @@ declare const window: any;
 declare const global: any;
 
 const isFrontend = (typeof (window) !== "undefined");
-export type CertaBackendCallback = (...args: any[]) => void | null | undefined | number | string | boolean;
+export type CertaBackendCallback = (...args: any[]) => void | null | undefined | number | string | boolean | Promise<void> | Promise<null> | Promise<undefined> | Promise<number> | Promise<string> | Promise<boolean>;
 
 /** @internal */
 export function getCallbacksRegisteredOnBackend(): { [name: string]: CertaBackendCallback } {

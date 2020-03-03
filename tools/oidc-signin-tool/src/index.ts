@@ -4,3 +4,4 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./TestOidcClient";
 export * from "./TestUsers";
+export * from "./TestUtility";

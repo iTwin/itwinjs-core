@@ -364,7 +364,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       treeRef.draw(drawArgs);
 
     // Shader behaves slightly differently when classifying surfaces vs point clouds.
-    this._isClassifyingPointCloud = classifiedTree.loader.containsPointClouds;
+    this._isClassifyingPointCloud = classifiedTree.isPointCloud;
 
     if (this._doDebugFrustum) {
       this._debugFrustumGraphic = dispose(this._debugFrustumGraphic);

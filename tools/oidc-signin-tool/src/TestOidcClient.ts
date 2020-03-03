@@ -5,28 +5,10 @@
 import { Client, Issuer, UserinfoResponse as OIDCUserInfo, TokenSet, AuthorizationParameters, OpenIDCallbackChecks, generators } from "openid-client";
 import { IAuthorizationClient, AccessToken, UserInfo, UrlDiscoveryClient, Config } from "@bentley/imodeljs-clients";
 import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
+import { TestOidcConfiguration, TestUserCredentials } from "./TestUsers";
 import * as url from "url";
 import * as puppeteer from "puppeteer";
 import * as os from "os";
-
-/**
- * Interface for test user credentials
- * @alpha
- */
-export interface TestUserCredentials {
-  email: string;
-  password: string;
-}
-
-/**
- * Configuration used by [[TestOidcClient]]
- * @alpha
- */
-export interface TestOidcConfiguration {
-  clientId: string;
-  redirectUri: string;
-  scope: string;
-}
 
 /**
  * Implementation of IAuthorizationClient used for the iModel.js integration tests.

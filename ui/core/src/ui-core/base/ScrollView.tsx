@@ -10,10 +10,10 @@ import * as React from "react";
 import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
-/** Scroll View React functional component
+/** Scroll View React functional component.
+ * This has the 'overflow-y: auto' CSS property and has a height and width of 100%.
  * @public
  */
-// tslint:disable-next-line:variable-name
-export const ScrollView: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function ScrollView(props: CommonDivProps) {
   return <Div {...props} mainClassName="uicore-scrollview" />;
-};
+}

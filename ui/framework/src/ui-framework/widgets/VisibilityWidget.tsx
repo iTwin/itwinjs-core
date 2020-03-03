@@ -11,6 +11,7 @@ import * as React from "react";
 import { IModelApp, SelectedViewportChangedArgs, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import { Position, ScrollPositionMaintainer } from "@bentley/ui-core";
+import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { ContextMenu, ContextMenuItem, SelectionMode } from "@bentley/ui-components";
 import { connectIModelConnection } from "../redux/connectIModel";
 
@@ -68,8 +69,8 @@ interface VisibilityTreeState {
   showOptions: boolean;
   showSearchBox: boolean;
   viewport?: Viewport;
-  selectAll: boolean;
-  clearAll: boolean;
+  showAll: BeUiEvent<void>;
+  hideAll: BeUiEvent<void>;
 }
 
 /** VisibilityComponent React component.
@@ -83,7 +84,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     super(props);
     this.state = {
       activeTree: VisibilityComponentHierarchy.Models, showOptions: false, showSearchBox: false,
-      viewport: this.props.activeViewport, selectAll: false, clearAll: false,
+      viewport: this.props.activeViewport, showAll: new BeUiEvent<void>(), hideAll: new BeUiEvent<void>(),
     };
   }
   public async componentDidMount() {
@@ -113,21 +114,17 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
 
   private _onShowTree = (event: any) => {
     const activeTree = event.target.value;
-    this.setState({ activeTree });
+    this.setState({ activeTree, showSearchBox: false });
   }
 
   private _onSetEnableAll = () => {
     this._onCloseOptions();
-    this.setState(
-      { selectAll: true },
-      () => { this.setState({ selectAll: false }); });
+    this.state.showAll.emit();
   }
 
   private _onClearAll = () => {
     this._onCloseOptions();
-    this.setState(
-      { clearAll: true },
-      () => { this.setState({ clearAll: false }); });
+    this.state.hideAll.emit();
   }
 
   private _onToggleSearchBox = () => {
@@ -139,16 +136,45 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
       && - 1 !== this.props.enableHierarchiesPreloading.indexOf(hierarchy);
   }
 
-  private _renderTree() {
+  private _renderModelsTree() {
     const { iModelConnection, config } = this.props;
-    const { activeTree, showSearchBox, viewport, selectAll, clearAll } = this.state;
+    const { viewport } = this.state;
+    return <ModelsTree
+      iModel={iModelConnection}
+      activeView={viewport}
+      rootElementRef={this.props.activeTreeRef}
+      enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.Models)}
+      {...config?.modelsTree}
+    />;
+  }
+
+  private _renderSpatialTree() {
+    const { iModelConnection } = this.props;
+    return <SpatialContainmentTree
+      iModel={iModelConnection}
+      enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.SpatialContainment)}
+    />;
+  }
+
+  private _renderCategoriesTree() {
+    const { iModelConnection } = this.props;
+    const { viewport, showSearchBox, showAll, hideAll } = this.state;
+    return <CategoryTree
+      iModel={iModelConnection}
+      activeView={viewport}
+      showSearchBox={showSearchBox}
+      enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.Categories)}
+      showAll={showAll}
+      hideAll={hideAll}
+    />;
+  }
+
+  private _renderTree() {
+    const { activeTree } = this.state;
     return (<div className="uifw-visibility-tree-wrapper">
-      {activeTree === VisibilityComponentHierarchy.Models && <ModelsTree imodel={iModelConnection} activeView={viewport}
-        rootElementRef={this.props.activeTreeRef} enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.Models)} {...config?.modelsTree} />}
-      {activeTree === VisibilityComponentHierarchy.Categories && <CategoryTree iModel={iModelConnection} activeView={viewport} showSearchBox={showSearchBox}
-        selectAll={selectAll} clearAll={clearAll} enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.Categories)} />}
-      {activeTree === VisibilityComponentHierarchy.SpatialContainment && <SpatialContainmentTree iModel={iModelConnection}
-        enablePreloading={this.shouldEnablePreloading(VisibilityComponentHierarchy.SpatialContainment)} />}
+      {activeTree === VisibilityComponentHierarchy.Models && this._renderModelsTree()}
+      {activeTree === VisibilityComponentHierarchy.Categories && this._renderCategoriesTree()}
+      {activeTree === VisibilityComponentHierarchy.SpatialContainment && this._renderSpatialTree()}
     </div>);
   }
 

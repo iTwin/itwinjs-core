@@ -6,57 +6,29 @@
  * @module Tile
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
 import {
-  ClipVector,
-  Range3d,
-  Transform,
-} from "@bentley/geometry-core";
+  BeDuration,
+  Id64String,
+} from "@bentley/bentleyjs-core";
+import { Transform } from "@bentley/geometry-core";
 import {
   ElementAlignedBox3d,
-  TileProps,
-  TileTreeProps,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
-import { TileLoader } from "./internal";
+import { RenderClipVolume } from "../render/RenderClipVolume";
+import { TileLoadPriority } from "./internal";
 
 /**
  * Parameters used to construct a TileTree
  * @internal
  */
 export interface TileTreeParams {
-  readonly id: string;
-  readonly rootTile: TileProps;
-  readonly iModel: IModelConnection;
-  readonly is3d: boolean;
-  readonly loader: TileLoader;
-  readonly location: Transform;
-  readonly modelId: Id64String;
-  readonly maxTilesToSkip?: number;
-  readonly maxInitialTilesToSkip?: number;
-  readonly yAxisUp?: boolean;
-  readonly clipVector?: ClipVector;
-  readonly contentRange?: ElementAlignedBox3d;
-  readonly contentIdQualifier?: string;
-}
-
-/** Create TileTree.Params from JSON and context.
- * @internal
- */
-export function tileTreeParamsFromJSON(props: TileTreeProps, iModel: IModelConnection, is3d: boolean, loader: TileLoader, modelId: Id64String): TileTreeParams {
-  const contentRange = undefined !== props.contentRange ? Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange) : undefined;
-  return {
-    id: props.id,
-    rootTile: props.rootTile,
-    iModel,
-    is3d,
-    loader,
-    location: Transform.fromJSON(props.location),
-    modelId,
-    maxTilesToSkip: props.maxTilesToSkip,
-    maxInitialTilesToSkip: props.maxInitialTilesToSkip,
-    yAxisUp: props.yAxisUp,
-    contentRange,
-    contentIdQualifier: props.contentIdQualifier,
-  };
+  id: string;
+  modelId: Id64String;
+  iModel: IModelConnection;
+  location: Transform;
+  clipVolume?: RenderClipVolume;
+  priority: TileLoadPriority;
+  contentRange?: ElementAlignedBox3d;
+  expirationTime?: BeDuration;
 }

@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { DbResult } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodeljs-clients";
 import { IModelVersion, ChangedElements } from "@bentley/imodeljs-common";
-import { TestUsers } from "@bentley/oidc-signin-tool";
+import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   BriefcaseManager, ChangedElementsDb, AuthorizedBackendRequestContext,
   IModelDb, OpenParams, IModelJsFs,
@@ -28,12 +28,12 @@ describe("ChangedElements (#integration)", () => {
   let testIModel: TestIModelInfo;
 
   before(async () => {
-    requestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testProjectId = await HubUtility.queryProjectIdByName(requestContext, "iModelJsIntegrationTest");
     testIModel = await IModelTestUtils.getTestModelInfo(requestContext, testProjectId, "ReadOnlyTest");
 
     // Purge briefcases that are close to reaching the acquire limit
-    const managerRequestContext = await TestUsers.getAuthorizedClientRequestContext(TestUsers.manager);
+    const managerRequestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
     await HubUtility.purgeAcquiredBriefcases(managerRequestContext, "iModelJsIntegrationTest", "ReadOnlyTest");
   });
 

@@ -46,19 +46,18 @@ import {
   MapTile,
   MapCartoRectangle,
   MapTileTree,
-  MapTileTreeReference,
   MapTilingScheme,
   QuadId,
   RealityTile,
   RealityTileDrawArgs,
+  RealityTileTree,
   TerrainTileLoaderBase,
-  Tile,
   TileContent,
   TileDrawArgs,
   TileParams,
   TileTree,
   TileTreeOwner,
-  TileTreeParams,
+  RealityTileTreeParams,
   TileTreeReference,
   TileTreeSet,
   TileTreeSupplier,
@@ -67,11 +66,11 @@ import {
   WebMapTileTreeProps,
   getCesiumWorldTerrainLoader,
   getGcsConverterAvailable,
-  tileTreeParamsFromJSON,
   calculateEcefToDb,
 } from "./internal";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext } from "../ViewContext";
+import { RenderGraphic } from "../render/RenderGraphic";
 import { TerrainTexture, RenderTerrainMeshGeometry } from "../render/RenderSystem";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
@@ -173,6 +172,15 @@ class PlanarProjection extends MapTileProjection {
 }
 
 /** @internal */
+export interface TerrainTileContent extends TileContent {
+  terrain?: {
+    geometry?: RenderTerrainMeshGeometry;
+    /** Used on leaves to support up-sampling. */
+    mesh?: TerrainMeshPrimitive;
+  };
+}
+
+/** @internal */
 export class TerrainMapTile extends MapTile {
   private static _maxParentHeightDepth = 4;
   public drapeTiles?: MapTile[];
@@ -181,14 +189,14 @@ export class TerrainMapTile extends MapTile {
   protected _geometry?: RenderTerrainMeshGeometry;
   protected _mesh?: TerrainMeshPrimitive;     // Primitive retained on leaves only for upsampling.
   public get isReady(): boolean { return super.isReady && this.drapesAreReady; }
-  public get terrainTree() { return this.root as BackgroundTerrainTileTree; }
+  public get terrainTree() { return this.tree as BackgroundTerrainTileTree; }
   public get geometry() { return this._geometry; }
   public get mesh() { return this._mesh; }
   public get loadableTerrainTile() { return this.loadableTile as TerrainMapTile; }
   public get hasGraphics(): boolean { return undefined !== this.geometry; }
   public getRangeCorners(result: Point3d[]): Point3d[] { return this._patch instanceof PlanarTilePatch ? this._patch.getRangeCorners(this.heightRange!, result) : this.range.corners(result); }
-  constructor(params: TileParams, quadId: QuadId, private _patch: TilePatch, rectangle: MapCartoRectangle, heightRange: Range1d | undefined, cornerNormals: Ray3d[] | undefined) {
-    super(params, quadId, rectangle, cornerNormals);
+  constructor(params: TileParams, tree: BackgroundTerrainTileTree, quadId: QuadId, private _patch: TilePatch, rectangle: MapCartoRectangle, heightRange: Range1d | undefined, cornerNormals: Ray3d[] | undefined) {
+    super(params, tree, quadId, rectangle, cornerNormals);
     this._heightRange = heightRange ? heightRange.clone() : undefined;
   }
   public setLastUsed(lastUsed: BeTimePoint) {
@@ -198,6 +206,21 @@ export class TerrainMapTile extends MapTile {
         drapeTile.setLastUsed(lastUsed);
 
   }
+
+  public produceGraphics(): RenderGraphic | undefined {
+    if (undefined !== this._graphic)
+      return this._graphic;
+
+    const geometry = this.geometry;
+    assert(undefined !== geometry);
+    if (undefined === geometry)
+      return undefined;
+
+    const loader = this.mapLoader;
+    const textures = this.getDrapeTextures();
+    return this._graphic = IModelApp.renderSystem.createTerrainMeshGraphic(geometry, loader.featureTable, textures);
+  }
+
   public getClipShape(): Point3d[] {
     return (this._patch instanceof PlanarTilePatch) ? this._patch.getClipShape() : super.getClipShape();
   }
@@ -352,8 +375,8 @@ export class TerrainMapTile extends MapTile {
     return new TerrainTexture(drapeTile.texture!, scale, translate, clipRect);
   }
 
-  public setContent(content: TileContent): void {
-    this._geometry = dispose(this._geometry);     // This should never happen but paranoia.
+  public setContent(content: TerrainTileContent): void {
+    this._geometry = dispose(this._geometry); // This should never happen but paranoia.
     this._geometry = content.terrain?.geometry;
     this._mesh = content.terrain?.mesh;
     this.everLoaded = true;
@@ -363,6 +386,7 @@ export class TerrainMapTile extends MapTile {
 
     this.setIsReady();
   }
+
   public disposeContents() {
     super.disposeContents();
     this._geometry = dispose(this._geometry);
@@ -412,7 +436,7 @@ class TerrainMapUpsampledChild extends TerrainMapTile {
 
 /** @internal */
 class BackgroundTerrainTileTree extends MapTileTree {
-  constructor(params: TileTreeParams, ecefToDb: Transform, bimElevationBias: number, public geodeticOffset: number, gcsConverterAvailable: boolean, tilingScheme: MapTilingScheme, globeMode: GlobeMode, public exaggeration: number, maxDepth: number) {
+  constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, public geodeticOffset: number, gcsConverterAvailable: boolean, tilingScheme: MapTilingScheme, globeMode: GlobeMode, public exaggeration: number, maxDepth: number) {
     super(params, ecefToDb, bimElevationBias, gcsConverterAvailable, tilingScheme, maxDepth, globeMode, true, true);
   }
   public settings?: TerrainSettings;
@@ -422,11 +446,12 @@ class BackgroundTerrainTileTree extends MapTileTree {
   public createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile {
     const patch = new PlanarTilePatch(corners, normal, chordHeight);
     const cornerNormals = this.getCornerRays(rectangle);
-    return this.mapLoader.isTileAvailable(quadId) ? new TerrainMapTile(params, quadId, patch, rectangle, heightRange, cornerNormals) : new TerrainMapUpsampledChild(params, quadId, patch, rectangle, heightRange, cornerNormals);
+    const ctor = this.mapLoader.isTileAvailable(quadId) ? TerrainMapTile : TerrainMapUpsampledChild;
+    return new ctor(params, this, quadId, patch, rectangle, heightRange, cornerNormals);
   }
 
   public createGlobeChild(params: TileParams, quadId: QuadId, _rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, heightRange?: Range1d): MapTile {
-    return new TerrainMapTile(params, quadId, ellipsoidPatch, rectangle, heightRange, this.getCornerRays(rectangle));
+    return new TerrainMapTile(params, this, quadId, ellipsoidPatch, rectangle, heightRange, this.getCornerRays(rectangle));
   }
   public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
     return (quadId.level <= ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent as TerrainMapTile).heightRange;
@@ -488,14 +513,15 @@ class BackgroundTerrainTreeSupplier implements TileTreeSupplier {
     const modelId = iModel.transientIds.next;
     const geodeticOffset = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
     const loader = await getCesiumWorldTerrainLoader(iModel, modelId, bimElevationBias, id.wantSkirts, id.exaggeration);
-    const treeProps = new WebMapTileTreeProps(bimElevationBias, modelId);
     const ecefToDb = await calculateEcefToDb(iModel, bimElevationBias);
 
     if (undefined === loader) {
       assert(false, "Invalid Terrain Provider");
       return undefined;
     }
-    return new BackgroundTerrainTileTree(tileTreeParamsFromJSON(treeProps, iModel, true, loader, modelId), ecefToDb, bimElevationBias, geodeticOffset, gcsConverterAvailable, new GeographicTilingScheme(), id.globeMode, id.exaggeration, loader.maxDepth);
+
+    const treeProps = new WebMapTileTreeProps(modelId, loader, iModel);
+    return new BackgroundTerrainTileTree(treeProps, ecefToDb, bimElevationBias, geodeticOffset, gcsConverterAvailable, new GeographicTilingScheme(), id.globeMode, id.exaggeration, loader.maxDepth);
   }
 }
 
@@ -508,7 +534,7 @@ const backgroundTerrainTreeSupplier = new BackgroundTerrainTreeSupplier();
 export class BackgroundTerrainTileTreeReference extends TileTreeReference {
   public settings: BackgroundMapSettings;
   private readonly _iModel: IModelConnection;
-  private _mapDrapeTree?: TileTreeReference;
+  private readonly _mapDrapeTree: BackgroundMapTileTreeReference;
 
   public constructor(settings: BackgroundMapSettings, iModel: IModelConnection) {
     super();
@@ -548,15 +574,11 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
     if (undefined === tree)
       return;     // Not loaded yet.
 
-    let drapeTree;
-    if (undefined !== this._mapDrapeTree) {
-      drapeTree = this._mapDrapeTree.treeOwner.load();
+    const drapeTree = this._mapDrapeTree.treeOwner.load();
+    if (undefined === drapeTree)
+      return; // Not loaded yet.
 
-      if (undefined === drapeTree)
-        return;     // Not loaded yet.
-
-      assert(drapeTree instanceof MapTileTree);
-    }
+    assert(drapeTree instanceof MapTileTree);
 
     tree.settings = context.viewport.displayStyle.backgroundMapSettings.terrainSettings;
     tree.drapeTree = drapeTree as MapTileTree;
@@ -569,26 +591,11 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
   }
 
   public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
-    let args = super.createDrawArgs(context);
+    const args = super.createDrawArgs(context);
     if (undefined === args)
       return undefined;
 
-    args = new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes);
-    args.getTileGraphics = (tile: Tile) => {
-      if (!(tile instanceof TerrainMapTile))
-        return undefined;
-
-      if (undefined === tile.geometry) {
-        assert(false, "No Geometry for Terrain tile.");
-        return undefined;
-      }
-
-      const loader = tile.mapLoader;
-      const textures = tile.getDrapeTextures();
-      return IModelApp.renderSystem.createTerrainMeshGraphic(tile.geometry, loader.featureTable, textures);
-    };
-
-    return args;
+    return new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes);
   }
 
   protected getViewFlagOverrides(tree: TileTree) {
@@ -602,9 +609,7 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
 
   public discloseTileTrees(trees: TileTreeSet): void {
     super.discloseTileTrees(trees);
-
-    if (undefined !== this._mapDrapeTree)
-      trees.disclose(this._mapDrapeTree);
+    trees.disclose(this._mapDrapeTree);
   }
 
   public getToolTip(hit: HitDetail): HTMLElement | string | undefined {
@@ -630,15 +635,15 @@ export class BackgroundTerrainTileTreeReference extends TileTreeReference {
 
   /** Add logo cards to logo div. */
   public addLogoCards(logoDiv: HTMLTableElement, vp: ScreenViewport): void {
-    const drapeTree = this._mapDrapeTree as MapTileTreeReference;
-    if (undefined !== drapeTree &&
-      undefined !== drapeTree.treeOwner.tileTree &&
-      undefined !== drapeTree.treeOwner.tileTree.loader as WebMapTileLoader &&
-      undefined !== this.treeOwner.tileTree &&
-      undefined !== this.treeOwner.tileTree.loader as TerrainTileLoaderBase) {
-      (drapeTree.treeOwner.tileTree.loader as WebMapTileLoader).geometryAttributionProvider = (this.treeOwner.tileTree.loader as TerrainTileLoaderBase).geometryAttributionProvider;
-      drapeTree.addLogoCards(logoDiv, vp);
-    }
+    const drapeTree = this._mapDrapeTree.treeOwner.tileTree as RealityTileTree;
+    const terrainTree = this.treeOwner.tileTree as RealityTileTree;
+    if (undefined === drapeTree || undefined === terrainTree)
+      return;
+
+    const mapLoader = drapeTree.loader as WebMapTileLoader;
+    const terrainLoader = terrainTree.loader as TerrainTileLoaderBase;
+    mapLoader.geometryAttributionProvider = terrainLoader.geometryAttributionProvider;
+    this._mapDrapeTree.addLogoCards(logoDiv, vp);
   }
 
   private get _symbologyOverrides(): FeatureSymbology.Overrides | undefined {

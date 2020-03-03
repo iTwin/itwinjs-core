@@ -119,9 +119,8 @@ interface LinksRendererProps {
  * React component for rendering string with links.
  * @alpha
  */
-// tslint:disable-next-line: variable-name
-export const LinksRenderer: React.FC<LinksRendererProps> = (props: LinksRendererProps) => {
+export function LinksRenderer(props: LinksRendererProps) {
   const { value } = props;
   const stringValue = useAsyncValue(value);
   return <>{stringValue ? withLinks(props.record, stringValue, props.highlighter) : props.defaultValue}</>;
-};
+}

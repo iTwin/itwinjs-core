@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ClientRequestContext, GuidString, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, HubIModel, ImsTestAuthorizationClient, ProjectShareClient } from "@bentley/imodeljs-clients";
+import { GuidString, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, HubIModel, ProjectShareClient } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { IModelConnection, IModelApp, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
+import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
+import { TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
+
 import { ProjectShareHandler, PSPhotoFile } from "../../ProjectSharePhotoTree";
 import { PhotoFile, PhotoFolder, PhotoTree } from "../../PhotoTree";
-import { TestConfig, TestUsers } from "../TestConfig";
+import { TestConfig } from "../TestConfig";
 
 chai.should();
 
@@ -123,11 +125,8 @@ describe("GeoPhoto (#integration)", () => {
   before(async () => {
     IModelApp.startup();
 
-    const imsTestAuthorizationClient = new ImsTestAuthorizationClient();
-    await imsTestAuthorizationClient.signIn(new ClientRequestContext(), TestUsers.regular);
-    IModelApp.authorizationClient = imsTestAuthorizationClient;
-
-    requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
+    IModelApp.authorizationClient = new TestAuthorizationClient(requestContext.accessToken);
 
     const project = await TestConfig.queryProject(requestContext, "iModelJsGeoPhotoTestProject");
     projectId = project.wsgId;

@@ -8,10 +8,20 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, InstanceKey } from "@bentley/presentation-common";
+import { KeySet, InstanceKey, ContentSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
 import { PresentationTableDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { SortDirection } from "@bentley/ui-core";
+
+const RULESET: Ruleset = {
+  id: "localization test",
+  rules: [{
+    ruleType: RuleTypes.Content,
+    specifications: [{
+      specType: ContentSpecificationTypes.SelectedNodeInstances,
+    }],
+  }],
+};
 
 interface MeaningfulInstances {
   repositoryModel: ModelProps;
@@ -40,7 +50,7 @@ describe("TableDataProvider", async () => {
   });
 
   beforeEach(async () => {
-    provider = new PresentationTableDataProvider({ imodel, ruleset: "SimpleContent", pageSize: 10 });
+    provider = new PresentationTableDataProvider({ imodel, ruleset: RULESET, pageSize: 10 });
   });
 
   after(async () => {

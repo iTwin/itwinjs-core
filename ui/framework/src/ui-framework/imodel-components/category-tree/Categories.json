@@ -1,6 +1,6 @@
 {
   "$schema": "../../../../node_modules/@bentley/presentation-common/Ruleset.schema.json",
-  "id": "ui-framework/Categories",
+  "id": "ui-framework/CategoriesTree",
   "rules": [
     {
       "ruleType": "RootNodes",

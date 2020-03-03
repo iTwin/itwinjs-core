@@ -355,34 +355,30 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 /** StatusBar With Space Between Items React functional component
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarSpaceBetween: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function StatusBarSpaceBetween(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-statusbar-space-between" />;
-};
+}
 
 /** StatusBar Left Section React functional component
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarLeftSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function StatusBarLeftSection(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-statusbar-left" />;
-};
+}
 
 /** StatusBar Center Section React functional component
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarCenterSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function StatusBarCenterSection(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-statusbar-center" />;
-};
+}
 
 /** StatusBar Right Section React functional component
  * @beta
  */
-// tslint:disable-next-line:variable-name
-export const StatusBarRightSection: React.FunctionComponent<CommonDivProps> = (props: CommonDivProps) => {
+export function StatusBarRightSection(props: CommonDivProps) {
   return <Div {...props} mainClassName="uifw-statusbar-right" />;
-};
+}
 
 /** Context providing values for StatusFieldProps and MessageCenterFieldProps
  *  @internal

@@ -126,7 +126,7 @@ export class I3dmReader extends GltfReader {
     if (undefined === instances)
       return Promise.resolve({ readStatus: TileReadStatus.InvalidTileData, isLeaf: this._isLeaf });
 
-    return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._range, undefined, undefined, undefined, instances);
+    return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._range, undefined, undefined, instances);
   }
 
   protected readFeatures(_features: Mesh.Features, _json: any): boolean {

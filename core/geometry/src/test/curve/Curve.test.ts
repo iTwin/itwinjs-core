@@ -787,7 +787,7 @@ function testSamples(_ck: Checker, samples: any[], maxEcho: number = 0) {
   if (n0 !== 0)
     console.log([s0, n0]);
 }
-describe.skip("Samples", () => {
+describe("Samples", () => {
   it("Counts", () => {
     const ck = new Checker();
     testSamples(ck, Sample.point2d);
@@ -809,7 +809,7 @@ describe.skip("Samples", () => {
     testSamples(ck, Sample.createBoxes());
     testSamples(ck, Sample.createRuledSweeps());
     testSamples(ck, Sample.createSimpleIndexedPolyfaces(1));
-    testSamples(ck, Sample.createClipPlanes(), 100);
+    testSamples(ck, Sample.createClipPlanes());
     ck.checkpoint("Samples");
     expect(ck.getNumErrors()).equals(0);
   });

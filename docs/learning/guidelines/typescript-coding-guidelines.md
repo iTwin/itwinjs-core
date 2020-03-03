@@ -463,3 +463,19 @@ verbatim, with the xx replaced with the current year.
 
 While not an absolute requirement, we recommend and optimize for [Visual Studio Code](https://code.visualstudio.com/). You will be likely be less productive if you attempt to use anything else. We recommend configuring the **TSLint** extension for Visual Studio Code and using our **tslint.json** to get real-time feedback.
 
+## React Function Components
+
+There are a few different techniques for defining a React function component:
+
+1. ```const Xyz: React.FunctionComponent<XyzProps> = (props) => {...}```
+1. ```const Xyz: React.FC<XyzProps> = (props) => {...}```
+1. ```function Xyz(props: XyzProps) {...}```
+
+The first two techniques require a Lint rule to disable the camel case naming rule; the last way does not. Therefore, we prefer the ```function Xyz(props: XyzProps)``` technique.
+It is also the most concise. All 3 techniques generate the same documentation.
+
+```tsx
+export function Xyz(props: XyzProps) {
+  return <div>Hello World!</div>;
+}
+```

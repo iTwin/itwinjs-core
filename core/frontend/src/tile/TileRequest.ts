@@ -8,11 +8,11 @@
 
 import { AbandonedError, assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { ImageSource } from "@bentley/imodeljs-common";
-import { Tile, TileTree, TileLoader, TileAdmin } from "./internal";
+import { Tile, TileTree, TileAdmin } from "./internal";
 import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 
-/** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with a [[TileLoader]] to execute the request for tile content and
+/** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile]] to execute the request for tile content and
  * convert the result into a renderable graphic.
  * @internal
  */
@@ -46,8 +46,7 @@ export class TileRequest {
     return this.viewports.isEmpty;
   }
 
-  public get tree(): TileTree { return this.tile.root; }
-  public get loader(): TileLoader { return this.tree.loader; }
+  public get tree(): TileTree { return this.tile.tree; }
 
   public addViewport(vp: Viewport): void {
     this.viewports = IModelApp.tileAdmin.getViewportSet(vp, this.viewports);
@@ -65,7 +64,7 @@ export class TileRequest {
     let response;
     let gotResponse = false;
     try {
-      response = await this.loader.requestTileContent(this.tile, () => this.isCanceled);
+      response = await this.tile.requestContent(() => this.isCanceled);
       gotResponse = true;
 
       // Set this now, so our `isCanceled` check can see it.
@@ -99,7 +98,7 @@ export class TileRequest {
   public cancel(): void {
     this.notifyAndClear();
     if (TileRequest.State.Dispatched === this._state)
-      this.loader.onActiveRequestCanceled(this.tile);
+      this.tile.onActiveRequestCanceled();
 
     this._state = TileRequest.State.Failed;
   }
@@ -141,7 +140,7 @@ export class TileRequest {
     }
 
     try {
-      const content = await this.loader.loadTileContent(this.tile, data, IModelApp.renderSystem, () => this.isCanceled);
+      const content = await this.tile.readContent(data, IModelApp.renderSystem, () => this.isCanceled);
       if (this.isCanceled)
         return Promise.resolve();
 
@@ -164,7 +163,7 @@ export namespace TileRequest {
    * @internal
    */
   export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
-  /** The input to [[TileLoader.loadTileContent]], to be converted into a [[Tile.Content]].
+  /** The input to [[Tile.readContent]], to be converted into a [[Tile.Content]].
    * @internal
    */
   export type ResponseData = Uint8Array | ImageSource;

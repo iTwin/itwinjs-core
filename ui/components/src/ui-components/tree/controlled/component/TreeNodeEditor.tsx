@@ -35,7 +35,7 @@ export type TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.React
 /** React component for displaying tree node editor
  * @beta
  */
-export const TreeNodeEditor: React.FC<TreeNodeEditorProps> = (props: TreeNodeEditorProps) => { // tslint:disable-line: variable-name
+export function TreeNodeEditor(props: TreeNodeEditorProps) {
   const onCommit = (args: PropertyUpdatedArgs) => {
     const newValue = (args.newValue as PrimitiveValue).value as string;
     props.onCommit(props.node, newValue);
@@ -55,7 +55,7 @@ export const TreeNodeEditor: React.FC<TreeNodeEditorProps> = (props: TreeNodeEdi
       />
     </span>
   );
-};
+}
 
 function createPropertyRecord(label: string | PropertyRecord, typename: string = "text", editor?: string) {
   const createPrimitiveValue = (value: string): PrimitiveValue => ({

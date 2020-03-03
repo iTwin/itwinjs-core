@@ -6,7 +6,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
 import {
   ConfigurableUiManager, FrontstageManager, WidgetState, ContentGroupProps,
-  ContentLayoutProps, UiFramework,
+  ContentLayoutProps,
 } from "@bentley/ui-framework";
 
 /** Include application registered Controls in Webpack
@@ -31,7 +31,6 @@ export class AppUi {
 
   public static initialize() {
     ConfigurableUiManager.initialize();
-    UiFramework.setDefaultRulesetId("Items");
 
     AppUi.defineFrontstages();
     AppUi.defineContentGroups();

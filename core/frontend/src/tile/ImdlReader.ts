@@ -43,7 +43,7 @@ import {
 import {
   GltfReader,
   GltfReaderProps,
-  GltfReaderResult,
+  IModelTileContent,
   ShouldAbortReadGltf,
 } from "./internal";
 import { DisplayParams } from "../render/primitives/DisplayParams";
@@ -78,6 +78,11 @@ import { IModelApp } from "../IModelApp";
 
 // tslint:disable:no-const-enum
 
+/** @internal */
+export interface ImdlReaderResult extends IModelTileContent {
+  readStatus: TileReadStatus;
+}
+
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
@@ -104,7 +109,7 @@ export class ImdlReader extends GltfReader {
   }
 
   /** Attempt to deserialize the tile data */
-  public async read(): Promise<GltfReaderResult> {
+  public async read(): Promise<ImdlReaderResult> {
     let content;
     try {
       content = readTileContentDescription(this._buffer, this._sizeMultiplier, !this._is3d, IModelApp.tileAdmin, this._isVolumeClassifier);
@@ -653,7 +658,7 @@ export class ImdlReader extends GltfReader {
     return this._system.createMesh(params, instances);
   }
 
-  private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): GltfReaderResult {
+  private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): ImdlReaderResult {
     const graphics: RenderGraphic[] = [];
 
     if (undefined === this._nodes.Node_Root) {

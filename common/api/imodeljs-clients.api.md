@@ -1119,6 +1119,9 @@ export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
     signOut(requestContext: ClientRequestContext): Promise<void>;
 }
 
+// @beta
+export const isIOidcFrontendClient: (client: IAuthorizationClient | undefined) => client is IOidcFrontendClient;
+
 // @alpha
 export class LargeThumbnail extends Thumbnail {
 }
