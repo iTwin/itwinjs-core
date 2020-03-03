@@ -9,7 +9,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { DictionaryModel, ElementAspect, IModelDb, IModelJsFs, OpenParams, SpatialCategory } from "../imodeljs-backend";
+import { DictionaryModel, ElementAspect, IModelDb, IModelJsFs, OpenParams, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -64,7 +64,7 @@ describe("ElementAspectPerformance", () => {
   it("SimpleElement-Insert-Update-Delete-Read", async () => {
     const snapshotPath = path.join(KnownTestLocations.outputDir, "SimpleELe.bim");
     assert.exists(iModelDbHub);
-    const iModelDb = iModelDbHub.createSnapshot(snapshotPath);
+    const iModelDb = SnapshotIModelDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
     let eleId: Id64String;
@@ -119,7 +119,7 @@ describe("ElementAspectPerformance", () => {
   it("UniqueAspectElement-Insert-Update-Delete-Read", async () => {
     const snapshotPath = path.join(KnownTestLocations.outputDir, "UniqueAspectELe.bim");
     assert.exists(iModelDbHub);
-    const iModelDb = iModelDbHub.createSnapshot(snapshotPath);
+    const iModelDb = SnapshotIModelDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
     interface TestAspectProps extends ElementAspectProps { testUniqueAspectProperty: string; }
@@ -192,7 +192,7 @@ describe("ElementAspectPerformance", () => {
   it("MultiAspectElement-Insert-Update-Delete-Read", async () => {
     const snapshotPath = path.join(KnownTestLocations.outputDir, "MultiApectELe.bim");
     assert.exists(iModelDbHub);
-    const iModelDb = iModelDbHub.createSnapshot(snapshotPath);
+    const iModelDb = SnapshotIModelDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
     const count1 = 10000;

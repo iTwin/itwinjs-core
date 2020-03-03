@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SpatialCategory, IModelDb } from "../imodeljs-backend";
+import { SpatialCategory, IModelDb, SnapshotIModelDb } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { BackendRequestContext } from "../BackendRequestContext";
 import { KnownTestLocations } from "../test/KnownTestLocations";
@@ -96,7 +96,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "props_" + pCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("PropPerformance", "props_" + pCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", "props_" + pCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         seedIModel.setAsMaster();
         assert.isDefined(seedIModel.getMetaData("TestPropsSchema:PropElement"), "PropsClass is present in iModel.");
@@ -348,7 +348,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "index_" + iCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         seedIModel.setAsMaster();
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement"), "PropsClass is present in iModel.");
@@ -375,7 +375,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "index_perclass_" + iCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_perclass_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_perclass_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         seedIModel.setAsMaster();
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement0"), "PropsClass is present in iModel.");

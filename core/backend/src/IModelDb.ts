@@ -18,8 +18,11 @@ import {
   ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority,
   QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps, SpatialViewDefinitionProps,
 } from "@bentley/imodeljs-common";
-import * as path from "path";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
+import * as path from "path";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { BriefcaseEntry, BriefcaseId, BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
@@ -28,17 +31,15 @@ import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
+import { EventSink, EventSinkManager } from "./EventSink";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
+import { ApplicationType, IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelJsNative } from "@bentley/imodeljs-native";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { Model } from "./Model";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
-import { IModelHost, ApplicationType } from "./IModelHost";
-import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
-import { EventSink, EventSinkManager } from "./EventSink";
+
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** A string that identifies a Txn.
@@ -111,6 +112,12 @@ export class OpenParams {
 
   /** Create parameters to open the Db that allows pulling changes from the Hub */
   public static pullOnly(): OpenParams { return new OpenParams(OpenMode.ReadWrite, SyncMode.PullOnly); }
+
+  /** @beta */
+  public static createSnapshot(): OpenParams { return new OpenParams(OpenMode.ReadWrite); }
+
+  /** @beta */
+  public static openSnapshot(): OpenParams { return new OpenParams(OpenMode.Readonly); }
 
   /** Create parameters to open a standalone Db
    * @deprecated use snapshot iModels.
@@ -197,7 +204,8 @@ export class IModelDb extends IModel {
   /** Check if this iModel has been opened read-only or not. */
   public get isReadonly(): boolean { return this.openParams.openMode === OpenMode.Readonly; }
 
-  private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
+  /** @internal */
+  protected constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
     super(iModelToken);
     this.openParams = openParams;
     this.setupBriefcaseEntry(briefcaseEntry);
@@ -219,67 +227,6 @@ export class IModelDb extends IModel {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
     super.initialize(name, props);
-  }
-
-  /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
-   * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
-   * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
-   * @param snapshotFile The file that will contain the new iModel *snapshot*
-   * @param args The parameters that define the new iModel *snapshot*
-   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
-   * @beta
-   */
-  public static createSnapshot(snapshotFile: string, args: CreateIModelProps & IModelEncryptionProps): IModelDb {
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, args);
-    const openMode = briefcaseEntry.openParams.openMode;
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
-    return new IModelDb(briefcaseEntry, iModelToken, briefcaseEntry.openParams);
-  }
-
-  /** Create a local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file, using this iModel as a *seed* or starting point.
-   * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
-   * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
-   * @param snapshotFile The file that will contain the new iModel *snapshot*
-   * @returns A writeable IModelDb
-   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
-   * @beta
-   */
-  public createSnapshot(snapshotFile: string, encryptionProps?: IModelEncryptionProps): IModelDb {
-    if (this.nativeDb.isEncrypted()) {
-      throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel", Logger.logError, loggerCategory);
-    }
-    IModelJsFs.copySync(this.briefcase.pathname, snapshotFile);
-    const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
-    if (encryptionPropsString) {
-      const status: DbResult = IModelHost.platform.DgnDb.encryptDb(snapshotFile, encryptionPropsString);
-      if (DbResult.BE_SQLITE_OK !== status) {
-        throw new IModelError(status, "Problem encrypting snapshot iModel", Logger.logError, loggerCategory);
-      }
-    } else {
-      const status: DbResult = IModelHost.platform.DgnDb.vacuum(snapshotFile);
-      if (DbResult.BE_SQLITE_OK !== status) {
-        throw new IModelError(status, "Error initializing snapshot iModel", Logger.logError, loggerCategory);
-      }
-    }
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, false, encryptionPropsString);
-    const isSeedFileMaster: boolean = BriefcaseId.Master === briefcaseEntry.briefcaseId;
-    const isSeedFileSnapshot: boolean = BriefcaseId.Snapshot === briefcaseEntry.briefcaseId;
-    // Replace iModelId if seedFile is a master or snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
-    if ((isSeedFileMaster) || (isSeedFileSnapshot)) {
-      briefcaseEntry.iModelId = Guid.createValue();
-    }
-    briefcaseEntry.briefcaseId = BriefcaseId.Snapshot;
-
-    const openMode = OpenMode.ReadWrite;
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
-    const snapshotDb = new IModelDb(briefcaseEntry, iModelToken, OpenParams.standalone(OpenMode.ReadWrite)); // WIP: clean up copied file on error?
-    if (isSeedFileMaster) {
-      snapshotDb.setGuid(briefcaseEntry.iModelId);
-    } else {
-      snapshotDb.setAsMaster(briefcaseEntry.iModelId);
-    }
-    snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId, encryptionPropsString);
-    return snapshotDb;
   }
 
   /** Create an iModel on iModelHub */
@@ -304,24 +251,6 @@ export class IModelDb extends IModel {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(pathname, openMode, enableTransactions);
     const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
     return new IModelDb(briefcaseEntry, iModelToken, OpenParams.standalone(openMode));
-  }
-
-  /** Open a local iModel *snapshot*. Once created, *snapshots* are read-only and are typically used for archival or data transfer purposes.
-   * @see [[open]]
-   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
-   * @throws [IModelError]($common) If the file is not found or is not a valid *snapshot*.
-   * @beta
-   */
-  public static openSnapshot(filePath: string, encryptionProps?: IModelEncryptionProps): IModelDb {
-    const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(filePath, OpenMode.Readonly, false, encryptionPropsString);
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, OpenMode.Readonly);
-    const iModelDb: IModelDb = new IModelDb(briefcaseEntry, iModelToken, OpenParams.standalone(OpenMode.Readonly));
-    const briefcaseId: number = iModelDb.getBriefcaseId().value;
-    if ((BriefcaseId.Snapshot === briefcaseId) || (BriefcaseId.Master === briefcaseId)) {
-      return iModelDb;
-    }
-    throw new IModelError(IModelStatus.BadRequest, "IModelDb.openSnapshot cannot be used to open a briefcase", Logger.logError, loggerCategory);
   }
 
   /** Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from iModelHub to the
@@ -509,15 +438,6 @@ export class IModelDb extends IModel {
     this.clearBriefcaseEntry();
   }
 
-  /** Close this local read-only iModel *snapshot*, if it is currently open.
-   * > Note: A *snapshot* cannot be modified after this function is called.
-   * @throws IModelError if the iModel is not open, or is not a *snapshot*.
-   * @beta
-   */
-  public closeSnapshot(): void {
-    this.closeStandalone();
-  }
-
   /** Close this iModel, if it is currently open.
    * @param requestContext The client request context.
    * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
@@ -558,7 +478,8 @@ export class IModelDb extends IModel {
     this._briefcase = briefcaseEntry;
   }
 
-  private clearBriefcaseEntry(): void {
+  /** @internal */
+  protected clearBriefcaseEntry(): void {
     const briefcaseEntry = this.briefcase;
     briefcaseEntry.onBeforeClose.removeListener(this.onBriefcaseBeforeCloseHandler, this);
     briefcaseEntry.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
@@ -2347,5 +2268,117 @@ export class TxnManager {
       txnId = this.queryNextTxnId(txnId);
     }
     return JSON.stringify(changes);
+  }
+}
+
+/** A *snapshot* iModel database file that is typically used for archival and data transfer purposes.
+ * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
+ * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
+ * @beta
+ */
+export class SnapshotIModelDb extends IModelDb {
+  // WIP: remove BriefcaseEntry and IModelToken from this constructor
+  private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
+    super(briefcaseEntry, iModelToken, openParams);
+  }
+
+  /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
+   * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
+   * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
+   * @param snapshotFile The file that will contain the new iModel *snapshot*
+   * @param args The parameters that define the new iModel *snapshot*
+   * @returns A writeable SnapshotIModelDb
+   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
+   * @beta
+   */
+  public static createEmpty(snapshotFile: string, args: CreateIModelProps & IModelEncryptionProps): SnapshotIModelDb {
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, args);
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, briefcaseEntry.openParams.openMode);
+    return new SnapshotIModelDb(briefcaseEntry, iModelToken, briefcaseEntry.openParams);
+  }
+
+  /** Create a local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file, using this iModel as a *seed* or starting point.
+   * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
+   * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
+   * @param iModelDb The snapshot will be initialized from the current contents of this iModelDb
+   * @param snapshotFile The file that will contain the new iModel *snapshot*
+   * @param encryptionProps Properties optionally used to encrypt the new snapshot.
+   * @returns A writeable SnapshotIModelDb
+   * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
+   * @beta
+   */
+  public static createFrom(iModelDb: IModelDb, snapshotFile: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb {
+    if (iModelDb.nativeDb.isEncrypted()) {
+      throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel", Logger.logError, loggerCategory);
+    }
+    IModelJsFs.copySync(iModelDb.briefcase.pathname, snapshotFile);
+    const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
+    if (encryptionPropsString) {
+      const status: DbResult = IModelHost.platform.DgnDb.encryptDb(snapshotFile, encryptionPropsString);
+      if (DbResult.BE_SQLITE_OK !== status) {
+        throw new IModelError(status, "Problem encrypting snapshot iModel", Logger.logError, loggerCategory);
+      }
+    } else {
+      const status: DbResult = IModelHost.platform.DgnDb.vacuum(snapshotFile);
+      if (DbResult.BE_SQLITE_OK !== status) {
+        throw new IModelError(status, "Error initializing snapshot iModel", Logger.logError, loggerCategory);
+      }
+    }
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, false, encryptionPropsString);
+    const isSeedFileMaster: boolean = BriefcaseId.Master === briefcaseEntry.briefcaseId;
+    const isSeedFileSnapshot: boolean = BriefcaseId.Snapshot === briefcaseEntry.briefcaseId;
+    // Replace iModelId if seedFile is a master or snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
+    if ((isSeedFileMaster) || (isSeedFileSnapshot)) {
+      briefcaseEntry.iModelId = Guid.createValue();
+    }
+    briefcaseEntry.briefcaseId = BriefcaseId.Snapshot;
+
+    const openMode = OpenMode.ReadWrite;
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
+    const snapshotDb = new SnapshotIModelDb(briefcaseEntry, iModelToken, OpenParams.createSnapshot()); // WIP: clean up copied file on error?
+    if (isSeedFileMaster) {
+      snapshotDb.setGuid(briefcaseEntry.iModelId);
+    } else {
+      snapshotDb.setAsMaster(briefcaseEntry.iModelId);
+    }
+    snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId, encryptionPropsString);
+    return snapshotDb;
+  }
+
+  // WIP: rename openSnapshot --> open when there is no longer a static open method in the IModelDb superclass
+  /** Open a read-only iModel *snapshot*.
+   * @see [[close]]
+   * @throws [IModelError]($common) If the file is not found or is not a valid *snapshot*.
+   * @beta
+   */
+  public static openSnapshot(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb {
+    const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(filePath, OpenMode.Readonly, false, encryptionPropsString);
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, OpenMode.Readonly);
+    const iModelDb: SnapshotIModelDb = new SnapshotIModelDb(briefcaseEntry, iModelToken, OpenParams.openSnapshot());
+    const briefcaseId: number = iModelDb.getBriefcaseId().value;
+    if ((BriefcaseId.Snapshot === briefcaseId) || (BriefcaseId.Master === briefcaseId)) {
+      return iModelDb;
+    }
+    throw new IModelError(IModelStatus.BadRequest, "SnapshotIModelDb.open cannot be used to open a briefcase", Logger.logError, loggerCategory);
+  }
+
+  // WIP: rename closeSnapshot --> close after there is no longer a close method in the IModelDb superclass
+  /** Close this local read-only iModel *snapshot*, if it is currently open.
+   * > Note: A *snapshot* cannot be modified after this function is called.
+   * @throws IModelError if the iModel is not open, or is not a *snapshot*.
+   * @beta
+   */
+  public closeSnapshot(): void {
+    if (!this.isSnapshot)
+      throw new IModelError(BentleyStatus.ERROR, "Cannot use to close a managed iModel. Use IModelDb.close() instead");
+    BriefcaseManager.closeStandalone(this.briefcase);
+    this.clearBriefcaseEntry(); // WIP: should not need to call this for snapshots
+  }
+
+  // WIP: have method that uses the filePath instead
+  /** @internal */
+  public static find(iModelToken: IModelToken): SnapshotIModelDb {
+    return IModelDb.find(iModelToken) as SnapshotIModelDb;
   }
 }

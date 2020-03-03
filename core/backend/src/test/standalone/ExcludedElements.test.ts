@@ -6,7 +6,7 @@ import { DbResult, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core"
 import { BisCodeSpec, ColorDef, DisplayStyleProps, DisplayStyleSettingsProps, IModel, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { expect } from "chai";
 import * as path from "path";
-import { BackendRequestContext, DictionaryModel, DisplayStyle3d, ECSqlStatement, Element, IModelDb, NativeLoggerCategory } from "../../imodeljs-backend";
+import { BackendRequestContext, DictionaryModel, DisplayStyle3d, ECSqlStatement, Element, IModelDb, NativeLoggerCategory, SnapshotIModelDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "../integration/HubUtility";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -14,10 +14,10 @@ import { KnownTestLocations } from "../KnownTestLocations";
 // spell-checker: disable
 
 describe("ExcludedElements", () => {
-  let imodel1: IModelDb;
-  let imodel2: IModelDb;
-  let imodel4: IModelDb;
-  let imodel5: IModelDb;
+  let imodel1: SnapshotIModelDb;
+  let imodel2: SnapshotIModelDb;
+  let imodel4: SnapshotIModelDb;
+  let imodel5: SnapshotIModelDb;
   const requestContext = new BackendRequestContext();
 
   before(async () => {

@@ -2,16 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { Id64String, Id64, DbResult } from "@bentley/bentleyjs-core";
-import { SpatialCategory, IModelDb } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { GeometricElementProps, Code, SubCategoryAppearance, ColorDef, IModel, GeometryStreamProps, ElementAspectProps } from "@bentley/imodeljs-common";
-import { Point3d, Arc3d, Point2d, Cone } from "@bentley/geometry-core";
+import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Arc3d, Cone, Point2d, Point3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
-import { IModelJsFs } from "../../IModelJsFs";
-import { BackendRequestContext } from "../../BackendRequestContext";
-import { ECSqlStatement } from "../../ECSqlStatement";
+import { Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { assert, expect } from "chai";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../../imodeljs-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 interface IPrimitiveBase {
   i?: number;
@@ -411,7 +408,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     const testSchemaPath = IModelTestUtils.prepareOutputFile(subDirName, schemaFileName);
     IModelJsFs.writeFileSync(testSchemaPath, testSchema);
 
-    const imodel = IModelDb.createSnapshot(iModelPath, { rootSubject: { name: "RoundTripTest" } });
+    const imodel = SnapshotIModelDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
     await imodel.importSchemas(new BackendRequestContext(), [testSchemaPath]);
     imodel.setAsMaster();
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);

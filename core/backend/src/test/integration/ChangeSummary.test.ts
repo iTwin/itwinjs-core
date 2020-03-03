@@ -2,22 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { expect, assert } from "chai";
-import { OpenMode, DbResult, Id64String, Id64, PerfLogger, ChangeSetStatus, using, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { ChangeSetStatus, DbResult, Id64, Id64String, Logger, LogLevel, OpenMode, PerfLogger, using } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodeljs-clients";
-import { IModelVersion, IModelStatus, ChangeOpCode, ChangedValueState, IModel, SubCategoryAppearance, ColorDef } from "@bentley/imodeljs-common";
+import { ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelStatus, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import {
-  BriefcaseManager, ChangeSummaryManager, ChangeSummary,
-  IModelDb, OpenParams, IModelJsFs, AuthorizedBackendRequestContext, ElementOwnsChildElements,
-} from "../../imodeljs-backend";
-import { IModelTestUtils, DisableNativeAssertions, TestIModelInfo } from "../IModelTestUtils";
+import { assert, expect } from "chai";
+import * as path from "path";
+import { AuthorizedBackendRequestContext, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ElementOwnsChildElements, IModelDb, IModelJsFs, KeepBriefcase, OpenParams, SnapshotIModelDb, SpatialCategory } from "../../imodeljs-backend";
+import { DisableNativeAssertions, IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
-import { KeepBriefcase } from "../../BriefcaseManager";
-import { SpatialCategory } from "../../Category";
-import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
 function setupTest(iModelId: string): void {
@@ -463,19 +457,19 @@ describe("ChangeSummary (#integration)", () => {
     }
 
     // extract on snapshot iModel should fail
-    iModel = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("test.bim"));
-    assert.exists(iModel);
-    assert.exists(iModel.briefcase);
-    assert.isTrue(iModel.isSnapshot);
+    const snapshotIModel = SnapshotIModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("test.bim"));
+    assert.exists(snapshotIModel);
+    assert.exists(snapshotIModel.briefcase);
+    assert.isTrue(snapshotIModel.isSnapshot);
     try {
       await using(new DisableNativeAssertions(), async (_r) => {
-        await ChangeSummaryManager.extractChangeSummaries(requestContext, iModel);
+        await ChangeSummaryManager.extractChangeSummaries(requestContext, snapshotIModel);
       });
     } catch (e) {
       assert.isDefined(e.errorNumber);
       assert.equal(e.errorNumber, IModelStatus.BadArg);
     } finally {
-      iModel.closeSnapshot();
+      snapshotIModel.closeSnapshot();
     }
   });
 

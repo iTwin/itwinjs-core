@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SpatialCategory, IModelDb, ECSqlStatement } from "../imodeljs-backend";
+import { SpatialCategory, IModelDb, ECSqlStatement, SnapshotIModelDb } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { BackendRequestContext } from "../BackendRequestContext";
 import { KnownTestLocations } from "../test/KnownTestLocations";
@@ -150,7 +150,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     assert(IModelJsFs.existsSync(st));
     const seedName = path.join(outDir, "relationship.bim");
     if (!IModelJsFs.existsSync(seedName)) {
-      const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
+      const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
       await seedIModel.importSchemas(new BackendRequestContext(), [st]);
       seedIModel.setAsMaster();
       // first create Elements and then Relationship

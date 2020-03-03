@@ -9,7 +9,7 @@ import { IModelError, Code, ElementProps, RpcManager, GeometricElement3dProps, I
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
-  IModelJsNative, NativeLoggerCategory,
+  IModelJsNative, NativeLoggerCategory, SnapshotIModelDb,
 } from "../imodeljs-backend";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -171,9 +171,9 @@ export class IModelTestUtils {
   }
 
   /** Orchestrates the steps necessary to create a new snapshot iModel from a seed file. */
-  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): IModelDb {
-    const seedDb: IModelDb = IModelDb.openSnapshot(seedFileName);
-    const testDb: IModelDb = seedDb.createSnapshot(testFileName);
+  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotIModelDb {
+    const seedDb: SnapshotIModelDb = SnapshotIModelDb.openSnapshot(seedFileName);
+    const testDb: SnapshotIModelDb = SnapshotIModelDb.createFrom(seedDb, testFileName);
     seedDb.closeSnapshot();
     return testDb;
   }

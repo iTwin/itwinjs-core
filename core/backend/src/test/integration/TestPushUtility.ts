@@ -11,7 +11,7 @@ import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
   IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, GeometricElement, ModelSelector,
-  OrthographicViewDefinition, PhysicalModel, SpatialCategory, AuthorizedBackendRequestContext,
+  OrthographicViewDefinition, PhysicalModel, SpatialCategory, AuthorizedBackendRequestContext, SnapshotIModelDb,
 } from "../../imodeljs-backend";
 import { IModelWriter } from "./IModelWriter";
 import { HubUtility } from "./HubUtility";
@@ -67,7 +67,7 @@ export class TestPushUtility {
     if (fs.existsSync(pathname))
       fs.unlinkSync(pathname);
 
-    this._iModelDb = IModelDb.createSnapshot(pathname, { rootSubject: { name: this.iModelName! } });
+    this._iModelDb = SnapshotIModelDb.createEmpty(pathname, { rootSubject: { name: this.iModelName! } });
 
     const definitionModelId: Id64String = IModel.dictionaryId;
     this._physicalModelId = PhysicalModel.insert(this._iModelDb, IModel.rootSubjectId, "TestModel");

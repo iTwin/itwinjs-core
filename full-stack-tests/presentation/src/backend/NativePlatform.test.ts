@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { PresentationError } from "@bentley/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
+import { SnapshotIModelDb } from "@bentley/imodeljs-backend";
 import { IModelError } from "@bentley/imodeljs-common";
 import { PresentationManagerMode } from "@bentley/presentation-backend";
-import { NativePlatformDefinition, createDefaultNativePlatform } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
+import { PresentationError } from "@bentley/presentation-common";
+import { expect } from "chai";
+import { initialize, terminate } from "../IntegrationTests";
 
 describe("NativePlatform", () => {
 
   let nativePlatform: NativePlatformDefinition;
-  let imodel: IModelDb;
+  let imodel: SnapshotIModelDb;
 
   before(async () => {
     await initialize();
@@ -26,7 +26,7 @@ describe("NativePlatform", () => {
 
   beforeEach(() => {
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = IModelDb.openSnapshot(testIModelName);
+    imodel = SnapshotIModelDb.openSnapshot(testIModelName);
     expect(imodel).is.not.null;
     const TNativePlatform = createDefaultNativePlatform({ // tslint:disable-line: variable-name naming-convention
       id: "",

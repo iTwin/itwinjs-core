@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { StandardViewIndex, Transform, Range3d, Vector3d, Point3d, Matrix3d } from "@bentley/geometry-core";
-import { AxisAlignedBox3d, ViewFlags, Cartographic, EcefLocation, ContextRealityModelProps, RenderMode } from "@bentley/imodeljs-common";
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel } from "@bentley/imodeljs-backend";
-import * as requestPromise from "request-promise-native";
+import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@bentley/geometry-core";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotIModelDb } from "@bentley/imodeljs-backend";
+import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import * as fs from "fs";
+import * as requestPromise from "request-promise-native";
 
 class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
@@ -60,7 +60,7 @@ export class RealityModelContextIModelCreator {
    */
   public constructor(iModelFileName: string, url: string, private _name: string) {
     fs.unlink(iModelFileName, ((_err) => { }));
-    this.iModelDb = IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
+    this.iModelDb = SnapshotIModelDb.createEmpty(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
     this.url = url;
   }
   private realityModelFromJson(json: any, worldRange: AxisAlignedBox3d): { realityModel: ContextRealityModelProps | undefined, geoLocated: boolean } {
@@ -145,9 +145,9 @@ export class RealityModelContextIModelCreator {
       this.iModelDb.updateProjectExtents(worldRange);
       this.iModelDb.saveChanges();
     })
-    .catch((error) => {
-      process.stdout.write("Error occurred requesting data from: " + this.url + "Error: " + error + "\n");
-    });
+      .catch((error) => {
+        process.stdout.write("Error occurred requesting data from: " + this.url + "Error: " + error + "\n");
+      });
 
   }
 

@@ -19,7 +19,7 @@ import {
   ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
   FunctionalModel, FunctionalSchema, GeometricElement3d, GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer,
   InformationPartitionElement, InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
-  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SpatialLocationModel, SubCategory, Subject, Texture, ViewDefinition,
+  Relationship, RelationshipProps, RenderMaterialElement, SpatialCategory, SpatialLocationModel, SubCategory, Subject, Texture, ViewDefinition, SnapshotIModelDb,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -746,12 +746,12 @@ export namespace IModelTransformerUtils {
     assert.equal(targetRelationship.id, json.targetRelInstanceId);
   }
 
-  export function createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): IModelDb {
+  export function createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotIModelDb {
     const teamFile: string = path.join(outputDir, `Team${teamName}.bim`);
     if (IModelJsFs.existsSync(teamFile)) {
       IModelJsFs.removeSync(teamFile);
     }
-    const iModelDb: IModelDb = IModelDb.createSnapshot(teamFile, { rootSubject: { name: teamName } });
+    const iModelDb: SnapshotIModelDb = SnapshotIModelDb.createEmpty(teamFile, { rootSubject: { name: teamName } });
     assert.exists(iModelDb);
     populateTeamIModel(iModelDb, teamName, teamOrigin, teamColor);
     iModelDb.saveChanges();
@@ -801,13 +801,13 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(physicalObjectId2));
   }
 
-  export function createSharedIModel(outputDir: string, teamNames: string[]): IModelDb {
+  export function createSharedIModel(outputDir: string, teamNames: string[]): SnapshotIModelDb {
     const iModelName: string = `Shared${teamNames.join("")}`;
     const iModelFile: string = path.join(outputDir, `${iModelName}.bim`);
     if (IModelJsFs.existsSync(iModelFile)) {
       IModelJsFs.removeSync(iModelFile);
     }
-    const iModelDb: IModelDb = IModelDb.createSnapshot(iModelFile, { rootSubject: { name: iModelName } });
+    const iModelDb: SnapshotIModelDb = SnapshotIModelDb.createEmpty(iModelFile, { rootSubject: { name: iModelName } });
     assert.exists(iModelDb);
     teamNames.forEach((teamName: string) => {
       const subjectId: Id64String = Subject.insert(iModelDb, IModel.rootSubjectId, teamName);
@@ -893,12 +893,12 @@ export namespace IModelTransformerUtils {
     return elementId;
   }
 
-  export function createConsolidatedIModel(outputDir: string, consolidatedName: string): IModelDb {
+  export function createConsolidatedIModel(outputDir: string, consolidatedName: string): SnapshotIModelDb {
     const consolidatedFile: string = path.join(outputDir, `${consolidatedName}.bim`);
     if (IModelJsFs.existsSync(consolidatedFile)) {
       IModelJsFs.removeSync(consolidatedFile);
     }
-    const consolidatedDb: IModelDb = IModelDb.createSnapshot(consolidatedFile, { rootSubject: { name: `${consolidatedName}` } });
+    const consolidatedDb: SnapshotIModelDb = SnapshotIModelDb.createEmpty(consolidatedFile, { rootSubject: { name: `${consolidatedName}` } });
     assert.exists(consolidatedDb);
     const definitionModelId = DefinitionModel.insert(consolidatedDb, IModel.rootSubjectId, `Definition${consolidatedName}`);
     assert.isTrue(Id64.isValidId64(definitionModelId));

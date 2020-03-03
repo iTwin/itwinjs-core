@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { ConnectClient, Config } from "@bentley/imodeljs-clients";
-import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations } from "@bentley/imodeljs-backend";
+import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations, SnapshotIModelDb } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
@@ -72,9 +72,9 @@ export class IModelTestUtils {
     return dbName;
   }
 
-  public static openSnapshotFromSeed(filename: string, opts?: IModelTestUtilsOpenOptions): IModelDb {
+  public static openSnapshotFromSeed(filename: string, opts?: IModelTestUtilsOpenOptions): SnapshotIModelDb {
     const dbName = IModelTestUtils.copyIModelForOpen(filename, opts || {});
-    const iModel: IModelDb = IModelDb.openSnapshot(dbName); // could throw Error
+    const iModel = SnapshotIModelDb.openSnapshot(dbName); // could throw Error
     assert.exists(iModel);
     return iModel!;
   }

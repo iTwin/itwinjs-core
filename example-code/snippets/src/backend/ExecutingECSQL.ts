@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb, ECSqlStatement, ECSqlValue } from "@bentley/imodeljs-backend";
-import { NavigationValue } from "@bentley/imodeljs-common";
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
+import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotIModelDb } from "@bentley/imodeljs-backend";
+import { NavigationValue } from "@bentley/imodeljs-common";
 
 // tslint:disable:no-console
 
@@ -197,6 +197,6 @@ function executeECSql_QueryResult(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 }
 
-const dummyIModel = IModelDb.openSnapshot("");
+const dummyIModel = SnapshotIModelDb.openSnapshot("");
 executeECSql_Binding(dummyIModel);
 executeECSql_QueryResult(dummyIModel);

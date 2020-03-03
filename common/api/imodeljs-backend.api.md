@@ -2214,17 +2214,19 @@ export class IModelCloneContext {
 
 // @public
 export class IModelDb extends IModel {
+    // @internal
+    protected constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams);
     abandonChanges(): void;
     // @internal (undocumented)
     get briefcase(): BriefcaseEntry;
     cancelSnap(sessionId: string): void;
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
+    // @internal (undocumented)
+    protected clearBriefcaseEntry(): void;
     clearSqliteStatementCache(): void;
     clearStatementCache(): void;
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
-    // @beta
-    closeSnapshot(): void;
     // @internal @deprecated
     closeStandalone(): void;
     get codeSpecs(): CodeSpecs;
@@ -2233,10 +2235,6 @@ export class IModelDb extends IModel {
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb>;
-    // @beta
-    static createSnapshot(snapshotFile: string, args: CreateIModelProps & IModelEncryptionProps): IModelDb;
-    // @beta
-    createSnapshot(snapshotFile: string, encryptionProps?: IModelEncryptionProps): IModelDb;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
@@ -2290,8 +2288,6 @@ export class IModelDb extends IModel {
     // @internal
     static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<IModelDb>;
     readonly openParams: OpenParams;
-    // @beta
-    static openSnapshot(filePath: string, encryptionProps?: IModelEncryptionProps): IModelDb;
     // @internal @deprecated
     static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
     // @internal
@@ -3237,11 +3233,15 @@ export class OpenParams {
     openMode: OpenMode,
     syncMode?: SyncMode | undefined,
     timeout?: number | undefined);
+    // @beta (undocumented)
+    static createSnapshot(): OpenParams;
     equals(other: OpenParams): boolean;
     static fixedVersion(): OpenParams;
     get isBriefcase(): boolean;
     get isSnapshot(): boolean;
     readonly openMode: OpenMode;
+    // @beta (undocumented)
+    static openSnapshot(): OpenParams;
     static pullAndPush(): OpenParams;
     static pullOnly(): OpenParams;
     // @deprecated
@@ -3596,6 +3596,16 @@ export class SheetTemplate extends Document implements SheetTemplateProps {
 export class SheetViewDefinition extends ViewDefinition2d {
     // @internal (undocumented)
     static get className(): string;
+}
+
+// @beta
+export class SnapshotIModelDb extends IModelDb {
+    closeSnapshot(): void;
+    static createEmpty(snapshotFile: string, args: CreateIModelProps & IModelEncryptionProps): SnapshotIModelDb;
+    static createFrom(iModelDb: IModelDb, snapshotFile: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb;
+    // @internal (undocumented)
+    static find(iModelToken: IModelToken): SnapshotIModelDb;
+    static openSnapshot(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb;
 }
 
 // @public

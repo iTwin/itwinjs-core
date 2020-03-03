@@ -11,7 +11,7 @@ import {
 import {
   BackendRequestContext, AnalyticalSchema, AnalyticalModel, AnalyticalElement, AnalyticalPartition,
   IModelDb, SpatialCategory, SubjectOwnsPartitionElements, Schema,
-  Schemas, ClassRegistry, KnownLocations, IModelJsFs, BisCoreSchema, GenericSchema, PhysicalPartition, GeometricElement3d,
+  Schemas, ClassRegistry, KnownLocations, IModelJsFs, BisCoreSchema, GenericSchema, PhysicalPartition, GeometricElement3d, SnapshotIModelDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -52,7 +52,7 @@ describe("Analytical Domain", () => {
   const requestContext = new BackendRequestContext();
 
   it("should import Analytical schema", async () => {
-    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IModel", "ImportAnalytical.bim"), { rootSubject: { name: "ImportAnalytical" } });
+    const iModelDb = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "ImportAnalytical.bim"), { rootSubject: { name: "ImportAnalytical" } });
     // import schemas
     const analyticalSchemaFileName: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "Analytical.ecschema.xml");
     const testSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestAnalytical.ecschema.xml");
@@ -137,7 +137,7 @@ describe("Analytical Domain", () => {
   });
 
   it("should create elements exercising the Analytical domain", async () => {
-    const iModelDb: IModelDb = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("AnalyticalDomain", "AnalyticalTest.bim"), {
+    const iModelDb = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("AnalyticalDomain", "AnalyticalTest.bim"), {
       rootSubject: { name: "AnalyticalTest", description: "Test of the Analytical domain schema." },
       client: "Analytical",
       globalOrigin: { x: 0, y: 0 },

@@ -11,7 +11,7 @@ import * as path from "path";
 import * as semver from "semver";
 import {
   AuthorizedBackendRequestContext, BackendLoggerCategory, BisCoreSchema, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect,
-  GenericSchema, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, KeepBriefcase, NativeLoggerCategory, OpenParams,
+  GenericSchema, IModelDb, IModelExporter, IModelJsFs, IModelTransformer, KeepBriefcase, NativeLoggerCategory, OpenParams, SnapshotIModelDb,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -46,7 +46,7 @@ describe("IModelTransformerHub (#integration)", () => {
     if (IModelJsFs.existsSync(sourceSeedFileName)) {
       IModelJsFs.removeSync(sourceSeedFileName);
     }
-    const sourceSeedDb: IModelDb = IModelDb.createSnapshot(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
+    const sourceSeedDb = SnapshotIModelDb.createEmpty(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
     await IModelTransformerUtils.prepareSourceDb(sourceSeedDb);
     sourceSeedDb.closeSnapshot();
@@ -59,7 +59,7 @@ describe("IModelTransformerHub (#integration)", () => {
     if (IModelJsFs.existsSync(targetSeedFileName)) {
       IModelJsFs.removeSync(targetSeedFileName);
     }
-    const targetSeedDb: IModelDb = IModelDb.createSnapshot(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
+    const targetSeedDb = SnapshotIModelDb.createEmpty(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
     await IModelTransformerUtils.prepareTargetDb(targetSeedDb);
     targetSeedDb.closeSnapshot();

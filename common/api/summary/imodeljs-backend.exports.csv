@@ -261,6 +261,7 @@ public;SheetBorderTemplate
 public;SheetModel 
 public;SheetTemplate 
 public;SheetViewDefinition 
+beta;SnapshotIModelDb 
 public;SourceAndTarget
 public;SpatialCategory 
 public;class SpatialElement 

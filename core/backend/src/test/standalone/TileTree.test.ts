@@ -29,6 +29,7 @@ import {
   PhysicalModel,
   PhysicalObject,
   PhysicalPartition,
+  SnapshotIModelDb,
   SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
@@ -38,7 +39,7 @@ let uniqueId = 0;
 
 const defaultExtents = Range3d.fromJSON({
   low: { x: -500, y: -200, z: -50 },
-  high: {x: 500, y: 200, z: 50 },
+  high: { x: 500, y: 200, z: 50 },
 });
 
 // Tile tree range is scaled+offset a bit.
@@ -94,7 +95,7 @@ function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
 }
 
 describe("tile tree", () => {
-  let db: IModelDb;
+  let db: SnapshotIModelDb;
   let modelId: string;
 
   before(() => {
@@ -107,7 +108,7 @@ describe("tile tree", () => {
     };
 
     const name = "Test_" + (++uniqueId) + ".bim";
-    db = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("TileTree", name), props);
+    db = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("TileTree", name), props);
     modelId = insertPhysicalModel(db);
 
     // NB: The model needs to contain at least one element with a range - otherwise tile tree will have null range.

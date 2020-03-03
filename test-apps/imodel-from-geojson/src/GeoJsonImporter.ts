@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex, Arc3d, Range3d } from "@bentley/geometry-core";
-import { Cartographic, Code, ColorDef, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, GeometryParams, AxisAlignedBox3d, EcefLocation, ViewFlags, IModel, BackgroundMapProps, BackgroundMapType, RenderMode } from "@bentley/imodeljs-common";
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SpatialModel, ViewDefinition } from "@bentley/imodeljs-backend";
-import { GeoJson } from "./GeoJson";
+import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@bentley/geometry-core";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotIModelDb, SpatialCategory, SpatialModel, ViewDefinition } from "@bentley/imodeljs-backend";
+import { AxisAlignedBox3d, BackgroundMapProps, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps, GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
+import { GeoJson } from "./GeoJson";
 
 /** */
 export class GeoJsonImporter {
@@ -32,7 +32,7 @@ export class GeoJsonImporter {
    */
   public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapType?: string, mapGroundBias?: number,
     private _classifiedURL?: string, private _classifiedName?: string, private _classifiedOutside?: string, private _classifiedInside?: string) {
-    this.iModelDb = appendToExisting ? IModelDb.openStandalone(iModelFileName, OpenMode.ReadWrite) : IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: geoJson.title } });
+    this.iModelDb = appendToExisting ? IModelDb.openStandalone(iModelFileName, OpenMode.ReadWrite) : SnapshotIModelDb.createEmpty(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
     this._appendToExisting = appendToExisting;
     this._modelName = modelName;
