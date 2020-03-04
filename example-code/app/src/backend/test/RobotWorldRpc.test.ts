@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { IModelDb, IModelJsFs, PhysicalModel } from "@bentley/imodeljs-backend";
+import { IModelJsFs, PhysicalModel, StandaloneIModelDb } from "@bentley/imodeljs-backend";
 import { SnapshotIModelRpcInterface, IModel, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager, IModelTokenProps, GeometricElement3dProps } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
@@ -29,7 +29,7 @@ async function setUpTest() {
   const iModelFile = IModelTestUtils.prepareOutputFile("RobotWorldRpc.bim");
   const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
   IModelJsFs.copySync(seedFile, iModelFile);
-  const iModel = IModelDb.openStandalone(iModelFile, OpenMode.ReadWrite);
+  const iModel = StandaloneIModelDb.openStandalone(iModelFile, OpenMode.ReadWrite);
   await RobotWorld.importSchema(requestContext, iModel);
   iModel.saveChanges();
   PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
@@ -118,7 +118,7 @@ describe("RobotWorldRpc", () => {
 });
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudApp
-// tslint:disable:no-duplicate-imports - The imports are intentionally separated in this cease.
+// tslint:disable:no-duplicate-imports - The imports are intentionally separated in this case.
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) {

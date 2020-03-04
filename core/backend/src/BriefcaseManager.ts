@@ -1146,7 +1146,7 @@ export class BriefcaseManager {
   /** Open a standalone iModel from the local disk
    * @param encryptionPropsString `JSON.stringify(IModelEncryptionProps) | undefined`
    */
-  public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean, encryptionPropsString?: string): BriefcaseEntry {
+  public static openStandalone(pathname: string, openMode: OpenMode, encryptionPropsString?: string): BriefcaseEntry {
     if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname, undefined, undefined, undefined, openMode)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open standalone iModel at ${pathname} again - it has already been opened once`, Logger.logError, loggerCategory);
 
@@ -1156,15 +1156,7 @@ export class BriefcaseManager {
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, "Could not open standalone iModel", Logger.logError, loggerCategory, () => ({ pathname }));
 
-    let briefcaseId: number = nativeDb.getBriefcaseId();
-    if (enableTransactions) {
-      if (briefcaseId === BriefcaseId.Illegal || briefcaseId === BriefcaseId.Master) {
-        briefcaseId = BriefcaseId.Standalone;
-        nativeDb.setBriefcaseId(briefcaseId, encryptionPropsString);
-      }
-      assert(nativeDb.getBriefcaseId() !== BriefcaseId.Illegal || nativeDb.getBriefcaseId() !== BriefcaseId.Master);
-    }
-
+    const briefcaseId: number = nativeDb.getBriefcaseId();
     const briefcase = new BriefcaseEntry("", nativeDb.getDbGuid(), nativeDb.getParentChangeSetId(), pathname, OpenParams.standalone(openMode), briefcaseId);
     briefcase.setNativeDb(nativeDb);
 

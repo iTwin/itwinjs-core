@@ -2,20 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { assert } from "chai";
-import { OpenMode, GuidString, Logger, LogLevel, ChangeSetStatus, ChangeSetApplyOption } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { RequestGlobalOptions, Version } from "@bentley/imodeljs-clients";
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
-import { Version, RequestGlobalOptions } from "@bentley/imodeljs-clients";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import {
-  IModelDb, OpenParams, PhysicalModel, AuthorizedBackendRequestContext,
-  BriefcaseManager, IModelJsFs,
-} from "../../imodeljs-backend";
+import { assert } from "chai";
+import * as path from "path";
+import { ChangeSetToken } from "../../BriefcaseManager";
+import { AuthorizedBackendRequestContext, BriefcaseManager, IModelDb, OpenParams, PhysicalModel, StandaloneIModelDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { ChangeSetToken } from "../../BriefcaseManager";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe.skip("DebugHubIssues (#integration)", () => {
@@ -230,10 +227,9 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
   it.skip("should be able to apply specific change set to the briefcase on disk", async () => {
     const iModelName = "ReadOnlyTest";
-
     const iModelDir = path.join(iModelRootDir, iModelName);
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
-    const iModel: IModelDb = IModelDb.openStandalone(briefcasePathname, OpenMode.ReadWrite);
+    const iModel = StandaloneIModelDb.openStandalone(briefcasePathname, OpenMode.ReadWrite);
     assert.isDefined(iModel);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
@@ -290,17 +286,6 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
     await iModel.close(requestContext);
-  });
-
-  it.skip("should be able to create a change set from a standalone iModel)", async () => {
-    const dbName = "D:\\temp\\Defects\\879278\\DPIntegrationTestProj79.bim";
-    const iModel: IModelDb = IModelDb.openStandalone(dbName, OpenMode.ReadWrite, true); // could throw Error
-    assert.exists(iModel);
-
-    const changeSetToken = BriefcaseManager.createStandaloneChangeSet(iModel.briefcase);
-    assert(IModelJsFs.existsSync(changeSetToken.pathname));
-
-    BriefcaseManager.dumpChangeSet(iModel.briefcase, changeSetToken);
   });
 
   it.skip("should be able to open any iModel on the Hub", async () => {

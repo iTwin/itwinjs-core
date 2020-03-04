@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, SpatialViewDefinition, GeometricElement3d, DisplayStyle3d } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, SpatialViewDefinition, GeometricElement3d, DisplayStyle3d, StandaloneIModelDb } from "@bentley/imodeljs-backend";
 import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Placement3d, RenderMode, ViewFlags, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { YawPitchRollAngles, Point3d, Vector3d, Range3d, StandardViewIndex } from "@bentley/geometry-core";
@@ -226,10 +226,10 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
 }
 
 function doImport(inputArgs: Yargs.Arguments<ImportInputArgs>) {
-  let originalIModel: IModelDb;
+  let originalIModel: StandaloneIModelDb;
 
   try {
-    originalIModel = IModelDb.openStandalone(inputArgs.input as string, inputArgs.createDuplicateIbim ? OpenMode.Readonly : OpenMode.ReadWrite); // could throw Error
+    originalIModel = StandaloneIModelDb.openStandalone(inputArgs.input as string, inputArgs.createDuplicateIbim ? OpenMode.Readonly : OpenMode.ReadWrite); // could throw Error
   } catch (error) {
     process.stdout.write("Unable to open: " + inputArgs.input + "\n");
     return false;
@@ -240,7 +240,7 @@ function doImport(inputArgs: Yargs.Arguments<ImportInputArgs>) {
   if (inputArgs.createDuplicateIbim) {
     outputFileName = inputArgs.input + ".animated.ibim";
     IModelJsFs.copySync(inputArgs.input as string, outputFileName);
-    outputIModel = IModelDb.openStandalone(outputFileName, OpenMode.ReadWrite);
+    outputIModel = StandaloneIModelDb.openStandalone(outputFileName, OpenMode.ReadWrite);
   }
   try { unlinkSync(outputFileName + ".tiles"); } catch (error) { }
   if (inputArgs.fixRange)

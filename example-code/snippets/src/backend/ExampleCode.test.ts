@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { BisCoreSchema, ConcurrencyControl, Element, ElementAspect, IModelDb, PhysicalModel, ClassRegistry } from "@bentley/imodeljs-backend";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
-import { Id64, Id64String, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
+import { ClientRequestContext, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
+import { BisCoreSchema, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneIModelDb } from "@bentley/imodeljs-backend";
+import { AccessToken, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
+import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
+import { assert } from "chai";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
-  let iModel: IModelDb;
+  let iModel: StandaloneIModelDb;
 
   const accessToken: AccessToken = (AccessToken as any);
   const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken);

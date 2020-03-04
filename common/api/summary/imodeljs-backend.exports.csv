@@ -277,6 +277,7 @@ internal;SqliteStatement
 internal;SqliteStatementCache
 internal;SqliteValue
 internal;SqliteValueType
+internal;StandaloneIModelDb 
 internal;StringParam
 public;SubCategory 
 public;Subject 

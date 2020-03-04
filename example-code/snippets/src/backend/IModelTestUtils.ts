@@ -2,24 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { RpcManager, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { ConnectClient, Config } from "@bentley/imodeljs-clients";
-import { IModelDb, IModelHost, IModelHostConfiguration, KnownLocations, SnapshotIModelDb } from "@bentley/imodeljs-backend";
-import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
-import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { IModelHost, IModelHostConfiguration, KnownLocations, SnapshotIModelDb, StandaloneIModelDb } from "@bentley/imodeljs-backend";
+import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
+import { Config, ConnectClient } from "@bentley/imodeljs-clients";
+import { IModelReadRpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { assert } from "chai";
+import * as path from "path";
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
-}
-
-export interface IModelTestUtilsOpenForWriteOptions extends IModelTestUtilsOpenOptions {
-  enableTransactions?: boolean;
 }
 
 export class KnownTestLocations {
@@ -79,10 +75,10 @@ export class IModelTestUtils {
     return iModel!;
   }
 
-  public static openIModelForWrite(filename: string, opts?: IModelTestUtilsOpenForWriteOptions): IModelDb {
+  public static openIModelForWrite(filename: string, opts?: IModelTestUtilsOpenOptions): StandaloneIModelDb {
     opts = opts || {};
     const dbName = IModelTestUtils.copyIModelForOpen(filename, opts);
-    const iModel = IModelDb.openStandalone(dbName, OpenMode.ReadWrite, opts.enableTransactions);
+    const iModel = StandaloneIModelDb.openStandalone(dbName, OpenMode.ReadWrite);
     assert.exists(iModel);
     return iModel;
   }

@@ -506,7 +506,7 @@ export class BriefcaseManager {
     static initialize(cacheRootDir: string, iModelClient?: IModelClient): void;
     static initializeBriefcaseCacheFromDisk(requestContext: AuthorizedClientRequestContext): Promise<void>;
     static openBriefcase(briefcase: BriefcaseEntry): void;
-    static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean, encryptionPropsString?: string): BriefcaseEntry;
+    static openStandalone(pathname: string, openMode: OpenMode, encryptionPropsString?: string): BriefcaseEntry;
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;
     static purgeCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
     static pushChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks?: boolean): Promise<void>;
@@ -2227,8 +2227,6 @@ export class IModelDb extends IModel {
     clearSqliteStatementCache(): void;
     clearStatementCache(): void;
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
-    // @internal @deprecated
-    closeStandalone(): void;
     get codeSpecs(): CodeSpecs;
     // @beta
     get concurrencyControl(): ConcurrencyControl;
@@ -2288,8 +2286,6 @@ export class IModelDb extends IModel {
     // @internal
     static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<IModelDb>;
     readonly openParams: OpenParams;
-    // @internal @deprecated
-    static openStandalone(pathname: string, openMode?: OpenMode, enableTransactions?: boolean): IModelDb;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
@@ -3244,7 +3240,6 @@ export class OpenParams {
     static openSnapshot(): OpenParams;
     static pullAndPush(): OpenParams;
     static pullOnly(): OpenParams;
-    // @deprecated
     static standalone(openMode: OpenMode): OpenParams;
     readonly syncMode?: SyncMode | undefined;
     timeout?: number | undefined;
@@ -3772,6 +3767,12 @@ export enum SqliteValueType {
     Null = 5,
     // (undocumented)
     String = 3
+}
+
+// @internal (undocumented)
+export class StandaloneIModelDb extends IModelDb {
+    closeStandalone(): void;
+    static openStandalone(filePath: string, openMode?: OpenMode): StandaloneIModelDb;
 }
 
 // @internal

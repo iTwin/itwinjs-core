@@ -6,11 +6,11 @@ import { BeDuration, DbResult, IModelStatus, OpenMode } from "@bentley/bentleyjs
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorByName, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { BackendRequestContext, IModelDb, IModelHost, IModelJsFs, IModelJsNative, PhysicalModel, SpatialCategory, TxnAction, UpdateModelOptions } from "../../imodeljs-backend";
+import { BackendRequestContext, IModelHost, IModelJsFs, IModelJsNative, PhysicalModel, SpatialCategory, StandaloneIModelDb, TxnAction, UpdateModelOptions } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 describe("TxnManager", () => {
-  let imodel: IModelDb;
+  let imodel: StandaloneIModelDb;
   let props: TestPhysicalObjectProps;
   const requestContext = new BackendRequestContext();
 
@@ -29,7 +29,7 @@ describe("TxnManager", () => {
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
     assert.equal(performUpgrade(testFileName), 0);
-    imodel = IModelDb.openStandalone(testFileName, OpenMode.ReadWrite);
+    imodel = StandaloneIModelDb.openStandalone(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
 
     const builder = new GeometryStreamBuilder();
