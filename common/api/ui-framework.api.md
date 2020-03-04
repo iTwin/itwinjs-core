@@ -729,12 +729,6 @@ export interface CategoryTreeProps {
 export class CategoryVisibilityHandler implements IVisibilityHandler {
     constructor(params: CategoryVisibilityHandlerParams);
     // (undocumented)
-    activeView?: Viewport;
-    // (undocumented)
-    allViewports?: boolean;
-    // (undocumented)
-    categories: Category[];
-    // (undocumented)
     changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
     // (undocumented)
     dispose(): void;
@@ -757,7 +751,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     setEnableAll(enable: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
     // (undocumented)
     showAll(filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
-}
+    }
 
 // @internal (undocumented)
 export interface CategoryVisibilityHandlerParams {

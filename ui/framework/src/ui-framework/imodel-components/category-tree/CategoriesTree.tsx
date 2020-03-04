@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { IModelConnection, Viewport, IModelApp, SpatialViewState } from "@bentley/imodeljs-frontend";
+import { IModelConnection, Viewport, IModelApp, SpatialViewState, PerModelCategoryVisibility } from "@bentley/imodeljs-frontend";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { Ruleset, NodeKey } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
@@ -156,20 +156,9 @@ function useShowHideAll(visibilityHandler: CategoryVisibilityHandler, showAll: b
 
 function useCategoryVisibilityHandler(imodel: IModelConnection, categories: Category[], activeView?: Viewport, allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
   return useDisposable(React.useCallback(
-    () => createCategoryVisibilityHandler(imodel, categories, activeView, allViewports, visibilityHandler),
+    () => visibilityHandler ?? new CategoryVisibilityHandler({ imodel, categories, activeView, allViewports }),
     [imodel, categories, activeView, allViewports, visibilityHandler]),
   );
-}
-
-function createCategoryVisibilityHandler(imodel: IModelConnection, categories: Category[], activeView?: Viewport, allViewports?: boolean, visibilityHandler?: CategoryVisibilityHandler) {
-  if (visibilityHandler) {
-    visibilityHandler.categories = categories;
-    visibilityHandler.allViewports = allViewports;
-    visibilityHandler.activeView = activeView;
-    return visibilityHandler;
-  }
-
-  return new CategoryVisibilityHandler({ imodel, categories, activeView, allViewports });
 }
 
 function useCategories(iModel: IModelConnection, view?: Viewport) {
@@ -237,25 +226,38 @@ export interface CategoryVisibilityHandlerParams {
 /** @internal */
 export class CategoryVisibilityHandler implements IVisibilityHandler {
   private _imodel: IModelConnection;
+  private _pendingVisibilityChange: any | undefined;
   private _onVisibilityChange?: () => void;
-
-  public activeView?: Viewport;
-  public allViewports?: boolean;
-  public categories: Category[];
+  private _activeView?: Viewport;
+  private _useAllViewports?: boolean;
+  private _categories: Category[];
 
   constructor(params: CategoryVisibilityHandlerParams) {
     this._imodel = params.imodel;
-    this.activeView = params.activeView;
-    this.allViewports = params.allViewports;
-    this.categories = params.categories;
+    this._activeView = params.activeView;
+    this._useAllViewports = params.allViewports;
+    this._categories = params.categories;
     this._onVisibilityChange = params.onVisibilityChange;
+    if (this._activeView) {
+      this._activeView.onDisplayStyleChanged.addListener(this.onDisplayStyleChanged);
+      this._activeView.onViewedCategoriesChanged.addListener(this.onViewedCategoriesChanged);
+    }
   }
 
-  // istanbul ignore next
-  public dispose() { }
+  public dispose() {
+    if (this._activeView) {
+      this._activeView.onDisplayStyleChanged.removeListener(this.onDisplayStyleChanged);
+      this._activeView.onViewedCategoriesChanged.removeListener(this.onViewedCategoriesChanged);
+    }
+    clearTimeout(this._pendingVisibilityChange);
+  }
 
-  public get onVisibilityChange() { return this._onVisibilityChange; }
-  public set onVisibilityChange(callback: (() => void) | undefined) { this._onVisibilityChange = callback; }
+  public get onVisibilityChange() {
+    return this._onVisibilityChange;
+  }
+  public set onVisibilityChange(callback: (() => void) | undefined) {
+    this._onVisibilityChange = callback;
+  }
 
   public async showAll(filteredProvider?: IPresentationTreeDataProvider) {
     await this.setEnableAll(true, filteredProvider);
@@ -296,7 +298,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
       const nodes = await filteredProvider.getNodes();
       ids = nodes.map((node) => getInstanceIdFromTreeNodeKey(filteredProvider.getNodeKey(node)));
     } else
-      ids = this.categories.map((category: Category) => category.key);
+      ids = this._categories.map((category: Category) => category.key);
 
     // istanbul ignore else
     if (ids.length > 0) {
@@ -315,6 +317,16 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
       if (IModelApp.viewManager.selectedView && IModelApp.viewManager.selectedView.view.is3d() === vp.view.is3d()) {
         vp.changeCategoryDisplay(ids, enabled, enableAllSubCategories);
 
+        // remove category overrides per model
+        const modelsContainingOverrides: string[] = [];
+        vp.perModelCategoryVisibility.forEachOverride((modelId: string, categoryId: string) => {
+          // istanbul ignore else
+          if (ids.findIndex((id) => id === categoryId) !== -1)
+            modelsContainingOverrides.push(modelId);
+          return true;
+        });
+        vp.perModelCategoryVisibility.setOverride(modelsContainingOverrides, ids, PerModelCategoryVisibility.Override.None);
+
         // changeCategoryDisplay only enables subcategories, it does not disabled them. So we must do that ourselves.
         if (false === enabled) {
           ids.forEach((id) => {
@@ -328,7 +340,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     };
 
     // This property let us act on all viewports or just on the selected one, configurable by the app
-    if (this.allViewports) {
+    if (this._useAllViewports) {
       IModelApp.viewManager.forEachViewport(updateViewport);
     } else {
       updateViewport(IModelApp.viewManager.selectedView);
@@ -349,7 +361,7 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     };
 
     // This property let us act on all viewports or just on the selected one, configurable by the app
-    if (this.allViewports) {
+    if (this._useAllViewports) {
       IModelApp.viewManager.forEachViewport(updateViewport);
     } else {
       updateViewport(IModelApp.viewManager.selectedView);
@@ -358,17 +370,17 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
 
   public isSubCategoryVisible(id: string): boolean {
     const parentItem = this.getParent(id);
-    if (!parentItem || !this.activeView)
+    if (!parentItem || !this._activeView)
       return false;
-    return this.activeView.view.viewsCategory(parentItem.key) && this.activeView.isSubCategoryVisible(id);
+    return this._activeView.view.viewsCategory(parentItem.key) && this._activeView.isSubCategoryVisible(id);
   }
 
   public isCategoryVisible(id: string): boolean {
-    return (this.activeView) ? this.activeView.view.viewsCategory(id) : false;
+    return (this._activeView) ? this._activeView.view.viewsCategory(id) : false;
   }
 
   public getParent(key: string): Category | undefined {
-    for (const category of this.categories) {
+    for (const category of this._categories) {
       if (category.children) {
         if (category.children.indexOf(key) !== -1)
           return category;
@@ -376,5 +388,25 @@ export class CategoryVisibilityHandler implements IVisibilityHandler {
     }
 
     return undefined;
+  }
+
+  // tslint:disable-next-line: naming-convention
+  private onDisplayStyleChanged = () => {
+    this.onVisibilityChangeInternal();
+  }
+
+  // tslint:disable-next-line: naming-convention
+  private onViewedCategoriesChanged = () => {
+    this.onVisibilityChangeInternal();
+  }
+
+  private onVisibilityChangeInternal() {
+    if (this._pendingVisibilityChange)
+      return;
+
+    this._pendingVisibilityChange = setTimeout(() => {
+      this._onVisibilityChange && this._onVisibilityChange();
+      this._pendingVisibilityChange = undefined;
+    }, 0);
   }
 }

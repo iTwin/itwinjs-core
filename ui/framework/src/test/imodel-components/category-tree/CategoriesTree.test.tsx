@@ -10,11 +10,11 @@ import { render, waitForElement, cleanup, fireEvent } from "@testing-library/rea
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
   IModelConnection, Viewport, SpatialViewState, IModelApp, NoRenderApp,
-  ViewManager, ScreenViewport, SubCategoriesCache,
+  ViewManager, ScreenViewport, SubCategoriesCache, PerModelCategoryVisibility, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
-import { BeEvent, Id64String, BeUiEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, Id64String, BeUiEvent, using } from "@bentley/bentleyjs-core";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import {
   SelectionManager, SelectionChangeEvent, Presentation, PresentationManager,
@@ -22,7 +22,7 @@ import {
 } from "@bentley/presentation-frontend";
 import { KeySet, ECInstancesNodeKey, StandardNodeTypes, InstanceKey } from "@bentley/presentation-common";
 import TestUtils from "../../TestUtils";
-import { CategoryTree, CategoryVisibilityHandler, Category } from "../../../ui-framework/imodel-components/category-tree/CategoriesTree";
+import { CategoryTree, CategoryVisibilityHandler, Category, CategoryVisibilityHandlerParams } from "../../../ui-framework/imodel-components/category-tree/CategoriesTree";
 
 describe("CategoryTree", () => {
 
@@ -322,12 +322,51 @@ describe("CategoryTree", () => {
   });
 
   describe("CategoryVisibilityHandler", () => {
+
+    interface ViewportMockProps {
+      viewState?: ViewState;
+      perModelCategoryVisibility?: PerModelCategoryVisibility.Overrides;
+      onViewedCategoriesChanged?: BeEvent<(vp: Viewport) => void>;
+      onDisplayStyleChanged?: BeEvent<(vp: Viewport) => void>;
+    }
+
+    const mockViewport = (props?: ViewportMockProps) => {
+      if (!props)
+        props = {};
+      if (!props.viewState)
+        props.viewState = moq.Mock.ofType<ViewState>().object;
+      if (!props.perModelCategoryVisibility)
+        props.perModelCategoryVisibility = moq.Mock.ofType<PerModelCategoryVisibility.Overrides>().object;
+      if (!props.onDisplayStyleChanged)
+        props.onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
+      if (!props.onViewedCategoriesChanged)
+        props.onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
+      const vpMock = moq.Mock.ofType<Viewport>();
+      vpMock.setup((x) => x.iModel).returns(() => imodelMock.object);
+      vpMock.setup((x) => x.view).returns(() => props!.viewState!);
+      vpMock.setup((x) => x.perModelCategoryVisibility).returns(() => props!.perModelCategoryVisibility!);
+      vpMock.setup((x) => x.onViewedCategoriesChanged).returns(() => props!.onViewedCategoriesChanged!);
+      vpMock.setup((x) => x.onDisplayStyleChanged).returns(() => props!.onDisplayStyleChanged!);
+      return vpMock;
+    };
+
+    const createHandler = (partialProps?: Partial<CategoryVisibilityHandlerParams>): CategoryVisibilityHandler => {
+      if (!partialProps)
+        partialProps = {};
+      const props: CategoryVisibilityHandlerParams = {
+        imodel: partialProps.imodel || imodelMock.object,
+        activeView: partialProps.activeView,
+        onVisibilityChange: partialProps.onVisibilityChange || sinon.stub(),
+        categories: partialProps.categories || [],
+        allViewports: partialProps.allViewports,
+      };
+      return new CategoryVisibilityHandler(props);
+    };
+
+    const selectedViewStateMock = moq.Mock.ofType<ViewState>();
     const selectedViewMock = moq.Mock.ofType<ScreenViewport>();
-    const selectedSpatialViewMock = moq.Mock.ofType<SpatialViewState>();
     const subCategoriesCacheMock = moq.Mock.ofType<SubCategoriesCache>();
-    const dataProvider = moq.Mock.ofType<IPresentationTreeDataProvider>();
-    const activeViewMock = moq.Mock.ofType<Viewport>();
-    let visibilityHandler: CategoryVisibilityHandler;
+    const perModelCategoryVisibilityMock = moq.Mock.ofType<PerModelCategoryVisibility.Overrides>();
 
     const categoryNode: TreeNodeItem = { id: "CategoryKey", label: PropertyRecord.fromString("category-node"), autoExpand: true };
     const subcategoryNode: TreeNodeItem = { id: "SubCategoryKey", label: PropertyRecord.fromString("subcategory-node"), parentId: "CategoryKey" };
@@ -350,33 +389,41 @@ describe("CategoryTree", () => {
       imodelMock.reset();
       viewManagerMock.reset();
       selectedViewMock.reset();
-      selectedSpatialViewMock.reset();
       subCategoriesCacheMock.reset();
-      dataProvider.reset();
+      perModelCategoryVisibilityMock.reset();
 
       imodelMock.setup((x) => x.subcategories).returns(() => subCategoriesCacheMock.object);
       subCategoriesCacheMock.setup((x) => x.getSubCategories("CategoryKey")).returns(() => new Set(categories[0].children!));
       viewManagerMock.setup((x) => x.selectedView).returns(() => selectedViewMock.object);
-      selectedViewMock.setup((x) => x.view).returns(() => selectedSpatialViewMock.object);
-      selectedSpatialViewMock.setup((x) => x.is3d()).returns(() => true);
-
-      visibilityHandler = new CategoryVisibilityHandler({
-        imodel: imodelMock.object,
-        categories,
-        activeView: activeViewMock.object,
-      });
+      selectedViewMock.setup((x) => x.view).returns(() => selectedViewStateMock.object);
+      selectedViewMock.setup((x) => x.perModelCategoryVisibility).returns(() => perModelCategoryVisibilityMock.object);
     });
 
     after(() => {
       IModelApp.shutdown();
     });
 
+    describe("dispose", () => {
+
+      it("removes listeners from viewport events", () => {
+        const onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
+        const onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
+        const viewport = mockViewport({ onDisplayStyleChanged, onViewedCategoriesChanged });
+        using(createHandler({ activeView: viewport.object }), (_) => { });
+        expect(onDisplayStyleChanged.numberOfListeners).to.be.eq(0);
+        expect(onViewedCategoriesChanged.numberOfListeners).to.be.eq(0);
+      });
+
+    });
+
     describe("onVisibilityChange", () => {
 
       it("sets onVisibilityChange callback", async () => {
         const callback = () => { };
-        visibilityHandler.onVisibilityChange = callback;
-        expect(callback).to.be.eq(visibilityHandler.onVisibilityChange);
+        using(createHandler({}), (handler) => {
+          handler.onVisibilityChange = callback;
+          expect(callback).to.be.eq(handler.onVisibilityChange);
+        });
       });
 
     });
@@ -384,9 +431,20 @@ describe("CategoryTree", () => {
     describe("showAll", () => {
 
       it("calls setEnableAll", async () => {
-        const spy = sinon.spy(visibilityHandler, "setEnableAll");
-        await visibilityHandler.showAll();
-        expect(spy).to.be.calledWithExactly(true, undefined);
+        await using(createHandler({}), async (handler) => {
+          const spy = sinon.spy(handler, "setEnableAll");
+          await handler.showAll();
+          expect(spy).to.be.calledWithExactly(true, undefined);
+        });
+      });
+
+      it("calls onVisibilityChanged callback", async () => {
+        await using(createHandler({}), async (handler) => {
+          const spy = sinon.spy();
+          handler.onVisibilityChange = spy;
+          await handler.showAll();
+          expect(spy).to.be.calledOnce;
+        });
       });
 
     });
@@ -394,9 +452,20 @@ describe("CategoryTree", () => {
     describe("hideAll", () => {
 
       it("calls setEnableAll", async () => {
-        const spy = sinon.spy(visibilityHandler, "setEnableAll");
-        await visibilityHandler.hideAll();
-        expect(spy).to.be.calledWithExactly(false, undefined);
+        await using(createHandler({}), async (handler) => {
+          const spy = sinon.spy(handler, "setEnableAll");
+          await handler.hideAll();
+          expect(spy).to.be.calledWithExactly(false, undefined);
+        });
+      });
+
+      it("calls onVisibilityChanged callback", async () => {
+        await using(createHandler({}), async (handler) => {
+          const spy = sinon.spy();
+          handler.onVisibilityChange = spy;
+          await handler.hideAll();
+          expect(spy).to.be.calledOnce;
+        });
       });
 
     });
@@ -404,24 +473,30 @@ describe("CategoryTree", () => {
     describe("changeVisibility", () => {
 
       it("calls enableCategory", async () => {
-        const spy = sinon.spy(visibilityHandler, "enableCategory");
-        await visibilityHandler.changeVisibility(categoryNode, categoryKey, true);
-        expect(spy).to.be.calledWith([categoryNode.id], true, true);
+        await using(createHandler({ activeView: mockViewport().object }), async (handler) => {
+          const spy = sinon.spy(handler, "enableCategory");
+          await handler.changeVisibility(categoryNode, categoryKey, true);
+          expect(spy).to.be.calledWith([categoryNode.id], true, true);
+        });
       });
 
       it("calls enableSubcategoryCategory", async () => {
-        const spy = sinon.spy(visibilityHandler, "enableSubCategory");
-        await visibilityHandler.changeVisibility(subcategoryNode, subcategoryKey, false);
-        expect(spy).to.be.calledWith(subcategoryNode.id, false);
+        await using(createHandler({ activeView: mockViewport().object, categories }), async (handler) => {
+          const spy = sinon.spy(handler, "enableSubCategory");
+          await handler.changeVisibility(subcategoryNode, subcategoryKey, false);
+          expect(spy).to.be.calledWith(subcategoryNode.id, false);
+        });
       });
 
       it("calls enableSubcategoryCategory and enableCategory to ensure that parent category is enabled", async () => {
-        const enableCategorySpy = sinon.spy(visibilityHandler, "enableCategory");
-        const enableSubCategorySpy = sinon.spy(visibilityHandler, "enableSubCategory");
-        await visibilityHandler.changeVisibility(subcategoryNode, subcategoryKey, true);
-        expect(enableCategorySpy).to.be.calledWith(["CategoryKey"], true, false);
-        expect(enableSubCategorySpy).to.be.calledWith(subcategoryNode.id, true);
-        expect(enableCategorySpy.calledBefore(enableSubCategorySpy)).to.be.true;
+        await using(createHandler({ activeView: mockViewport().object, categories }), async (handler) => {
+          const enableCategorySpy = sinon.spy(handler, "enableCategory");
+          const enableSubCategorySpy = sinon.spy(handler, "enableSubCategory");
+          await handler.changeVisibility(subcategoryNode, subcategoryKey, true);
+          expect(enableCategorySpy).to.be.calledWith(["CategoryKey"], true, false);
+          expect(enableSubCategorySpy).to.be.calledWith(subcategoryNode.id, true);
+          expect(enableCategorySpy.calledBefore(enableSubCategorySpy)).to.be.true;
+        });
       });
 
     });
@@ -429,15 +504,19 @@ describe("CategoryTree", () => {
     describe("getVisibilityStatus", () => {
 
       it("calls isCategoryVisible", () => {
-        const spy = sinon.stub(visibilityHandler, "isCategoryVisible");
-        visibilityHandler.getVisibilityStatus(categoryNode, categoryKey);
-        expect(spy).to.be.calledWith(categoryNode.id);
+        using(createHandler({}), (handler) => {
+          const spy = sinon.stub(handler, "isCategoryVisible");
+          handler.getVisibilityStatus(categoryNode, categoryKey);
+          expect(spy).to.be.calledWith(categoryNode.id);
+        });
       });
 
       it("calls isSubCategoryVisible", () => {
-        const spy = sinon.stub(visibilityHandler, "isSubCategoryVisible");
-        visibilityHandler.getVisibilityStatus(subcategoryNode, subcategoryKey);
-        expect(spy).to.be.calledWith(subcategoryNode.id);
+        using(createHandler({ categories }), (handler) => {
+          const spy = sinon.stub(handler, "isSubCategoryVisible");
+          handler.getVisibilityStatus(subcategoryNode, subcategoryKey);
+          expect(spy).to.be.calledWith(subcategoryNode.id);
+        });
       });
 
     });
@@ -445,14 +524,18 @@ describe("CategoryTree", () => {
     describe("setEnableAll", () => {
 
       it("enables categories and subCategories", async () => {
-        await visibilityHandler.setEnableAll(true);
-        selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey", "SecondCategoryKey"], true, true), moq.Times.once());
+        await using(createHandler({ categories }), async (handler) => {
+          await handler.setEnableAll(true);
+          selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey", "SecondCategoryKey"], true, true), moq.Times.once());
+        });
       });
 
       it("disables categories and subCategories", async () => {
-        await visibilityHandler.setEnableAll(false);
-        selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey", "SecondCategoryKey"], false, true), moq.Times.once());
-        selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryKey", false), moq.Times.once());
+        await using(createHandler({ categories }), async (handler) => {
+          await handler.setEnableAll(false);
+          selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey", "SecondCategoryKey"], false, true), moq.Times.once());
+          selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryKey", false), moq.Times.once());
+        });
       });
 
       describe("with filtered data provider", () => {
@@ -479,14 +562,18 @@ describe("CategoryTree", () => {
         });
 
         it("enables categories and subCategories", async () => {
-          await visibilityHandler.setEnableAll(true, filteredProviderMock.object);
-          selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey"], true, true), moq.Times.once()); // no SecondCategoryKey
+          await using(createHandler({ categories }), async (handler) => {
+            await handler.setEnableAll(true, filteredProviderMock.object);
+            selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey"], true, true), moq.Times.once()); // no SecondCategoryKey
+          });
         });
 
         it("disables categories and subCategories", async () => {
-          await visibilityHandler.setEnableAll(false, filteredProviderMock.object);
-          selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey"], false, true), moq.Times.once()); // no SecondCategoryKey
-          selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryKey", false), moq.Times.once());
+          await using(createHandler({ categories }), async (handler) => {
+            await handler.setEnableAll(false, filteredProviderMock.object);
+            selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryKey"], false, true), moq.Times.once()); // no SecondCategoryKey
+            selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryKey", false), moq.Times.once());
+          });
         });
 
       });
@@ -496,25 +583,29 @@ describe("CategoryTree", () => {
     describe("isCategoryVisible", () => {
 
       beforeEach(() => {
-        activeViewMock.reset();
         viewStateMock.reset();
       });
 
       it("returns false if active viewport is not supplied", () => {
-        visibilityHandler = new CategoryVisibilityHandler({ imodel: imodelMock.object, categories });
-        expect(visibilityHandler.isCategoryVisible("CategoryKey")).to.be.false;
+        using(createHandler({}), (handler) => {
+          expect(handler.isCategoryVisible("CategoryKey")).to.be.false;
+        });
       });
 
       it("returns false if category is not visible", () => {
-        activeViewMock.setup((x) => x.view).returns(() => viewStateMock.object);
         viewStateMock.setup((x) => x.viewsCategory("CategoryKey")).returns(() => false);
-        expect(visibilityHandler.isCategoryVisible("CategoryKey")).to.be.false;
+        const viewMock = mockViewport({ viewState: viewStateMock.object });
+        using(createHandler({ activeView: viewMock.object }), (handler) => {
+          expect(handler.isCategoryVisible("CategoryKey")).to.be.false;
+        });
       });
 
       it("returns true if category is visible", () => {
-        activeViewMock.setup((x) => x.view).returns(() => viewStateMock.object);
         viewStateMock.setup((x) => x.viewsCategory("CategoryKey")).returns(() => true);
-        expect(visibilityHandler.isCategoryVisible("CategoryKey")).to.be.true;
+        const viewMock = mockViewport({ viewState: viewStateMock.object });
+        using(createHandler({ activeView: viewMock.object }), (handler) => {
+          expect(handler.isCategoryVisible("CategoryKey")).to.be.true;
+        });
       });
 
     });
@@ -522,156 +613,253 @@ describe("CategoryTree", () => {
     describe("isSubCategoryVisible", () => {
 
       beforeEach(() => {
-        activeViewMock.reset();
         viewStateMock.reset();
       });
 
       it("returns false if active viewport is not supplied", () => {
-        visibilityHandler = new CategoryVisibilityHandler({ imodel: imodelMock.object, categories });
-        expect(visibilityHandler.isSubCategoryVisible("SubCategoryKey")).to.be.false;
+        using(createHandler({ categories }), (handler) => {
+          expect(handler.isSubCategoryVisible("SubCategoryKey")).to.be.false;
+        });
       });
 
       it("returns false if parent category is not found", () => {
-        expect(visibilityHandler.isSubCategoryVisible("SubCategoryWithoutParent")).to.be.false;
+        using(createHandler({ activeView: mockViewport().object, categories }), (handler) => {
+          expect(handler.isSubCategoryVisible("SubCategoryWithoutParent")).to.be.false;
+        });
       });
 
       it("returns false if parent category is not visible in view", () => {
-        activeViewMock.setup((x) => x.view).returns(() => viewStateMock.object);
+        const viewMock = mockViewport({ viewState: viewStateMock.object });
         viewStateMock.setup((x) => x.viewsCategory("CategoryKey")).returns(() => false);
-        expect(visibilityHandler.isSubCategoryVisible("SubCategoryKey")).to.be.false;
+        using(createHandler({ activeView: viewMock.object, categories }), (handler) => {
+          expect(handler.isSubCategoryVisible("SubCategoryKey")).to.be.false;
+        });
       });
 
       it("returns false if subCategory is not visible in view", () => {
-        activeViewMock.setup((x) => x.view).returns(() => viewStateMock.object);
+        const viewMock = mockViewport({ viewState: viewStateMock.object });
         viewStateMock.setup((x) => x.viewsCategory("CategoryKey")).returns(() => true);
-        activeViewMock.setup((x) => x.isSubCategoryVisible("SubCategoryKey")).returns(() => false);
-        expect(visibilityHandler.isSubCategoryVisible("SubCategoryKey")).to.be.false;
+        viewMock.setup((x) => x.isSubCategoryVisible("SubCategoryKey")).returns(() => false);
+        using(createHandler({ activeView: viewMock.object, categories }), (handler) => {
+          expect(handler.isSubCategoryVisible("SubCategoryKey")).to.be.false;
+        });
       });
 
       it("returns true if subCategory and parent are visible in view", () => {
-        activeViewMock.setup((x) => x.view).returns(() => viewStateMock.object);
+        const viewMock = mockViewport({ viewState: viewStateMock.object });
         viewStateMock.setup((x) => x.viewsCategory("CategoryKey")).returns(() => true);
-        activeViewMock.setup((x) => x.isSubCategoryVisible("SubCategoryKey")).returns(() => true);
-        expect(visibilityHandler.isSubCategoryVisible("SubCategoryKey")).to.be.true;
+        viewMock.setup((x) => x.isSubCategoryVisible("SubCategoryKey")).returns(() => true);
+        using(createHandler({ activeView: viewMock.object, categories }), (handler) => {
+          expect(handler.isSubCategoryVisible("SubCategoryKey")).to.be.true;
+        });
       });
 
     });
 
+    const mockViewManagerForEachViewport = (viewport: Viewport) => {
+      viewManagerMock.reset();
+      viewManagerMock.setup((x) => x.selectedView).returns(() => selectedViewMock.object);
+      viewManagerMock
+        .setup((x) => x.forEachViewport(moq.It.isAny()))
+        .callback((action) => action(viewport))
+        .verifiable(moq.Times.once());
+    };
+
     describe("enableCategory", () => {
-      const screenViewportsMock = moq.Mock.ofType<ScreenViewport>();
-      const spatialViewMock = moq.Mock.ofType<SpatialViewState>();
 
       beforeEach(() => {
-        screenViewportsMock.reset();
-        screenViewportsMock.setup((x) => x.view).returns(() => spatialViewMock.object);
-        spatialViewMock.setup((x) => x.is3d()).returns(() => true);
-        visibilityHandler.categories = [{ key: "CategoryId" }];
-        viewManagerMock
-          .setup((x) => x.forEachViewport(moq.It.isAny()))
-          .callback((action) => action(screenViewportsMock.object))
-          .verifiable(moq.Times.once());
+        perModelCategoryVisibilityMock.reset();
+        selectedViewMock.reset();
+
+        selectedViewMock.setup((x) => x.view).returns(() => selectedViewStateMock.object);
+        selectedViewMock.setup((x) => x.perModelCategoryVisibility).returns(() => perModelCategoryVisibilityMock.object);
       });
 
       it("enables category", () => {
-        visibilityHandler.enableCategory(["CategoryId"], true, false);
-        selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], true, false), moq.Times.once());
+        using(createHandler({}), (handler) => {
+          handler.enableCategory(["CategoryId"], true, false);
+          selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], true, false), moq.Times.once());
+        });
       });
 
       it("disables category", () => {
-        visibilityHandler.enableCategory(["CategoryId"], false, false);
-        selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], false, false), moq.Times.once());
+        using(createHandler({}), (handler) => {
+          handler.enableCategory(["CategoryId"], false, false);
+          selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], false, false), moq.Times.once());
+        });
+      });
+
+      it("removes overrides per model when enabling category", () => {
+        perModelCategoryVisibilityMock
+          .setup((x) => x.forEachOverride(moq.It.isAny()))
+          .callback((action) => action("ModelId", "CategoryId"));
+
+        using(createHandler({}), (handler) => {
+          handler.enableCategory(["CategoryId"], true, false);
+          selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], true, false), moq.Times.once());
+          perModelCategoryVisibilityMock.verify((x) => x.setOverride(["ModelId"], ["CategoryId"], PerModelCategoryVisibility.Override.None), moq.Times.once());
+        });
       });
 
       it("does not change category state if selectedView is undefined", () => {
         viewManagerMock.reset();
         viewManagerMock.setup((x) => x.selectedView).returns(() => undefined);
-        visibilityHandler.enableCategory(["CategoryId"], false, false);
-        selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], false, false), moq.Times.never());
+        using(createHandler({}), (handler) => {
+          handler.enableCategory(["CategoryId"], false, false);
+          selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], false, false), moq.Times.never());
+        });
       });
 
       it("enables category in all viewports", () => {
-        visibilityHandler.allViewports = true;
+        viewStateMock.reset();
+        viewStateMock.setup((x) => x.is3d()).returns(() => true);
+        const otherViewMock = mockViewport({ viewState: viewStateMock.object });
+        mockViewManagerForEachViewport(otherViewMock.object);
+        selectedViewStateMock.setup((x) => x.is3d()).returns(() => true);
 
-        visibilityHandler.enableCategory(["CategoryId"], true, false);
-        viewManagerMock.verifyAll();
-        screenViewportsMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], true, false), moq.Times.once());
+        using(createHandler({ allViewports: true }), (handler) => {
+          handler.enableCategory(["CategoryId"], true, false);
+          viewManagerMock.verifyAll();
+          otherViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], true, false), moq.Times.once());
+        });
       });
 
       it("disables category in all viewports", () => {
-        visibilityHandler.allViewports = true;
+        viewStateMock.reset();
+        viewStateMock.setup((x) => x.is3d()).returns(() => true);
+        const otherViewMock = mockViewport({ viewState: viewStateMock.object });
+        mockViewManagerForEachViewport(otherViewMock.object);
+        selectedViewStateMock.setup((x) => x.is3d()).returns(() => true);
 
-        visibilityHandler.enableCategory(["CategoryId"], false, false);
-        viewManagerMock.verifyAll();
-        screenViewportsMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], false, false), moq.Times.once());
+        using(createHandler({ allViewports: true }), (handler) => {
+          handler.enableCategory(["CategoryId"], false, false);
+          viewManagerMock.verifyAll();
+          otherViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], false, false), moq.Times.once());
+        });
       });
 
       it("does not change category if viewport and selected view has different types", () => {
-        visibilityHandler.allViewports = true;
+        viewStateMock.reset();
+        viewStateMock.setup((x) => x.is3d()).returns(() => false);
+        const otherViewMock = mockViewport({ viewState: viewStateMock.object });
+        mockViewManagerForEachViewport(otherViewMock.object);
+        selectedViewStateMock.setup((x) => x.is3d()).returns(() => true);
 
-        spatialViewMock.reset();
-        spatialViewMock.setup((x) => x.is3d()).returns(() => false);
-        visibilityHandler.enableCategory(["CategoryId"], false, false);
-        selectedViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], false, false), moq.Times.never());
+        using(createHandler({ allViewports: true }), (handler) => {
+          handler.enableCategory(["CategoryId"], false, false);
+          otherViewMock.verify((x) => x.changeCategoryDisplay(["CategoryId"], false, false), moq.Times.never());
+        });
       });
 
     });
 
     describe("enableSubCategory", () => {
-      const screenViewportsMock = moq.Mock.ofType<ScreenViewport>();
-      const spatialViewMock = moq.Mock.ofType<SpatialViewState>();
 
       beforeEach(() => {
-        screenViewportsMock.reset();
-        screenViewportsMock.setup((x) => x.view).returns(() => spatialViewMock.object);
-        spatialViewMock.setup((x) => x.is3d()).returns(() => true);
-        viewManagerMock
-          .setup((x) => x.forEachViewport(moq.It.isAny()))
-          .callback((action) => action(screenViewportsMock.object))
-          .verifiable(moq.Times.once());
+        selectedViewMock.reset();
+        selectedViewMock.setup((x) => x.view).returns(() => selectedViewStateMock.object);
       });
 
       it("enables subCategory", () => {
-        visibilityHandler.enableSubCategory("SubCategoryId", true);
-        selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", true), moq.Times.once());
+        using(createHandler({}), (handler) => {
+          handler.enableSubCategory("SubCategoryId", true);
+          selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", true), moq.Times.once());
+        });
       });
 
       it("disables subCategory", () => {
-        visibilityHandler.enableSubCategory("SubCategoryId", false);
-        selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", false), moq.Times.once());
+        using(createHandler({}), (handler) => {
+          handler.enableSubCategory("SubCategoryId", false);
+          selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", false), moq.Times.once());
+        });
       });
 
       it("does not change subCategory state if selectedView is undefined", () => {
         viewManagerMock.reset();
         viewManagerMock.setup((x) => x.selectedView).returns(() => undefined);
-        visibilityHandler.enableSubCategory("SubCategoryId", false);
-        selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", false), moq.Times.never());
+
+        using(createHandler({}), (handler) => {
+          handler.enableSubCategory("SubCategoryId", false);
+          selectedViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", false), moq.Times.never());
+        });
       });
 
       it("enables subCategory in all viewports", () => {
-        visibilityHandler.allViewports = true;
+        viewStateMock.reset();
+        viewStateMock.setup((x) => x.is3d()).returns(() => true);
+        const otherViewMock = mockViewport({ viewState: viewStateMock.object });
+        mockViewManagerForEachViewport(otherViewMock.object);
+        selectedViewStateMock.setup((x) => x.is3d()).returns(() => true);
 
-        visibilityHandler.enableSubCategory("SubCategoryId", true);
-        viewManagerMock.verifyAll();
-        screenViewportsMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", true), moq.Times.once());
+        using(createHandler({ allViewports: true }), (handler) => {
+          handler.enableSubCategory("SubCategoryId", true);
+          viewManagerMock.verifyAll();
+          otherViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", true), moq.Times.once());
+        });
       });
 
       it("disables subCategory in all viewports", () => {
-        visibilityHandler.allViewports = true;
+        viewStateMock.reset();
+        viewStateMock.setup((x) => x.is3d()).returns(() => true);
+        const otherViewMock = mockViewport({ viewState: viewStateMock.object });
+        mockViewManagerForEachViewport(otherViewMock.object);
+        selectedViewStateMock.setup((x) => x.is3d()).returns(() => true);
 
-        visibilityHandler.enableSubCategory("SubCategoryId", false);
-        viewManagerMock.verifyAll();
-        screenViewportsMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", false), moq.Times.once());
+        using(createHandler({ allViewports: true }), (handler) => {
+          handler.enableSubCategory("SubCategoryId", false);
+          viewManagerMock.verifyAll();
+          otherViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", false), moq.Times.once());
+        });
       });
 
       it("does not change subCategory state if viewport and selectedView has different types", () => {
-        visibilityHandler.allViewports = true;
+        viewStateMock.reset();
+        viewStateMock.setup((x) => x.is3d()).returns(() => false);
+        const otherViewMock = mockViewport({ viewState: viewStateMock.object });
+        mockViewManagerForEachViewport(otherViewMock.object);
+        selectedViewStateMock.setup((x) => x.is3d()).returns(() => true);
 
-        spatialViewMock.reset();
-        spatialViewMock.setup((x) => x.is3d()).returns(() => false);
+        using(createHandler({ allViewports: true }), (handler) => {
+          handler.enableSubCategory("SubCategoryId", false);
+          viewManagerMock.verifyAll();
+          otherViewMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", false), moq.Times.never());
+        });
+      });
 
-        visibilityHandler.enableSubCategory("SubCategoryId", false);
-        viewManagerMock.verifyAll();
-        screenViewportsMock.verify((x) => x.changeSubCategoryDisplay("SubCategoryId", false), moq.Times.never());
+    });
+
+    describe("visibility change callback", () => {
+
+      it("calls the callback on `onDisplayStyleChanged` event", async () => {
+        const onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
+        const spy = sinon.spy();
+        await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onDisplayStyleChanged }).object }), async (_) => {
+          onDisplayStyleChanged.raiseEvent();
+          await new Promise((resolve) => setTimeout(resolve));
+          expect(spy).to.be.calledOnce;
+        });
+      });
+
+      it("calls the callback on `onViewedCategoriesChanged` event", async () => {
+        const onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
+        const spy = sinon.spy();
+        await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onViewedCategoriesChanged }).object }), async (_) => {
+          onViewedCategoriesChanged.raiseEvent();
+          await new Promise((resolve) => setTimeout(resolve));
+          expect(spy).to.be.calledOnce;
+        });
+      });
+
+      it("calls the callback only once when multiple events are raised", async () => {
+        const onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
+        const onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
+        const spy = sinon.spy();
+        await using(createHandler({ onVisibilityChange: spy, activeView: mockViewport({ onDisplayStyleChanged, onViewedCategoriesChanged }).object }), async (_) => {
+          onViewedCategoriesChanged.raiseEvent();
+          onDisplayStyleChanged.raiseEvent();
+          await new Promise((resolve) => setTimeout(resolve));
+          expect(spy).to.be.calledOnce;
+        });
       });
 
     });
