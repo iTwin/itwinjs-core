@@ -302,6 +302,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/projectlocation-plugin",
+      "projectFolder": "plugins/projectlocation",
+      "reviewCategory": "plugins",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "example-code-snippets",
       "projectFolder": "example-code/snippets",
       "reviewCategory": "internal",

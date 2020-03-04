@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/projectlocation-plugin",
+      "comment": "wip frontend code for an extension for updating the project extents and ecef location via changeset.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/projectlocation-plugin",
+  "email": "Brien.Bastings@bentley.com"
+}

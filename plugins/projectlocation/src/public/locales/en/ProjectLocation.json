@@ -1,0 +1,39 @@
+{
+  "tools": {
+    "ProjectLocation": {
+      "Select": {
+        "keyin": "project location select"
+      },
+      "Show": {
+        "keyin": "project location show"
+      },
+      "Hide": {
+        "keyin": "project location hide"
+      },
+      "Clear": {
+        "keyin": "project location clear"
+      },
+      "Update": {
+        "keyin": "project location update"
+      },
+      "Geolocation": {
+        "Point": {
+          "keyin": "project geolocation point"
+        },
+        "North": {
+          "keyin": "project geolocation north"
+        }
+      }
+    }
+  },
+  "Message": {
+    "ProjectExtents": "Project Extents",
+    "ModifyProjectExtents": "Modify Project Extents",
+    "NotGeolocated": "Not geolocated",
+    "Length": "Length",
+    "Width": "Width",
+    "Height": "Height",
+    "Altitude": "Altitude",
+    "North": "North"
+  }
+}
