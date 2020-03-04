@@ -6,7 +6,7 @@
 
 @mixin uicore-text-small {
 
-    @include uicore-text( small );
-    padding:        0;
-    margin:         0;
+  @include uicore-text( small );
+  padding:        0;
+  margin:         0;
 }

@@ -6,6 +6,6 @@
 
 @mixin uicore-text-leading {
 
-    @include uicore-text( leading );
-    @include uicore-text-block-spacing;
+  @include uicore-text( leading );
+  @include uicore-text-block-spacing;
 }

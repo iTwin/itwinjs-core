@@ -6,22 +6,22 @@
 
 @mixin no-border {
 
-    border:         0 none transparent;
+  border:         0 none transparent;
 }
 
 @mixin no-link {
 
-    text-decoration:        none;
-    color:                  $buic-text-color;
+  text-decoration:        none;
+  color:                  $buic-text-color;
 
-    &:link,
-    &:visited,
-    &:hover,
-    &:active {
+  &:link,
+  &:visited,
+  &:hover,
+  &:active {
 
-        color:              $buic-text-color;
-        text-decoration:    none;
-    }
+    color:              $buic-text-color;
+    text-decoration:    none;
+  }
 }
 
 @mixin firefox-only {

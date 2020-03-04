@@ -6,58 +6,58 @@
 
 @mixin uicore-inputs-radio {
 
-    display:                flex;
-    position:               relative;
-    padding:                0 0 0 $uicore-line-height;
-    margin:                 $uicore-unbordered-padding 0;
-    cursor:                 pointer;
-    align-items:            center;
+  display:                flex;
+  position:               relative;
+  padding:                0 0 0 $uicore-line-height;
+  margin:                 $uicore-unbordered-padding 0;
+  cursor:                 pointer;
+  align-items:            center;
 
-    > input {
+  > input {
 
-        position:           absolute;
-        left:               4px;
-        top:                0;
-        height:             $uicore-line-height;
-        margin:             0;
+    position:           absolute;
+    left:               4px;
+    top:                0;
+    height:             $uicore-line-height;
+    margin:             0;
 
-        font-size:          $uicore-font-size;
-        line-height:        $uicore-line-height;
-        text-align:         left;
+    font-size:          $uicore-font-size;
+    line-height:        $uicore-line-height;
+    text-align:         left;
 
-        cursor:             pointer;
+    cursor:             pointer;
 
-        &[disabled] {
-          cursor:             not-allowed;
-        }
+    &[disabled] {
+      cursor:             not-allowed;
     }
+  }
 
-    > .uicore-label {
+  > .uicore-label {
 
-        display:            inline;
-        position:           relative;
-        left:               6px;
+    display:            inline;
+    position:           relative;
+    left:               6px;
 
-        padding:            0;
-        margin:             0;
-        border:             0 none transparent;
-        font-size:          $uicore-font-size;
-        font-style:         normal;
-        font-weight:        $uicore-font-weight-normal;
-        line-height:        $uicore-line-height;
-        text-align:         left;
-        vertical-align:     initial;
-        white-space:        normal;
-        color:              $buic-text-color;
-    }
+    padding:            0;
+    margin:             0;
+    border:             0 none transparent;
+    font-size:          $uicore-font-size;
+    font-style:         normal;
+    font-weight:        $uicore-font-weight-normal;
+    line-height:        $uicore-line-height;
+    text-align:         left;
+    vertical-align:     initial;
+    white-space:        normal;
+    color:              $buic-text-color;
+  }
 
-    &.uicore-disabled {
+  &.uicore-disabled {
 
-        cursor:             not-allowed;
-    }
+    cursor:             not-allowed;
+  }
 
-    &.success > .uicore-label {    color: $uicore-green; }
-    &.warning > .uicore-label {    color: $uicore-orange; }
-    &.error > .uicore-label {      color: $uicore-red; }
-    &.uicore-disabled > .uicore-label {   color: $buic-text-color-disabled; }
+  &.success > .uicore-label {    color: $uicore-green; }
+  &.warning > .uicore-label {    color: $uicore-orange; }
+  &.error > .uicore-label {      color: $uicore-red; }
+  &.uicore-disabled > .uicore-label {   color: $buic-text-color-disabled; }
 }

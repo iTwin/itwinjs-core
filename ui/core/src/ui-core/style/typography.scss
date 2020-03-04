@@ -40,23 +40,23 @@ $uicore-font-loaded-class:         null !default;
 
 @mixin uicore-font-family {
 
-    @if $uicore-font-loaded-class {
+  @if $uicore-font-loaded-class {
 
-        font-family:            sans-serif;
+    font-family:            sans-serif;
 
-        &.#{ $uicore-font-loaded-class } {
+    &.#{ $uicore-font-loaded-class } {
 
-            font-family:        $uicore-font-family;
-        }
-
-        @at-root {
-            body.#{ $uicore-font-loaded-class } & {
-
-                font-family:    $uicore-font-family;
-            }
-        }
-    } @else {
-
-        font-family:            $uicore-font-family;
+      font-family:        $uicore-font-family;
     }
+
+    @at-root {
+      body.#{ $uicore-font-loaded-class } & {
+
+        font-family:    $uicore-font-family;
+      }
+    }
+  } @else {
+
+    font-family:            $uicore-font-family;
+  }
 }

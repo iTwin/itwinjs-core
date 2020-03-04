@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-ninezone",
+      "comment": "Fixed Safari browser issues",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}
