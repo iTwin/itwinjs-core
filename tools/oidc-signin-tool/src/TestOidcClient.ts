@@ -246,10 +246,8 @@ export class TestOidcClient implements IAuthorizationClient {
     ]);
 
     // Cut out for federated sign-in
-    if (-1 !== page.url().indexOf("microsoftonline")) {
-      await page.waitForNavigation({ waitUntil: "networkidle2" });
+    if (-1 !== page.url().indexOf("microsoftonline"))
       return;
-    }
 
     await page.waitForSelector("#password");
     await page.type("#password", this._user.password);
@@ -262,6 +260,9 @@ export class TestOidcClient implements IAuthorizationClient {
       }),
       page.$eval(".allow", (button: any) => button.click()),
     ]);
+
+    // Check if there were any errors when performing sign-in
+    await this.checkErrorOnPageByClassName(page, "ping-error");
   }
 
   // Bentley-specific federated login.  This will get called if a redirect to a url including "wsfed".
@@ -342,7 +343,6 @@ export class TestOidcClient implements IAuthorizationClient {
         page.$eval(".allow", (button: any) => button.click()),
       ]);
     }
-
   }
 
   private async checkSelectorExists(page: puppeteer.Page, selector: string): Promise<boolean> {
@@ -358,6 +358,18 @@ export class TestOidcClient implements IAuthorizationClient {
         return undefined;
       return errMsgElement.textContent;
     }, selector);
+
+    if (undefined !== errMsgText && null !== errMsgText)
+      throw new Error(errMsgText);
+  }
+
+  private async checkErrorOnPageByClassName(page: puppeteer.Page, className: string): Promise<void> {
+    const errMsgText = await page.evaluate((s) => {
+      const elements = document.getElementsByClassName(s);
+      if (0 === elements.length || undefined === elements[0].innerHTML)
+        return undefined;
+      return elements[0].innerHTML;
+    }, className);
 
     if (undefined !== errMsgText && null !== errMsgText)
       throw new Error(errMsgText);
