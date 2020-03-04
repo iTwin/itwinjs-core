@@ -2,19 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { assert } from "chai";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelVersion, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { Config, IModelHubClient, ChangeSet, HubIModel, IModelQuery, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
-import {
-  IModelDb, OpenParams, IModelJsFs, KeepBriefcase, ConcurrencyControl,
-  DictionaryModel, SpatialCategory, BriefcaseManager, Element,
-} from "../imodeljs-backend";
-import { KnownTestLocations } from "../test/KnownTestLocations";
-import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { AuthorizedClientRequestContext, ChangeSet, Config, HubIModel, IModelHubClient, IModelHubError, IModelQuery } from "@bentley/imodeljs-clients";
+import { IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { assert } from "chai";
+import * as path from "path";
+import { BriefcaseIModelDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, KeepBriefcase, OpenParams, SpatialCategory } from "../imodeljs-backend";
+import { IModelTestUtils, TestIModelInfo } from "../test/IModelTestUtils";
+import { KnownTestLocations } from "../test/KnownTestLocations";
 
 async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string, client: IModelHubClient) {
   const changeSets: ChangeSet[] = await client.changeSets.get(requestContext, imodelId);
@@ -23,45 +20,45 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 
   // open imodel first time from imodel-hub with first revision
   const startTime = new Date().getTime();
-  const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(firstChangeSetId));
+  const iModelDb = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(firstChangeSetId));
   const endTime = new Date().getTime();
-  assert.exists(imodeldb);
+  assert.exists(iModelDb);
   const elapsedTime = (endTime - startTime) / 1000.0;
-  assert.strictEqual<string>(imodeldb.briefcase.currentChangeSetId, firstChangeSetId);
-  imodeldb.close(requestContext).catch();
+  assert.strictEqual<string>(iModelDb.briefcase.currentChangeSetId, firstChangeSetId);
+  iModelDb.close(requestContext).catch();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime, { Description: "from hub first CS", Operation: "Open" });
 
   // open imodel from local cache with second revision
   const startTime1 = new Date().getTime();
-  const imodeldb1: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(secondChangeSetId));
+  const iModelDb1 = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(secondChangeSetId));
   const endTime1 = new Date().getTime();
-  assert.exists(imodeldb1);
+  assert.exists(iModelDb1);
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-  assert.strictEqual<string>(imodeldb1.briefcase.currentChangeSetId, secondChangeSetId);
-  imodeldb1.close(requestContext).catch();
+  assert.strictEqual<string>(iModelDb1.briefcase.currentChangeSetId, secondChangeSetId);
+  iModelDb1.close(requestContext).catch();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime1, { Description: "from cache second CS", Operation: "Open" });
 
   // open imodel from local cache with first revision
   const startTime2 = new Date().getTime();
-  const imodeldb2: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.first());
+  const iModelDb2 = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.first());
   const endTime2 = new Date().getTime();
-  assert.exists(imodeldb2);
+  assert.exists(iModelDb2);
   const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
-  imodeldb2.close(requestContext).catch();
+  iModelDb2.close(requestContext).catch();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime2, { Description: "from cache first CS", Operation: "Open" });
 
   // open imodel from local cache with latest revision
   const startTime3 = new Date().getTime();
-  const imodeldb3: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
+  const iModelDb3 = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
   const endTime3 = new Date().getTime();
-  assert.exists(imodeldb3);
+  assert.exists(iModelDb3);
   const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
-  imodeldb3.close(requestContext).catch();
+  iModelDb3.close(requestContext).catch();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime3, { Description: "from cache latest CS", Operation: "Open" });
 }
 
 async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
-  const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
+  const iModelPullAndPush = await BriefcaseIModelDb.open(requestContext, projectId, imodelPushId, OpenParams.pullAndPush(), IModelVersion.latest());
   assert.exists(iModelPullAndPush);
   iModelPullAndPush.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
@@ -116,7 +113,7 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
   }
   // create new imodel with given name
-  const rwIModel: IModelDb = await IModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModel = await BriefcaseIModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   const rwIModelId = rwIModel.iModelToken.iModelId;
   assert.isNotEmpty(rwIModelId);
 
@@ -143,7 +140,7 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
   }
   // create new imodel with given name
-  const rwIModel: IModelDb = await IModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModel = await BriefcaseIModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   const rwIModelId = rwIModel.iModelToken.iModelId;
   assert.isNotEmpty(rwIModelId);
   // import schema and push change to hub
@@ -169,15 +166,15 @@ const getElementCount = (iModel: IModelDb): number => {
 };
 
 async function executeQueryTime(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelId: string) {
-  const imodeldb: IModelDb = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
-  assert.exists(imodeldb);
+  const iModelDb = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.named("latest"));
+  assert.exists(iModelDb);
   const startTime = new Date().getTime();
-  const stat = IModelTestUtils.executeQuery(imodeldb, "SELECT * FROM BisCore.LineStyle");
+  const stat = IModelTestUtils.executeQuery(iModelDb, "SELECT * FROM BisCore.LineStyle");
   const endTime = new Date().getTime();
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   assert.equal(7, stat.length);
   reporter.addEntry("ImodelChangesetPerformance", "ExecuteQuery", "Execution time(s)", elapsedTime1, { Description: "execute a simple ECSQL query", Operation: "ExecuteQuery" });
-  imodeldb.close(requestContext).catch();
+  iModelDb.close(requestContext).catch();
 }
 
 async function reverseChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
@@ -188,7 +185,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
 
   // create new imodel with given name
-  const rwIModel: IModelDb = await IModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModel = await BriefcaseIModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   const rwIModelId = rwIModel.iModelToken.iModelId;
   assert.isNotEmpty(rwIModelId);
 
@@ -233,7 +230,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, projectId, iModelTemp.id!);
 
   // create new imodel with given name
-  const rwIModel: IModelDb = await IModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
+  const rwIModel = await BriefcaseIModelDb.create(requestContext, projectId, iModelName, { rootSubject: { name: "TestSubject" } });
   const rwIModelId = rwIModel.iModelToken.iModelId;
   assert.isNotEmpty(rwIModelId);
 

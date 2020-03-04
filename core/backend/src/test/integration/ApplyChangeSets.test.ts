@@ -8,7 +8,7 @@ import { IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
-import { AuthorizedBackendRequestContext, IModelDb, NativeLoggerCategory, KnownLocations, OpenParams } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseIModelDb, KnownLocations, NativeLoggerCategory, OpenParams } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
@@ -28,7 +28,7 @@ describe("ApplyChangeSets (#integration)", () => {
   };
 
   const testOpen = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string) => {
-    const iModelDb = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    const iModelDb = await BriefcaseIModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert(!!iModelDb);
   };
 

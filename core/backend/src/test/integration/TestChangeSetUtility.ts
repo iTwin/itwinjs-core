@@ -3,15 +3,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { GuidString } from "@bentley/bentleyjs-core";
-import { IModelVersion, IModel, SubCategoryAppearance, ColorDef } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KeepBriefcase, IModelDb, OpenParams, BriefcaseManager } from "../../imodeljs-backend";
-import { HubUtility } from "./HubUtility";
-import { ConcurrencyControl } from "../../ConcurrencyControl";
+import { ColorDef, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { SpatialCategory } from "../../Category";
+import { ConcurrencyControl } from "../../ConcurrencyControl";
+import { BriefcaseIModelDb, BriefcaseManager, KeepBriefcase, OpenParams } from "../../imodeljs-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { HubUtility } from "./HubUtility";
 
 /** Test utility to push an iModel and ChangeSets */
 export class TestChangeSetUtility {
@@ -20,7 +19,7 @@ export class TestChangeSetUtility {
 
   public projectId!: GuidString;
   public iModelId!: GuidString;
-  private _iModel!: IModelDb;
+  private _iModel!: BriefcaseIModelDb;
   private _requestContext: AuthorizedClientRequestContext;
 
   private _modelId!: string;
@@ -38,7 +37,7 @@ export class TestChangeSetUtility {
   }
 
   private async addTestModel(): Promise<void> {
-    this._iModel = await IModelDb.open(this._requestContext, this.projectId, this.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModel = await BriefcaseIModelDb.open(this._requestContext, this.projectId, this.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
     this._iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     [, this._modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this._iModel, IModelTestUtils.getUniqueModelCode(this._iModel, "TestPhysicalModel"), true);
     await this._iModel.concurrencyControl.request(this._requestContext);
@@ -58,7 +57,7 @@ export class TestChangeSetUtility {
     this._iModel.saveChanges("Added test elements");
   }
 
-  public async createTestIModel(): Promise<IModelDb> {
+  public async createTestIModel(): Promise<BriefcaseIModelDb> {
     await this.initialize();
 
     // Re-create iModel on iModelHub

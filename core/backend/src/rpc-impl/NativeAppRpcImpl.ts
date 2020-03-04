@@ -28,7 +28,7 @@ import { cancelTileContentRequests } from "./IModelTileRpcImpl";
 import { NativeAppBackend } from "../NativeAppBackend";
 import { Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { Logger, LogLevel, ClientRequestContext, DbResult, assert } from "@bentley/bentleyjs-core";
-import { IModelDb, OpenParams } from "../IModelDb";
+import { BriefcaseIModelDb, OpenParams } from "../IModelDb";
 import { BriefcaseManager, KeepBriefcase } from "../BriefcaseManager";
 import { NativeAppStorage } from "../NativeAppStorage";
 
@@ -109,7 +109,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const openParams: OpenParams = OpenParams.pullOnly();
     const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
-    const db = await IModelDb.downloadBriefcase(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    const db = await BriefcaseIModelDb.downloadBriefcase(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
     return db.toJSON();
   }
 
@@ -137,7 +137,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
       assert(briefcases.length === 1);
       Object.assign(iModelToken, { key: briefcases[0].key });
     }
-    const db = await IModelDb.openBriefcase(requestContext, iModelToken);
+    const db = await BriefcaseIModelDb.openBriefcase(requestContext, iModelToken);
     return db.toJSON();
   }
 
@@ -148,7 +148,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async closeBriefcase(tokenProps: IModelTokenProps): Promise<boolean> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    await IModelDb.find(iModelToken).close(requestContext, KeepBriefcase.Yes);
+    await BriefcaseIModelDb.find(iModelToken).close(requestContext, KeepBriefcase.Yes);
     return Promise.resolve(true);
   }
 

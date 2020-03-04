@@ -9,8 +9,7 @@ import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
 import * as path from "path";
-import { ChangeSetToken } from "../../BriefcaseManager";
-import { AuthorizedBackendRequestContext, BriefcaseManager, IModelDb, OpenParams, PhysicalModel, StandaloneIModelDb } from "../../imodeljs-backend";
+import { AuthorizedBackendRequestContext, BriefcaseIModelDb, BriefcaseManager, ChangeSetToken, OpenParams, PhysicalModel, StandaloneIModelDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
@@ -41,7 +40,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    const iModel = await BriefcaseIModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
@@ -256,7 +255,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const iModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, pathname);
 
-    const iModelDb = await IModelDb.open(requestContext, projectId, iModelId.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelDb = await BriefcaseIModelDb.open(requestContext, projectId, iModelId.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
     assert(!!iModelDb);
 
     // Create and upload a dummy change set to the Hub
@@ -281,7 +280,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    const iModel = await BriefcaseIModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
@@ -295,7 +294,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    const iModel = await BriefcaseIModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 

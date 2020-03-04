@@ -9,7 +9,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { DictionaryModel, ElementAspect, IModelDb, IModelJsFs, OpenParams, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { BriefcaseIModelDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs, OpenParams, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
@@ -34,7 +34,7 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
 describe("ElementAspectPerformance", () => {
   const reporter = new Reporter();
   let requestContext: AuthorizedClientRequestContext;
-  let iModelDbHub: IModelDb;
+  let iModelDbHub: BriefcaseIModelDb;
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
@@ -50,7 +50,7 @@ describe("ElementAspectPerformance", () => {
     Config.App.merge(myAppConfig);
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    iModelDbHub = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    iModelDbHub = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelDbHub);
   });
 

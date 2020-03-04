@@ -9,10 +9,10 @@
 import { assert, BeEvent, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelError, RpcRequest } from "@bentley/imodeljs-common";
-import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
-import { IModelDb } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
+import { BriefcaseIModelDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -111,7 +111,7 @@ export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush
  * @beta
  */
 export class AutoPush {
-  private _iModel: IModelDb;
+  private _iModel: BriefcaseIModelDb;
   private _autoSchedule: boolean;
   private _pushIntervalMillisMin: number;
   private _pushIntervalMillisMax: number;
@@ -128,7 +128,7 @@ export class AutoPush {
    * @param params  Auto-push configuration parameters
    * @param activityMonitor The activity monitor that will tell me when the app is idle. Defaults to BackendActivityMonitor with a 1 second idle period.
    */
-  constructor(iModel: IModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor) {
+  constructor(iModel: BriefcaseIModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor) {
     AutoPush.validateAutoPushParams(params);
     iModel.onBeforeClose.addListener(() => this.cancel());
     this._iModel = iModel;
@@ -179,7 +179,7 @@ export class AutoPush {
   }
 
   /** The IModelDb that this is auto-pushing. */
-  public get iModel(): IModelDb { return this._iModel; }
+  public get iModel(): BriefcaseIModelDb { return this._iModel; }
 
   /** The time that the last push finished in unix milliseconds. Returns 0 if no push has yet been done. */
   public get endOfLastPushMillis() { return (this._startOfPushMillis <= this._endOfPushMillis) ? this._endOfPushMillis : 0; }

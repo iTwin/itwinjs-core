@@ -9,7 +9,7 @@ import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodelj
 import { HubIModel, IModelQuery, ChangeSetPostPushEvent, NamedVersionCreatedEvent, RequestGlobalOptions, RequestTimeoutOptions, Config } from "@bentley/imodeljs-clients";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import {
-  IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, AuthorizedBackendRequestContext,
+  BriefcaseIModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, AuthorizedBackendRequestContext,
   ECSqlStatement, ChangeSummary, ConcurrencyControl, IModelJsFs,
 } from "../../imodeljs-backend";
 import * as utils from "./../../../../clients-backend/lib/test/imodelhub/TestUtils";
@@ -29,7 +29,7 @@ describe("PushRetry", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testProjectId: string;
   let testIModelId: GuidString;
-  let testIModel: IModelDb;
+  let testIModel: BriefcaseIModelDb;
   const testPushUtility: TestPushUtility = new TestPushUtility();
   const iModelName = "PushRetryTest";
   const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -54,7 +54,7 @@ describe("PushRetry", () => {
   const extractChangeSummary = async (changeSetId: string) => {
     if (!testIModel) {
       // Open a new local briefcase of the iModel at the specified version
-      testIModel = await IModelDb.open(requestContext, testProjectId, testIModelId.toString(), OpenParams.pullAndPush(), IModelVersion.asOfChangeSet(changeSetId));
+      testIModel = await BriefcaseIModelDb.open(requestContext, testProjectId, testIModelId.toString(), OpenParams.pullAndPush(), IModelVersion.asOfChangeSet(changeSetId));
     } else {
       // Update the existing local briefcase of the iModel to the specified version
       await testIModel.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(changeSetId));
@@ -173,7 +173,7 @@ describe("PushRetry", () => {
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, testProjectId, iModelTemp.id!);
     }
 
-    const pushRetryIModel: IModelDb = await IModelDb.create(requestContext, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const pushRetryIModel = await BriefcaseIModelDb.create(requestContext, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const pushRetryIModelId = pushRetryIModel.iModelToken.iModelId;
     assert.isNotEmpty(pushRetryIModelId);
 
@@ -214,7 +214,7 @@ describe("PushRetry", () => {
       await BriefcaseManager.imodelClient.iModels.delete(requestContext, testProjectId, iModelTemp.id!);
     }
 
-    const pushRetryIModel: IModelDb = await IModelDb.create(requestContext, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
+    const pushRetryIModel = await BriefcaseIModelDb.create(requestContext, testProjectId, iModelName, { rootSubject: { name: "TestSubject" } });
     const pushRetryIModelId = pushRetryIModel.iModelToken.iModelId;
     assert.isNotEmpty(pushRetryIModelId);
 

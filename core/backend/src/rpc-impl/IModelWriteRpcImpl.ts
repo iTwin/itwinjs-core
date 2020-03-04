@@ -8,7 +8,7 @@
 import { Id64, ClientRequestContext, Id64String, DbOpcode, assert, Id64Array, GuidString } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, LockLevel, LockType } from "@bentley/imodeljs-clients";
 import { RpcInterface, RpcManager, IModelProps, IModelToken, IModelTokenProps, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat, AxisAlignedBox3dProps, CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance, Code } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams } from "../IModelDb";
+import { BriefcaseIModelDb, IModelDb, OpenParams } from "../IModelDb";
 import { Range3d } from "@bentley/geometry-core";
 import { ConcurrencyControl, AuthorizedBackendRequestContext, PhysicalPartition, SubjectOwnsPartitionElements, PhysicalModel, SpatialCategory, Element } from "../imodeljs-backend";
 
@@ -66,7 +66,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const openParams: OpenParams = OpenParams.pullAndPush();
     openParams.timeout = 1000;
-    const db = await IModelDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams);
+    const db = await BriefcaseIModelDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams);
     return db.toJSON();
   }
 
@@ -124,7 +124,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async pullMergePush(tokenProps: IModelTokenProps, comment: string, doPush: boolean): Promise<GuidString> {
-    const iModelDb = IModelDb.find(IModelToken.fromJSON(tokenProps));
+    const iModelDb = BriefcaseIModelDb.find(IModelToken.fromJSON(tokenProps));
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     await iModelDb.pullAndMergeChanges(requestContext);
     requestContext.enter();

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, ClientRequestContextProps, BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { RpcInterface, RpcManager, IModelTokenProps, IModelToken } from "@bentley/imodeljs-common";
+import { BentleyError, BentleyStatus, ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
+import { BriefcaseIModelDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps, Config, IModelBankClient, IModelQuery } from "@bentley/imodeljs-clients";
-import { IModelDb, ChangeSummaryExtractOptions, ChangeSummaryManager, BriefcaseManager, IModelJsFs, IModelHost } from "@bentley/imodeljs-backend";
-import { TestRpcInterface, CloudEnvProps } from "../common/RpcInterfaces";
+import { IModelToken, IModelTokenProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
+import { CloudEnvProps, TestRpcInterface } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
@@ -22,7 +22,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async extractChangeSummaries(tokenProps: IModelTokenProps, options: any): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    await ChangeSummaryManager.extractChangeSummaries(requestContext, IModelDb.find(iModelToken), options as ChangeSummaryExtractOptions);
+    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseIModelDb.find(iModelToken), options as ChangeSummaryExtractOptions);
   }
 
   public async deleteChangeCache(tokenProps: IModelTokenProps): Promise<void> {

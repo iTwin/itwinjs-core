@@ -262,14 +262,14 @@ export class AuthorizedBackendRequestContext extends AuthorizedClientRequestCont
 
 // @beta
 export class AutoPush {
-    constructor(iModel: IModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor);
+    constructor(iModel: BriefcaseIModelDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor);
     get autoSchedule(): boolean;
     set autoSchedule(v: boolean);
     cancel(): void;
     get durationOfLastPushMillis(): number;
     get endOfLastPushMillis(): number;
     event: BeEvent<AutoPushEventHandler>;
-    get iModel(): IModelDb;
+    get iModel(): BriefcaseIModelDb;
     get lastError(): any | undefined;
     // (undocumented)
     reserveCodes(): Promise<void>;
@@ -478,6 +478,27 @@ export class BriefcaseId {
     get value(): number;
     }
 
+// @public (undocumented)
+export class BriefcaseIModelDb extends IModelDb {
+    close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
+    static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<BriefcaseIModelDb>;
+    // @internal
+    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
+    // (undocumented)
+    static find(iModelToken: IModelToken): BriefcaseIModelDb;
+    static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<BriefcaseIModelDb>;
+    // @internal
+    static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseIModelDb>;
+    // @beta
+    pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+    // @beta
+    pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void>;
+    // @beta
+    reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+    // @beta
+    reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+}
+
 // @internal
 export class BriefcaseManager {
     static applyStandaloneChangeSets(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[], processOption: ChangeSetApplyOption): ChangeSetStatus;
@@ -662,7 +683,7 @@ export class ChangeSummaryManager {
     static detachChangeCache(iModel: IModelDb): void;
     // (undocumented)
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]>;
-    static extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
+    static extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseIModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: IModelDb, changeSummaryId: Id64String): ChangeSummary;
@@ -2213,7 +2234,7 @@ export class IModelCloneContext {
 }
 
 // @public
-export class IModelDb extends IModel {
+export abstract class IModelDb extends IModel {
     // @internal
     protected constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams);
     abandonChanges(): void;
@@ -2224,20 +2245,18 @@ export class IModelDb extends IModel {
     get classMetaDataRegistry(): MetaDataRegistry;
     // @internal (undocumented)
     protected clearBriefcaseEntry(): void;
+    // @internal (undocumented)
+    protected clearEventSink(): void;
     clearSqliteStatementCache(): void;
     clearStatementCache(): void;
-    close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
     get codeSpecs(): CodeSpecs;
     // @beta
     get concurrencyControl(): ConcurrencyControl;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
-    static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<IModelDb>;
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
-    // @internal
-    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
     // (undocumented)
     readonly elements: IModelDb.Elements;
     // (undocumented)
@@ -2262,12 +2281,16 @@ export class IModelDb extends IModel {
     getMetaData(classFullName: string): EntityMetaData;
     importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @internal (undocumented)
+    protected initializeIModelDb(): void;
+    // @internal (undocumented)
     insertCodeSpec(codeSpec: CodeSpec): Id64String;
     get isBriefcase(): boolean;
     // @internal
     get isOpen(): boolean;
     get isReadonly(): boolean;
     get isSnapshot(): boolean;
+    // @internal
+    protected static logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static readonly maxLimit = 10000;
     // (undocumented)
@@ -2282,17 +2305,10 @@ export class IModelDb extends IModel {
     static readonly onCreated: BeEvent<(_imodelDb: IModelDb) => void>;
     static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>;
     static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: IModelDb) => void>;
-    static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelDb>;
-    // @internal
-    static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<IModelDb>;
     readonly openParams: OpenParams;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
-    // @beta
-    pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    // @beta
-    pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void>;
     query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Id64Set;
     queryFilePropertyBlob(prop: FilePropertyProps): Uint8Array | undefined;
@@ -2304,16 +2320,14 @@ export class IModelDb extends IModel {
     querySchemaVersion(schemaName: string): string | undefined;
     // (undocumented)
     readFontJson(): string;
-    // @beta
-    reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     get relationships(): Relationships;
     // (undocumented)
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
-    // @beta
-    reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
     setAsMaster(guid?: GuidString): void;
+    // @internal (undocumented)
+    protected setDefaultConcurrentControlAndPolicy(): void;
     setGuid(guid: GuidString): DbResult;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
@@ -3769,7 +3783,7 @@ export enum SqliteValueType {
     String = 3
 }
 
-// @internal (undocumented)
+// @internal
 export class StandaloneIModelDb extends IModelDb {
     closeStandalone(): void;
     static openStandalone(filePath: string, openMode?: OpenMode): StandaloneIModelDb;

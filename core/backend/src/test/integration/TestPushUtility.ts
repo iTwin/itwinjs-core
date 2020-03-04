@@ -2,21 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import * as fs from "fs";
-import { Id64String, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ImsUserCredentials } from "@bentley/imodeljs-clients";
-import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps } from "@bentley/imodeljs-common";
+import { Code, CodeScopeSpec, ColorDef, GeometricElement3dProps, IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import {
-  IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, GeometricElement, ModelSelector,
-  OrthographicViewDefinition, PhysicalModel, SpatialCategory, AuthorizedBackendRequestContext, SnapshotIModelDb,
-} from "../../imodeljs-backend";
-import { IModelWriter } from "./IModelWriter";
-import { HubUtility } from "./HubUtility";
+import * as fs from "fs";
+import * as path from "path";
+import { AuthorizedBackendRequestContext, BriefcaseIModelDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DisplayStyle3d, GeometricElement, IModelDb, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SnapshotIModelDb, SpatialCategory } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ConcurrencyControl } from "../../ConcurrencyControl";
+import { HubUtility } from "./HubUtility";
+import { IModelWriter } from "./IModelWriter";
 
 const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -49,7 +45,7 @@ export class TestPushUtility {
 
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
-    this._iModelDb = await IModelDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
+    this._iModelDb = await BriefcaseIModelDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
     this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
 
     const lastLevel = this._currentLevel + count;
@@ -189,7 +185,9 @@ export class TestPushUtility {
 
   private async pushTestChangeSet() {
     const description = TestPushUtility.getChangeSetDescription(this._currentLevel);
-    await this._iModelDb!.pushChanges(this._requestContext!, () => description);
+    if (this._iModelDb instanceof BriefcaseIModelDb) {
+      await this._iModelDb!.pushChanges(this._requestContext!, () => description);
+    }
   }
 
   private async createNamedVersion() {

@@ -186,7 +186,7 @@ export class BriefcaseHandler {
   }
 
   /** Acquire a [[Briefcase]] for the specified iModel. This assigns you a new briefcaseId and returns you a download link.
-   * A briefcase is automatically acquired when calling [IModelDb.open]($backend) or [IModelDb.create]($backend). You should use this method only when you want to acquire the briefcaseId without downloading the file. If you need just the download link, you can call [[BriefcaseHandler.get]] with [[BriefcaseQuery.selectDownloadUrl]].
+   * A briefcase is automatically acquired when calling [BriefcaseIModelDb.open]($backend) or [BriefcaseIModelDb.create]($backend). You should use this method only when you want to acquire the briefcaseId without downloading the file. If you need just the download link, you can call [[BriefcaseHandler.get]] with [[BriefcaseQuery.selectDownloadUrl]].
    * @param requestContext The client request context
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @returns The acquired Briefcase instance.

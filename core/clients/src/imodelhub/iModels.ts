@@ -68,18 +68,18 @@ export class HubIModel extends WsgInstance {
 export enum InitializationState {
   /** Initialization was successful. */
   Successful = 0,
-    /** Initialization has not started, seed file has not yet been uploaded. */
-    NotStarted = 1,
-    /** Initialization has been scheduled and has not completed yet. */
-    Scheduled = 2,
-    /** Initialization failed with a generic error. */
-    Failed = 3,
-    /** Initialization failed due to file having outdated schemas. */
-    OutdatedFile = 4,
-    /** Initialization failed due to file having [[Code]] values that are too long. */
-    CodeTooLong = 5,
-    /** Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($backend). */
-    SeedFileIsBriefcase = 6,
+  /** Initialization has not started, seed file has not yet been uploaded. */
+  NotStarted = 1,
+  /** Initialization has been scheduled and has not completed yet. */
+  Scheduled = 2,
+  /** Initialization failed with a generic error. */
+  Failed = 3,
+  /** Initialization failed due to file having outdated schemas. */
+  OutdatedFile = 4,
+  /** Initialization failed due to file having [[Code]] values that are too long. */
+  CodeTooLong = 5,
+  /** Initialization failed due to file being a [[Briefcase]]. Only standalone and master files are supported for iModel creation, see [BriefcaseId]($backend). */
+  SeedFileIsBriefcase = 6,
 }
 
 /** SeedFile
@@ -559,7 +559,7 @@ export class IModelsHandler {
       throw IModelHubClientError.invalidArgument("extent");
   }
 
-  /** Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+  /** Create an iModel from given seed file. In most cases [BriefcaseIModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.
    * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect context ([[Project]] or [[Asset]]).
@@ -735,7 +735,7 @@ export class IModelHandler {
   }
 
   /**
-   * Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+   * Create an iModel from given seed file. In most cases [BriefcaseIModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
    *
    * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
    * @param requestContext The client request context.

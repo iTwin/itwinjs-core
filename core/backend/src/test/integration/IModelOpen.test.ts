@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { GuidString, BentleyError } from "@bentley/bentleyjs-core";
-import { IModelVersion, RpcPendingResponse } from "@bentley/imodeljs-common";
+import { BentleyError, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
+import { IModelVersion, RpcPendingResponse } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelDb, OpenParams, AuthorizedBackendRequestContext, BriefcaseManager } from "../../imodeljs-backend";
-import { HubUtility } from "./HubUtility";
+import { assert } from "chai";
 import { KeepBriefcase } from "../../BriefcaseManager";
+import { AuthorizedBackendRequestContext, BriefcaseIModelDb, BriefcaseManager, OpenParams } from "../../imodeljs-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { HubUtility } from "./HubUtility";
 
 describe("IModelOpen (#integration)", () => {
 
@@ -32,7 +32,7 @@ describe("IModelOpen (#integration)", () => {
     testChangeSetId = await HubUtility.queryLatestChangeSetId(requestContext, testIModelId);
 
     // Open and close the iModel to ensure it works and is closed
-    const iModel = await IModelDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(testChangeSetId));
+    const iModel = await BriefcaseIModelDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(testChangeSetId));
     assert.isDefined(iModel);
     await iModel.close(requestContext, KeepBriefcase.No);
 
@@ -49,7 +49,7 @@ describe("IModelOpen (#integration)", () => {
     // Try the bad request context
     let error: any;
     try {
-      await IModelDb.open(badRequestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+      await BriefcaseIModelDb.open(badRequestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     } catch (err) {
       error = err;
     }
@@ -59,7 +59,7 @@ describe("IModelOpen (#integration)", () => {
 
     error = undefined;
     try {
-      await IModelDb.open(badRequestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(testChangeSetId));
+      await BriefcaseIModelDb.open(badRequestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(testChangeSetId));
     } catch (err) {
       error = err;
     }
@@ -78,7 +78,7 @@ describe("IModelOpen (#integration)", () => {
     // Open iModel and ensure RpcPendingResponse exception is thrown
     let exceptionThrown = false;
     try {
-      await IModelDb.open(requestContext, testProjectId, testIModelId, openParams);
+      await BriefcaseIModelDb.open(requestContext, testProjectId, testIModelId, openParams);
     } catch (error) {
       exceptionThrown = error instanceof RpcPendingResponse;
     }
@@ -86,7 +86,7 @@ describe("IModelOpen (#integration)", () => {
 
     // Open and close the model
     openParams.timeout = undefined;
-    const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, testIModelId, openParams);
+    const iModel = await BriefcaseIModelDb.open(requestContext, testProjectId, testIModelId, openParams);
     assert.isDefined(iModel);
     await iModel.close(requestContext, KeepBriefcase.No);
   });
@@ -99,9 +99,9 @@ describe("IModelOpen (#integration)", () => {
     const openParams: OpenParams = OpenParams.fixedVersion();
     openParams.timeout = 500;
     const version = IModelVersion.asOfChangeSet(testChangeSetId);
-    let openPromises = new Array<Promise<IModelDb>>();
+    let openPromises = new Array<Promise<BriefcaseIModelDb>>();
     for (let ii = 0; ii < numTries; ii++) {
-      const open = IModelDb.open(requestContext, testProjectId, testIModelId, openParams, version);
+      const open = BriefcaseIModelDb.open(requestContext, testProjectId, testIModelId, openParams, version);
       openPromises.push(open);
     }
 
@@ -123,10 +123,10 @@ describe("IModelOpen (#integration)", () => {
     openPromises = [];
     openParams.timeout = undefined;
     for (let ii = 0; ii < numTries; ii++) {
-      const open = IModelDb.open(requestContext, testProjectId, testIModelId, openParams, version);
+      const open = BriefcaseIModelDb.open(requestContext, testProjectId, testIModelId, openParams, version);
       openPromises.push(open);
     }
-    const iModels: IModelDb[] = await Promise.all(openPromises);
+    const iModels: BriefcaseIModelDb[] = await Promise.all(openPromises);
     const pathname = iModels[0].briefcase.pathname;
     for (let ii = 1; ii < numTries; ii++) {
       assert.strictEqual(iModels[ii].briefcase.pathname, pathname);
@@ -142,7 +142,7 @@ describe("IModelOpen (#integration)", () => {
     const numChangeSets = changeSets.length;
     assert.isAbove(numChangeSets, 10);
 
-    const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(changeSets[9].wsgId));
+    const iModel = await BriefcaseIModelDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(changeSets[9].wsgId));
     assert.isDefined(iModel);
     await iModel.close(requestContext, KeepBriefcase.No);
   });
@@ -161,13 +161,13 @@ describe("IModelOpen (#integration)", () => {
       changeSetIds.push(changeSets[index].wsgId);
     }
 
-    const openPromises = new Array<Promise<IModelDb>>();
+    const openPromises = new Array<Promise<BriefcaseIModelDb>>();
     for (const changeSetId of changeSetIds) {
-      const open = IModelDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(changeSetId));
+      const open = BriefcaseIModelDb.open(requestContext, testProjectId, testIModelId, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(changeSetId));
       openPromises.push(open);
     }
 
-    const iModels: IModelDb[] = await Promise.all(openPromises);
+    const iModels: BriefcaseIModelDb[] = await Promise.all(openPromises);
     for (const iModel of iModels) {
       await iModel.close(requestContext, KeepBriefcase.Yes);
     }

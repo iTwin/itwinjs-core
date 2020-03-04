@@ -27,6 +27,7 @@ public;BackendRequestContext
 public;BisCoreSchema 
 internal;BriefcaseEntry
 public;BriefcaseId
+public;BriefcaseIModelDb 
 internal;BriefcaseManager
 public;CachedECSqlStatement
 internal;CachedSqliteStatement
@@ -168,7 +169,7 @@ beta;ILinearLocationLocatesElement
 beta;ILinearlyLocatedAlongILinearElement 
 beta;ILinearlyLocatedAttributesElement 
 beta;IModelCloneContext
-public;IModelDb 
+public;class IModelDb 
 public;IModelDb
 internal;TileContentState
 internal;Tiles
