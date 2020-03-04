@@ -3775,6 +3775,8 @@ export class IModelConnection extends IModel {
     loadFontMap(): Promise<FontMap>;
     readonly models: IModelConnection.Models;
     // @internal
+    get noGcsDefined(): boolean | undefined;
+    // @internal
     protected _noGcsDefined?: boolean;
     static readonly onClose: BeEvent<(_imodel: IModelConnection) => void>;
     // @beta

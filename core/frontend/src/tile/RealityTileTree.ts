@@ -197,6 +197,10 @@ export class RealityTileTree extends TileTree {
               targetBranch.add(graphics);
             } else {
               clipVector.transformInPlace(args.location);
+              for (const primitive of clipVector.clips)
+                for (const clipPlanes of primitive.fetchClipPlanesRef()!.convexSets)
+                  for (const plane of clipPlanes.planes)
+                    plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
 
               const branch = new GraphicBranch();
               const doClipOverride = new ViewFlag.Overrides();
