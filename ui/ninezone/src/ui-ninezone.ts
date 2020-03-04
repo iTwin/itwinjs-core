@@ -91,10 +91,6 @@ export * from "./ui-ninezone/toolbar/item/expandable/group/Title";
 export * from "./ui-ninezone/toolbar/item/expandable/group/tool/Expander";
 export * from "./ui-ninezone/toolbar/item/expandable/group/tool/Tool";
 
-export * from "./ui-ninezone/toolbar/item/expandable/history/Icon";
-export * from "./ui-ninezone/toolbar/item/expandable/history/Item";
-export * from "./ui-ninezone/toolbar/item/expandable/history/Tray";
-
 export * from "./ui-ninezone/toolbar/Items";
 export * from "./ui-ninezone/toolbar/Toolbar";
 

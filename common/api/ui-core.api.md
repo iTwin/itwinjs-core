@@ -12,7 +12,6 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
-import { UiError as UiError_2 } from '@bentley/ui-abstract';
 
 // @internal
 export class AnnularSector {
@@ -96,8 +95,6 @@ export interface BadgeProps extends CommonProps {
 
 // @internal
 export class BadgeUtilities {
-    static determineBadgeType(badgeType?: BadgeType, betaBadge?: boolean): BadgeType;
-    static getComponentForBadge(badgeType?: BadgeType, betaBadge?: boolean): React.ReactNode;
     static getComponentForBadgeType(badgeType?: BadgeType): React.ReactNode;
 }
 
@@ -778,9 +775,6 @@ export interface FormContextState extends FormState {
     // (undocumented)
     setValues: (values: FieldValues) => void;
 }
-
-// @internal @deprecated
-export const getClassName: (obj: any) => string;
 
 // @internal
 export const getDisplayName: (component: React.ComponentType<any>) => string;
@@ -1963,9 +1957,6 @@ export class UiCore {
     // @internal
     static translate(key: string | string[], options?: TranslationOptions): string;
 }
-
-// @public @deprecated
-export const UiError: typeof UiError_2;
 
 // @public
 export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {

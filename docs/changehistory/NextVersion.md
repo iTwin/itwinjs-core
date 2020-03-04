@@ -170,6 +170,21 @@ A couple of types were renamed to better match their intention:
 * `VisibilityTree` to `ModelsTree`
 * `IModelConnectedVisibilityTree` to `IModelConnectedModelsTree`
 
+#### Removal of deprecated APIs
+
+The following items that were marked as @deprecated in the 1.x timeframe have been removed:
+
+* FrontstageDef.inheritZoneStates (never implemented in iModel.js)
+* FrontstageDef.hubEnabled (never implemented in iModel.js)
+* FrontstageDef.contextToolbarEnabled (never implemented in iModel.js)
+* IconSpec (Use IconSpec in @bentley/ui-core instead)
+* IconProps (Use IconProps in @bentley/ui-core instead)
+* Icon (Use the Icon component in @bentley/ui-core instead)
+* ItemDefBase.betaBadge (use badgeType instead)
+* ItemProps.betaBadge  (use badgeType instead)
+* WidgetDef.betaBadge (use badgeType instead)
+* WidgetProps.betaBadge (use badgeType instead)
+
 #### Other changes
 
 * Removed `useControlledTree` flag from the following *Prop* types:
@@ -182,6 +197,14 @@ A couple of types were renamed to better match their intention:
 
 * Removed `UiFramework.getDefaultRulesetId()` and `UiFramework.setDefaultRulesetId()`. Each component
 should decide what ruleset it wants to use.
+
+### API changes in `ui-core` package
+
+#### Removal of deprecated APIs
+
+The following items that were marked as @deprecated in the 1.x timeframe have been removed:
+
+* UiError (use UiError in @bentley/ui-abstract instead)
 
 ### API changes in `presentation-common` package
 

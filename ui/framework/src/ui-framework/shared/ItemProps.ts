@@ -59,11 +59,6 @@ export interface ItemProps extends IconProps {
    *  @deprecated - use ConditionalStringValue or ConditionalBooleanValue instead
    */
   stateSyncIds?: string[];
-
-  /** Indicates whether to draw a Beta badge.
-   * @deprecated - use badgeType instead
-   */
-  betaBadge?: boolean;
 }
 
 /** Properties for a Tool item with a tool id.

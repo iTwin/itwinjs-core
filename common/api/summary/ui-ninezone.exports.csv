@@ -34,7 +34,6 @@ internal;createVerticalPanelState(side: VerticalWidgetPanelSide): VerticalPanelS
 internal;createWidgetState(id: WidgetState["id"]): WidgetState
 internal;Css
 internal;CssProperties
-alpha;DefaultHistoryManager: HistoryManager
 beta;Dialog 
 beta;DialogProps 
 beta;Direction
@@ -102,15 +101,6 @@ alpha;GroupToolExpanderProps
 alpha;GroupToolProps 
 alpha;HandleMode
 alpha;HandleModeHelpers
-alpha;History
-alpha;HistoryEntry
-alpha;HistoryIcon 
-alpha;HistoryItem 
-alpha;HistoryItemProps 
-alpha;HistoryKey = number | string
-alpha;HistoryManager
-alpha;HistoryTray 
-alpha;HistoryTrayProps 
 beta;HorizontalAnchor
 internal;HorizontalAnchorHelpers
 internal;HorizontalPanelState 

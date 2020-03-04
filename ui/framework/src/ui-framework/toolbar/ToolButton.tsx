@@ -119,7 +119,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 
     const icon = <Icon iconSpec={this.props.iconSpec} />;
     const toolbarItemProps = getToolbarItemProps(this.props);
-    const badge = BadgeUtilities.getComponentForBadge(this.props.badgeType, this.props.betaBadge);  // tslint:disable-line: deprecation
+    const badge = BadgeUtilities.getComponentForBadgeType(this.props.badgeType);
 
     return (
       <Item

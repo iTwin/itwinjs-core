@@ -30,7 +30,6 @@ const tool2 = new CommandItemDef({
   applicationData: { key: "value" },
   stateSyncIds: [toolItemEventId],
   stateFunc: toolItemStateFunc,
-  betaBadge: true,
 });
 
 const groupItemEventId = "test-button-state";

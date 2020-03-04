@@ -155,7 +155,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
       return null;
 
     const icon = <Icon iconSpec={this.props.iconSpec} />;
-    const badge = BadgeUtilities.getComponentForBadge(this.props.badgeType, this.props.betaBadge);  // tslint:disable-line: deprecation
+    const badge = BadgeUtilities.getComponentForBadgeType(this.props.badgeType);
     const { isDisabled, ...otherProps } = this.props;
     return (
       <ToolbarDragInteractionContext.Consumer>

@@ -22,10 +22,6 @@ export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent
   labelKey?: string;
   /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
   tooltipKey?: string;
-  /** Indicates whether to draw a Beta badge.
-   * @deprecated - use badge instead.
-   */
-  readonly betaBadge?: boolean;
   /** A [[WidgetControl]] providing information about the Widget. */
   control?: ConfigurableUiControlConstructor;
   /** A React component for the Widget. */

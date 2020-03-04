@@ -157,20 +157,6 @@ describe("ActionItemButton", () => {
   });
 });
 
-it("should render with betaBadge", () => {
-  const myCommand =
-    new CommandItemDef({
-      commandId: "command",
-      iconSpec: "icon-placeholder",
-      betaBadge: true,
-    });
-
-  const wrapper = mount(<ActionItemButton actionItem={myCommand} />);
-  const badge = wrapper.find("div.nz-badge");
-  badge.length.should.eq(1);
-  wrapper.unmount();
-});
-
 it("should render with badgeType", () => {
   const myCommand =
     new CommandItemDef({

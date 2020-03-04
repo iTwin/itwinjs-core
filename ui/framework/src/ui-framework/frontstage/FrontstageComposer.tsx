@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { CommonProps, PointProps, Rectangle, RectangleProps, BadgeUtilities } from "@bentley/ui-core";
+import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiFramework } from "../UiFramework";
 import {
@@ -217,7 +217,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
         return widgetDef.isVisible && !widgetDef.isFloating;
       });
       const tabs = visibleWidgetDefs.map<WidgetTab>((widgetDef: WidgetDef) => ({
-        badgeType: BadgeUtilities.determineBadgeType(widgetDef.badgeType, widgetDef.betaBadge), // tslint:disable-line: deprecation
+        badgeType: widgetDef.badgeType,
         iconSpec: widgetDef.iconSpec,
         title: widgetDef.label,
         widgetName: widgetDef.id,

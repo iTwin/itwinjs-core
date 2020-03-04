@@ -77,7 +77,6 @@ describe("<PanelsProvider />", () => {
     const appendChild = sinon.stub(panels, "appendChild").callsFake((newChild: Node) => newChild);
     mount(
       <PanelsProvider
-        histories={null}
         items={
           <>
             <ExpandableItem />
@@ -100,7 +99,6 @@ describe("<PanelsProvider />", () => {
     const removeChild = sinon.spy(panels, "removeChild");
     mount(
       <PanelsProvider
-        histories={null}
         items={
           <ExpandableItem />
         }
@@ -112,51 +110,10 @@ describe("<PanelsProvider />", () => {
     removeChild.calledTwice.should.true;
   });
 
-  it("should append histories", () => {
-    const histories = document.createElement("div");
-    const appendChild = sinon.stub(histories, "appendChild").callsFake((newChild: Node) => newChild);
-    mount(
-      <PanelsProvider
-        histories={histories}
-        items={
-          <>
-            <ExpandableItem />
-            <BadItem />
-            <ExpandableItem />
-          </>
-        }
-        panels={null}
-      >
-        {(items) => items}
-      </PanelsProvider>,
-    );
-    appendChild.calledTwice.should.true;
-  });
-
-  it("should remove existing histories", () => {
-    const histories = document.createElement("div");
-    histories.appendChild(document.createElement("div"));
-    histories.appendChild(document.createElement("div"));
-    const removeChild = sinon.spy(histories, "removeChild");
-    mount(
-      <PanelsProvider
-        histories={histories}
-        items={
-          <ExpandableItem />
-        }
-        panels={null}
-      >
-        {(items) => items}
-      </PanelsProvider>,
-    );
-    removeChild.calledTwice.should.true;
-  });
-
   it("should not clone if item is not a valid element", () => {
     const children = sinon.fake(() => null);
     mount(
       <PanelsProvider
-        histories={null}
         items={"!element"}
         panels={null}
       >
@@ -170,7 +127,6 @@ describe("<PanelsProvider />", () => {
   it("should force update", () => {
     const sut = mount(
       <PanelsProvider
-        histories={null}
         items={
           <>
             <ExpandableItem />

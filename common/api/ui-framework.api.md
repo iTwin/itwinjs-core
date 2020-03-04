@@ -14,7 +14,6 @@ import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { AutoSuggestData } from '@bentley/ui-core';
-import { BackgroundMapType } from '@bentley/imodeljs-common';
 import { BackstageActionItem as BackstageActionItem_2 } from '@bentley/ui-abstract';
 import { BackstageItem } from '@bentley/ui-abstract';
 import { BackstageItemsManager } from '@bentley/ui-abstract';
@@ -51,9 +50,8 @@ import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
-import { Icon as Icon_2 } from '@bentley/ui-core';
-import { IconProps as IconProps_2 } from '@bentley/ui-core';
-import { IconSpec as IconSpec_2 } from '@bentley/ui-core';
+import { IconProps } from '@bentley/ui-core';
+import { IconSpec } from '@bentley/ui-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -351,7 +349,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     componentDidUpdate(prevProps: BackstageProps): void;
     // (undocumented)
     componentWillUnmount(): void;
-    static getBackstageToggleCommand(overrideIconSpec?: IconSpec_2): import("../shared/CommandItemDef").CommandItemDef;
+    static getBackstageToggleCommand(overrideIconSpec?: IconSpec): import("../shared/CommandItemDef").CommandItemDef;
     static hide(): void;
     // (undocumented)
     static isBackstageVisible: boolean;
@@ -421,7 +419,7 @@ export interface BackstageEventArgs {
 }
 
 // @public @deprecated
-export interface BackstageItemProps extends IconProps_2 {
+export interface BackstageItemProps extends IconProps {
     description?: string | StringGetter;
     descriptionKey?: string;
     isActive?: boolean;
@@ -437,7 +435,7 @@ export interface BackstageItemProps extends IconProps_2 {
 // @public @deprecated
 export interface BackstageItemState {
     // (undocumented)
-    iconSpec: IconSpec_2;
+    iconSpec: IconSpec;
     // (undocumented)
     isActive?: boolean;
     // (undocumented)
@@ -469,7 +467,7 @@ export class BackstageItemUtilities {
 export class BackstageManager {
     // (undocumented)
     close(): void;
-    static getBackstageToggleCommand(overrideIconSpec?: IconSpec_2): CommandItemDef;
+    static getBackstageToggleCommand(overrideIconSpec?: IconSpec): CommandItemDef;
     // (undocumented)
     get isOpen(): boolean;
     readonly onToggled: BeEvent<(args: BackstageToggledArgs) => void>;
@@ -1663,9 +1661,6 @@ export class DrawingNavigationAidControl extends NavigationAidControl {
     static navigationAidId: string;
 }
 
-// @internal (undocumented)
-export type dummy_node = React.ReactNode;
-
 // @public
 export class ElementTooltip extends React.Component<CommonProps, ElementTooltipState> {
     constructor(props: CommonProps);
@@ -2013,8 +2008,6 @@ export class FrontstageDef {
     get contentGroupId(): string;
     // (undocumented)
     get contentLayoutDef(): ContentLayoutDef | undefined;
-    // @deprecated (undocumented)
-    contextToolbarEnabled: boolean;
     // (undocumented)
     get defaultContentId(): string;
     // (undocumented)
@@ -2029,12 +2022,8 @@ export class FrontstageDef {
     // @alpha
     getStagePanelDef(location: StagePanelLocation_2): StagePanelDef | undefined;
     getZoneDef(zoneId: number): ZoneDef | undefined;
-    // @deprecated (undocumented)
-    hubEnabled: boolean;
     // (undocumented)
     get id(): string;
-    // @deprecated (undocumented)
-    inheritZoneStates: boolean;
     // @internal
     initializeFromProps(props: FrontstageProps): void;
     initializeFromProvider(frontstageProvider: FrontstageProvider): void;
@@ -2399,9 +2388,6 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
     relativePosition: RelativePosition;
 }
 
-// @public @deprecated
-export const Icon: typeof Icon_2;
-
 // @beta
 export class IconHelper {
     static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
@@ -2409,13 +2395,6 @@ export class IconHelper {
     // (undocumented)
     static get reactIconKey(): string;
 }
-
-// @public @deprecated
-export interface IconProps extends IconProps_2 {
-}
-
-// @public @deprecated
-export type IconSpec = IconSpec_2;
 
 // @beta
 export const IModelConnectedCategoryTree: any;
@@ -2628,8 +2607,6 @@ export abstract class ItemDefBase {
     applicationData?: any;
     // (undocumented)
     badgeType?: BadgeType;
-    // @deprecated (undocumented)
-    betaBadge: boolean;
     get description(): string;
     // (undocumented)
     iconElement?: React.ReactNode;
@@ -2686,11 +2663,9 @@ export class ItemMap extends Map<string, ItemDefBase> {
 }
 
 // @public
-export interface ItemProps extends IconProps_2 {
+export interface ItemProps extends IconProps {
     applicationData?: any;
     badgeType?: BadgeType;
-    // @deprecated
-    betaBadge?: boolean;
     description?: string | StringGetter | ConditionalStringValue;
     descriptionKey?: string;
     icon?: string | ConditionalStringValue;
@@ -3635,26 +3610,6 @@ export class PropsHelper {
     static isShallowEqual(newObj: any, prevObj: any): boolean;
 }
 
-// @alpha
-export class RealityDataPicker extends React.Component<RealityDataPickerProps, RealityDataPickerState> {
-    constructor(props: RealityDataPickerProps);
-    // (undocumented)
-    get attachedModels(): AttachedRealityModel[];
-    componentDidMount(): Promise<void>;
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @alpha @deprecated
-export class RealityDataPickerControl extends WidgetControl {
-    constructor(info: ConfigurableCreateInfo, options: any);
-    // (undocumented)
-    static get iconSpec(): string;
-    // (undocumented)
-    static get label(): string;
-}
-
 // @public
 export type Reducer<S, A> = (state: S, action: A) => S;
 
@@ -3686,7 +3641,7 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
 
 // @beta
 export interface ReviewToolWidgetProps {
-    iconSpec?: IconSpec_2;
+    iconSpec?: IconSpec;
     prefixHorizontalItems?: ItemList;
     prefixVerticalItems?: ItemList;
     showCategoryAndModelsContextTools?: boolean;
@@ -5424,8 +5379,6 @@ export class WidgetDef {
     get applicationData(): any | undefined;
     // (undocumented)
     get badgeType(): BadgeType | undefined;
-    // @deprecated (undocumented)
-    get betaBadge(): boolean;
     // (undocumented)
     canOpen(): boolean;
     // (undocumented)
@@ -5562,9 +5515,7 @@ export function WidgetPanelsToolbars(): JSX.Element;
 export function WidgetPanelsToolSettings(): JSX.Element | null;
 
 // @public
-export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps_2 {
-    // @deprecated
-    readonly betaBadge?: boolean;
+export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps {
     classId?: string | ConfigurableUiControlConstructor;
     control?: ConfigurableUiControlConstructor;
     element?: React.ReactNode;

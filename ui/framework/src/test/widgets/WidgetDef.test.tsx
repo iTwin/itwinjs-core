@@ -73,7 +73,6 @@ describe("WidgetDef", () => {
     expect(widgetDef.tooltip).to.eq("tooltip");
     expect(widgetDef.iconSpec).to.eq("icon-home");
 
-    expect(widgetDef.betaBadge).to.eq(true);    // tslint:disable-line: deprecation
     expect(widgetDef.badgeType).to.eq(BadgeType.TechnicalPreview);
   });
 

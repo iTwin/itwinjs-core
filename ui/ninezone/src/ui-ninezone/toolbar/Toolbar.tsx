@@ -47,8 +47,6 @@ export class ToolbarPanelAlignmentHelpers {
 export interface PanelsProviderProps {
   /** Render prop that provides item panels. */
   children?: (items: React.ReactNode) => React.ReactNode;
-  /** Histories container. */
-  histories: HTMLElement | null;
   /** Items of the toolbar. */
   items?: React.ReactNode;
   /** Panels container. */
@@ -78,31 +76,13 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
     }
   }
 
-  private appendHistories() {
-    const histories = this.props.histories;
-    if (!histories)
-      return;
-
-    while (histories.firstChild) {
-      histories.removeChild(histories.firstChild);
-    }
-
-    for (const ref of this._refs) {
-      if (!ref.current)
-        continue;
-      histories.appendChild(ref.current.history); // tslint:disable-line: deprecation
-    }
-  }
-
   public componentDidMount() {
     this.appendPanels();
-    this.appendHistories();
     this._update = true;
   }
 
   public componentDidUpdate() {
     this.appendPanels();
-    this.appendHistories();
     this._update = true;
   }
 
@@ -156,7 +136,6 @@ export const getToolbarDirection = (expandsTo: Direction): OrthogonalDirection =
 };
 
 interface ToolbarState {
-  histories: HTMLElement | null;
   panels: HTMLElement | null;
 }
 
@@ -171,7 +150,6 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
 
   /** @internal */
   public readonly state = {
-    histories: null,
     panels: null,
   };
 
@@ -179,7 +157,6 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
     return (
       <ToolbarDirectionContext.Provider value={this.props.expandsTo!}>
         <PanelsProvider
-          histories={this.state.histories}
           items={this.props.items}
           panels={this.state.panels}
         >
@@ -204,10 +181,6 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
         style={this.props.style}
       >
         <div
-          className="nz-expanded nz-histories"
-          ref={this._handleHistoriesRef}
-        />
-        <div
           className="nz-expanded nz-panels"
           ref={this._handlePanelsRef}
         />
@@ -221,10 +194,6 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
     );
   }
 
-  private _handleHistoriesRef = (histories: HTMLElement | null) => {
-    this.setState({ histories });
-  }
-
   private _handlePanelsRef = (panels: HTMLElement | null) => {
     this.setState({ panels });
   }
@@ -235,8 +204,6 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
  */
 export interface ToolbarItem {
   readonly panel: HTMLElement;
-  /** @deprecated */
-  readonly history: HTMLElement;
 }
 
 /** These props will be injected by Toolbar.

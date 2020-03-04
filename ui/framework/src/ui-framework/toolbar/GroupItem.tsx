@@ -304,7 +304,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
         const itemTrayId = this.generateTrayId();
         const groupItem: ToolGroupItem = {
           iconSpec: item.iconSpec, label: item.label, trayId: itemTrayId,
-          badgeType: BadgeUtilities.determineBadgeType(item.badgeType, item.betaBadge), // tslint:disable-line: deprecation
+          badgeType: item.badgeType,
         };
 
         items.set(item.id, groupItem);
@@ -369,7 +369,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
       className,
       groupItemDef.overflow && "nz-toolbar-item-overflow",
     );
-    const badge = BadgeUtilities.getComponentForBadge(groupItemDef.badgeType, groupItemDef.betaBadge);  // tslint:disable-line: deprecation
+    const badge = BadgeUtilities.getComponentForBadgeType(groupItemDef.badgeType);
     return (
       <ToolbarDirectionContext.Consumer>
         {(direction) => (

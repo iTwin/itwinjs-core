@@ -14,16 +14,6 @@
     @include uicore-z-index(toolbar-panels);
   }
 
-  > .nz-histories {
-    @include uicore-z-index(toolbar-histories);
-
-    > .nz-item > div {
-      > * > * {
-        pointer-events: auto;
-      }
-    }
-  }
-
   > .nz-expanded {
     pointer-events: none;
     position: absolute;

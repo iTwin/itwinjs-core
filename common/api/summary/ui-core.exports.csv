@@ -76,7 +76,6 @@ beta;FocusTrap
 beta;Form 
 beta;FormContext: React.Context
 beta;FormContextState 
-internal;getClassName: (obj: any) => string
 internal;getDisplayName: (component: React.ComponentType
 internal;getUserColor(email: string): string
 public;GlobalContextMenu 
@@ -211,7 +210,6 @@ public;TreeNodePlaceholderProps
 public;TreeNodeProps 
 public;TreeProps 
 public;UiCore
-public;UiError: typeof UiError_2
 public;UiEvent
 beta;UiSettings
 beta;UiSettingsResult

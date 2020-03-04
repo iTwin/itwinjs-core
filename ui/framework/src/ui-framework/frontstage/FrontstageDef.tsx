@@ -69,13 +69,6 @@ export class FrontstageDef {
   public get applicationData(): any | undefined { return this._applicationData; }
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
 
-  /** @deprecated */
-  public inheritZoneStates: boolean = true;
-  /** @deprecated */
-  public hubEnabled: boolean = false;
-  /** @deprecated */
-  public contextToolbarEnabled: boolean = false;
-
   public get topLeft(): ZoneDef | undefined { return this._topLeft; }
   public get topCenter(): ZoneDef | undefined { return this._topCenter; }
   public get topRight(): ZoneDef | undefined { return this._topRight; }

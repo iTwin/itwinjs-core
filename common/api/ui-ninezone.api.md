@@ -212,9 +212,6 @@ export class CssProperties {
     static fromPosition(props: PointProps): React_2.CSSProperties;
 }
 
-// @alpha @deprecated
-export const DefaultHistoryManager: HistoryManager;
-
 // @beta
 export class Dialog extends React.PureComponent<DialogProps> {
     // (undocumented)
@@ -367,12 +364,8 @@ export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
 // @beta
 export interface ExpandableItemProps extends CommonProps {
     hideIndicator?: boolean;
-    // @deprecated
-    history?: React.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
-    // @deprecated
-    onIsHistoryExtendedChange?: (isExtended: boolean) => void;
     panel?: React.ReactNode;
 }
 
@@ -583,61 +576,6 @@ export class HandleModeHelpers {
     static readonly HOVERED_CLASS_NAME = "nz-handle-hovered";
     static readonly TIMEDOUT_CLASS_NAME = "nz-handle-timedout";
     static readonly VISIBLE_CLASS_NAME = "nz-handle-visible";
-}
-
-// @alpha @deprecated
-export type History<TItem> = Array<HistoryEntry<TItem>>;
-
-// @alpha @deprecated
-export interface HistoryEntry<TItem> {
-    item: TItem;
-    key: HistoryKey;
-}
-
-// @alpha @deprecated
-export class HistoryIcon extends React.PureComponent<HistoryItemProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha @deprecated
-export class HistoryItem extends React.PureComponent<HistoryItemProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha @deprecated
-export interface HistoryItemProps extends CommonProps {
-    children?: React.ReactNode;
-    isActive?: boolean;
-    isDisabled?: boolean;
-    onClick?: () => void;
-    title?: string;
-}
-
-// @alpha @deprecated
-export type HistoryKey = number | string;
-
-// @alpha @deprecated
-export class HistoryManager {
-    constructor(maxItemCount: number);
-    addItem<TItem extends {}>(key: HistoryKey, item: TItem, history: History<TItem>): History<TItem>;
-    // (undocumented)
-    readonly maxItemCount: number;
-}
-
-// @alpha @deprecated
-export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha @deprecated
-export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
-    direction?: Direction;
-    isExtended?: boolean;
-    items?: React.ReactNode;
-    onIsHistoryExtendedChange?: (isExtended: boolean) => void;
 }
 
 // @beta
@@ -1152,7 +1090,6 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
 // @alpha
 export interface PanelsProviderProps {
     children?: (items: React.ReactNode) => React.ReactNode;
-    histories: HTMLElement | null;
     items?: React.ReactNode;
     panels: HTMLElement | null;
 }
@@ -1859,7 +1796,6 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
     render(): JSX.Element;
     // @internal (undocumented)
     readonly state: {
-        histories: null;
         panels: null;
     };
 }
@@ -1892,8 +1828,6 @@ export interface ToolbarIconProps extends ToolbarButtonProps {
 
 // @alpha
 export interface ToolbarItem {
-    // @deprecated (undocumented)
-    readonly history: HTMLElement;
     // (undocumented)
     readonly panel: HTMLElement;
 }
