@@ -624,6 +624,8 @@ export enum IModelHubStatus {
     // (undocumented)
     ConflictsAggregate = 102441,
     // (undocumented)
+    ContextDoesNotExist = 102447,
+    // (undocumented)
     DatabaseOperationFailed = 102443,
     // (undocumented)
     DatabaseTemporarilyLocked = 102419,
