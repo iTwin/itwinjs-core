@@ -449,7 +449,7 @@ class SubjectModelIdsCache {
     const ecsql = `
       SELECT p.ECInstanceId id, p.Parent.Id subjectId
         FROM bis.InformationPartitionElement p
-        JOIN bis.Model m ON m.ModeledElement.Id = p.ECInstanceId
+        INNER JOIN bis.GeometricModel3d m ON m.ModeledElement.Id = p.ECInstanceId
        WHERE NOT m.IsPrivate`;
     const result = this._imodel.query(ecsql);
     for await (const row of result) {
