@@ -800,6 +800,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       if (this._menuElement)
         this._menuElement.blur();
     });
+    // istanbul ignore next
     if (propagate && this.props.parentMenu && this.props.parentMenu.props.parentSubmenu) {
       this.props.parentMenu.props.parentSubmenu.close(true);
     }
@@ -819,6 +820,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       // istanbul ignore else
       if (this.props.onClick !== undefined)
         this.props.onClick(event);
+      // istanbul ignore next
       if (this.props.opened)
         this.close();
       else

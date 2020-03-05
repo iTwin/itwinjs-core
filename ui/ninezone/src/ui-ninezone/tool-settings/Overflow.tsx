@@ -8,9 +8,9 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
+import { useResizeObserver } from "@bentley/ui-core";
 import { ToolSettingProps } from "./Setting";
 import { Ellipsis } from "../base/Ellipsis";
-import { useResizeObserver } from "../base/useResizeObserver";
 import { useToolSettingsEntry } from "./Docked";
 import "./Overflow.scss";
 

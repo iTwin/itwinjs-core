@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/z-index";
-@import "../geometry";
+@import "~@bentley/ui-core/lib/ui-core/geometry";
 
 .nz-popup-tooltip {
   position: absolute;

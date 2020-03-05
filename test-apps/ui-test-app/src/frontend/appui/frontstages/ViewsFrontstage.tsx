@@ -55,7 +55,6 @@ import {
   CustomItemDef,
   CursorInformation,
   CursorUpdatedEventArgs,
-  PopupButton,
   CursorPopupManager,
   CursorPopupContent,
   VisibilityWidget,
@@ -629,27 +628,28 @@ class AdditionalTools {
   /** Get the CustomItemDef for PopupButton  */
   private get _viewportPopupButtonItemDef() {
     return new CustomItemDef({
-      reactElement: (
-        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" badgeType={BadgeType.New}>
-          <div style={{ width: "400px", height: "300px" }}>
-            <ScrollView>
-              <div>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-                dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      customId: "test.custom-popup",
+      iconSpec: "icon-arrow-down",
+      label: "Popup Test",
+      badgeType: BadgeType.New,
+      popupPanelNode:
+        <div style={{ width: "400px", height: "300px", padding: "6px 0px 6px 6px" }}>
+          <ScrollView>
+            <div>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+              proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </div>
-              <ViewportWidget projectName="iModelHubTest" imodelName="86_Hospital" />
-              <div>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-                dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            <ViewportWidget projectName="iModelHubTest" imodelName="86_Hospital" />
+            <div>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+              proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </div>
-            </ScrollView>
-          </div>
-        </PopupButton>
-      ),
+          </ScrollView>
+        </div>,
     });
   }
 

@@ -839,6 +839,14 @@ export class HorizontalTabs extends React.PureComponent<TabsProps> {
 export function Icon(props: IconProps): JSX.Element | null;
 
 // @beta
+export class IconHelper {
+    static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
+    static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
+    // (undocumented)
+    static get reactIconKey(): string;
+}
+
+// @beta
 export class IconInput extends React.PureComponent<IconInputProps> {
     // (undocumented)
     render(): JSX.Element;
@@ -1495,6 +1503,12 @@ export interface RectangleProps {
     readonly top: number;
 }
 
+// @internal (undocumented)
+export const ResizeObserver: ResizeObserverType;
+
+// @internal (undocumented)
+export type ResizeObserverType = typeof import("resize-observer-polyfill").default;
+
 // @alpha
 export class ScrollPositionMaintainer implements IDisposable {
     constructor(el: Element);
@@ -2007,8 +2021,24 @@ export function useDisposable<TDisposable extends IDisposable>(createDisposable:
 // @public
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 
+// @internal
+export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
+outsideEventPredicate?: (e: PointerEvent) => boolean): React.MutableRefObject<T | null>;
+
 // @public
 export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined;
+
+// @internal
+export function useRefEffect<T>(callback: (instance: T | null) => (void | (() => void)), deps: ReadonlyArray<any>): (instance: T | null) => void;
+
+// @internal
+export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
+
+// @internal
+export function useResizeObserver<T extends Element>(onResize?: (width: number) => void, useHeight?: boolean): (instance: T | null) => void;
+
+// @internal
+export const useTargeted: (elementRef: React.RefObject<Element>) => boolean;
 
 // @public
 export enum VerticalAlignment {

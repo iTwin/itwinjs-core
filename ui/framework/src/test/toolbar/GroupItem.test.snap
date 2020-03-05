@@ -2,7 +2,7 @@
 
 exports[`GroupItem <GroupButton /> renders correctly 1`] = `
 <GroupItem
-  direction={3}
+  direction={4}
   groupItemDef={
     GroupItemDef {
       "_description": "",
@@ -104,7 +104,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "_tooltip": "",
       "badgeType": undefined,
       "defaultActiveItemId": undefined,
-      "direction": 3,
+      "direction": 4,
       "directionExplicit": true,
       "execute": [Function],
       "getKey": [Function],

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { renderHook, act } from "@testing-library/react-hooks";
-import { useResizeObserver } from "../../ui-ninezone";
-import * as ResizeObserverModule from "../../ui-ninezone/base/ResizeObserverPolyfill";
-import { createDOMRect } from "../Utils";
+import { useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
+import * as ResizeObserverModule from "../../../ui-core/utils/hooks/ResizeObserverPolyfill";
+import { createDOMRect } from "../../Utils";
 
 describe("useResizeObserver", () => {
   const sandbox = sinon.createSandbox();
@@ -52,6 +52,26 @@ describe("useResizeObserver", () => {
     // Call the ResizeObserver callback.
     resizeObserverSpy.firstCall.args[0]([{
       contentRect: createDOMRect({ width: 100 }),
+      target: element,
+    }], resizeObserverSpy.firstCall.returnValue);
+
+    spy.calledOnceWithExactly(100).should.true;
+  });
+
+  it("should call onResize (height)", () => {
+    const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
+    const spy = sandbox.spy();
+    const { result } = renderHook(() => useResizeObserver(spy, true));
+    const element = document.createElement("div");
+    act(() => {
+      result.current(element);
+    });
+
+    spy.resetHistory();
+    sinon.stub(element, "getBoundingClientRect").returns(createDOMRect({ height: 100 }));
+    // Call the ResizeObserver callback.
+    resizeObserverSpy.firstCall.args[0]([{
+      contentRect: createDOMRect({ height: 100 }),
       target: element,
     }], resizeObserverSpy.firstCall.returnValue);
 

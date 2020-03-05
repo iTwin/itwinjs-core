@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { renderHook, act } from "@testing-library/react-hooks";
-import { useOnOutsideClick } from "../../ui-ninezone";
+import { useOnOutsideClick } from "../../../ui-core/utils/hooks/useOnOutsideClick";
 
 describe("useOnOutsideClick", () => {
   it("should call onOutsideClick", () => {

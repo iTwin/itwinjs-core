@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render, act, fireEvent, queryByText } from "@testing-library/react";
 import { DockedToolSettings, getOverflown, DockedToolSetting } from "../../ui-ninezone";
-import * as ResizeObserverModule from "../../ui-ninezone/base/ResizeObserverPolyfill";
+import * as ResizeObserverModule from "@bentley/ui-core/lib/ui-core/utils/hooks/ResizeObserverPolyfill"; // tslint:disable-line: no-direct-imports
 import { createDOMRect, ResizeObserverMock } from "../Utils";
 
 describe("DockedToolSettings", () => {
@@ -180,6 +180,7 @@ describe("DockedToolSettings", () => {
 
   it("should recalculate overflow on entry resize", () => {
     let width = 50;
+
     // tslint:disable-next-line: only-arrow-functions
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
       if (this.classList.contains("nz-toolSettings-docked")) {
@@ -189,6 +190,7 @@ describe("DockedToolSettings", () => {
       }
       return createDOMRect();
     });
+
     let resizeObserver: ResizeObserverMock | undefined;
     let target: Element | undefined;
     sandbox.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
@@ -198,6 +200,7 @@ describe("DockedToolSettings", () => {
         target = element;
       }
     });
+
     const { queryAllByText } = render(
       <DockedToolSettings>
         <DockedToolSetting>Entry 1</DockedToolSetting>

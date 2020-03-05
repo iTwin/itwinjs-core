@@ -8,8 +8,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { useTargeted } from "../../../../../base/useTargeted";
+import { CommonProps, useTargeted } from "@bentley/ui-core";
 import "./Tool.scss";
 
 /** Properties of [[GroupTool]] component.

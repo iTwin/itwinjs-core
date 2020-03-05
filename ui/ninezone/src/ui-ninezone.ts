@@ -12,13 +12,7 @@ export * from "./ui-ninezone/base/DragHandle";
 export * from "./ui-ninezone/base/Ellipsis";
 export * from "./ui-ninezone/base/NineZone";
 export * from "./ui-ninezone/base/PointerCaptor";
-export * from "./ui-ninezone/base/ResizeObserverPolyfill";
-export * from "./ui-ninezone/base/useOnOutsideClick";
-export * from "./ui-ninezone/base/useRefEffect";
-export * from "./ui-ninezone/base/useRefs";
-export * from "./ui-ninezone/base/useResizeObserver";
 export * from "./ui-ninezone/base/useSingleDoubleClick";
-export * from "./ui-ninezone/base/useTargeted";
 export * from "./ui-ninezone/base/WithContainIn";
 
 export * from "./ui-ninezone/footer/dialog/Button";
@@ -106,6 +100,8 @@ export * from "./ui-ninezone/widget/Stacked";
 export * from "./ui-ninezone/widget/Tab";
 export * from "./ui-ninezone/widget/Tabs";
 export * from "./ui-ninezone/widget/Tools";
+export * from "./ui-ninezone/widget/ToolsArea";
+export * from "./ui-ninezone/widget/NavigationArea";
 export * from "./ui-ninezone/widget/ToolSettings";
 export * from "./ui-ninezone/widget/Widget";
 

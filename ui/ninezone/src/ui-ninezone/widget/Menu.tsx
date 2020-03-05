@@ -8,8 +8,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { useRefs } from "../base/useRefs";
+import { CommonProps, useRefs } from "@bentley/ui-core";
 import "./Menu.scss";
 
 /** @internal */

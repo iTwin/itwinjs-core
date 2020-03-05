@@ -5,7 +5,7 @@
 import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { useTargeted } from "../../ui-ninezone/base/useTargeted";
+import { useTargeted } from "../../../ui-core/utils/hooks/useTargeted";
 
 // tslint:disable-next-line: variable-name
 const Targeted = (props: { children?: (targeted: boolean) => React.ReactNode }) => {
@@ -38,5 +38,24 @@ describe("useTargeted", () => {
     sut.unmount();
 
     spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
+  });
+
+  it("should remove event listeners", () => {
+    const spy = sandbox.spy(document, "removeEventListener");
+    const sut = mount(<Targeted />);
+    sut.unmount();
+
+    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
+  });
+
+  it("should add event listeners", () => {
+    const spy = sandbox.spy(document, "addEventListener");
+    const sut = mount(<Targeted />);
+
+    // trigger useEffect handler processing
+    document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
+
+    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
+    sut.unmount();
   });
 });

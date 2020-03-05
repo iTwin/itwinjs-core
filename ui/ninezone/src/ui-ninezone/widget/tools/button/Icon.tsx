@@ -17,6 +17,7 @@ import "./Icon.scss";
 export interface ToolbarIconProps extends ToolbarButtonProps {
   /** Button icon. */
   icon?: React.ReactNode;
+  small?: boolean;
 }
 
 /** Toolbar button which displays icon. Used in [[Toolbar]] component.
@@ -25,9 +26,10 @@ export interface ToolbarIconProps extends ToolbarButtonProps {
  */
 export class ToolbarIcon extends React.PureComponent<ToolbarIconProps> {
   public render() {
-    const { className, ...props } = this.props;
+    const { className, small, ...props } = this.props;
     const buttonClassName = classnames(
       "nz-toolbar-button-icon",
+      small && "nz-toolbar-button-icon-small",
       className);
 
     return (

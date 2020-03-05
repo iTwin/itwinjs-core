@@ -528,7 +528,7 @@ export class SampleAppViewer extends React.Component<any> {
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
-                <FrameworkVersion version="1">
+                <FrameworkVersion version="2">
                   <ConfigurableUiContent
                     appBackstage={<AppBackstageComposer />}
                   />

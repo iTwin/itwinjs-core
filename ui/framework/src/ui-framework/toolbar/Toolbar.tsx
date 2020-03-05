@@ -145,6 +145,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
         }
         returnValue = true;
       } else {
+        // istanbul ignore next
         if (item instanceof GroupItemDef) {
           if (this._processSyncUiEvent(item.items, args))
             returnValue = true;
@@ -204,6 +205,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
         const lastItemIndex = actionItems.length - 1;
         let singleItemSize = 0;
         for (let index = lastItemIndex; index >= 0; index--) {
+          // istanbul ignore next
           if (actionItems[index] instanceof CustomItemDef)
             continue;
           if (0 === singleItemSize)

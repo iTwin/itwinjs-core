@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { IconHelper } from "../../ui-framework/shared/IconHelper";
+import { IconHelper } from "../../ui-core/utils/IconHelper";
 import { expect } from "chai";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
 
@@ -16,6 +16,32 @@ describe("IconHelper", () => {
     const iconNode = IconHelper.getIconReactNode(iconSpec);
     expect(iconNode).not.to.be.undefined;
     expect((iconNode as JSX.Element).props.iconSpec).to.eq("cat");
+  });
+
+  it("should get null icon data", () => {
+    const iconNode = IconHelper.getIconReactNode("");
+    expect(iconNode).to.be.null;
+  });
+
+  it("should get null icon data in empty conditional string", () => {
+    const iconNode = IconHelper.getIconReactNode(new ConditionalStringValue(() => "", ["dummy"]));
+    expect(iconNode).to.be.null;
+  });
+
+  it("should get null icon data if null passed in", () => {
+    const iconNode = IconHelper.getIconReactNode(null);
+    expect(iconNode).to.be.null;
+  });
+
+  it("should get null icon data if internal data not set", () => {
+    const iconNode = IconHelper.getIconReactNode(IconHelper.reactIconKey);
+    expect(iconNode).to.be.null;
+  });
+
+  it("should get react node back", () => {
+    const iconNode = IconHelper.getIconReactNode(<i className="icon icon-placeholder" />);
+    expect(iconNode).not.to.be.undefined;
+    expect(React.isValidElement(iconNode)).to.be.true;
   });
 
   it("should get conditionalString icon data", () => {
@@ -35,6 +61,11 @@ describe("IconHelper", () => {
     const iconNode = IconHelper.getIconReactNode(iconSpec, internalData);
     expect(iconNode).not.to.be.undefined;
     expect((iconNode as JSX.Element).props.iconSpec.props.children).to.eq("Test");
+  });
+
+  it("should get empty string back", () => {
+    const iconSpec = IconHelper.getIconData(null);
+    expect(iconSpec).to.be.equal("");
   });
 
 });

@@ -84,6 +84,7 @@ public;CubeRotationChangeEvent
 public;CubeRotationChangeEventArgs
 alpha;CustomNumberEditor 
 alpha;CustomNumberPropertyEditor 
+beta;CustomToolbarItem 
 beta;DataController
 beta;class DataControllerBase 
 internal;DataRowItem 
@@ -139,6 +140,7 @@ beta;FilterRenderer
 public;FloatTypeConverter 
 public;from
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
+internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
@@ -235,6 +237,10 @@ internal;PlayerButton
 internal;PlayerButtonProps 
 public;Point2dTypeConverter 
 public;Point3dTypeConverter 
+beta;PopupItem(props: PopupItemProps): JSX.Element
+beta;PopupItemProps 
+beta;PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element
+beta;PopupItemWithDragProps 
 public;PrimitivePropertyLabelRenderer 
 public;PrimitivePropertyLabelRendererProps 
 public;PrimitivePropertyRenderer 
@@ -340,6 +346,19 @@ beta;ToggleEditor
 beta;TogglePropertyEditor 
 internal;toNode: 
 internal;toNodes: 
+beta;ToolbarButtonItem: React.MemoExoticComponent
+beta;ToolbarButtonItemProps 
+beta;ToolbarItem = ActionButton | GroupButton | CustomToolbarItem
+internal;ToolbarItemContext: React.Context
+internal;ToolbarItemContextArgs
+internal;ToolbarOverflowContextProps
+beta;ToolbarPanelAlignment
+internal;ToolbarPanelAlignmentHelpers
+internal;ToolbarPopupContext: React.Context
+internal;ToolbarPopupContextProps
+beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
+internal;ToolbarWithOverflowDirectionContext: React.Context
+beta;ToolbarWithOverflowProps 
 beta;TreeActions
 beta;TreeCellUpdatedArgs
 beta;TreeCheckboxStateChangeEventArgs
@@ -392,6 +411,9 @@ alpha;UITooltipRenderer
 public;Unsubscribable
 beta;useAsyncValue: 
 beta;usePagedTreeNodeLoader
+internal;useToolbarPopupContext(): ToolbarPopupContextProps
+internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
+internal;useToolItemEntryContext(): ToolbarItemContextArgs
 beta;useTreeEventsHandler
 beta;useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSource
 beta;useTreeNodeLoader

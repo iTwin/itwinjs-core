@@ -4,7 +4,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
 <ToolWidgetWithDef
   horizontalToolbar={
     <Toolbar
-      expandsTo={3}
+      expandsTo={4}
       items={
         <UNDEFINED>
           <ActionItemButton
@@ -399,10 +399,10 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "_toolbarBaseName": "[Test1]ToolWidget",
       "_tooltip": "",
       "_widgetType": 0,
-      "horizontalDirection": 3,
+      "horizontalDirection": 4,
       "horizontalItems": undefined,
       "horizontalPanelAlignment": 0,
-      "verticalDirection": 2,
+      "verticalDirection": 3,
       "verticalItems": undefined,
       "verticalPanelAlignment": 0,
     }
@@ -410,35 +410,187 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
 />
 `;
 
-exports[`CoreToolDefinitions should render KeyInBrowser 1`] = `
-<ExpandableItem
-  hideIndicator={false}
-  iconSpec="icon-process"
-  isDisabled={false}
-  labelKey="UiFramework:keyinbrowser.label"
-  panel={
-    <WithOnOutsideClick
-      className="nz-toolbar-item-expandable-group-panel"
-      onOutsideClick={[Function]}
-    >
-      <KeyinBrowser
-        onCancel={[Function]}
-        onExecute={[Function]}
-      />
-    </WithOnOutsideClick>
-  }
->
-  <div>
-    <Item
-      icon={
-        <Icon
-          iconSpec="icon-process"
-        />
+exports[`CoreToolDefinitions ToolWidgetComposer should render correctly with Core Tool Definitions 1`] = `
+<ToolsArea
+  horizontalToolbar={
+    <ToolbarWithOverflow
+      expandsTo={4}
+      items={
+        Array [
+          Object {
+            "badgeType": undefined,
+            "icon": "icon-process",
+            "id": "uif:keyinbrowser",
+            "internalData": Map {},
+            "isCustom": true,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 10,
+            "label": "keyinbrowser.label",
+            "panelContentNode": <UNDEFINED>
+              [Function]
+            </UNDEFINED>,
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-cursor",
+            "id": "Select",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 20,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-fit-to-view",
+            "id": "View.Fit",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 30,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-window-area",
+            "id": "View.WindowArea",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 40,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-zoom",
+            "id": "View.Zoom",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 50,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-hand-2",
+            "id": "View.Pan",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 60,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-gyroscope",
+            "id": "View.Rotate",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 70,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-walk",
+            "id": "View.Walk",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 80,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-camera",
+            "id": "View.ToggleCamera",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 90,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-airplane",
+            "id": "View.Fly",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 100,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-section-plane",
+            "id": "ViewClip.ByPlane",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 110,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-section-element",
+            "id": "ViewClip.ByElement",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 120,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-section-shape",
+            "id": "ViewClip.ByShape",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 130,
+            "label": "",
+          },
+          Object {
+            "badgeType": undefined,
+            "execute": [Function],
+            "icon": "icon-section-range",
+            "id": "ViewClip.ByRange",
+            "internalData": Map {},
+            "isActive": false,
+            "isDisabled": undefined,
+            "isHidden": undefined,
+            "itemPriority": 140,
+            "label": "",
+          },
+        ]
       }
-      onClick={[Function]}
-      onKeyDown={[Function]}
-      title="keyinbrowser.label"
     />
-  </div>
-</ExpandableItem>
+  }
+  onMouseEnter={[Function]}
+/>
 `;

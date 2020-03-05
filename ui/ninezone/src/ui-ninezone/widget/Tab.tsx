@@ -8,10 +8,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { useResizeObserver } from "../base/useResizeObserver";
+import { CommonProps, useResizeObserver, useRefs } from "@bentley/ui-core";
 import { useSingleDoubleClick } from "../base/useSingleDoubleClick";
-import { useRefs } from "../base/useRefs";
 import { useWidgetTab } from "./Tabs";
 import { useNineZoneDispatch, WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK, useWidget, TabState, useTabById } from "../base/NineZone";
 import { useWidgetPanelSide } from "../widget-panels/Panel";

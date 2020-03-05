@@ -8,6 +8,11 @@
   box-sizing: border-box;
   width: $mls-button-width;
   height: $mls-button-height;
+  &.nz-toolbar-button-icon-small {
+    width: $mls-small-button-width;
+    height: $mls-small-button-height;
+  }
+  margin-bottom: 6px;
   cursor: pointer;
   position: relative;
   overflow: hidden;

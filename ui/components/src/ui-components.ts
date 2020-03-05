@@ -84,6 +84,11 @@ export * from "./ui-components/timeline/DayPicker";
 export * from "./ui-components/timeline/SolarTimeline";
 export * from "./ui-components/timeline/BaseSolarDataProvider";
 
+export * from "./ui-components/toolbar/Toolbar";
+export * from "./ui-components/toolbar/PopupItem";
+export * from "./ui-components/toolbar/PopupItemWithDrag";
+export * from "./ui-components/toolbar/Item";
+
 export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PropertyLabelRenderer";
@@ -207,6 +212,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Table
  * Classes and components for working with a Table.
+ */
+/**
+ * @docs-group-description Toolbar
+ * Functions that provide a Toolbar components.
  */
 /**
  * @docs-group-description Tree

@@ -8,7 +8,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { useTargeted } from "../../base/useTargeted";
+import { useTargeted } from "@bentley/ui-core";
 import { MergeTargetProps } from "./Merge";
 
 /** Properties of [[WidgetTarget]] component.

@@ -7,15 +7,15 @@
  */
 
 import * as React from "react";
-import { Icon } from "@bentley/ui-core";
 import { ConditionalStringValue } from "@bentley/ui-abstract";
+import { Icon } from "../icons/IconComponent";
 
 /** Icon Helper Class used to store the data needed to generate an <Icon> for used in any control that shows an icon.
  * @beta
  */
 export class IconHelper {
   public static get reactIconKey(): string {
-    return "#-react-node-#";
+    return "#-react-iconspec-node-#";
   }
 
   /** Returns an <Icon> ReactNode from the many ways an icon can be specified.
@@ -31,7 +31,7 @@ export class IconHelper {
     if (React.isValidElement(icon))
       return <Icon iconSpec={icon} />;
 
-    const iconString = (typeof icon === "string" || icon instanceof ConditionalStringValue) ? ConditionalStringValue.getValue(icon) : "";
+    const iconString = ConditionalStringValue.getValue(icon as (string | ConditionalStringValue));
     if (!iconString)
       return null;
 

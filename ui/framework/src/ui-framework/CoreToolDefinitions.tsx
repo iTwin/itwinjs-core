@@ -16,7 +16,6 @@ import {
   ViewClipByShapeTool, ViewClipByRangeTool, ViewClipByElementTool, ViewClipByPlaneTool,
   MeasureDistanceTool, MeasureLocationTool,
 } from "@bentley/imodeljs-frontend";
-import { PopupButton, PopupButtonChildrenRenderPropArgs } from "./toolbar/PopupButton";
 import { GroupItemDef } from "./toolbar/GroupItem";
 import { ViewFlags } from "@bentley/imodeljs-common";
 import { ToolItemDef } from "./shared/ToolItemDef";
@@ -29,6 +28,10 @@ import { ContentViewManager } from "./content/ContentViewManager";
 import { UiFramework } from "./UiFramework";
 import { getSelectionContextSyncEventIds, selectionContextStateFunc, getIsHiddenIfSelectionNotActive } from "./selection/SelectionContextItemDef";
 import { ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { ToolbarPopupContext } from "@bentley/ui-components";
+import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../ui-framework";
+
+// tslint:disable: deprecation
 
 /** Utility Class that provides definitions of tools provided by iModel.js core. These definitions can be used to populate the UI.
  * @public
@@ -41,6 +44,14 @@ export class CoreTools {
   public static get keyinBrowserButtonItemDef() {
     return new CustomItemDef({
       customId: "uif:keyinbrowser",
+      iconSpec: "icon-process",
+      labelKey: "UiFramework:keyinbrowser.label",
+      popupPanelNode: <ToolbarPopupContext.Consumer>
+        {({ closePanel }) => (
+          <KeyinBrowser onExecute={closePanel} onCancel={closePanel} />
+        )}
+      </ToolbarPopupContext.Consumer>,
+      // DEPRECATED way
       reactElement: (
         <PopupButton iconSpec="icon-process" labelKey="UiFramework:keyinbrowser.label">
           {this._renderKeyInBrowser}
@@ -54,7 +65,6 @@ export class CoreTools {
       <KeyinBrowser onExecute={closePanel} onCancel={closePanel} />
     );
   }
-
   public static get fitViewCommand() {
     return new ToolItemDef({
       toolId: FitViewTool.toolId,

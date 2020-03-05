@@ -135,7 +135,6 @@ export * from "./ui-framework/shared/CommandItemDef";
 export * from "./ui-framework/shared/CustomItemDef";
 export * from "./ui-framework/shared/CustomItemProps";
 export * from "./ui-framework/shared/GroupItemProps";
-export * from "./ui-framework/shared/IconHelper";
 export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
@@ -229,6 +228,7 @@ export * from "./ui-framework/widgets/VisibilityWidget";
 export * from "./ui-framework/widgets/DefaultNavigationWidget";
 export * from "./ui-framework/widgets/ReviewToolWidget";
 export * from "./ui-framework/widgets/NavigationWidgetComposer";
+export * from "./ui-framework/widgets/ToolWidgetComposer";
 export * from "./ui-framework/widgets/BasicToolWidget";
 export * from "./ui-framework/widgets/BasicNavigationWidget";
 

@@ -14,6 +14,8 @@ import { Direction, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ItemList } from "../../ui-framework/shared/ItemMap";
 import { Orientation } from "@bentley/ui-core";
 
+// tslint:disable: deprecation
+
 describe("<Toolbar  />", async () => {
 
   const testItemEventId = "test-event";

@@ -8,8 +8,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
-import { useTargeted } from "../../../../base/useTargeted";
+import { CommonProps, NoChildrenProps, useTargeted } from "@bentley/ui-core";
 import "./BackArrow.scss";
 
 /** Properties of [[BackArrow]] component.

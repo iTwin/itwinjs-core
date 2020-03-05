@@ -9,13 +9,16 @@ import {
   ToolWidget,
   ActionItemButton,
   CoreTools,
+  ToolWidgetComposer,
 } from "../ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
-import { PopupButton } from "../ui-framework/toolbar/PopupButton";
+import { ToolbarWithOverflow } from "@bentley/ui-components";
+import { ToolbarHelper } from "../ui-framework/toolbar/ToolbarHelper";
 
 describe("CoreToolDefinitions", () => {
 
   let horizontalToolbar: React.ReactNode;
+  let horizontalToolbarWithOverflow: React.ReactNode;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -42,6 +45,28 @@ describe("CoreToolDefinitions", () => {
           </>
         }
       />;
+
+    // Set in the before() after UiFramework.i18n is initialized
+    horizontalToolbarWithOverflow =
+      <ToolbarWithOverflow
+        expandsTo={Direction.Bottom}
+        items={ToolbarHelper.createToolbarItemsFromItemDefs([
+          CoreTools.keyinBrowserButtonItemDef,
+          CoreTools.selectElementCommand,
+          CoreTools.fitViewCommand,
+          CoreTools.windowAreaCommand,
+          CoreTools.zoomViewCommand,
+          CoreTools.panViewCommand,
+          CoreTools.rotateViewCommand,
+          CoreTools.walkViewCommand,
+          CoreTools.toggleCameraViewCommand,
+          CoreTools.flyViewCommand,
+          CoreTools.sectionByPlaneCommandItemDef,
+          CoreTools.sectionByElementCommandItemDef,
+          CoreTools.sectionByShapeCommandItemDef,
+          CoreTools.sectionByRangeCommandItemDef,
+        ])}
+      />;
   });
 
   it("ToolWidget should render with Core Tool Definitions", () => {
@@ -62,9 +87,21 @@ describe("CoreToolDefinitions", () => {
     ).should.matchSnapshot();
   });
 
-  it("should render KeyInBrowser", () => {
-    const sut = shallow<PopupButton>(CoreTools.keyinBrowserButtonItemDef.reactElement as React.ReactElement);
-    sut.setState({ isPressed: true });
-    sut.dive().should.matchSnapshot();
+  it("ToolWidgetComposer should render with Core Tool Definitions", () => {
+    const wrapper = mount(
+      <ToolWidgetComposer // tslint:disable-line:deprecation
+        horizontalToolbar={horizontalToolbarWithOverflow}
+      />,
+    );
+    wrapper.unmount();
   });
+
+  it("ToolWidgetComposer should render correctly with Core Tool Definitions", () => {
+    shallow(
+      <ToolWidgetComposer // tslint:disable-line:deprecation
+        horizontalToolbar={horizontalToolbarWithOverflow}
+      />,
+    ).should.matchSnapshot();
+  });
+
 });

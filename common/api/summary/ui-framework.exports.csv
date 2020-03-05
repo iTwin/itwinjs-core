@@ -24,6 +24,8 @@ public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 public;AppNotificationManager 
 public;Backstage 
 beta;BackstageActionItem 
+beta;BackstageAppButton(props: BackstageAppButtonProps): JSX.Element
+beta;BackstageAppButtonProps
 beta;BackstageComposer(props: BackstageComposerProps): JSX.Element
 internal;BackstageComposerActionItem({ item }: BackstageComposerActionItemProps): JSX.Element
 internal;BackstageComposerActionItemProps
@@ -138,7 +140,6 @@ beta;CursorUpdatedEvent
 beta;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
-beta;CustomToolbarButton 
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
@@ -219,7 +220,6 @@ public;GroupItemDef
 public;GroupItemProps 
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
-beta;IconHelper
 beta;IModelConnectedCategoryTree: any
 alpha;IModelConnectedModelsTree: any
 beta;IModelConnectedNavigationWidget: any
@@ -491,6 +491,8 @@ internal;ToolSettingsZoneProps
 internal;ToolUiManager
 public;ToolUiProvider 
 public;ToolWidget 
+beta;ToolWidgetComposer(props: ToolWidgetComposerProps): JSX.Element
+beta;ToolWidgetComposerProps
 public;ToolWidgetDef 
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 

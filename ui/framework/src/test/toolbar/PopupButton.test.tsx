@@ -8,6 +8,8 @@ import { render, cleanup, fireEvent } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 
+// tslint:disable: deprecation
+
 import TestUtils from "../TestUtils";
 import {
   PopupButton,

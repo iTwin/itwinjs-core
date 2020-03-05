@@ -8,7 +8,7 @@
 
 import * as React from "react";
 
-/** Callback ref typeguard. */
+/** Callback ref type guard. */
 function isRefCallback<T>(ref: React.Ref<T>): ref is (_: T | null) => void {
   return typeof ref === "function";
 }
@@ -21,8 +21,11 @@ export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>) {
     for (const ref of refs) {
       if (isRefCallback(ref)) {
         ref(instance);
-      } else if (ref) {
-        (ref as React.MutableRefObject<T | null>).current = instance;
+      } else {
+        // istanbul ignore else
+        if (ref) {
+          (ref as React.MutableRefObject<T | null>).current = instance;
+        }
       }
     }
   }, [...refs]); // eslint-disable-line react-hooks/exhaustive-deps

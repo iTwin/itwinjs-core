@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Base
  */
-import { useRefEffect } from "./useRefEffect";
+import { useRefEffect } from "@bentley/ui-core";
 
 /** Delays raising click event to determine if action is double click.
  * Will not fire click event if action is double click.

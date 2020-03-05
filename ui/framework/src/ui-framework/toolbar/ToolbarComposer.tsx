@@ -13,6 +13,7 @@ import {
   GroupButton, ActionButton, ConditionalBooleanValue,
 } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
+import { ToolbarWithOverflow } from "@bentley/ui-components";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Direction, ToolbarPanelAlignment, Toolbar } from "@bentley/ui-ninezone";
 import { ToolbarHelper } from "./ToolbarHelper";
@@ -20,6 +21,8 @@ import { useDefaultToolbarItems } from "./useDefaultToolbarItems";
 import { useUiItemsProviderToolbarItems } from "./useUiItemsProviderToolbarItems";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
+import { ToolbarDragInteractionContext } from "./DragInteraction";
 
 /** Private function to set up sync event monitoring of toolbar items */
 function useToolbarItemSyncEffect(itemsManager: ToolbarItemsManager, syncIdsOfInterest: string[]) {
@@ -81,6 +84,19 @@ function cloneGroup(inGroup: GroupButton): GroupButton {
   return clonedGroup;
 }
 
+function getSortedChildren(group: GroupButton): Array<ActionButton | GroupButton> {
+  const sortedChildren = group.items
+    .filter((item) => !(ConditionalBooleanValue.getValue(item.isHidden)))
+    .sort((a, b) => a.itemPriority - b.itemPriority)
+    .map((i) => {
+      if (ToolbarItemUtilities.isGroupButton(i)) {
+        return { ...i, items: getSortedChildren(i) };
+      }
+      return i;
+    });
+  return sortedChildren;
+}
+
 /** local function to combine items from Stage and from Plugins */
 function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems: ReadonlyArray<CommonToolbarItem>) {
   const items: CommonToolbarItem[] = [];
@@ -112,7 +128,7 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
   if (groupChildren.length) {
     groupChildren.forEach((toolbarItem: ActionButton | GroupButton) => {
       const parentGroup = findPotentialParentGroup(items, toolbarItem.parentToolGroupId!);
-      // if parent group is located add item to it, if not just add to item list
+      // if parent group is located, add item to it, if not just add to item list
       if (parentGroup && ToolbarItemUtilities.isGroupButton(parentGroup)) {
         parentGroup.items.push(toolbarItem);
       } else {
@@ -121,7 +137,18 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
       }
     });
   }
-  return items;
+
+  const availableItems = items
+    .filter((item) => !(ConditionalBooleanValue.getValue(item.isHidden)))
+    .sort((a, b) => a.itemPriority - b.itemPriority)
+    .map((i) => {
+      if (ToolbarItemUtilities.isGroupButton(i)) {
+        return { ...i, items: getSortedChildren(i) };
+      }
+      return i;
+    });
+
+  return availableItems;
 }
 
 /** Properties for the [[ToolbarComposer]] React components
@@ -166,29 +193,37 @@ export function ToolbarComposer(props: ExtensibleToolbarProps) {
   const toolbarOrientation = orientation === ToolbarOrientation.Horizontal ? Orientation.Horizontal : Orientation.Vertical;
   const expandsTo = toolbarOrientation === Orientation.Horizontal ? Direction.Bottom : usage === ToolbarUsage.ViewNavigation ? Direction.Left : Direction.Right;
   const panelAlignment = (toolbarOrientation === Orientation.Horizontal && usage === ToolbarUsage.ViewNavigation) ? ToolbarPanelAlignment.End : ToolbarPanelAlignment.Start;
+  const version = useFrameworkVersion();
+  const isDragEnabled = React.useContext(ToolbarDragInteractionContext);
 
-  const createReactNodes = (): React.ReactNode => {
-    const availableItems = toolbarItems
-      .filter((item) => !(ConditionalBooleanValue.getValue(item.isHidden)))
-      .sort((a, b) => a.itemPriority - b.itemPriority);
+  if ("1" === version) {
+    const createReactNodes = (): React.ReactNode => {
+      const availableItems = toolbarItems;
+      if (0 === availableItems.length)
+        return null;
 
-    if (0 === availableItems.length)
-      return null;
+      const createdNodes = availableItems.map((item: CommonToolbarItem) => {
+        return ToolbarHelper.createNodeForToolbarItem(item);
+      });
+      return createdNodes;
+    };
 
-    const createdNodes = availableItems.map((item: CommonToolbarItem) => {
-      return ToolbarHelper.createNodeForToolbarItem(item);
-    });
-    return createdNodes;
-  };
+    return <Toolbar
+      expandsTo={expandsTo}
+      panelAlignment={panelAlignment}
+      items={
+        <>
+          {createReactNodes()}
+        </>
+      }
+    />;
+  }
 
-  return <Toolbar
+  return <ToolbarWithOverflow
     expandsTo={expandsTo}
     panelAlignment={panelAlignment}
-    items={
-      <>
-        {createReactNodes()}
-      </>
-    }
+    items={toolbarItems}
+    useDragInteraction={isDragEnabled}
   />;
 
 }

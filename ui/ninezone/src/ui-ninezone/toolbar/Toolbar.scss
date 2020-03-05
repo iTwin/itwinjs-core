@@ -72,6 +72,9 @@
     }
 
     &.nz-panel-alignment-end {
+      display: flex;
+      justify-content: flex-end;
+
       > .nz-panels {
         > * > * {
           justify-content: end;

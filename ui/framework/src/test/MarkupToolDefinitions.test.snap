@@ -4,7 +4,7 @@ exports[`MarkupToolDefinitions ToolWidget should render correctly with Markup To
 <ToolWidgetWithDef
   horizontalToolbar={
     <Toolbar
-      expandsTo={3}
+      expandsTo={4}
       items={
         <UNDEFINED>
           <ActionItemButton
@@ -343,10 +343,10 @@ exports[`MarkupToolDefinitions ToolWidget should render correctly with Markup To
       "_toolbarBaseName": "[TestFrontstage]ToolWidget",
       "_tooltip": "",
       "_widgetType": 0,
-      "horizontalDirection": 3,
+      "horizontalDirection": 4,
       "horizontalItems": undefined,
       "horizontalPanelAlignment": 0,
-      "verticalDirection": 2,
+      "verticalDirection": 3,
       "verticalItems": undefined,
       "verticalPanelAlignment": 0,
     }

@@ -15,9 +15,11 @@ import {
   ListPickerBase,
   ListItemType,
   ListPickerPropsExtended,
+  FrameworkVersion,
 } from "../../ui-framework";
 import { Item, Group } from "@bentley/ui-ninezone";
 import { WithOnOutsideClickProps } from "@bentley/ui-core";
+import { ToolbarItemContext } from "@bentley/ui-components";
 
 const title = "Test";
 const listItems = new Array<ListItem>();
@@ -60,14 +62,67 @@ describe("ListPicker", () => {
     TestUtils.terminateUiFramework();
   });
 
-  describe("rendering", () => {
+  describe("v2 rendering", () => {
     it("should render correctly", () => {
       enzyme.shallow(
-        <ListPicker
-          title={title}
-          items={listItems}
-          setEnabled={setEnabled}
-        />,
+        <FrameworkVersion version="2">
+          <ToolbarItemContext.Provider
+            value={{
+              hasOverflow: false,
+              useHeight: false,
+              onResize: () => { },
+            }}
+          >
+            <ListPicker
+              title={title}
+              items={listItems}
+              setEnabled={setEnabled}
+            />
+          </ToolbarItemContext.Provider>
+        </FrameworkVersion>,
+      ).should.matchSnapshot();
+    });
+
+    it("v2 should mount & unmount correctly", () => {
+      const enableAllFunc = () => { };
+      const disableAllFunc = () => { };
+      const invertFunc = () => { };
+
+      const component = enzyme.mount(
+        <FrameworkVersion version="2">
+          <ToolbarItemContext.Provider
+            value={{
+              hasOverflow: false,
+              useHeight: false,
+              onResize: () => { },
+            }}
+          >
+            <ListPicker
+              title={title}
+              items={listItems}
+              setEnabled={setEnabled}
+              enableAllFunc={enableAllFunc}
+              disableAllFunc={disableAllFunc}
+              invertFunc={invertFunc}
+            />
+          </ToolbarItemContext.Provider>
+        </FrameworkVersion>,
+
+      );
+      component.unmount();
+    });
+  });
+
+  describe("v1 rendering", () => {
+    it("should render correctly", () => {
+      enzyme.shallow(
+        <FrameworkVersion version="1">
+          <ListPicker
+            title={title}
+            items={listItems}
+            setEnabled={setEnabled}
+          />
+        </FrameworkVersion>,
       ).should.matchSnapshot();
     });
 
@@ -77,14 +132,16 @@ describe("ListPicker", () => {
       const invertFunc = () => { };
 
       const component = enzyme.mount(
-        <ListPicker
-          title={title}
-          items={listItems}
-          setEnabled={setEnabled}
-          enableAllFunc={enableAllFunc}
-          disableAllFunc={disableAllFunc}
-          invertFunc={invertFunc}
-        />,
+        <FrameworkVersion version="1">
+          <ListPicker
+            title={title}
+            items={listItems}
+            setEnabled={setEnabled}
+            enableAllFunc={enableAllFunc}
+            disableAllFunc={disableAllFunc}
+            invertFunc={invertFunc}
+          />
+        </FrameworkVersion>,
       );
       component.unmount();
     });

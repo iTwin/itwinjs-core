@@ -9,7 +9,7 @@
 import * as React from "react";
 
 import { BadgeType, ConditionalStringValue } from "@bentley/ui-abstract";
-import { CommonProps, PointProps, RectangleProps, Rectangle, BadgeUtilities } from "@bentley/ui-core";
+import { CommonProps, PointProps, RectangleProps, Rectangle, BadgeUtilities, IconHelper } from "@bentley/ui-core";
 import {
   Stacked as NZ_WidgetStack, HorizontalAnchor, VerticalAnchor, ResizeHandle, Tab, TabGroup, TabSeparator,
   WidgetZoneId, TabMode, HandleMode, DraggedWidgetManagerProps, VerticalAnchorHelpers, DisabledResizeHandles,
@@ -17,7 +17,6 @@ import {
 
 import { WidgetChangeHandler } from "../frontstage/FrontstageComposer";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { IconHelper } from "../shared/IconHelper";
 
 // cSpell:ignore Timedout
 

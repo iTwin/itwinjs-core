@@ -80,7 +80,6 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
       (props as any)[flagName] = (props as any)[flagName] === undefined ? true : !(props as any)[flagName];
       const viewFlags = ViewFlags.fromJSON(props);
       IModelApp.viewManager.selectedView.viewFlags = viewFlags;
-      IModelApp.viewManager.selectedView.invalidateRenderPlan();
       this.updateState();
     }
   }

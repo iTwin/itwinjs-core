@@ -28,10 +28,10 @@ beta;CommandHandler
 beta;CommonBackstageItem 
 beta;CommonItemProps
 beta;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
-beta;CommonToolbarItem = ActionButton | GroupButton | CustomDefinition
+beta;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
 beta;ConditionalBooleanValue
 beta;ConditionalStringValue
-beta;CustomDefinition 
+beta;CustomButtonDefinition 
 beta;CustomFormattedNumberParams 
 beta;DialogItem
 beta;DialogItemsChangedArgs

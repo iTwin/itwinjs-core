@@ -1,0 +1,74 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "variables";
+
+.components-toolbar-items-container {
+  $divider-color: $buic-background-toolbutton-stroke;
+  $border-color: $buic-background-toolbutton-stroke;
+  $border-radius: 3px;
+
+  border-color: $border-color;
+  border-width: $components-items-border-width;
+  border-radius: $border-radius;
+  border-style: solid;
+  display: inline-block;
+  vertical-align: bottom;
+  box-sizing: border-box;
+
+  &.components-vertical {
+    width: $components-desktop-toolbar-width;
+
+    > * {
+      height: $components-desktop-item-height;
+
+      &:not(:first-child) {
+        margin-top: $components-desktop-space-between-toolbar-items;
+
+        &:before {
+          content: '';
+          background-color: $divider-color;
+          display: block;
+          position: absolute;
+          pointer-events: none;
+          height: $components-desktop-space-between-toolbar-items;
+          width: 100%;
+          left: 0;
+          top: -$components-desktop-space-between-toolbar-items;
+        }
+      }
+    }
+  }
+
+  &.components-horizontal {
+    height: $components-desktop-toolbar-height;
+
+    > * {
+      display: inline-block;
+      height: 100%;
+      width: $components-desktop-item-width;
+
+      &:not(:first-child) {
+        margin-left: $components-desktop-space-between-toolbar-items;
+
+        &:before {
+          content: '';
+          background-color: $divider-color;
+          display: block;
+          position: absolute;
+          pointer-events: none;
+          width: $components-desktop-space-between-toolbar-items;
+          height: 100%;
+          left: -$components-desktop-space-between-toolbar-items;
+          top: 0;
+        }
+      }
+    }
+  }
+
+  > * {
+    vertical-align: bottom;
+  }
+}

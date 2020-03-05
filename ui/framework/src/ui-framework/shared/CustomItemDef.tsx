@@ -26,7 +26,8 @@ export class CustomItemDef extends ActionButtonItemDef {
   private static _sId = 0;
   public static customIdPrefix = "Custom-";
   public customId: string;
-  public reactElement: React.ReactNode;
+  public reactElement?: React.ReactNode;
+  public popupPanelNode?: React.ReactNode;
 
   constructor(props: CustomItemProps) {
     super(props);
@@ -39,6 +40,7 @@ export class CustomItemDef extends ActionButtonItemDef {
     }
 
     this.reactElement = props.reactElement;
+    this.popupPanelNode = props.popupPanelNode;
   }
 
   public get id(): string {
@@ -52,7 +54,7 @@ export class CustomItemDef extends ActionButtonItemDef {
     let clone: React.ReactNode;
 
     // istanbul ignore else
-    if (React.isValidElement(this.reactElement)) {
+    if (this.reactElement && React.isValidElement(this.reactElement)) {
       const key = this.getKey(index);
       const cloneProps: CloneProps = {
         key,

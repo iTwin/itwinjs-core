@@ -66,6 +66,8 @@
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.23",
     "@bentley/icons-generic-webfont": "^1.0.0",
+    "@bentley/ui-abstract": "2.0.0-dev.23",
+    "@bentley/ui-components": "2.0.0-dev.23",
     "@bentley/ui-core": "2.0.0-dev.23",
     "@bentley/webpack-tools": "2.0.0-dev.23",
     "@testing-library/react": "^8.0.1",
@@ -113,7 +115,6 @@
     "react-markdown": "^3.2.1",
     "react-resize-detector": "^3.2.0",
     "react-router-dom": "^4.2.2",
-    "resize-observer-polyfill": "1.5.1",
     "rimraf": "^2.6.2",
     "sass-loader": "^7.1.0",
     "sinon": "^7.5.0",

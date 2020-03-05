@@ -8,13 +8,14 @@
 
 import * as React from "react";
 
-import { Tools as NZ_ToolsWidget, AppButton } from "@bentley/ui-ninezone";
+import { ToolsArea, AppButton } from "@bentley/ui-ninezone";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { Icon } from "@bentley/ui-core";
 
 import widgetIconSvg from "@bentley/icons-generic/icons/home.svg";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
-import { Backstage } from "../backstage/Backstage";
+import { BackstageManager } from "../backstage/BackstageManager";
+import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 
 /** Properties for the [[BackstageAppButton]] React component
  * @beta
@@ -28,8 +29,11 @@ export interface BackstageAppButtonProps {
  * @beta
  */
 export function BackstageAppButton(props: BackstageAppButtonProps) {
+  const backstageToggleCommand = BackstageManager.getBackstageToggleCommand(props.icon);
   const [icon, setIcon] = React.useState(props.icon ? props.icon : IconSpecUtilities.createSvgIconSpec(widgetIconSvg));
   const isInitialMount = React.useRef(true);
+  const useSmallAppButton = "1" !== useFrameworkVersion();
+
   React.useEffect(() => {
     if (isInitialMount.current)
       isInitialMount.current = false;
@@ -39,8 +43,8 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
   }, [props.icon]);
 
   return (
-    <AppButton
-      onClick={Backstage.backstageToggleCommand.execute} // tslint:disable-line:deprecation
+    <AppButton small={useSmallAppButton}
+      onClick={backstageToggleCommand.execute}
       icon={
         <Icon iconSpec={icon} />
       }
@@ -68,12 +72,10 @@ export interface ToolWidgetComposerProps {
  */
 export function ToolWidgetComposer(props: ToolWidgetComposerProps) {
   return (
-    <NZ_ToolsWidget
+    <ToolsArea
       button={props.cornerItem}
       horizontalToolbar={props.horizontalToolbar}
       verticalToolbar={props.verticalToolbar}
-      preserveSpace={true}
-      isNavigation={false}
       onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
     />
   );

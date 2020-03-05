@@ -8,9 +8,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, useResizeObserver } from "@bentley/ui-core";
 import { useToolSettingsEntry } from "./Docked";
-import { useResizeObserver } from "../base/useResizeObserver";
 import "./Setting.scss";
 
 /** Properties of [[ToolSetting]] component.

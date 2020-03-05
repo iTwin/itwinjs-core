@@ -193,7 +193,6 @@ export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelecto
       initialized: true,
     });
   }
-
   /**
    * Query the views and set the initial state with the iModel's views.
    */

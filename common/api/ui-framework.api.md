@@ -34,7 +34,8 @@ import { CommonToolbarItem } from '@bentley/ui-abstract';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
-import { CustomDefinition } from '@bentley/ui-abstract';
+import { CustomButtonDefinition } from '@bentley/ui-abstract';
+import { CustomToolbarItem } from '@bentley/ui-components';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogItemsManager } from '@bentley/ui-abstract';
@@ -366,6 +367,15 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 export interface BackstageActionItem extends BackstageActionItem_2 {
     // (undocumented)
     readonly type: BackstageItemType.ActionItem;
+}
+
+// @beta
+export function BackstageAppButton(props: BackstageAppButtonProps): JSX.Element;
+
+// @beta
+export interface BackstageAppButtonProps {
+    // (undocumented)
+    icon?: string;
 }
 
 // @beta
@@ -1436,7 +1446,9 @@ export class CustomItemDef extends ActionButtonItemDef {
     // (undocumented)
     get id(): string;
     // (undocumented)
-    reactElement: React.ReactNode;
+    popupPanelNode?: React.ReactNode;
+    // (undocumented)
+    reactElement?: React.ReactNode;
     // (undocumented)
     toolbarReactNode(index?: number): React.ReactNode;
 }
@@ -1446,13 +1458,9 @@ export interface CustomItemProps extends ItemProps {
     // (undocumented)
     customId?: string;
     // (undocumented)
-    reactElement: React_2.ReactNode;
-}
-
-// @beta
-export interface CustomToolbarButton extends CustomDefinition {
+    popupPanelNode?: React_2.ReactNode;
     // (undocumented)
-    itemDef: CustomItemDef;
+    reactElement?: React_2.ReactNode;
 }
 
 // @public
@@ -2386,14 +2394,6 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
     orientation: Orientation;
     // (undocumented)
     relativePosition: RelativePosition;
-}
-
-// @beta
-export class IconHelper {
-    static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
-    static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
-    // (undocumented)
-    static get reactIconKey(): string;
 }
 
 // @beta
@@ -3424,7 +3424,7 @@ export interface PointerMessageProps extends CommonProps {
     message?: string;
 }
 
-// @public
+// @public @deprecated
 export class PopupButton extends React.Component<PopupButtonProps, BaseItemState> {
     constructor(props: PopupButtonProps);
     // (undocumented)
@@ -3437,16 +3437,16 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     render(): JSX.Element | null;
 }
 
-// @public
+// @public @deprecated
 export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
 
-// @public
+// @public @deprecated
 export interface PopupButtonChildrenRenderPropArgs {
     // (undocumented)
     closePanel: () => void;
 }
 
-// @public
+// @public @deprecated
 export interface PopupButtonProps extends ItemProps, CommonProps {
     // (undocumented)
     children?: React.ReactNode | PopupButtonChildrenRenderProp;
@@ -4460,7 +4460,7 @@ export enum SyncUiEventId {
     SelectionSetChanged = "selectionsetchanged",
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
-    ViewStateChanged = "viewstateshanged",
+    ViewStateChanged = "viewstatechanged",
     WidgetStateChanged = "widgetstatechanged",
     WorkflowActivated = "workflowactivated"
 }
@@ -4665,7 +4665,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
 // @beta
 export class ToolbarHelper {
     static constructChildToolbarItems(itemDefs: AnyItemDef[]): Array<ActionButton | GroupButton_2>;
-    static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomDefinition>): CustomToolbarButton;
+    static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomButtonDefinition>): CustomToolbarItem;
     // (undocumented)
     static createNodeForToolbarItem(item: CommonToolbarItem, onItemExecuted?: OnItemExecutedFunc): React.ReactNode;
     static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef): CommonToolbarItem;
@@ -4674,7 +4674,7 @@ export class ToolbarHelper {
     // (undocumented)
     static getIconReactNode(item: ActionButton | GroupButton_2): React.ReactNode;
     // @alpha
-    static isCustomToolbarButton: (item: CommonToolbarItem) => item is CustomToolbarButton;
+    static isCustomToolbarButton: (item: CommonToolbarItem) => item is CustomToolbarItem;
 }
 
 // @alpha
@@ -4871,6 +4871,16 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
     render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<ToolWidgetState>;
+}
+
+// @beta
+export function ToolWidgetComposer(props: ToolWidgetComposerProps): JSX.Element;
+
+// @beta
+export interface ToolWidgetComposerProps {
+    cornerItem?: React.ReactNode;
+    horizontalToolbar?: React.ReactNode;
+    verticalToolbar?: React.ReactNode;
 }
 
 // @public @deprecated

@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { renderHook, act } from "@testing-library/react-hooks";
-import { useRefs } from "../../ui-ninezone";
+import { useRefs } from "../../../ui-core/utils/hooks/useRefs";
 
 describe("useRefs", () => {
   it("should set ref objects and invoke ref callbacks", () => {

@@ -54,5 +54,8 @@ export function FrameworkVersionSwitch(props: FrameworkVersionSwitchProps) {
     case "2": {
       return <>{props.v2}</>;
     }
+    default: {
+      return <>{props.v1}</>;
+    }
   }
 }

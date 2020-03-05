@@ -8,12 +8,190 @@ import ToolSettings from "./ToolSettings";
 import { ToolSettingProps } from "./ToolSetting";
 import { WidgetPanels } from "@src/widget-panels/Panels";
 import { NineZoneProvider, createNineZoneState, NineZoneStateReducer, addPanelWidget, addTab, useNineZoneDispatch, TOGGLE_PANEL_PINNED, TOGGLE_PANEL_SPAN, TOGGLE_PANEL_COLLAPSED, isHorizontalPanelState, usePanel, useWidget } from "@src/base/NineZone";
+import { AppButton } from "@src/widget/tools/button/App";
+import { ToolsArea } from "@src/widget/ToolsArea";
+import { NavigationArea } from "@src/widget/NavigationArea";
+
+import { Direction } from "@src/utilities/Direction";
+import { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
+import { ToolbarWithOverflow, ToolbarUtils, ToolbarItem } from "@bentley/ui-components";
+
 import "./Zones.scss";
+import { CommonToolbarItem, GroupButton, ActionButton } from "@bentley/ui-abstract";
 
 let id = 0;
 const getId = () => {
   return id++;
 };
+
+const iconNames = ["icon-app-1", "icon-app-2", "icon-smiley-happy", "icon-smiley-neutral", "icon-smiley-sad", "icon-star-hollow", "icon-help-hollow"];
+function getChildItem(tool: SimpleTool, index: number): GroupButton | ActionButton {
+  if (tool.items) {
+    const children = tool.items.map((childTool: SimpleTool, childIndex: number) => {
+      return getChildItem(childTool, childIndex);
+    });
+    return {
+      id: `${tool.id}-${index}`,
+      itemPriority: index * 10,
+      icon: iconNames[index],
+      label: tool.id,
+      panelLabel: `Panel ${tool.id}`,
+      isDisabled: tool.isDisabled,
+      isActive: tool.isActive,
+      items: children,
+    };
+  }
+  return getActionButtonFromSimpleTool(tool, index);
+}
+
+function getToolbarItem(tool: SimpleTool, index: number): ToolbarItem {
+  if (tool.panel) {
+    return {
+      id: `${tool.id}-${index}`,
+      itemPriority: index * 10,
+      icon: iconNames[index],
+      label: tool.id,
+      isDisabled: tool.isDisabled,
+      isActive: tool.isActive,
+      isCustom: true,
+      panelContentNode: tool.panel,
+    };
+  } else if (tool.items) {
+    const children = tool.items.map((childTool: SimpleTool, childIndex: number) => {
+      return getChildItem(childTool, childIndex);
+    });
+    return {
+      id: `${tool.id}-${index}`,
+      itemPriority: index * 10,
+      icon: iconNames[index],
+      label: tool.id,
+      panelLabel: `Panel ${tool.id}`,
+      isDisabled: tool.isDisabled,
+      isActive: tool.isActive,
+      items: children,
+    };
+  }
+  return getActionButtonFromSimpleTool(tool, index);
+}
+
+interface SimpleTool {
+  readonly id: string;
+  readonly isActive?: boolean;
+  readonly isDisabled?: boolean;
+  readonly isHidden?: boolean;
+  readonly panel?: React.ReactNode;
+  readonly items?: SimpleTool[];
+}
+
+function handleClick() {
+  // tslint:disable-next-line: no-console
+  console.log("click");
+}
+
+const getActionButtonFromSimpleTool = (tool: SimpleTool, index: number) => {
+  return {
+    id: `${tool.id}-${index}`,
+    itemPriority: index * 10,
+    icon: iconNames[index],
+    label: tool.id,
+    isDisabled: tool.isDisabled,
+    isActive: tool.isActive,
+    execute: handleClick,
+  };
+};
+
+function DemoToolWidget() {
+  const horizontalTools = [
+    { id: "toolH1" },
+    { id: "toolH2", isDisabled: true },
+    { id: "toolH3", isActive: true },
+    { id: "toolH4" },
+    { id: "toolHP1", panel: <div>This is a very long Hello World!</div> },
+    { id: "toolHG1", items: [{ id: "toolGi1" }, { id: "toolGi2" }, { id: "toolGi3" }] },
+  ];
+
+  const verticalTools = [
+    { id: "toolV1" },
+    { id: "toolV2", isDisabled: true },
+    { id: "toolVG1", items: [{ id: "toolGi1" }, { id: "toolGi2" }, { id: "toolGi3", items: [{ id: "toolngi1" }, { id: "toolngi2" }, { id: "toolngi3" }] }] },
+    { id: "toolV3", isActive: true },
+    { id: "toolCP1", panel: <div><p>Hello World!</p><p>Hello World!</p><p>Hello World!</p></div> },
+    { id: "toolV4" },
+  ];
+
+  return <ToolsArea
+    button={
+      <AppButton icon={<i className="icon icon-home" />}
+        onClick={() => { }}
+      />
+    }
+
+    horizontalToolbar={
+      horizontalTools.length > 0 &&
+      <ToolbarWithOverflow
+        expandsTo={Direction.Bottom}
+        overflowExpandsTo={Direction.Right}
+        items={horizontalTools.map((tool: SimpleTool, index: number) => getToolbarItem(tool, index))}
+        panelAlignment={ToolbarPanelAlignment.Start}
+        useDragInteraction={true}
+      />
+    }
+
+    verticalToolbar={
+      verticalTools.length > 0 &&
+      <ToolbarWithOverflow
+        expandsTo={Direction.Right}
+        overflowExpandsTo={Direction.Top}
+        items={verticalTools.map((tool: SimpleTool, index: number) => getToolbarItem(tool, index))}
+        panelAlignment={ToolbarPanelAlignment.Start}
+        useDragInteraction={true}
+      />
+    }
+  />;
+}
+
+function DemoNavigationWidget() {
+  const horizontalTools = [
+    { id: "toolH1" },
+    { id: "toolH2", isDisabled: true },
+    { id: "toolH3", isActive: true },
+    { id: "toolH4" },
+    { id: "toolHP1", panel: <div>This is a very long Hello World!</div> },
+    { id: "toolHG1", items: [{ id: "toolGi1" }, { id: "toolGi2" }, { id: "toolGi3" }] },
+  ];
+
+  const verticalTools = [
+    { id: "toolV1" },
+    { id: "toolV2", isDisabled: true },
+    { id: "toolV3", isActive: true },
+    { id: "toolVP1", panel: <div><p>Hello World!</p><p>Hello World!</p><p>Hello World!</p></div> },
+    { id: "toolV4" },
+  ];
+
+  return <NavigationArea
+    horizontalToolbar={
+      horizontalTools.length > 0 &&
+      <ToolbarWithOverflow
+        expandsTo={Direction.Bottom}
+        overflowExpandsTo={Direction.Left}
+        items={horizontalTools.map((tool: SimpleTool, index: number) => getToolbarItem(tool, index))}
+        useDragInteraction={true}
+      /*  panelAlignment={ToolbarPanelAlignment.End} */
+      />
+    }
+
+    verticalToolbar={
+      verticalTools.length > 0 &&
+      <ToolbarWithOverflow
+        expandsTo={Direction.Left}
+        overflowExpandsTo={Direction.Top}
+        items={verticalTools.map((tool: SimpleTool, index: number) => getToolbarItem(tool, index))}
+        panelAlignment={ToolbarPanelAlignment.Start}
+        useDragInteraction={true}
+      />
+    }
+  />;
+}
 
 const useSettings = () => {
   const [settings, setSettings] = React.useState<ReadonlyArray<ToolSettingProps>>(() => [
@@ -115,6 +293,7 @@ export default function Zones() {
     initialState = addTab(initialState, "bottomPanel3", "bottomPanel3_1", { label: "Tab 1" });
     return initialState;
   });
+
   return (
     <React.StrictMode>
       <NineZoneProvider
@@ -127,7 +306,12 @@ export default function Zones() {
           <WidgetPanels
             className="nzdemo-widgetPanels"
             widgetContent={<WidgetContent />}
-            centerContent={<div className="nzdemo-toolbars"><div /><div /></div>}
+            centerContent={
+              <div className="nzdemo-toolbars">
+                <DemoToolWidget />
+                <DemoNavigationWidget />
+              </div>
+            }
           >
             <button onClick={add}>Add</button>
             <button onClick={addToStart}>Add To Start</button>

@@ -2,7 +2,7 @@
 
 exports[`<Toolbar /> renders correctly 1`] = `
 <ContextProvider
-  value={3}
+  value={4}
 >
   <PanelsProvider
     panels={null}

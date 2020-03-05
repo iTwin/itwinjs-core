@@ -66,7 +66,7 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
               "syncEventIds": Array [
                 "activecontentchanged",
                 "activeviewportchanged",
-                "viewstateshanged",
+                "viewstatechanged",
               ],
               "testFunc": [Function],
             },
@@ -86,7 +86,7 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
               "syncEventIds": Array [
                 "activecontentchanged",
                 "activeviewportchanged",
-                "viewstateshanged",
+                "viewstatechanged",
               ],
               "testFunc": [Function],
             },
@@ -203,7 +203,7 @@ exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix item
               "syncEventIds": Array [
                 "activecontentchanged",
                 "activeviewportchanged",
-                "viewstateshanged",
+                "viewstatechanged",
               ],
               "testFunc": [Function],
             },
@@ -223,7 +223,7 @@ exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix item
               "syncEventIds": Array [
                 "activecontentchanged",
                 "activeviewportchanged",
-                "viewstateshanged",
+                "viewstatechanged",
               ],
               "testFunc": [Function],
             },

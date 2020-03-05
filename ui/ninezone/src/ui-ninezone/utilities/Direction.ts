@@ -10,7 +10,7 @@
  * @beta
  */
 export enum Direction {
-  Left,
+  Left = 1,
   Top,
   Right,
   Bottom,
