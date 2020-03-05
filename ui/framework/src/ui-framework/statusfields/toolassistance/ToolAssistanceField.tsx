@@ -15,6 +15,7 @@ import {
   ToolAssistanceInstructions, ToolAssistanceInstruction, ToolAssistanceSection, ToolAssistanceImage,
   ToolAssistanceKeyboardInfo, ToolAssistanceInputMethod,
 } from "@bentley/imodeljs-frontend";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
   SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
   HorizontalTabs, UiCore, LabeledToggle, Icon,
@@ -449,8 +450,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         Logger.logError(UiFramework.loggerCategory(this), `getInstructionImage: Invalid keyboardInfo provided with image`);
       }
     } else if (typeof instruction.image === "string") {
-      if (instruction.image)
-        image = <div className="uifw-toolassistance-icon-large"><Icon iconSpec={instruction.image} /></div>;
+      if (instruction.image.length > 0) {
+        const svgSource = IconSpecUtilities.getSvgSource(instruction.image);
+        const className = (svgSource !== undefined) ? "uifw-toolassistance-svg" : "uifw-toolassistance-icon-large";
+        image = <div className={className}><Icon iconSpec={instruction.image} /></div>;
+      }
     } else if (instruction.image === ToolAssistanceImage.Keyboard) {
       if (instruction.keyboardInfo) {
         image = ToolAssistanceField.getInstructionKeyboardImage(instruction.keyboardInfo);

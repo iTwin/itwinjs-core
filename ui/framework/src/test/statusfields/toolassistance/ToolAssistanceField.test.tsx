@@ -321,6 +321,24 @@ describe("ToolAssistanceField", () => {
     wrapper.unmount();
   });
 
+  it("should support svg icons in string-based instruction.image", () => {
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+
+    const notifications = new AppNotificationManager();
+    const mainInstruction = ToolAssistance.createInstruction("svg:test", "This is the prompt");
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction);
+
+    notifications.setToolAssistance(instructions);
+
+    clickIndicator(wrapper);
+
+    expect(wrapper.find("div.uifw-toolassistance-svg").length).to.eq(1);
+    expect(wrapper.find("div.uifw-toolassistance-icon-large").length).to.eq(0);
+
+    wrapper.unmount();
+  });
+
   it("invalid modifier key info along with image should log error", () => {
     const spyMethod = sinon.spy(Logger, "logError");
     const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);

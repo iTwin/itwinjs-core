@@ -3,13 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Point3d } from "@bentley/geometry-core";
 import {
   IModelApp, PrimitiveTool,
   BeButtonEvent, EventHandled,
   ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
 } from "@bentley/imodeljs-frontend";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
 
-import { Point3d } from "@bentley/geometry-core";
+import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg";
 
 export class Tool2 extends PrimitiveTool {
   public static toolId = "Tool2";
@@ -54,13 +56,14 @@ export class Tool2 extends PrimitiveTool {
 
     const instruction13 = ToolAssistance.createInstruction("icon-cursor-click", "Using icon-cursor-click icon");
     const instruction14 = ToolAssistance.createKeyboardInstruction(ToolAssistance.createKeyboardInfo([ToolAssistance.ctrlKey, "Z"]), "Press Ctrl+Z", true);
+    const instruction15 = ToolAssistance.createInstruction(IconSpecUtilities.createSvgIconSpec(placeholderSvg), "Using placeholder SVG icon");
 
     const instructionT1 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, "Tap on something", false, ToolAssistanceInputMethod.Touch);
     const instructionT2 = ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, "Tap on something then drag", false, ToolAssistanceInputMethod.Touch);
 
     const section1 = ToolAssistance.createSection([
       instruction1, instruction2, instruction3, instruction4, instruction5, instruction6, instruction7, instruction8,
-      instruction9, instruction10, instruction11, instruction12, instruction13, instruction14,
+      instruction9, instruction10, instruction11, instruction12, instruction13, instruction14, instruction15,
       instructionT1, instructionT2],
       ToolAssistance.inputsLabel);
 
