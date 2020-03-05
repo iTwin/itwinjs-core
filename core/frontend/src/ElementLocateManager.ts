@@ -91,6 +91,22 @@ export class LocateResponse {
   public snapStatus = SnapStatus.Success;
   public reason?: string;
   public explanation = "";
+
+  /** @internal */
+  public clone(): LocateResponse {
+    const other = new LocateResponse();
+    other.snapStatus = this.snapStatus;
+    other.reason = this.reason;
+    other.explanation = this.explanation;
+    return other;
+  }
+
+  /** @internal */
+  public setFrom(other: LocateResponse): void {
+    this.snapStatus = other.snapStatus;
+    this.reason = other.reason;
+    this.explanation = other.explanation;
+  }
 }
 
 /** @public */
