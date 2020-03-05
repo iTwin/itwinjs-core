@@ -88,7 +88,7 @@ describe("iModel", () => {
     IModelTestUtils.registerTestBimSchema();
     imodel1 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "CompatibilityTestSeed.bim"), IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel3 = SnapshotIModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel3 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
     imodel4 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "GetSetAutoHandledArrayProperties.bim"), IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
     imodel5 = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
 
@@ -97,11 +97,11 @@ describe("iModel", () => {
   });
 
   after(() => {
-    imodel1.closeSnapshot();
-    imodel2.closeSnapshot();
-    imodel3.closeSnapshot();
-    imodel4.closeSnapshot();
-    imodel5.closeSnapshot();
+    imodel1.close();
+    imodel2.close();
+    imodel3.close();
+    imodel4.close();
+    imodel5.close();
   });
 
   /** Roundtrip the entity through a json string and back to a new entity. */
@@ -1285,19 +1285,19 @@ describe("iModel", () => {
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
       assert.isFalse(codeSpec.isManagedWithIModel);
-      iModelDb.closeSnapshot();
+      iModelDb.close();
     }
 
     // Reopen iModel (ensure CodeSpec cache is cleared) and reconfirm CodeSpec properties
     if (true) {
-      const iModelDb = SnapshotIModelDb.openSnapshot(iModelFileName);
+      const iModelDb = SnapshotIModelDb.open(iModelFileName);
       const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(codeSpecName);
       assert.isTrue(Id64.isValidId64(codeSpec.id));
       assert.equal(codeSpec.name, codeSpecName);
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
       assert.isFalse(codeSpec.isManagedWithIModel);
-      iModelDb.closeSnapshot();
+      iModelDb.close();
     }
   });
 
@@ -1583,7 +1583,7 @@ describe("iModel", () => {
     next = iModel.queryNextAvailableFileProperty(myPropsStr);
     assert.equal(0, next, "queryNextAvailableFileProperty, should return 0 when none present");
 
-    iModel.closeSnapshot();
+    iModel.close();
   });
 
   it("The same promise can have two subscribers, and it will notify both.", async () => {
@@ -1816,9 +1816,9 @@ describe("iModel", () => {
     assert.equal(rootSubjectName1, snapshotRootSubjectName);
     assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
     assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
-    snapshotDb1.closeSnapshot();
-    snapshotDb2.closeSnapshot();
-    snapshotDb3.closeSnapshot();
+    snapshotDb1.close();
+    snapshotDb2.close();
+    snapshotDb3.close();
   });
 
   it("Password-protected Snapshot iModels", () => {
@@ -1830,22 +1830,22 @@ describe("iModel", () => {
     // create snapshot from scratch without a password, then unnecessarily specify a password to open
     let snapshotDb1 = SnapshotIModelDb.createFrom(imodel1, snapshotFile1);
     assert.equal(snapshotDb1.briefcase.briefcaseId, BriefcaseId.Snapshot);
-    snapshotDb1.closeSnapshot();
-    snapshotDb1 = SnapshotIModelDb.openSnapshot(snapshotFile1, { password: "unnecessaryPassword" });
+    snapshotDb1.close();
+    snapshotDb1 = SnapshotIModelDb.open(snapshotFile1, { password: "unnecessaryPassword" });
     assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
 
     // create snapshot from scratch and give it a password
     let snapshotDb2 = SnapshotIModelDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password" });
     assert.equal(snapshotDb2.briefcase.briefcaseId, BriefcaseId.Snapshot);
-    snapshotDb2.closeSnapshot();
-    snapshotDb2 = SnapshotIModelDb.openSnapshot(snapshotFile2, { password: "password" });
+    snapshotDb2.close();
+    snapshotDb2 = SnapshotIModelDb.open(snapshotFile2, { password: "password" });
     assert.isTrue(snapshotDb2.nativeDb.isEncrypted());
 
     // create a new snapshot from a non-password-protected snapshot and then give it a password
     let snapshotDb3 = SnapshotIModelDb.createFrom(imodel1, snapshotFile3, { password: "password" });
     assert.equal(snapshotDb3.briefcase.briefcaseId, BriefcaseId.Snapshot);
-    snapshotDb3.closeSnapshot();
-    snapshotDb3 = SnapshotIModelDb.openSnapshot(snapshotFile3, { password: "password" });
+    snapshotDb3.close();
+    snapshotDb3 = SnapshotIModelDb.open(snapshotFile3, { password: "password" });
     assert.isTrue(snapshotDb3.nativeDb.isEncrypted());
 
     // it is invalid to create a snapshot from a password-protected iModel
@@ -1854,9 +1854,9 @@ describe("iModel", () => {
     assert.throws(() => SnapshotIModelDb.createFrom(snapshotDb2, snapshotFile4, { password: "password" }), IModelError);
     assert.isFalse(IModelJsFs.existsSync(snapshotFile4));
 
-    snapshotDb1.closeSnapshot();
-    snapshotDb2.closeSnapshot();
-    snapshotDb3.closeSnapshot();
+    snapshotDb1.close();
+    snapshotDb2.close();
+    snapshotDb3.close();
   });
 
   it("Run plain SQL", () => {
@@ -1927,8 +1927,8 @@ describe("iModel", () => {
   it("Run plain SQL against readonly connection", () => {
     let iModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "sqlitesqlreadonlyconnection.bim"), { rootSubject: { name: "test" } });
     const iModelPath: string = iModel.briefcase.pathname;
-    iModel.closeSnapshot();
-    iModel = SnapshotIModelDb.openSnapshot(iModelPath);
+    iModel.close();
+    iModel = SnapshotIModelDb.open(iModelPath);
 
     iModel.withPreparedSqliteStatement("SELECT Name,StrData FROM be_Prop WHERE Namespace='ec_Db'", (stmt: SqliteStatement) => {
       let rowCount: number = 0;
@@ -1962,7 +1962,7 @@ describe("iModel", () => {
       }
       assert.equal(rowCount, 2);
     });
-    iModel.closeSnapshot();
+    iModel.close();
   });
 
   it("containsClass", () => {

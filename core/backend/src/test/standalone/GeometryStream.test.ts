@@ -49,7 +49,7 @@ describe("GeometryStream", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
   });
 
   it("create GeometricElement3d using line codes 1-7", async () => {
@@ -967,7 +967,7 @@ describe("Mass Properties", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
   });
 
   it("volume", async () => {

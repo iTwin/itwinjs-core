@@ -21,7 +21,7 @@ describe("Wire Format Snippets", () => {
   });
 
   after(() => {
-    iModel.closeSnapshot();
+    iModel.close();
   });
 
   it("Root Subject", () => {

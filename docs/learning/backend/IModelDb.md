@@ -23,6 +23,6 @@ A *snapshot* iModel is a file that is disconnected from iModelHub and therefore 
 Once created, a *snapshot* iModel is read-only and cannot be changed.
 This makes *snapshot* iModels ideal for archival or data transfer purposes.
 
-Use [SnapshotIModelDb.openSnapshot]($backend) to open an existing *snapshot* iModel.
+Use [SnapshotIModelDb.open]($backend) to open an existing *snapshot* iModel.
 
-Use [SnapshotIModelDb.closeSnapshot]($backend) to close the *snapshot* iModel.
+Use [SnapshotIModelDb.close]($backend) to close the *snapshot* iModel.

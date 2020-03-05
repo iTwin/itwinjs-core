@@ -132,7 +132,7 @@ describe("tile tree", () => {
 
   after(() => {
     if (db)
-      db.closeSnapshot();
+      db.close();
   });
 
   it("should update after changing project extents and purging", async () => {

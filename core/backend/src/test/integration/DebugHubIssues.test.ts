@@ -228,7 +228,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const iModelName = "ReadOnlyTest";
     const iModelDir = path.join(iModelRootDir, iModelName);
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
-    const iModel = StandaloneIModelDb.openStandalone(briefcasePathname, OpenMode.ReadWrite);
+    const iModel = StandaloneIModelDb.open(briefcasePathname, OpenMode.ReadWrite);
     assert.isDefined(iModel);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);

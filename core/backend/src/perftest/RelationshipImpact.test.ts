@@ -187,7 +187,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
       }
       verifyCounts(seedIModel, seedCount);
       seedIModel.saveChanges();
-      seedIModel.closeSnapshot();
+      seedIModel.close();
     }
   });
   after(() => {
@@ -240,7 +240,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     }
     perfimodel.saveChanges();
     verifyCounts(perfimodel, seedCount + opCount);
-    perfimodel.closeSnapshot();
+    perfimodel.close();
 
     reporter.addEntry("RelPerfTest", "RelationshipInsert", "Execution time(s)", totalTimeLink, { count: opCount, sCount: seedCount, relType: "LinkTable" });
     reporter.addEntry("RelPerfTest", "RelationshipInsert", "Execution time(s)", totalTimeNav, { count: opCount, sCount: seedCount, relType: "NavProp" });
@@ -281,7 +281,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const elapsedTimeNav = (endTime1 - startTime1) / 1000.0;
 
     perfimodel.saveChanges();
-    perfimodel.closeSnapshot();
+    perfimodel.close();
 
     reporter.addEntry("RelPerfTest", "RelationshipRead", "Execution time(s)", elapsedTimeLink, { count: opCount, sCount: seedCount, relType: "LinkTable" });
     reporter.addEntry("RelPerfTest", "RelationshipRead", "Execution time(s)", elapsedTimeNav, { count: opCount, sCount: seedCount, relType: "NavProp" });
@@ -329,7 +329,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     // assert.equal(getCount(perfimodel, "TestRelationSchema:ADrivesB"), seedCount - opCount);
 
     perfimodel.saveChanges();
-    perfimodel.closeSnapshot();
+    perfimodel.close();
 
     reporter.addEntry("RelPerfTest", "RelationshipDelete", "Execution time(s)", elapsedTimeLink, { count: opCount, sCount: seedCount, relType: "LinkTable" });
     reporter.addEntry("RelPerfTest", "RelationshipDelete", "Execution time(s)", elapsedTimeNav, { count: opCount, sCount: seedCount, relType: "NavProp" });

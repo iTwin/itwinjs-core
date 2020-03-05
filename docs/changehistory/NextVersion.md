@@ -60,6 +60,18 @@ The following are view tools that allow a user to navigate a plane or three-dime
 
 With a new major version of the iModel.js library come breaking API changes. The majority of those changes result from the removal of previously deprecated APIs. In addition, the following APis have changed in ways that may require calling code to be adjusted:
 
+### Briefcase iModels
+
+The methods for working with Briefcase iModels (those that are synchronized with iModelHub) have been moved into a new [BriefcaseIModelDb]($backend) class, which is a breaking change.
+The following methods have been moved from (the now abstract) [IModelDb]($backend) class:
+
+* `IModelDb.open` --> [BriefcaseIModelDb.open]($backend)
+* `IModelDb.create` --> [BriefcaseIModelDb.create]($backend)
+* `IModelDb.pullAndMergeChanges` --> [BriefcaseIModelDb.pullAndMergeChanges]($backend)
+* `IModelDb.pushChanges` --> [BriefcaseIModelDb.pushChanges]($backend)
+* `IModelDb.reverseChanges` --> [BriefcaseIModelDb.reverseChanges]($backend)
+* `IModelDb.reinstateChanges` --> [BriefcaseIModelDb.reinstateChanges]($backend)
+
 ### Snapshot iModels
 
 The methods for working with snapshot iModels have been moved into a new [SnapshotIModelDb]($backend) class, which is a breaking change.
@@ -67,8 +79,8 @@ The following renames are required:
 
 * `IModelDb.createSnapshot` (static) --> [SnapshotIModelDb.createEmpty]($backend)
 * `IModelDb.createSnapshot` --> [SnapshotIModelDb.createFrom]($backend)
-* `IModelDb.openSnapshot` --> [SnapshotIModelDb.openSnapshot]($backend)
-* `IModelDb.closeSnapshot` --> [SnapshotIModelDb.closeSnapshot]($backend)
+* `IModelDb.openSnapshot` --> [SnapshotIModelDb.open]($backend)
+* `IModelDb.closeSnapshot` --> [SnapshotIModelDb.close]($backend)
 
 ### GeometryStream iteration
 

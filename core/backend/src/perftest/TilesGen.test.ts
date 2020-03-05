@@ -231,7 +231,7 @@ async function generateTileFromSnapshot(iModelPath: string, useTileCache: boolea
       IModelJsFs.removeSync(tileCacheJournalFile);
   }
   const sp = new StopWatch();
-  const conn = SnapshotIModelDb.openSnapshot(iModelPath);
+  const conn = SnapshotIModelDb.open(iModelPath);
   const clientReqCtx = new ClientRequestContext();
   const tileStats: TileStats[] = [];
   const models = await getGeometric3dModels(conn);

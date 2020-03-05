@@ -134,7 +134,7 @@ describe("PerformanceElementsTests", () => {
         }
 
         seedIModel.saveChanges();
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
   });
@@ -176,7 +176,7 @@ describe("PerformanceElementsTests", () => {
             const row = stmt.getRow();
             assert.equal(row.count, size + opCount);
           });
-          perfimodel.closeSnapshot();
+          perfimodel.close();
         }
       }
     }
@@ -212,7 +212,7 @@ describe("PerformanceElementsTests", () => {
             const row = stmt.getRow();
             assert.equal(row.count, size - opCount);
           });
-          perfimodel.closeSnapshot();
+          perfimodel.close();
         }
       }
     }
@@ -249,7 +249,7 @@ describe("PerformanceElementsTests", () => {
 
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsRead", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });
-          perfimodel.closeSnapshot();
+          perfimodel.close();
         }
       }
     }
@@ -303,7 +303,7 @@ describe("PerformanceElementsTests", () => {
           }
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsUpdate", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });
-          perfimodel.closeSnapshot();
+          perfimodel.close();
         }
       }
     }

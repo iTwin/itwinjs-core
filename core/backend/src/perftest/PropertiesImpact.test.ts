@@ -114,7 +114,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
         }
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestPropsSchema:PropElement"), seedCount);
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
   });
@@ -148,7 +148,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestPropsSchema:PropElement"), opCount + seedCount);
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("PropPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, properties: propCount });
     }
@@ -174,7 +174,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestPropsSchema:PropElement"), seedCount - opCount);
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("PropPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
@@ -206,7 +206,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("PropPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
   });
@@ -253,7 +253,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       }
 
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("PropPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
 
@@ -366,7 +366,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         }
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestIndexSchema:PropElement"), seedCount);
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
     // second round for Index per class seed files
@@ -395,7 +395,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(getCount(seedIModel, "TestIndexSchema:PropElement0"), seedCount);
 
         seedIModel.saveChanges();
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
 
@@ -430,7 +430,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement"), opCount + seedCount);
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
@@ -458,7 +458,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement0"), opCount + seedCount);
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
@@ -485,7 +485,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement"), seedCount - opCount);
 
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
@@ -511,7 +511,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement0"), seedCount - opCount);
 
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
@@ -542,7 +542,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
     // second round for per class
@@ -571,7 +571,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
   });
@@ -614,7 +614,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(elemFound.primProp1, "Updated Value");
       }
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
     // second round for per class
@@ -656,7 +656,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(elemFound.primProp1, "Updated Value");
       }
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
   });

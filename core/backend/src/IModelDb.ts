@@ -2164,8 +2164,6 @@ export class BriefcaseIModelDb extends IModelDb {
    */
   public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     requestContext.enter();
-    if (this.isSnapshot)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a snapshot iModel. Use IModelDb.closeSnapshot() instead");
 
     if (this.needsConcurrencyControl) {
       await this.concurrencyControl.onClose(requestContext);
@@ -2270,7 +2268,7 @@ export class SnapshotIModelDb extends IModelDb {
 
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
-   * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
+   * > Note: A *snapshot* cannot be modified after [[close]] is called.
    * @param snapshotFile The file that will contain the new iModel *snapshot*
    * @param args The parameters that define the new iModel *snapshot*
    * @returns A writeable SnapshotIModelDb
@@ -2331,13 +2329,12 @@ export class SnapshotIModelDb extends IModelDb {
     return snapshotDb;
   }
 
-  // WIP: rename openSnapshot --> open when there is no longer a static open method in the IModelDb superclass
   /** Open a read-only iModel *snapshot*.
    * @see [[close]]
    * @throws [IModelError]($common) If the file is not found or is not a valid *snapshot*.
    * @beta
    */
-  public static openSnapshot(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb {
+  public static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb {
     const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(filePath, OpenMode.Readonly, encryptionPropsString);
     const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, OpenMode.Readonly);
@@ -2349,15 +2346,12 @@ export class SnapshotIModelDb extends IModelDb {
     throw new IModelError(IModelStatus.BadRequest, "SnapshotIModelDb.open cannot be used to open a briefcase", Logger.logError, loggerCategory);
   }
 
-  // WIP: rename closeSnapshot --> close after there is no longer a close method in the IModelDb superclass
   /** Close this local read-only iModel *snapshot*, if it is currently open.
    * > Note: A *snapshot* cannot be modified after this function is called.
    * @throws IModelError if the iModel is not open, or is not a *snapshot*.
    * @beta
    */
-  public closeSnapshot(): void {
-    if (!this.isSnapshot)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot use to close a managed iModel. Use IModelDb.close() instead");
+  public close(): void {
     BriefcaseManager.closeStandalone(this.briefcase);
     this.clearBriefcaseEntry(); // WIP: should not need to call this for snapshots
   }
@@ -2400,13 +2394,12 @@ export class StandaloneIModelDb extends IModelDb {
   // }
 
   // WIP: enforce new/high briefcaseId
-  // WIP: get rid of enableTransactions parameter
   /** Open an iModel from a local file.
    * @param filePath The pathname of the iModel
    * @param openMode Open mode for database
    * @throws [[IModelError]]
    */
-  public static openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): StandaloneIModelDb {
+  public static open(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): StandaloneIModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(filePath, openMode);
     const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
     return new StandaloneIModelDb(briefcaseEntry, iModelToken, OpenParams.standalone(openMode));
@@ -2415,9 +2408,7 @@ export class StandaloneIModelDb extends IModelDb {
   /** Close this standalone iModel, if it is currently open
    * @throws IModelError if the iModel is not open, or is not standalone
    */
-  public closeStandalone(): void {
-    if (!this.isSnapshot)
-      throw new IModelError(BentleyStatus.ERROR, "Cannot use to close a managed iModel. Use IModelDb.close() instead");
+  public close(): void {
     BriefcaseManager.closeStandalone(this.briefcase);
     this.clearBriefcaseEntry();
   }

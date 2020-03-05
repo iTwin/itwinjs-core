@@ -29,12 +29,12 @@ async function setUpTest() {
   const iModelFile = IModelTestUtils.prepareOutputFile("RobotWorldRpc.bim");
   const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
   IModelJsFs.copySync(seedFile, iModelFile);
-  const iModel = StandaloneIModelDb.openStandalone(iModelFile, OpenMode.ReadWrite);
+  const iModel = StandaloneIModelDb.open(iModelFile, OpenMode.ReadWrite);
   await RobotWorld.importSchema(requestContext, iModel);
   iModel.saveChanges();
   PhysicalModel.insert(iModel, IModel.rootSubjectId, "test");
   iModel.saveChanges();
-  iModel.closeStandalone();
+  iModel.close();
 }
 
 describe("RobotWorldRpc", () => {

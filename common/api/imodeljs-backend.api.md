@@ -3609,12 +3609,12 @@ export class SheetViewDefinition extends ViewDefinition2d {
 
 // @beta
 export class SnapshotIModelDb extends IModelDb {
-    closeSnapshot(): void;
+    close(): void;
     static createEmpty(snapshotFile: string, args: CreateIModelProps & IModelEncryptionProps): SnapshotIModelDb;
     static createFrom(iModelDb: IModelDb, snapshotFile: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb;
     // @internal (undocumented)
     static find(iModelToken: IModelToken): SnapshotIModelDb;
-    static openSnapshot(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb;
+    static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb;
 }
 
 // @public
@@ -3785,8 +3785,8 @@ export enum SqliteValueType {
 
 // @internal
 export class StandaloneIModelDb extends IModelDb {
-    closeStandalone(): void;
-    static openStandalone(filePath: string, openMode?: OpenMode): StandaloneIModelDb;
+    close(): void;
+    static open(filePath: string, openMode?: OpenMode): StandaloneIModelDb;
 }
 
 // @internal

@@ -91,6 +91,6 @@ describe("Functional Domain", () => {
       }
     });
 
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 });

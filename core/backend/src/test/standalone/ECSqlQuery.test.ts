@@ -23,19 +23,19 @@ describe("ECSql Query", () => {
   let imodel5: SnapshotIModelDb;
 
   before(async () => {
-    imodel1 = SnapshotIModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("test.bim"));
-    imodel2 = SnapshotIModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel3 = SnapshotIModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
-    imodel4 = SnapshotIModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
-    imodel5 = SnapshotIModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel1 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel2 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel3 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel4 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel5 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
   });
 
   after(async () => {
-    imodel1.closeSnapshot();
-    imodel2.closeSnapshot();
-    imodel3.closeSnapshot();
-    imodel4.closeSnapshot();
-    imodel5.closeSnapshot();
+    imodel1.close();
+    imodel2.close();
+    imodel3.close();
+    imodel4.close();
+    imodel5.close();
   });
 
   // new new addon build

@@ -29,7 +29,7 @@ describe("TxnManager", () => {
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
     assert.equal(performUpgrade(testFileName), 0);
-    imodel = StandaloneIModelDb.openStandalone(testFileName, OpenMode.ReadWrite);
+    imodel = StandaloneIModelDb.open(testFileName, OpenMode.ReadWrite);
     await imodel.importSchemas(requestContext, [schemaFileName]); // will throw an exception if import fails
 
     const builder = new GeometryStreamBuilder();
@@ -52,7 +52,7 @@ describe("TxnManager", () => {
     imodel.nativeDb.enableTxnTesting();
   });
 
-  after(() => imodel.closeStandalone());
+  after(() => imodel.close());
 
   it("Undo/Redo", async () => {
     const models = imodel.models;

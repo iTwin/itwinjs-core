@@ -218,7 +218,7 @@ export class HubUtility {
 
     Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
     HubUtility.createStandaloneIModel(briefcasePathname, iModelDir);
-    const iModel = StandaloneIModelDb.openStandalone(briefcasePathname, OpenMode.ReadWrite);
+    const iModel = StandaloneIModelDb.open(briefcasePathname, OpenMode.ReadWrite);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
 
@@ -242,7 +242,7 @@ export class HubUtility {
       status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Reinstate);
     }
 
-    iModel.closeStandalone();
+    iModel.close();
     assert(status === ChangeSetStatus.Success, "Error applying change sets");
   }
 
@@ -390,10 +390,10 @@ export class HubUtility {
       IModelJsFs.unlinkSync(iModelPathname);
     IModelJsFs.copySync(seedPathname, iModelPathname);
 
-    const iModel = StandaloneIModelDb.openStandalone(iModelPathname, OpenMode.ReadWrite);
+    const iModel = StandaloneIModelDb.open(iModelPathname, OpenMode.ReadWrite);
     iModel.briefcase.nativeDb.setBriefcaseId(BriefcaseId.Standalone);
     iModel.briefcase.briefcaseId = BriefcaseId.Standalone;
-    iModel.closeStandalone();
+    iModel.close();
 
     return iModelPathname;
   }

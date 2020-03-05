@@ -22,7 +22,7 @@ describe("Example Code", () => {
   });
 
   after(() => {
-    iModel.closeStandalone();
+    iModel.close();
   });
 
   // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncCallback

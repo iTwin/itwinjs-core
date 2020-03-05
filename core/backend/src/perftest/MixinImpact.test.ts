@@ -162,7 +162,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
         }
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestMixinSchema:PropElement"), ((2 * seedCount * hCount) + seedCount));
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
   });
@@ -186,7 +186,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       });
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("MixinPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { hierarchy: hCount, sCount: seedCount });
     }
   });

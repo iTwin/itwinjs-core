@@ -20,7 +20,7 @@ describe("ElementAspect", () => {
   });
 
   after(() => {
-    iModel.closeSnapshot();
+    iModel.close();
   });
 
   it("should be able to get aspects from test file", () => {

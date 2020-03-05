@@ -56,9 +56,9 @@ describe("RulesEmbedding", () => {
   }
 
   function createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotIModelDb {
-    const seedDb = SnapshotIModelDb.openSnapshot(seedFileName);
+    const seedDb = SnapshotIModelDb.open(seedFileName);
     const testDb = SnapshotIModelDb.createFrom(seedDb, testFileName);
-    seedDb.closeSnapshot();
+    seedDb.close();
     return testDb;
   }
 
@@ -76,7 +76,7 @@ describe("RulesEmbedding", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
     nativePlatform.dispose();
 
     fs.unlink(testIModelName, (err: Error) => {

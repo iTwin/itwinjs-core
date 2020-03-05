@@ -1646,7 +1646,7 @@ describe("ECSqlStatement", () => {
         });
 
     } finally {
-      iModel.closeSnapshot();
+      iModel.close();
     }
   });
 

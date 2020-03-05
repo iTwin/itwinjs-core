@@ -90,6 +90,6 @@ describe("Generic Domain", () => {
     }
 
     iModelDb.saveChanges("Insert Generic elements");
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 });

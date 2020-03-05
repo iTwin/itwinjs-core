@@ -163,8 +163,8 @@ describe("IModelTransformer", () => {
 
     IModelTransformerUtils.dumpIModelInfo(sourceDb);
     IModelTransformerUtils.dumpIModelInfo(targetDb);
-    sourceDb.closeSnapshot();
-    targetDb.closeSnapshot();
+    sourceDb.close();
+    targetDb.close();
   });
 
   function count(iModelDb: IModelDb, classFullName: string): number {
@@ -208,8 +208,8 @@ describe("IModelTransformer", () => {
     const targetSubject: Subject = targetDb.elements.getElement<Subject>(targetSubjectId);
     assert.equal(targetSubject.description, "Target Subject Description");
     // Close
-    sourceDb.closeSnapshot();
-    targetDb.closeSnapshot();
+    sourceDb.close();
+    targetDb.close();
   });
 
   // WIP: Using IModelTransformer within the same iModel is not yet supported
@@ -229,34 +229,34 @@ describe("IModelTransformer", () => {
     transformer.processSubject(sourceSubjectId, targetSubjectId);
     transformer.dispose();
     iModelDb.saveChanges();
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 
   // WIP: Included as skipped until test file management strategy can be refined.
   it.skip("should successfully complete PlantSight workflow", async () => {
     // Source IModelDb
     const sourceFileName = "d:/data/DgnDb/PlantSight/PlantSightSource.bim";
-    const sourceDb = SnapshotIModelDb.openSnapshot(sourceFileName);
+    const sourceDb = SnapshotIModelDb.open(sourceFileName);
     const sourceModelId: Id64String = "0x20000000002";
     assert.doesNotThrow(() => sourceDb.elements.getElement<PhysicalPartition>(sourceModelId));
     assert.doesNotThrow(() => sourceDb.models.getModel<PhysicalModel>(sourceModelId));
     assert.isAtLeast(countElementsInModel(sourceDb, sourceModelId), 1, "Source Model should contain Elements");
     // Target IModelDb
     const targetFileName = IModelTestUtils.prepareOutputFile("IModelTransformer", "PlantSightTarget.bim");
-    const targetDb = SnapshotIModelDb.createFrom(SnapshotIModelDb.openSnapshot("d:/data/DgnDb/PlantSight/PlantSightTarget.bim"), targetFileName);
+    const targetDb = SnapshotIModelDb.createFrom(SnapshotIModelDb.open("d:/data/DgnDb/PlantSight/PlantSightTarget.bim"), targetFileName);
     // Import
     const transformer = new IModelTransformer(sourceDb, targetDb);
     transformer.processAll();
     transformer.dispose();
     // Close
-    sourceDb.closeSnapshot();
-    targetDb.closeSnapshot();
+    sourceDb.close();
+    targetDb.close();
   });
 
   it("should clone test file", async () => {
     // open source iModel
     const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
-    const sourceDb = SnapshotIModelDb.openSnapshot(sourceFileName);
+    const sourceDb = SnapshotIModelDb.open(sourceFileName);
     const numSourceElements: number = count(sourceDb, Element.classFullName);
     assert.exists(sourceDb);
     assert.isAtLeast(numSourceElements, 12);
@@ -280,8 +280,8 @@ describe("IModelTransformer", () => {
     assert.isAtLeast(numTargetElements, numSourceElements);
     assert.deepEqual(sourceDb.ecefLocation, targetDb.ecefLocation);
     // clean up
-    sourceDb.closeSnapshot();
-    targetDb.closeSnapshot();
+    sourceDb.close();
+    targetDb.close();
   });
 
   it("should transform 3d elements in target iModel", async () => {
@@ -323,8 +323,8 @@ describe("IModelTransformer", () => {
     assert.deepEqual(targetModelExtents, transform3d.multiplyRange(sourceModelExtents));
     // clean up
     transformer.dispose();
-    sourceDb.closeSnapshot();
-    targetDb.closeSnapshot();
+    sourceDb.close();
+    targetDb.close();
   });
 
   it("should sync Team iModels into Shared", async () => {
@@ -341,7 +341,7 @@ describe("IModelTransformer", () => {
       transformerA2S.processAll();
       transformerA2S.dispose();
       IModelTransformerUtils.dumpIModelInfo(iModelA);
-      iModelA.closeSnapshot();
+      iModelA.close();
       iModelShared.saveChanges("Imported A");
       IModelTransformerUtils.assertSharedIModelContents(iModelShared, ["A"]);
     }
@@ -357,7 +357,7 @@ describe("IModelTransformer", () => {
       transformerB2S.processAll();
       transformerB2S.dispose();
       IModelTransformerUtils.dumpIModelInfo(iModelB);
-      iModelB.closeSnapshot();
+      iModelB.close();
       iModelShared.saveChanges("Imported B");
       IModelTransformerUtils.assertSharedIModelContents(iModelShared, ["A", "B"]);
     }
@@ -386,11 +386,11 @@ describe("IModelTransformer", () => {
       transformerS2C.dispose();
       IModelTransformerUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
       IModelTransformerUtils.dumpIModelInfo(iModelConsolidated);
-      iModelConsolidated.closeSnapshot();
+      iModelConsolidated.close();
     }
 
     IModelTransformerUtils.dumpIModelInfo(iModelShared);
-    iModelShared.closeSnapshot();
+    iModelShared.close();
   });
 
   it("IModelCloneContext remap tests", async () => {
@@ -404,7 +404,7 @@ describe("IModelTransformer", () => {
     assert.equal(Id64.invalid, cloneContext.findTargetCodeSpecId(targetId));
     assert.throws(() => cloneContext.remapCodeSpec("SourceNotFound", "TargetNotFound"));
     cloneContext.dispose();
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 
   // WIP: Included as skipped until test file management strategy can be refined.
@@ -423,7 +423,7 @@ describe("IModelTransformer", () => {
     // Import campus
     if (true) {
       const campusIModelFileName = "D:/data/bim/MergeTest/Campus.bim";
-      const campusDb = SnapshotIModelDb.openSnapshot(campusIModelFileName);
+      const campusDb = SnapshotIModelDb.open(campusIModelFileName);
       IModelTransformerUtils.dumpIModelInfo(campusDb);
       const transformer = new IModelTransformer(campusDb, mergedDb, { targetScopeElementId: campusSubjectId });
       await transformer.processSchemas(new BackendRequestContext());
@@ -432,13 +432,13 @@ describe("IModelTransformer", () => {
       transformer.dispose();
       mergedDb.saveChanges("Imported Campus");
       BriefcaseManager.createStandaloneChangeSet(mergedDb.briefcase); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-      campusDb.closeSnapshot();
+      campusDb.close();
     }
 
     // Import garage
     if (true) {
       const garageIModelFileName = "D:/data/bim/MergeTest/Garage.bim";
-      const garageDb = SnapshotIModelDb.openSnapshot(garageIModelFileName);
+      const garageDb = SnapshotIModelDb.open(garageIModelFileName);
       IModelTransformerUtils.dumpIModelInfo(garageDb);
       const transformer = new IModelTransformer(garageDb, mergedDb, { targetScopeElementId: garageSubjectId });
       transformer.context.remapElement(IModel.rootSubjectId, garageSubjectId);
@@ -446,13 +446,13 @@ describe("IModelTransformer", () => {
       transformer.dispose();
       mergedDb.saveChanges("Imported Garage");
       BriefcaseManager.createStandaloneChangeSet(mergedDb.briefcase); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-      garageDb.closeSnapshot();
+      garageDb.close();
     }
 
     // Import building
     if (true) {
       const buildingIModelFileName = "D:/data/bim/MergeTest/Building.bim";
-      const buildingDb = SnapshotIModelDb.openSnapshot(buildingIModelFileName);
+      const buildingDb = SnapshotIModelDb.open(buildingIModelFileName);
       IModelTransformerUtils.dumpIModelInfo(buildingDb);
       const transformer = new IModelTransformer(buildingDb, mergedDb, { targetScopeElementId: buildingSubjectId });
       await transformer.processSchemas(new BackendRequestContext());
@@ -461,10 +461,10 @@ describe("IModelTransformer", () => {
       transformer.dispose();
       mergedDb.saveChanges("Imported Building");
       BriefcaseManager.createStandaloneChangeSet(mergedDb.briefcase); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-      buildingDb.closeSnapshot();
+      buildingDb.close();
     }
 
     IModelTransformerUtils.dumpIModelInfo(mergedDb);
-    mergedDb.closeSnapshot();
+    mergedDb.close();
   });
 });

@@ -213,6 +213,6 @@ describe("LinearReferencing Domain", () => {
 
     iModelDb.saveChanges("Insert Test LinearReferencing elements");
 
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 });

@@ -43,6 +43,6 @@ export class PerfTestDataMgr {
   }
   public closeDb() {
     if (this.db)
-      this.db.closeSnapshot();
+      this.db.close();
   }
 }

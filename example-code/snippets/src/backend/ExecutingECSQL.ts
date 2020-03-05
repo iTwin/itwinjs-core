@@ -197,6 +197,6 @@ function executeECSql_QueryResult(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_END__
 }
 
-const dummyIModel = SnapshotIModelDb.openSnapshot("");
+const dummyIModel = SnapshotIModelDb.open("");
 executeECSql_Binding(dummyIModel);
 executeECSql_QueryResult(dummyIModel);

@@ -23,7 +23,7 @@ describe("IModelSchemaLoader", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
   });
 
   it("should load a known EC Schema by name from an existing iModel", () => {

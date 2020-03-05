@@ -50,7 +50,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const sourceSeedDb = SnapshotIModelDb.createEmpty(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
     await IModelTransformerUtils.prepareSourceDb(sourceSeedDb);
-    sourceSeedDb.closeSnapshot();
+    sourceSeedDb.close();
     const sourceIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, sourceSeedFileName);
     assert.isTrue(Guid.isGuid(sourceIModelId));
 
@@ -63,7 +63,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const targetSeedDb = SnapshotIModelDb.createEmpty(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
     await IModelTransformerUtils.prepareTargetDb(targetSeedDb);
-    targetSeedDb.closeSnapshot();
+    targetSeedDb.close();
     const targetIModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, targetSeedFileName);
     assert.isTrue(Guid.isGuid(targetIModelId));
 

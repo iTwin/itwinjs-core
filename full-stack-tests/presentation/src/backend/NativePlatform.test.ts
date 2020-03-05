@@ -26,7 +26,7 @@ describe("NativePlatform", () => {
 
   beforeEach(() => {
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = SnapshotIModelDb.openSnapshot(testIModelName);
+    imodel = SnapshotIModelDb.open(testIModelName);
     expect(imodel).is.not.null;
     const TNativePlatform = createDefaultNativePlatform({ // tslint:disable-line: variable-name naming-convention
       id: "",
@@ -40,12 +40,12 @@ describe("NativePlatform", () => {
   afterEach(() => {
     nativePlatform.dispose();
     try {
-      imodel.closeSnapshot();
+      imodel.close();
     } catch (_e) { }
   });
 
   it("throws on closed imodel", async () => {
-    imodel.closeSnapshot();
+    imodel.close();
     expect(() => nativePlatform.getImodelAddon(imodel)).to.throw(IModelError);
   });
 

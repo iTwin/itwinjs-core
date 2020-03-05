@@ -160,7 +160,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         }
         assert.equal(getCount(seedIModel, "TestPolySchema:TestElement"), ((hCount + 1) * flatSeedCount));
         seedIModel.saveChanges();
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
     // now create single multiHierarchy based schema and iModel
@@ -197,7 +197,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       }
       assert.equal(getCount(seedIModel2, "TestPolySchema:TestElement"), ((multiHierarchyCount + 1) * multiSeedCount));
       seedIModel2.saveChanges();
-      seedIModel2.closeSnapshot();
+      seedIModel2.close();
     }
   });
   after(() => {
@@ -232,7 +232,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       reporter.addEntry("PolyPerfTest", "PolymorphicFlatRead", "Execution time(s)", totalTime / fhCount, { sCount: flatSeedCount, hCount: fhCount });
 
       perfimodel.saveChanges();
-      perfimodel.closeSnapshot();
+      perfimodel.close();
     }
   });
   it("Multi Read", async () => {
@@ -269,7 +269,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     reporter.addEntry("PolyPerfTest", "PolymorphicMultiRead", "Execution time(s)", parentTime, { sCount: multiSeedCount, hCount: multiHierarchyCount, level: "Base" });
 
     perfimodel.saveChanges();
-    perfimodel.closeSnapshot();
+    perfimodel.close();
   });
 
 });

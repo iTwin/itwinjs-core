@@ -172,9 +172,9 @@ export class IModelTestUtils {
 
   /** Orchestrates the steps necessary to create a new snapshot iModel from a seed file. */
   public static createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotIModelDb {
-    const seedDb: SnapshotIModelDb = SnapshotIModelDb.openSnapshot(seedFileName);
+    const seedDb: SnapshotIModelDb = SnapshotIModelDb.open(seedFileName);
     const testDb: SnapshotIModelDb = SnapshotIModelDb.createFrom(seedDb, testFileName);
-    seedDb.closeSnapshot();
+    seedDb.close();
     return testDb;
   }
 

@@ -68,7 +68,7 @@ describe("DumpIModel", () => {
   });
 
   after(() => {
-    iModel.closeSnapshot();
+    iModel.close();
   });
 
   it("should dump iModel to JSON", () => {

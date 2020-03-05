@@ -55,7 +55,7 @@ describe("ChangeMerging", () => {
     const testFileName = IModelTestUtils.prepareOutputFile("ChangeMerging", "upgraded.bim");
     const seedFileName = IModelTestUtils.resolveAssetFile("testImodel.bim");
     IModelJsFs.copySync(seedFileName, testFileName);
-    const upgradedDb = StandaloneIModelDb.openStandalone(testFileName, OpenMode.ReadWrite);
+    const upgradedDb = StandaloneIModelDb.open(testFileName, OpenMode.ReadWrite);
     upgradedDb.nativeDb.enableTxnTesting();
     upgradedDb.saveChanges();
     createChangeSet(upgradedDb);
@@ -67,9 +67,9 @@ describe("ChangeMerging", () => {
     IModelJsFs.copySync(testFileName, firstFileName);
     IModelJsFs.copySync(testFileName, secondFileName);
     IModelJsFs.copySync(testFileName, neutralFileName);
-    const firstDb = StandaloneIModelDb.openStandalone(firstFileName, OpenMode.ReadWrite);
-    const secondDb = StandaloneIModelDb.openStandalone(secondFileName, OpenMode.ReadWrite);
-    const neutralDb = StandaloneIModelDb.openStandalone(neutralFileName, OpenMode.ReadWrite);
+    const firstDb = StandaloneIModelDb.open(firstFileName, OpenMode.ReadWrite);
+    const secondDb = StandaloneIModelDb.open(secondFileName, OpenMode.ReadWrite);
+    const neutralDb = StandaloneIModelDb.open(neutralFileName, OpenMode.ReadWrite);
     assert.isTrue(firstDb !== secondDb);
     firstDb.nativeDb.enableTxnTesting();
     secondDb.nativeDb.enableTxnTesting();

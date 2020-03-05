@@ -133,7 +133,7 @@ describe("Analytical Domain", () => {
     assert.isUndefined(iModelDb.elements.getElement<GeometricElement3d>(elementId).typeDefinition, "Expect typeDefinition to be undefined");
     // close
     iModelDb.saveChanges();
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 
   it("should create elements exercising the Analytical domain", async () => {
@@ -189,6 +189,6 @@ describe("Analytical Domain", () => {
 
     iModelDb.saveChanges("Insert Test Analytical elements");
 
-    iModelDb.closeSnapshot();
+    iModelDb.close();
   });
 });

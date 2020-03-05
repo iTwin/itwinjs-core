@@ -16,7 +16,7 @@ describe("Useful ECSQL queries", () => {
   });
 
   after(() => {
-    iModel.closeSnapshot();
+    iModel.close();
   });
 
   it("should select by code value", () => {

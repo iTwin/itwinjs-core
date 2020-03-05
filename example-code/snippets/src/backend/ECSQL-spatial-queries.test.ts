@@ -17,7 +17,7 @@ describe("Useful ECSQL spatial queries", () => {
   });
 
   after(() => {
-    iModel.closeSnapshot();
+    iModel.close();
   });
 
   it("should execute spatial queries", () => {

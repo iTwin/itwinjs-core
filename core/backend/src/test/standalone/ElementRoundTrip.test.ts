@@ -418,7 +418,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
         new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
 
     imodel.saveChanges();
-    imodel.closeSnapshot();
+    imodel.close();
   });
 
   it("Roundtrip all type of properties via ElementApi, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
@@ -491,7 +491,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       verifyTestElement(stmtRow, actualValue);
     });
 
-    imodel.closeSnapshot();
+    imodel.close();
   });
 
   it("Roundtrip all type of properties via ElementAspectApi, ConcurrentQuery and ECSqlStatement via insert and update", async () => {
@@ -571,6 +571,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       verifyTestElementAspect(stmtRow, actualAspectValue[0]);
     });
 
-    imodel.closeSnapshot();
+    imodel.close();
   });
 });

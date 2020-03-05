@@ -109,7 +109,7 @@ describe("ElementAspectPerformance", () => {
       totalTimeDeleteSimpELeGet = totalTimeDeleteSimpELeGet + elapsedTime3;
 
     }
-    iModelDb.closeSnapshot();
+    iModelDb.close();
     reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeInsertSimpELeGet, { ElementCount: count1, Operation: "Insert" });
     reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeUpdateSimpELeGet, { ElementCount: count1, Operation: "Update" });
     reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeDeleteSimpELeGet, { ElementCount: count1, Operation: "Delete" });
@@ -182,7 +182,7 @@ describe("ElementAspectPerformance", () => {
       const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
       totalTimeDelete = totalTimeDelete + elapsedTime3;
     }
-    iModelDb.closeSnapshot();
+    iModelDb.close();
     reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeInsert, { ElementCount: count1, Operation: "Insert" });
     reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeUpdate, { ElementCount: count1, Operation: "Update" });
     reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeDelete, { ElementCount: count1, Operation: "Delete" });
@@ -263,7 +263,7 @@ describe("ElementAspectPerformance", () => {
       const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
       totalTimeDelete = totalTimeDelete + elapsedTime3;
     }
-    iModelDb.closeSnapshot();
+    iModelDb.close();
     reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeInsert, { ElementCount: count1, Operation: "Insert" });
     reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeUpdate, { ElementCount: count1, Operation: "Update" });
     reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeDelete, { ElementCount: count1, Operation: "Delete" });

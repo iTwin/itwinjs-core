@@ -24,7 +24,7 @@ class GltfGlobals {
   public static textureToMaterialMap: Map<Id64String, number>;
 
   public static initialize(iModelName: string, gltfName: string) {
-    GltfGlobals.iModel = SnapshotIModelDb.openSnapshot(iModelName);
+    GltfGlobals.iModel = SnapshotIModelDb.open(iModelName);
     process.stdout.write(`Opened ${iModelName} successfully...\n`);
 
     const gltfPathParts = path.parse(gltfName);
