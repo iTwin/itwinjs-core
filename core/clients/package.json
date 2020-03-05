@@ -4,6 +4,7 @@
   "description": "Clients for various Bentley Services used by iModel.js",
   "main": "lib/imodeljs-clients.js",
   "typings": "lib/imodeljs-clients",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "buildIModelJsModule",

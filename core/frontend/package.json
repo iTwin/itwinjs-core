@@ -4,6 +4,7 @@
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
     "build": "buildIModelJsModule",

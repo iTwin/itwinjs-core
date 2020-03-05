@@ -10,25 +10,27 @@ const IMJS_GLOBAL_OBJECT = "__IMODELJS_INTERNALS_DO_NOT_USE";
 const IMJS_GLOBAL_LIBS = `${IMJS_GLOBAL_OBJECT}.SHARED_LIBS`;
 const IMJS_GLOBAL_LIBS_VERS = `${IMJS_GLOBAL_LIBS}_VERS`;
 
-module.exports = class ImjsSharedLibExposerPlugin {
+/** The plugin adds any module that contains the `imodeljsSharedLibrary` field within its package.json to the global scope.
+ *
+ * The reason for adding it to the global scope is in support of iModel.js Extensions.
+ */
+export class IModeljsLibraryExportsPlugin {
   constructor() { }
 
   public apply(compiler: Compiler) {
-    compiler.hooks.normalModuleFactory.tap("ImjsSharedLibExposerPlugin", (normalModuleFactory) => {
-      normalModuleFactory.hooks.module.tap("ImjsSharedLibExposerPlugin", (mod, info) => {
+    compiler.hooks.normalModuleFactory.tap("IModeljsLibraryExportsPlugin", (normalModuleFactory) => {
+      normalModuleFactory.hooks.module.tap("IModeljsLibraryExportsPlugin", (mod, info) => {
         const pkgJson = info.resourceResolveData.descriptionFileData;
-        if (pkgJson.name === info.rawRequest) {
-          if (pkgJson.author && pkgJson.author.name === "Bentley Systems, Inc.") {
-            mod.___IS_BENTLEY = true;
-            mod.___IMJS_VER = pkgJson.version;
-            mod.___IMJS_NAME = pkgJson.name;
-          }
+        if (pkgJson.name === info.rawRequest && pkgJson.imodeljsSharedLibrary) {
+          mod.___IS_BENTLEY = true;
+          mod.___IMJS_VER = pkgJson.version;
+          mod.___IMJS_NAME = pkgJson.name;
         }
         return mod;
       });
     });
-    compiler.hooks.compilation.tap("ImjsSharedLibExposerPlugin", (compilation) => {
-      compilation.moduleTemplates.javascript.hooks.content.tap("ImjsSharedLibExposerPlugin", (source, module) => {
+    compiler.hooks.compilation.tap("IModeljsLibraryExportsPlugin", (compilation) => {
+      compilation.moduleTemplates.javascript.hooks.content.tap("IModeljsLibraryExportsPlugin", (source, module) => {
         if (!module.___IS_BENTLEY)
           return source;
         const pkgName = JSON.stringify(module.___IMJS_NAME);
@@ -42,4 +44,4 @@ module.exports = class ImjsSharedLibExposerPlugin {
       });
     });
   }
-};
+}

@@ -2,8 +2,9 @@
   "name": "@bentley/frontend-devtools",
   "version": "2.0.0-dev.23",
   "description": "Debug menu and supporting UI widgets",
-  "license": "MIT",
   "main": "lib/frontend-devtools.js",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
   "scripts": {
     "build": "buildIModelJsModule",
     "clean": "rimraf lib .rush package-deps.json",

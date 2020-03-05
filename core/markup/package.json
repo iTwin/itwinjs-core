@@ -2,8 +2,9 @@
   "name": "@bentley/imodeljs-markup",
   "version": "2.0.0-dev.23",
   "description": "iModel.js markup package",
-  "license": "MIT",
   "main": "lib/imodeljs-markup.js",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
   "scripts": {
     "build": "buildIModelJsModule",
     "clean": "rimraf lib .rush package-deps.json",

@@ -2,9 +2,10 @@
   "name": "@bentley/imodeljs-quantity",
   "version": "2.0.0-dev.23",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
-  "license": "MIT",
   "main": "lib/imodeljs-quantity.js",
   "typings": "lib/imodeljs-quantity",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/quantity"

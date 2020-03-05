@@ -5,6 +5,7 @@
   "license": "MIT",
   "main": "lib/ecschema-metadata.js",
   "typings": "lib/ecschema-metadata",
+  "imodeljsSharedLibrary": true,
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-metadata"

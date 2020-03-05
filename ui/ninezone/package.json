@@ -2,13 +2,14 @@
   "name": "@bentley/ui-ninezone",
   "version": "2.0.0-dev.23",
   "description": "iModel.js Nine-zone React UI components",
+  "main": "lib/ui-ninezone.js",
+  "typings": "lib/ui-ninezone",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/ninezone"
   },
-  "main": "lib/ui-ninezone.js",
-  "typings": "lib/ui-ninezone",
   "scripts": {
     "build": "buildIModelJsModule",
     "build:watch": "tsc -w",

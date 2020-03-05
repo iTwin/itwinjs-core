@@ -2,13 +2,14 @@
   "name": "@bentley/ui-abstract",
   "version": "2.0.0-dev.23",
   "description": "iModel.js UI abstractions",
+  "main": "lib/ui-abstract.js",
+  "typings": "lib/ui-abstract",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/abstract"
   },
-  "main": "lib/ui-abstract.js",
-  "typings": "lib/ui-abstract",
   "scripts": {
     "build": "buildIModelJsModule",
     "clean": "rimraf ./lib package-deps.json",

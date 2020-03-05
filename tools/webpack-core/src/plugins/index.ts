@@ -9,3 +9,5 @@ export * from "./CopyExternalsPlugin";
 export * from "./FrontendDefaultsPlugin";
 export * from "./PrettyLoggingPlugin";
 export * from "./WatchBackendPlugin";
+export * from "./IModeljsLibraryExportsPlugin";
+export * from "./IModeljsLibraryImportsPlugin";

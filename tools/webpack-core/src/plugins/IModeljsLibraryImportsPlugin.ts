@@ -3,13 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-const RawSource = require("webpack-sources").ConcatSource;
+import { Compiler } from "webpack";
+import { ConcatSource } from "webpack-sources";
 
 const IMJS_GLOBAL_OBJECT = "__IMODELJS_INTERNALS_DO_NOT_USE";
 const IMJS_GLOBAL_LIBS = `${IMJS_GLOBAL_OBJECT}.SHARED_LIBS`;
 const IMJS_GLOBAL_LIBS_VERS = `${IMJS_GLOBAL_LIBS}_VERS`;
 
-function getLoaderString(pkgName, pkgVersion) {
+function getLoaderString(pkgName: string, pkgVersion: string) {
   return `  module.exports = (() => {
     if (!window.${IMJS_GLOBAL_OBJECT} || !window.${IMJS_GLOBAL_LIBS_VERS} || !window.${IMJS_GLOBAL_LIBS})
       throw new Error("Expected globals are missing!");
@@ -21,32 +22,30 @@ function getLoaderString(pkgName, pkgVersion) {
   })();`;
 }
 
-module.exports = class ImjsSharedLibConsumerPlugin {
+export class IModeljsLibraryImportsPlugin {
   constructor() { }
 
-  apply(compiler) {
-    compiler.hooks.normalModuleFactory.tap('ImjsSharedLibConsumerPlugin', (normalModuleFactory) => {
-      normalModuleFactory.hooks.module.tap("ImjsSharedLibConsumerPlugin", (mod, info) => {
+  public apply(compiler: Compiler) {
+    compiler.hooks.normalModuleFactory.tap("IModeljsLibraryImportsPlugin", (normalModuleFactory) => {
+      normalModuleFactory.hooks.module.tap("IModeljsLibraryImportsPlugin", (mod, info) => {
         const pkgJson = info.resourceResolveData.descriptionFileData;
-        if (pkgJson.name === info.rawRequest) {
-          if (pkgJson.author && pkgJson.author.name === "Bentley Systems, Inc.") {
-            mod.___IS_BENTLEY = true;
-            mod.___IMJS_VER = pkgJson.version;
-            mod.___IMJS_NAME = pkgJson.name;
-            mod.shouldPreventParsing = () => true;
-          }
+        if (pkgJson.name === info.rawRequest && pkgJson.imodeljsSharedLibrary) {
+          mod.___IS_BENTLEY = true;
+          mod.___IMJS_VER = pkgJson.version;
+          mod.___IMJS_NAME = pkgJson.name;
+          mod.shouldPreventParsing = () => true;
         }
       });
     });
 
-    compiler.hooks.compilation.tap('ImjsSharedLibConsumerPlugin', (compilation) => {
-      compilation.moduleTemplates.javascript.hooks.content.tap("ImjsSharedLibConsumerPlugin", (source, module, ctx) => {
+    compiler.hooks.compilation.tap("IModeljsLibraryImportsPlugin", (compilation) => {
+      compilation.moduleTemplates.javascript.hooks.content.tap("IModeljsLibraryImportsPlugin", (source, module) => {
         if (!module.___IS_BENTLEY)
           return source;
 
         const pkgName = JSON.stringify(module.___IMJS_NAME);
-        const pkgVersion = JSON.stringify(module.___IMJS_VER)
-        return new RawSource(getLoaderString(pkgName, pkgVersion));
+        const pkgVersion = JSON.stringify(module.___IMJS_VER);
+        return new ConcatSource(getLoaderString(pkgName, pkgVersion));
       });
     });
   }

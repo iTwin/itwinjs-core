@@ -2,13 +2,14 @@
   "name": "@bentley/ui-components",
   "version": "2.0.0-dev.23",
   "description": "iModel.js UI complex components",
+  "main": "lib/ui-components.js",
+  "typings": "lib/ui-components",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/components"
   },
-  "main": "lib/ui-components.js",
-  "typings": "lib/ui-components",
   "scripts": {
     "build": "buildIModelJsModule",
     "clean": "rimraf lib .rush package-deps.json",

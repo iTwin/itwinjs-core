@@ -2,13 +2,14 @@
   "name": "@bentley/imodeljs-i18n",
   "version": "2.0.0-dev.23",
   "description": "iModel.js localization code",
+  "main": "lib/imodeljs-i18n",
+  "typings": "lib/imodeljs-i18n",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/core/i18n"
   },
-  "main": "lib/imodeljs-i18n",
-  "typings": "lib/imodeljs-i18n",
   "scripts": {
     "build": "buildIModelJsModule",
     "clean": "rimraf lib .rush package-deps.json",

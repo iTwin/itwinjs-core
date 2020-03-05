@@ -1,10 +1,11 @@
 {
   "name": "@bentley/geometry-core",
   "version": "2.0.0-dev.23",
-  "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
   "typings": "lib/geometry-core",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
   "scripts": {
     "build": "buildIModelJsModule",
     "clean": "rimraf lib .rush ./src/test/output package-deps.json",

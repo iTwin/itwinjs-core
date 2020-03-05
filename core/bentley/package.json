@@ -4,6 +4,7 @@
   "description": "Bentley JavaScript core components",
   "main": "lib/bentleyjs-core.js",
   "typings": "lib/bentleyjs-core",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",

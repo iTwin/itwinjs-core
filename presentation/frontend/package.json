@@ -2,6 +2,9 @@
   "name": "@bentley/presentation-frontend",
   "version": "2.0.0-dev.23",
   "description": "Frontend of iModel.js Presentation library",
+  "main": "lib/presentation-frontend.js",
+  "typings": "lib/presentation-frontend",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -18,8 +21,6 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "main": "lib/presentation-frontend.js",
-  "typings": "lib/presentation-frontend",
   "scripts": {
     "build": "npm run extract && buildIModelJsModule",
     "build:watch": "tsc -w",

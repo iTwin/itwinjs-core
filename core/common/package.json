@@ -2,9 +2,10 @@
   "name": "@bentley/imodeljs-common",
   "version": "2.0.0-dev.23",
   "description": "iModel.js components common to frontend and backend",
-  "license": "MIT",
   "main": "lib/imodeljs-common.js",
   "typings": "lib/imodeljs-common",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
   "scripts": {
     "build": "buildIModelJsModule",
     "clean": "rimraf lib .rush package-deps.json",
