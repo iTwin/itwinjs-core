@@ -8,8 +8,9 @@
 
 import { AbandonedError, assert, base64StringToUint8Array, IModelStatus } from "@bentley/bentleyjs-core";
 import { ImageSource } from "@bentley/imodeljs-common";
-import { Tile, TileTree, TileAdmin } from "./internal";
+import { Tile, TileTree } from "./internal";
 import { Viewport } from "../Viewport";
+import { ReadonlyViewportSet } from "../ViewportSet";
 import { IModelApp } from "../IModelApp";
 
 /** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with the [[Tile]] to execute the request for tile content and
@@ -21,14 +22,14 @@ export class TileRequest {
   public readonly tile: Tile;
   /** Determines the order in which pending requests are pulled off the queue to become active. A tile with a lower value takes precedence over one with a higher value. */
   /** The set of [[Viewport]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no viewport cares about it. */
-  public viewports: TileAdmin.ViewportSet;
+  public viewports: ReadonlyViewportSet;
   private _state: TileRequest.State;
   public priority = 0;
 
   public constructor(tile: Tile, vp: Viewport) {
     this._state = TileRequest.State.Queued;
     this.tile = tile;
-    this.viewports = IModelApp.tileAdmin.getViewportSet(vp);
+    this.viewports = IModelApp.tileAdmin.getViewportSetForRequest(vp);
   }
 
   public get state(): TileRequest.State { return this._state; }
@@ -49,7 +50,7 @@ export class TileRequest {
   public get tree(): TileTree { return this.tile.tree; }
 
   public addViewport(vp: Viewport): void {
-    this.viewports = IModelApp.tileAdmin.getViewportSet(vp, this.viewports);
+    this.viewports = IModelApp.tileAdmin.getViewportSetForRequest(vp, this.viewports);
   }
 
   /** Transition the request from "queued" to "active", kicking off a series of asynchronous operations usually beginning with an http request, and -

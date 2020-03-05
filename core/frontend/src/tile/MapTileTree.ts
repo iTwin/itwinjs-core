@@ -344,7 +344,6 @@ export abstract class MapTile extends RealityTile {
     }
 
     this.loadChildren(); // NB: asynchronous
-    this._childrenLastUsed = args.now;
 
     if (undefined !== this.children) {
       for (const child of this.children) {

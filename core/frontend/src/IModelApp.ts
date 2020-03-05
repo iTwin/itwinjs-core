@@ -8,7 +8,15 @@
 
 const copyrightNotice = 'Copyright © 2017-2019 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext, Logger, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import {
+  BeDuration,
+  ClientRequestContext,
+  Guid,
+  GuidString,
+  Logger,
+  SerializedClientRequestContext,
+  dispose,
+} from "@bentley/bentleyjs-core";
 import {
   AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
   SettingsAdmin, IAuthorizationClient, IncludePrefix,
@@ -182,8 +190,6 @@ export class IModelApp {
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
   private static _animationIntervalId?: number;
-  private static _tileTreePurgeTime?: BeTimePoint;
-  private static _tileTreePurgeInterval?: BeDuration;
   private static _features: FeatureTrackingManager;
   private static _nativeApp: boolean = false;
   private static _featureToggles: FeatureToggleClient;
@@ -457,12 +463,6 @@ export class IModelApp {
   public static startEventLoop() {
     if (!IModelApp._wantEventLoop) {
       IModelApp._wantEventLoop = true;
-      const treeExpirationTime = IModelApp.tileAdmin.tileTreeExpirationTime;
-      if (undefined !== treeExpirationTime) {
-        IModelApp._tileTreePurgeInterval = treeExpirationTime;
-        IModelApp._tileTreePurgeTime = BeTimePoint.now().plus(treeExpirationTime);
-      }
-
       window.addEventListener("resize", IModelApp.requestNextAnimation);
       IModelApp.requestIntervalAnimation();
       IModelApp.requestNextAnimation();
@@ -479,12 +479,6 @@ export class IModelApp {
       IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
       IModelApp.viewManager.renderLoop();
       IModelApp.tileAdmin.process();
-
-      if (undefined !== IModelApp._tileTreePurgeTime && IModelApp._tileTreePurgeTime.milliseconds < Date.now()) {
-        const now = BeTimePoint.now();
-        IModelApp._tileTreePurgeTime = now.plus(IModelApp._tileTreePurgeInterval!);
-        IModelApp.viewManager.purgeTileTrees(now.minus(IModelApp._tileTreePurgeInterval!));
-      }
     } catch (exception) {
       ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
         close(); // this does nothing in a web browser, closes electron.

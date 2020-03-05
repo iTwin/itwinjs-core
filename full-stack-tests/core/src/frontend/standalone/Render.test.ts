@@ -4,12 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as path from "path";
-import { TestViewport, testViewports, comparePixelData, Color, testOnScreenViewport, createOnScreenTestViewport } from "../TestViewport";
+import {
+  Color,
+  TestViewport,
+  comparePixelData,
+  createOnScreenTestViewport,
+  testOnScreenViewport,
+  testViewports,
+} from "../TestViewport";
+import { BeDuration } from "@bentley/bentleyjs-core";
 import { RenderMode, ColorDef, Hilite, RgbColor } from "@bentley/imodeljs-common";
 import {
   GraphicType,
   IModelApp,
   IModelConnection,
+  IModelTileTree,
   FeatureOverrideProvider,
   FeatureSymbology,
   OffScreenViewport,
@@ -17,6 +26,10 @@ import {
   RenderMemory,
   RenderSystem,
   SpatialViewState,
+  TileAdmin,
+  TileLoadStatus,
+  TileTree,
+  TileTreeSet,
   Viewport,
   ViewRect,
   Decorator,
@@ -681,6 +694,194 @@ describe("Render mirukuru", () => {
       const mapTreeRef = vp.displayStyle.backgroundMap;
       const mapTree = mapTreeRef.treeOwner.tileTree!;
       expect(mapTree).not.to.be.undefined;
+    });
+  });
+});
+
+describe("Tile unloading", async () => {
+  let imodel: IModelConnection;
+  const expirationSeconds = 0.1;
+  const waitSeconds = 4 * expirationSeconds;
+  const tileOpts = {
+    ignoreMinimumExpirationTimes: true,
+    tileExpirationTime: expirationSeconds,
+    realityTileExpirationTime: expirationSeconds,
+    tileTreeExpirationTime: expirationSeconds,
+    disableMagnification: true,
+    useProjectExtents: false,
+  };
+
+  before(async () => {
+    IModelApp.startup({ tileAdmin: TileAdmin.create(tileOpts) });
+
+    const imodelLocation = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
+    imodel = await IModelConnection.openSnapshot(imodelLocation);
+  });
+
+  after(async () => {
+    if (imodel)
+      await imodel.closeSnapshot();
+
+    IModelApp.shutdown();
+  });
+
+  function getTileTree(vp: Viewport): TileTree {
+    const trees = new TileTreeSet();
+    vp.discloseTileTrees(trees);
+    expect(trees.size).to.equal(1);
+    let tree: TileTree | undefined;
+    for (const t of trees.trees)
+      tree = t;
+
+    return tree!;
+  }
+
+  async function waitForExpiration(vp: TestViewport): Promise<void> {
+    const expiration = BeDuration.fromSeconds(waitSeconds);
+    await expiration.wait();
+    await vp.drawFrame(); // needed for off-screen viewports which don't participate in render loop
+  }
+
+  it("should not dispose of displayed tiles", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp) => {
+      vp.onRender.addListener((_) => vp.invalidateScene());
+      await vp.waitForAllTilesToRender();
+
+      const tree = getTileTree(vp);
+      (tree as IModelTileTree).debugMaxDepth = 1;
+      expect(tree.isDisposed).to.be.false;
+
+      vp.invalidateScene();
+      await vp.waitForAllTilesToRender();
+
+      const expectLoadedChildren = () => {
+        const children = tree.rootTile.children!;
+        expect(children).not.to.be.undefined;
+        expect(children.length).to.equal(8);
+        for (const child of children)
+          expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+      };
+
+      expectLoadedChildren();
+
+      await waitForExpiration(vp);
+
+      expect(tree.isDisposed).to.be.false;
+      expectLoadedChildren();
+    });
+  });
+
+  it("should dispose of undisplayed tiles", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp) => {
+      vp.onRender.addListener((_) => vp.invalidateScene());
+      await vp.waitForAllTilesToRender();
+
+      const tree = getTileTree(vp);
+      (tree as IModelTileTree).debugMaxDepth = 1;
+      expect(tree.isDisposed).to.be.false;
+
+      vp.invalidateScene();
+      await vp.waitForAllTilesToRender();
+
+      const children = tree.rootTile.children!;
+      expect(children).not.to.be.undefined;
+      expect(children.length).to.equal(8);
+      for (const child of children)
+        expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+
+      vp.scroll({ x: -9999, y: -9999 }, { animateFrustumChange: false });
+
+      await waitForExpiration(vp);
+
+      expect(tree.isDisposed).to.be.false;
+      expect(tree.rootTile.children).to.be.undefined;
+
+      for (const child of children)
+        expect(child.loadStatus).to.equal(TileLoadStatus.Abandoned);
+    });
+  });
+
+  it("should not dispose of displayed tile trees", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      const tree = getTileTree(vp);
+      expect(tree.isDisposed).to.be.false;
+
+      await waitForExpiration(vp);
+
+      expect(tree.isDisposed).to.be.false;
+    });
+  });
+
+  it("should dispose of undisplayed tile trees", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      const tree = getTileTree(vp);
+      expect(tree.isDisposed).to.be.false;
+
+      vp.changeViewedModels([]);
+
+      await waitForExpiration(vp);
+
+      expect(tree.isDisposed).to.be.true;
+    });
+  });
+
+  it("should not dispose of tile trees displayed in second viewport", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp1: TestViewport) => {
+      // vp1 loads+renders all tiles, then sits idle.
+      await vp1.waitForAllTilesToRender();
+      const tree = getTileTree(vp1);
+      expect(tree.isDisposed).to.be.false;
+
+      // vp2 renders continuously.
+      await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp2) => {
+        await vp2.waitForAllTilesToRender();
+
+        vp2.changeViewedModels([]);
+
+        await waitForExpiration(vp2);
+
+        // vp2 no longers views this tile tree, but vp1 still does.
+        expect(tree.isDisposed).to.be.false;
+      });
+    });
+  });
+
+  it("should not dispose of tiles displayed in second viewport", async () => {
+    await testViewports("0x41", imodel, 1854, 931, async (vp1: TestViewport) => {
+      // vp1 loads+renders all tiles, then sits idle.
+      await vp1.waitForAllTilesToRender();
+      const tree = getTileTree(vp1);
+      (tree as IModelTileTree).debugMaxDepth = 1;
+
+      // After changing max depth we must re-select tiles...
+      vp1.invalidateScene();
+      await vp1.waitForAllTilesToRender();
+
+      // vp2 renders continuously, selecting tiles each frame.
+      await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp2) => {
+        vp2.onRender.addListener((_) => vp2.invalidateScene());
+        await vp2.waitForAllTilesToRender();
+
+        const expectLoadedChildren = () => {
+          const children = tree.rootTile.children!;
+          expect(children).not.to.be.undefined;
+          expect(children.length).to.equal(8);
+          for (const child of children)
+            expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
+        };
+
+        expectLoadedChildren();
+
+        vp2.scroll({ x: -9999, y: -9999 }, { animateFrustumChange: false });
+
+        await waitForExpiration(vp2);
+
+        expectLoadedChildren();
+      });
     });
   });
 });

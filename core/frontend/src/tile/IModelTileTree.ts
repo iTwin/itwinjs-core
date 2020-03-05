@@ -6,7 +6,10 @@
  * @module Tile
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import {
+  BeTimePoint,
+  Id64String,
+} from "@bentley/bentleyjs-core";
 import {
   Range3d,
   Transform,
@@ -78,6 +81,8 @@ export class IModelTileTree extends TileTree {
   public readonly maxTilesToSkip: number;
   public readonly maxInitialTilesToSkip: number;
   public readonly contentIdProvider: ContentIdProvider;
+  /** Strictly for debugging/testing - forces tile selection to halt at the specified depth. */
+  public debugMaxDepth?: number;
 
   public constructor(params: IModelTileTreeParams) {
     super(params);
@@ -116,6 +121,10 @@ export class IModelTileTree extends TileTree {
       tile.drawGraphics(args);
 
     args.drawGraphics();
-    args.context.viewport.numSelectedTiles += tiles.length;
+  }
+
+  public prune(): void {
+    const olderThan = BeTimePoint.now().minus(this.expirationTime);
+    this.rootTile.pruneChildren(olderThan);
   }
 }

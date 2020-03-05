@@ -931,25 +931,6 @@ export abstract class Viewport implements IDisposable {
    */
   public lastFlashedElem?: string;
 
-  /** The number of tiles selected for display in the view as of the most recently-drawn frame.
-   * The tiles selected may not meet the desired level-of-detail for the view, instead being temporarily drawn while
-   * tiles of more appropriate level-of-detail are loaded asynchronously.
-   * @note This member should be treated as read-only - it should only be modified internally.
-   * @see Viewport.numRequestedTiles
-   * @see Viewport.numReadyTiles
-   */
-  public numSelectedTiles = 0;
-
-  /** The number of tiles which were ready and met the desired level-of-detail for display in the view as of the most recently-drawn frame.
-   * These tiles may *not* have been selected because some other (probably sibling) tiles were *not* ready for display.
-   * This is a useful metric for determining how "complete" the view is - e.g., one indicator of progress toward view completion can be expressed as:
-   * `  (numReadyTiles) / (numReadyTiles + numRequestedTiles)`
-   * @note This member should be treated as read-only - it should only be modified internally.
-   * @see Viewport.numSelectedTiles
-   * @see Viewport.numRequestedTiles
-   */
-  public numReadyTiles = 0;
-
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
   private static _nextViewportId = 1;
@@ -1412,6 +1393,7 @@ export abstract class Viewport implements IDisposable {
   protected constructor(target: RenderTarget) {
     this._target = target;
     this._viewportId = Viewport._nextViewportId++;
+    IModelApp.tileAdmin.registerViewport(this);
   }
 
   public dispose(): void {
@@ -1632,6 +1614,29 @@ export abstract class Viewport implements IDisposable {
    * @see Viewport.numSelectedTiles
    */
   public get numRequestedTiles(): number { return IModelApp.tileAdmin.getNumRequestsForViewport(this); }
+
+  /** The number of tiles selected for display in the view as of the most recently-drawn frame.
+   * The tiles selected may not meet the desired level-of-detail for the view, instead being temporarily drawn while
+   * tiles of more appropriate level-of-detail are loaded asynchronously.
+   * @see Viewport.numRequestedTiles
+   * @see Viewport.numReadyTiles
+   */
+  public get numSelectedTiles(): number {
+    const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
+    return undefined !== tiles ? tiles.selected.size : 0;
+  }
+
+  /** The number of tiles which were ready and met the desired level-of-detail for display in the view as of the most recently-drawn frame.
+   * These tiles may *not* have been selected because some other (probably sibling) tiles were *not* ready for display.
+   * This is a useful metric for determining how "complete" the view is - e.g., one indicator of progress toward view completion can be expressed as:
+   * `  (numReadyTiles) / (numReadyTiles + numRequestedTiles)`
+   * @see Viewport.numSelectedTiles
+   * @see Viewport.numRequestedTiles
+   */
+  public get numReadyTiles(): number {
+    const tiles = IModelApp.tileAdmin.getTilesForViewport(this);
+    return undefined !== tiles ? tiles.ready.size : 0;
+  }
 
   /** @internal */
   public toViewOrientation(from: XYZ, to?: XYZ) { this._viewingSpace.toViewOrientation(from, to); }
@@ -2326,7 +2331,8 @@ export abstract class Viewport implements IDisposable {
 
     if (!this._sceneValid) {
       if (!this._freezeScene) {
-        this.numSelectedTiles = this.numReadyTiles = 0;
+        IModelApp.tileAdmin.clearTilesForViewport(this);
+        IModelApp.tileAdmin.clearUsageForViewport(this);
         const context = this.createSceneContext();
         view.createScene(context);
         this.forEachTiledGraphicsProviderTree((ref) => ref.addToScene(context));

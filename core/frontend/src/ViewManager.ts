@@ -318,6 +318,7 @@ export class ViewManager {
   }
 
   /** Purge TileTrees that haven't been drawn since the specified time point and are not currently in use by any ScreenViewport.
+   * Intended strictly for debugging purposes - TileAdmin takes care of properly purging.
    * @internal
    */
   public purgeTileTrees(olderThan: BeTimePoint): void {

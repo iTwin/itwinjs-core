@@ -110,12 +110,11 @@ export abstract class TileTreeReference implements RenderMemory.Consumer {
       return undefined;
 
     const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(tree.expirationTime);
     const transform = this.computeTransform(tree);
     const clipVolume = this.getClipVolume(tree);
     const viewFlagOverrides = this.getViewFlagOverrides(tree);
 
-    return new TileDrawArgs(context, transform, tree, now, purgeOlderThan, viewFlagOverrides, clipVolume, tree.parentsAndChildrenExclusive, this.getSymbologyOverrides(tree));
+    return new TileDrawArgs(context, transform, tree, now, viewFlagOverrides, clipVolume, tree.parentsAndChildrenExclusive, this.getSymbologyOverrides(tree));
   }
 
   /** Supply transform from this tile tree reference's location to iModel coordinate space.

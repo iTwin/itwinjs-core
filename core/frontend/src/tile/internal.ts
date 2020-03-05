@@ -35,6 +35,7 @@ export * from "./TileTreeOwner";
 export * from "./TileTreeReference";
 export * from "./TileAdmin";
 export * from "./TileRequest";
+export * from "./TileUsageMarker";
 export * from "./GltfReader";
 export * from "./I3dmReader";
 export * from "./B3dmReader";

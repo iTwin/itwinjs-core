@@ -44,12 +44,13 @@ export class TileDrawArgs {
   public viewingSpace: ViewingSpace;
   public readonly graphics: GraphicBranch = new GraphicBranch();
   public readonly now: BeTimePoint;
-  public readonly purgeOlderThan: BeTimePoint;
   protected _frustumPlanes?: FrustumPlanes;
   public planarClassifier?: RenderPlanarClassifier;
   public drape?: RenderTextureDrape;
   public readonly viewClip?: ClipVector;
   public parentsAndChildrenExclusive: boolean;
+  /** Tiles that we want to draw and that are ready to draw. May not actually be selected, e.g. if sibling tiles are not yet ready. */
+  public readonly readyTiles = new Set<Tile>();
 
   public getPixelSize(tile: Tile): number {
     const radius = this.getTileRadius(tile); // use a sphere to test pixel size. We don't know the orientation of the image within the bounding box.
@@ -74,20 +75,17 @@ export class TileDrawArgs {
 
   public static fromTileTree(context: SceneContext, location: Transform, tree: TileTree, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = false, symbologyOverrides?: FeatureSymbology.Overrides) {
     const now = BeTimePoint.now();
-    const purgeOlderThan = now.minus(tree.expirationTime);
-    return new TileDrawArgs(context, location, tree, now, purgeOlderThan, viewFlagOverrides, clip, parentsAndChildrenExclusive, symbologyOverrides);
+    return new TileDrawArgs(context, location, tree, now, viewFlagOverrides, clip, parentsAndChildrenExclusive, symbologyOverrides);
   }
 
-  public constructor(context: SceneContext, location: Transform, tree: TileTree, now: BeTimePoint, purgeOlderThan: BeTimePoint, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = true, symbologyOverrides?: FeatureSymbology.Overrides) {
+  public constructor(context: SceneContext, location: Transform, tree: TileTree, now: BeTimePoint, viewFlagOverrides: ViewFlag.Overrides, clip?: RenderClipVolume, parentsAndChildrenExclusive = true, symbologyOverrides?: FeatureSymbology.Overrides) {
     this.location = location;
     this.tree = tree;
+    this.context = context;
+    this.now = now;
+
     if (undefined !== clip && !clip.hasOutsideClipColor)
       this.clipVolume = clip;
-
-    this.context = context;
-
-    this.now = now;
-    this.purgeOlderThan = purgeOlderThan;
 
     this.graphics.setViewFlagOverrides(viewFlagOverrides);
     this.graphics.symbologyOverrides = symbologyOverrides;
@@ -149,4 +147,12 @@ export class TileDrawArgs {
   }
 
   public markChildrenLoading(): void { this.context.hasMissingTiles = true; }
+
+  public markUsed(tile: Tile): void {
+    tile.usageMarker.mark(this.context.viewport, this.now);
+  }
+
+  public markReady(tile: Tile): void {
+    this.readyTiles.add(tile);
+  }
 }

@@ -176,6 +176,10 @@ class ProxyTree extends TileTree {
   protected _selectTiles(_args: TileDrawArgs): Tile[] {
     return [ this.rootTile ];
   }
+
+  public prune(): void {
+    // Our single tile is only a proxy. Our proxied tree(s) will be pruned separately
+  }
 }
 
 /** The single Tile belonging to a ProxyTree, serving as a proxy for all of the proxied tree's tiles. */

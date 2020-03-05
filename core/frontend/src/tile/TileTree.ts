@@ -45,6 +45,7 @@ export enum TileTreeLoadStatus {
  * @internal
  */
 export abstract class TileTree {
+  private _isDisposed = false;
   protected _lastSelected = BeTimePoint.now();
   protected _clipVolume?: RenderClipVolume;
   public readonly iModel: IModelConnection;
@@ -66,6 +67,9 @@ export abstract class TileTree {
 
   protected abstract _selectTiles(args: TileDrawArgs): Tile[];
   public abstract draw(args: TileDrawArgs): void;
+
+  /** Discard tiles and/or tile contents, presumably based on a least-recently-used and/or least-likely-to-be-needed criterion. */
+  public abstract prune(): void;
 
   public get is2d(): boolean { return !this.is3d; }
   public get isPointCloud(): boolean { return false; }
@@ -95,10 +99,18 @@ export abstract class TileTree {
   /** Don't override this method. Implement [[_selectTiles]]. */
   public selectTiles(args: TileDrawArgs): Tile[] {
     this._lastSelected = BeTimePoint.now();
-    return this._selectTiles(args);
+    const tiles = this._selectTiles(args);
+    IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, tiles, args.readyTiles);
+    return tiles;
   }
 
+  public get isDisposed(): boolean { return this._isDisposed; }
+
   public dispose(): void {
+    if (this.isDisposed)
+      return;
+
+    this._isDisposed = true;
     dispose(this.rootTile);
     dispose(this.clipVolume);
   }

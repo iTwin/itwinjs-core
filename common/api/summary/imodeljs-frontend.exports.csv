@@ -345,6 +345,7 @@ public;ScreenViewport
 public;ScrollViewTool 
 public;SectionDrawingModelState 
 public;SelectAddEvent
+internal;SelectedAndReadyTiles
 public;SelectedViewportChangedArgs
 public;SelectionMethod
 public;SelectionMode
@@ -404,7 +405,6 @@ internal;ThreeAxes
 internal;class Tile
 alpha;class TileAdmin
 alpha;TileAdmin
-internal;ViewportSet 
 internal;TileAvailability
 internal;enum TileBoundingBoxes
 internal;TileContent
@@ -424,6 +424,7 @@ internal;TileTreeParams
 internal;class TileTreeReference 
 internal;TileTreeSet
 internal;TileTreeSupplier
+internal;TileUsageMarker
 internal;enum TileVisibility
 public;Tool
 public;ToolAdmin

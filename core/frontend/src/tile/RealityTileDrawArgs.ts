@@ -35,7 +35,7 @@ export class RealityTileDrawArgs extends TileDrawArgs {
   public get worldToViewMap(): Map4d { return this._worldToViewMap; }
 
   public constructor(args: TileDrawArgs, worldToViewMap: Map4d, frustumPlanes: FrustumPlanes) {
-    super(args.context, args.location, args.tree, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, false, args.graphics.symbologyOverrides);
+    super(args.context, args.location, args.tree, args.now, args.graphics.viewFlagOverrides, args.clipVolume, false, args.graphics.symbologyOverrides);
 
     const tileToWorld = Matrix4d.createTransform(this.location);
     this._worldToViewMap = worldToViewMap;

@@ -75,6 +75,7 @@ public;OpenMode
 public;OrderedComparator
 public;PerfLogger 
 public;PriorityQueue
+public;ReadonlySortedArray
 beta;RepositoryStatus
 beta;RpcInterfaceStatus
 public;SerializedClientRequestContext

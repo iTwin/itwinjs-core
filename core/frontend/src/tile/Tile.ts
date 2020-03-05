@@ -8,7 +8,6 @@
 
 import {
   assert,
-  BeTimePoint,
   dispose,
 } from "@bentley/bentleyjs-core";
 import {
@@ -44,6 +43,7 @@ import {
   TileRequest,
   TileTree,
   TileTreeLoadStatus,
+  TileUsageMarker,
 } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
@@ -83,7 +83,6 @@ export abstract class Tile {
   private _rangeGraphicType: TileBoundingBoxes = TileBoundingBoxes.None;
   protected _graphic?: RenderGraphic;
   protected _contentId: string;
-  protected _childrenLastUsed = BeTimePoint.now();
   protected _childrenLoadStatus: TileTreeLoadStatus;
   protected _request?: TileRequest;
   protected _isLeaf: boolean;
@@ -95,6 +94,7 @@ export abstract class Tile {
   public readonly depth: number;
   public readonly center: Point3d;
   public readonly radius: number;
+  public readonly usageMarker = new TileUsageMarker();
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   protected abstract _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
@@ -127,7 +127,6 @@ export abstract class Tile {
   /** Dispose of resources held by this tile. */
   public disposeContents(): void {
     this._state = TileState.NotReady;
-
     this._graphic = dispose(this._graphic);
     this._rangeGraphic = dispose(this._rangeGraphic);
     this._rangeGraphicType = TileBoundingBoxes.None;
@@ -135,9 +134,9 @@ export abstract class Tile {
 
   /** Dispose of resources held by this tile and all of its children, marking it and all of its children as "abandoned". */
   public dispose(): void {
-    this._state = TileState.Abandoned;
     this.disposeContents();
-    this.unloadChildren();
+    this._state = TileState.Abandoned;
+    this.disposeChildren();
   }
 
   /** Return whether this tile can be drawn. */
@@ -161,7 +160,7 @@ export abstract class Tile {
 
   public setLeaf(): void {
     // Don't potentially re-request the children later.
-    this.unloadChildren();
+    this.disposeChildren();
     this._isLeaf = true;
     this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
   }
@@ -291,24 +290,16 @@ export abstract class Tile {
     return this._childrenLoadStatus;
   }
 
-  protected unloadChildren(olderThan?: BeTimePoint): void {
+  protected disposeChildren(): void {
     const children = this.children;
     if (undefined === children)
       return;
 
-    if (undefined !== olderThan && this._childrenLastUsed.milliseconds > olderThan.milliseconds) {
-      // this node has been used recently. Keep it, but potentially unload its grandchildren.
-      for (const child of children)
-        child.unloadChildren(olderThan);
-    } else {
-      for (const child of children) {
-        child._state = TileState.Abandoned;
-        child.dispose();
-      }
+    for (const child of children)
+      child.dispose();
 
-      this._childrenLoadStatus = TileTreeLoadStatus.NotLoaded;
-      this._children = undefined;
-    }
+    this._childrenLoadStatus = TileTreeLoadStatus.NotLoaded;
+    this._children = undefined;
   }
 
   protected isRegionCulled(args: TileDrawArgs): boolean {

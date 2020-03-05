@@ -27,7 +27,7 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
   private _collector: GraphicsCollector;
 
   private constructor(planes: FrustumPlanes, worldToViewMap: Map4d, collector: GraphicsCollector, args: TileDrawArgs) {
-    super(args.context, args.location, args.tree, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
+    super(args.context, args.location, args.tree, args.now, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
 
     this._planes = planes;
     this._worldToViewMap = worldToViewMap;

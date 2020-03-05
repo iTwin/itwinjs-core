@@ -194,6 +194,10 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
 
   public async drawFrame(): Promise<void> {
     this.renderFrame();
+
+    // NB: ToolAdmin loop is not turned on, and this viewport is not tracked by ViewManager - must manually pump tile request scheduler.
+    IModelApp.tileAdmin.process();
+
     return Promise.resolve();
   }
 }

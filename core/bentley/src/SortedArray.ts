@@ -50,18 +50,13 @@ export function lowerBound<T, U = T>(value: T, list: U[], compare: OrderedCompar
 }
 
 /**
- * Maintains an array of some type T in sorted order. The ordering is specified by a function supplied
- * by the user.
- * By default, only unique elements are permitted; attempting to insert a new element that compares
- * as equal to an element already in the array will not modify the contents of the array.
- *
- * This allows a SortedArray<T> to behave like a Set<T> where T is an object and equality is determined
+ * A read-only view of an array of some type T sorted according to some user-supplied criterion.
+ * Duplicate elements may be present, though sub-types may enforce uniqueness of elements.
+ * In the absence of duplicates, a ReadonlySortedArray<T> can behave like a Set<T> where T is an object and equality is determined
  * by some criterion other than object identity.
  *
  * Because the array is always sorted, querying for the presence of an element is performed using binary
  * search, which is more efficient than a linear search for reasonably large arrays.
- *
- * The user can also specify how the SortedArray takes ownership of inserted values, e.g., by cloning them.
  *
  * The comparison function must meet the following criteria, given 'lhs' and 'rhs' of type T:
  *  - If lhs is equal to rhs, returns 0
@@ -70,23 +65,24 @@ export function lowerBound<T, U = T>(value: T, list: U[], compare: OrderedCompar
  *  - If compare(lhs, rhs) returns 0, then compare(rhs, lhs) must also return 0
  *  - If compare(lhs, rhs) returns a negative value, then compare(rhs, lhs) must return a positive value, and vice versa.
  *
- * Modifying an element in a way that affects the comparison function will produce unpredictable results, the
- * most likely of which is that the array will cease to be sorted.
+ * Note that the array is read-only only from the perspective of its public interface. Mutation methods are defined for internal use by sub-types.
+ *
+ * @see [[SortedArray]] for a general-purpose mutable sorted array.
  * @public
  */
-export class SortedArray<T> implements Iterable<T> {
+export class ReadonlySortedArray<T> implements Iterable<T> {
   protected _array: T[] = [];
   protected readonly _compare: OrderedComparator<T>;
   protected readonly _clone: CloneFunction<T>;
   protected readonly _allowDuplicates: boolean;
 
   /**
-   * Construct a new SortedArray<T>.
+   * Construct a new ReadonlySortedArray<T>.
    * @param compare The function used to compare elements within the array.
    * @param allowDuplicates If true, multiple values comparing equal may exist in the array.
    * @param clone The function invoked to clone a new element for insertion into the array. The default implementation simply returns its input.
    */
-  public constructor(compare: OrderedComparator<T>, allowDuplicates: boolean = false, clone: CloneFunction<T> = shallowClone) {
+  protected constructor(compare: OrderedComparator<T>, allowDuplicates: boolean = false, clone: CloneFunction<T> = shallowClone) {
     this._compare = compare;
     this._clone = clone;
     this._allowDuplicates = allowDuplicates;
@@ -98,62 +94,8 @@ export class SortedArray<T> implements Iterable<T> {
   /** Returns true if the array contains no elements. */
   public get isEmpty(): boolean { return 0 === this.length; }
 
-  /** Clears the contents of the sorted array. */
-  public clear(): void { this._array.length = 0; }
-
   /** Returns an iterator over the contents of the array in sorted order, suitable for use in `for-of` loops. */
   public [Symbol.iterator](): Iterator<T> { return this._array[Symbol.iterator](); }
-
-  /** Extracts the sorted array as a T[] and empties the contents of this SortedArray.
-   * @returns the contents of this SortedArray as a T[].
-   */
-  public extractArray(): T[] {
-    const result = this._array;
-    this._array = [];
-    return result;
-  }
-
-  /**
-   * Attempts to insert a new value into the array at a position determined by the ordering.
-   * The behavior differs based on whether or not duplicate elements are permitted.
-   * If duplicates are **not** permitted, then:
-   *  - If an equivalent element already exists in the array, nothing will be inserted and the index of the existing element will be returned.
-   *  - Otherwise, the element is inserted and its index is returned.
-   * If duplicates **are** permitted, then:
-   *  - The element will be inserted in a correct position based on the sorting criterion;
-   *  - The position of the element relative to other elements comparing as equal to it is unspecified; and
-   *  - The actual index of the newly-inserted element is returned.
-   * If the element is to be inserted, then the supplied value will be passed to the clone function supplied to the constructor and the result will be inserted into the array.
-   * @param value The value to insert
-   * @param onInsert The optional callback method to call if insertion occurs with the inserted value
-   * @returns the index in the array of the newly-inserted value, or, if duplicates are not permitted and an equivalent value already exists, the index of the equivalent value.
-   */
-  public insert(value: T, onInsert?: (value: T) => any): number {
-    const bound = this.lowerBound(value);
-
-    if (!bound.equal || this._allowDuplicates)
-      this._array.splice(bound.index, 0, this._clone(value));
-
-    if (undefined !== onInsert)
-      onInsert(value);
-
-    return bound.index;
-  }
-
-  /**
-   * Removes the first occurrence of a value comparing equal to the specified value from the array.
-   * @param value The value of the element to delete
-   * @returns the index of the deleted value, or -1 if no such element exists.
-   */
-  public remove(value: T): number {
-    const bound = this.lowerBound(value);
-    if (bound.equal) {
-      this._array.splice(bound.index, 1);
-      return bound.index;
-    } else {
-      return -1;
-    }
-  }
 
   /**
    * Looks up the index of an element comparing equal to the specified value using binary search.
@@ -205,4 +147,127 @@ export class SortedArray<T> implements Iterable<T> {
    * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent element already exists at that index.
    */
   protected lowerBound(value: T): { index: number, equal: boolean } { return lowerBound(value, this._array, this._compare); }
+
+  /** Clears the contents of the sorted array. */
+  protected _clear(): void { this._array.length = 0; }
+
+  /** Extracts the sorted array as a T[] and empties the contents of this ReadonlySortedArray.
+   * @returns the contents of this ReadonlySortedArray as a T[].
+   */
+  protected _extractArray(): T[] {
+    const result = this._array;
+    this._array = [];
+    return result;
+  }
+
+  /**
+   * Attempts to insert a new value into the array at a position determined by the ordering.
+   * The behavior differs based on whether or not duplicate elements are permitted.
+   * If duplicates are **not** permitted, then:
+   *  - If an equivalent element already exists in the array, nothing will be inserted and the index of the existing element will be returned.
+   *  - Otherwise, the element is inserted and its index is returned.
+   * If duplicates **are** permitted, then:
+   *  - The element will be inserted in a correct position based on the sorting criterion;
+   *  - The position of the element relative to other elements comparing as equal to it is unspecified; and
+   *  - The actual index of the newly-inserted element is returned.
+   * If the element is to be inserted, then the supplied value will be passed to the clone function supplied to the constructor and the result will be inserted into the array.
+   * @param value The value to insert
+   * @param onInsert The optional callback method to call if insertion occurs with the inserted value
+   * @returns the index in the array of the newly-inserted value, or, if duplicates are not permitted and an equivalent value already exists, the index of the equivalent value.
+   */
+  protected _insert(value: T, onInsert?: (value: T) => any): number {
+    const bound = this.lowerBound(value);
+
+    if (!bound.equal || this._allowDuplicates)
+      this._array.splice(bound.index, 0, this._clone(value));
+
+    if (undefined !== onInsert)
+      onInsert(value);
+
+    return bound.index;
+  }
+
+  /**
+   * Removes the first occurrence of a value comparing equal to the specified value from the array.
+   * @param value The value of the element to delete
+   * @returns the index of the deleted value, or -1 if no such element exists.
+   */
+  protected _remove(value: T): number {
+    const bound = this.lowerBound(value);
+    if (bound.equal) {
+      this._array.splice(bound.index, 1);
+      return bound.index;
+    } else {
+      return -1;
+    }
+  }
+}
+
+/**
+ * Maintains an array of some type T in sorted order. The ordering is specified by a function supplied
+ * by the user.
+ * By default, only unique elements are permitted; attempting to insert a new element that compares
+ * as equal to an element already in the array will not modify the contents of the array.
+ *
+ * This allows a SortedArray<T> to behave like a Set<T> where T is an object and equality is determined
+ * by some criterion other than object identity.
+ *
+ * Because the array is always sorted, querying for the presence of an element is performed using binary
+ * search, which is more efficient than a linear search for reasonably large arrays.
+ *
+ * The user can also specify how the SortedArray takes ownership of inserted values, e.g., by cloning them.
+ *
+ * The comparison function must meet the following criteria, given 'lhs' and 'rhs' of type T:
+ *  - If lhs is equal to rhs, returns 0
+ *  - If lhs is less than rhs, returns a negative value
+ *  - If lhs is greater than rhs, returns a positive value
+ *  - If compare(lhs, rhs) returns 0, then compare(rhs, lhs) must also return 0
+ *  - If compare(lhs, rhs) returns a negative value, then compare(rhs, lhs) must return a positive value, and vice versa.
+ *
+ * Modifying an element in a way that affects the comparison function will produce unpredictable results, the
+ * most likely of which is that the array will cease to be sorted.
+ * @public
+ */
+export class SortedArray<T> extends ReadonlySortedArray<T> {
+  /**
+   * Construct a new SortedArray<T>.
+   * @param compare The function used to compare elements within the array.
+   * @param allowDuplicates If true, multiple values comparing equal may exist in the array.
+   * @param clone The function invoked to clone a new element for insertion into the array. The default implementation simply returns its input.
+   */
+  public constructor(compare: OrderedComparator<T>, allowDuplicates: boolean = false, clone: CloneFunction<T> = shallowClone) {
+    super(compare, allowDuplicates, clone);
+  }
+
+  /** Clears the contents of the sorted array. */
+  public clear(): void { this._clear(); }
+
+  /** Extracts the sorted array as a T[] and empties the contents of this SortedArray.
+   * @returns the contents of this SortedArray as a T[].
+   */
+  public extractArray(): T[] { return this._extractArray(); }
+
+  /**
+   * Attempts to insert a new value into the array at a position determined by the ordering.
+   * The behavior differs based on whether or not duplicate elements are permitted.
+   * If duplicates are **not** permitted, then:
+   *  - If an equivalent element already exists in the array, nothing will be inserted and the index of the existing element will be returned.
+   *  - Otherwise, the element is inserted and its index is returned.
+   * If duplicates **are** permitted, then:
+   *  - The element will be inserted in a correct position based on the sorting criterion;
+   *  - The position of the element relative to other elements comparing as equal to it is unspecified; and
+   *  - The actual index of the newly-inserted element is returned.
+   * If the element is to be inserted, then the supplied value will be passed to the clone function supplied to the constructor and the result will be inserted into the array.
+   * @param value The value to insert
+   * @param onInsert The optional callback method to call if insertion occurs with the inserted value
+   * @returns the index in the array of the newly-inserted value, or, if duplicates are not permitted and an equivalent value already exists, the index of the equivalent value.
+   */
+  public insert(value: T, onInsert?: (value: T) => any): number { return this._insert(value, onInsert); }
+
+  /**
+   * Removes the first occurrence of a value comparing equal to the specified value from the array.
+   * @param value The value of the element to delete
+   * @returns the index of the deleted value, or -1 if no such element exists.
+   */
+  public remove(value: T): number { return this._remove(value); }
 }
