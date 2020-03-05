@@ -514,7 +514,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createActionButton("EntryN3", 30, "icon-developer", "EntryN3", (): void => { }),
       ];
 
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
         ToolbarItemUtilities.createGroupButton("GroupN1", 10, "icon-developer", "GroupN1", nestedChildren, { panelLabel: "Nested-Tools" }),
         ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }),
@@ -567,7 +567,7 @@ describe("<ToolbarWithOverflow />", () => {
     it("should fire first child when group item clicked", () => {
       const spy = sinon.spy();
 
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
         ToolbarItemUtilities.createActionButton("Child1", 10, "icon-developer", "Child1", spy, { isDisabled: true, badgeType: BadgeType.New }),
         ToolbarItemUtilities.createActionButton("Child2", 20, "icon-developer", "Child2", (): void => { }),
         ToolbarItemUtilities.createActionButton("Child3", 30, "icon-developer", "Child3", (): void => { }),
@@ -614,7 +614,7 @@ describe("<ToolbarWithOverflow />", () => {
     });
 
     it("group with no children should render correctly", () => {
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
       ];
 
       const toolbarItems: CommonToolbarItem[] = [
@@ -687,7 +687,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createActionButton("EntryN3", 30, "icon-developer", "EntryN3", spy, { isActive: true }),
       ];
 
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
         ToolbarItemUtilities.createGroupButton("GroupN1", 10, "icon-developer", "GroupN1", nestedChildren, { panelLabel: "Nested-Tools" }),
         ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }),
@@ -724,7 +724,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createActionButton("EntryN3", 30, "icon-developer", "EntryN3", (): void => { }),
       ];
 
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
         ToolbarItemUtilities.createGroupButton("GroupN1", 10, "icon-developer", "GroupN1", nestedChildren, { panelLabel: "Nested-Tools" }),
         ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }),
@@ -759,7 +759,7 @@ describe("<ToolbarWithOverflow />", () => {
         ToolbarItemUtilities.createActionButton("EntryN3", 30, "icon-developer", "EntryN3", (): void => { }),
       ];
 
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
         ToolbarItemUtilities.createGroupButton("GroupN1", 10, "icon-developer", "GroupN1", nestedChildren, { panelLabel: "Nested-Tools" }),
       ];
 
@@ -792,7 +792,7 @@ describe("<ToolbarWithOverflow />", () => {
     }
 
     it("should open on drag", () => {
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
         ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }),
@@ -840,7 +840,7 @@ describe("<ToolbarWithOverflow />", () => {
     });
 
     it("should not open if drag less than 20", () => {
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
         ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }),
@@ -888,7 +888,7 @@ describe("<ToolbarWithOverflow />", () => {
     it("should open on long press", async () => {
       const spy = sinon.spy();
 
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
         ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", spy),
         ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }),
@@ -936,7 +936,7 @@ describe("<ToolbarWithOverflow />", () => {
     it("should not open on long press if we move pointer more than 10 px", async () => {
       const spy = sinon.spy();
 
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
         ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", spy),
         ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }),
@@ -985,7 +985,7 @@ describe("<ToolbarWithOverflow />", () => {
     it("should not open if we get pointer up before meeting drag requirements", async () => {
       const spy = sinon.spy();
 
-      const childItems: Array<ActionButton | GroupButton> = [
+      const childItems: ReadonlyArray<ActionButton | GroupButton> = [
         ToolbarItemUtilities.createActionButton("Entry1", 10, "icon-developer", "Entry1", spy),
         ToolbarItemUtilities.createActionButton("Entry2", 20, "icon-developer", "Entry2", (): void => { }),
         ToolbarItemUtilities.createActionButton("Entry3", 30, "icon-developer", "Entry3", (): void => { }),

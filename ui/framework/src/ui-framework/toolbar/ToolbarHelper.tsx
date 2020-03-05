@@ -13,7 +13,6 @@ import {
   OnItemExecutedFunc,
   ConditionalStringValue,
   StringGetter,
-  BadgeType,
 } from "@bentley/ui-abstract";
 
 import { IconHelper } from "@bentley/ui-core";
@@ -37,7 +36,7 @@ export class ToolbarHelper {
     const internalData = new Map<string, any>();  // used to store ReactNode if iconSpec hold a ReactNode
     const icon = IconHelper.getIconData(itemDef.iconSpec, internalData);
     const label = this.getStringOrConditionalString(itemDef.rawLabel);
-    const badgeType = itemDef.badgeType ? itemDef.badgeType : itemDef.badgeType ? BadgeType.TechnicalPreview : undefined;
+    const badgeType = itemDef.badgeType;
 
     // istanbul ignore else
     if (itemDef.popupPanelNode && React.isValidElement(itemDef.popupPanelNode)) {
@@ -103,7 +102,7 @@ export class ToolbarHelper {
     const internalData = new Map<string, any>();  // used to store ReactNode if iconSpec hold a ReactNode
     const icon = IconHelper.getIconData(itemDef.iconSpec, internalData);
     const label = this.getStringOrConditionalString(itemDef.rawLabel);
-    const badgeType = itemDef.badgeType ? itemDef.badgeType : undefined;
+    const badgeType = itemDef.badgeType;
 
     // istanbul ignore else
     if (itemDef instanceof CommandItemDef) {

@@ -130,7 +130,7 @@ export class ToolbarItemsManager {
     return [...eventIds.values()];
   }
 
-  private static refreshChildItems(parentItem: GroupButton, eventIds: Set<string>): { childrenUpdated: boolean, childItems: Array<ActionButton | GroupButton> } {
+  private static refreshChildItems(parentItem: GroupButton, eventIds: Set<string>): { childrenUpdated: boolean, childItems: ReadonlyArray<ActionButton | GroupButton> } {
     const updatedItems: Array<ActionButton | GroupButton> = [];
     let itemsUpdated = false;
 
@@ -213,7 +213,7 @@ export class ToolbarItemsManager {
       this.loadItemsInternal(updatedItems, false, true);
   }
 
-  private static isActiveToolIdRefreshRequiredForChildren(children: Array<ActionButton | GroupButton>, toolId: string): boolean {
+  private static isActiveToolIdRefreshRequiredForChildren(children: ReadonlyArray<ActionButton | GroupButton>, toolId: string): boolean {
     for (const item of children) {
       if (ToolbarItemUtilities.isGroupButton(item)) {
         if (this.isActiveToolIdRefreshRequiredForChildren(item.items, toolId))

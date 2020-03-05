@@ -82,7 +82,7 @@ export interface GroupButton extends ToolbarItem {
   /** label shown as the title in at top of group panel. */
   readonly panelLabel?: string | ConditionalStringValue;
   /** children of the group */
-  readonly items: Array<ActionButton | GroupButton>;
+  readonly items: ReadonlyArray<ActionButton | GroupButton>;
 }
 
 /** Describes the data needed to insert a custom button into a toolbar.
@@ -120,7 +120,7 @@ export class ToolbarItemUtilities {
   })
 
   /** Creates a Group button */
-  public static createGroupButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: Array<ActionButton | GroupButton>, overrides?: Partial<GroupButton>): GroupButton => ({
+  public static createGroupButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton>): GroupButton => ({
     id, itemPriority,
     icon, label,
     items,

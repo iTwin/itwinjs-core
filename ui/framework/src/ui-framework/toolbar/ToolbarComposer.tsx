@@ -57,18 +57,65 @@ function useToolbarItemSyncEffect(itemsManager: ToolbarItemsManager, syncIdsOfIn
   }, [itemsManager, itemsManager.items]);
 }
 
-function findPotentialParentGroup(items: readonly CommonToolbarItem[], itemId: string): CommonToolbarItem | undefined {
+function nestedAddItemToSpecifiedParentGroup(items: ReadonlyArray<ActionButton | GroupButton>, groupChildren: Array<ActionButton | GroupButton>): Array<ActionButton | GroupButton> {
+  const outItems: Array<ActionButton | GroupButton> = [];
   for (const toolbarItem of items) {
-    if (ToolbarItemUtilities.isGroupButton(toolbarItem)) {
-      if (itemId === toolbarItem.id)
-        return toolbarItem;
-
-      const foundNestedGroup = findPotentialParentGroup(toolbarItem.items, itemId);
-      if (foundNestedGroup)
-        return foundNestedGroup;
+    if (!ToolbarItemUtilities.isGroupButton(toolbarItem)) {
+      outItems.push(toolbarItem);
+      continue;
     }
+
+    const newChildren: Array<ActionButton | GroupButton> = nestedAddItemToSpecifiedParentGroup(toolbarItem.items, groupChildren);
+    const foundIndices: number[] = [];
+
+    groupChildren.forEach((entry, index) => {
+      if (entry.parentToolGroupId === toolbarItem.id) {
+        foundIndices.push(index);
+      }
+    });
+
+    if (foundIndices.length) {
+      // process in reverse order so groupChildren can be reduced as we find matches
+      foundIndices.sort((a, b) => a - b).reverse().forEach((foundIndex) => {
+        newChildren.push(groupChildren[foundIndex]);
+        groupChildren.splice(foundIndex);
+      });
+    }
+
+    outItems.push({ ...toolbarItem, items: newChildren });
   }
-  return undefined;
+  return outItems;
+}
+
+function addItemToSpecifiedParentGroup(items: readonly CommonToolbarItem[], groupChildren: Array<ActionButton | GroupButton>): CommonToolbarItem[] {
+  const outItems: CommonToolbarItem[] = [];
+  for (const toolbarItem of items) {
+    if (!ToolbarItemUtilities.isGroupButton(toolbarItem)) {
+      outItems.push(toolbarItem);
+      continue;
+    }
+
+    const newChildren: Array<ActionButton | GroupButton> = nestedAddItemToSpecifiedParentGroup(toolbarItem.items, groupChildren);
+    const foundIndices: number[] = [];
+
+    groupChildren.forEach((entry, index) => {
+      if (entry.parentToolGroupId === toolbarItem.id) {
+        foundIndices.push(index);
+      }
+    });
+
+    // istanbul ignore else
+    if (foundIndices.length) {
+      // process in reverse order so groupChildren can be reduced as we find matches
+      foundIndices.sort((a, b) => a - b).reverse().forEach((foundIndex) => {
+        newChildren.push(groupChildren[foundIndex]);
+        groupChildren.splice(foundIndex);
+      });
+    }
+
+    outItems.push({ ...toolbarItem, items: newChildren });
+  }
+  return outItems;
 }
 
 function cloneGroup(inGroup: GroupButton): GroupButton {
@@ -84,7 +131,7 @@ function cloneGroup(inGroup: GroupButton): GroupButton {
   return clonedGroup;
 }
 
-function getSortedChildren(group: GroupButton): Array<ActionButton | GroupButton> {
+function getSortedChildren(group: GroupButton): ReadonlyArray<ActionButton | GroupButton> {
   const sortedChildren = group.items
     .filter((item) => !(ConditionalBooleanValue.getValue(item.isHidden)))
     .sort((a, b) => a.itemPriority - b.itemPriority)
@@ -99,7 +146,7 @@ function getSortedChildren(group: GroupButton): Array<ActionButton | GroupButton
 
 /** local function to combine items from Stage and from Plugins */
 function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems: ReadonlyArray<CommonToolbarItem>) {
-  const items: CommonToolbarItem[] = [];
+  let items: CommonToolbarItem[] = [];
   const groupChildren: Array<ActionButton | GroupButton> = [];
 
   // istanbul ignore else
@@ -125,17 +172,16 @@ function combineItems(defaultItems: ReadonlyArray<CommonToolbarItem>, addonItems
     });
   }
 
+  // if an item from an addon has specified a parent group then try to find it and insert it.  If no parent is found, add item at root level.
   if (groupChildren.length) {
-    groupChildren.forEach((toolbarItem: ActionButton | GroupButton) => {
-      const parentGroup = findPotentialParentGroup(items, toolbarItem.parentToolGroupId!);
-      // if parent group is located, add item to it, if not just add to item list
-      if (parentGroup && ToolbarItemUtilities.isGroupButton(parentGroup)) {
-        parentGroup.items.push(toolbarItem);
-      } else {
+    items = addItemToSpecifiedParentGroup(items, groupChildren);
+
+    if (groupChildren.length) {
+      groupChildren.forEach((toolbarItem: ActionButton | GroupButton) => {
         Logger.logWarning("ToolbarComposer", `Requested Parent Group [${toolbarItem.parentToolGroupId!}] not found, so item [${toolbarItem.id}] is added directly to toolbar.`);
         items.push(toolbarItem);
-      }
-    });
+      });
+    }
   }
 
   const availableItems = items
