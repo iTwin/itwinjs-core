@@ -252,8 +252,13 @@ export type ChangeState = "new" | "modified" | "deleted";
 
 // @beta
 export enum ChangesType {
+    Definition = 2,
+    GlobalProperties = 32,
     Regular = 0,
-    Schema = 1
+    Schema = 1,
+    SheetsAndDrawings = 8,
+    SpatialData = 4,
+    ViewsAndModels = 16
 }
 
 // @alpha

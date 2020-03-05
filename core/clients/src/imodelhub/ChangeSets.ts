@@ -24,9 +24,19 @@ const loggerCategory: string = ClientsLoggerCategory.IModelHub;
  */
 export enum ChangesType {
   /** [[ChangeSet]] contains regular file changes (e.g. changes to elements or models). */
-  Regular,
+  Regular = 0,
   /** [[ChangeSet]] only contains schema changes. */
-  Schema,
+  Schema = 1 << 0,
+  /** [[ChangeSet]] contains definition changes. */
+  Definition = 1 << 1,
+  /** [[ChangeSet]] contains spatial data changes. */
+  SpatialData = 1 << 2,
+  /** [[ChangeSet]] contains sheets and drawings changes. */
+  SheetsAndDrawings = 1 << 3,
+  /** [[ChangeSet]] contains views and model changes. */
+  ViewsAndModels = 1 << 4,
+  /** [[ChangeSet]] contains changes of global properties. */
+  GlobalProperties = 1 << 5,
 }
 
 /**
