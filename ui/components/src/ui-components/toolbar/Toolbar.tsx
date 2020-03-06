@@ -219,7 +219,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
    * handleContainerResize - handler called when container <div> is resized.
    * handleOverflowResize - handler called when determining size of overflow indicator/button.
    * handleEntryResize - handler called when determining size of each item/button.  */
-  const [overflowItemKeys, handleContainerResize, handleOverflowResize, handleEntryResize] = useOverflow(availableNodes);
+  const [overflowItemKeys, handleContainerResize, handleOverflowResize, handleEntryResize] = useOverflow(availableNodes, panelAlignment === ToolbarPanelAlignment.End);
   // handler called by ResizeObserver
   const handleResize = React.useCallback((w: number) => {
     width.current = w;
@@ -257,7 +257,8 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
 
   const direction = getToolbarDirection(expandsTo);
   const overflowExpandsTo = undefined !== props.overflowExpandsTo ? props.overflowExpandsTo : Direction.Right;
-  const addOverflowButton = React.useCallback(() => {
+  const addOverflowButton = React.useCallback((atStart: boolean) => {
+    const overflowItems = !!atStart ? overflowPanelItems.reverse() : overflowPanelItems;
     return (<ToolbarItemContext.Provider
       value={{
         hasOverflow: false,
@@ -267,10 +268,10 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
     >
       <ToolbarOverflowButton
         onClick={onOverflowClick}
-        panelNode={overflowPanelItems.length > 0 && isOverflowPanelOpen &&
+        panelNode={overflowItems.length > 0 && isOverflowPanelOpen &&
           <ToolbarOverflowPanel ref={panelRef} >
             <OverflowItemsContainer>
-              {overflowPanelItems.map(([key, child]) => {
+              {overflowItems.map(([key, child]) => {
                 return (
                   <ToolbarItemContext.Provider
                     key={key}
@@ -315,7 +316,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
           className="components-items"
           direction={direction}
         >
-          {(!overflowItemKeys || overflowItemKeys.length > 0) && showOverflowAtStart && addOverflowButton()}
+          {(!overflowItemKeys || overflowItemKeys.length > 0) && showOverflowAtStart && addOverflowButton(true)}
           {displayedItems.map(([key, child]) => {
             const onEntryResize = handleEntryResize(key);
             return (
@@ -331,7 +332,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
               </ToolbarItemContext.Provider>
             );
           })}
-          {(!overflowItemKeys || overflowItemKeys.length > 0) && !showOverflowAtStart && addOverflowButton()}
+          {(!overflowItemKeys || overflowItemKeys.length > 0) && !showOverflowAtStart && addOverflowButton(false)}
 
         </ToolbarItems>
       </div>
@@ -350,60 +351,86 @@ function getChildKey(child: React.ReactNode, index: number) {
   return index.toString();
 }
 
-/** Returns a subset of docked entry keys that exceed given width and should be overflowItemKeys.
+/** Returns a subset of toolbar item entry keys that exceed given width and should be overflowItemKeys.
  * @internal
  */
-function getOverflown(width: number, docked: ReadonlyArray<readonly [string, number]>, overflowWidth: number) {
-  let settingsWidth = 0;
-  let i = 0;
+function determineOverflowItems(size: number, entries: ReadonlyArray<readonly [string, number]>, overflowButtonSize: number, overflowButtonAtStart: boolean): string[] {
+  let toolbarSize = 0;
   const buttonPadding = 2;
-  for (; i < docked.length; i++) {
-    const w = docked[i][1] + buttonPadding;
-    const newSettingsWidth = settingsWidth + w;
-    if (newSettingsWidth > width) {
-      settingsWidth += (overflowWidth + buttonPadding);
-      break;
+  if (overflowButtonAtStart && entries.length > 0) {
+    let i = entries.length - 1;
+    for (; i >= 0; i--) {
+      const w = entries[i][1] + buttonPadding;
+      const newSettingsWidth = toolbarSize + w;
+      if (newSettingsWidth > size) {
+        toolbarSize += (overflowButtonSize + buttonPadding);
+        break;
+      }
+      toolbarSize = newSettingsWidth;
     }
-    settingsWidth = newSettingsWidth;
-  }
-  let j = i;
-  for (; j > 0; j--) {
-    if (settingsWidth <= width)
-      break;
-    const w = docked[j][1] + buttonPadding;
-    settingsWidth -= w;
-  }
+    if (i >= 0) {
+      let j = i + 1;
+      for (; j < entries.length; j++) {
+        if (toolbarSize <= size)
+          break;
+        const w = entries[j][1] + buttonPadding;
+        toolbarSize -= w;
+      }
 
-  return docked.slice(j).map((e) => e[0]);
+      return entries.slice(0, j).map((e) => e[0]);
+    } else {
+      return [];
+    }
+  } else {
+    let i = 0;
+    for (; i < entries.length; i++) {
+      const w = entries[i][1] + buttonPadding;
+      const newSettingsWidth = toolbarSize + w;
+      if (newSettingsWidth > size) {
+        toolbarSize += (overflowButtonSize + buttonPadding);
+        break;
+      }
+      toolbarSize = newSettingsWidth;
+    }
+    let j = i;
+    for (; j > 0; j--) {
+      if (toolbarSize <= size)
+        break;
+      const w = entries[j][1] + buttonPadding;
+      toolbarSize -= w;
+    }
+
+    return entries.slice(j).map((e) => e[0]);
+  }
 }
 
 /** Hook that returns a list of overflowItemKeys availableItems.
  * @internal
  */
-function useOverflow(availableItems: React.ReactNode): [
+function useOverflow(availableItems: React.ReactNode, overflowButtonAtStart: boolean): [
   ReadonlyArray<string> | undefined,
   (size: number) => void,
   (size: number) => void,
   (key: string) => (size: number) => void,
 ] {
   const [overflowItemKeys, setOverflown] = React.useState<ReadonlyArray<string>>();
-  const entryWidths = React.useRef(new Map<string, number | undefined>());
-  const width = React.useRef<number | undefined>(undefined);
-  const overflowWidth = React.useRef<number | undefined>(undefined);
+  const itemSizes = React.useRef(new Map<string, number | undefined>());
+  const size = React.useRef<number | undefined>(undefined);
+  const overflowButtonSize = React.useRef<number | undefined>(undefined);
 
   const calculateOverflow = React.useCallback(() => {
-    const widths = verifiedMapEntries(entryWidths.current);
-    if (width.current === undefined ||
-      widths === undefined ||
-      overflowWidth.current === undefined) {
+    const sizes = verifiedMapEntries(itemSizes.current);
+    if (size.current === undefined ||
+      sizes === undefined ||
+      overflowButtonSize.current === undefined) {
       setOverflown(undefined);
       return;
     }
 
     // Calculate overflow.
-    const newOverflown = getOverflown(width.current, [...widths.entries()], overflowWidth.current);
+    const newOverflown = determineOverflowItems(size.current, [...sizes.entries()], overflowButtonSize.current, overflowButtonAtStart);
     setOverflown(newOverflown);
-  }, []);
+  }, [overflowButtonAtStart]);
 
   React.useLayoutEffect(() => {
     const newEntryWidths = new Map<string, number | undefined>();
@@ -411,29 +438,29 @@ function useOverflow(availableItems: React.ReactNode): [
     for (let i = 0; i < array.length; i++) {
       const child = array[i];
       const key = getChildKey(child, i);
-      const lastW = entryWidths.current.get(key);
+      const lastW = itemSizes.current.get(key);
       newEntryWidths.set(key, lastW);
     }
-    entryWidths.current = newEntryWidths;
+    itemSizes.current = newEntryWidths;
     calculateOverflow();
   }, [availableItems, calculateOverflow]);
 
   const handleContainerResize = React.useCallback((w: number) => {
-    const calculate = width.current !== w;
-    width.current = w;
+    const calculate = size.current !== w;
+    size.current = w;
     calculate && calculateOverflow();
   }, [calculateOverflow]);
 
   const handleOverflowResize = React.useCallback((w: number) => {
-    const calculate = overflowWidth.current !== w;
-    overflowWidth.current = w;
+    const calculate = overflowButtonSize.current !== w;
+    overflowButtonSize.current = w;
     calculate && calculateOverflow();
   }, [calculateOverflow]);
 
   const handleEntryResize = (key: string) => (w: number) => {
-    const oldW = entryWidths.current.get(key);
+    const oldW = itemSizes.current.get(key);
     if (oldW !== w) {
-      entryWidths.current.set(key, w);
+      itemSizes.current.set(key, w);
       calculateOverflow();
     }
   };

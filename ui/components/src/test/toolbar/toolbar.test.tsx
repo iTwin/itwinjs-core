@@ -72,6 +72,36 @@ describe("<ToolbarWithOverflow />", () => {
       expect(renderedComponent.queryByTitle("Entry6")).not.to.be.null;
     });
 
+    it("will render 3 items with overflow - simulate horizontal toolbar right of window.", () => {
+      // tslint:disable-next-line: only-arrow-functions
+      sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+        if (this.classList.contains("components-toolbar-overflow-sizer")) {
+          return createDOMRect({ width: 168 }); // 4*42 = 168
+        } else if (this.classList.contains("components-toolbar-item-container")) {
+          return createDOMRect({ width: 40 });
+        }
+        return createDOMRect();
+      });
+      const renderedComponent = render(<ToolbarWithOverflow panelAlignment={ToolbarPanelAlignment.End} items={toolbarItems} />);
+      expect(renderedComponent).not.to.be.undefined;
+      // renderedComponent.debug();
+
+      // first 3 on left should be in overflow since panel alignment is set to ToolbarPanelAlignment.End
+      expect(renderedComponent.queryByTitle("Entry1")).to.be.null;
+      expect(renderedComponent.queryByTitle("Entry2")).to.be.null;
+      expect(renderedComponent.queryByTitle("Entry3")).to.be.null;
+      expect(renderedComponent.queryByTitle("Entry4")).not.to.be.null;
+      expect(renderedComponent.queryByTitle("Entry5")).not.to.be.null;
+      expect(renderedComponent.queryByTitle("Entry6")).not.to.be.null;
+
+      const overflowButton = renderedComponent.container.querySelector(".components-toolbar-button-item.components-ellipsis-icon");
+      expect(overflowButton).not.to.be.undefined;
+      fireEvent.click(overflowButton!);
+      expect(renderedComponent.queryByTitle("Entry1")).not.to.be.null;
+      expect(renderedComponent.queryByTitle("Entry2")).not.to.be.null;
+      expect(renderedComponent.queryByTitle("Entry2")).not.to.be.null;
+    });
+
     it("will render with 3 items + overflow", () => {
       // tslint:disable-next-line: only-arrow-functions
       sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
