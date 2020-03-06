@@ -59,6 +59,7 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
   <div
     className="uifw-widgetPanels-frontstage"
   >
+    <ModalFrontstageComposer />
     <WidgetPanelsToolSettings />
     <WidgetPanels
       centerContent={<WidgetPanelsToolbars />}
@@ -72,7 +73,7 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
 </NineZoneProvider>
 `;
 
-exports[`WidgetPanelsFrontstage should render content 1`] = `
+exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
 <NineZoneProvider
   dispatch={[Function]}
   state={
@@ -129,6 +130,16 @@ exports[`WidgetPanelsFrontstage should render content 1`] = `
   <div
     className="uifw-widgetPanels-frontstage"
   >
+    <ModalFrontstageComposer
+      stageInfo={
+        Object {
+          "content": <div>
+            Hello World!
+          </div>,
+          "title": "TestModalStage",
+        }
+      }
+    />
     <WidgetPanelsToolSettings />
     <WidgetPanels
       centerContent={<WidgetPanelsToolbars />}

@@ -300,9 +300,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       this.setState({ modalFrontstageCount: FrontstageManager.modalFrontstageCount });
   }
 
-  private _navigationBack = () => {
-  }
-
   private _closeModal = () => {
     FrontstageManager.closeModalFrontstage();
   }
@@ -322,7 +319,6 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
       <ModalFrontstage
         isOpen={true}
         title={title}
-        navigateBack={this._navigationBack}
         closeModal={this._closeModal}
         appBarRight={appBarRight}
       >

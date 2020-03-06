@@ -3157,7 +3157,7 @@ export interface ModalFrontstageProps extends CommonProps {
     appBarRight?: React.ReactNode;
     closeModal: () => any;
     isOpen?: boolean;
-    navigateBack: () => any;
+    navigateBack?: () => any;
     title: string;
 }
 

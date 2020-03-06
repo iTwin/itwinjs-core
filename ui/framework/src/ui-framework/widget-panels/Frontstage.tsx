@@ -18,13 +18,16 @@ import { WidgetContent } from "./Content";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
 import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
+import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "./ModalFrontstageComposer";
 import "./Frontstage.scss";
 
 /** @internal */
 export function WidgetPanelsFrontstage() {
   const frontstageDef = useActiveFrontstageDef();
+  const activeModalFrontstageInfo = useActiveModalFrontstageInfo();
   const frontstage = frontstageDef?.frontstageProvider?.frontstage;
   const [nineZone, nineZoneDispatch] = useFrontstageDefNineZone(frontstageDef);
+
   if (!frontstage)
     return null;
   return (
@@ -35,6 +38,7 @@ export function WidgetPanelsFrontstage() {
       <div
         className="uifw-widgetPanels-frontstage"
       >
+        <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
         <WidgetPanelsToolSettings />
         <WidgetPanels className="uifw-widgetPanels"
           centerContent={<WidgetPanelsToolbars />}

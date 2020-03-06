@@ -23,7 +23,7 @@ export interface ModalFrontstageProps extends CommonProps {
   /** Indicates whether the modal Frontstage is open */
   isOpen?: boolean;
   /** Callback for navigating back from the modal Frontstage. This is normally connected to Redux. */
-  navigateBack: () => any;
+  navigateBack?: () => any;
   /** Callback for closing the modal Frontstage. This is normally connected to Redux. */
   closeModal: () => any;
   /** An optional React node displayed in the upper right of the modal Frontstage. */
@@ -40,7 +40,8 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
   }
 
   private _onGoBack = () => {
-    this.props.navigateBack();
+    if (this.props.navigateBack)
+      this.props.navigateBack();
     this.props.closeModal();
   }
 
