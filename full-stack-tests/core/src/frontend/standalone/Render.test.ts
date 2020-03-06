@@ -744,7 +744,6 @@ describe("Tile unloading", async () => {
 
   it("should not dispose of displayed tiles", async () => {
     await testViewports("0x41", imodel, 1854, 931, async (vp) => {
-      vp.onRender.addListener((_) => vp.invalidateScene());
       await vp.waitForAllTilesToRender();
 
       const tree = getTileTree(vp);
@@ -773,7 +772,6 @@ describe("Tile unloading", async () => {
 
   it("should dispose of undisplayed tiles", async () => {
     await testViewports("0x41", imodel, 1854, 931, async (vp) => {
-      vp.onRender.addListener((_) => vp.invalidateScene());
       await vp.waitForAllTilesToRender();
 
       const tree = getTileTree(vp);
