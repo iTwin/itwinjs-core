@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "2.0.0-dev.24",
+  "version": "2.0.0-dev.25",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
   "repository": {
@@ -25,9 +25,9 @@
   },
   "types": "./index.d.ts",
   "dependencies": {
-    "@bentley/config-loader": "2.0.0-dev.24",
-    "@bentley/build-tools": "2.0.0-dev.24",
-    "@bentley/webpack-tools-core": "2.0.0-dev.24",
+    "@bentley/config-loader": "2.0.0-dev.25",
+    "@bentley/build-tools": "2.0.0-dev.25",
+    "@bentley/webpack-tools-core": "2.0.0-dev.25",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "3.9.3",
     "@types/mocha": "^5.2.5",
