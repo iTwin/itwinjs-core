@@ -104,7 +104,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async downloadBriefcase(tokenProps: IModelTokenProps): Promise<IModelTokenProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
 
-    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
+    BriefcaseManager.initializeBriefcaseCacheFromDisk();
 
     const iModelToken = IModelToken.fromJSON(tokenProps);
     const openParams: OpenParams = OpenParams.pullOnly();
@@ -121,15 +121,14 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   public async openBriefcase(tokenProps: IModelTokenProps): Promise<IModelProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
 
-    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
+    BriefcaseManager.initializeBriefcaseCacheFromDisk();
 
     const iModelToken = IModelToken.fromJSON(tokenProps);
     if (!tokenProps.key) {
       const allBriefcases = await BriefcaseManager.getBriefcasesFromDisk();
       const briefcases = allBriefcases.filter((v) => {
         return v.changeSetId === iModelToken.changeSetId
-          && v.iModelId === iModelToken.iModelId
-          && v.openMode === iModelToken.openMode;
+          && v.iModelId === iModelToken.iModelId;
       });
       if (briefcases.length === 0) {
         throw new IModelError(DbResult.BE_SQLITE_ERROR_FileNotFound, "Briefcase not found with requested iModelId/changesetId/openMode");
@@ -158,8 +157,7 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
    * @note The ContextId in empty and should remain empty when pass to openBriefcase() call.
    */
   public async getBriefcases(): Promise<BriefcaseProps[]> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    await BriefcaseManager.initializeBriefcaseCacheFromDisk(requestContext);
+    BriefcaseManager.initializeBriefcaseCacheFromDisk();
     return BriefcaseManager.getBriefcasesFromDisk();
   }
 

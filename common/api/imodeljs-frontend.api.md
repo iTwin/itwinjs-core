@@ -5258,7 +5258,7 @@ export class NativeApp {
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
     // (undocumented)
-    static downloadBriefcase(contextId: string, iModelId: string, purpose?: OpenMode, version?: IModelVersion): Promise<void>;
+    static downloadBriefcase(contextId: string, iModelId: string, version?: IModelVersion): Promise<void>;
     static getBriefcases(): Promise<BriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
@@ -5266,7 +5266,7 @@ export class NativeApp {
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
     // (undocumented)
-    static openBriefcase(contextId: string, iModelId: string, changeSetId: string, openMode?: OpenMode): Promise<IModelConnection>;
+    static openBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<IModelConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status?: InternetConnectivityStatus): Promise<void>;

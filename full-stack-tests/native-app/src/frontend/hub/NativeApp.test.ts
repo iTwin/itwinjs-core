@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OpenMode, using } from "@bentley/bentleyjs-core";
+import { using } from "@bentley/bentleyjs-core";
 import { NativeApp, IModelApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
 import { BriefcaseProps } from "@bentley/imodeljs-common";
 import { Config } from "@bentley/imodeljs-clients";
@@ -28,6 +28,10 @@ describe("NativeApp (#integration)", () => {
     IModelApp.authorizationClient = undefined;
   });
 
+  it.skip("should purge the briefcase cache", async () => {
+    await TestUtility.purgeBriefcaseCache();
+  });
+
   it("Download Briefcase (#integration)", async () => {
     // Redirect native log to backend. Logger must be config.
     NativeAppLogger.initialize();
@@ -44,10 +48,10 @@ describe("NativeApp (#integration)", () => {
     await using(new OfflineScope(), async (scope: OfflineScope) => {
       const briefcases = await NativeApp.getBriefcases();
       const rs = briefcases.filter((_: BriefcaseProps) => _.iModelId === testIModelId);
-      assert(rs.length > 1);
+      assert(rs.length > 0);
       assert.isNumber(rs[0].fileSize);
       assert(rs[0].fileSize! > 0);
-      const conn = await NativeApp.openBriefcase("", rs[0].iModelId!, rs[0].changeSetId!, OpenMode.Readonly);
+      const conn = await NativeApp.openBriefcase("", rs[0].iModelId!, rs[0].changeSetId!);
       const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
       assert.notEqual(rowCount, 0);
       assert.equal(scope.rejected.length, 0);

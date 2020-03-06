@@ -46,3 +46,10 @@ export class AuthorizedClientRequestContext extends ClientRequestContext impleme
     return obj;
   }
 }
+
+/** AuthorizedClientRequestContext type guard.
+ * @beta
+ */
+export const isAuthorizedClientRequestContext = (requestContext: ClientRequestContext): requestContext is AuthorizedClientRequestContext => {
+  return (requestContext as AuthorizedClientRequestContext).accessToken !== undefined;
+};

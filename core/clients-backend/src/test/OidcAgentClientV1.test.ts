@@ -18,7 +18,8 @@ chai.should();
  * Note that we have kept this old AgentClient only because some of our clients are still
  * using it, and we want to ensure it's in a working state.
  */
-describe("OidcAgentClientV1 (#integration)", () => {
+// NEEDS_WORK: Commented out since this workflow is not supported after ping migration - issue reported to OIDC team.
+describe.skip("OidcAgentClientV1 (#integration)", () => {
 
   let validator: HubAccessTestValidator;
   const requestContext = new ClientRequestContext();

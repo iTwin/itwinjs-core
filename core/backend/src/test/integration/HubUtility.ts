@@ -428,8 +428,8 @@ export class HubUtility {
 
   /** Generate a name (for an iModel) that's unique for the user + host */
   public static generateUniqueName(baseName: string) {
-    let username = "";
-    let hostname = "";
+    let username = "AnonymousUser";
+    let hostname = "AnonymousHost";
     try {
       hostname = os.hostname();
       username = os.userInfo().username;

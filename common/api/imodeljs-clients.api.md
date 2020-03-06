@@ -1125,6 +1125,9 @@ export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
 }
 
 // @beta
+export const isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext;
+
+// @beta
 export const isIOidcFrontendClient: (client: IAuthorizationClient | undefined) => client is IOidcFrontendClient;
 
 // @alpha

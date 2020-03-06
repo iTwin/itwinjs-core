@@ -459,6 +459,7 @@ export class BriefcaseEntry {
     setNativeDb(nativeDb: IModelJsNative.DgnDb): void;
     targetChangeSetId: string;
     targetChangeSetIndex?: number;
+    toJson(): any;
 }
 
 // @public
@@ -527,7 +528,7 @@ export class BriefcaseManager {
     static getChangeSetsPath(iModelId: GuidString): string;
     static get imodelClient(): IModelClient;
     static initialize(cacheRootDir: string, iModelClient?: IModelClient): void;
-    static initializeBriefcaseCacheFromDisk(requestContext: AuthorizedClientRequestContext): Promise<void>;
+    static initializeBriefcaseCacheFromDisk(): void;
     static openBriefcase(briefcase: BriefcaseEntry): void;
     static openStandalone(pathname: string, openMode: OpenMode, encryptionPropsString?: string): BriefcaseEntry;
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, mergeToVersion?: IModelVersion): Promise<void>;

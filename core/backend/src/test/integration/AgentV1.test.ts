@@ -11,7 +11,8 @@ import { AuthorizedBackendRequestContext, BriefcaseIModelDb, OpenParams } from "
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
-describe("AgentV1 (#integration)", () => {
+// NEEDS_WORK: Commented out since this workflow is not supported after ping migration - issue reported to OIDC team.
+describe.skip("AgentV1 (#integration)", () => {
   // Agent test is not supported on ios
   if (!MobileRpcConfiguration.isMobileBackend) {
     let testProjectId: string;

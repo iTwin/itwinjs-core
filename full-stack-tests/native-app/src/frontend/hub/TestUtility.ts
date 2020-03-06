@@ -60,6 +60,10 @@ export class TestUtility {
     return TestRpcInterface.getClient().createIModel(name, contextId, deleteIfExists);
   }
 
+  public static async purgeBriefcaseCache() {
+    return TestRpcInterface.getClient().purgeBriefcaseCache();
+  }
+
   public static async getModelLockLevel(iModel: IModelConnection, modelId: Id64String): Promise<LockLevel> {
     const req = new AuthorizedClientRequestContext(await IModelApp.authorizationClient!.getAccessToken());
     const lockedModels = await IModelApp.iModelClient.locks.get(req, iModel.iModelToken.iModelId!, new LockQuery().byObjectId(modelId));

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
-import { RequestGlobalOptions, Version } from "@bentley/imodeljs-clients";
+import { RequestGlobalOptions, Version, UserInfoQuery, HubUserInfo } from "@bentley/imodeljs-clients";
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
@@ -30,7 +30,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     };
     // IModelTestUtils.setupDebugLogLevels();
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Only needed for DEV
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
   });
 
   it.skip("should be able to open the Retail Building Sample", async () => {
@@ -110,8 +110,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
-    const projectName = "iModelJsTest";
-    const iModelName = "ReadOnlyTest";
+    const projectName = "iModelJsIntegrationTest";
+    const iModelName = "Stadium Dataset 1";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
@@ -119,22 +119,47 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
   it.skip("should be able to upload required test files to the Hub", async () => {
     const projectName = "iModelJsIntegrationTest";
+    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    console.log(`Uploading test iModels into ${projectName}: ${projectId}`); // tslint:disable-line:no-console
 
     let iModelName = "ReadOnlyTest";
     let iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
 
     iModelName = "ReadWriteTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
 
     iModelName = "NoVersionsTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
 
     iModelName = "ConnectionReadTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
+
+    iModelName = "Stadium Dataset 1";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
+
+    iModelName = "seedFileTest";
+    let destIModelName = "ReadOnlyFullStackTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
+    let iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, destIModelName);
+    console.log(`Uploaded test iModel ${destIModelName}: ${iModelId}`); // tslint:disable-line:no-console
+
+    iModelName = "seedFileTest";
+    destIModelName = "ReadWriteFullStackTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
+    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, destIModelName);
+    console.log(`Uploaded test iModel ${destIModelName}: ${iModelId}`); // tslint:disable-line:no-console
   });
 
   it.skip("should be able to download required test files from the Hub", async () => {
@@ -305,4 +330,28 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await BriefcaseManager.purgeCache(requestContext);
   });
 
+  it.skip("display info of all test users that accessed a specific iModel", async () => {
+    const projectName = "iModelJsIntegrationTest";
+    const iModelName = "ReadOnlyFullStackTest";
+
+    const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
+
+    const users: HubUserInfo[] = await BriefcaseManager.imodelClient.users.get(requestContext, myIModelId, new UserInfoQuery().select("*"));
+    for (const user of users) {
+      console.log(`iModel ${projectName}:${iModelName} (${myIModelId}) was accessed by these users:`); // tslint:disable-line
+      console.log(`${user.email}: ${user.id}`); // tslint:disable-line
+    }
+  });
+
+  it.skip("display all test user ids", async () => {
+    let token = await TestUtility.getAccessToken(TestUsers.regular);
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+    token = await TestUtility.getAccessToken(TestUsers.manager);
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+    token = await TestUtility.getAccessToken(TestUsers.super);
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+    token = await TestUtility.getAccessToken(TestUsers.superManager);
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+  });
 });

@@ -80,5 +80,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
       throw new BentleyError(BentleyStatus.ERROR);
     return hubIModel.id;
   }
+
+  public async purgeBriefcaseCache(): Promise<void> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    await BriefcaseManager.purgeCache(requestContext);
+  }
 }
 TestRpcImpl.register();
