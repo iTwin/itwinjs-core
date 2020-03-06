@@ -6,7 +6,7 @@
  * @module Models
  */
 
-import { DbOpcode, DbResult, GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, DbOpcode, DbResult, GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
 import { LockLevel } from "@bentley/imodeljs-clients";
 import { AxisAlignedBox3d, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
@@ -58,6 +58,7 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   public static populateRequest(req: ConcurrencyControl.Request, props: ModelProps, iModel: IModelDb, opcode: DbOpcode): void {
+    assert(iModel instanceof BriefcaseIModelDb);
     if (!(iModel instanceof BriefcaseIModelDb)) {
       return;
     }
@@ -91,45 +92,35 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   protected static onInsert(props: ModelProps, iModel: IModelDb): void {
-    if (!iModel.isReadonly && (iModel instanceof BriefcaseIModelDb)) {
-      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert);
-    }
+    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert); }
   }
   /** Called after a new model is inserted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
   protected static onInserted(id: string, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) {
-      iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert);
-    }
+    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert); }
   }
   /** Called before a model is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
   protected static onUpdate(props: ModelProps, iModel: IModelDb): void {
-    if (!iModel.isReadonly && (iModel instanceof BriefcaseIModelDb)) {
-      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update);
-    }
+    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update); }
   }
   /** Called after a model is updated.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
   protected static onUpdated(props: ModelProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) {
-      iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update);
-    }
+    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update); }
   }
   /** Called before a model is deleted.
    * @throws [[IModelError]] if there is a problem
    * @beta
    */
   protected static onDelete(props: ModelProps, iModel: IModelDb): void {
-    if (!iModel.isReadonly && (iModel instanceof BriefcaseIModelDb)) {
-      iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete);
-    }
+    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete); }
   }
   /** Called after a model is deleted.
    * @throws [[IModelError]] if there is a problem

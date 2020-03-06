@@ -1796,6 +1796,15 @@ describe("iModel", () => {
     const snapshotDb1 = SnapshotIModelDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName } });
     const snapshotDb2 = SnapshotIModelDb.createFrom(snapshotDb1, snapshotFile2);
     const snapshotDb3 = SnapshotIModelDb.createFrom(imodel1, snapshotFile3);
+    assert.isTrue(snapshotDb1 instanceof SnapshotIModelDb);
+    assert.isTrue(snapshotDb2 instanceof SnapshotIModelDb);
+    assert.isTrue(snapshotDb3 instanceof SnapshotIModelDb);
+    assert.isTrue(snapshotDb1.isSnapshot);
+    assert.isTrue(snapshotDb2.isSnapshot);
+    assert.isTrue(snapshotDb3.isSnapshot);
+    assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
+    assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
+    assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
     assert.equal(snapshotDb1.briefcase.briefcaseId, BriefcaseId.Snapshot);
     assert.equal(snapshotDb2.briefcase.briefcaseId, BriefcaseId.Snapshot);
     assert.equal(snapshotDb3.briefcase.briefcaseId, BriefcaseId.Snapshot);
@@ -1832,6 +1841,9 @@ describe("iModel", () => {
     assert.equal(snapshotDb1.briefcase.briefcaseId, BriefcaseId.Snapshot);
     snapshotDb1.close();
     snapshotDb1 = SnapshotIModelDb.open(snapshotFile1, { password: "unnecessaryPassword" });
+    assert.isTrue(snapshotDb1 instanceof SnapshotIModelDb);
+    assert.isTrue(snapshotDb1.isSnapshot);
+    assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
     assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
 
     // create snapshot from scratch and give it a password
@@ -1839,6 +1851,9 @@ describe("iModel", () => {
     assert.equal(snapshotDb2.briefcase.briefcaseId, BriefcaseId.Snapshot);
     snapshotDb2.close();
     snapshotDb2 = SnapshotIModelDb.open(snapshotFile2, { password: "password" });
+    assert.isTrue(snapshotDb2 instanceof SnapshotIModelDb);
+    assert.isTrue(snapshotDb2.isSnapshot);
+    assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb2.nativeDb.isEncrypted());
 
     // create a new snapshot from a non-password-protected snapshot and then give it a password
@@ -1846,6 +1861,9 @@ describe("iModel", () => {
     assert.equal(snapshotDb3.briefcase.briefcaseId, BriefcaseId.Snapshot);
     snapshotDb3.close();
     snapshotDb3 = SnapshotIModelDb.open(snapshotFile3, { password: "password" });
+    assert.isTrue(snapshotDb3 instanceof SnapshotIModelDb);
+    assert.isTrue(snapshotDb3.isSnapshot);
+    assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb3.nativeDb.isEncrypted());
 
     // it is invalid to create a snapshot from a password-protected iModel

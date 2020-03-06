@@ -159,7 +159,7 @@ export class BriefcaseQuery extends WsgQuery {
 
 /**
  * Handler for managing [[Briefcase]]s. Use [[IModelClient.Briefcases]] to get an instance of this class.
- * In most cases, you should use [IModelDb]($backend) methods instead.
+ * In most cases, you should use [BriefcaseIModelDb]($backend) methods instead.
  * @internal
  */
 export class BriefcaseHandler {

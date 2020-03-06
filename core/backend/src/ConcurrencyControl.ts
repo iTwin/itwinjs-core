@@ -172,6 +172,9 @@ export class ConcurrencyControl {
    * @internal
    */
   public onModelWrite(modelClass: typeof Model, model: ModelProps, opcode: DbOpcode): void {
+    if (this._iModel.isReadonly) {
+      throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only", Logger.logError, loggerCategory);
+    }
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForModelTo(resourcesNeeded, model, opcode, modelClass);
     this.applyPolicyBeforeWrite(resourcesNeeded);
@@ -217,6 +220,9 @@ export class ConcurrencyControl {
    * @internal
    */
   public onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void {
+    if (this._iModel.isReadonly) {
+      throw new IModelError(IModelStatus.ReadOnly, "iModel is read-only", Logger.logError, loggerCategory);
+    }
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForElementTo(resourcesNeeded, element, opcode, elementClass);
     this.applyPolicyBeforeWrite(resourcesNeeded);

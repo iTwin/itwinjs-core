@@ -1535,7 +1535,7 @@ export class Element extends Entity implements ElementProps {
     protected static onUpdated(props: ElementProps, iModel: IModelDb): void;
     parent?: RelatedElement;
     // @beta
-    static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, _iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined): void;
+    static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined): void;
     removeUserProperties(nameSpace: string): void;
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;

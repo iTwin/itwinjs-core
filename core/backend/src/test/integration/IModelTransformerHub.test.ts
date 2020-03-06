@@ -70,8 +70,10 @@ describe("IModelTransformerHub (#integration)", () => {
     try {
       const sourceDb = await BriefcaseIModelDb.open(requestContext, projectId, sourceIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
       const targetDb = await BriefcaseIModelDb.open(requestContext, projectId, targetIModelId, OpenParams.pullAndPush(), IModelVersion.latest());
-      assert.exists(sourceDb);
-      assert.exists(targetDb);
+      assert.isTrue(sourceDb instanceof BriefcaseIModelDb);
+      assert.exists(targetDb instanceof BriefcaseIModelDb);
+      assert.isFalse(sourceDb.isSnapshot);
+      assert.isFalse(targetDb.isSnapshot);
       sourceDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
       targetDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy);
 

@@ -327,7 +327,7 @@ class ParallelQueue {
 }
 
 /**
- * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [IModelDb]($backend) methods instead.
+ * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [BriefcaseIModelDb]($backend) methods instead.
  * @beta
  */
 export class ChangeSetHandler {

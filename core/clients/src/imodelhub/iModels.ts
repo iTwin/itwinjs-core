@@ -22,7 +22,7 @@ const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 /**
  * HubIModel represents an iModel on iModelHub. Getting a valid HubIModel instance from iModelHub is required for majority of iModelHub method calls, as wsgId of this object needs to be passed as iModelId argument to those methods.
  *
- * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [IModelDb]($backend).
+ * For iModel representation in iModel.js, see [IModel]($common). For the file that is used for that iModel, see [BriefcaseIModelDb]($backend).
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "ContextScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })

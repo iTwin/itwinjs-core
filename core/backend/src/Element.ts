@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
+import { assert, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
@@ -69,16 +69,19 @@ export class Element extends Entity implements ElementProps {
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
-  /**
-   * Disclose the codes and locks needed to perform the specified operation on this element
+  /** Disclose the codes and locks needed to perform the specified operation on this element
    * @param req the request to populate
    * @param props the version of the element that will be written
-   * @param _iModel the iModel
+   * @param iModel the iModel
    * @param opcode the operation
    * @param original a pre-change copy of the element. Passed only in the case of Update.
    * @beta
    */
-  public static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, _iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined) {
+  public static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined) {
+    assert(iModel instanceof BriefcaseIModelDb);
+    if (!(iModel instanceof BriefcaseIModelDb)) {
+      return;
+    }
     switch (opcode) {
       case DbOpcode.Insert: {
         if (Code.isValid(props.code) && !Code.isEmpty(props.code))
@@ -113,9 +116,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onInsert(props: ElementProps, iModel: IModelDb): void {
-    if (!iModel.isReadonly && (iModel instanceof BriefcaseIModelDb)) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert);
-    }
+    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Insert); }
   }
   /** Called before an Element is updated.
    * @throws [[IModelError]] if there is a problem
@@ -123,9 +124,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onUpdate(props: ElementProps, iModel: IModelDb): void {
-    if (!iModel.isReadonly && (iModel instanceof BriefcaseIModelDb)) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update);
-    }
+    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Update); }
   }
   /** Called before an Element is deleted.
    * @throws [[IModelError]] if there is a problem
@@ -133,9 +132,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onDelete(props: ElementProps, iModel: IModelDb): void {
-    if (!iModel.isReadonly && (iModel instanceof BriefcaseIModelDb)) {
-      iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
-    }
+    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete); }
   }
   /** Called after a new Element was inserted.
    * @throws [[IModelError]] if there is a problem
@@ -143,9 +140,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onInserted(props: ElementProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) {
-      iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert);
-    }
+    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Insert); }
   }
   /** Called after an Element was updated.
    * @throws [[IModelError]] if there is a problem
@@ -153,9 +148,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onUpdated(props: ElementProps, iModel: IModelDb): void {
-    if (iModel instanceof BriefcaseIModelDb) {
-      iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update);
-    }
+    if (iModel instanceof BriefcaseIModelDb) { iModel.concurrencyControl.onElementWritten(this, props.id!, DbOpcode.Update); }
   }
   /** Called after an Element was deleted.
    * @throws [[IModelError]] if there is a problem
