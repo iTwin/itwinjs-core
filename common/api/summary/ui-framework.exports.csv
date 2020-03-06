@@ -290,6 +290,7 @@ public;MessageAddedEventArgs
 public;MessageCenterField 
 public;MessageCenterFieldProps 
 public;MessageManager
+public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
 public;ModalDialogManager
 public;ModalDialogRenderer 

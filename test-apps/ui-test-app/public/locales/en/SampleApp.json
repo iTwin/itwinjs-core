@@ -163,7 +163,8 @@
     "showHeightEditor": "Show Height Editor",
     "showContextMenu": "Show Context Menu",
     "showToolbar": "Show Toolbar",
-    "showHTMLElement": "Show HTML Element"
+    "showHTMLElement": "Show HTML Element",
+    "clearMessages": "Clear Messages"
   },
   "tools": {
     "ToolWithSettings": {

@@ -3083,6 +3083,7 @@ export class MessageManager {
     // (undocumented)
     static readonly onInputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent;
     static readonly onMessageAddedEvent: MessageAddedEvent;
+    static readonly onMessagesUpdatedEvent: MessagesUpdatedEvent;
     // @beta
     static readonly onToolAssistanceChangedEvent: ToolAssistanceChangedEvent;
     static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
@@ -3095,6 +3096,10 @@ export class MessageManager {
     // @internal (undocumented)
     static showAlertMessageBox(messageDetails: NotifyMessageDetails): void;
     }
+
+// @public
+export class MessagesUpdatedEvent extends UiEvent<{}> {
+}
 
 // @public
 export class ModalDialogChangedEvent extends DialogChangedEvent {

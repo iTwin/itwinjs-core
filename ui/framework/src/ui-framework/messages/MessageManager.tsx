@@ -78,6 +78,11 @@ export interface ToolAssistanceChangedEventArgs {
  */
 export class MessageAddedEvent extends UiEvent<MessageAddedEventArgs> { }
 
+/** Messages Updated Event class.
+ * @public
+ */
+export class MessagesUpdatedEvent extends UiEvent<{}> { }
+
 /** Activity Message Added Event class.
  * @public
  */
@@ -128,6 +133,9 @@ export class MessageManager {
   /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.outputMessage(). */
   public static readonly onMessageAddedEvent = new MessageAddedEvent();
 
+  /** The MessagesUpdatedEvent is fired when a message is added or the messages are cleared. */
+  public static readonly onMessagesUpdatedEvent = new MessagesUpdatedEvent();
+
   /** The ActivityMessageUpdatedEvent is fired when an Activity message updates via IModelApp.notifications.outputActivityMessage(). */
   public static readonly onActivityMessageUpdatedEvent = new ActivityMessageUpdatedEvent();
 
@@ -151,6 +159,7 @@ export class MessageManager {
   /** Clear the message list. */
   public static clearMessages(): void {
     this._messages.splice(0);
+    this.onMessagesUpdatedEvent.emit({});
     this._lastMessage = undefined;
   }
 
@@ -184,6 +193,7 @@ export class MessageManager {
    */
   public static addToMessageCenter(message: NotifyMessageDetails): void {
     this._messages.push(message);
+    this.onMessagesUpdatedEvent.emit({});
     this.checkMaxCachedMessages();
   }
 
@@ -192,6 +202,7 @@ export class MessageManager {
     if (this._messages.length > this._maxCachedMessages) {
       const numToErase = this._maxCachedMessages / 4;
       this._messages.splice(0, numToErase);
+      this.onMessagesUpdatedEvent.emit({});
     }
   }
 

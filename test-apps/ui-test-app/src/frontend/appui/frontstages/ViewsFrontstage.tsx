@@ -66,6 +66,7 @@ import {
   BasicNavigationWidget,
   ToolbarHelper,
   ModelsTreeNodeType,
+  MessageManager,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -610,6 +611,12 @@ class AdditionalTools {
     }
   }
 
+  private get _clearMessages() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.clearMessages", execute: () => { MessageManager.clearMessages(); },
+    });
+  }
+
   private _closeCursorPopup() {
     CursorPopupManager.close("test1", false);
     CursorPopupManager.close("testR1", false);
@@ -707,7 +714,7 @@ class AdditionalTools {
       labelKey: "SampleApp:buttons.messageDemos",
       panelLabel: "Message Demos",
       iconSpec: "icon-placeholder",
-      items: [this._tool3Item, this._tool4Item, this._outputMessageItem],
+      items: [this._tool3Item, this._tool4Item, this._outputMessageItem, this._clearMessages],
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.dialogDemos",
