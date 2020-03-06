@@ -72,7 +72,8 @@
     "@bentley/imodeljs-clients": "^2.0.0-dev.25",
     "@bentley/imodeljs-common": "^2.0.0-dev.25",
     "@bentley/imodeljs-i18n": "^2.0.0-dev.25",
-    "@bentley/imodeljs-quantity": "^2.0.0-dev.25"
+    "@bentley/imodeljs-quantity": "^2.0.0-dev.25",
+    "@bentley/webgl-compatibility": "2.0.0-dev.25"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -88,6 +89,7 @@
     "@bentley/imodeljs-i18n": "2.0.0-dev.25",
     "@bentley/imodeljs-quantity": "2.0.0-dev.25",
     "@bentley/webpack-tools": "2.0.0-dev.25",
+    "@bentley/webgl-compatibility": "2.0.0-dev.25",
     "@types/chai": "^4.1.4",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",

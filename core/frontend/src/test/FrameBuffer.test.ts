@@ -5,7 +5,8 @@
 
 import { expect, assert } from "chai";
 import { IModelApp } from "../IModelApp";
-import { Capabilities, System, RenderBuffer, TextureHandle, FrameBuffer, GL, Debug } from "../webgl";
+import { System, RenderBuffer, TextureHandle, FrameBuffer, GL, Debug } from "../webgl";
+import { Capabilities } from "@bentley/webgl-compatibility";
 
 describe("FrameBuffer tests", () => {
   before(() => IModelApp.startup());

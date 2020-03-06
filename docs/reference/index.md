@@ -23,6 +23,7 @@ The iModel.js library is organized into the following separately downloadable [n
 - ($bentley)
 - ($geometry)
 - ($frontend-devtools)
+- ($webgl-compatibility)
 - ($logger-config)
 
 ## iModel.js UI Packages

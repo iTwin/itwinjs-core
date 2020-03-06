@@ -32,7 +32,6 @@ export * from "./ModelState";
 export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./QuantityFormatter";
-export * from "./RenderCompatibility";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
 export * from "./Sheet";

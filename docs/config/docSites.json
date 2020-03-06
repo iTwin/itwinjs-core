@@ -64,7 +64,8 @@
       "presentation-backend": "presentation-backend",
       "presentation-common": "presentation-common",
       "presentation-components": "presentation-components",
-      "presentation-frontend": "presentation-frontend"
+      "presentation-frontend": "presentation-frontend",
+      "webgl-compatibility": "webgl-compatibility"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"imodeljs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",
     "ogShareImage": "landing-page/assets/twitter-share.png"

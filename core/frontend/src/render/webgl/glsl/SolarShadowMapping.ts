@@ -6,10 +6,11 @@
  * @module WebGL
  */
 import { assert } from "@bentley/bentleyjs-core";
+import { RenderType } from "@bentley/webgl-compatibility";
 import { VariableType, ProgramBuilder, FragmentShaderBuilder, FragmentShaderComponent } from "../ShaderBuilder";
 import { TextureUnit } from "../RenderFlags";
 import { addInstancedRtcMatrix } from "./Vertex";
-import { RenderType, System } from "../System";
+import { System } from "../System";
 import { addEyeSpace, addFrustum } from "./Common";
 
 const computeShadowPos = `

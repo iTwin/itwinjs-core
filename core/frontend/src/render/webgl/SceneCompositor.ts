@@ -23,7 +23,8 @@ import {
 } from "./CachedGeometry";
 import { Vector2d, Vector3d, Transform } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
-import { System, RenderType, DepthType } from "./System";
+import { System } from "./System";
+import { RenderType, DepthType } from "@bentley/webgl-compatibility";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";

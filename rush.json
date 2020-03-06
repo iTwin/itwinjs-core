@@ -17,8 +17,7 @@
       "@types"
     ]
   },
-  "projects": [
-    {
+  "projects": [{
       "packageName": "@bentley/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
@@ -101,6 +100,13 @@
     {
       "packageName": "@bentley/frontend-devtools",
       "projectFolder": "core/frontend-devtools",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/webgl-compatibility",
+      "projectFolder": "core/webgl-compatibility",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

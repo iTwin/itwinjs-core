@@ -34,7 +34,7 @@ import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
-import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
+import { WebGLRenderCompatibilityInfo, queryRenderCompatibility } from "@bentley/webgl-compatibility";
 import { TileAdmin } from "./tile/internal";
 import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
@@ -305,7 +305,7 @@ export class IModelApp {
    * and/or performance.
    * @beta
    */
-  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return System.queryRenderCompatibility(); }
+  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return queryRenderCompatibility(System.createContext); }
 
   /**
    * This method must be called before any iModel.js frontend services are used.

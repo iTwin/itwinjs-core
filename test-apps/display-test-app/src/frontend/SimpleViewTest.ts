@@ -30,9 +30,9 @@ import {
   OidcBrowserClient,
   RenderDiagnostics,
   RenderSystem,
-  WebGLExtensionName,
   OidcDesktopClientRenderer,
 } from "@bentley/imodeljs-frontend";
+import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { showStatus } from "./Utils";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import { DisplayTestApp } from "./App";

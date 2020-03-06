@@ -29,6 +29,7 @@ import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { ByteStream } from '@bentley/bentleyjs-core';
 import { Camera } from '@bentley/imodeljs-common';
+import { Capabilities } from '@bentley/webgl-compatibility';
 import { Cartographic } from '@bentley/imodeljs-common';
 import { CartographicRange } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
@@ -237,6 +238,8 @@ import { ViewFlag } from '@bentley/imodeljs-common';
 import { ViewFlags } from '@bentley/imodeljs-common';
 import { ViewQueryParams } from '@bentley/imodeljs-common';
 import { ViewStateProps } from '@bentley/imodeljs-common';
+import { WebGLExtensionName } from '@bentley/webgl-compatibility';
+import { WebGLRenderCompatibilityInfo } from '@bentley/webgl-compatibility';
 import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { XYZ } from '@bentley/geometry-core';
@@ -11028,42 +11031,6 @@ export class WalkViewTool extends ViewManip {
     provideToolAssistance(mainInstrKey: string): void;
     // (undocumented)
     static toolId: string;
-}
-
-// @internal (undocumented)
-export type WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" | "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2";
-
-// @beta
-export enum WebGLFeature {
-    DepthTexture = "depth texture",
-    FloatRendering = "float rendering",
-    FragDepth = "fragment depth",
-    Instancing = "instancing",
-    MinimalTextureUnits = "minimal texture units",
-    MrtPick = "mrt pick",
-    MrtTransparency = "mrt transparency",
-    ShadowMaps = "shadow maps",
-    UintElementIndex = "uint element index"
-}
-
-// @beta
-export interface WebGLRenderCompatibilityInfo {
-    contextErrorMessage?: string;
-    missingOptionalFeatures: WebGLFeature[];
-    missingRequiredFeatures: WebGLFeature[];
-    status: WebGLRenderCompatibilityStatus;
-    unmaskedRenderer?: string;
-    unmaskedVendor?: string;
-    userAgent: string;
-}
-
-// @beta
-export enum WebGLRenderCompatibilityStatus {
-    AllOkay = 0,
-    CannotCreateContext = 4,
-    MajorPerformanceCaveat = 2,
-    MissingOptionalFeatures = 1,
-    MissingRequiredFeatures = 3
 }
 
 // @internal (undocumented)
