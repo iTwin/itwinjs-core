@@ -421,6 +421,29 @@ import { DEPRECATED_treeWithUnifiedSelection as treeWithUnifiedSelection } from 
  * Various methods (usually static createXXXX) that accept `MultiLineStringDataVariant` have previously been marked as deprecated, with replacement methods that include the words `FromVariant` data.  This decision has been reversed, and that short names are again considered ok.   This includes:
   * `LineString3d.createArrayOfLineString3d (variantLinestringData:MultiLineStringDataVariant): LineString3d[]` is un-deprecated, and the mangled name `createArrayOfLineString3dFromVariantData` is deprecated.
 
+### various method name changes (breaking)
+
+  * On Arc3d, there were previously (confusingly) two "get" properties for the internal matrix of the Arc3d.
+    * arc.matrixRef
+       * This returns a reference to the matrix.
+      * This is not changed.
+      * Direct access to the matrix is dangerous, but the "Ref" qualifier makes that clear.
+    * arc.matrix
+      * this formerly returned a clone of the matrix.
+      * Cloning is expensive.
+      * this is removed.
+      * It is replaced by a method (not property)  `arc3d.matrixClone ()`
+      * `arc3d.matrixClone()` clones the matrix.
+    * `Ellipsoid` API changed to eliminate use of `Point2d` as carrier for a pair of angles.
+      * angle pairs are instead returned in strongly typed`LongitudeLatitudeNumber` objects.
+      * method `ellipsoid.surfaceNormalToRadians` is removed.
+        Use `ellipsoid.surfaceNormalToAngles` for the same result in proper `LongitudeLatitudeNumber` form.
+      * method `ellipsoid.intersectRay (ray, rayFractions[], xyz[], thetaPhiRadians[])` now returns `thetaPhiRadians` as an array of strongly typed `LongitutdeLatitudeNumber`.
+        * Changes made to callers in core\frontend\BackgroundMapGeometry.ts
+      * `SurfaceLocationDetail` has a new (constructor-like) static method `createUVNumbersPoint (surface, u, v, point)` with the surface `u` and `v` parameters as separate numeric values (previously packaged as `Point2d`)
+      * `SphereImplicit.intersectSphereRay` returns its surface angle data as `LongitudeLatitudePoint` instead of as `Point2d`.
+
+
 ### Bug fixes
 
 * Apply on-plane tolerances in mesh-plane clip. (https://bentleycs.visualstudio.com/iModelTechnologies/_workitems/edit/273249/)

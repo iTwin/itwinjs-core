@@ -28,6 +28,7 @@ import { Sphere } from "../../solid/Sphere";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
   for (const f of [0, 0.25, 0.75]) {
@@ -622,7 +623,7 @@ describe("LinearSystems", () => {
     const radius = 5.0;
     const rayFractions: number[] = [];
     const xyzIntersections: Point3d[] = [];
-    const thetaPhiRadians: Point2d[] = [];
+    const thetaPhiRadians: LongitudeLatitudeNumber[] = [];
     let x0 = 0;
     let y0;
     const b = 2.5 * radius; // distance for displaying the ray

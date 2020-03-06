@@ -589,12 +589,12 @@ export class CurveChainWireOffsetContext {
     } else if (g instanceof Arc3d) {
       const g1 = g.cloneAtZ();
       if (g1.isCircular) {
-        const sign = g1.sweep.sweepRadians * g1.matrix.coffs[8] >= 0.0 ? 1.0 : -1.0;
-        const r = g1.matrix.columnXMagnitude();
+        const sign = g1.sweep.sweepRadians * g1.matrixRef.coffs[8] >= 0.0 ? 1.0 : -1.0;
+        const r = g1.matrixRef.columnXMagnitude();
         const r1 = r - sign * distanceLeft;
         if (r1 >= 0) {
           const factor = r1 / r;
-          const matrix = g1.matrix;
+          const matrix = g1.matrixClone ();
           matrix.scaleColumnsInPlace(factor, factor, 1.0);
           return this.applyBasePoints(Arc3d.createRefs(g1.center.clone(), matrix, g1.sweep.clone()), g.startPoint(), g.endPoint());
         }

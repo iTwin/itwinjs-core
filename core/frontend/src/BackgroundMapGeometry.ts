@@ -24,6 +24,7 @@ import {
   Matrix3d,
   XYAndZ,
   Arc3d,
+  LongitudeLatitudeNumber,
 } from "@bentley/geometry-core";
 import { Cartographic, GlobeMode, Frustum, ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
@@ -61,7 +62,7 @@ export class BackgroundMapGeometry {
   private static _transitionDistanceMultiplier = .25;  // In the transition range which extends beyond the caretesian range we intepolate between cartesian and ellipsoid.
 
   private static _scratchRayFractions = new Array<number>();
-  private static _scratchRayAngles = new Array<Point2d>();
+  private static _scratchRayAngles = new Array<LongitudeLatitudeNumber>();
   private static _scratchPoint = Point3d.createZero();
 
   constructor(private _ecefToDb: Transform, private _bimElevationBias: number, globeMode: GlobeMode, iModel: IModelConnection) {
@@ -135,7 +136,7 @@ export class BackgroundMapGeometry {
         if ((!positiveOnly || thisFraction > 0) && (undefined === intersectDistance || thisFraction < intersectDistance)) {
           intersectDistance = thisFraction;
           intersect = scratchIntersectRay;
-          ellipsoid.radiansToUnitNormalRay(BackgroundMapGeometry._scratchRayAngles[i].x, BackgroundMapGeometry._scratchRayAngles[i].y, intersect);
+          ellipsoid.radiansToUnitNormalRay(BackgroundMapGeometry._scratchRayAngles[i].longitudeRadians, BackgroundMapGeometry._scratchRayAngles[i].latitudeRadians, intersect);
           if (intersect.direction.dotProduct(ray.direction) < 0) {
             if (this.cartesianRange.containsPoint(intersect.origin)) {    // If we're in the cartesian range, correct to planar intersection.
               const planeFraction = ray.intersectionWithPlane(this.cartesianPlane, scratchIntersectRay.origin);
@@ -225,8 +226,8 @@ export class BackgroundMapGeometry {
 
         // Extrema...
         let angles, extremaPoint;
-        if (undefined !== (angles = ellipsoid.surfaceNormalToRadians(viewZ)) &&
-          undefined !== (extremaPoint = ellipsoid.radiansToPoint(angles.x, angles.y)) &&
+        if (undefined !== (angles = ellipsoid.surfaceNormalToAngles(viewZ)) &&
+          undefined !== (extremaPoint = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians)) &&
           (eyePoint === undefined || viewZ.dotProductStartEnd(extremaPoint, eyePoint) > 0) &&
           clipPlanes.classifyPointContainment([extremaPoint], false) !== ClipPlaneContainment.StronglyOutside)
           depthRange.extendX(viewZ.dotProduct(extremaPoint));

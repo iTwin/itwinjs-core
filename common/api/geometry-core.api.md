@@ -231,7 +231,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
-    get matrix(): Matrix3d;
+    matrixClone(): Matrix3d;
     get matrixRef(): Matrix3d;
     maxVectorLength(): number;
     moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail): CurveLocationDetail;
@@ -1640,7 +1640,7 @@ export class Ellipsoid implements Clipper {
     static createCenterMatrixRadii(center: Point3d, axes: Matrix3d | undefined, radiusX: number, radiusY: number, radiusZ: number): Ellipsoid;
     createPlaneSection(plane: Plane3dByOriginAndUnitNormal): Arc3d | undefined;
     createSectionArcPointPointVectorInPlane(pointAnglesA: LongitudeLatitudeNumber, pointAnglesB: LongitudeLatitudeNumber, inPlaneVector: Vector3d, result?: Arc3d): Arc3d | undefined;
-    intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number;
+    intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: LongitudeLatitudeNumber[] | undefined): number;
     isAlmostEqual(other: Ellipsoid): boolean;
     isPointOnOrInside(point: Point3d): boolean;
     localToWorld(localPoint: XYAndZ, result?: Point3d): Point3d;
@@ -1658,8 +1658,6 @@ export class Ellipsoid implements Clipper {
     sectionArcWithIntermediateNormal(angleA: LongitudeLatitudeNumber, intermediateNormalFraction: number, angleB: LongitudeLatitudeNumber): Arc3d;
     silhouetteArc(eyePoint: Point4d): Arc3d | undefined;
     surfaceNormalToAngles(normal: Vector3d, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber;
-    // @deprecated
-    surfaceNormalToRadians(normal: Vector3d, result?: Point2d): Point2d;
     get transformRef(): Transform;
     tryTransformInPlace(transform: Transform): boolean;
     worldToLocal(worldPoint: XYAndZ, result?: Point3d): Point3d | undefined;
@@ -4705,7 +4703,7 @@ export class SphereImplicit {
     evaluateImplicitFunction(x: number, y: number, z: number): number;
     evaluateImplicitFunctionXYZW(wx: number, wy: number, wz: number, w: number): number;
     evaluateThetaPhi(thetaRadians: number, phiRadians: number, result?: Point3d): Point3d;
-    static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number;
+    static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: LongitudeLatitudeNumber[] | undefined): number;
     static patchRangeStartEndRadians(center: Point3d, radius: number, theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d;
     static radiansToUnitSphereXYZ(thetaRadians: number, phiRadians: number, xyz: XYZ): void;
     radius: number;
