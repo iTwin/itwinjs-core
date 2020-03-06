@@ -215,11 +215,11 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
       );
     });
   }, [props.items]);
-  /* overflown - keys of items to show in overflow panel
+  /* overflowItemKeys - keys of items to show in overflow panel
    * handleContainerResize - handler called when container <div> is resized.
    * handleOverflowResize - handler called when determining size of overflow indicator/button.
    * handleEntryResize - handler called when determining size of each item/button.  */
-  const [overflown, handleContainerResize, handleOverflowResize, handleEntryResize] = useOverflow(availableNodes);
+  const [overflowItemKeys, handleContainerResize, handleOverflowResize, handleEntryResize] = useOverflow(availableNodes);
   // handler called by ResizeObserver
   const handleResize = React.useCallback((w: number) => {
     width.current = w;
@@ -242,14 +242,14 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
   const availableItems = React.Children.toArray(availableNodes);
   const displayedItems = availableItems.reduce<Array<[string, React.ReactNode]>>((acc, child, index) => {
     const key = getChildKey(child, index);
-    if (!overflown || overflown.indexOf(key) < 0) {
+    if (!overflowItemKeys || overflowItemKeys.indexOf(key) < 0) {
       acc.push([key, child]);
     }
     return acc;
   }, []);
-  const overflownItems = overflown ? availableItems.reduce<Array<[string, React.ReactNode]>>((acc, child, index) => {
+  const overflowPanelItems = overflowItemKeys ? availableItems.reduce<Array<[string, React.ReactNode]>>((acc, child, index) => {
     const key = getChildKey(child, index);
-    if (overflown.indexOf(key) >= 0) {
+    if (overflowItemKeys.indexOf(key) >= 0) {
       acc.push([key, child]);
     }
     return acc;
@@ -267,10 +267,10 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
     >
       <ToolbarOverflowButton
         onClick={onOverflowClick}
-        panelNode={overflownItems.length > 0 && isOverflowPanelOpen &&
+        panelNode={overflowPanelItems.length > 0 && isOverflowPanelOpen &&
           <ToolbarOverflowPanel ref={panelRef} >
             <OverflowItemsContainer>
-              {overflownItems.map(([key, child]) => {
+              {overflowPanelItems.map(([key, child]) => {
                 return (
                   <ToolbarItemContext.Provider
                     key={key}
@@ -289,7 +289,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
         }
       />
     </ToolbarItemContext.Provider>);
-  }, [useHeight, overflownItems, handleOverflowResize, isOverflowPanelOpen, onOverflowClick, panelRef]);
+  }, [useHeight, overflowPanelItems, handleOverflowResize, isOverflowPanelOpen, onOverflowClick, panelRef]);
 
   const className = classnames(
     "components-toolbar-overflow-sizer",
@@ -315,7 +315,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
           className="components-items"
           direction={direction}
         >
-          {(!overflown || overflown.length > 0) && showOverflowAtStart && addOverflowButton()}
+          {(!overflowItemKeys || overflowItemKeys.length > 0) && showOverflowAtStart && addOverflowButton()}
           {displayedItems.map(([key, child]) => {
             const onEntryResize = handleEntryResize(key);
             return (
@@ -331,7 +331,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
               </ToolbarItemContext.Provider>
             );
           })}
-          {(!overflown || overflown.length > 0) && !showOverflowAtStart && addOverflowButton()}
+          {(!overflowItemKeys || overflowItemKeys.length > 0) && !showOverflowAtStart && addOverflowButton()}
 
         </ToolbarItems>
       </div>
@@ -350,7 +350,7 @@ function getChildKey(child: React.ReactNode, index: number) {
   return index.toString();
 }
 
-/** Returns a subset of docked entry keys that exceed given width and should be overflown.
+/** Returns a subset of docked entry keys that exceed given width and should be overflowItemKeys.
  * @internal
  */
 function getOverflown(width: number, docked: ReadonlyArray<readonly [string, number]>, overflowWidth: number) {
@@ -377,7 +377,7 @@ function getOverflown(width: number, docked: ReadonlyArray<readonly [string, num
   return docked.slice(j).map((e) => e[0]);
 }
 
-/** Hook that returns a list of overflown availableItems.
+/** Hook that returns a list of overflowItemKeys availableItems.
  * @internal
  */
 function useOverflow(availableItems: React.ReactNode): [
@@ -386,7 +386,7 @@ function useOverflow(availableItems: React.ReactNode): [
   (size: number) => void,
   (key: string) => (size: number) => void,
 ] {
-  const [overflown, setOverflown] = React.useState<ReadonlyArray<string>>();
+  const [overflowItemKeys, setOverflown] = React.useState<ReadonlyArray<string>>();
   const entryWidths = React.useRef(new Map<string, number | undefined>());
   const width = React.useRef<number | undefined>(undefined);
   const overflowWidth = React.useRef<number | undefined>(undefined);
@@ -438,7 +438,7 @@ function useOverflow(availableItems: React.ReactNode): [
     }
   };
 
-  return [overflown, handleContainerResize, handleOverflowResize, handleEntryResize];
+  return [overflowItemKeys, handleContainerResize, handleOverflowResize, handleEntryResize];
 }
 
 /** Interface toolbars use to define context for its items.
