@@ -13,12 +13,12 @@ export const whitelistRelPath: string = "../assets/whitelist.txt";
 should();
 const logFilePath = path.join(__dirname, "./iModelClientsTests.log");
 const logFileStream = fs.createWriteStream(logFilePath, { flags: "a" });
-console.log("Log File created at: " + logFilePath);
+// console.log("Log File created at: " + logFilePath);
 
 // The Request URLs are captured separate. The log file is used by the Hub URL whitelist validation.
 const urlLogPath = path.join(__dirname, "./requesturls.log");
 const urlLogFileStream = fs.createWriteStream(urlLogPath, { flags: "a" });
-console.log("URL Log file created at: " + urlLogPath);
+// console.log("URL Log file created at: " + urlLogPath);
 
 function logFunction(logLevel: string, category: string, message: string) {
   if (category === ClientsLoggerCategory.Request)

@@ -1,10 +1,6 @@
 {
   "extends": "@bentley/build-tools/tslint.json",
   "rules": {
-    "no-console": [
-      false
-    ],
-    "unified-signatures": false,
     "space-before-function-paren": [
       true,
       {
