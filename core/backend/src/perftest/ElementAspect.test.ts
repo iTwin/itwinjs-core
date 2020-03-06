@@ -13,7 +13,7 @@ import { BriefcaseIModelDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
-export async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
+async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
   // Create a new physical model.
   const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
   // Find or create a SpatialCategory.
@@ -22,7 +22,10 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
   const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
   // Reserve all of the codes that are required by the new model and category.
   try {
-    await rwIModel.concurrencyControl.request(requestContext);
+    if (rwIModel instanceof BriefcaseIModelDb) {
+      await rwIModel.concurrencyControl.request(requestContext);
+      requestContext.enter();
+    }
   } catch (err) {
     if (err instanceof IModelHubError) {
       assert.fail(JSON.stringify(err));

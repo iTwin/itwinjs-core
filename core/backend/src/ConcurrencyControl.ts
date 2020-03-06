@@ -6,19 +6,19 @@
  * @module iModels
  */
 
+import { assert, DbOpcode, DbResult, Id64String, Logger, RepositoryStatus } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodeljs-clients";
+import { CodeProps, ElementProps, IModelError, IModelStatus, IModelWriteRpcInterface, ModelProps } from "@bentley/imodeljs-common";
 import * as deepAssign from "deep-assign";
-import { assert, DbOpcode, Id64String, Logger, RepositoryStatus, DbResult } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, CodeQuery, CodeState, HubCode, Lock, LockLevel, LockType, LockQuery } from "@bentley/imodeljs-clients";
-import { IModelError, IModelStatus, ElementProps, ModelProps, CodeProps, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { IModelDb } from "./IModelDb";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { RelationshipProps } from "./Relationship";
 import * as path from "path";
-import { IModelJsFs } from "./IModelJsFs";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
-import { Model } from "./Model";
 import { Element } from "./Element";
+import { BriefcaseIModelDb } from "./IModelDb";
+import { IModelJsFs } from "./IModelJsFs";
+import { Model } from "./Model";
+import { RelationshipProps } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.ConcurrencyControl;
 
@@ -33,13 +33,13 @@ export class ConcurrencyControl {
   private _cache: ConcurrencyControl.StateCache;
   private _modelsAffectedByWrites = new Set<Id64String>(); // TODO: Remove this when we get tile healing
 
-  constructor(private _iModel: IModelDb) {
+  constructor(private _iModel: BriefcaseIModelDb) {
     this._cache = new ConcurrencyControl.StateCache(this);
     this._policy = ConcurrencyControl.PessimisticPolicy;
   }
 
   /** @internal */
-  public get iModel(): IModelDb { return this._iModel; }
+  public get iModel(): BriefcaseIModelDb { return this._iModel; }
 
   /** @internal */
   public get modelsAffectedByWrites(): Id64String[] { return Array.from(this._modelsAffectedByWrites); }
@@ -108,9 +108,7 @@ export class ConcurrencyControl {
   /** @internal */
   public onUndoRedo() { this.applyTransactionOptions(); }
 
-  /** @internal */
-  private applyTransactionOptions() {
-  }
+  private applyTransactionOptions() { }
 
   public async syncCache(requestContext: AuthorizedClientRequestContext): Promise<void> {
     this._cache.clear();
@@ -118,8 +116,8 @@ export class ConcurrencyControl {
   }
 
   public async openOrCreateCache(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this.iModel.needsConcurrencyControl)
-      throw new IModelError(IModelStatus.BadRequest, "not a briefcase or not read-write", Logger.logError, loggerCategory);
+    if (this.iModel.isReadonly)
+      throw new IModelError(IModelStatus.BadRequest, "not read-write", Logger.logError, loggerCategory);
     if (this._cache.isOpen)
       return;
     if (this._cache.open())
@@ -174,9 +172,6 @@ export class ConcurrencyControl {
    * @internal
    */
   public onModelWrite(modelClass: typeof Model, model: ModelProps, opcode: DbOpcode): void {
-    if (!this._iModel.needsConcurrencyControl)
-      throw new IModelError(IModelStatus.BadRequest, "this is not a writable briefcase");
-
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForModelTo(resourcesNeeded, model, opcode, modelClass);
     this.applyPolicyBeforeWrite(resourcesNeeded);
@@ -222,14 +217,10 @@ export class ConcurrencyControl {
    * @internal
    */
   public onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void {
-    if (!this._iModel.needsConcurrencyControl)
-      throw new IModelError(IModelStatus.BadRequest, "this is not a writable briefcase");
-
     const resourcesNeeded = new ConcurrencyControl.Request();
     this.buildRequestForElementTo(resourcesNeeded, element, opcode, elementClass);
     this.applyPolicyBeforeWrite(resourcesNeeded);
     this.addToPendingRequestIfNotHeld(resourcesNeeded);
-
     this._modelsAffectedByWrites.add(element.model);  // TODO: Remove this when we get tile healing
   }
 
@@ -415,7 +406,7 @@ export class ConcurrencyControl {
   }
 
   public async onOpened(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this._iModel.needsConcurrencyControl)
+    if (this._iModel.isReadonly)
       return;
 
     assert(!this._iModel.concurrencyControl._cache.isOpen, "iModelDb.onOpened should be raised only once");
@@ -924,7 +915,7 @@ export namespace ConcurrencyControl {
 
   /** Code manager */
   export class Codes {
-    constructor(private _iModel: IModelDb) { }
+    constructor(private _iModel: BriefcaseIModelDb) { }
 
     /**
      * Reserve Codes.
@@ -972,13 +963,12 @@ export namespace ConcurrencyControl {
 
     private _db: ECDb = new ECDb();
 
-    public constructor(public concurrencyControl: ConcurrencyControl) {
-    }
+    public constructor(public concurrencyControl: ConcurrencyControl) { }
 
     public get isOpen(): boolean { return this._db.isOpen; }
 
     private mustHaveBriefcase() {
-      if (this.concurrencyControl.iModel === undefined || this.concurrencyControl.iModel.briefcase === undefined || !this.concurrencyControl.iModel.needsConcurrencyControl)
+      if (this.concurrencyControl.iModel === undefined || this.concurrencyControl.iModel.briefcase === undefined || this.concurrencyControl.iModel.isReadonly)
         throw new IModelError(IModelStatus.NotOpenForWrite, "not a read-write iModel briefcase", Logger.logError, loggerCategory, () => this.concurrencyControl.iModel);
     }
 

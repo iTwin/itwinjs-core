@@ -46,8 +46,9 @@ export class TestPushUtility {
   /** Pushes new change sets to the Hub periodically and sets up named versions */
   public async pushTestChangeSetsAndVersions(count: number) {
     this._iModelDb = await BriefcaseIModelDb.open(this._requestContext!, this._projectId!, this._iModelId!.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
-    this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
-
+    if (this._iModelDb instanceof BriefcaseIModelDb) {
+      this._iModelDb.concurrencyControl.setPolicy(ConcurrencyControl.OptimisticPolicy); // don't want to bother with locks.
+    }
     const lastLevel = this._currentLevel + count;
     while (this._currentLevel < lastLevel) {
       await this.createTestChangeSet();
@@ -169,14 +170,16 @@ export class TestPushUtility {
   private async createTestChangeSet() {
     this.insertTestElement(this._currentLevel, 0);
     this.insertTestElement(this._currentLevel, 1);
-    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
-    this._iModelDb!.saveChanges(`Inserted elements into level ${this._currentLevel}`);
-    this.updateTestElement(this._currentLevel - 1, 0);
-    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
-    this._iModelDb!.saveChanges(`Updated element in level ${this._currentLevel - 1}`);
-    this.deleteTestElements(this._currentLevel - 1, 1);
-    await this._iModelDb!.concurrencyControl.request(this._requestContext!);
-    this._iModelDb!.saveChanges(`Deleted element in level ${this._currentLevel - 1}`);
+    if (this._iModelDb instanceof BriefcaseIModelDb) {
+      await this._iModelDb!.concurrencyControl.request(this._requestContext!);
+      this._iModelDb!.saveChanges(`Inserted elements into level ${this._currentLevel}`);
+      this.updateTestElement(this._currentLevel - 1, 0);
+      await this._iModelDb!.concurrencyControl.request(this._requestContext!);
+      this._iModelDb!.saveChanges(`Updated element in level ${this._currentLevel - 1}`);
+      this.deleteTestElements(this._currentLevel - 1, 1);
+      await this._iModelDb!.concurrencyControl.request(this._requestContext!);
+      this._iModelDb!.saveChanges(`Deleted element in level ${this._currentLevel - 1}`);
+    }
   }
 
   private static getChangeSetDescription(level: number) {

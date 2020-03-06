@@ -84,7 +84,7 @@ async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientReques
   await iModelPullAndPush.close(requestContext, KeepBriefcase.No);
 }
 
-export async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
+async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
   // Create a new physical model.
   const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
 
@@ -95,7 +95,10 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
 
   // Reserve all of the codes that are required by the new model and category.
   try {
-    await rwIModel.concurrencyControl.request(requestContext);
+    if (rwIModel instanceof BriefcaseIModelDb) {
+      await rwIModel.concurrencyControl.request(requestContext);
+      requestContext.enter();
+    }
   } catch (err) {
     if (err instanceof IModelHubError) {
       assert.fail(JSON.stringify(err));

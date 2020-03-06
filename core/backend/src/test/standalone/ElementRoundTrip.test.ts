@@ -410,7 +410,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     const imodel = SnapshotIModelDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
     await imodel.importSchemas(new BackendRequestContext(), [testSchemaPath]);
-    imodel.setAsMaster();
+    const result: DbResult = imodel.nativeDb.setAsMaster();
+    assert.equal(DbResult.BE_SQLITE_OK, result);
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)

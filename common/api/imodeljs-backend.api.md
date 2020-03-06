@@ -478,9 +478,11 @@ export class BriefcaseId {
     get value(): number;
     }
 
-// @public (undocumented)
+// @public
 export class BriefcaseIModelDb extends IModelDb {
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
+    // @beta
+    get concurrencyControl(): ConcurrencyControl;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<BriefcaseIModelDb>;
     // @internal
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
@@ -497,7 +499,7 @@ export class BriefcaseIModelDb extends IModelDb {
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @beta
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-}
+    }
 
 // @internal
 export class BriefcaseManager {
@@ -771,7 +773,7 @@ export class CodeSpecs {
 
 // @beta
 export class ConcurrencyControl {
-    constructor(_iModel: IModelDb);
+    constructor(_iModel: BriefcaseIModelDb);
     abandonRequest(): void;
     areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
     areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
@@ -803,7 +805,7 @@ export class ConcurrencyControl {
     // @alpha
     get hasSchemaLock(): boolean;
     // @internal (undocumented)
-    get iModel(): IModelDb;
+    get iModel(): BriefcaseIModelDb;
     // @internal (undocumented)
     get isBulkMode(): boolean;
     lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<Lock[]>;
@@ -865,7 +867,7 @@ export class ConcurrencyControl {
 // @beta (undocumented)
 export namespace ConcurrencyControl {
     export class Codes {
-        constructor(_iModel: IModelDb);
+        constructor(_iModel: BriefcaseIModelDb);
         query(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
         reserve(requestContext: AuthorizedClientRequestContext, codes?: CodeProps[]): Promise<void>;
     }
@@ -2250,8 +2252,6 @@ export abstract class IModelDb extends IModel {
     clearSqliteStatementCache(): void;
     clearStatementCache(): void;
     get codeSpecs(): CodeSpecs;
-    // @beta
-    get concurrencyControl(): ConcurrencyControl;
     constructEntity<T extends Entity>(props: EntityProps): T;
     containsClass(classFullName: string): boolean;
     // (undocumented)
@@ -2297,8 +2297,6 @@ export abstract class IModelDb extends IModel {
     readonly models: IModelDb.Models;
     // @internal
     get nativeDb(): IModelJsNative.DgnDb;
-    // @beta
-    get needsConcurrencyControl(): boolean;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
@@ -2325,9 +2323,6 @@ export abstract class IModelDb extends IModel {
     requestSnap(requestContext: ClientRequestContext, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
-    setAsMaster(guid?: GuidString): void;
-    // @internal (undocumented)
-    protected setDefaultConcurrentControlAndPolicy(): void;
     setGuid(guid: GuidString): DbResult;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
@@ -2949,8 +2944,6 @@ export abstract class LinearPhysicalElement extends PhysicalElement {
 
 // @beta
 export class LinearReferencingSchema extends Schema {
-    // @deprecated (undocumented)
-    static importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static registerSchema(): void;
     // (undocumented)

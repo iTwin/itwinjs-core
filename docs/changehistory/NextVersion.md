@@ -71,6 +71,7 @@ The following methods have been moved from (the now abstract) [IModelDb]($backen
 * `IModelDb.pushChanges` --> [BriefcaseIModelDb.pushChanges]($backend)
 * `IModelDb.reverseChanges` --> [BriefcaseIModelDb.reverseChanges]($backend)
 * `IModelDb.reinstateChanges` --> [BriefcaseIModelDb.reinstateChanges]($backend)
+* `IModelDb.concurrencyControl` --> [BriefcaseIModelDb.concurrencyControl]($backend)
 
 ### Snapshot iModels
 

@@ -12,7 +12,7 @@ import { IModelError } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { ClassRegistry } from "../ClassRegistry";
-import { IModelDb } from "../IModelDb";
+import { BriefcaseIModelDb, IModelDb } from "../IModelDb";
 import { KnownLocations } from "../IModelHost";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./FunctionalElements";
@@ -36,10 +36,13 @@ export class FunctionalSchema extends Schema {
     // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     requestContext.enter();
     if (!iModelDb.isSnapshot) {
-      if (!(requestContext instanceof AuthorizedClientRequestContext))
+      if (!(requestContext instanceof AuthorizedClientRequestContext)) {
         throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
-      await iModelDb.concurrencyControl.lockSchema(requestContext);
-      requestContext.enter();
+      }
+      if (iModelDb instanceof BriefcaseIModelDb) {
+        await iModelDb.concurrencyControl.lockSchema(requestContext);
+        requestContext.enter();
+      }
     }
     const stat = iModelDb.briefcase.nativeDb.importFunctionalSchema();
     if (DbResult.BE_SQLITE_OK !== stat) {

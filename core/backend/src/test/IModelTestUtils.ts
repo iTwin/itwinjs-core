@@ -20,6 +20,7 @@ import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { BriefcaseIModelDb } from "../IModelDb";
 
 /** Class for simple test timing */
 export class Timer {
@@ -178,12 +179,12 @@ export class IModelTestUtils {
     return testDb;
   }
 
-  public static getUniqueModelCode(testIModel: IModelDb, newModelCodeBase: string): Code {
+  public static getUniqueModelCode(testDb: IModelDb, newModelCodeBase: string): Code {
     let newModelCode: string = newModelCodeBase;
     let iter: number = 0;
     while (true) {
-      const modelCode = InformationPartitionElement.createCode(testIModel, IModel.rootSubjectId, newModelCode);
-      if (testIModel.elements.queryElementIdByCode(modelCode) === undefined)
+      const modelCode = InformationPartitionElement.createCode(testDb, IModel.rootSubjectId, newModelCode);
+      if (testDb.elements.queryElementIdByCode(modelCode) === undefined)
         return modelCode;
 
       newModelCode = newModelCodeBase + iter;
@@ -192,35 +193,37 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: CodeProps): Id64String {
+  public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps): Id64String {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       model: IModel.repositoryModelId,
       code: newModelCode,
     };
-    const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
-    return testImodel.elements.insertElement(modeledElement);
+    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
+    return testDb.elements.insertElement(modeledElement);
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static async createAndInsertPhysicalPartitionAsync(rqctx: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
+  public static async createAndInsertPhysicalPartitionAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       model: IModel.repositoryModelId,
       code: newModelCode,
     };
-    const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
-    await testImodel.concurrencyControl.requestResourcesForInsert(rqctx, [modeledElement]);
-    rqctx.enter();
-    return testImodel.elements.insertElement(modeledElement);
+    const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
+    if (testDb instanceof BriefcaseIModelDb) {
+      await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [modeledElement]);
+      rqctx.enter();
+    }
+    return testDb.elements.insertElement(modeledElement);
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static createAndInsertPhysicalModel(testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
-    const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    const newModelId = testImodel.models.insertModel(newModel);
+  public static createAndInsertPhysicalModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
+    const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+    const newModelId = testDb.models.insertModel(newModel);
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
@@ -228,11 +231,13 @@ export class IModelTestUtils {
   }
 
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  public static async createAndInsertPhysicalModelAsync(rqctx: AuthorizedClientRequestContext, testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
-    const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    await testImodel.concurrencyControl.requestResourcesForInsert(rqctx, [], [newModel]);
-    rqctx.enter();
-    const newModelId = testImodel.models.insertModel(newModel);
+  public static async createAndInsertPhysicalModelAsync(rqctx: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
+    const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+    if (testDb instanceof BriefcaseIModelDb) {
+      await testDb.concurrencyControl.requestResourcesForInsert(rqctx, [], [newModel]);
+      rqctx.enter();
+    }
+    const newModelId = testDb.models.insertModel(newModel);
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);

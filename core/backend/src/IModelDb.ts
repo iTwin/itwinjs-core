@@ -152,7 +152,6 @@ export abstract class IModelDb extends IModel {
   private readonly _sqliteStatementCache = new SqliteStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
-  private _concurrency?: ConcurrencyControl;
   private _eventSink?: EventSink;
   protected _fontMap?: FontMap;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
@@ -209,7 +208,6 @@ export abstract class IModelDb extends IModel {
     super(iModelToken);
     this.openParams = openParams;
     this.setupBriefcaseEntry(briefcaseEntry);
-    this.setDefaultConcurrentControlAndPolicy();
     this.initializeIModelDb();
     this.initializeEventSink();
   }
@@ -667,45 +665,34 @@ export abstract class IModelDb extends IModel {
   /** Update the IModelProps of this iModel in the database. */
   public updateIModelProps(): void { this.nativeDb.updateIModelProps(JSON.stringify(this.toJSON())); }
 
-  /**
-   * Commit pending changes to this iModel.
+  /** Commit pending changes to this iModel.
    * @note If this IModelDb is connected to an iModel, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
-   * @param _description Optional description of the changes
+   * @param description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
   public saveChanges(description?: string): void {
-    if (this.openParams.openMode === OpenMode.Readonly)
+    if (this.openParams.openMode === OpenMode.Readonly) {
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only", Logger.logError, loggerCategory);
-
+    }
     // TODO: this.Txns.onSaveChanges => validation, rules, indirect changes, etc.
-    if (this.needsConcurrencyControl)
+    if (this instanceof BriefcaseIModelDb) {
       this.concurrencyControl.onSaveChanges();
-
+    }
     const stat = this.nativeDb.saveChanges(description);
-    if (DbResult.BE_SQLITE_OK !== stat)
+    if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Problem saving changes", Logger.logError, loggerCategory);
-
-    if (this.needsConcurrencyControl)
+    }
+    if (this instanceof BriefcaseIModelDb) {
       this.concurrencyControl.onSavedChanges();
+    }
   }
 
   /** Abandon pending changes in this iModel */
   public abandonChanges(): void {
-    this.concurrencyControl.abandonRequest();
-    this.nativeDb.abandonChanges();
-  }
-
-  /** Set iModel as Master copy.
-   * @param guid Optionally provide db guid. If its not provided the method would generate one.
-   */
-  public setAsMaster(guid?: GuidString): void {
-    if (guid === undefined) {
-      if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster())
-        throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggerCategory);
-    } else {
-      if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!))
-        throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggerCategory);
+    if (this instanceof BriefcaseIModelDb) {
+      this.concurrencyControl.abandonRequest();
     }
+    this.nativeDb.abandonChanges();
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
@@ -729,10 +716,13 @@ export abstract class IModelDb extends IModel {
       return;
     }
 
-    if (!(requestContext instanceof AuthorizedClientRequestContext))
+    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
       throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
-    await this.concurrencyControl.lockSchema(requestContext);
-    requestContext.enter();
+    }
+    if (this instanceof BriefcaseIModelDb) {
+      await this.concurrencyControl.lockSchema(requestContext);
+      requestContext.enter();
+    }
 
     const stat = this.briefcase.nativeDb.importSchemas(schemaFileNames);
     if (DbResult.BE_SQLITE_OK !== stat) {
@@ -745,10 +735,10 @@ export abstract class IModelDb extends IModel {
     try {
       // The schema import logic and/or imported Domains may have created new elements and models.
       // Make sure we have the supporting locks and codes.
-      if (!(requestContext instanceof AuthorizedClientRequestContext))
-        throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
-      await this.concurrencyControl.request(requestContext);
-      requestContext.enter();
+      if (this instanceof BriefcaseIModelDb) {
+        await this.concurrencyControl.request(requestContext);
+        requestContext.enter();
+      }
     } catch (err) {
       requestContext.enter();
       this.abandonChanges();
@@ -778,30 +768,6 @@ export abstract class IModelDb extends IModel {
 
   /** Get the linkTableRelationships for this IModel */
   public get relationships(): Relationships { return this._relationships || (this._relationships = new Relationships(this)); }
-
-  /** Does this briefcase require concurrency control?
-   * @beta
-   */
-  public get needsConcurrencyControl(): boolean {
-    return !this.isReadonly && !this.isSnapshot;
-  }
-
-  /** Get the ConcurrencyControl for this IModel.
-   * See [[needsConcurrencyControl]]
-   * @beta
-   */
-  public get concurrencyControl(): ConcurrencyControl {
-    if (this._concurrency === undefined)
-      this.setDefaultConcurrentControlAndPolicy();
-    return this._concurrency!;
-  }
-
-  // WIP: Move to BriefcaseIModelDb and make it private
-  /** @internal */
-  protected setDefaultConcurrentControlAndPolicy() {
-    this._concurrency = new ConcurrencyControl(this);
-    this._concurrency!.setPolicy(ConcurrencyControl.PessimisticPolicy);
-  }
 
   /** Get the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
@@ -1922,7 +1888,9 @@ export class TxnManager {
    */
   public reverseTxns(numOperations: number): IModelStatus {
     const status = this._nativeDb.reverseTxns(numOperations);
-    this._iModel.concurrencyControl.onUndoRedo();
+    if (this._iModel instanceof BriefcaseIModelDb) {
+      this._iModel.concurrencyControl.onUndoRedo();
+    }
     return status;
   }
 
@@ -2003,10 +1971,25 @@ export class TxnManager {
   }
 }
 
-/** @public */
+/** A local copy of an iModel from iModelHub.
+ * @public
+ */
 export class BriefcaseIModelDb extends IModelDb {
+  private _concurrencyControl!: ConcurrencyControl;
+
+  /** Get the ConcurrencyControl for this IModel.
+   * @beta
+   */
+  public get concurrencyControl(): ConcurrencyControl { return this._concurrencyControl; }
+
   private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
     super(briefcaseEntry, iModelToken, openParams);
+    this.setDefaultConcurrentControlAndPolicy();
+  }
+
+  private setDefaultConcurrentControlAndPolicy() {
+    this._concurrencyControl = new ConcurrencyControl(this);
+    this._concurrencyControl.setPolicy(ConcurrencyControl.PessimisticPolicy);
   }
 
   /** Create an iModel on iModelHub */
@@ -2165,11 +2148,10 @@ export class BriefcaseIModelDb extends IModelDb {
   public async close(requestContext: AuthorizedClientRequestContext, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     requestContext.enter();
 
-    if (this.needsConcurrencyControl) {
+    if (!this.isReadonly) {
       await this.concurrencyControl.onClose(requestContext);
       requestContext.enter();
     }
-
     try {
       await BriefcaseManager.close(requestContext, this.briefcase, keepBriefcase);
     } catch (error) {
@@ -2323,7 +2305,9 @@ export class SnapshotIModelDb extends IModelDb {
     if (isSeedFileMaster) {
       snapshotDb.setGuid(briefcaseEntry.iModelId);
     } else {
-      snapshotDb.setAsMaster(briefcaseEntry.iModelId);
+      if (DbResult.BE_SQLITE_OK !== snapshotDb.nativeDb.setAsMaster(briefcaseEntry.iModelId)) {
+        throw new IModelError(IModelStatus.SQLiteError, "Error creating snapshot", Logger.logWarning, loggerCategory);
+      }
     }
     snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId, encryptionPropsString);
     return snapshotDb;

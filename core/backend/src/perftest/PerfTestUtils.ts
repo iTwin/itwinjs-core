@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Code, ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Code, ColorDef, DbResult, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
 import { BackendRequestContext, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
@@ -35,9 +35,11 @@ export class PerfTestDataMgr {
     if (this.db) {
       this.modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this.db, Code.createEmpty(), true);
       this.catId = SpatialCategory.queryCategoryIdByName(this.db, IModel.dictionaryId, "MySpatialCategory");
-      if (undefined === this.catId)
+      if (undefined === this.catId) {
         this.catId = SpatialCategory.insert(this.db, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
-      this.db.setAsMaster();
+      }
+      const result: DbResult = this.db.nativeDb.setAsMaster();
+      assert.equal(DbResult.BE_SQLITE_OK, result);
       this.db.saveChanges();
     }
   }

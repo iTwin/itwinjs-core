@@ -2,19 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SpatialCategory, IModelDb, SnapshotIModelDb } from "../imodeljs-backend";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { BackendRequestContext } from "../BackendRequestContext";
-import { KnownTestLocations } from "../test/KnownTestLocations";
+import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Arc3d, Point3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelJsFs } from "../IModelJsFs";
-import { Code, IModel, SubCategoryAppearance, ColorDef, GeometricElementProps, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d } from "@bentley/geometry-core";
-import { ECSqlStatement } from "../ECSqlStatement";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { IModelTestUtils } from "../test/IModelTestUtils";
+import { KnownTestLocations } from "../test/KnownTestLocations";
 
 function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
   // add Geometry
@@ -98,7 +95,8 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       if (!IModelJsFs.existsSync(seedName)) {
         const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", "props_" + pCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.setAsMaster();
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestPropsSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -350,7 +348,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
       if (!IModelJsFs.existsSync(seedName)) {
         const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.setAsMaster();
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -377,7 +376,8 @@ describe("SchemaDesignPerf Number of Indices", () => {
       if (!IModelJsFs.existsSync(seedName)) {
         const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_perclass_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.setAsMaster();
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement0"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");

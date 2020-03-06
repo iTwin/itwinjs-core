@@ -128,7 +128,8 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       if (!IModelJsFs.existsSync(seedName)) {
         const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", "mixin_" + hCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.setAsMaster();
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestMixinSchema:MixinElement"), "Mixin Class is not present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
