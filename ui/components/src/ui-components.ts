@@ -63,8 +63,9 @@ export * from "./ui-components/navigationaids/DrawingNavigationAid";
 
 export * from "./ui-components/oidc/SignIn";
 
-export * from "./ui-components/properties/ValueRendererManager";
+export * from "./ui-components/selectable-content/SelectableContent";
 
+export * from "./ui-components/properties/ValueRendererManager";
 export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyRenderer";
@@ -196,6 +197,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description OIDC
  * Components for working with OIDC and Sign-in.
+ */
+/**
+ * @docs-group-description SelectableContent
+ * Classes and components for working with SelectableContent component.
  */
 /**
  * @docs-group-description Properties

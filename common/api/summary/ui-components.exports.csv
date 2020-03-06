@@ -74,6 +74,8 @@ public;CompositeTypeConverter
 internal;ContextMenu 
 internal;ContextMenuItem 
 internal;ContextMenuProps 
+beta;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
+beta;ControlledSelectableContentProps
 beta;ControlledTree(props: ControlledTreeProps): JSX.Element
 beta;ControlledTreeProps 
 public;ConvertedPrimitives
@@ -281,6 +283,9 @@ beta;SaturationPicker
 beta;SaturationPickerProps 
 internal;Scrubber 
 internal;ScrubberProps 
+beta;SelectableContent(props: SelectableContentProps): JSX.Element
+beta;SelectableContentDefinition
+beta;SelectableContentProps
 internal;SelectionHandler
 public;SelectionMode
 public;SelectionModeFlags

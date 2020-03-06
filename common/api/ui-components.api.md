@@ -953,6 +953,19 @@ export interface ContextMenuProps extends CommonProps {
 }
 
 // @beta
+export function ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element;
+
+// @beta
+export interface ControlledSelectableContentProps {
+    // (undocumented)
+    children: SelectableContentDefinition[];
+    // (undocumented)
+    onSelectedContentIdChanged?: (contentId: string) => void;
+    // (undocumented)
+    selectedContentId: string;
+}
+
+// @beta
 export function ControlledTree(props: ControlledTreeProps): JSX.Element;
 
 // @beta
@@ -2841,6 +2854,27 @@ export interface ScrubberProps extends CommonProps {
     startDate?: Date;
     // (undocumented)
     totalDuration: number;
+}
+
+// @beta
+export function SelectableContent(props: SelectableContentProps): JSX.Element;
+
+// @beta
+export interface SelectableContentDefinition {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    render: () => React.ReactNode;
+}
+
+// @beta
+export interface SelectableContentProps {
+    // (undocumented)
+    children: SelectableContentDefinition[];
+    // (undocumented)
+    defaultSelectedContentId: string;
 }
 
 // @internal (undocumented)
