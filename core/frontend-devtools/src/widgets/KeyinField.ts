@@ -245,7 +245,7 @@ export class KeyinField {
     this.resetHistoryIndex();
 
     // Handle case in which new tools were registered since we last populated the auto-complete list.
-    // This can occur e.g. as a result of loading a plugin, or deferred initialization of a package like markup.
+    // This can occur e.g. as a result of loading a extension, or deferred initialization of a package like markup.
     const keyins = findKeyins();
     if (keyins.length > this.keyins.length) {
       const newKeyins: string[] = [];

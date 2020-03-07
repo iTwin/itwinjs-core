@@ -350,7 +350,7 @@ export class Tool {
   /**
    * Register this Tool class with the [[ToolRegistry]].
    * @param namespace optional namespace to supply to [[ToolRegistry.register]]. If undefined, use namespace from superclass.
-   * @param i18n optional internationalization services object (required only for externally hosted plugins). If undefined, use IModelApp.i18n.
+   * @param i18n optional internationalization services object (required only for externally hosted extensions). If undefined, use IModelApp.i18n.
    */
   public static register(namespace?: I18NNamespace, i18n?: I18N) { IModelApp.tools.register(this, namespace, i18n); }
 

@@ -602,7 +602,7 @@
       "request": "launch",
       "name": "Debug buildIModelJsModule",
       "program": "${workspaceRoot}/core/bentley/node_modules/@bentley/webpack-tools/lib/buildIModelJsModule.js",
-      "cwd": "${workspaceRoot}/plugins/wms/",
+      "cwd": "${workspaceRoot}/extensions/wms/",
       "outFiles": [
         "${workspaceRoot}/core/bentley/node_modules/@bentley/webpack-tools/lib/*.js",
       ],
@@ -699,8 +699,8 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "⚠︝GeoPhoto Plugin Tests (Integration - Certa/Backend)",
-      "cwd": "${workspaceRoot}/plugins/geo-photo/",
+      "name": "⚠︝GeoPhoto Extensions Tests (Integration - Certa/Backend)",
+      "cwd": "${workspaceRoot}/extensions/geo-photo/",
       "program": "${workspaceRoot}/tools/certa/bin/certa.js",
       "runtimeArgs": [
         "--max-http-header-size=16000"
@@ -721,7 +721,7 @@
       "port": 5858 // NB: This must match ports.debugging in full-stack-tests/core/certa.json
     },
     {
-      "name": "⚠︝GeoPhoto Plugin Tests (Integration - Frontend)",
+      "name": "⚠︝GeoPhoto Extension Tests (Integration - Frontend)",
       "type": "chrome",
       "request": "attach",
       "port": 9223, // NB: This must match ports.frontendDebugging in core/frontend/certa.json
@@ -732,7 +732,6 @@
       "webRoot": "${workspaceFolder}",
       "internalConsoleOptions": "openOnSessionStart"
     },
-    //sss
     {
       "type": "node",
       "request": "launch",
@@ -1060,10 +1059,10 @@
       ]
     },
     {
-      "name": "✔GeoPhoto Plugin Tests (Integration)",
+      "name": "✔GeoPhoto Extension Tests (Integration)",
       "configurations": [
-        "⚠︝GeoPhoto Plugin Tests (Integration - Certa/Backend)",
-        "⚠︝GeoPhoto Plugin Tests (Integration - Frontend)"
+        "⚠︝GeoPhoto Extension Tests (Integration - Certa/Backend)",
+        "⚠︝GeoPhoto Extension Tests (Integration - Frontend)"
       ]
     }
   ],

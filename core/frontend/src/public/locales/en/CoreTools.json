@@ -446,9 +446,9 @@
         "Face": "Face"
       }
     },
-    "Plugin": {
-      "keyin": "load plugin",
-      "description": "Loads a plugin module"
+    "Extension": {
+      "keyin": "load extension",
+      "description": "Loads a extension module"
     }
   },
   "touchCursor": {

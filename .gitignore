@@ -12,6 +12,8 @@ package-lock.json
 coverage
 full_stack_test_results
 integration_test_results
+imjs_plugins
+imjs_extensions
 
 # rush-specific
 /common/temp

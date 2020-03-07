@@ -50,7 +50,7 @@ export * from "./ViewState";
 export * from "./Viewport";
 export * from "./oidc/OidcBrowserClient";
 export * from "./oidc/OidcDesktopClientRenderer";
-export * from "./plugin/Plugin";
+export * from "./extension/Extension";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";
@@ -147,8 +147,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
- * @docs-group-description Plugins
- * Classes for creating and managing runtime [Plugins]($docs/learning/frontend/Plugins.md)
+ * @docs-group-description Extensions
+ * Classes for creating and managing runtime [Extensions]($docs/learning/frontend/Extensions.md)
  */
 /**
  * @docs-group-description Properties

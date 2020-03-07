@@ -1,0 +1,6 @@
+{
+  "Messages": {
+    "Copyright": "WMS Testing",
+    "DisplayType": "Displaying {{weatherType}} using wmsExtension"
+  }
+}

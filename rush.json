@@ -11,7 +11,7 @@
       "common",
       "tools",
       "internal",
-      "plugins"
+      "extensions"
     ],
     "ignoredNpmScopes": [
       "@types"
@@ -287,30 +287,30 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/geonames-plugin",
-      "projectFolder": "plugins/geonames",
-      "reviewCategory": "plugins",
+      "packageName": "@bentley/geonames-extension",
+      "projectFolder": "extensions/geonames",
+      "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/geo-photo-plugin",
-      "projectFolder": "plugins/geo-photo",
-      "reviewCategory": "plugins",
+      "packageName": "@bentley/geo-photo-extension",
+      "projectFolder": "extensions/geo-photo",
+      "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/hypermodeling-plugin",
-      "projectFolder": "plugins/hypermodeling",
-      "reviewCategory": "plugins",
+      "packageName": "@bentley/hypermodeling-extension",
+      "projectFolder": "extensions/hypermodeling",
+      "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/projectlocation-plugin",
-      "projectFolder": "plugins/projectlocation",
-      "reviewCategory": "plugins",
+      "packageName": "@bentley/projectlocation-extension",
+      "projectFolder": "extensions/projectlocation",
+      "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -357,20 +357,20 @@
       "shouldPublish": false
     },
     {
-      "packageName": "wms-plugin-example",
-      "projectFolder": "plugins/wms",
+      "packageName": "wms-extension-example",
+      "projectFolder": "extensions/wms",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
       "packageName": "iot-demo",
-      "projectFolder": "plugins/iot-demo",
+      "projectFolder": "extensions/iot-demo",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
     {
       "packageName": "test-tools",
-      "projectFolder": "plugins/test-tools",
+      "projectFolder": "extensions/test-tools",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

@@ -39,7 +39,7 @@ import { TileAdmin } from "./tile/internal";
 import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { PluginAdmin } from "./plugin/Plugin";
+import { ExtensionAdmin } from "./extension/Extension";
 import { UiAdmin } from "@bentley/ui-abstract";
 import { FeatureTrackingManager } from "./FeatureTrackingManager";
 import { FeatureToggleClient } from "./FeatureToggleClient";
@@ -47,7 +47,7 @@ import { System } from "./render/webgl/System";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
-import * as pluginTool from "./tools/PluginTool";
+import * as extensionTool from "./tools/ExtensionTool";
 import * as viewTool from "./tools/ViewTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as measureTool from "./tools/MeasureTool";
@@ -112,7 +112,7 @@ export interface IModelAppOptions {
   /** @internal */
   terrainProvider?: TerrainProvider;
   /** @internal */
-  pluginAdmin?: PluginAdmin;
+  extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   /** if present, supplies the [[FeatureTrackingManager]] for this session
@@ -176,7 +176,7 @@ export class IModelApp {
   private static _imodelClient: IModelClient;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
-  private static _pluginAdmin: PluginAdmin;
+  private static _extensionAdmin: ExtensionAdmin;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
   private static _settings: SettingsAdmin;
@@ -254,7 +254,7 @@ export class IModelApp {
   /** @internal */
   public static get terrainProvider() { return this._terrainProvider; }
   /** @internal */
-  public static get pluginAdmin() { return this._pluginAdmin; }
+  public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
   /** The [[FeatureTrackingManager]] for this session
@@ -349,7 +349,7 @@ export class IModelApp {
       clipViewTool,
       measureTool,
       accudrawTool,
-      pluginTool,
+      extensionTool,
     ].forEach((tool) => this.tools.registerModule(tool, coreNamespace));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
@@ -374,7 +374,7 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._pluginAdmin = (opts.pluginAdmin !== undefined) ? opts.pluginAdmin : new PluginAdmin();
+    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._terrainProvider = opts.terrainProvider;
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
@@ -389,7 +389,7 @@ export class IModelApp {
       this.accuSnap,
       this.locateManager,
       this.tentativePoint,
-      this.pluginAdmin,
+      this.extensionAdmin,
       this.quantityFormatter,
       this._terrainProvider,
       this.uiAdmin,

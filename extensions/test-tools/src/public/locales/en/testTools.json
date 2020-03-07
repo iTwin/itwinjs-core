@@ -1,0 +1,12 @@
+{
+  "tools": {
+    "ExtensionSave": {
+      "keyin": "add startup extension",
+      "description": "Adds a Extension to load at startup"
+    },
+    "ExtensionRemove": {
+      "keyin": "remove startup extension",
+      "description": "Removes a Extensions from the startup list"
+    }
+  }
+}

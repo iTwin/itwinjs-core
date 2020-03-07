@@ -2549,6 +2549,49 @@ export interface EventSourceOptions {
     prefetchLimit: number;
 }
 
+// @beta
+export abstract class Extension {
+    constructor(name: string);
+    get i18n(): I18N;
+    // @internal (undocumented)
+    get loader(): ExtensionLoader | undefined;
+    set loader(loader: ExtensionLoader | undefined);
+    // (undocumented)
+    name: string;
+    abstract onExecute(_args: string[]): void;
+    onLoad(_args: string[]): void;
+    reportReload(): boolean;
+    resolveResourceUrl(relativeUrl: string): string;
+    setI18n(defaultNamespace?: string, options?: I18NOptions): void;
+}
+
+// @beta
+export class ExtensionAdmin {
+    constructor();
+    // @internal (undocumented)
+    addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension): void;
+    addSavedExtensions(requestContext: AuthorizedClientRequestContext, extensionName: string, args: string[] | undefined, allUsers: boolean, settingName: string): Promise<void>;
+    // @internal (undocumented)
+    static detailsFromExtensionLoadResults(extensionName: string, results: ExtensionLoadResults, reportSuccess: boolean): {
+        detailHTML: HTMLElement | undefined;
+        detailStrings: string[] | undefined;
+    };
+    // @internal (undocumented)
+    getRegisteredExtension(extensionName: string): Promise<ExtensionLoadResults> | undefined;
+    loadExtension(extensionRoot: string, args?: string[]): Promise<ExtensionLoadResults>;
+    // @internal
+    loadSavedExtensions(requestContext: AuthorizedClientRequestContext, settingName: string, userSettings?: boolean, appSettings?: boolean, configuration?: boolean): Promise<LoadSavedExtensionsResult>;
+    // @internal (undocumented)
+    loadViewStartupExtensions(): Promise<void>;
+    // (undocumented)
+    onInitialized(): void;
+    register(extension: Extension): string[] | undefined;
+    removeSavedExtensions(requestContext: AuthorizedClientRequestContext, extensionName: string, allUsers: boolean, settingName: string): Promise<void>;
+    }
+
+// @beta
+export type ExtensionLoadResults = Extension | undefined | string | string[];
+
 // @public
 export interface ExtentLimits {
     max: number;
@@ -3630,6 +3673,8 @@ export class IModelApp {
     static createRenderSys(opts?: RenderSystem.Options): RenderSystem;
     // @internal
     static eventSourceOptions: EventSourceOptions;
+    // @internal (undocumented)
+    static get extensionAdmin(): ExtensionAdmin;
     // @internal
     static get features(): FeatureTrackingManager;
     // @internal
@@ -3666,8 +3711,6 @@ export class IModelApp {
     // @internal
     static makeModalDiv(options: ModalOptions): ModalReturn;
     static get notifications(): NotificationManager;
-    // @internal (undocumented)
-    static get pluginAdmin(): PluginAdmin;
     // @alpha
     static get quantityFormatter(): QuantityFormatter;
     // @beta
@@ -3705,6 +3748,8 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: IAuthorizationClient;
+    // @internal (undocumented)
+    extensionAdmin?: ExtensionAdmin;
     // @internal
     features?: FeatureTrackingManager;
     // @internal
@@ -3714,8 +3759,6 @@ export interface IModelAppOptions {
     // @internal (undocumented)
     locateManager?: ElementLocateManager;
     notifications?: NotificationManager;
-    // @internal (undocumented)
-    pluginAdmin?: PluginAdmin;
     // @internal (undocumented)
     quantityFormatter?: QuantityFormatter;
     // @internal (undocumented)
@@ -4179,32 +4222,32 @@ export class LengthDescription extends FormattedQuantityDescription {
 export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void;
 
 // @internal (undocumented)
-export class LoadSavedPluginsResult {
-    constructor(status: LoadSavedPluginsStatus, i18nkey?: string | undefined, pluginResults?: Map<string, PluginLoadResults> | undefined);
+export class LoadSavedExtensionsResult {
+    constructor(status: LoadSavedExtensionsStatus, i18nkey?: string | undefined, extensionResults?: Map<string, ExtensionLoadResults> | undefined);
+    // (undocumented)
+    extensionResults?: Map<string, ExtensionLoadResults> | undefined;
     // (undocumented)
     i18nkey?: string | undefined;
     // (undocumented)
-    pluginResults?: Map<string, PluginLoadResults> | undefined;
-    // (undocumented)
     report(): void;
     // (undocumented)
-    status: LoadSavedPluginsStatus;
+    status: LoadSavedExtensionsStatus;
 }
 
 // @internal (undocumented)
-export enum LoadSavedPluginsStatus {
+export enum LoadSavedExtensionsStatus {
     // (undocumented)
-    AllPluginsFailedToLoad = 5,
+    AllExtensionsFailedToLoad = 5,
     // (undocumented)
     LoadError = 6,
     // (undocumented)
-    NoSavedPlugins = 2,
+    NoSavedExtensions = 2,
     // (undocumented)
     NotLoggedIn = 1,
     // (undocumented)
     SettingsInvalid = 3,
     // (undocumented)
-    SomePluginsFailedToLoad = 4,
+    SomeExtensionsFailedToLoad = 4,
     // (undocumented)
     Success = 0
 }
@@ -5726,51 +5769,6 @@ export class PlanarMapTile extends MapTile {
     // (undocumented)
     setReprojectedCorners(reprojectedCorners: Point3d[]): void;
 }
-
-// @beta
-export abstract class Plugin {
-    constructor(name: string);
-    get i18n(): I18N;
-    // @internal (undocumented)
-    get loader(): PluginLoader | undefined;
-    set loader(loader: PluginLoader | undefined);
-    // (undocumented)
-    name: string;
-    abstract onExecute(_args: string[]): void;
-    onLoad(_args: string[]): void;
-    reportReload(): boolean;
-    resolveResourceUrl(relativeUrl: string): string;
-    setI18n(defaultNamespace?: string, options?: I18NOptions): void;
-}
-
-// @beta
-export class PluginAdmin {
-    constructor();
-    // @internal (undocumented)
-    addPendingPlugin(pluginRootName: string, pendingPlugin: PendingPlugin): void;
-    addSavedPlugins(requestContext: AuthorizedClientRequestContext, pluginName: string, args: string[] | undefined, allUsers: boolean, settingName: string): Promise<void>;
-    // @internal (undocumented)
-    static detailsFromPluginLoadResults(pluginName: string, results: PluginLoadResults, reportSuccess: boolean): {
-        detailHTML: HTMLElement | undefined;
-        detailStrings: string[] | undefined;
-    };
-    // @internal (undocumented)
-    getRegisteredPlugin(pluginName: string): Promise<PluginLoadResults> | undefined;
-    // @internal (undocumented)
-    getTarFileName(pluginRootName: string): string;
-    loadPlugin(pluginRoot: string, args?: string[]): Promise<PluginLoadResults>;
-    // @internal
-    loadSavedPlugins(requestContext: AuthorizedClientRequestContext, settingName: string, userSettings?: boolean, appSettings?: boolean, configuration?: boolean): Promise<LoadSavedPluginsResult>;
-    // @internal (undocumented)
-    loadViewStartupPlugins(): Promise<void>;
-    // (undocumented)
-    onInitialized(): void;
-    register(plugin: Plugin): string[] | undefined;
-    removeSavedPlugins(requestContext: AuthorizedClientRequestContext, pluginName: string, allUsers: boolean, settingName: string): Promise<void>;
-    }
-
-// @beta
-export type PluginLoadResults = Plugin | undefined | string | string[];
 
 // @public
 export abstract class PrimitiveTool extends InteractiveTool {

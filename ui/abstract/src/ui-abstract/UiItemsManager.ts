@@ -14,7 +14,7 @@ import { BackstageItem } from "./backstage/BackstageItem";
 import { StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 
-const loggerCategory = "imodeljs-frontend.Plugin";
+const loggerCategory = "ui-abstract.UiItemsProvider";
 
 /** Action taken by the application on item provided by a UiItemsProvider
  * @beta
@@ -95,10 +95,8 @@ export class UiItemsManager {
   }
 
   /**
-   * Registers a UiItemsProvider with the UiItemsManager. This method should be called by the Plugin when it is first loaded via the
-   * Plugin's onLoad method. (@see [[Plugin]]).
-   * @param plugin a newly instantiated subclass of Plugin.
-   * @returns an array of error messages. The array will be empty if the load is successful, otherwise it is a list of one or more problems.
+   * Registers a UiItemsProvider with the UiItemsManager.
+   * @param uiProvider the UI items provider to register.
    */
   public static register(uiProvider: UiItemsProvider): void {
     if (UiItemsManager.getUiItemsProvider(uiProvider.id)) {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 /* ------------------------
- * This is an example of a Plugin that starts a webworker.
+ * This is an example of a Extension that starts a webworker.
  * This particular example supports several different operations that the WebWorker can perform.
  * Each request returns a Promise that is fulfilled when the WebWorker responds.
  * Multiple requests can be made. They are processed serially in the order they are received.
@@ -12,7 +12,7 @@
  * ------------------------ */
 // tslint:disable:no-console
 
-import { Plugin, IModelApp } from "@bentley/imodeljs-frontend";
+import { Extension, IModelApp } from "@bentley/imodeljs-frontend";
 
 type resolveFunc = ((arg: any) => void);
 type rejectFunc = ((arg: Error) => void);
@@ -176,8 +176,8 @@ class IMJsWorker {
    * ----------------------------------------------- */
 }
 
-// The Plugin class that starts the web worker and sends it work each time it is invoked.
-class StartWebWorker extends Plugin {
+// The Extension class that starts the web worker and sends it work each time it is invoked.
+class StartWebWorker extends Extension {
   private _testWorker: IMJsWorker | undefined;
 
   constructor(name: string) {
@@ -222,7 +222,7 @@ class StartWebWorker extends Plugin {
   }
 }
 
-// boilerplate plugin code that is executed when the module is loaded.
+// boilerplate extension code that is executed when the module is loaded.
 declare var PLUGIN_NAME: string;
 export const startWebWorker = new StartWebWorker(PLUGIN_NAME);
-IModelApp.pluginAdmin.register(startWebWorker);
+IModelApp.extensionAdmin.register(startWebWorker);

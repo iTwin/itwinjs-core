@@ -129,6 +129,9 @@ internal;EventListener = (data: any) => void
 internal;EventSource
 internal;class EventSourceManager
 internal;EventSourceOptions
+beta;class Extension
+beta;ExtensionAdmin
+beta;ExtensionLoadResults = Extension | undefined | string | string[]
 public;ExtentLimits
 public;extractImageSourceDimensions(source: ImageSource): Promise
 alpha;FeatureLogBatchClient
@@ -226,8 +229,8 @@ alpha;ItemField
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-internal;LoadSavedPluginsResult
-internal;LoadSavedPluginsStatus
+internal;LoadSavedExtensionsResult
+internal;LoadSavedExtensionsStatus
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -294,9 +297,6 @@ internal;PingTestResult
 beta;Pixel
 internal;PlanarClassifierMap = Map
 internal;PlanarMapTile 
-beta;class Plugin
-beta;PluginAdmin
-beta;PluginLoadResults = Plugin | undefined | string | string[]
 public;class PrimitiveTool 
 alpha;enum PrimitiveVisibility
 internal;QuadId
