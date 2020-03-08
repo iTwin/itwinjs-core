@@ -43,16 +43,13 @@ import { SelectionChangeType } from '@bentley/presentation-frontend';
 import { SelectionHandler } from '@bentley/presentation-frontend';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SortDirection } from '@bentley/ui-core';
-import { Subscription } from '@bentley/ui-components';
 import { TableDataChangeEvent } from '@bentley/ui-components';
 import { TableDataProvider } from '@bentley/ui-components';
 import { TableProps } from '@bentley/ui-components';
-import { TreeCheckboxStateChangeEvent } from '@bentley/ui-components';
-import { TreeEvents } from '@bentley/ui-components';
-import { TreeModel } from '@bentley/ui-components';
+import { TreeEventHandler } from '@bentley/ui-components';
+import { TreeEventHandlerParams } from '@bentley/ui-components';
 import { TreeModelChanges } from '@bentley/ui-components';
 import { TreeModelSource } from '@bentley/ui-components';
-import { TreeNodeEvent } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
 import { TreeProps } from '@bentley/ui-components';
 import { TreeSelectionModificationEvent } from '@bentley/ui-components';
@@ -112,14 +109,6 @@ export interface ControlledTreeWithFilteringSupportProps {
     onFilterApplied?: (filter: string) => void;
     onMatchesCounted?: (count: number) => void;
     onNodeLoaderChanged?: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | undefined) => void;
-}
-
-// @beta
-export function controlledTreeWithUnifiedSelection<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithUnifiedSelectionProps, "nodeLoader" | Exclude<keyof P, "visibleNodes">>>;
-
-// @beta
-export interface ControlledTreeWithUnifiedSelectionProps {
-    nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
 
 // @beta
@@ -341,33 +330,34 @@ export interface TreeWithUnifiedSelectionProps {
 }
 
 // @beta
-export class UnifiedSelectionTreeEventHandler implements TreeEvents, IDisposable {
-    constructor(wrappedHandler: TreeEvents, modelSource: TreeModelSource, selectionHandler: SelectionHandler, dataProvider: IPresentationTreeDataProvider);
+export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implements IDisposable {
+    constructor(params: UnifiedSelectionTreeEventHandlerParams);
     protected createKeysForSelection(nodes: TreeNodeItem[], _selectionType: SelectionChangeType): Keys;
     // (undocumented)
     dispose(): void;
     // (undocumented)
     protected getKeys(nodes: TreeNodeItem[]): Keys;
     // (undocumented)
-    protected getModel(): TreeModel;
-    // (undocumented)
     protected getNodeKey(node: TreeNodeItem): NodeKey;
     // (undocumented)
-    onCheckboxStateChanged(event: TreeCheckboxStateChangeEvent): Subscription | undefined;
+    get modelSource(): TreeModelSource;
     // (undocumented)
-    onDelayedNodeClick(event: TreeNodeEvent): void;
+    onSelectionModified({ modifications }: TreeSelectionModificationEvent): import("@bentley/ui-components").Subscription | undefined;
     // (undocumented)
-    onNodeCollapsed(event: TreeNodeEvent): void;
-    // (undocumented)
-    onNodeExpanded(event: TreeNodeEvent): void;
-    // (undocumented)
-    onSelectionModified(event: TreeSelectionModificationEvent): Subscription;
-    // (undocumented)
-    onSelectionReplaced(event: TreeSelectionReplacementEvent): Subscription;
+    onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent): import("@bentley/ui-components").Subscription | undefined;
     // (undocumented)
     selectNodes(modelChange?: TreeModelChanges): void;
     protected shouldSelectNode(node: TreeNodeItem, selection: Readonly<KeySet>): boolean;
     }
+
+// @beta
+export interface UnifiedSelectionTreeEventHandlerParams extends TreeEventHandlerParams {
+    // (undocumented)
+    dataProvider: IPresentationTreeDataProvider;
+    name?: string;
+    // @internal
+    selectionHandler?: SelectionHandler;
+}
 
 // @beta
 export function useControlledTreeFiltering(nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, modelSource: TreeModelSource, filter: string | undefined, activeMatch?: number): {
@@ -379,13 +369,13 @@ export function useControlledTreeFiltering(nodeLoader: AbstractTreeNodeLoaderWit
 };
 
 // @beta
-export function useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents;
-
-// @beta
 export function usePresentationNodeLoader(props: PresentationNodeLoaderProps): import("@bentley/ui-components").PagedTreeNodeLoader<IPresentationTreeDataProvider>;
 
 // @alpha
 export function useRulesetRegistration(ruleset: Ruleset): void;
+
+// @beta
+export function useUnifiedSelectionEventHandler(modelSource: TreeModelSource, nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, disposeCollapsedNodes?: boolean, name?: string): UnifiedSelectionTreeEventHandler;
 
 // @public
 export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & ViewWithUnifiedSelectionProps>;

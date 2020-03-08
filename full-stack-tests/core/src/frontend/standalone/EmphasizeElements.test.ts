@@ -389,5 +389,23 @@ describe("EmphasizeElements tests", () => {
       currIds = emph.getHiddenElements(vp);
       assert.isTrue(undefined !== currIds && ids.size === currIds.size);
     });
+
+    roundTrip((emph, vp) => {
+      const redIds = new Set<string>();
+      const redKey = emph.createOverrideKey(ColorDef.red, FeatureOverrideType.ColorOnly)!;
+      expect(redKey).not.to.be.undefined;
+      redIds.add("0x1"); redIds.add("0x2"); redIds.add("0x3");
+      expect(emph.overrideElements(redIds, vp, ColorDef.red, undefined, true)).to.be.true;
+      const currRedIds = emph.getOverriddenElementsByKey(redKey);
+      assert.isTrue(undefined !== currRedIds && redIds.size === currRedIds.size);
+
+      const blueIds = new Set<string>();
+      const blueKey = emph.createOverrideKey(ColorDef.blue, FeatureOverrideType.ColorOnly)!;
+      expect(blueKey).not.to.be.undefined;
+      blueIds.add("0x4"); blueIds.add("0x5");
+      expect(emph.overrideElements(blueIds, vp, ColorDef.blue, undefined, true)).to.be.true;
+      const currBlueIds = emph.getOverriddenElementsByKey(blueKey);
+      assert.isTrue(undefined !== currBlueIds && blueIds.size === currBlueIds.size);
+    });
   });
 });

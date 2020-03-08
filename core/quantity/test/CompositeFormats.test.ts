@@ -463,4 +463,182 @@ describe("Composite Formats tests:", () => {
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
+
+  it("Rad to Degrees (precision 8)", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          {
+            label: "°",
+            name: "Units.ARC_DEG",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 8,
+      type: "Decimal",
+      uomSeparator: "",
+    };
+
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
+
+    const testQuantityData = [
+      { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30.27146435°" },
+      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153.10973366°" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      assert.isTrue(formattedValue === testEntry.result);
+      assert.isTrue(formattedValue.length > 0);
+      // tslint:disable-next-line:no-console
+      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+    }
+  });
+
+  it("Rad to Degrees (precision 0)", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          {
+            label: "°",
+            name: "Units.ARC_DEG",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 0,
+      type: "Decimal",
+      uomSeparator: "",
+    };
+
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
+
+    const testQuantityData = [
+      { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30.0°" },
+      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153.0°" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      assert.isTrue(formattedValue === testEntry.result);
+      assert.isTrue(formattedValue.length > 0);
+      // tslint:disable-next-line:no-console
+      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+    }
+  });
+
+  it("Rad to DMS (precision 8)", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          {
+            label: "°",
+            name: "Units.ARC_DEG",
+          },
+          {
+            label: "'",
+            name: "Units.ARC_MINUTE",
+          },
+          {
+            label: "\"",
+            name: "Units.ARC_SECOND",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 8,
+      type: "Decimal",
+      uomSeparator: "",
+    };
+
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
+
+    const testQuantityData = [
+      { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30°16'17.27166\"" },
+      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153°6'35.041176\"" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      assert.isTrue(formattedValue === testEntry.result);
+      assert.isTrue(formattedValue.length > 0);
+      // tslint:disable-next-line:no-console
+      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+    }
+  });
+  it("Rad to DMS (precision 3)", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          {
+            label: "°",
+            name: "Units.ARC_DEG",
+          },
+          {
+            label: "'",
+            name: "Units.ARC_MINUTE",
+          },
+          {
+            label: "\"",
+            name: "Units.ARC_SECOND",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 3,
+      type: "Decimal",
+      uomSeparator: "",
+    };
+
+    const format = new Format("test");
+    await format.fromJson(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(format.hasUnits);
+
+    const testQuantityData = [
+      {
+        magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30°16'17.272\""
+      },
+      { magnitude: 2.6722689691318213, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "153°6'35.041\"" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      assert.isTrue(formattedValue === testEntry.result);
+      assert.isTrue(formattedValue.length > 0);
+      // tslint:disable-next-line:no-console
+      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+    }
+  });
+
 });

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
-@import "@bentley/ui-ninezone/lib/ui-ninezone/widget/tool-settings/variables";
+@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/widget/tool-settings/variables";
 
 .uifw-tool-settings-content {
   padding: unset;

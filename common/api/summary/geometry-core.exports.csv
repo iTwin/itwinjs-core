@@ -49,6 +49,7 @@ public;BSplineSurface3dH
 public;BSplineSurface3dQuery
 public;BSplineWrapMode
 public;ClipMaskXYZRangePlanes
+public;ClippedPolyfaceBuilders
 public;Clipper
 public;ClipPlane 
 public;ClipPlaneContainment

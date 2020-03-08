@@ -5,8 +5,6 @@ internal;ContentBuilder
 public;ContentDataProvider 
 beta;controlledTreeWithFilteringSupport
 beta;ControlledTreeWithFilteringSupportProps
-beta;controlledTreeWithUnifiedSelection
-beta;ControlledTreeWithUnifiedSelectionProps
 beta;controlledTreeWithVisibleNodes
 beta;ControlledTreeWithVisibleNodesProps 
 public;DataProvidersFactory
@@ -35,9 +33,10 @@ public;TreeWithFilteringSupportProps
 public;treeWithUnifiedSelection
 public;TreeWithUnifiedSelectionProps
 beta;UnifiedSelectionTreeEventHandler 
+beta;UnifiedSelectionTreeEventHandlerParams 
 beta;useControlledTreeFiltering(nodeLoader: AbstractTreeNodeLoaderWithProvider
-beta;useControlledTreeUnifiedSelection(modelSource: TreeModelSource, treeEvents: TreeEvents, dataProvider: IPresentationTreeDataProvider): TreeEvents
 beta;usePresentationNodeLoader(props: PresentationNodeLoaderProps): import("@bentley/ui-components").PagedTreeNodeLoader
 alpha;useRulesetRegistration(ruleset: Ruleset): void
+beta;useUnifiedSelectionEventHandler(modelSource: TreeModelSource, nodeLoader: AbstractTreeNodeLoaderWithProvider
 public;viewWithUnifiedSelection
 public;ViewWithUnifiedSelectionProps

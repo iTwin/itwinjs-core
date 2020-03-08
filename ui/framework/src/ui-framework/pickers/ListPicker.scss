@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-ninezone/lib/ui-ninezone/_typography";
-@import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/_typography";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
+@import "~@bentley/ui-core/lib/ui-core/index";
 
 $no-shadow: none;
 $shadow: drop-shadow(0 1px 0 $buic-text-color-reverse);

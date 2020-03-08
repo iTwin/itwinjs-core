@@ -13,7 +13,7 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { PolygonOps } from "../geometry3d/PolygonOps";
+import { PolygonOps, IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Arc3d } from "../curve/Arc3d";
 import { ClipPlane } from "./ClipPlane";
@@ -22,6 +22,7 @@ import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { Range3d, Range1d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 
 /**
  * A ConvexClipPlaneSet is a collection of ClipPlanes, often used for bounding regions of space.
@@ -352,7 +353,7 @@ export class ConvexClipPlaneSet implements Clipper {
     for (const plane of this._planes) {
       const hA = - plane.altitude(pointA);
       const hB = - plane.altitude(pointB);
-      fraction = Geometry.safeDivideFraction(-hA, (hB - hA), 0.0);
+      fraction = Geometry.conditionalDivideFraction(-hA, (hB - hA));
       if (fraction === undefined) {
         // LIne parallel to the plane.  If positive, it is all OUT
         if (hA > 0.0)
@@ -425,7 +426,50 @@ export class ConvexClipPlaneSet implements Clipper {
         return;
     }
   }
-
+  /** Clip a convex polygon to (a single) inside part and (possibly many) outside parts.
+   * @param xyz input polygon.
+   * @param outsideFragments an array to receive (via push, with no preliminary clear) outside fragments
+   * @param arrayCache cache for work arrays.
+   * @return the surviving inside part (if any)
+   */
+  public clipInsidePushOutside(xyz: GrowableXYZArray,
+    outsideFragments: GrowableXYZArray[],
+    arrayCache: GrowableXYZArrayCache): GrowableXYZArray | undefined {
+    const perpendicularRange = Range1d.createNull();
+    let newInside = arrayCache.grabFromCache();
+    let newOutside = arrayCache.grabFromCache();
+    let insidePart = arrayCache.grabFromCache();  // this is empty ...
+    insidePart.pushFrom(xyz);
+    // While looping through planes . .
+    // the outside part for the current plane is definitely outside and can be stashed to the final outside
+    // the inside part for the current plane passes forward to be further split by the remaining planes.
+    for (const plane of this._planes) {
+      IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(plane, insidePart, newInside, newOutside, perpendicularRange);
+      if (newOutside.length > 0) {
+        // the newOutside fragment is definitely outside the ConvexClipPlaneSet
+        outsideFragments.push(newOutside);    // save the definitely outside part as return data.
+        newOutside = arrayCache.grabFromCache();
+        if (newInside.length === 0) {
+          insidePart.length = 0;
+          break;
+        }
+        // insideWork is changed ... swap it with insidePart
+        arrayCache.dropToCache(insidePart);
+        insidePart = newInside;
+        newInside = arrayCache.grabFromCache();
+      }
+      // outside clip was empty .. insideWork is identical to insidePart .. let insidePart feed through to the next clipper.
+    }
+    // at break or fall out ...
+    // ALWAYS drop `newInside` and `newOutside` to the cache
+    arrayCache.dropToCache(newInside);
+    arrayCache.dropToCache(newOutside);
+    // if `insidePart` is alive, return it to caller.  Otherwise drop it to cache and return undefined.
+    if (insidePart.length > 0)
+      return insidePart;
+    arrayCache.dropToCache(insidePart);
+    return undefined;
+  }
   /** Returns 1, 2, or 3 based on whether point array is strongly inside, ambiguous, or strongly outside respectively.
    * * This has a peculiar expected use case as a very fast pre-filter for more precise clipping.
    * * The expected point set is for a polygon.

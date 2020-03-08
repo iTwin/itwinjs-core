@@ -7,19 +7,18 @@ import {
   usePagedNodeLoader,
   SelectionMode,
   FilteringInput,
-  TreeEventHandler,
   useModelSource,
   useVisibleTreeNodes,
 } from "@bentley/ui-components";
 
 import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import {
-  useControlledTreeUnifiedSelection, useControlledTreeFiltering,
+  useControlledTreeFiltering, useUnifiedSelectionEventHandler,
 } from "@bentley/presentation-components";
 
 import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
-import { useState, useMemo } from "react";
+import { useState } from "react";
 
 import "./TreeWidget.css";
 import { useDataProvider, PAGING_SIZE } from "./SampleTreeDataProvider";
@@ -46,13 +45,8 @@ export const ControlledTreeWithHooks: React.FC<Props> = (props: Props) => {
     nodeHighlightingProps,
   } = useControlledTreeFiltering(nodeLoader, modelSource, filter, activeMatch);
 
-  const eventHandler = useMemo(() => new TreeEventHandler({
-    modelSource: filteredModelSource,
-    nodeLoader: filteredNodeLoader,
-    collapsedChildrenDisposalEnabled: true,
-  }), [filteredNodeLoader, filteredModelSource]);
+  const eventHandler = useUnifiedSelectionEventHandler(filteredModelSource ?? modelSource, filteredNodeLoader ?? nodeLoader, true, "TreeWithHooks");
 
-  const unifiedSelectionHandler = useControlledTreeUnifiedSelection(filteredModelSource, eventHandler, dataProvider);
   const visibleNodes = useVisibleTreeNodes(filteredModelSource);
 
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : null;
@@ -74,7 +68,7 @@ export const ControlledTreeWithHooks: React.FC<Props> = (props: Props) => {
       <div className="filteredTree">
         <ControlledTree
           visibleNodes={visibleNodes}
-          treeEvents={unifiedSelectionHandler}
+          treeEvents={eventHandler}
           nodeLoader={filteredNodeLoader}
           selectionMode={SelectionMode.Extended}
           descriptionsEnabled={true}

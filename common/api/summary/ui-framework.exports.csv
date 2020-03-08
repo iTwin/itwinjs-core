@@ -296,7 +296,9 @@ public;ModelessDialogRenderer
 internal;ModelSelectorWidget 
 internal;ModelSelectorWidgetControl 
 alpha;ModelsTree: React.FC
+alpha;ModelsTreeNodeType
 alpha;ModelsTreeProps
+alpha;ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean
 public;MouseDownChangedEvent 
 public;MouseDownChangedEventArgs
 internal;NavCubeFace 
@@ -501,6 +503,7 @@ beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
 alpha;VisibilityComponent 
+alpha;VisibilityComponentConfig
 public;VisibilityComponentHierarchy
 alpha;VisibilityComponentProps
 internal;VisibilityHandler 

@@ -1025,7 +1025,7 @@ class IModelJsModuleBuilder {
             args.push(">" + jsonFile);
         }
         return new Promise((resolve, _reject) => {
-            child_process.execFile(webpackFullPath, args, { cwd: process.cwd() }, (error, stdout, stderr) => {
+            child_process.execFile(webpackFullPath, args, { cwd: process.cwd(), maxBuffer: 1024 * 500 }, (error, stdout, stderr) => {
                 if (this._detail > 0)
                     console.log("Finished", operation);
                 if ((null == error) || (!stderr || (0 === stderr.length))) {

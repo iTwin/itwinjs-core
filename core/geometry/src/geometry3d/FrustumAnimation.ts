@@ -13,6 +13,7 @@ import { Point3dArray } from "./PointHelpers";
 import { Matrix3d } from "./Matrix3d";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
+
 /**
  * context for constructing smooth motion a startFrustum and endFrustum.
  * The externally interesting calls are

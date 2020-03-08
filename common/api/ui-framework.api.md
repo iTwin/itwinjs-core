@@ -1903,6 +1903,8 @@ export interface FrameworkZoneProps extends CommonProps {
     // (undocumented)
     isHidden: boolean;
     // (undocumented)
+    isInFooterMode: boolean;
+    // (undocumented)
     openWidgetId: WidgetZoneId | undefined;
     // (undocumented)
     targetChangeHandler: TargetChangeHandler;
@@ -3225,6 +3227,20 @@ export class ModelSelectorWidgetControl extends WidgetControl {
 export const ModelsTree: React.FC<ModelsTreeProps>;
 
 // @alpha
+export enum ModelsTreeNodeType {
+    // (undocumented)
+    Category = 3,
+    // (undocumented)
+    Element = 4,
+    // (undocumented)
+    Model = 2,
+    // (undocumented)
+    Subject = 1,
+    // (undocumented)
+    Unknown = 0
+}
+
+// @alpha
 export interface ModelsTreeProps {
     activeView?: Viewport;
     // @internal
@@ -3233,10 +3249,14 @@ export interface ModelsTreeProps {
     imodel: IModelConnection;
     rootElementRef?: React.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
+    selectionPredicate?: ModelsTreeSelectionPredicate;
     useControlledTree?: boolean;
     // @internal
     visibilityHandler?: VisibilityHandler;
 }
+
+// @alpha
+export type ModelsTreeSelectionPredicate = (key: NodeKey, type: ModelsTreeNodeType) => boolean;
 
 // @public
 export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> {
@@ -5175,6 +5195,15 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     render(): JSX.Element;
     }
 
+// @alpha
+export interface VisibilityComponentConfig {
+    // (undocumented)
+    modelsTree?: {
+        selectionMode?: SelectionMode;
+        selectionPredicate?: ModelsTreeSelectionPredicate;
+    };
+}
+
 // @public
 export enum VisibilityComponentHierarchy {
     // (undocumented)
@@ -5189,6 +5218,7 @@ export enum VisibilityComponentHierarchy {
 export interface VisibilityComponentProps {
     activeTreeRef?: React.Ref<HTMLDivElement>;
     activeViewport?: Viewport;
+    config?: VisibilityComponentConfig;
     enableHierarchiesPreloading?: VisibilityComponentHierarchy[];
     iModelConnection: IModelConnection;
     useControlledTree?: boolean;

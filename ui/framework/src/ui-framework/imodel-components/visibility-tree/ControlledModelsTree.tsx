@@ -7,21 +7,24 @@
  */
 
 import * as React from "react";
+import { from } from "rxjs/internal/observable/from";
+import { map } from "rxjs/internal/operators/map";
 import { IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
 import {
-  IPresentationTreeDataProvider, useControlledTreeUnifiedSelection,
-  usePresentationNodeLoader, useRulesetRegistration,
+  IPresentationTreeDataProvider, usePresentationNodeLoader, useRulesetRegistration, UnifiedSelectionTreeEventHandler,
+  UnifiedSelectionTreeEventHandlerParams,
 } from "@bentley/presentation-components";
 import { Ruleset } from "@bentley/presentation-common";
 import { VisibilityHandler, VisibilityStatus } from "./VisibilityTree";
-import { useEffectSkipFirst, NodeCheckboxRenderProps, ImageCheckBox, CheckBoxState, isPromiseLike } from "@bentley/ui-core";
+import { useEffectSkipFirst, NodeCheckboxRenderProps, ImageCheckBox, CheckBoxState, isPromiseLike, useDisposable } from "@bentley/ui-core";
 import {
-  useVisibleTreeNodes, ControlledTree, SelectionMode, TreeEventHandler,
-  TreeNodeRendererProps, TreeNodeRenderer, TreeRendererProps, TreeRenderer, CheckBoxInfo, TreeModelSource,
-  ITreeNodeLoader, TreeCheckboxStateChangeEvent, CheckboxStateChange, TreeModelNode, TreeImageLoader, TreeModelChanges, TreeModel,
+  useVisibleTreeNodes, ControlledTree, SelectionMode, TreeNodeRendererProps, TreeNodeRenderer, TreeRendererProps,
+  TreeRenderer, CheckBoxInfo, TreeModelSource, TreeCheckboxStateChangeEvent, CheckboxStateChange,
+  TreeModelNode, TreeImageLoader, TreeModelChanges, AbstractTreeNodeLoaderWithProvider, TreeNodeItem, TreeSelectionModificationEvent, TreeSelectionReplacementEvent,
 } from "@bentley/ui-components";
 
 import "./VisibilityTree.scss";
+import { ModelsTreeNodeType, ModelsTreeSelectionPredicate } from "./ModelsTree";
 
 const PAGING_SIZE = 20;
 
@@ -40,6 +43,8 @@ export interface ControlledModelsTreeProps {
   activeView?: Viewport;
   /** Selection mode in the tree */
   selectionMode?: SelectionMode;
+  /** Predicate which indicates whether node can be selected or no */
+  selectionPredicate?: ModelsTreeSelectionPredicate;
   /**
    * Custom data provider to use for testing
    * @internal
@@ -81,9 +86,7 @@ export const ControlledModelsTree: React.FC<ControlledModelsTreeProps> = (props:
 
   const visibilityHandler = useVisibilityHandler(props, nodeLoader.getDataProvider());
 
-  const eventHandler = useEventHandler(modelSource, nodeLoader, visibilityHandler);
-
-  const unifiedEventHandler = useControlledTreeUnifiedSelection(modelSource, eventHandler, nodeLoader.getDataProvider());
+  const eventHandler = useEventHandler(modelSource, nodeLoader, visibilityHandler, props.selectionPredicate);
 
   const visibleNodes = useVisibleTreeNodes(modelSource);
 
@@ -94,7 +97,7 @@ export const ControlledModelsTree: React.FC<ControlledModelsTreeProps> = (props:
       <ControlledTree
         visibleNodes={visibleNodes}
         nodeLoader={nodeLoader}
-        treeEvents={unifiedEventHandler}
+        treeEvents={eventHandler}
         selectionMode={selectionMode}
         treeRenderer={treeRenderer}
       />
@@ -148,20 +151,21 @@ const useVisibilityHandler = (props: ControlledModelsTreeProps, dataProvider: IP
   return handler;
 };
 
-const useEventHandler = (modelSource: TreeModelSource, nodeLoader: ITreeNodeLoader, visibilityHandler: VisibilityHandler | undefined) => {
-  const [handler, setHandler] = React.useState(() => new EventHandler(modelSource, nodeLoader, visibilityHandler, true));
+const useEventHandler = (
+  modelSource: TreeModelSource,
+  nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,
+  visibilityHandler: VisibilityHandler | undefined,
+  selectionPredicate?: ModelsTreeSelectionPredicate) => {
+  const createEventHandler = React.useCallback(() => new EventHandler({
+    modelSource,
+    nodeLoader,
+    collapsedChildrenDisposalEnabled: true,
+    dataProvider: nodeLoader.getDataProvider(),
+    visibilityHandler,
+    selectionPredicate,
+  }), [modelSource, nodeLoader, visibilityHandler, selectionPredicate]);
 
-  React.useEffect(() => {
-    return () => {
-      handler.dispose();
-    };
-  }, [handler]);
-
-  useEffectSkipFirst(() => {
-    setHandler(new EventHandler(modelSource, nodeLoader, visibilityHandler, true));
-  }, [modelSource, nodeLoader, visibilityHandler]);
-
-  return handler;
+  return useDisposable(createEventHandler);
 };
 
 const createVisibilityHandler = (props: ControlledModelsTreeProps, dataProvider: IPresentationTreeDataProvider) => {
@@ -180,29 +184,76 @@ const createVisibilityHandler = (props: ControlledModelsTreeProps, dataProvider:
   });
 };
 
-class EventHandler extends TreeEventHandler {
-  private _modelSource: TreeModelSource;
+interface EventHandlerParams extends UnifiedSelectionTreeEventHandlerParams {
+  visibilityHandler: VisibilityHandler | undefined;
+  selectionPredicate?: ModelsTreeSelectionPredicate;
+}
+
+class EventHandler extends UnifiedSelectionTreeEventHandler {
   private _visibilityHandler: VisibilityHandler | undefined;
+  private _selectionPredicate?: ModelsTreeSelectionPredicate;
 
-  private _dispose: () => void;
-  private _skipModelChange = false;
+  private _removeListener: () => void;
 
-  constructor(modelSource: TreeModelSource, nodeLoader: ITreeNodeLoader, visibilityHandler: VisibilityHandler | undefined, disposeChildren?: boolean) {
-    super({ modelSource, nodeLoader, collapsedChildrenDisposalEnabled: disposeChildren });
-    this._modelSource = modelSource;
-    this._visibilityHandler = visibilityHandler;
+  constructor(params: EventHandlerParams) {
+    super(params);
+    this._visibilityHandler = params.visibilityHandler;
+    this._selectionPredicate = params.selectionPredicate;
 
     if (this._visibilityHandler) {
       this._visibilityHandler.onVisibilityChange = () => this.updateCheckboxes();
     }
 
-    this._dispose = this._modelSource.onModelChanged.addListener((args) => this.onModelChanged(args));
+    this._removeListener = this.modelSource.onModelChanged.addListener((args) => this.updateCheckboxes(args[1]));
     this.updateCheckboxes(); // tslint:disable-line: no-floating-promises
   }
 
   public dispose() {
-    this._dispose();
     super.dispose();
+    this._removeListener();
+  }
+
+  private getNodeType(item: TreeNodeItem) {
+    if (!item.extendedData)
+      return ModelsTreeNodeType.Unknown;
+
+    if (item.extendedData.isSubject)
+      return ModelsTreeNodeType.Subject;
+    if (item.extendedData.isModel)
+      return ModelsTreeNodeType.Model;
+    if (item.extendedData.isCategory)
+      return ModelsTreeNodeType.Category;
+    return ModelsTreeNodeType.Element;
+  }
+
+  private filterSelectionItems(items: TreeNodeItem[]) {
+    if (!this._selectionPredicate)
+      return items;
+
+    return items.filter((item) => this._selectionPredicate!(this.getNodeKey(item), this.getNodeType(item)));
+  }
+
+  public onSelectionModified({ modifications }: TreeSelectionModificationEvent) {
+    const filteredModification = from(modifications).pipe(
+      map(({ selectedNodeItems, deselectedNodeItems }) => {
+        return {
+          selectedNodeItems: this.filterSelectionItems(selectedNodeItems),
+          deselectedNodeItems: this.filterSelectionItems(deselectedNodeItems),
+        };
+      }),
+    );
+    return super.onSelectionModified({ modifications: filteredModification });
+  }
+
+  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEvent) {
+    const filteredReplacements = from(replacements).pipe(
+      map(({ selectedNodeItems }) => {
+        return {
+          selectedNodeItems: this.filterSelectionItems(selectedNodeItems),
+        };
+      }),
+    );
+    return super.onSelectionReplaced({ replacements: filteredReplacements });
   }
 
   public onCheckboxStateChanged(event: TreeCheckboxStateChangeEvent) {
@@ -224,19 +275,13 @@ class EventHandler extends TreeEventHandler {
     return undefined;
   }
 
-  private onModelChanged(args: [TreeModel, TreeModelChanges]) {
-    if (this._skipModelChange)
-      return;
-
-    this.updateCheckboxes(args[1]); // tslint:disable-line: no-floating-promises
-  }
-
   private async updateCheckboxes(modelChanges?: TreeModelChanges) {
     // if handling model change event only need to update newly added nodes
     const nodeStates = await (modelChanges ? this.collectAddedNodesCheckboxInfos(modelChanges.addedNodeIds) : this.collectAllNodesCheckboxInfos());
+    if (nodeStates.size === 0)
+      return;
 
-    this._skipModelChange = true;
-    this._modelSource.modifyModel((model) => {
+    this.modelSource.modifyModel((model) => {
       for (const [nodeId, checkboxInfo] of nodeStates.entries()) {
         const node = model.getNode(nodeId);
         // istanbul ignore else
@@ -244,13 +289,12 @@ class EventHandler extends TreeEventHandler {
           node.checkbox = checkboxInfo;
       }
     });
-    this._skipModelChange = false;
   }
 
   private async collectAddedNodesCheckboxInfos(addedNodeIds: string[]) {
     const nodeStates = new Map<string, CheckBoxInfo>();
     for (const nodeId of addedNodeIds) {
-      const node = this._modelSource.getModel().getNode(nodeId);
+      const node = this.modelSource.getModel().getNode(nodeId);
       // istanbul ignore if
       if (!node)
         continue;
@@ -264,7 +308,7 @@ class EventHandler extends TreeEventHandler {
 
   private async collectAllNodesCheckboxInfos() {
     const nodeStates = new Map<string, CheckBoxInfo>();
-    for (const node of this._modelSource.getModel().iterateTreeModelNodes()) {
+    for (const node of this.modelSource.getModel().iterateTreeModelNodes()) {
       const info = await this.getNodeCheckBoxInfo(node);
       if (info)
         nodeStates.set(node.id, info);

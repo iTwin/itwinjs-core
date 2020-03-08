@@ -1090,7 +1090,7 @@ export class Sample {
    * @note edgeVisible is false only on the diagonals
    */
   public static createTriangularUnitGridPolyface(origin: Point3d, vectorX: Vector3d, vectorY: Vector3d,
-    numXVertices: number, numYVertices: number, createParams: boolean = false, createNormals: boolean = false, createColors: boolean = false): IndexedPolyface {
+    numXVertices: number, numYVertices: number, createParams: boolean = false, createNormals: boolean = false, createColors: boolean = false, triangulate: boolean = true): IndexedPolyface {
     const mesh = IndexedPolyface.create(createNormals, createParams, createColors);
     const normal = vectorX.crossProduct(vectorY);
     if (createNormals) {
@@ -1115,53 +1115,57 @@ export class Sample {
         const vertex10 = vertex00 + 1;
         const vertex01 = vertex00 + numXVertices;
         const vertex11 = vertex01 + 1;
-        // Push lower triangle
-        mesh.addPointIndex(vertex00, true);
-        mesh.addPointIndex(vertex10, true);
-        mesh.addPointIndex(vertex11, false);
-        // make color === faceIndex
-        if (createColors) {
-          thisColorIndex = mesh.addColor(color++);
-          mesh.addColorIndex(thisColorIndex);
-          mesh.addColorIndex(thisColorIndex);
-          mesh.addColorIndex(thisColorIndex);
-        }
-        // param indexing matches points .  .
-        if (createParams) {
-          mesh.addParamIndex(vertex00);
-          mesh.addParamIndex(vertex10);
-          mesh.addParamIndex(vertex11);
-        }
+        if (triangulate) {
+          // Push lower triangle
+          mesh.addPointIndex(vertex00, true); mesh.addPointIndex(vertex10, true); mesh.addPointIndex(vertex11, false);
+          // make color === faceIndex
+          if (createColors) {
+            thisColorIndex = mesh.addColor(color++);
+            mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex);
+          }
+          // param indexing matches points .  .
+          if (createParams) {
+            mesh.addParamIndex(vertex00); mesh.addParamIndex(vertex10); mesh.addParamIndex(vertex11);
+          }
 
-        if (createNormals) {
-          mesh.addNormalIndex(0);
-          mesh.addNormalIndex(0);
-          mesh.addNormalIndex(0);
-        }
-        mesh.terminateFacet(false);
+          if (createNormals) {
+            mesh.addNormalIndex(0); mesh.addNormalIndex(0); mesh.addNormalIndex(0);
+          }
+          mesh.terminateFacet(false);
 
-        // upper triangle
-        mesh.addPointIndex(vertex11, true);
-        mesh.addPointIndex(vertex01, true);
-        mesh.addPointIndex(vertex00, false);
-        // make color === faceIndex
-        if (createColors) {
-          mesh.addColorIndex(thisColorIndex);
-          mesh.addColorIndex(thisColorIndex);
-          mesh.addColorIndex(thisColorIndex);
+          // upper triangle
+          mesh.addPointIndex(vertex11, true); mesh.addPointIndex(vertex01, true); mesh.addPointIndex(vertex00, false);
+          // make color === faceIndex
+          if (createColors) {
+            mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex);
+          }
+          // param indexing matches points.
+          if (createParams) {
+            mesh.addParamIndex(vertex11); mesh.addParamIndex(vertex01); mesh.addParamIndex(vertex00);
+          }
+          if (createNormals) {
+            mesh.addNormalIndex(0); mesh.addNormalIndex(0); mesh.addNormalIndex(0);
+          }
+          mesh.terminateFacet(false);
+        } else {
+          // Push quad
+          mesh.addPointIndex(vertex00, true); mesh.addPointIndex(vertex10, true); mesh.addPointIndex(vertex11, true); mesh.addPointIndex(vertex01, true);
+          // make color === faceIndex
+          if (createColors) {
+            thisColorIndex = mesh.addColor(color++);
+            mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex); mesh.addColorIndex(thisColorIndex);
+          }
+          // param indexing matches points .  .
+          if (createParams) {
+            mesh.addParamIndex(vertex00); mesh.addParamIndex(vertex10); mesh.addParamIndex(vertex11); mesh.addParamIndex(vertex01);
+          }
+
+          if (createNormals) {
+            mesh.addNormalIndex(0); mesh.addNormalIndex(0); mesh.addNormalIndex(0); mesh.addNormalIndex(0);
+          }
+          mesh.terminateFacet(false);
+
         }
-        // param indexing matches points.
-        if (createParams) {
-          mesh.addParamIndex(vertex11);
-          mesh.addParamIndex(vertex01);
-          mesh.addParamIndex(vertex00);
-        }
-        if (createNormals) {
-          mesh.addNormalIndex(0);
-          mesh.addNormalIndex(0);
-          mesh.addNormalIndex(0);
-        }
-        mesh.terminateFacet(false);
       }
     }
     return mesh;
@@ -2106,13 +2110,15 @@ export class Sample {
     ay: number,
     dx1: number,
     dx4: number): Point3d[] {
-    return [Point3d.create(0, 0),
-      Point3d.create(ax + dx1, dy1),
-      Point3d.create(2 * ax, dy2),
-      Point3d.create(2 * ax, ay + dy3),
-      Point3d.create(ax + dx4, ay + dy4),
-      Point3d.create(0.0, ay),
-      Point3d.create(0, 0)];
+    const points = [];
+    points.push(Point3d.create(0, 0));
+    points.push(Point3d.create(ax + dx1, dy1));
+    points.push(Point3d.create(2 * ax, dy2));
+    points.push(Point3d.create(2 * ax, ay + dy3));
+    points.push(Point3d.create(ax + dx4, ay + dy4));
+    points.push(Point3d.create(0.0, ay));
+    points.push(Point3d.create(0, 0));
+    return points;
   }
   /**
    * make line segments for each pair of adjacent points.
@@ -2229,6 +2235,7 @@ export class Sample {
     result.push(this.createXYGridBsplineSurface(8, 4, 4, 3)!);
     this.appendGeometry(this.createClosedSolidSampler(true), result);
     result.push(this.createTriangularUnitGridPolyface(pointA, Vector3d.unitX(), Vector3d.unitY(), 4, 5));
+    result.push(this.createTriangularUnitGridPolyface(pointA, Vector3d.unitX(), Vector3d.unitY(), 4, 5, true, true, true, false));
     this.appendGeometry(this.createSimpleParityRegions(), result);
     this.appendGeometry(this.createSimpleUnions(), result);
     this.appendGeometry(this.createBagOfCurves(), result);

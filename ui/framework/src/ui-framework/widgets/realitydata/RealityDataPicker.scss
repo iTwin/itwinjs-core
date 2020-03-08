@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/ui-core/lib/ui-core/index.scss";
-@import "@bentley/ui-core/lib/ui-core/index";
-@import "@bentley/ui-core/lib/ui-core/style/colors";
-@import "@bentley/ui-ninezone/lib/ui-ninezone/_scrollbar";
+@import "~@bentley/ui-core/lib/ui-core/index.scss";
+@import "~@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/style/colors";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/_scrollbar";
 
 .reality-data-widget {
   height: 100%;

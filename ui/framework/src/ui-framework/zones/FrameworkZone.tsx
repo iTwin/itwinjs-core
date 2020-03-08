@@ -34,6 +34,7 @@ export interface FrameworkZoneProps extends CommonProps {
   fillZone?: boolean;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>;
   isHidden: boolean;
+  isInFooterMode: boolean;
   openWidgetId: WidgetZoneId | undefined;
   targetChangeHandler: TargetChangeHandler;
   targetedBounds?: RectangleProps;
@@ -61,6 +62,7 @@ export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
               style={this.props.style}
               isFloating={!!this.props.zone.floating}
               isHidden={this.props.isHidden}
+              isInFooterMode={this.props.isInFooterMode}
               id={this.props.zone.id}
               safeAreaInsets={safeAreaInsets}
             >
@@ -69,6 +71,7 @@ export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
             <NZ_Zone
               bounds={this.props.zone.bounds}
               id={this.props.zone.id}
+              isInFooterMode={this.props.isInFooterMode}
               safeAreaInsets={safeAreaInsets}
             >
               <ZoneTargets

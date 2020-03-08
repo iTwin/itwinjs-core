@@ -17,7 +17,7 @@ import {
 import {
   ControlledTree, TreeEventHandler, useVisibleTreeNodes, SelectionMode, TreeNodeRendererProps,
   TreeNodeRenderer, TreeRendererProps, TreeRenderer, TreeModelNode, TreeModelSource, CheckBoxInfo, TreeCheckboxStateChangeEvent,
-  CheckboxStateChange, TreeSelectionReplacementEvent, ITreeNodeLoaderWithProvider, TreeImageLoader, FilteringInput, TreeNodeItem, TreeModelChanges, TreeModel,
+  CheckboxStateChange, TreeSelectionReplacementEvent, ITreeNodeLoaderWithProvider, TreeImageLoader, FilteringInput, TreeNodeItem, TreeModelChanges,
 } from "@bentley/ui-components";
 import { NodeCheckboxRenderProps, ImageCheckBox, CheckBoxState, useEffectSkipFirst } from "@bentley/ui-core";
 
@@ -374,12 +374,11 @@ export class CategoryVisibilityHandler {
 }
 
 class EventHandler extends TreeEventHandler {
-  private _modelSource: TreeModelSource;
   private _dataProvider: IPresentationTreeDataProvider;
   private _activeView?: Viewport;
   private _visibilityHandler: CategoryVisibilityHandler;
-  private _skipModelChange = false;
-  private _dispose: () => void;
+  private _modelSource: TreeModelSource;
+  private _removeListener: () => void;
 
   constructor(
     modelSource: TreeModelSource,
@@ -392,11 +391,12 @@ class EventHandler extends TreeEventHandler {
     this._activeView = activeView;
     this._visibilityHandler = visibilityHandler;
 
-    this._dispose = this._modelSource.onModelChanged.addListener((args) => this.onModelChanged(args));
+    this._removeListener = this._modelSource.onModelChanged.addListener((args) => this.updateCheckboxes(args[1]));
   }
 
   public dispose() {
-    this._dispose();
+    super.dispose();
+    this._removeListener();
   }
 
   public async selectAll() {
@@ -433,22 +433,13 @@ class EventHandler extends TreeEventHandler {
     return undefined;
   }
 
-  private onModelChanged(args: [TreeModel, TreeModelChanges]) {
-    if (this._skipModelChange)
-      return;
-
-    this.updateCheckboxes(args[1]);
-  }
-
   private updateCheckboxes(modelChanges?: TreeModelChanges) {
-    this._skipModelChange = true;
     // if handling model change event only need to update newly added nodes
     if (modelChanges) {
       this.updateNewNodeCheckboxes(modelChanges.addedNodeIds);
     } else {
       this.updateAllNodeCheckboxes();
     }
-    this._skipModelChange = false;
   }
 
   private updateAllNodeCheckboxes() {
@@ -459,6 +450,9 @@ class EventHandler extends TreeEventHandler {
     });
   }
   private updateNewNodeCheckboxes(newNodeIds: string[]) {
+    if (newNodeIds.length === 0)
+      return;
+
     this._modelSource.modifyModel((model) => {
       for (const nodeId of newNodeIds) {
         const node = model.getNode(nodeId);

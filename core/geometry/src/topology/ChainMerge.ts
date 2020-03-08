@@ -7,13 +7,14 @@
  * @module Topology
  */
 
-import { Geometry } from "../Geometry";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgeGraphOps } from "./Merging";
 import { LineString3d } from "../curve/LineString3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 /**
  * interface containing various options appropriate to merging lines segments into chains.
  */
@@ -93,6 +94,7 @@ class ChainMergeContextValidatedOptions {
  *      * `context.clusterAndMergeVerticesXYZ ()`
  *   * Collect the chains:
  *      * myLinestringArray = context.collectMaximalChains();
+ * * The context carries an optional plane which is used by addSegmentsOnPlane
  *
  * @internal
  */
@@ -100,10 +102,22 @@ export class ChainMergeContext {
 
   private _graph: HalfEdgeGraph;
   private _options: ChainMergeContextValidatedOptions;
+  private _plane?: PlaneAltitudeEvaluator;
+  private _convexClipper?: ConvexClipPlaneSet;
   private constructor(options: ChainMergeContextValidatedOptions) {
     this._graph = new HalfEdgeGraph();
     this._options = options;
   }
+  /** Save a reference plane for later use, e.g. in addSegmentsOnPlane */
+  public set plane(value: PlaneAltitudeEvaluator | undefined) { this._plane = value; }
+  /** Property access for the reference plane. */
+  public get plane(): PlaneAltitudeEvaluator | undefined { return this._plane; }
+
+  /** Save a reference plane for later use, e.g. in addSegmentsOnPlane */
+  public set convexClipper(value: ConvexClipPlaneSet | undefined) { this._convexClipper = value; }
+  /** Property access for the reference plane. */
+  public get convexClipper(): ConvexClipPlaneSet | undefined { return this._convexClipper; }
+
   /**
    * * Construct an empty chain merge graph.
    * * The options parameter may contain any combination of the options values.
@@ -111,7 +125,7 @@ export class ChainMergeContext {
    *     * Default is `Geometry.smallMetricDistance`
    *   * primarySortDirection = direction for first sort.
    *     * To minimize clash among points on primary sort, this should NOT be perpendicular to any principal plane.
-   *     * The default points into the first octant with inobvious components.
+   *     * The default points into the first octant with non-obvious components.
    */
   public static create(options?: ChainMergeContextOptions): ChainMergeContext {
     const validatedOptions = ChainMergeContextValidatedOptions.createFromUnValidated(options);
@@ -125,6 +139,25 @@ export class ChainMergeContext {
   public addLineSegment3dArray(data: LineSegment3d[]) {
     for (const segment of data) {
       this.addSegment(segment.point0Ref, segment.point1Ref);
+    }
+  }
+  /** Add edges for all segments that are "on" the plane.
+   * * No action if `this.plane` is undefined.
+   */
+  public addSegmentsOnPlane(points: GrowableXYZArray, addClosure: boolean = false) {
+    if (!this._plane)
+      return;
+    const plane = this._plane;
+    let i0 = addClosure ? points.length - 1 : 0;
+    let a0 = points.evaluateUncheckedIndexPlaneAltitude(i0, plane);
+    let i1 = addClosure ? 0 : 1;
+    let a1;
+    for (; i1 < points.length; i0 = i1++ , a0 = a1) {
+      a1 = points.evaluateUncheckedIndexPlaneAltitude(i1, plane);
+      if (Geometry.isSmallMetricDistance(a0) && Geometry.isSmallMetricDistance(a1))
+        this._graph.createEdgeXYZXYZ(
+          points.getXAtUncheckedPointIndex(i0), points.getYAtUncheckedPointIndex(i0), points.getZAtUncheckedPointIndex(i0), 0,
+          points.getXAtUncheckedPointIndex(i1), points.getYAtUncheckedPointIndex(i1), points.getZAtUncheckedPointIndex(i1), 0);
     }
   }
   /**

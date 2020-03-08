@@ -192,11 +192,6 @@ export class Formatter {
     // Caller will deal with appending +||-||() value sign as specified by formatting options so just format positive value
     let posMagnitude = Math.abs(magnitude);
 
-    if ((Math.abs(posMagnitude) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty)) return "";
-
-    const precisionScale = Math.pow(10, spec.format.precision + 1);
-    posMagnitude = Math.floor(posMagnitude * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
-
     // tslint:disable-next-line:prefer-for-of
     for (let i = 0; i < spec.unitConversions.length; i++) {
       const currentLabel = spec.unitConversions[i].label;
@@ -207,7 +202,13 @@ export class Formatter {
       if (i > 0 && unitConversion.offset !== 0)
         throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has a invalid unit specification..`);
 
-      const unitValue = (posMagnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD; // offset should only ever be defined for major unit
+      let unitValue = (posMagnitude * unitConversion.factor) + unitConversion.offset + Formatter.FPV_MINTHRESHOLD; // offset should only ever be defined for major unit
+      if (0 === i) {
+        const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision in actual magnitude
+        unitValue = Math.floor(unitValue * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
+        if ((Math.abs(unitValue) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty)) return "";
+      }
+
       if (i < spec.format.units!.length - 1) {
         const wholePart = Math.floor(unitValue);
         const componentText = Formatter.formatCompositePart(wholePart, false, currentLabel, spec);

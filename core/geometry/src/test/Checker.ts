@@ -74,6 +74,7 @@ export class Checker {
     Ellipsoid: false,
     regionBoolean: false,
     ParityRegionAnalysis: false,
+    isolateFacetsOnClipPlane: false,
   };
   public constructor() { this._numErrors = 0; this._numOK = 0; this._savedErrors = 0; this._savedOK = 0; }
   public getNumErrors(): number { return this._savedErrors + this._numErrors; }
