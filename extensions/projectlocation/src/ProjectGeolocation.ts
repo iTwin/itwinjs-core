@@ -14,11 +14,14 @@ import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
 export class ProjectGeolocationPointTool extends PrimitiveTool {
   public static toolId = "ProjectLocation.Geolocation.Point";
   public static iconSpec = "icon-globe"; // <== Tool button should use whatever icon you have here...
+  public accept: boolean = false;
+  public origin?: Point3d;
 
   public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
   public requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public onCleanup() { super.onCleanup(); this.unsuspendDecorations(); }
   public onRestartTool(): void { this.exitTool(); }
   public onUnsuspend(): void { this.provideToolAssistance(); }
 
@@ -27,6 +30,32 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   protected setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
     this.provideToolAssistance();
+  }
+
+  private unsuspendDecorations() {
+    const deco = ProjectExtentsClipDecoration.get();
+    if (undefined !== deco)
+      deco.suspendGeolocationDecorations = false;
+  }
+
+  public decorate(context: DecorateContext): void {
+    if (undefined === this.origin)
+      return;
+
+    const deco = ProjectExtentsClipDecoration.get();
+    if (undefined === deco)
+      return;
+
+    deco.suspendGeolocationDecorations = true;
+    deco.drawMonumentPoint(context, this.origin); // ### TODO When this.accept is true...indicate that we are waiting for user to change values???
+  }
+
+  public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    if (undefined === ev.viewport || this.accept)
+      return;
+
+    this.origin = ev.point.clone();
+    ev.viewport.invalidateDecorations();
   }
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
@@ -38,10 +67,18 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     if (undefined === ev.viewport)
       return EventHandled.No; // Shouldn't really happen...
 
+    if (!this.accept) {
+      // ### TODO Synch tool settings w/current lat/long/alt/angle...
+      this.accept = true; // Require explict accept to give user a chance to change values...
+      this.origin = ev.point.clone();
+      this.setupAndPromptForNextAction();
+      return EventHandled.No;
+    }
+
     const deco = ProjectExtentsClipDecoration.get();
     if (undefined !== deco) {
       const origin = new Cartographic(Angle.createDegrees(2.35).radians, Angle.createDegrees(48.85).radians); // ### TODO: Need UI for lat/long/alt/angle...
-      deco.updateEcefLocation(origin, ev.point);
+      deco.updateEcefLocation(origin, this.origin);
     }
 
     this.onReinitialize(); // Calls onRestartTool to exit...
@@ -66,7 +103,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
   public isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
   public requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public onCleanup() { super.onCleanup(); this.unsuspendNorthDecoration(); }
+  public onCleanup() { super.onCleanup(); this.unsuspendDecorations(); }
   public onRestartTool(): void { this.exitTool(); }
   public onUnsuspend(): void { this.provideToolAssistance(); }
 
@@ -94,10 +131,10 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     return EditManipulator.HandleUtils.projectPointToPlaneInView(ev.point, this.origin, Vector3d.unitZ(), ev.viewport!, true);
   }
 
-  private unsuspendNorthDecoration() {
+  private unsuspendDecorations() {
     const deco = ProjectExtentsClipDecoration.get();
     if (undefined !== deco)
-      deco.suspendNorthDecoration = false;
+      deco.suspendGeolocationDecorations = false;
   }
 
   private updateNorthVector(ev: BeButtonEvent): void {
@@ -129,7 +166,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     if (undefined === deco)
       return;
 
-    deco.suspendNorthDecoration = true;
+    deco.suspendGeolocationDecorations = true;
     deco.drawNorthArrow(context, this.northDir);
   }
 

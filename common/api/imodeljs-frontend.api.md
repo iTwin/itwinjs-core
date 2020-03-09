@@ -3796,6 +3796,8 @@ export class IModelConnection extends IModel {
     static createForNativeAppBriefcase(iModel: IModelProps, openMode: OpenMode): IModelConnection;
     // @internal
     detachChangeCache(): Promise<void>;
+    // @internal (undocumented)
+    disableGCS(disable: boolean): void;
     // @internal
     readonly displayedExtents: AxisAlignedBox3d;
     // @alpha

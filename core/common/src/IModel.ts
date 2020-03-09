@@ -105,12 +105,14 @@ export class EcefLocation implements EcefLocationProps {
     const zVector = Vector3d.createFrom(ecefOrigin).normalize();
     const xVector = Vector3d.create(-Math.sin(origin.longitude), Math.cos(origin.longitude), 0.0);
     const matrix = Matrix3d.createRigidFromColumns(zVector!, xVector, AxisOrder.ZXY)!;
+    if (angle !== undefined) {
+      const north = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
+      matrix.multiplyMatrixMatrix(north, matrix);
+    }
     if (point !== undefined) {
       const delta = matrix.multiplyVector(Vector3d.create(-point.x, -point.y, -point.z));
       ecefOrigin.addInPlace(delta);
     }
-    if (angle !== undefined)
-      matrix.multiplyMatrixMatrix(Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle), matrix);
 
     return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix)! });
   }

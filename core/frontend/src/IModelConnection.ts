@@ -89,8 +89,10 @@ export class IModelConnection extends IModel {
   public readonly geoServices: GeoServices;
   /** @internal Whether it has already been determined that this iModelConnection does not have a map projection. */
   protected _noGcsDefined?: boolean;
-  /** @internal Whether it has already been determined that this iModelConnection does not have a map projection.  */
+  /** @internal Whether it has already been determined that this iModelConnection does not have a map projection. */
   public get noGcsDefined(): boolean | undefined { return this._noGcsDefined; }
+  /** @internal */
+  public disableGCS(disable: boolean): void { this._noGcsDefined = disable ? true : undefined; }
   /** @internal The displayed extents. Union of the the project extents and all displayed models. */
   public readonly displayedExtents: AxisAlignedBox3d;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */

@@ -29,11 +29,9 @@
   "Message": {
     "ProjectExtents": "Project Extents",
     "ModifyProjectExtents": "Modify Project Extents",
-    "NotGeolocated": "Not geolocated",
     "Length": "Length",
     "Width": "Width",
     "Height": "Height",
-    "Altitude": "Altitude",
     "North": "North"
   }
 }
