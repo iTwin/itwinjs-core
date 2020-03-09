@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
-@import "@bentley/ui-ninezone/lib/ui-ninezone/_scrollbar";
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/_scrollbar";
+@import "~@bentley/ui-core/lib/ui-core/index";
 
 $outline-size: 2px;
 
@@ -67,7 +67,7 @@ $outline-size: 2px;
     padding: 0 20px;
     text-align: center;
     color: $uicore-gray;
-    color: rgba($uicore-text-color, .85);
+    color: rgba($uicore-text-color, 0.85);
     pointer-events: none;
 
     .default-prompt {
@@ -76,9 +76,9 @@ $outline-size: 2px;
   }
 
   .fade-in {
-    -webkit-animation: show ease-in .25s;
-    -moz-animation: show ease-in .25s;
-    animation: show ease-in .25s;
+    -webkit-animation: show ease-in 0.25s;
+    -moz-animation: show ease-in 0.25s;
+    animation: show ease-in 0.25s;
 
     -webkit-animation-fill-mode: forwards;
     -moz-animation-fill-mode: forwards;
@@ -86,13 +86,20 @@ $outline-size: 2px;
   }
 
   @-webkit-keyframes show {
-    0%   {opacity: 0;}
-    100% {opacity: 1;}
+    0% {
+      opacity: 0;
     }
+    100% {
+      opacity: 1;
+    }
+  }
 
   @keyframes show {
-    0%   {opacity: 0;}
-    100% {opacity: 1;}
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
   }
 }
-

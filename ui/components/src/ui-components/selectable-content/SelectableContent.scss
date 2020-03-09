@@ -2,24 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/index";
 
 .components-selectable-content {
-
   display: flex;
   flex-direction: column;
 
   .components-selectable-content-header {
-
     .components-selectable-content-selector {
       @include uicore-inputs-select;
       width: 100%;
     }
-
   }
 
   .components-selectable-content-wrapper {
     flex-grow: 1;
   }
-
 }
