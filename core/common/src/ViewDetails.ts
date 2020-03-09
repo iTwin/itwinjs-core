@@ -67,7 +67,7 @@ export class ViewDetails {
 
   /** @internal */
   public constructor(jsonProperties: { viewDetails?: ViewDetailsProps }) {
-    if (undefined === jsonProperties.viewDetails)
+    if (!jsonProperties.viewDetails)
       jsonProperties.viewDetails = { };
 
     this._json = jsonProperties.viewDetails;
