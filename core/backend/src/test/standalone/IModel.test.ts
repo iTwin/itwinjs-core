@@ -1849,12 +1849,16 @@ describe("iModel", () => {
     // create snapshot from scratch and give it a password
     let snapshotDb2 = SnapshotIModelDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password" });
     assert.equal(snapshotDb2.briefcase.briefcaseId, BriefcaseId.Snapshot);
+    const subjectName2 = "TestSubject2";
+    const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
+    assert.isTrue(Id64.isValidId64(subjectId2));
     snapshotDb2.close();
     snapshotDb2 = SnapshotIModelDb.open(snapshotFile2, { password: "password" });
     assert.isTrue(snapshotDb2 instanceof SnapshotIModelDb);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb2.nativeDb.isEncrypted());
+    assert.exists(snapshotDb2.elements.getElement(subjectId2));
 
     // create a new snapshot from a non-password-protected snapshot and then give it a password
     let snapshotDb3 = SnapshotIModelDb.createFrom(imodel1, snapshotFile3, { password: "password" });
