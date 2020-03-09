@@ -5,6 +5,8 @@
 import { assert } from "chai";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
 
+// cspell:ignore cadetblue
+
 describe("ColorDef", () => {
   it("should compare ColorDef RGB values", () => {
     const cadetBlue = new ColorDef(ColorByName.cadetBlue);
@@ -47,15 +49,27 @@ describe("ColorDef", () => {
 
     const yellow3 = new ColorDef("#FFFF00");
     assert.isTrue(yellow.equals(yellow3));
-    let yellow4 = new ColorDef("rgbA(255,255,0,255)");
+    let yellow4 = new ColorDef("rgbA(255,255,0,100%)");
     assert.isTrue(yellow.equals(yellow4));
     yellow4 = new ColorDef("rgb(255,255,0)");
     assert.isTrue(yellow.equals(yellow4));
     yellow4 = new ColorDef("Yellow"); // wrong case, should still work
     assert.isTrue(yellow.equals(yellow4));
-    const yellow5 = new ColorDef("rgba(255,255,0,200)");
+    let yellow5 = new ColorDef("rgba(255,255,0,.2)");
     assert.isTrue(yellow.getRgb() === yellow5.getRgb());
-    assert.equal(200, yellow5.getAlpha());
+    assert.equal(51, yellow5.getAlpha(), "Alpha from rgba");
+    assert.equal(204, yellow5.getTransparency(), "transparency from rgba");
+
+    yellow5 = new ColorDef("rgba(100%,100%, 0%, 20%)");
+    assert.isTrue(yellow.getRgb() === yellow5.getRgb());
+    assert.equal(51, yellow5.getAlpha(), "Alpha from rgba");
+
+    const t1 = new ColorDef("rgba(10% 10% 10% / 90%)").colors;
+    assert.equal(25, t1.r);
+    assert.equal(25, t1.g);
+    assert.equal(25, t1.b);
+    assert.equal(25, t1.t);
+
     const str = yellow.toHexString();
     const str2 = yellow.toRgbString();
     yellow4 = new ColorDef(str);

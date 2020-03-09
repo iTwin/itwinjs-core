@@ -335,7 +335,7 @@ export class ColorDef {
   /** True if this ColorDef is fully opaque */
   public get isOpaque(): boolean { return 255 === this.getAlpha(); }
   /** Get the transparency value for this ColorDef (inverse of alpha). Will be between 0-255 */
-  public getTransparency(): number { return 255 - this.getAlpha(); }
+  public getTransparency(): number { scratchUInt32[0] = this._tbgr; return scratchBytes[3]; }
   /** Change the transparency value for this ColorDef
    * @param transparency the new transparency value. Must be between 0-255, where 0 means 'fully opaque' and 255 means 'fully transparent'.
    */
@@ -361,25 +361,26 @@ export class ColorDef {
       const name = m[1];
       const components = m[2];
 
+      const hasPercent = (str: string) => str[str.length - 1] === "%";
+      const floatOrPercent = (str: string) => {
+        const v = parseFloat(str);
+        return Geometry.clamp(hasPercent(str) ? v / 100. : v, 0, 1);
+      };
+      const intOrPercent = (str: string) => {
+        const v = hasPercent(str) ? (parseFloat(str) / 100.) * 255 : parseInt(str, 10);
+        return Geometry.clamp(v, 0, 255);
+      };
+
       switch (name) {
         case "rgb":
         case "rgba":
-          color = /^(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(,\s*([0-9]*\.?[0-9]+)\s*)?$/.exec(components);
+          color = /^(\d+%*)\s*[, ]\s*(\d+%*)\s*[, ]\s*(\d+%*)\s*([,\/]\s*([0-9]*\.?[0-9]+%*)\s*)?$/.exec(components);
           if (color) { // rgb(255,0,0) rgba(255,0,0,0.5)
             return ColorDef.from(
-              Math.min(255, parseInt(color[1], 10)),
-              Math.min(255, parseInt(color[2], 10)),
-              Math.min(255, parseInt(color[3], 10)),
-              color[5] != null ? 255 - Math.min(255, parseInt(color[5], 10)) : 0, this);
-          }
-
-          color = /^(\d+)\%\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(,\s*([0-9]*\.?[0-9]+)\s*)?$/.exec(components);
-          if (color) { // rgb(100%,0%,0%) rgba(100%,0%,0%,0.5)
-            return ColorDef.from(
-              (Math.min(100, parseInt(color[1], 10)) / 100) * 255,
-              (Math.min(100, parseInt(color[2], 10)) / 100) * 255,
-              (Math.min(100, parseInt(color[3], 10)) / 100) * 255,
-              color[5] != null ? 255 - ((Math.min(100, parseInt(color[5], 10)) / 100) * 255) : 0, this);
+              intOrPercent(color[1]),
+              intOrPercent(color[2]),
+              intOrPercent(color[3]),
+              typeof color[5] === "string" ? 255 - (255 * floatOrPercent(color[5])) : 0, this);
           }
 
           break;
