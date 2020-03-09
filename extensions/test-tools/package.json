@@ -43,8 +43,8 @@
     }
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.25",
-    "@bentley/webpack-tools": "2.0.0-dev.25",
+    "@bentley/build-tools": "2.0.0-dev.26",
+    "@bentley/webpack-tools": "2.0.0-dev.26",
     "@types/node": "10.14.1",
     "rimraf": "^2.6.2",
     "tsconfig-paths": "^3.3.2",
@@ -55,12 +55,12 @@
     "webpack-cli": "^3.1.0"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.25",
-    "@bentley/geometry-core": "2.0.0-dev.25",
-    "@bentley/imodeljs-clients": "2.0.0-dev.25",
-    "@bentley/imodeljs-common": "2.0.0-dev.25",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.25",
-    "@bentley/imodeljs-frontend": "2.0.0-dev.25",
-    "@bentley/imodeljs-quantity": "2.0.0-dev.25"
+    "@bentley/bentleyjs-core": "2.0.0-dev.26",
+    "@bentley/geometry-core": "2.0.0-dev.26",
+    "@bentley/imodeljs-clients": "2.0.0-dev.26",
+    "@bentley/imodeljs-common": "2.0.0-dev.26",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.26",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.26",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.26"
   }
 }
