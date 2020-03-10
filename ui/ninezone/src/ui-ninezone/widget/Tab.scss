@@ -72,7 +72,7 @@
     }
 
     &:not(.nz-active) {
-      color: $buic-foreground-accessory;
+      color: $buic-foreground-muted;
       border-right-width: 1px;
 
       &.nz-minimized {
@@ -90,6 +90,10 @@
 
     &:hover {
       background: $buic-background-3;
+
+      &:not(.nz-active) {
+        color: $buic-foreground-body;
+      }
     }
   }
 }

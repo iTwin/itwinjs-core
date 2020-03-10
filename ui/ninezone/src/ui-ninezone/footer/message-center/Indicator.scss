@@ -40,7 +40,11 @@
     > .nz-label {
       font-size: $text-font-size;
 
-      @include for-tablet-landscape-down {
+      @include for-tablet-portrait-down {
+        font-size: $text-font-size-medium;
+      }
+
+      @include for-phone-only {
         display: none;
       }
     }

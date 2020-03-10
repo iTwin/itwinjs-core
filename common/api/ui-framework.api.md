@@ -4279,8 +4279,11 @@ export function StatusBarComposer(props: StatusBarComposerProps): JSX.Element;
 
 // @beta
 export interface StatusBarComposerProps {
-    // (undocumented)
+    centerClassName?: string;
     items: CommonStatusBarItem[];
+    leftClassName?: string;
+    mainClassName?: string;
+    rightClassName?: string;
 }
 
 // @internal
