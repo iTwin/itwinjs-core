@@ -33,15 +33,45 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
  */
 export class BriefcaseId {
   private _value: number;
-  public static get Illegal(): number { return 0xffffffff; }
-  /** @internal */
-  public static get Master(): number { return 0; }
-  /** @internal */
-  public static get Standalone(): number { return 1; }
-  /** @beta */
-  public static get Snapshot(): number { return 1; }
-  constructor(value?: number) { this._value = value === undefined ? BriefcaseId.Illegal : value; }
+  /** Return the value held by this BriefcaseId. */
   public get value(): number { return this._value; }
+  constructor(value?: number) { this._value = value === undefined ? BriefcaseId.Illegal : value; }
+  /** Indicates an invalid/illegal BriefcaseId */
+  public static get Illegal(): number { return 0xffffffff; }
+  /** BriefcaseIds must be less than this value
+   * @internal
+   */
+  public static get MaxRepo() { return 1 << 24; }
+  /** @internal */
+  public static get LegacyMaster(): number { return 0; }
+  /** From a legacy perspective, 1 used to identify a standalone iModel. However, this value now means Snapshot. This getter is preserved for code that might encounter older iModels
+   * @internal
+   */
+  public static get LegacyStandalone(): number { return 1; }
+  /** Reserve a fixed BriefcaseId for the new concept of a single-practitioner standalone iModel.
+   * @note This will be renamed to Standalone once all source code has been updated.
+   * @internal
+   */
+  public static get FutureStandalone(): number { return BriefcaseId.MaxRepo - 2; }
+  /** A snapshot iModel is read-only once created. They are typically used for archival and data transfer purposes.
+   * @note Legacy standalone iModels are now considered snapshots
+   * @beta
+   */
+  public static get Snapshot(): number { return 1; }
+  /** A checkpoint snapshot iModel is a snapshot of a point on the iModelHub timeline.
+   * @note Legacy master briefcases are now considered checkpoint snapshots that match the beginning of the iModelHub timeline
+   * @beta
+   */
+  public static get CheckpointSnapshot(): number { return 0; }
+  /** Returns `true` if the value of this BriefcaseId equals Snapshot or CheckpointSnapshot.
+   * @beta
+   */
+  public get isSnapshot(): boolean { return this.value === BriefcaseId.Snapshot || this.value === BriefcaseId.CheckpointSnapshot; }
+  /** Returns `true` if the specified value equals Snapshot or CheckpointSnapshot.
+   * @beta
+   */
+  public static isSnapshot(value: number): boolean { return value === BriefcaseId.Snapshot || value === BriefcaseId.CheckpointSnapshot; }
+  /** Return a string representation of the value of this BriefcaseId. */
   public toString(): string { return this._value.toString(); }
 }
 
@@ -443,7 +473,7 @@ export class BriefcaseManager {
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
     if (!IModelJsFs.existsSync(pathname))
       return;
-    const briefcase = this.initializeBriefcase(requestContext, contextId, iModelId, changeSetId, pathname, OpenParams.fixedVersion(), BriefcaseId.Standalone);
+    const briefcase = this.initializeBriefcase(requestContext, contextId, iModelId, changeSetId, pathname, OpenParams.fixedVersion(), BriefcaseId.LegacyStandalone);
     return briefcase;
   }
 
@@ -880,7 +910,7 @@ export class BriefcaseManager {
   }
 
   private static async initBriefcaseFileId(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry) {
-    if (briefcase.briefcaseId === BriefcaseId.Standalone)
+    if (briefcase.briefcaseId === BriefcaseId.LegacyStandalone)
       return;
 
     const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, briefcase.iModelId, new BriefcaseQuery().byId(briefcase.briefcaseId));
@@ -892,7 +922,7 @@ export class BriefcaseManager {
 
   private static createFixedVersionBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): BriefcaseEntry {
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
-    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, OpenParams.fixedVersion(), BriefcaseId.Standalone);
+    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, OpenParams.fixedVersion(), BriefcaseId.LegacyStandalone);
 
     briefcase.isPending = this.finishCreateBriefcase(requestContext, briefcase);
 
@@ -1234,11 +1264,11 @@ export class BriefcaseManager {
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, "Could not create standalone iModel", Logger.logError, loggerCategory, () => ({ fileName }));
 
-    res = nativeDb.setBriefcaseId(BriefcaseId.Standalone, argsString); // setBriefcaseId can close/reopen nativeDb, so must pass encryption props
+    res = nativeDb.setBriefcaseId(BriefcaseId.LegacyStandalone, argsString); // setBriefcaseId can close/reopen nativeDb, so must pass encryption props
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, "Could not set briefcaseId for standalone iModel", Logger.logError, loggerCategory, () => ({ fileName }));
 
-    const briefcase = new BriefcaseEntry("", nativeDb.getDbGuid(), "", fileName, OpenParams.standalone(OpenMode.ReadWrite), BriefcaseId.Standalone);
+    const briefcase = new BriefcaseEntry("", nativeDb.getDbGuid(), "", fileName, OpenParams.standalone(OpenMode.ReadWrite), BriefcaseId.LegacyStandalone);
     briefcase.setNativeDb(nativeDb);
     BriefcaseManager._cache.addBriefcase(briefcase);
     return briefcase;
