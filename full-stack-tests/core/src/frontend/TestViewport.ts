@@ -302,12 +302,9 @@ export async function testOnScreenViewport(viewId: Id64String, imodel: IModelCon
   return Promise.resolve();
 }
 
-// Execute a test against both an off-screen and on-screen viewport.
-export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
+export async function testOffScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
   if (!IModelApp.initialized)
     return Promise.resolve();
-
-  await testOnScreenViewport(viewId, imodel, width, height, test, devicePixelRatio);
 
   const offscreen = await createOffScreenTestViewport(viewId, imodel, width, height);
   try {
@@ -316,5 +313,15 @@ export async function testViewports(viewId: Id64String, imodel: IModelConnection
     offscreen.dispose();
   }
 
+  return Promise.resolve();
+}
+
+// Execute a test against both an off-screen and on-screen viewport.
+export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
+  if (!IModelApp.initialized)
+    return Promise.resolve();
+
+  await testOnScreenViewport(viewId, imodel, width, height, test, devicePixelRatio);
+  await testOffScreenViewport(viewId, imodel, width, height, test);
   return Promise.resolve();
 }
