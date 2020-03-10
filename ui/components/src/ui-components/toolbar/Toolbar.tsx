@@ -98,8 +98,8 @@ export const ToolbarWithOverflowDirectionContext = React.createContext<ToolbarOv
 });
 
 function CustomItem({ item }: { item: CustomToolbarItem }) {
+  const { useDragInteraction } = useToolbarWithOverflowDirectionContext();
 
-  // const node = item.internalData.get(ToolbarUtils.reactButtonKey);
   if (item.buttonNode !== undefined)
     return <>{item.buttonNode}</>;
 
@@ -113,7 +113,7 @@ function CustomItem({ item }: { item: CustomToolbarItem }) {
     isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
     title={title ? title : /* istanbul ignore next */ item.id}
     panel={item.panelContentNode}
-    hideIndicator={true}
+    hideIndicator={useDragInteraction}
     badge={badge}
   />;
 }
@@ -138,6 +138,7 @@ function GroupPopupItem({ item }: { item: GroupButton }) {
     title={title}
     panel={<PopupItemsPanel groupItem={item} activateOnPointerUp={false} />}
     badge={badge}
+    hideIndicator={useDragInteraction}
   />;
 }
 

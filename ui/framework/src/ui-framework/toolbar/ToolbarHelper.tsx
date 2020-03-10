@@ -39,35 +39,20 @@ export class ToolbarHelper {
     const badgeType = itemDef.badgeType;
 
     // istanbul ignore else
-    if (itemDef.popupPanelNode && React.isValidElement(itemDef.popupPanelNode)) {
-      return {
-        id: itemDef.id,
-        itemPriority,
-        icon,
-        label,
-        isCustom: true,
-        isHidden,
-        isDisabled,
-        internalData,
-        badgeType,
-        panelContentNode: itemDef.popupPanelNode,
-        ...overrides,
-      };
-    } else {
-      return {
-        id: itemDef.id,
-        itemPriority,
-        icon,
-        label,
-        isCustom: true,
-        isHidden,
-        isDisabled,
-        internalData,
-        badgeType,
-        buttonNode: itemDef.toolbarReactNode(),
-        ...overrides,
-      };
-    }
+    return {
+      id: itemDef.id,
+      itemPriority,
+      icon,
+      label,
+      isCustom: true,
+      isHidden,
+      isDisabled,
+      internalData,
+      badgeType,
+      buttonNode: itemDef.toolbarReactNode(),  // used by createNodeForToolbarItem below
+      panelContentNode: itemDef.popupPanelNode,
+      ...overrides,
+    };
   }
 
   /** Construct ActionButton and GroupButton definitions given an array to ItemDefs. */
@@ -172,9 +157,10 @@ export class ToolbarHelper {
       return GroupButtonItem({ item, onItemExecuted });
     }
 
-    if (ToolbarHelper.isCustomToolbarButton(item)) { // TODO do we need onItemExecuted for custom toolbar buttons?
+    if (ToolbarHelper.isCustomToolbarButton(item)) {
       return item.buttonNode ? item.buttonNode : null;
     }
+
     return null;
   }
 

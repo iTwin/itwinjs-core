@@ -419,6 +419,13 @@ exports[`CoreToolDefinitions ToolWidgetComposer should render correctly with Cor
         Array [
           Object {
             "badgeType": undefined,
+            "buttonNode": <PopupButton
+              iconSpec="icon-process"
+              labelKey="UiFramework:keyinbrowser.label"
+              onSizeKnown={[Function]}
+            >
+              [Function]
+            </PopupButton>,
             "icon": "icon-process",
             "id": "uif:keyinbrowser",
             "internalData": Map {},

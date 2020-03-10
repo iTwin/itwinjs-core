@@ -12,6 +12,7 @@ import { SizeProps } from "@bentley/ui-core";
 
 import { ActionButtonItemDef } from "./ActionButtonItemDef";
 import { CustomItemProps } from "./CustomItemProps";
+import { ConditionalBooleanValue } from "@bentley/ui-abstract";
 
 /** @internal */
 interface CloneProps {
@@ -48,7 +49,7 @@ export class CustomItemDef extends ActionButtonItemDef {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
-    if (!this.isVisible) // tslint:disable-line:deprecation
+    if (!this.isVisible || ConditionalBooleanValue.getValue(this.isHidden)) // tslint:disable-line:deprecation
       return null;
 
     let clone: React.ReactNode;
