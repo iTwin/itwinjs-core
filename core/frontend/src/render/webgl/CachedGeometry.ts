@@ -58,6 +58,8 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
   public get isInstanced() { return undefined !== this.asInstanced; }
+  public get alwaysRenderTranslucent(): boolean { return false; }
+  public get allowColorOverride(): boolean { return true; }
 
   // Returns true if white portions of this geometry should render as black on white background
   protected abstract _wantWoWReversal(_target: Target): boolean;
