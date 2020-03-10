@@ -712,6 +712,30 @@ export abstract class InputCollector extends InteractiveTool {
   }
 }
 
+/** The result type of [[ToolRegistry.parseKeyin]].
+ * @alpha
+ */
+export interface ParsedKeyin {
+  /** If found, the tool that handles the keyin. */
+  tool?: ToolType;
+  /** Arguments to be passed to the tool's `parseAndRun` method. */
+  args: string[];
+}
+
+/** The result type of [[ToolRegistry.parseAndRun]].
+ * @alpha
+ */
+export enum ParseAndRunResult {
+  /** The tool's `parseAndRun` method was invoked and returned `true`. */
+  Success,
+  /** No tool matching the toolId in the keyin is registered. */
+  ToolNotFound,
+  /** The number of arguments supplied does not meet the constraints of the Tool. @see [[Tool.minArgs]] and [[Tool.maxArgs]]. */
+  BadArgumentCount,
+  /** The tool's `parseAndRun` method returned `false`. */
+  FailedToRun,
+}
+
 /** The ToolRegistry holds a mapping between toolIds and their corresponding [[Tool]] class. This provides the mechanism to
  * find Tools by their toolId, and also a way to iterate over the set of Tools available.
  * @public
@@ -787,6 +811,50 @@ export class ToolRegistry {
     return tool !== undefined && tool.run(...args);
   }
 
+  /** Given a string consisting of a toolId followed by any number of arguments, locate the corresponding Tool and parse the arguments.
+   * @note Only extremely rudimentary argument parsing is currently supported. e.g., arguments cannot contain whitespace.
+   * @param keyin A string consisting of a toolId followed by any number of arguments. The arguments are separated by whitespace.
+   * @returns The tool, if found, along with an array of parsed arguments.
+   * @alpha
+   */
+  public parseKeyin(keyin: string): ParsedKeyin {
+    const tools = this.getToolList();
+    let tool: ToolType | undefined;
+    const args: string[] = [];
+    const findTool = (lowerKeyin: string) => tools.find((x) => x.keyin.toLowerCase() === lowerKeyin || x.englishKeyin.toLowerCase() === lowerKeyin);
+
+    // try the trivial, common case first
+    tool = findTool(keyin.toLowerCase());
+    if (undefined !== tool)
+      return { tool, args };
+
+    // Tokenize to separate keyin from arguments
+    // ###TODO handle quoted arguments
+    // ###TODO there's actually nothing that prevents a Tool from including leading/trailing spaces in its keyin, or sequences of more than one space...we will fail to find such tools if they exist...
+    const tokens = keyin.split(" ").filter((x) => 0 < x.length);
+    if (tokens.length <= 1)
+      return { tool, args };
+
+    // Find the longest starting substring that matches a tool's keyin.
+    for (let i = tokens.length - 2; i >= 0; i--) {
+      let substr = tokens[0];
+      for (let j = 1; j <= i; j++) {
+        substr += " ";
+        substr += tokens[j];
+      }
+
+      tool = findTool(substr.toLowerCase());
+      if (undefined !== tool) {
+        for (let k = i + 1; k < tokens.length; k++)
+          args.push(tokens[k]);
+
+        break;
+      }
+    }
+
+    return { tool, args };
+  }
+
   /** Get a list of Tools currently registered, excluding hidden tools */
   public getToolList(): ToolList {
     if (this._keyinList === undefined) {
@@ -794,6 +862,26 @@ export class ToolRegistry {
       this.tools.forEach((thisTool) => { if (!thisTool.hidden) this._keyinList!.push(thisTool); });
     }
     return this._keyinList;
+  }
+
+  /** Given a string consisting of a toolId followed by any number of arguments, parse the keyin string and invoke the corresponding tool's `parseAndRun` method.
+   * @param keyin A string consisting of a toolId followed by any number of arguments.
+   * @returns A status indicating whether the keyin was successfully parsed and executed.
+   * @see [[parseKeyin]].
+   * @throws any Error thrown by the tool's `parseAndRun` method.
+   * @alpha
+   */
+  public parseAndRun(keyin: string): ParseAndRunResult {
+    const parsed = this.parseKeyin(keyin);
+    if (undefined === parsed.tool)
+      return ParseAndRunResult.ToolNotFound;
+
+    const maxArgs = parsed.tool.maxArgs;
+    if (parsed.args.length < parsed.tool.minArgs || (undefined !== maxArgs && parsed.args.length > maxArgs))
+      return ParseAndRunResult.BadArgumentCount;
+
+    const tool = new parsed.tool();
+    return tool.parseAndRun(...parsed.args) ? ParseAndRunResult.Success : ParseAndRunResult.FailedToRun;
   }
 
   /**

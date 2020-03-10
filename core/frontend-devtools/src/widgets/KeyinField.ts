@@ -7,54 +7,15 @@
  * @module Widgets
  */
 
-import { ToolType, IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
+import {
+  IModelApp,
+  MessageBoxIconType,
+  MessageBoxType,
+  ParseAndRunResult,
+} from "@bentley/imodeljs-frontend";
 import { createButton } from "../ui/Button";
 import { createTextBox, TextBox } from "../ui/TextBox";
 import { createDataList, DataList, DataListEntry, appendDataListEntries } from "../ui/DataList";
-
-interface Keyin {
-  tool?: ToolType;
-  args: string[];
-}
-
-// ###TODO Remove this when ToolRegistry has a (better) implementation of keyin parsing.
-function parseKeyin(input: string): Keyin {
-  const tools = IModelApp.tools.getToolList();
-  let tool: ToolType | undefined;
-  const args: string[] = [];
-  const findTool = (lowerKeyin: string) => tools.find((x) => x.keyin.toLowerCase() === lowerKeyin || x.englishKeyin.toLowerCase() === lowerKeyin);
-
-  // try the trivial, common case first
-  tool = findTool(input.toLowerCase());
-  if (undefined !== tool)
-    return { tool, args };
-
-  // Tokenize to separate keyin from arguments
-  // ###TODO handle quoted arguments
-  // ###TODO there's actually nothing that prevents a Tool from including leading/trailing spaces in its keyin, or sequences of more than one space...we will fail to find such tools if they exist...
-  const tokens = input.split(" ").filter((x) => 0 < x.length);
-  if (tokens.length <= 1)
-    return { tool, args };
-
-  // Find the longest starting substring that matches a tool's keyin.
-  for (let i = tokens.length - 2; i >= 0; i--) {
-    let substr = tokens[0];
-    for (let j = 1; j <= i; j++) {
-      substr += " ";
-      substr += tokens[j];
-    }
-
-    tool = findTool(substr.toLowerCase());
-    if (undefined !== tool) {
-      for (let k = i + 1; k < tokens.length; k++)
-        args.push(tokens[k]);
-
-      break;
-    }
-  }
-
-  return { tool, args };
-}
 
 function findKeyins(): string[] {
   const keyins: string[] = [];
@@ -210,35 +171,28 @@ export class KeyinField {
     this.selectAll();
     const textBox = this.textBox.textbox;
 
-    const outputMessage = async (msg: string) => {
-      await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, msg, MessageBoxIconType.Warning);
-      this.focus();
-    };
-
     const input = textBox.value;
     this.pushHistory(input);
 
-    const keyin = parseKeyin(input);
-    if (undefined === keyin.tool) {
-      await outputMessage("Cannot find a key-in that matches: " + input);
-      return;
-    }
-
-    const maxArgs = keyin.tool.maxArgs;
-    if (keyin.args.length < keyin.tool.minArgs || (undefined !== maxArgs && keyin.args.length > maxArgs)) {
-      await outputMessage("Incorrect number of arguments");
-      return;
-    }
-
-    const tool = new keyin.tool();
-    let runStatus = false;
+    let message: string | undefined;
     try {
-      runStatus = keyin.args.length > 0 ? tool.parseAndRun(...keyin.args) : tool.run();
-      if (!runStatus)
-        await outputMessage("Key-in failed to run");
-    } catch (e) {
-      await outputMessage("Key-in caused the following exception to occur: " + e);
+      switch (IModelApp.tools.parseAndRun(input)) {
+        case ParseAndRunResult.ToolNotFound:
+          message = "Cannot find a key-in that matches: " + input;
+          break;
+        case ParseAndRunResult.BadArgumentCount:
+          message = "Incorrect number of arguments";
+          break;
+        case ParseAndRunResult.FailedToRun:
+          message = "Key-in failed to run";
+          break;
+      }
+    } catch (ex) {
+      message = "Key-in produced exception: " + ex;
     }
+
+    if (undefined !== message)
+      await IModelApp.notifications.openMessageBox(MessageBoxType.MediumAlert, message, MessageBoxIconType.Warning);
   }
 
   private respondToKeyinFocus() {

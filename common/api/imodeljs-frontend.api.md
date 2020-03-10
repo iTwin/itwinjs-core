@@ -5629,6 +5629,20 @@ export class PanViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @alpha
+export enum ParseAndRunResult {
+    BadArgumentCount = 2,
+    FailedToRun = 3,
+    Success = 0,
+    ToolNotFound = 1
+}
+
+// @alpha
+export interface ParsedKeyin {
+    args: string[];
+    tool?: ToolType;
+}
+
 // @internal (undocumented)
 export class PerformanceMetrics {
     constructor(gatherGlFinish?: boolean, gatherCurPerformanceMetrics?: boolean, gpuResults?: GLTimerResultCallback);
@@ -8996,6 +9010,10 @@ export class ToolRegistry {
     // @internal
     findPartialMatches(keyin: string): FuzzySearchResults<ToolType>;
     getToolList(): ToolList;
+    // @alpha
+    parseAndRun(keyin: string): ParseAndRunResult;
+    // @alpha
+    parseKeyin(keyin: string): ParsedKeyin;
     register(toolClass: ToolType, namespace?: I18NNamespace, i18n?: I18N): void;
     registerModule(moduleObj: any, namespace?: I18NNamespace, i18n?: I18N): void;
     run(toolId: string, ...args: any[]): boolean;
