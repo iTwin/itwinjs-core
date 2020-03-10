@@ -40,8 +40,6 @@ export abstract class ItemDefBase {
   public isHidden?: boolean | ConditionalBooleanValue;
   public isDisabled?: boolean | ConditionalBooleanValue;
 
-  /** @deprecated - use badgeType instead */
-  public betaBadge: boolean = false;
   public badgeType?: BadgeType;
 
   /** @deprecated - use condition instead */
@@ -61,7 +59,6 @@ export abstract class ItemDefBase {
     me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
     me.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
 
-    me.betaBadge = (itemProps.betaBadge !== undefined) ? itemProps.betaBadge : false;   // tslint:disable-line: deprecation
     me.badgeType = itemProps.badgeType;
 
     if (itemProps.applicationData !== undefined)

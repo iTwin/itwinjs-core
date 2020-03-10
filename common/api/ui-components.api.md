@@ -4,6 +4,7 @@
 
 ```ts
 
+import { ActionButton } from '@bentley/ui-abstract';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
 import { Cartographic } from '@bentley/imodeljs-common';
@@ -11,16 +12,19 @@ import { CheckBoxInfo as CheckBoxInfo_2 } from '@bentley/ui-core';
 import { CheckBoxState } from '@bentley/ui-core';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommonProps } from '@bentley/ui-core';
+import { CommonToolbarItem } from '@bentley/ui-abstract';
 import { ConnectDragPreview } from 'react-dnd';
 import { ConnectDragSource } from 'react-dnd';
 import { ConnectDropTarget } from 'react-dnd';
 import { ContextComponent } from 'react-dnd';
 import * as CSS from 'csstype';
 import { CSSProperties } from 'react';
+import { CustomButtonDefinition } from '@bentley/ui-abstract';
 import { DndComponentClass } from 'react-dnd';
 import { Face } from '@bentley/ui-core';
 import { GlobalContextMenuProps } from '@bentley/ui-core';
 import { GlobalDialogProps } from '@bentley/ui-core';
+import { GroupButton } from '@bentley/ui-abstract';
 import { HSVColor } from '@bentley/imodeljs-common';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { Id64String } from '@bentley/bentleyjs-core';
@@ -29,6 +33,7 @@ import { immerable } from 'immer';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import * as Inspire from 'inspire-tree';
 import { Matrix3d } from '@bentley/geometry-core';
+import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeCheckboxProps as NodeCheckboxProps_2 } from '@bentley/ui-core';
 import { NodeCheckboxRenderer } from '@bentley/ui-core';
 import { Observable as Observable_2 } from 'rxjs/internal/Observable';
@@ -948,6 +953,19 @@ export interface ContextMenuProps extends CommonProps {
 }
 
 // @beta
+export function ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element;
+
+// @beta
+export interface ControlledSelectableContentProps {
+    // (undocumented)
+    children: SelectableContentDefinition[];
+    // (undocumented)
+    onSelectedContentIdChanged?: (contentId: string) => void;
+    // (undocumented)
+    selectedContentId: string;
+}
+
+// @beta
 export function ControlledTree(props: ControlledTreeProps): JSX.Element;
 
 // @beta
@@ -1048,6 +1066,14 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 export class CustomNumberPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get reactElement(): React.ReactNode;
+}
+
+// @beta
+export interface CustomToolbarItem extends CustomButtonDefinition {
+    // (undocumented)
+    buttonNode?: React.ReactNode;
+    // (undocumented)
+    panelContentNode?: React.ReactNode;
 }
 
 // @beta
@@ -1667,6 +1693,9 @@ export function from<T>(iterable: Iterable<T> | PromiseLike<T>): Observable<T>;
 
 // @beta @deprecated
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
+
+// @internal (undocumented)
+export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
 // @internal (undocumented)
 export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void;
@@ -2416,6 +2445,23 @@ export class Point3dTypeConverter extends BasePointTypeConverter {
     protected getVectorLength(point: Primitives.Point): number | undefined;
 }
 
+// @beta
+export function PopupItem(props: PopupItemProps): JSX.Element;
+
+// @beta
+export interface PopupItemProps extends ToolbarButtonItemProps {
+    hideIndicator?: boolean;
+    panel?: React.ReactNode;
+}
+
+// @beta
+export function PopupItemWithDrag(props: PopupItemWithDragProps): JSX.Element;
+
+// @beta
+export interface PopupItemWithDragProps extends ToolbarButtonItemProps {
+    groupItem: GroupButton;
+}
+
 // @public
 export class PrimitivePropertyLabelRenderer extends React.PureComponent<PrimitivePropertyLabelRendererProps> {
     // (undocumented)
@@ -2808,6 +2854,27 @@ export interface ScrubberProps extends CommonProps {
     startDate?: Date;
     // (undocumented)
     totalDuration: number;
+}
+
+// @beta
+export function SelectableContent(props: SelectableContentProps): JSX.Element;
+
+// @beta
+export interface SelectableContentDefinition {
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    render: () => React.ReactNode;
+}
+
+// @beta
+export interface SelectableContentProps {
+    // (undocumented)
+    children: SelectableContentDefinition[];
+    // (undocumented)
+    defaultSelectedContentId: string;
 }
 
 // @internal (undocumented)
@@ -3535,6 +3602,94 @@ export const toNode: <TPayload>(inspireNode: Inspire.TreeNode) => BeInspireTreeN
 export const toNodes: <TPayload>(inspireNodes: Inspire.TreeNodes) => BeInspireTreeNodes<TPayload>;
 
 // @beta
+export const ToolbarButtonItem: React.MemoExoticComponent<React.FC<ToolbarButtonItemProps>>;
+
+// @beta
+export interface ToolbarButtonItemProps extends CommonProps {
+    badge?: React.ReactNode;
+    icon?: React.ReactNode;
+    isActive?: boolean;
+    isDisabled?: boolean;
+    onClick?: () => void;
+    onKeyDown?: (e: React.KeyboardEvent) => void;
+    title: string;
+}
+
+// @beta
+export type ToolbarItem = ActionButton | GroupButton | CustomToolbarItem;
+
+// @internal
+export const ToolbarItemContext: React.Context<ToolbarItemContextArgs>;
+
+// @internal
+export interface ToolbarItemContextArgs {
+    // (undocumented)
+    readonly hasOverflow: boolean;
+    // (undocumented)
+    readonly onResize: (w: number) => void;
+    // (undocumented)
+    readonly useHeight: boolean;
+}
+
+// @internal (undocumented)
+export interface ToolbarOverflowContextProps {
+    // (undocumented)
+    readonly direction: OrthogonalDirection;
+    // (undocumented)
+    readonly expandsTo: Direction;
+    // (undocumented)
+    readonly overflowDirection: OrthogonalDirection;
+    // (undocumented)
+    readonly overflowExpandsTo: Direction;
+    // (undocumented)
+    readonly panelAlignment: ToolbarPanelAlignment;
+    // (undocumented)
+    readonly useDragInteraction: boolean;
+}
+
+// @beta
+export enum ToolbarPanelAlignment {
+    // (undocumented)
+    End = 1,
+    // (undocumented)
+    Start = 0
+}
+
+// @internal
+export class ToolbarPanelAlignmentHelpers {
+    static readonly END_CLASS_NAME = "components-panel-alignment-end";
+    // (undocumented)
+    static getCssClassName(panelAlignment: ToolbarPanelAlignment): string;
+    static readonly START_CLASS_NAME = "components-panel-alignment-start";
+}
+
+// @internal
+export const ToolbarPopupContext: React.Context<ToolbarPopupContextProps>;
+
+// @internal (undocumented)
+export interface ToolbarPopupContextProps {
+    // (undocumented)
+    readonly closePanel: () => void;
+    // (undocumented)
+    readonly setSelectedItem?: (buttonItem: ActionButton) => void;
+}
+
+// @beta
+export function ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element;
+
+// @internal
+export const ToolbarWithOverflowDirectionContext: React.Context<ToolbarOverflowContextProps>;
+
+// @beta
+export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
+    expandsTo?: Direction;
+    items: CommonToolbarItem[];
+    overflowExpandsTo?: Direction;
+    panelAlignment?: ToolbarPanelAlignment;
+    useDragInteraction?: boolean;
+}
+
+// @beta
 export interface TreeActions {
     // (undocumented)
     onNodeCheckboxClicked: (nodeId: string, newState: CheckBoxState) => void;
@@ -4070,6 +4225,15 @@ export const useAsyncValue: <T extends any>(value: T | PromiseLike<T>) => T | un
 
 // @beta
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;
+
+// @internal (undocumented)
+export function useToolbarPopupContext(): ToolbarPopupContextProps;
+
+// @internal (undocumented)
+export function useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps;
+
+// @internal (undocumented)
+export function useToolItemEntryContext(): ToolbarItemContextArgs;
 
 // @beta
 export function useTreeEventsHandler<TEventsHandler extends TreeEventHandler>(factoryOrParams: (() => TEventsHandler) | TreeEventHandlerParams): TreeEventHandler;

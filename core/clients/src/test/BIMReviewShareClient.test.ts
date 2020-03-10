@@ -21,7 +21,7 @@ describe("BIMReviewShareClient", () => {
       return;
 
     if (typeof window !== undefined) {
-      console.log("BimReviewShareClient has not been setup to work in browser environments");
+      console.log("BimReviewShareClient has not been setup to work in browser environments"); // tslint:disable-line
       this.skip(); // This client has not been setup to work in browsers
       return;
     }

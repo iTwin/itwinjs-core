@@ -18,6 +18,7 @@ import { Range3d, Range1d } from "../geometry3d/Range";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
 import { Ray3d } from "../geometry3d/Ray3d";
+import { LongitudeLatitudeNumber } from "../geometry3d/LongitudeLatitudeAltitude";
 // import { Arc3d } from "../curve/Arc3d";
 // cspell:word Cardano
 // cspell:word CCminusSS
@@ -479,7 +480,7 @@ export class SphereImplicit {
    *    * thetaPhiRadians = sphere longitude and latitude in radians.
    * * For each optional array, caller must of course initialize an array (usually empty)
    */
-  public static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: Point2d[] | undefined): number {
+  public static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: LongitudeLatitudeNumber[] | undefined): number {
     const vx = ray.origin.x - center.x;
     const vy = ray.origin.y - center.y;
     const vz = ray.origin.z - center.z;
@@ -510,7 +511,7 @@ export class SphereImplicit {
           xyz.push(point);
         if (thetaPhiRadians !== undefined) {
           const data = sphere.xyzToThetaPhiR(point);
-          thetaPhiRadians.push(Point2d.create(data.thetaRadians, data.phiRadians));
+          thetaPhiRadians.push(LongitudeLatitudeNumber.createRadians(data.thetaRadians, data.phiRadians));
         }
       }
     }

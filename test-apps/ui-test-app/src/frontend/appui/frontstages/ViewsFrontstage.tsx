@@ -55,7 +55,6 @@ import {
   CustomItemDef,
   CursorInformation,
   CursorUpdatedEventArgs,
-  PopupButton,
   CursorPopupManager,
   CursorPopupContent,
   VisibilityWidget,
@@ -67,6 +66,7 @@ import {
   BasicNavigationWidget,
   ToolbarHelper,
   ModelsTreeNodeType,
+  MessageManager,
 } from "@bentley/ui-framework";
 
 import { AppUi } from "../AppUi";
@@ -250,7 +250,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               [
                 <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
                   applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} badgeType={BadgeType.New} />,
-                <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} betaBadge={true}
+                <Widget iconSpec="icon-placeholder" label="External iModel View" control={ViewportWidgetControl} fillZone={true} badgeType={BadgeType.TechnicalPreview}
                   applicationData={{ projectName: "iModelHubTest", imodelName: "86_Hospital" }} />,
               ]}
           />
@@ -515,7 +515,7 @@ class AdditionalTools {
 
   private get _saveContentLayout() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", betaBadge: true, execute: () => {
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.saveContentLayout", badgeType: BadgeType.TechnicalPreview, execute: () => {
         if (ContentLayoutManager.activeLayout && ContentLayoutManager.activeContentGroup) {
           // Create props for the Layout, ContentGroup and ViewStates
           const savedViewLayoutProps = SavedViewLayout.viewLayoutToProps(ContentLayoutManager.activeLayout, ContentLayoutManager.activeContentGroup, true,
@@ -611,6 +611,12 @@ class AdditionalTools {
     }
   }
 
+  private get _clearMessages() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.clearMessages", execute: () => { MessageManager.clearMessages(); },
+    });
+  }
+
   private _closeCursorPopup() {
     CursorPopupManager.close("test1", false);
     CursorPopupManager.close("testR1", false);
@@ -629,27 +635,28 @@ class AdditionalTools {
   /** Get the CustomItemDef for PopupButton  */
   private get _viewportPopupButtonItemDef() {
     return new CustomItemDef({
-      reactElement: (
-        <PopupButton iconSpec="icon-arrow-down" label="Popup Test" badgeType={BadgeType.New}>
-          <div style={{ width: "400px", height: "300px" }}>
-            <ScrollView>
-              <div>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-                dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+      customId: "test.custom-popup",
+      iconSpec: "icon-arrow-down",
+      label: "Popup Test",
+      badgeType: BadgeType.New,
+      popupPanelNode:
+        <div style={{ width: "400px", height: "300px", padding: "6px 0px 6px 6px" }}>
+          <ScrollView>
+            <div>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+              proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </div>
-              <ViewportWidget projectName="iModelHubTest" imodelName="86_Hospital" />
-              <div>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-                dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+            <ViewportWidget projectName="iModelHubTest" imodelName="86_Hospital" />
+            <div>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+              Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+              dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+              proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
               </div>
-            </ScrollView>
-          </div>
-        </PopupButton>
-      ),
+          </ScrollView>
+        </div>,
     });
   }
 
@@ -707,7 +714,7 @@ class AdditionalTools {
       labelKey: "SampleApp:buttons.messageDemos",
       panelLabel: "Message Demos",
       iconSpec: "icon-placeholder",
-      items: [this._tool3Item, this._tool4Item, this._outputMessageItem],
+      items: [this._tool3Item, this._tool4Item, this._outputMessageItem, this._clearMessages],
     }),
     new GroupItemDef({
       labelKey: "SampleApp:buttons.dialogDemos",

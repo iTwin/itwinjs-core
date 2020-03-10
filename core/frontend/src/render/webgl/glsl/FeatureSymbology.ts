@@ -16,7 +16,7 @@ import {
   VariablePrecision,
   FragmentShaderComponent,
 } from "../ShaderBuilder";
-import { TextureUnit } from "../RenderFlags";
+import { OvrFlags, TextureUnit } from "../RenderFlags";
 import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
 import { addFeatureAndMaterialLookup, addLineWeight, replaceLineWeight, replaceLineCode, addAlpha } from "./Vertex";
 import { assignFragColor, computeLinearDepth, addWindowToTexCoords } from "./Fragment";
@@ -135,10 +135,15 @@ const checkVertexDiscard = `
     hasAlpha = feature_alpha <= s_maxAlpha;
 
   bool isOpaquePass = (kRenderPass_OpaqueLinear <= u_renderPass && kRenderPass_OpaqueGeneral >= u_renderPass);
-  if (isOpaquePass && !u_discardTranslucentDuringOpaquePass)
+  bool discardTranslucentDuringOpaquePass = 1 == u_transparencyDiscardFlags || 3 == u_transparencyDiscardFlags;
+  if (isOpaquePass && !discardTranslucentDuringOpaquePass)
     return false;
 
   bool isTranslucentPass = kRenderPass_Translucent == u_renderPass;
+  bool discardOpaqueDuringTranslucentPass = 2 == u_transparencyDiscardFlags || 3 == u_transparencyDiscardFlags;
+  if (isTranslucentPass &&!discardOpaqueDuringTranslucentPass)
+    return false;
+
   return (isOpaquePass && hasAlpha) || (isTranslucentPass && !hasAlpha);
 `;
 
@@ -197,6 +202,9 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
             flags = edgeOvrs.computeOvrFlags();
         }
 
+        if (!params.geometry.allowColorOverride)
+          flags |= OvrFlags.Rgba;
+
         uniform.setUniformBitflags(flags);
       });
     });
@@ -228,10 +236,17 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       // Even when transparency view flag is off, we need to allow features to override transparency, because it
       // is used when applying transparency threshold. However, we need to ensure we don't DISCARD transparent stuff during
       // opaque pass if transparency is off (see checkVertexDiscard). Especially important for transparency threshold and readPixels().
-      vert.addUniform("u_discardTranslucentDuringOpaquePass", VariableType.Boolean, (prog) => {
-        prog.addGraphicUniform("u_discardTranslucentDuringOpaquePass", (uniform, params) => {
-          // ###TODO Handle raster text if necessary
-          uniform.setUniform1i(params.target.currentViewFlags.transparency ? 1 : 0);
+      // Also, if we override raster text to be opaque we must still draw it in the translucent pass.
+      // 1: discard translucent during opaque.
+      // 2: discard opaque during translucent.
+      // 3: both
+      vert.addUniform("u_transparencyDiscardFlags", VariableType.Int, (prog) => {
+        prog.addGraphicUniform("u_transparencyDiscardFlags", (uniform, params) => {
+          let flags = params.target.currentViewFlags.transparency ? 1 : 0;
+          if (!params.geometry.alwaysRenderTranslucent)
+            flags += 2;
+
+          uniform.setUniform1i(flags);
         });
       });
 

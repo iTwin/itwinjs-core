@@ -2,18 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb, SpatialCategory, ECSqlStatement } from "../imodeljs-backend";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { BackendRequestContext } from "../BackendRequestContext";
-import { KnownTestLocations } from "../test/KnownTestLocations";
+import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Arc3d, Point3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelJsFs } from "../IModelJsFs";
-import { Code, IModel, SubCategoryAppearance, ColorDef, GeometricElementProps, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d } from "@bentley/geometry-core";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { IModelTestUtils } from "../test/IModelTestUtils";
+import { KnownTestLocations } from "../test/KnownTestLocations";
 
 describe("SchemaDesignPerf Polymorphic query", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "PolymorphicPerformance");
@@ -131,14 +129,15 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "poly_flat_" + hCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_flat_" + hCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_flat_" + hCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
         // first create Elements and then Relationship
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
           spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.setAsMaster();
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
         // create base class elements
         for (let i = 0; i < flatSeedCount; ++i) {
@@ -147,7 +146,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
           setPropVal(geomElement, "propBase", "Base Value");
           let id = seedIModel.elements.insertElement(geomElement);
           assert.isTrue(Id64.isValidId64(id), "insert failed");
-          // create elements of Child upto required level
+          // create elements of Child up to required level
           for (let j = 0; j < hCount; ++j) {
             const className: string = "child" + j.toString();
             elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestPolySchema:" + className);
@@ -160,7 +159,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         }
         assert.equal(getCount(seedIModel, "TestPolySchema:TestElement"), ((hCount + 1) * flatSeedCount));
         seedIModel.saveChanges();
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
     // now create single multiHierarchy based schema and iModel
@@ -168,14 +167,15 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     assert(IModelJsFs.existsSync(st2));
     const seedName2 = path.join(outDir, "poly_multi_" + multiHierarchyCount.toString() + ".bim");
     if (!IModelJsFs.existsSync(seedName2)) {
-      const seedIModel2 = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_multi_" + multiHierarchyCount.toString() + ".bim"), { rootSubject: { name: "PerfTest" } });
+      const seedIModel2 = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("PolymorphicPerformance", "poly_multi_" + multiHierarchyCount.toString() + ".bim"), { rootSubject: { name: "PerfTest" } });
       await seedIModel2.importSchemas(new BackendRequestContext(), [st2]);
       // first create Elements and then Relationship
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel2, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel2, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
         spatialCategoryId = SpatialCategory.insert(seedIModel2, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
-      seedIModel2.setAsMaster();
+      const result: DbResult = seedIModel2.nativeDb.setAsMaster();
+      assert.equal(DbResult.BE_SQLITE_OK, result);
       assert.isDefined(seedIModel2.getMetaData("TestPolySchema:TestElement"), "Base Class is not present in iModel.");
       // create base class elements
       for (let i = 0; i < multiSeedCount; ++i) {
@@ -184,7 +184,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
         setPropVal(geomElement, "propBase", "Base Value");
         let id = seedIModel2.elements.insertElement(geomElement);
         assert.isTrue(Id64.isValidId64(id), "insert failed");
-        // create elements of Child upto required level
+        // create elements of Child up to required level
         for (let j = 0; j < multiHierarchyCount; ++j) {
           const className: string = "child" + j.toString();
           elementProps = createElemProps(seedIModel2, newModelId, spatialCategoryId, "TestPolySchema:" + className);
@@ -197,7 +197,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       }
       assert.equal(getCount(seedIModel2, "TestPolySchema:TestElement"), ((multiHierarchyCount + 1) * multiSeedCount));
       seedIModel2.saveChanges();
-      seedIModel2.closeSnapshot();
+      seedIModel2.close();
     }
   });
   after(() => {
@@ -232,7 +232,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
       reporter.addEntry("PolyPerfTest", "PolymorphicFlatRead", "Execution time(s)", totalTime / fhCount, { sCount: flatSeedCount, hCount: fhCount });
 
       perfimodel.saveChanges();
-      perfimodel.closeSnapshot();
+      perfimodel.close();
     }
   });
   it("Multi Read", async () => {
@@ -269,7 +269,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     reporter.addEntry("PolyPerfTest", "PolymorphicMultiRead", "Execution time(s)", parentTime, { sCount: multiSeedCount, hCount: multiHierarchyCount, level: "Base" });
 
     perfimodel.saveChanges();
-    perfimodel.closeSnapshot();
+    perfimodel.close();
   });
 
 });

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
@@ -59,12 +59,10 @@ const scratchRootSphere = new BoundingSphere();
  * @internal
  */
 export class RealityTile extends Tile {
-  private _lastUsed: BeTimePoint;
   public readonly transformToRoot?: Transform;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
-    this._lastUsed = BeTimePoint.now();
     this.transformToRoot = props.transformToRoot;
     if (undefined === this.transformToRoot)
       return;
@@ -81,8 +79,8 @@ export class RealityTile extends Tile {
   public get maxDepth(): number { return this.realityRoot.loader.maxDepth; }
   public get isPointCloud() { return this.realityRoot.loader.containsPointClouds; }
 
-  public setLastUsed(lastUsed: BeTimePoint) {
-    this._lastUsed = lastUsed;
+  public markUsed(args: TileDrawArgs): void {
+    args.markUsed(this);
   }
 
   public isOccluded(_viewingSpace: ViewingSpace): boolean {
@@ -126,7 +124,6 @@ export class RealityTile extends Tile {
     }
 
     this.loadChildren();
-    this._childrenLastUsed = args.now;
 
     if (undefined !== this.realityChildren) {
       for (const child of this.realityChildren)
@@ -138,7 +135,6 @@ export class RealityTile extends Tile {
     const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
-      this._childrenLastUsed = args.now;
       traversalDetails.childrenLoading = true;
       return;
     }
@@ -146,7 +142,6 @@ export class RealityTile extends Tile {
     if (undefined !== this.realityChildren) {
       const traversalChildren = this.realityRoot.getTraversalChildren(this.depth);
       traversalChildren.initialize();
-      this._childrenLastUsed = args.now;
       for (let i = 0; i < this.children!.length; i++)
         this.realityChildren[i].selectRealityTiles(context, args, traversalChildren.getChildDetail(i));
 
@@ -173,7 +168,6 @@ export class RealityTile extends Tile {
 
     for (const child of this.realityChildren) {
       if (child.isReady && TileVisibility.Visible === child.computeVisibility(args)) {
-        this._childrenLastUsed = args.now;
         scratchLoadedChildren.push(child);
       } else if (!child.getLoadedRealityChildren(args))
         return false;
@@ -207,8 +201,11 @@ export class RealityTile extends Tile {
       }
     }
   }
+
   public purgeContents(olderThan: BeTimePoint): void {
-    if (this._lastUsed.milliseconds < olderThan.milliseconds)
+    // Discard contents of tiles that have not been "used" recently, where "used" may mean: selected/preloaded for display or content requested.
+    // Note we do not discard the child Tile objects themselves.
+    if (this.usageMarker.isExpired(olderThan))
       this.disposeContents();
 
     const children = this.realityChildren;
@@ -271,7 +268,6 @@ export class RealityTile extends Tile {
     const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
-      this._childrenLastUsed = args.now;
     } else if (undefined !== this.realityChildren) {
       for (const child of this.realityChildren)
         child.preloadTilesInFrustum(args, context, preloadSizeModifier);

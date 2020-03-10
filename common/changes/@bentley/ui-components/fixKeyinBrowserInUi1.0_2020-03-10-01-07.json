@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Fix bug where toolbar buttons did not show expand arrow on custom button when not in 'DragInteraction' mode.  Fix display of key-in browser 1.0 UI.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "bill.steinbock@bentley.com"
+}

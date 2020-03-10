@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/index";
 
- $iModel-card-width: 275px;
+$iModel-card-width: 275px;
  $iModel-thumbnail-height: 200px;
  $card-background: #FCFDFD;
  $preview-background: #282B34;
@@ -113,8 +113,8 @@
 
 .imodel-card:hover,
 .imodel-card:focus {
-  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
-  -webkit-box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.25);
+  -webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.25);
 }
 
 // hover over preview
@@ -142,7 +142,7 @@
 
 // iModel name
 .imodel-card .imodel-card-name {
-  padding: .8em 14px;
+  padding: 0.8em 14px;
   font-size: $uicore-font-size;
   display: flex;
   align-items: center;
@@ -152,7 +152,7 @@
 // text
 .imodel-card .imodel-card-name .text {
   flex: initial;
-  margin-right: .5em;
+  margin-right: 0.5em;
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -167,7 +167,7 @@
 }
 
 .imodel-card .imodel-card-name .icon {
-  padding: .25em;
+  padding: 0.25em;
 }
 
 .imodel-card .imodel-card-name .icon:hover {
@@ -176,7 +176,7 @@
 
 .imodel-card-options-dropdown {
   margin: 0;
-  padding: .5em 0;
+  padding: 0.5em 0;
   font-size: $uicore-font-size;
   list-style: none;
   background-color: $uicore-white;
@@ -185,16 +185,16 @@
 .imodel-card-options-dropdown li {
   display: flex;
   align-items: center;
-  padding: .25em 2em .25em .75em;
+  padding: 0.25em 2em 0.25em 0.75em;
   color: $uicore-text-color;
   white-space: nowrap;
   cursor: pointer;
 
   .icon {
-    margin-right: .5em;
+    margin-right: 0.5em;
   }
 
-  &:hover{
+  &:hover {
     background: #eee;
   }
 }
@@ -206,7 +206,7 @@
   color: $uicore-gray;
   display: block;
   padding: 0 14px;
-  margin-bottom: .5em;
+  margin-bottom: 0.5em;
   text-overflow: ellipsis;
   white-space: wrap;
   overflow: hidden;

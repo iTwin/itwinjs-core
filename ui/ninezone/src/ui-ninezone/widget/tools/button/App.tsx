@@ -16,6 +16,7 @@ import "./App.scss";
  * @alpha
  */
 export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
+  small?: boolean;
 }
 
 /** App button which displays icon. Used in [[Toolbar]] component.
@@ -24,15 +25,15 @@ export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoCh
  */
 export class AppButton extends React.PureComponent<AppButtonProps> {
   public render() {
-    const { className, ...props } = this.props;
-    const buttonClassName = classnames(
-      "nz-toolbar-button-app",
-      className);
+    const { className, small, ...props } = this.props;
+
+    const buttonClassName = (small) ? classnames("nz-toolbar-button-app-small", className) : classnames("nz-toolbar-button-app", className);
 
     return (
       <ToolbarIcon
         className={buttonClassName}
         icon={this.props.icon}
+        small={!!small}
         {...props}
       >
         <div className="nz-bars">

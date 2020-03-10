@@ -8,9 +8,9 @@ import { render, cleanup, waitForElement } from "@testing-library/react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import {
-  CommandItemDef, GroupItemDef, SyncUiEventDispatcher, CustomItemDef, PopupButton, ToolbarComposer, ToolbarHelper, ToolItemDef, FrontstageManager, FrontstageActivatedEventArgs, FrontstageDef, FrontstageProps,
+  CommandItemDef, GroupItemDef, SyncUiEventDispatcher, CustomItemDef, ToolbarComposer, ToolbarHelper, ToolItemDef, FrontstageManager, FrontstageActivatedEventArgs, FrontstageDef, FrontstageProps, FrameworkVersion,
 } from "../../ui-framework";
-import { ToolbarUsage, ToolbarOrientation, UiItemsProvider, StageUsage, ToolbarItemUtilities, UiItemsManager, CommonToolbarItem, BadgeType, CustomDefinition, ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { ToolbarUsage, ToolbarOrientation, UiItemsProvider, StageUsage, ToolbarItemUtilities, UiItemsManager, CommonToolbarItem, BadgeType, CustomButtonDefinition, ConditionalBooleanValue } from "@bentley/ui-abstract";
 import { CoreTools } from "../../ui-framework/CoreToolDefinitions";
 
 class TestUiProvider implements UiItemsProvider {
@@ -109,13 +109,12 @@ describe("<ToolbarComposer  />", async () => {
 
   const custom1 = new CustomItemDef({
     customId: "test.custom",
-    reactElement: (
-      <PopupButton iconSpec="icon-arrow-down" label="Popup Test">
-        <div style={{ width: "200px", height: "100px" }}>
-          <span>hello world!</span>
-        </div>
-      </PopupButton>
-    ),
+    iconSpec: "icon-arrow-down",
+    label: "Popup Test",
+    popupPanelNode:
+      <div style={{ width: "200px", height: "100px" }}>
+        <span>hello world!</span>
+      </div>,
   });
 
   const group2 = new GroupItemDef({
@@ -144,12 +143,22 @@ describe("<ToolbarComposer  />", async () => {
     expect(renderedComponent).not.to.be.undefined;
   });
 
-  it("should not be able to create node for bad CustomDefinition", () => {
-    const badItem: CustomDefinition = {
+  it("should not be able to create node for bad CustomButtonDefinition", () => {
+    const badItem: CustomButtonDefinition = {
       id: "bad-no-itemdef", itemPriority: 10,
       isCustom: true,
     };
     expect(ToolbarHelper.createNodeForToolbarItem(badItem)).to.be.null;
+  });
+
+  it("should render with specified items", async () => {
+    const renderedComponent = render(
+      <FrameworkVersion version="2">
+        <ToolbarComposer usage={ToolbarUsage.ContentManipulation}
+          orientation={ToolbarOrientation.Horizontal}
+          items={ToolbarHelper.createToolbarItemsFromItemDefs([tool1, tool2, group1, custom1])} />
+      </FrameworkVersion>);
+    expect(renderedComponent).not.to.be.undefined;
   });
 
   it("should render with specified items", async () => {

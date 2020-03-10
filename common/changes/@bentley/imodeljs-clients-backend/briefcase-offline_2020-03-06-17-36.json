@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "comment": "Setup initialization of briefcase cache for offline workflows. (VSTS#286489)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

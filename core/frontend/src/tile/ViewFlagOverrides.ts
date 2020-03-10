@@ -3,22 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
   RenderMode,
-  ViewFlag,
+  ViewFlagOverrides,
+  ViewFlagPresence,
   ViewFlags,
 } from "@bentley/imodeljs-common";
 
-/** Create ViewFlag.Overrides suitable for most non-iModel tile trees (reality/map tiles).
+/** Create ViewFlagOverrides suitable for most non-iModel tile trees (reality/map tiles).
  * @param options Customize the overrides. Any properties left unspecified use the current view settings.
  * @internal
  */
-export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean }): ViewFlag.Overrides {
+export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean }): ViewFlagOverrides {
   const noLights = undefined !== options.lighting ? !options.lighting : undefined;
-  const ovrs = new ViewFlag.Overrides(ViewFlags.fromJSON({
+  const ovrs = new ViewFlagOverrides(ViewFlags.fromJSON({
     renderMode: RenderMode.SmoothShade,
     noCameraLights: noLights,
     noSourceLights: noLights,
@@ -28,13 +29,13 @@ export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, 
   }));
 
   if (undefined === options.clipVolume)
-    ovrs.clearPresent(ViewFlag.PresenceFlag.ClipVolume);
+    ovrs.clearPresent(ViewFlagPresence.ClipVolume);
 
   if (undefined === options.shadows)
-    ovrs.clearPresent(ViewFlag.PresenceFlag.Shadows);
+    ovrs.clearPresent(ViewFlagPresence.Shadows);
 
   if (undefined === options.lighting)
-    ovrs.clearPresent(ViewFlag.PresenceFlag.Lighting);
+    ovrs.clearPresent(ViewFlagPresence.Lighting);
 
   return ovrs;
 }

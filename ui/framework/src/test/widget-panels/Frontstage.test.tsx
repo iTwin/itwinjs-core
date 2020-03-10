@@ -5,13 +5,14 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { shallow } from "enzyme";
+import { shallow, mount } from "enzyme";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { INITIALIZE_PANEL, createNineZoneState } from "@bentley/ui-ninezone";
 import {
   addWidgets, FrontstageManager, FrontstageDef, FrontstageProvider, WidgetPanelsFrontstage, ZoneDef,
   useFrontstageDefNineZone, initializeNineZoneState, StagePanelDef, WidgetDef, WidgetState, addPanelWidgets, StagePanelZonesDef, StagePanelZoneDef, getWidgetId,
 } from "../../ui-framework";
+import { useActiveModalFrontstageInfo } from "../../ui-framework/widget-panels/ModalFrontstageComposer";
 
 describe("WidgetPanelsFrontstage", () => {
   const sandbox = sinon.createSandbox();
@@ -31,7 +32,12 @@ describe("WidgetPanelsFrontstage", () => {
     wrapper.should.matchSnapshot();
   });
 
-  it("should render content", () => {
+  it("should render modal stage content", () => {
+    const modalStageInfo = {
+      title: "TestModalStage",
+      content: <div>Hello World!</div>,
+    };
+    sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => modalStageInfo);
     const frontstageDef = new FrontstageDef();
     const frontstageProvider = moq.Mock.ofType<FrontstageProvider>();
     const frontstage = moq.Mock.ofType<FrontstageProvider["frontstage"]>();
@@ -44,6 +50,68 @@ describe("WidgetPanelsFrontstage", () => {
     wrapper.should.matchSnapshot();
   });
 
+  it("should render modal stage content when mounter", () => {
+    const modalStageInfo = {
+      title: "TestModalStage",
+      content: <div>Hello World!</div>,
+    };
+    sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => modalStageInfo);
+    const frontstageDef = new FrontstageDef();
+    const frontstageProvider = moq.Mock.ofType<FrontstageProvider>();
+    const frontstage = moq.Mock.ofType<FrontstageProvider["frontstage"]>();
+    const contentGroup = moq.Mock.ofType<FrontstageDef["contentGroup"]>();
+    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sandbox.stub(frontstageDef, "frontstageProvider").get(() => frontstageProvider.object);
+    sandbox.stub(frontstageDef, "contentGroup").get(() => contentGroup.object);
+    frontstageProvider.setup((x) => x.frontstage).returns(() => frontstage.object);
+    const wrapper = mount(<WidgetPanelsFrontstage />);
+    wrapper.unmount();
+  });
+
+  it("should not render modal stage content if activeModalFrontstage is undefined when mounted ", () => {
+    sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => undefined);
+    const frontstageDef = new FrontstageDef();
+    const frontstageProvider = moq.Mock.ofType<FrontstageProvider>();
+    const frontstage = moq.Mock.ofType<FrontstageProvider["frontstage"]>();
+    const contentGroup = moq.Mock.ofType<FrontstageDef["contentGroup"]>();
+    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstageDef);
+    sandbox.stub(frontstageDef, "frontstageProvider").get(() => frontstageProvider.object);
+    sandbox.stub(frontstageDef, "contentGroup").get(() => contentGroup.object);
+    frontstageProvider.setup((x) => x.frontstage).returns(() => frontstage.object);
+    const wrapper = mount(<WidgetPanelsFrontstage />);
+    wrapper.unmount();
+  });
+
+  it("should add tool activated event listener", () => {
+    const addListenerSpy = sandbox.spy(FrontstageManager.onModalFrontstageChangedEvent, "addListener");
+    const removeListenerSpy = sandbox.spy(FrontstageManager.onModalFrontstageChangedEvent, "removeListener");
+    const sut = renderHook(() => useActiveModalFrontstageInfo());
+    sut.unmount();
+    addListenerSpy.calledOnce.should.true;
+    removeListenerSpy.calledOnce.should.true;
+  });
+
+  it("should update active modal info", () => {
+    const modalStageInfo = {
+      title: "TestModalStage",
+      content: <div>Hello World!</div>,
+    };
+
+    sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => undefined);
+    renderHook(() => useActiveModalFrontstageInfo());
+    act(() => {
+      sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => undefined);
+      FrontstageManager.onModalFrontstageChangedEvent.emit({
+        modalFrontstageCount: 0,
+      });
+
+      sandbox.stub(FrontstageManager, "activeModalFrontstage").get(() => modalStageInfo);
+      FrontstageManager.onModalFrontstageChangedEvent.emit({
+        modalFrontstageCount: 1,
+      });
+    });
+  });
+
   it("should not render w/o frontstage", () => {
     sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
     const wrapper = shallow(<WidgetPanelsFrontstage />);
@@ -52,7 +120,7 @@ describe("WidgetPanelsFrontstage", () => {
 });
 
 describe("useFrontstageDefNineZone", () => {
-  it("should dispatch initialize action when fronstage def changes", () => {
+  it("should dispatch initialize action when frontstage def changes", () => {
     const { result, rerender } = renderHook((frontstage) => useFrontstageDefNineZone(frontstage), {
       initialProps: new FrontstageDef(),
     });

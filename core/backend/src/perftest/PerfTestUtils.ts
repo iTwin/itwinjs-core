@@ -2,21 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb, SpatialCategory } from "../imodeljs-backend";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { BackendRequestContext } from "../BackendRequestContext";
-// import { KnownTestLocations } from "../test/KnownTestLocations";
-// import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Code, ColorDef, DbResult, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelJsFs } from "../IModelJsFs";
-import { Code, IModel, SubCategoryAppearance, ColorDef } from "@bentley/imodeljs-common";
-// import { Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
-// import { Arc3d, Point3d } from "@bentley/geometry-core";
-// import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { BackendRequestContext, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { IModelTestUtils } from "../test/IModelTestUtils";
 
 export class PerfTestDataMgr {
-  public db: IModelDb | undefined;
+  public db: SnapshotIModelDb | undefined;
   public modelId: any;
   public catId: any;
 
@@ -27,7 +20,7 @@ export class PerfTestDataMgr {
     }
     const fName = path.basename(imodelPath);
     const dirName = path.basename(path.dirname(imodelPath));
-    this.db = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile(dirName, fName), { rootSubject: { name: "PerfTest" } });
+    this.db = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile(dirName, fName), { rootSubject: { name: "PerfTest" } });
   }
   public async importSchema(scehamPath: string, testCName: string = "") {
     assert(IModelJsFs.existsSync(scehamPath));
@@ -42,14 +35,16 @@ export class PerfTestDataMgr {
     if (this.db) {
       this.modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this.db, Code.createEmpty(), true);
       this.catId = SpatialCategory.queryCategoryIdByName(this.db, IModel.dictionaryId, "MySpatialCategory");
-      if (undefined === this.catId)
+      if (undefined === this.catId) {
         this.catId = SpatialCategory.insert(this.db, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: new ColorDef("rgb(255,0,0)") }));
-      this.db.setAsMaster();
+      }
+      const result: DbResult = this.db.nativeDb.setAsMaster();
+      assert.equal(DbResult.BE_SQLITE_OK, result);
       this.db.saveChanges();
     }
   }
   public closeDb() {
     if (this.db)
-      this.db.closeSnapshot();
+      this.db.close();
   }
 }

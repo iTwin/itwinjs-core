@@ -202,7 +202,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
     const classNames = classnames(
       className,
     );
-    const badge = BadgeUtilities.getComponentForBadge(groupItem.badgeType);  // tslint:disable-line: deprecation
+    const badge = BadgeUtilities.getComponentForBadgeType(groupItem.badgeType);  // tslint:disable-line: deprecation
 
     return (
       <ToolbarDirectionContext.Consumer>

@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 
-import { ClientRequestContext, assert, Id64, Id64String, Logger, OpenMode, IModelStatus } from "@bentley/bentleyjs-core";
-import { Range3dProps, Range3d } from "@bentley/geometry-core";
+import { assert, ClientRequestContext, Id64, Id64String, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { Range3d, Range3dProps } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import {
   ElementProps,
@@ -36,12 +36,12 @@ import {
   SnapResponseProps,
   ViewStateProps,
 } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { KeepBriefcase } from "../BriefcaseManager";
 import { SpatialCategory } from "../Category";
-import { IModelDb, OpenParams } from "../IModelDb";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { DictionaryModel } from "../Model";
 import { generateGeometrySummaries } from "../GeometrySummary";
+import { BriefcaseIModelDb, IModelDb, OpenParams } from "../IModelDb";
+import { DictionaryModel } from "../Model";
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -58,7 +58,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const openParams: OpenParams = OpenParams.fixedVersion();
     openParams.timeout = 1000; // 1 second
     const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
-    const db = await IModelDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    const db = await BriefcaseIModelDb.open(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
     return db.toJSON();
   }
 
@@ -68,13 +68,13 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     if (iModelToken.openMode === OpenMode.Readonly)
       return Promise.resolve(true); // Close is a no-op for ReadOnly connections.
 
-    await IModelDb.find(iModelToken).close(requestContext, KeepBriefcase.No);
+    await BriefcaseIModelDb.find(iModelToken).close(requestContext, KeepBriefcase.No);
     return Promise.resolve(true);
   }
 
   public async queryRows(tokenProps: IModelTokenProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
+    const iModelDb = BriefcaseIModelDb.find(iModelToken);
     return iModelDb.queryRows(ecsql, bindings, limit, quota, priority);
   }
 

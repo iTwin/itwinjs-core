@@ -76,7 +76,6 @@ beta;FocusTrap
 beta;Form 
 beta;FormContext: React.Context
 beta;FormContextState 
-internal;getClassName: (obj: any) => string
 internal;getDisplayName: (component: React.ComponentType
 internal;getUserColor(email: string): string
 public;GlobalContextMenu 
@@ -87,6 +86,7 @@ public;Headline(props: TextProps): JSX.Element
 public;HorizontalAlignment
 beta;HorizontalTabs 
 public;Icon(props: IconProps): JSX.Element | null
+beta;IconHelper
 beta;IconInput 
 beta;IconInputProps 
 public;IconProps
@@ -157,6 +157,8 @@ beta;ReactNumericInputProps
 internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
 internal;Rectangle 
 beta;RectangleProps
+internal;ResizeObserver: ResizeObserverType
+internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
 alpha;ScrollPositionMaintainer 
 public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
@@ -211,7 +213,6 @@ public;TreeNodePlaceholderProps
 public;TreeNodeProps 
 public;TreeProps 
 public;UiCore
-public;UiError: typeof UiError_2
 public;UiEvent
 beta;UiSettings
 beta;UiSettingsResult
@@ -221,6 +222,10 @@ public;UnderlinedButtonProps
 public;useDisposable
 public;useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void
 public;useOptionalDisposable
+internal;useRefEffect
+internal;useRefs
+internal;useResizeObserver
+internal;useTargeted: (elementRef: React.RefObject
 public;VerticalAlignment
 beta;VerticalTabs 
 public;WebFontIcon(props: WebFontIconProps): JSX.Element

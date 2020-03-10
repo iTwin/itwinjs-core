@@ -9,14 +9,14 @@
 import * as React from "react";
 
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import {
+  MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog, FooterPopup,
+} from "@bentley/ui-ninezone";
 
 import { UiFramework } from "../UiFramework";
 
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
-import { MessageManager, MessageAddedEventArgs } from "../messages/MessageManager";
-import {
-  MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog, FooterPopup,
-} from "@bentley/ui-ninezone";
+import { MessageManager } from "../messages/MessageManager";
 import { StatusFieldProps } from "./StatusFieldProps";
 import { MessageSpan } from "../messages/MessageSpan";
 
@@ -37,7 +37,7 @@ interface MessageCenterState {
   messageCount: number;
 }
 
-/** Properties of [[MessageCenterField]] component.
+/** Properties for withMessageCenterFieldProps HOC.
  * @public
  */
 export interface MessageCenterFieldProps extends StatusFieldProps {
@@ -68,15 +68,15 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
 
   /** @internal */
   public componentDidMount() {
-    MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
+    MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent);
   }
 
   /** @internal */
   public componentWillUnmount() {
-    MessageManager.onMessageAddedEvent.removeListener(this._handleMessageAddedEvent);
+    MessageManager.onMessagesUpdatedEvent.removeListener(this._handleMessagesUpdatedEvent);
   }
 
-  private _handleMessageAddedEvent = (_args: MessageAddedEventArgs) => {
+  private _handleMessagesUpdatedEvent = () => {
     this.setState({ messageCount: MessageManager.messages.length });
   }
 

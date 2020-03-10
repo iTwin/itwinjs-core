@@ -8,10 +8,9 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, Rectangle } from "@bentley/ui-core";
+import { CommonProps, Point, Rectangle, useRefs } from "@bentley/ui-core";
 import { usePointerCaptor } from "../base/PointerCaptor";
 import { WidgetPanelSide, isHorizontalWidgetPanelSide } from "./Panel";
-import { useRefs } from "../base/useRefs";
 import { useNineZoneDispatch, TOGGLE_PANEL_COLLAPSED, usePanel } from "../base/NineZone";
 import "./Grip.scss";
 

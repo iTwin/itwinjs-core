@@ -822,16 +822,22 @@ export class AccuSnap implements Decorator {
 
     const thisList = this.aSnapHits!;
     let thisHit: HitDetail | undefined;
-    const ignore = new LocateResponse();
+    let firstRejected;
+    const filterResponse = new LocateResponse();
+
     // keep looking through hits until we find one that is accu-snappable.
     while (undefined !== (thisHit = thisList.getNextHit())) {
-      if (LocateFilterStatus.Accept === await IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out))
+      if (LocateFilterStatus.Accept === await IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, filterResponse))
         return thisHit;
-
       // we only care about the status of the first hit.
-      out.snapStatus = SnapStatus.FilteredByApp;
-      out = ignore;
+      if (undefined !== firstRejected)
+        continue;
+      firstRejected = filterResponse.clone();
+      firstRejected.snapStatus = SnapStatus.FilteredByApp;
     }
+
+    if (undefined !== firstRejected)
+      out.setFrom(firstRejected);
 
     // Reset current hit index to go back to first hit on next AccuSnap reset event...
     thisList.resetCurrentHit();
@@ -946,7 +952,7 @@ export class AccuSnap implements Decorator {
     }
 
     const hit = IModelApp.tentativePoint.getCurrSnap();
-    if (hit)
+    if (hit && !hit.isModelHit) // Don't hilite reality models.
       hit.draw(context);
   }
 

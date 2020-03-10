@@ -129,6 +129,9 @@ internal;EventListener = (data: any) => void
 internal;EventSource
 internal;class EventSourceManager
 internal;EventSourceOptions
+beta;class Extension
+beta;ExtensionAdmin
+beta;ExtensionLoadResults = Extension | undefined | string | string[]
 public;ExtentLimits
 public;extractImageSourceDimensions(source: ImageSource): Promise
 alpha;FeatureLogBatchClient
@@ -180,7 +183,7 @@ public;GraphicType
 internal;GroupMark
 internal;HilitedState
 internal;Hilites
-alpha;HiliteSet
+beta;HiliteSet
 public;HitDetail
 public;HitDetailType
 public;HitGeomType
@@ -207,7 +210,7 @@ public;IModelConnection
 public;IModelConnection
 alpha;EditingFunctions
 alpha;EditingFunctions
-internal;Tiles
+beta;Tiles
 internal;IModelFrameLifecycle
 internal;IModelTile 
 internal;IModelTileContent 
@@ -226,8 +229,8 @@ alpha;ItemField
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-internal;LoadSavedPluginsResult
-internal;LoadSavedPluginsStatus
+internal;LoadSavedExtensionsResult
+internal;LoadSavedExtensionsStatus
 public;LocateAction
 public;LocateFilterStatus
 public;LocateOptions
@@ -287,6 +290,8 @@ public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
 public;PanViewTool 
+alpha;ParseAndRunResult
+alpha;ParsedKeyin
 internal;PerformanceMetrics
 beta;PerModelCategoryVisibility
 public;PhysicalModelState 
@@ -294,9 +299,6 @@ internal;PingTestResult
 beta;Pixel
 internal;PlanarClassifierMap = Map
 internal;PlanarMapTile 
-beta;class Plugin
-beta;PluginAdmin
-beta;PluginLoadResults = Plugin | undefined | string | string[]
 public;class PrimitiveTool 
 alpha;enum PrimitiveVisibility
 internal;QuadId
@@ -338,13 +340,14 @@ internal;SavedClipCache
 alpha;SavedClipEntry
 internal;SavedClipProps
 internal;SavedState
-internal;Scene
-internal;SceneContext 
+beta;Scene
+beta;SceneContext 
 internal;SceneVolumeClassifier
 public;ScreenViewport 
 public;ScrollViewTool 
 public;SectionDrawingModelState 
 public;SelectAddEvent
+internal;SelectedAndReadyTiles
 public;SelectedViewportChangedArgs
 public;SelectionMethod
 public;SelectionMode
@@ -401,30 +404,31 @@ internal;class TerrainTileLoaderBase
 internal;TextureDrapeMap = Map
 internal;TextureImage
 internal;ThreeAxes
-internal;class Tile
+beta;class Tile
 alpha;class TileAdmin
 alpha;TileAdmin
-internal;ViewportSet 
 internal;TileAvailability
 internal;enum TileBoundingBoxes
-internal;TileContent
-internal;TiledGraphicsProvider
-internal;TileDrawArgs
-internal;TileGraphicType
-internal;enum TileLoadPriority
-internal;enum TileLoadStatus
-internal;TileParams
-internal;TileRequest
-internal;TileRequest
-internal;class TileTree
-internal;TileTreeDiscloser
-internal;TileTreeLoadStatus
-internal;TileTreeOwner
-internal;TileTreeParams
-internal;class TileTreeReference 
-internal;TileTreeSet
-internal;TileTreeSupplier
-internal;enum TileVisibility
+beta;TileContent
+beta;TiledGraphicsProvider
+beta;TileDrawArgs
+beta;TileGraphicType
+beta;enum TileLoadPriority
+beta;enum TileLoadStatus
+beta;TileParams
+beta;TileRequest
+beta;TileRequest
+internal;enum State
+beta;class TileTree
+beta;TileTreeDiscloser
+beta;TileTreeLoadStatus
+beta;TileTreeOwner
+beta;TileTreeParams
+beta;class TileTreeReference
+beta;TileTreeSet
+beta;TileTreeSupplier
+beta;TileUsageMarker
+beta;enum TileVisibility
 public;Tool
 public;ToolAdmin
 public;ToolAdmin
@@ -448,7 +452,7 @@ internal;TouchCursor
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
-alpha;TwoWayViewportSync
+beta;TwoWayViewportSync
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection
@@ -468,13 +472,13 @@ alpha;ViewClipPlanesModifyTool
 alpha;ViewClipSettingsProvider
 alpha;ViewClipShapeModifyTool 
 alpha;ViewClipTool 
-alpha;ViewGlobeBirdTool 
-alpha;ViewGlobeIModelTool 
-alpha;ViewGlobeLocationTool 
-alpha;ViewGlobeSatelliteTool 
+beta;ViewGlobeBirdTool 
+beta;ViewGlobeIModelTool 
+beta;ViewGlobeLocationTool 
+beta;ViewGlobeSatelliteTool 
 internal;ViewHandleArray
 internal;enum ViewHandleType
-internal;ViewingSpace
+beta;ViewingSpace
 internal;class ViewingToolHandle
 public;ViewManager
 public;class ViewManip 
@@ -493,10 +497,6 @@ public;class ViewTool
 beta;ViewUndoEvent
 public;ViewUndoTool 
 public;WalkViewTool 
-internal;WebGLExtensionName = "WEBGL_draw_buffers" | "OES_element_index_uint" | "OES_texture_float" | "OES_texture_float_linear" | "OES_texture_half_float" | "OES_texture_half_float_linear" | "EXT_texture_filter_anisotropic" | "WEBGL_depth_texture" | "EXT_color_buffer_float" | "EXT_shader_texture_lod" | "ANGLE_instanced_arrays" | "OES_vertex_array_object" | "WEBGL_lose_context" | "EXT_frag_depth" | "EXT_disjoint_timer_query" | "EXT_disjoint_timer_query_webgl2"
-beta;WebGLFeature
-beta;WebGLRenderCompatibilityInfo
-beta;WebGLRenderCompatibilityStatus
 internal;WebMapTileContent 
 internal;WebMapTileLoader 
 internal;WebMapTileTreeProps 

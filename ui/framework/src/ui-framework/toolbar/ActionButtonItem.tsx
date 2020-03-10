@@ -46,6 +46,6 @@ export function ActionButtonItem(props: ActionButtonProps) {
     onClick={execute}
     onKeyDown={handleKeyDown}
     icon={ToolbarHelper.getIconReactNode(item)}
-    badge={BadgeUtilities.getComponentForBadge(item.badgeType)}
+    badge={BadgeUtilities.getComponentForBadgeType(item.badgeType)}
   />);
 }

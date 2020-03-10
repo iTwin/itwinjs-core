@@ -6,10 +6,10 @@
  * @module Categories
  */
 
-import { Id64, Id64String, JsonUtils, DbOpcode } from "@bentley/bentleyjs-core";
+import { DbOpcode, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
-import { IModelDb } from "./IModelDb";
+import { BriefcaseIModelDb, IModelDb } from "./IModelDb";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
 
 /** Defines the appearance for graphics in Geometric elements
@@ -142,11 +142,12 @@ export class DrawingCategory extends Category {
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 
-  /** Tell monitors about the sneaky insertion of my default sub-category */
+  /** Tell monitors about the automatic insertion of my default sub-category */
   protected static onInserted(props: ElementProps, iModel: IModelDb): void {
     super.onInserted(props, iModel);
-    if (iModel.needsConcurrencyControl)
+    if (iModel instanceof BriefcaseIModelDb) {
       iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
+    }
   }
 
   /** Get the name of the CodeSpec that is used by DrawingCategory objects. */
@@ -219,8 +220,9 @@ export class SpatialCategory extends Category {
   /** Tell monitors about the sneaky insertion of my default sub-category */
   protected static onInserted(props: ElementProps, iModel: IModelDb): void {
     super.onInserted(props, iModel);
-    if (iModel.needsConcurrencyControl)
+    if (iModel instanceof BriefcaseIModelDb) {
       iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
+    }
   }
 
   /** Get the name of the CodeSpec that is used by SpatialCategory objects. */

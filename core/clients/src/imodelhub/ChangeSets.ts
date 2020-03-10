@@ -24,9 +24,19 @@ const loggerCategory: string = ClientsLoggerCategory.IModelHub;
  */
 export enum ChangesType {
   /** [[ChangeSet]] contains regular file changes (e.g. changes to elements or models). */
-  Regular,
+  Regular = 0,
   /** [[ChangeSet]] only contains schema changes. */
-  Schema,
+  Schema = 1 << 0,
+  /** [[ChangeSet]] contains definition changes. */
+  Definition = 1 << 1,
+  /** [[ChangeSet]] contains spatial data changes. */
+  SpatialData = 1 << 2,
+  /** [[ChangeSet]] contains sheets and drawings changes. */
+  SheetsAndDrawings = 1 << 3,
+  /** [[ChangeSet]] contains views and model changes. */
+  ViewsAndModels = 1 << 4,
+  /** [[ChangeSet]] contains changes of global properties. */
+  GlobalProperties = 1 << 5,
 }
 
 /**
@@ -317,7 +327,7 @@ class ParallelQueue {
 }
 
 /**
- * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [IModelDb]($backend) methods instead.
+ * Handler for managing [[ChangeSet]]s. Use [[IModelClient.ChangeSets]] to get an instance of this class. In most cases, you should use [BriefcaseIModelDb]($backend) methods instead.
  * @beta
  */
 export class ChangeSetHandler {
@@ -367,7 +377,7 @@ export class ChangeSetHandler {
   }
 
   /**
-   * Download the specified [[ChangeSet]]s. If you want to [pull]($docs/learning/Glossary.md#pull) and [merge]($docs/learning/Glossary.md#merge) ChangeSets from iModelHub to your [[Briefcase]], you should use [IModelDb.pullAndMergeChanges]($backend) instead.
+   * Download the specified [[ChangeSet]]s. If you want to [pull]($docs/learning/Glossary.md#pull) and [merge]($docs/learning/Glossary.md#merge) ChangeSets from iModelHub to your [[Briefcase]], you should use [BriefcaseIModelDb.pullAndMergeChanges]($backend) instead.
    *
    * This method creates the directory containing the ChangeSets if necessary. If there is an error in downloading some of the ChangeSets, all partially downloaded ChangeSets are deleted from disk.
    * @param requestContext The client request context
@@ -420,7 +430,7 @@ export class ChangeSetHandler {
   }
 
   /**
-   * Upload a [[ChangeSet]] file. If you want to [push]($docs/learning/Glossary.md#push) your changes to iModelHub, use [IModelDb.pushChanges]($backend) instead. This method is only a part of that workflow.
+   * Upload a [[ChangeSet]] file. If you want to [push]($docs/learning/Glossary.md#push) your changes to iModelHub, use [BriefcaseIModelDb.pushChanges]($backend) instead. This method is only a part of that workflow.
    *
    * ChangeSets have to be uploaded in a linear order. If another user is uploading, or changeSet.parentId does not point to the latest ChangeSet on iModelHub, this method will fail. User will have to download all of the newer ChangeSets, merge them into their [[Briefcase]] and calculate a new ChangeSet id.
    * @param requestContext The client request context

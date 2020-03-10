@@ -3,10 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
+import {
+  BeTimePoint,
+  Id64String,
+} from "@bentley/bentleyjs-core";
 import {
   Range3d,
   Transform,
@@ -17,7 +20,7 @@ import {
   ElementAlignedBox3d,
   TileProps,
   TileTreeProps,
-  ViewFlag,
+  ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -40,7 +43,7 @@ export interface IModelTileTreeOptions {
 }
 
 // Overrides nothing.
-const viewFlagOverrides = new ViewFlag.Overrides();
+const viewFlagOverrides = new ViewFlagOverrides();
 
 /** Parameters used to construct an [[IModelTileTree]]
  * @internal
@@ -78,6 +81,8 @@ export class IModelTileTree extends TileTree {
   public readonly maxTilesToSkip: number;
   public readonly maxInitialTilesToSkip: number;
   public readonly contentIdProvider: ContentIdProvider;
+  /** Strictly for debugging/testing - forces tile selection to halt at the specified depth. */
+  public debugMaxDepth?: number;
 
   public constructor(params: IModelTileTreeParams) {
     super(params);
@@ -116,6 +121,10 @@ export class IModelTileTree extends TileTree {
       tile.drawGraphics(args);
 
     args.drawGraphics();
-    args.context.viewport.numSelectedTiles += tiles.length;
+  }
+
+  public prune(): void {
+    const olderThan = BeTimePoint.now().minus(this.expirationTime);
+    this.rootTile.pruneChildren(olderThan);
   }
 }

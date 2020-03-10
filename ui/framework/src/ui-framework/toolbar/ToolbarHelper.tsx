@@ -9,41 +9,48 @@ import * as React from "react";
 
 import {
   ToolbarItemUtilities, CommonToolbarItem, ActionButton, GroupButton,
-  CustomDefinition,
+  CustomButtonDefinition,
   OnItemExecutedFunc,
   ConditionalStringValue,
   StringGetter,
 } from "@bentley/ui-abstract";
 
+import { IconHelper } from "@bentley/ui-core";
 import { ToolItemDef } from "../shared/ToolItemDef";
 import { CommandItemDef } from "../shared/CommandItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";
 import { CustomItemDef } from "../shared/CustomItemDef";
-import { IconHelper } from "../shared/IconHelper";
 import { GroupItemDef } from "./GroupItem";
 import { GroupButtonItem } from "./GroupButtonItem";
 import { ActionButtonItem } from "./ActionButtonItem";
-
-/** Describes the data needed to insert a custom framework-specific button into an ToolbarComposer.
- * @beta
- */
-export interface CustomToolbarButton extends CustomDefinition {
-  itemDef: CustomItemDef;
-}
+import { CustomToolbarItem } from "@bentley/ui-components";
 
 /** Helper functions for defining an ToolbarComposer.
  * @beta
  */
 export class ToolbarHelper {
-  /** Construct CustomDefinition definitions given a CustomItemDef. */
-  public static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomDefinition>): CustomToolbarButton {
+  /** Construct CustomToolbarItem definitions given a CustomItemDef. */
+  public static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomButtonDefinition>): CustomToolbarItem {
+    const isHidden = itemDef.isHidden;
+    const isDisabled = itemDef.isDisabled;
+    const internalData = new Map<string, any>();  // used to store ReactNode if iconSpec hold a ReactNode
+    const icon = IconHelper.getIconData(itemDef.iconSpec, internalData);
+    const label = this.getStringOrConditionalString(itemDef.rawLabel);
+    const badgeType = itemDef.badgeType;
+
+    // istanbul ignore else
     return {
       id: itemDef.id,
       itemPriority,
-      itemDef,
+      icon,
+      label,
       isCustom: true,
-      isHidden: itemDef.isHidden,
-      isDisabled: itemDef.isDisabled,
+      isHidden,
+      isDisabled,
+      internalData,
+      badgeType,
+      buttonNode: itemDef.toolbarReactNode(),  // used by createNodeForToolbarItem below
+      panelContentNode: itemDef.popupPanelNode,
       ...overrides,
     };
   }
@@ -80,6 +87,7 @@ export class ToolbarHelper {
     const internalData = new Map<string, any>();  // used to store ReactNode if iconSpec hold a ReactNode
     const icon = IconHelper.getIconData(itemDef.iconSpec, internalData);
     const label = this.getStringOrConditionalString(itemDef.rawLabel);
+    const badgeType = itemDef.badgeType;
 
     // istanbul ignore else
     if (itemDef instanceof CommandItemDef) {
@@ -92,7 +100,7 @@ export class ToolbarHelper {
         isDisabled,
         isActive: itemDef.isActive,
         execute: itemDef.execute,
-        badgeType: itemDef.badgeType,
+        badgeType,
         internalData,
       };
     } else if (itemDef instanceof CustomItemDef) {
@@ -109,7 +117,7 @@ export class ToolbarHelper {
         isDisabled,
         items: children,
         isActive: false,
-        badgeType: itemDef.badgeType,
+        badgeType,
         internalData,
       };
     } else if (itemDef instanceof ToolItemDef) {
@@ -122,7 +130,7 @@ export class ToolbarHelper {
         isDisabled,
         isActive: itemDef.isActive,
         execute: itemDef.execute,
-        badgeType: itemDef.badgeType,
+        badgeType,
         internalData,
       };
     } else {
@@ -149,8 +157,8 @@ export class ToolbarHelper {
       return GroupButtonItem({ item, onItemExecuted });
     }
 
-    if (ToolbarHelper.isCustomToolbarButton(item)) { // TODO do we need onItemExecuted for custom toolbar buttons?
-      return item.itemDef.toolbarReactNode();
+    if (ToolbarHelper.isCustomToolbarButton(item)) {
+      return item.buttonNode ? item.buttonNode : null;
     }
 
     return null;
@@ -159,7 +167,7 @@ export class ToolbarHelper {
   /** CustomToolbarButton type guard.
    * @alpha
    */
-  public static isCustomToolbarButton = (item: CommonToolbarItem): item is CustomToolbarButton => {
-    return !!(item as CustomToolbarButton).isCustom && ("itemDef" in item);
+  public static isCustomToolbarButton = (item: CommonToolbarItem): item is CustomToolbarItem => {
+    return !!(item as CustomToolbarItem).isCustom && ("buttonNode" in item);
   }
 }

@@ -2,19 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SpatialCategory, IModelDb } from "../imodeljs-backend";
-import { IModelTestUtils } from "../test/IModelTestUtils";
-import { BackendRequestContext } from "../BackendRequestContext";
-import { KnownTestLocations } from "../test/KnownTestLocations";
+import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Arc3d, Point3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelJsFs } from "../IModelJsFs";
-import { Code, IModel, SubCategoryAppearance, ColorDef, GeometricElementProps, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { Id64, Id64String, DbResult } from "@bentley/bentleyjs-core";
-import { Arc3d, Point3d } from "@bentley/geometry-core";
-import { ECSqlStatement } from "../ECSqlStatement";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
+import { IModelTestUtils } from "../test/IModelTestUtils";
+import { KnownTestLocations } from "../test/KnownTestLocations";
 
 function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
   // add Geometry
@@ -96,9 +93,10 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "props_" + pCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("PropPerformance", "props_" + pCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", "props_" + pCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.setAsMaster();
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestPropsSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -114,7 +112,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
         }
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestPropsSchema:PropElement"), seedCount);
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
   });
@@ -148,7 +146,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestPropsSchema:PropElement"), opCount + seedCount);
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("PropPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, properties: propCount });
     }
@@ -174,7 +172,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const endTime = new Date().getTime();
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestPropsSchema:PropElement"), seedCount - opCount);
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("PropPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
@@ -206,7 +204,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("PropPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
   });
@@ -253,7 +251,7 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       }
 
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("PropPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
 
@@ -348,9 +346,10 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "index_" + iCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.setAsMaster();
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -366,7 +365,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         }
         seedIModel.saveChanges();
         assert.equal(getCount(seedIModel, "TestIndexSchema:PropElement"), seedCount);
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
     // second round for Index per class seed files
@@ -375,9 +374,10 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, "index_perclass_" + iCount + ".bim");
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_perclass_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", "index_perclass_" + iCount + ".bim"), { rootSubject: { name: "PerfTest" } });
         await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.setAsMaster();
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement0"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -395,7 +395,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(getCount(seedIModel, "TestIndexSchema:PropElement0"), seedCount);
 
         seedIModel.saveChanges();
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
 
@@ -430,7 +430,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement"), opCount + seedCount);
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
@@ -458,7 +458,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       perfimodel.saveChanges();
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement0"), opCount + seedCount);
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsInsert", "Execution time(s)", totalTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
@@ -485,7 +485,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement"), seedCount - opCount);
 
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
@@ -511,7 +511,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const elapsedTime = (endTime - startTime) / 1000.0;
       assert.equal(getCount(perfimodel, "TestIndexSchema:PropElement0"), seedCount - opCount);
 
-      perfimodel.closeSnapshot();
+      perfimodel.close();
 
       reporter.addEntry("IndexPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
@@ -542,7 +542,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
     // second round for per class
@@ -571,7 +571,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
           assert.equal(elemFound[key], "Test value");
         }
       }
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsRead", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
   });
@@ -614,7 +614,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(elemFound.primProp1, "Updated Value");
       }
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "No" });
     }
     // second round for per class
@@ -656,7 +656,7 @@ describe("SchemaDesignPerf Number of Indices", () => {
         assert.equal(elemFound.primProp1, "Updated Value");
       }
       const elapsedTime = (endTime - startTime) / 1000.0;
-      perfimodel.closeSnapshot();
+      perfimodel.close();
       reporter.addEntry("IndexPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
     }
   });

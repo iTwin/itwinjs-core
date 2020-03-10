@@ -2649,7 +2649,7 @@ export class FitViewTool extends ViewTool {
 }
 
 /** A tool that views a location on the background map from a satellite's perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
- * @alpha
+ * @beta
  */
 export class ViewGlobeSatelliteTool extends ViewTool {
   public static toolId = "View.GlobeSatellite";
@@ -2700,7 +2700,7 @@ export class ViewGlobeSatelliteTool extends ViewTool {
 }
 
 /** A tool that views a location on the background map from a bird's eye perspective; the viewed location is derived from the position of the current camera's eye above the background map. Operates on the selected view.
- * @alpha
+ * @beta
  */
 export class ViewGlobeBirdTool extends ViewTool {
   public static toolId = "View.GlobeBird";
@@ -2753,7 +2753,7 @@ export class ViewGlobeBirdTool extends ViewTool {
 /** A tool that views a location on the background map corresponding to a specified string.
  * This will either look down at the location using a bird's eye height, or, if a range is available, the entire range corresponding to the location will be viewed.
  * Operates on the selected view.
- * @alpha
+ * @beta
  */
 export class ViewGlobeLocationTool extends ViewTool {
   private _globalLocation?: GlobalLocation;
@@ -2824,7 +2824,7 @@ export class ViewGlobeLocationTool extends ViewTool {
 }
 
 /** A tool that views the current iModel on the background map so that the extent of the project is visible. Operates on the selected view.
- * @alpha
+ * @beta
  */
 export class ViewGlobeIModelTool extends ViewTool {
   public static toolId = "View.GlobeIModel";
@@ -3445,7 +3445,7 @@ export class ViewToggleCameraTool extends ViewTool {
   }
 }
 
-/** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool to allow the view to panned, zoomed, and rotated while defining the points.
+/** A tool that sets the view camera by two points. This is a PrimitiveTool and not a ViewTool to allow the view to be panned, zoomed, and rotated while defining the points.
  * To show tool settings for specifying camera and target heights above the snap point, make sure formatting and parsing data are cached before the tool starts
  * by calling QuantityFormatter.onInitialized at app startup.
  * @alpha

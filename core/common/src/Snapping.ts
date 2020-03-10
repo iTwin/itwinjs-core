@@ -33,7 +33,6 @@ export interface SnapRequestProps {
   snapAperture?: number;
   snapDivisor?: number;
   subCategoryId?: Id64String;
-  /** @alpha */
   geometryClass?: GeometryClass;
   intersectCandidates?: Id64Array;
   decorationGeometry?: DecorationGeometryProps[];

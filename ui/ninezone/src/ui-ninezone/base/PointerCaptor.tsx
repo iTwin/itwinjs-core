@@ -8,8 +8,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { useRefEffect } from "./useRefEffect";
+import { CommonProps, useRefEffect } from "@bentley/ui-core";
 import "./PointerCaptor.scss";
 
 /** Properties of [[PointerCaptor]] component.

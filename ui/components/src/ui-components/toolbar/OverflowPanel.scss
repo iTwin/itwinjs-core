@@ -1,0 +1,43 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/index";
+@import "variables";
+
+.components-toolbar-overflow-panel {
+  position: absolute;
+  background: $buic-background-1;
+  border-color: $buic-background-5;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 3px;
+  display: flex;
+  align-items: flex-start;
+  height: unset;
+  width: fit-content;
+  padding: unset;
+
+  &.components-vertical-components-direction-bottom {
+    right: -$components-items-border-width;
+    flex-direction: column;
+    top: 100%;
+   }
+
+   &.components-vertical-components-direction-top {
+    right: -$components-items-border-width;
+    flex-direction: column;
+    bottom: 100%
+   }
+
+  &.components-horizontal-components-direction-right {
+    left: 100%;
+    bottom: -$components-items-border-width;
+    flex-direction: row;
+  }
+  &.components-horizontal-components-direction-left {
+    right: 100%;
+    bottom: -$components-items-border-width;
+    flex-direction: row;
+  }
+}

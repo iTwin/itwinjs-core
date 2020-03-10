@@ -38,7 +38,7 @@ import {
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's camera or volume changes.
- * @internal
+ * @beta
  */
 export class ViewingSpace {
   private static get frustumDepth2d() { return Constant.oneMeter; }
@@ -47,9 +47,13 @@ export class ViewingSpace {
 
   /** @internal */
   public frustFraction = 1.0;
-  /** Maximum ratio of frontplane to backplane distance for 24 bit non-logarithmic zbuffer */
+  /** Maximum ratio of frontplane to backplane distance for 24 bit non-logarithmic zbuffer
+   * @internal
+   */
   public static nearScaleNonLog24 = 0.0003;
-  /** Maximum fraction of frontplane to backplane distance for 24 bit logarithmic zbuffer */
+  /** Maximum fraction of frontplane to backplane distance for 24 bit logarithmic zbuffer
+   * @internal
+   */
   public static nearScaleLog24 = 1.0E-8;
   /** View origin, potentially expanded */
   public readonly viewOrigin = new Point3d();
@@ -125,6 +129,8 @@ export class ViewingSpace {
     camera.setEyePoint(eyePoint);
     camera.setFocusDistance(focusDistance);
   }
+
+  /** @internal */
   public getTerrainHeightRange(): Range1d | undefined {
     const frustum = this.getFrustum()!;
     const cartoRange = Range2d.createNull();
@@ -137,7 +143,8 @@ export class ViewingSpace {
     return ApproximateTerrainHeights.instance.getMinimumMaximumHeights(cartoRange);
   }
 
-  private static _minDepth = 1;       // Allowing very small depth will cause frustum calculations to fail.
+  private static _minDepth = 1; // Allowing very small depth will cause frustum calculations to fail.
+
   /** Adjust the front and back planes to encompass the entire viewed volume */
   private adjustZPlanes(origin: Point3d, delta: Vector3d): void {
     const view = this.view;
@@ -216,7 +223,9 @@ export class ViewingSpace {
       delta.z = eyeOrg.z;
   }
 
-  /* get the mapping from NPC to view */
+  /* get the mapping from NPC to view
+   * @internal
+   */
   public calcNpcToView(): Map4d {
     const corners = this.getViewCorners();
     const map = Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high);
@@ -335,12 +344,14 @@ export class ViewingSpace {
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     scrToNpcTran.multiplyPoint3dArrayInPlace(pts);
   }
+
   /** Convert an array of points from CoordSystem.Npc to CoordSystem.View */
   public npcToViewArray(pts: Point3d[]): void {
     const corners = this.getViewCorners();
     for (const p of pts)
       corners.fractionToPoint(p.x, p.y, p.z, p);
   }
+
   /** Convert a point from CoordSystem.View to CoordSystem.Npc
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
@@ -351,6 +362,7 @@ export class ViewingSpace {
     Transform.initFromRange(corners.low, corners.high, undefined, scrToNpcTran);
     return scrToNpcTran.multiplyPoint3d(pt, out);
   }
+
   /** Convert a point from CoordSystem.Npc to CoordSystem.View
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
@@ -359,6 +371,7 @@ export class ViewingSpace {
     const corners = this.getViewCorners();
     return corners.fractionToPoint(pt.x, pt.y, pt.z, out);
   }
+
   /** Convert an array of points from CoordSystem.World to CoordSystem.Npc */
   public worldToNpcArray(pts: Point3d[]): void { this.worldToNpcMap.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
   /** Convert an array of points from CoordSystem.Npc to CoordSystem.World */
@@ -371,6 +384,7 @@ export class ViewingSpace {
   public viewToWorldArray(pts: Point3d[]) { this.worldToViewMap.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
   /** Convert an array of points from CoordSystem.View as Point4ds to CoordSystem.World */
   public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.worldToViewMap.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
+
   /**
    * Convert a point from CoordSystem.World to CoordSystem.Npc
    * @param pt the point to convert
@@ -454,11 +468,14 @@ export class ViewingSpace {
     return box;
   }
 
+  /** @internal */
   public getPixelSizeAtPoint(inPoint?: Point3d) {
     const viewPt = !!inPoint ? this.worldToView(inPoint) : this.npcToView(new Point3d(0.5, 0.5, 0.5));
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
     return this.viewToWorld(viewPt).distance(this.viewToWorld(viewPt2));
   }
+
+  /** @internal */
   public getPreloadFrustum(transformOrScale?: Transform | number, result?: Frustum) {
     const viewFrustum = this.getFrustum(CoordSystem.World, true);
 

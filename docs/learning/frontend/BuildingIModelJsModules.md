@@ -10,7 +10,7 @@ There are four types of modules in the iModel.js frontend ecosystem :
 
 2. Application modules. An iModel.js application consists of a module that contains the code for its unique functionality, with calls into the iModel.js system modules that take advantage of the classes and methods provided by iModel.js. An application module is loaded by the browser (or Electron) at startup.
 
-3. Plugins. A plugin is a module that is designed to be loaded into an iModel.js application in a browser or Electron application that is already executing. The Plugin registers with the iModel.js system, and then has full access to the iModel.js API. A Plugin can be used in multiple iModel.js applications. See the [iModel.js Plugins](./Plugins.md) article for more information.
+3. Plugins. A plugin is a module that is designed to be loaded into an iModel.js application in a browser or Electron application that is already executing. The Plugin registers with the iModel.js system, and then has full access to the iModel.js API. A Plugin can be used in multiple iModel.js applications. See the iModel.js Extensions article for more information.
 
 4. Web Workers. [Web Workers](https://developer.mozilla.org/docs/Web/API/Web_Workers_API/Using_web_workers) are also loaded at runtime, but they run in a separate JavaScript thread in the browser or Electron. Web Workers are used to offload computationally intensive tasks from the main JavaScript thread. They are restricted in the APIs that are available to them, and in particular, they are not allowed access to iModel.js APIs.
 

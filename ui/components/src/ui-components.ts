@@ -63,8 +63,9 @@ export * from "./ui-components/navigationaids/DrawingNavigationAid";
 
 export * from "./ui-components/oidc/SignIn";
 
-export * from "./ui-components/properties/ValueRendererManager";
+export * from "./ui-components/selectable-content/SelectableContent";
 
+export * from "./ui-components/properties/ValueRendererManager";
 export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyRenderer";
@@ -83,6 +84,11 @@ export * from "./ui-components/timeline/TimelineComponent";
 export * from "./ui-components/timeline/DayPicker";
 export * from "./ui-components/timeline/SolarTimeline";
 export * from "./ui-components/timeline/BaseSolarDataProvider";
+
+export * from "./ui-components/toolbar/Toolbar";
+export * from "./ui-components/toolbar/PopupItem";
+export * from "./ui-components/toolbar/PopupItemWithDrag";
+export * from "./ui-components/toolbar/Item";
 
 export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";
@@ -193,6 +199,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * Components for working with OIDC and Sign-in.
  */
 /**
+ * @docs-group-description SelectableContent
+ * Classes and components for working with SelectableContent component.
+ */
+/**
  * @docs-group-description Properties
  * Classes and components for working with Properties.
  */
@@ -207,6 +217,10 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Table
  * Classes and components for working with a Table.
+ */
+/**
+ * @docs-group-description Toolbar
+ * Functions that provide a Toolbar components.
  */
 /**
  * @docs-group-description Tree

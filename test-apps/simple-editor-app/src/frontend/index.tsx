@@ -153,7 +153,7 @@ interface SampleIModelParams {
 
 export class SampleAppIModelApp {
   public static sampleAppNamespace: I18NNamespace;
-  // if using StateManager that supports states from plugins and snippets then we don't explicitly setup redux store in app we just
+  // if using StateManager that supports states from extensions and snippets then we don't explicitly setup redux store in app we just
   // pass our reducer map to the StateManager constructor.
   // deprecated - public static store: Store<RootState>;
   // deprecated - public static rootReducer: any;
@@ -173,7 +173,7 @@ export class SampleAppIModelApp {
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
 
-    // use new state manager that allows dynamic additions from plugins and snippets
+    // use new state manager that allows dynamic additions from extensions and snippets
     if (!this._appStateManager) {
       this._appStateManager = new StateManager({
         sampleAppState: SampleAppReducer,
@@ -228,7 +228,7 @@ export class SampleAppIModelApp {
 
     IModelApp.toolAdmin.defaultToolId = SelectionTool.toolId;
 
-    // store name of this registered control in Redux store so it can be access by plugins
+    // store name of this registered control in Redux store so it can be access by extensions
     UiFramework.setDefaultIModelViewportControlId(IModelViewportControl.id);
 
     await MarkupApp.initialize();
@@ -299,7 +299,7 @@ export class SampleAppIModelApp {
     const viewStates: ViewState[] = [];
     let defaultViewState: ViewState | undefined;
 
-    // store the first selected viewId as default - mostly used by frontstages defined in plugins that want to open a IModelViewport
+    // store the first selected viewId as default - mostly used by frontstages defined in extensions that want to open a IModelViewport
     if (viewIdsSelected && viewIdsSelected.length > 0) {
       for (const viewId of viewIdsSelected) {
         const viewState = await iModelConnection.views.load(viewId);

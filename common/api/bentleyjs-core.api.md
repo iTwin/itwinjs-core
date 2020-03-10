@@ -624,6 +624,8 @@ export enum IModelHubStatus {
     // (undocumented)
     ConflictsAggregate = 102441,
     // (undocumented)
+    ContextDoesNotExist = 102447,
+    // (undocumented)
     DatabaseOperationFailed = 102443,
     // (undocumented)
     DatabaseTemporarilyLocked = 102419,
@@ -1076,6 +1078,35 @@ export class PriorityQueue<T> implements Iterable<T> {
     protected _swap(a: number, b: number): void;
 }
 
+// @public
+export class ReadonlySortedArray<T> implements Iterable<T> {
+    [Symbol.iterator](): Iterator<T>;
+    protected constructor(compare: OrderedComparator<T>, allowDuplicates?: boolean, clone?: CloneFunction<T>);
+    // (undocumented)
+    protected readonly _allowDuplicates: boolean;
+    // (undocumented)
+    protected _array: T[];
+    protected _clear(): void;
+    // (undocumented)
+    protected readonly _clone: CloneFunction<T>;
+    // (undocumented)
+    protected readonly _compare: OrderedComparator<T>;
+    contains(value: T): boolean;
+    protected _extractArray(): T[];
+    findEqual(value: T): T | undefined;
+    forEach(func: (value: T) => void): void;
+    get(index: number): T | undefined;
+    indexOf(value: T): number;
+    protected _insert(value: T, onInsert?: (value: T) => any): number;
+    get isEmpty(): boolean;
+    get length(): number;
+    protected lowerBound(value: T): {
+        index: number;
+        equal: boolean;
+    };
+    protected _remove(value: T): number;
+}
+
 // @beta
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
@@ -1125,31 +1156,11 @@ export interface SerializedClientRequestContext {
 export function shallowClone<T>(value: T): T;
 
 // @public
-export class SortedArray<T> implements Iterable<T> {
-    [Symbol.iterator](): Iterator<T>;
+export class SortedArray<T> extends ReadonlySortedArray<T> {
     constructor(compare: OrderedComparator<T>, allowDuplicates?: boolean, clone?: CloneFunction<T>);
-    // (undocumented)
-    protected readonly _allowDuplicates: boolean;
-    // (undocumented)
-    protected _array: T[];
     clear(): void;
-    // (undocumented)
-    protected readonly _clone: CloneFunction<T>;
-    // (undocumented)
-    protected readonly _compare: OrderedComparator<T>;
-    contains(value: T): boolean;
     extractArray(): T[];
-    findEqual(value: T): T | undefined;
-    forEach(func: (value: T) => void): void;
-    get(index: number): T | undefined;
-    indexOf(value: T): number;
     insert(value: T, onInsert?: (value: T) => any): number;
-    get isEmpty(): boolean;
-    get length(): number;
-    protected lowerBound(value: T): {
-        index: number;
-        equal: boolean;
-    };
     remove(value: T): number;
 }
 

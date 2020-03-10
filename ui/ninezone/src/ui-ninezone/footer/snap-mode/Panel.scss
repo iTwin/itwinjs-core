@@ -5,7 +5,7 @@
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/z-index";
 @import "../variables";
-@import "../../typography";
+@import "~@bentley/ui-core/lib/ui-core/typography";
 
 .nz-footer-snapMode-panel {
   min-width: $nz-footer-popup-min-width;

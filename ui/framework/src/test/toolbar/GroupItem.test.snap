@@ -2,7 +2,7 @@
 
 exports[`GroupItem <GroupButton /> renders correctly 1`] = `
 <GroupItem
-  direction={3}
+  direction={4}
   groupItemDef={
     GroupItemDef {
       "_description": "",
@@ -13,7 +13,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "_onItemExecuted": undefined,
           "_tooltip": "",
           "badgeType": 2,
-          "betaBadge": false,
           "commandId": "tool1",
           "execute": [Function],
           "getKey": [Function],
@@ -36,7 +35,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
             "key": "value",
           },
           "badgeType": undefined,
-          "betaBadge": true,
           "commandId": "tool2",
           "execute": [Function],
           "getKey": [Function],
@@ -61,7 +59,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "_onItemExecuted": undefined,
           "_tooltip": "",
           "badgeType": 2,
-          "betaBadge": false,
           "commandId": "tool1",
           "execute": [Function],
           "getKey": [Function],
@@ -84,7 +81,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
             "key": "value",
           },
           "badgeType": undefined,
-          "betaBadge": true,
           "commandId": "tool2",
           "execute": [Function],
           "getKey": [Function],
@@ -107,9 +103,8 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "_panelLabel": "",
       "_tooltip": "",
       "badgeType": undefined,
-      "betaBadge": false,
       "defaultActiveItemId": undefined,
-      "direction": 3,
+      "direction": 4,
       "directionExplicit": true,
       "execute": [Function],
       "getKey": [Function],
@@ -129,7 +124,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "_onItemExecuted": undefined,
           "_tooltip": "",
           "badgeType": 2,
-          "betaBadge": false,
           "commandId": "tool1",
           "execute": [Function],
           "getKey": [Function],
@@ -152,7 +146,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
             "key": "value",
           },
           "badgeType": undefined,
-          "betaBadge": true,
           "commandId": "tool2",
           "execute": [Function],
           "getKey": [Function],
@@ -184,7 +177,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "_onItemExecuted": undefined,
         "_tooltip": "",
         "badgeType": 2,
-        "betaBadge": false,
         "commandId": "tool1",
         "execute": [Function],
         "getKey": [Function],
@@ -207,7 +199,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "key": "value",
         },
         "badgeType": undefined,
-        "betaBadge": true,
         "commandId": "tool2",
         "execute": [Function],
         "getKey": [Function],

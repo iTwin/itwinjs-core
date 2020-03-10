@@ -3,8 +3,6 @@
 exports[`<ExpandableItem /> renders active correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-expandable nz-active"
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
 >
   <div
     className="nz-triangle"
@@ -14,13 +12,6 @@ exports[`<ExpandableItem /> renders active correctly 1`] = `
   >
     <div
       className="nz-panel"
-    />
-  </Portal>
-  <Portal
-    containerInfo={<div />}
-  >
-    <div
-      className="nz-history"
     />
   </Portal>
 </div>
@@ -31,8 +22,6 @@ exports[`<ExpandableItem /> renders correctly 1`] = `<ActualItem />`;
 exports[`<ExpandableItem /> renders disabled correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-expandable nz-disabled"
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
 >
   <div
     className="nz-triangle"
@@ -44,34 +33,18 @@ exports[`<ExpandableItem /> renders disabled correctly 1`] = `
       className="nz-panel"
     />
   </Portal>
-  <Portal
-    containerInfo={<div />}
-  >
-    <div
-      className="nz-history"
-    />
-  </Portal>
 </div>
 `;
 
 exports[`<ExpandableItem /> renders w/o indicator correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-expandable"
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
 >
   <Portal
     containerInfo={<div />}
   >
     <div
       className="nz-panel"
-    />
-  </Portal>
-  <Portal
-    containerInfo={<div />}
-  >
-    <div
-      className="nz-history"
     />
   </Portal>
 </div>

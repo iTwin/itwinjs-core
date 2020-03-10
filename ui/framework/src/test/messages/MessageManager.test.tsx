@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
 import { MessageManager } from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority, MessageBoxIconType } from "@bentley/imodeljs-frontend";
@@ -19,8 +20,11 @@ describe("MessageManager", () => {
   });
 
   it("maxCachedMessages handled correctly", () => {
+    const clearSpy = sinon.spy();
+    MessageManager.onMessagesUpdatedEvent.addListener(clearSpy);
     MessageManager.clearMessages();
     expect(MessageManager.messages.length).to.eq(0);
+    clearSpy.calledOnce.should.true;
 
     for (let i = 0; i < 500; i++) {
       const details = new NotifyMessageDetails(OutputMessagePriority.Debug, `A brief message - ${i}.`);
@@ -28,9 +32,11 @@ describe("MessageManager", () => {
     }
     expect(MessageManager.messages.length).to.eq(500);
 
+    clearSpy.resetHistory();
     const details2 = new NotifyMessageDetails(OutputMessagePriority.Debug, `A brief message.`);
     MessageManager.addMessage(details2);
     expect(MessageManager.messages.length).to.eq(376);
+    clearSpy.calledTwice.should.true;
 
     const newMax = 375;
     MessageManager.setMaxCachedMessages(newMax);

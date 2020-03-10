@@ -8,13 +8,13 @@ import * as _ from 'lodash';
 import { AbstractMenuItemProps } from '@bentley/ui-abstract';
 import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
+import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActionButton } from '@bentley/ui-abstract';
 import { ActivityMessageDetails } from '@bentley/imodeljs-frontend';
 import { ActivityMessageEndReason } from '@bentley/imodeljs-frontend';
 import { AutoSuggestData } from '@bentley/ui-core';
-import { BackgroundMapType } from '@bentley/imodeljs-common';
 import { BackstageActionItem as BackstageActionItem_2 } from '@bentley/ui-abstract';
 import { BackstageItem } from '@bentley/ui-abstract';
 import { BackstageItemsManager } from '@bentley/ui-abstract';
@@ -35,7 +35,8 @@ import { CommonToolbarItem } from '@bentley/ui-abstract';
 import { ConditionalBooleanValue } from '@bentley/ui-abstract';
 import { ConditionalStringValue } from '@bentley/ui-abstract';
 import * as CSS from 'csstype';
-import { CustomDefinition } from '@bentley/ui-abstract';
+import { CustomButtonDefinition } from '@bentley/ui-abstract';
+import { CustomToolbarItem } from '@bentley/ui-components';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogItemsManager } from '@bentley/ui-abstract';
@@ -51,9 +52,8 @@ import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
-import { Icon as Icon_2 } from '@bentley/ui-core';
-import { IconProps as IconProps_2 } from '@bentley/ui-core';
-import { IconSpec as IconSpec_2 } from '@bentley/ui-core';
+import { IconProps } from '@bentley/ui-core';
+import { IconSpec } from '@bentley/ui-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
@@ -149,6 +149,7 @@ import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-co
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
+import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
@@ -351,7 +352,7 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
     componentDidUpdate(prevProps: BackstageProps): void;
     // (undocumented)
     componentWillUnmount(): void;
-    static getBackstageToggleCommand(overrideIconSpec?: IconSpec_2): import("../shared/CommandItemDef").CommandItemDef;
+    static getBackstageToggleCommand(overrideIconSpec?: IconSpec): import("../shared/CommandItemDef").CommandItemDef;
     static hide(): void;
     // (undocumented)
     static isBackstageVisible: boolean;
@@ -368,6 +369,15 @@ export class Backstage extends React.Component<BackstageProps, BackstageState> {
 export interface BackstageActionItem extends BackstageActionItem_2 {
     // (undocumented)
     readonly type: BackstageItemType.ActionItem;
+}
+
+// @beta
+export function BackstageAppButton(props: BackstageAppButtonProps): JSX.Element;
+
+// @beta
+export interface BackstageAppButtonProps {
+    // (undocumented)
+    icon?: string;
 }
 
 // @beta
@@ -421,7 +431,7 @@ export interface BackstageEventArgs {
 }
 
 // @public @deprecated
-export interface BackstageItemProps extends IconProps_2 {
+export interface BackstageItemProps extends IconProps {
     description?: string | StringGetter;
     descriptionKey?: string;
     isActive?: boolean;
@@ -437,7 +447,7 @@ export interface BackstageItemProps extends IconProps_2 {
 // @public @deprecated
 export interface BackstageItemState {
     // (undocumented)
-    iconSpec: IconSpec_2;
+    iconSpec: IconSpec;
     // (undocumented)
     isActive?: boolean;
     // (undocumented)
@@ -469,7 +479,7 @@ export class BackstageItemUtilities {
 export class BackstageManager {
     // (undocumented)
     close(): void;
-    static getBackstageToggleCommand(overrideIconSpec?: IconSpec_2): CommandItemDef;
+    static getBackstageToggleCommand(overrideIconSpec?: IconSpec): CommandItemDef;
     // (undocumented)
     get isOpen(): boolean;
     readonly onToggled: BeEvent<(args: BackstageToggledArgs) => void>;
@@ -697,14 +707,6 @@ export interface CardSelectedEventArgs {
     index: number;
 }
 
-// @internal (undocumented)
-export interface Category {
-    // (undocumented)
-    children?: string[];
-    // (undocumented)
-    key: string;
-}
-
 // @public
 export function CategoryTree(props: CategoryTreeProps): JSX.Element;
 
@@ -718,59 +720,11 @@ export interface CategoryTreeProps {
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     // @alpha
-    hideAll?: BeUiEvent<void>;
+    filterInfo?: VisibilityTreeFilterInfo;
     iModel: IModelConnection;
-    // @alpha
-    showAll?: BeUiEvent<void>;
-    showSearchBox?: boolean;
-}
-
-// @internal (undocumented)
-export class CategoryVisibilityHandler implements IVisibilityHandler {
-    constructor(params: CategoryVisibilityHandlerParams);
-    // (undocumented)
-    activeView?: Viewport;
-    // (undocumented)
-    allViewports?: boolean;
-    // (undocumented)
-    categories: Category[];
-    // (undocumented)
-    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
-    // (undocumented)
-    dispose(): void;
-    enableCategory(ids: string[], enabled: boolean, enableAllSubCategories?: boolean): void;
-    enableSubCategory(key: string, enabled: boolean): void;
-    // (undocumented)
-    getParent(key: string): Category | undefined;
-    // (undocumented)
-    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus;
-    // (undocumented)
-    hideAll(filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
-    // (undocumented)
-    isCategoryVisible(id: string): boolean;
-    // (undocumented)
-    isSubCategoryVisible(id: string): boolean;
-    // (undocumented)
-    get onVisibilityChange(): (() => void) | undefined;
-    set onVisibilityChange(callback: (() => void) | undefined);
-    // (undocumented)
-    setEnableAll(enable: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
-    // (undocumented)
-    showAll(filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
-}
-
-// @internal (undocumented)
-export interface CategoryVisibilityHandlerParams {
-    // (undocumented)
-    activeView?: Viewport;
-    // (undocumented)
-    allViewports?: boolean;
-    // (undocumented)
-    categories: Category[];
-    // (undocumented)
-    imodel: IModelConnection;
-    // (undocumented)
-    onVisibilityChange?: () => void;
+    onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
+    // @internal
+    viewManager?: ViewManager;
 }
 
 // @internal
@@ -1444,7 +1398,9 @@ export class CustomItemDef extends ActionButtonItemDef {
     // (undocumented)
     get id(): string;
     // (undocumented)
-    reactElement: React.ReactNode;
+    popupPanelNode?: React.ReactNode;
+    // (undocumented)
+    reactElement?: React.ReactNode;
     // (undocumented)
     toolbarReactNode(index?: number): React.ReactNode;
 }
@@ -1454,13 +1410,9 @@ export interface CustomItemProps extends ItemProps {
     // (undocumented)
     customId?: string;
     // (undocumented)
-    reactElement: React_2.ReactNode;
-}
-
-// @beta
-export interface CustomToolbarButton extends CustomDefinition {
+    popupPanelNode?: React_2.ReactNode;
     // (undocumented)
-    itemDef: CustomItemDef;
+    reactElement?: React_2.ReactNode;
 }
 
 // @public
@@ -1669,9 +1621,6 @@ export class DrawingNavigationAidControl extends NavigationAidControl {
     static navigationAidId: string;
 }
 
-// @internal (undocumented)
-export type dummy_node = React.ReactNode;
-
 // @public
 export class ElementTooltip extends React.Component<CommonProps, ElementTooltipState> {
     constructor(props: CommonProps);
@@ -1735,9 +1684,14 @@ export interface ExtensibleToolbarProps {
 }
 
 // @public
-export class FooterModeField extends React.PureComponent<StatusFieldProps> {
+export class FooterModeField extends React.PureComponent<FooterModeFieldProps> {
     // (undocumented)
     render(): React.ReactNode;
+}
+
+// @public
+export interface FooterModeFieldProps extends StatusFieldProps {
+    children?: React.ReactNode;
 }
 
 // @beta
@@ -2019,8 +1973,6 @@ export class FrontstageDef {
     get contentGroupId(): string;
     // (undocumented)
     get contentLayoutDef(): ContentLayoutDef | undefined;
-    // @deprecated (undocumented)
-    contextToolbarEnabled: boolean;
     // (undocumented)
     get defaultContentId(): string;
     // (undocumented)
@@ -2035,12 +1987,8 @@ export class FrontstageDef {
     // @alpha
     getStagePanelDef(location: StagePanelLocation_2): StagePanelDef | undefined;
     getZoneDef(zoneId: number): ZoneDef | undefined;
-    // @deprecated (undocumented)
-    hubEnabled: boolean;
     // (undocumented)
     get id(): string;
-    // @deprecated (undocumented)
-    inheritZoneStates: boolean;
     // @internal
     initializeFromProps(props: FrontstageProps): void;
     initializeFromProvider(frontstageProvider: FrontstageProvider): void;
@@ -2265,6 +2213,9 @@ export type FunctionType = (...args: any[]) => any;
 // @public @deprecated
 export const getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
 
+// @alpha
+export function getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise<string[]>;
+
 // @internal (undocumented)
 export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps;
 
@@ -2404,24 +2355,6 @@ export interface HTMLElementPopupProps extends PopupPropsBase {
     // (undocumented)
     relativePosition: RelativePosition;
 }
-
-// @public @deprecated
-export const Icon: typeof Icon_2;
-
-// @beta
-export class IconHelper {
-    static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
-    static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
-    // (undocumented)
-    static get reactIconKey(): string;
-}
-
-// @public @deprecated
-export interface IconProps extends IconProps_2 {
-}
-
-// @public @deprecated
-export type IconSpec = IconSpec_2;
 
 // @beta
 export const IModelConnectedCategoryTree: any;
@@ -2634,8 +2567,6 @@ export abstract class ItemDefBase {
     applicationData?: any;
     // (undocumented)
     badgeType?: BadgeType;
-    // @deprecated (undocumented)
-    betaBadge: boolean;
     get description(): string;
     // (undocumented)
     iconElement?: React.ReactNode;
@@ -2692,11 +2623,9 @@ export class ItemMap extends Map<string, ItemDefBase> {
 }
 
 // @public
-export interface ItemProps extends IconProps_2 {
+export interface ItemProps extends IconProps {
     applicationData?: any;
     badgeType?: BadgeType;
-    // @deprecated
-    betaBadge?: boolean;
     description?: string | StringGetter | ConditionalStringValue;
     descriptionKey?: string;
     icon?: string | ConditionalStringValue;
@@ -3114,6 +3043,7 @@ export class MessageManager {
     // (undocumented)
     static readonly onInputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent;
     static readonly onMessageAddedEvent: MessageAddedEvent;
+    static readonly onMessagesUpdatedEvent: MessagesUpdatedEvent;
     // @beta
     static readonly onToolAssistanceChangedEvent: ToolAssistanceChangedEvent;
     static openMessageBox(mbType: MessageBoxType, message: HTMLElement | string, icon: MessageBoxIconType): Promise<MessageBoxValue>;
@@ -3126,6 +3056,10 @@ export class MessageManager {
     // @internal (undocumented)
     static showAlertMessageBox(messageDetails: NotifyMessageDetails): void;
     }
+
+// @public
+export class MessagesUpdatedEvent extends UiEvent<{}> {
+}
 
 // @public
 export class ModalDialogChangedEvent extends DialogChangedEvent {
@@ -3183,7 +3117,7 @@ export interface ModalFrontstageProps extends CommonProps {
     appBarRight?: React.ReactNode;
     closeModal: () => any;
     isOpen?: boolean;
-    navigateBack: () => any;
+    navigateBack?: () => any;
     title: string;
 }
 
@@ -3267,9 +3201,12 @@ export interface ModelsTreeProps {
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
+    // @alpha
+    filterInfo?: VisibilityTreeFilterInfo;
     iModel: IModelConnection;
     // @internal
     modelsVisibilityHandler?: VisibilityHandler;
+    onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
     rootElementRef?: React.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
     // @alpha
@@ -3455,7 +3392,7 @@ export interface PointerMessageProps extends CommonProps {
     message?: string;
 }
 
-// @public
+// @public @deprecated
 export class PopupButton extends React.Component<PopupButtonProps, BaseItemState> {
     constructor(props: PopupButtonProps);
     // (undocumented)
@@ -3468,16 +3405,16 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     render(): JSX.Element | null;
 }
 
-// @public
+// @public @deprecated
 export type PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode;
 
-// @public
+// @public @deprecated
 export interface PopupButtonChildrenRenderPropArgs {
     // (undocumented)
     closePanel: () => void;
 }
 
-// @public
+// @public @deprecated
 export interface PopupButtonProps extends ItemProps, CommonProps {
     // (undocumented)
     children?: React.ReactNode | PopupButtonChildrenRenderProp;
@@ -3641,26 +3578,6 @@ export class PropsHelper {
     static isShallowEqual(newObj: any, prevObj: any): boolean;
 }
 
-// @alpha
-export class RealityDataPicker extends React.Component<RealityDataPickerProps, RealityDataPickerState> {
-    constructor(props: RealityDataPickerProps);
-    // (undocumented)
-    get attachedModels(): AttachedRealityModel[];
-    componentDidMount(): Promise<void>;
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @alpha @deprecated
-export class RealityDataPickerControl extends WidgetControl {
-    constructor(info: ConfigurableCreateInfo, options: any);
-    // (undocumented)
-    static get iconSpec(): string;
-    // (undocumented)
-    static get label(): string;
-}
-
 // @public
 export type Reducer<S, A> = (state: S, action: A) => S;
 
@@ -3692,7 +3609,7 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
 
 // @beta
 export interface ReviewToolWidgetProps {
-    iconSpec?: IconSpec_2;
+    iconSpec?: IconSpec;
     prefixHorizontalItems?: ItemList;
     prefixVerticalItems?: ItemList;
     showCategoryAndModelsContextTools?: boolean;
@@ -4511,7 +4428,7 @@ export enum SyncUiEventId {
     SelectionSetChanged = "selectionsetchanged",
     TaskActivated = "taskactivated",
     ToolActivated = "toolactivated",
-    ViewStateChanged = "viewstateshanged",
+    ViewStateChanged = "viewstatechanged",
     WidgetStateChanged = "widgetstatechanged",
     WorkflowActivated = "workflowactivated"
 }
@@ -4620,6 +4537,9 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     render(): JSX.Element;
     }
 
+// @alpha
+export function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
+
 // @public
 export class ToolActivatedEvent extends UiEvent<ToolActivatedEventArgs> {
 }
@@ -4716,7 +4636,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
 // @beta
 export class ToolbarHelper {
     static constructChildToolbarItems(itemDefs: AnyItemDef[]): Array<ActionButton | GroupButton_2>;
-    static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomDefinition>): CustomToolbarButton;
+    static createCustomDefinitionToolbarItem(itemPriority: number, itemDef: CustomItemDef, overrides?: Partial<CustomButtonDefinition>): CustomToolbarItem;
     // (undocumented)
     static createNodeForToolbarItem(item: CommonToolbarItem, onItemExecuted?: OnItemExecutedFunc): React.ReactNode;
     static createToolbarItemFromItemDef(itemPriority: number, itemDef: AnyItemDef): CommonToolbarItem;
@@ -4725,7 +4645,7 @@ export class ToolbarHelper {
     // (undocumented)
     static getIconReactNode(item: ActionButton | GroupButton_2): React.ReactNode;
     // @alpha
-    static isCustomToolbarButton: (item: CommonToolbarItem) => item is CustomToolbarButton;
+    static isCustomToolbarButton: (item: CommonToolbarItem) => item is CustomToolbarItem;
 }
 
 // @alpha
@@ -4922,6 +4842,16 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
     render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<ToolWidgetState>;
+}
+
+// @beta
+export function ToolWidgetComposer(props: ToolWidgetComposerProps): JSX.Element;
+
+// @beta
+export interface ToolWidgetComposerProps {
+    cornerItem?: React.ReactNode;
+    horizontalToolbar?: React.ReactNode;
+    verticalToolbar?: React.ReactNode;
 }
 
 // @public @deprecated
@@ -5135,6 +5065,13 @@ export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2
 
 // @beta
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
+
+// @alpha
+export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | AbstractTreeNodeLoaderWithProvider<import("@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider").FilteredPresentationTreeDataProvider>;
+    isFiltering: boolean;
+    nodeHighlightingProps: import("@bentley/ui-components").HighlightableTreeProps | undefined;
+};
 
 // @alpha
 export const useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element;
@@ -5360,6 +5297,14 @@ export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEv
 }
 
 // @alpha
+export interface VisibilityTreeFilterInfo {
+    // (undocumented)
+    activeMatchIndex?: number;
+    // (undocumented)
+    filter: string;
+}
+
+// @alpha
 export const visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element;
 
 // @alpha
@@ -5430,8 +5375,6 @@ export class WidgetDef {
     get applicationData(): any | undefined;
     // (undocumented)
     get badgeType(): BadgeType | undefined;
-    // @deprecated (undocumented)
-    get betaBadge(): boolean;
     // (undocumented)
     canOpen(): boolean;
     // (undocumented)
@@ -5568,9 +5511,7 @@ export function WidgetPanelsToolbars(): JSX.Element;
 export function WidgetPanelsToolSettings(): JSX.Element | null;
 
 // @public
-export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps_2 {
-    // @deprecated
-    readonly betaBadge?: boolean;
+export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent">, IconProps {
     classId?: string | ConfigurableUiControlConstructor;
     control?: ConfigurableUiControlConstructor;
     element?: React.ReactNode;
@@ -5812,7 +5753,7 @@ export enum WidgetType {
 }
 
 // @beta
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "style" | "className" | "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
 
 // @alpha
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
@@ -5870,7 +5811,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
 };
 
 // @beta
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "style" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
 
 // @public
 export class Workflow extends ItemDefBase {

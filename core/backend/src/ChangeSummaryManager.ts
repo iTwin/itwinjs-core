@@ -13,7 +13,7 @@ import * as path from "path";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { IModelDb } from "./IModelDb";
+import { IModelDb, BriefcaseIModelDb } from "./IModelDb";
 import { KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -142,7 +142,7 @@ export class ChangeSummaryManager {
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
    */
-  public static async extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: IModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> {
+  public static async extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseIModelDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> {
     requestContext.enter();
     if (!iModel || !iModel.briefcase || !iModel.briefcase.isOpen || iModel.openParams.isSnapshot)
       throw new IModelError(IModelStatus.BadArg, "iModel to extract change summaries for must be open and must not be a snapshot iModel.");

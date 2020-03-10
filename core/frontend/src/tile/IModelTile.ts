@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
   assert,
+  BeTimePoint,
   ByteStream,
 } from "@bentley/bentleyjs-core";
 import {
@@ -159,7 +160,7 @@ export class IModelTile extends Tile {
       this._sizeMultiplier = sizeMult;
       this._contentId = this.iModelTree.contentIdProvider.idFromParentAndMultiplier(this.contentId, sizeMult);
       if (undefined !== this.children && this.children.length > 1)
-        this.unloadChildren();
+        this.disposeChildren();
     }
   }
 
@@ -205,12 +206,28 @@ export class IModelTile extends Tile {
     }
   }
 
-  public selectTiles(selected: IModelTile[], args: TileDrawArgs, numSkipped: number): SelectParent {
-    const vis = this.computeVisibility(args);
-    if (TileVisibility.OutsideFrustum === vis) {
-      this.unloadChildren(args.purgeOlderThan);
-      return SelectParent.No;
+  public pruneChildren(olderThan: BeTimePoint): void {
+    // A tile's usage marker indicates its the most recent time its *children* were used.
+    if (this.usageMarker.isExpired(olderThan)) {
+      this.disposeChildren();
+      return;
     }
+
+    // this node has been used recently. Keep it, but potentially unload its grandchildren.
+    const children = this.iModelChildren;
+    if (undefined !== children)
+      for (const child of children)
+        child.pruneChildren(olderThan);
+  }
+
+  public selectTiles(selected: IModelTile[], args: TileDrawArgs, numSkipped: number): SelectParent {
+    let vis = this.computeVisibility(args);
+    if (TileVisibility.OutsideFrustum === vis)
+      return SelectParent.No;
+
+    const maxDepth = this.iModelTree.debugMaxDepth;
+    if (undefined !== maxDepth && this.depth >= maxDepth)
+      vis = TileVisibility.Visible;
 
     if (TileVisibility.Visible === vis) {
       // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
@@ -219,9 +236,8 @@ export class IModelTile extends Tile {
 
       if (this.hasGraphics) {
         // It can be drawn - select it
-        ++args.context.viewport.numReadyTiles;
+        args.markReady(this);
         selected.push(this);
-        this.unloadChildren(args.purgeOlderThan);
       } else if (!this.isReady) {
         // It can't be drawn. Try to draw children in its place; otherwise draw the parent.
         // Do not load/request the children for this purpose.
@@ -254,7 +270,7 @@ export class IModelTile extends Tile {
           }
         }
 
-        this._childrenLastUsed = args.now;
+        args.markUsed(this);
       }
 
       // We're drawing either this tile, or its direct children.
@@ -284,14 +300,14 @@ export class IModelTile extends Tile {
     const children = canSkipThisTile ? this.iModelChildren : undefined;
     if (canSkipThisTile && TileTreeLoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
-      this._childrenLastUsed = args.now;
+      args.markUsed(this);
     }
 
     if (undefined !== children) {
       // If we are the root tile and we are not displayable, then we want to draw *any* currently available children in our place, or else we would draw nothing.
       // Otherwise, if we want to draw children in our place, we should wait for *all* of them to load, or else we would show missing chunks where not-yet-loaded children belong.
       const isUndisplayableRootTile = this.isUndisplayableRootTile;
-      this._childrenLastUsed = args.now;
+      args.markUsed(this);
       let drawChildren = true;
       const initialSize = selected.length;
       for (const child of children) {
@@ -320,7 +336,7 @@ export class IModelTile extends Tile {
         selected.push(this);
         if (!canSkipThisTile) {
           // This tile is too coarse, but we require loading it before we can start loading higher-res children.
-          ++args.context.viewport.numReadyTiles;
+          args.markReady(this);
         }
       }
 

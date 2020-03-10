@@ -9,11 +9,11 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { DictionaryModel, ElementAspect, IModelDb, IModelJsFs, OpenParams, SpatialCategory } from "../imodeljs-backend";
+import { BriefcaseIModelDb, DictionaryModel, ElementAspect, IModelDb, IModelJsFs, OpenParams, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 
-export async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
+async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
   // Create a new physical model.
   const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
   // Find or create a SpatialCategory.
@@ -22,7 +22,10 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
   const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
   // Reserve all of the codes that are required by the new model and category.
   try {
-    await rwIModel.concurrencyControl.request(requestContext);
+    if (rwIModel instanceof BriefcaseIModelDb) {
+      await rwIModel.concurrencyControl.request(requestContext);
+      requestContext.enter();
+    }
   } catch (err) {
     if (err instanceof IModelHubError) {
       assert.fail(JSON.stringify(err));
@@ -34,7 +37,7 @@ export async function createNewModelAndCategory(requestContext: AuthorizedClient
 describe("ElementAspectPerformance", () => {
   const reporter = new Reporter();
   let requestContext: AuthorizedClientRequestContext;
-  let iModelDbHub: IModelDb;
+  let iModelDbHub: BriefcaseIModelDb;
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
@@ -50,7 +53,7 @@ describe("ElementAspectPerformance", () => {
     Config.App.merge(myAppConfig);
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-    iModelDbHub = await IModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    iModelDbHub = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelDbHub);
   });
 
@@ -64,7 +67,7 @@ describe("ElementAspectPerformance", () => {
   it("SimpleElement-Insert-Update-Delete-Read", async () => {
     const snapshotPath = path.join(KnownTestLocations.outputDir, "SimpleELe.bim");
     assert.exists(iModelDbHub);
-    const iModelDb = iModelDbHub.createSnapshot(snapshotPath);
+    const iModelDb = SnapshotIModelDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
     let eleId: Id64String;
@@ -109,7 +112,7 @@ describe("ElementAspectPerformance", () => {
       totalTimeDeleteSimpELeGet = totalTimeDeleteSimpELeGet + elapsedTime3;
 
     }
-    iModelDb.closeSnapshot();
+    iModelDb.close();
     reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeInsertSimpELeGet, { ElementCount: count1, Operation: "Insert" });
     reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeUpdateSimpELeGet, { ElementCount: count1, Operation: "Update" });
     reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeDeleteSimpELeGet, { ElementCount: count1, Operation: "Delete" });
@@ -119,7 +122,7 @@ describe("ElementAspectPerformance", () => {
   it("UniqueAspectElement-Insert-Update-Delete-Read", async () => {
     const snapshotPath = path.join(KnownTestLocations.outputDir, "UniqueAspectELe.bim");
     assert.exists(iModelDbHub);
-    const iModelDb = iModelDbHub.createSnapshot(snapshotPath);
+    const iModelDb = SnapshotIModelDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
     interface TestAspectProps extends ElementAspectProps { testUniqueAspectProperty: string; }
@@ -182,7 +185,7 @@ describe("ElementAspectPerformance", () => {
       const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
       totalTimeDelete = totalTimeDelete + elapsedTime3;
     }
-    iModelDb.closeSnapshot();
+    iModelDb.close();
     reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeInsert, { ElementCount: count1, Operation: "Insert" });
     reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeUpdate, { ElementCount: count1, Operation: "Update" });
     reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeDelete, { ElementCount: count1, Operation: "Delete" });
@@ -192,7 +195,7 @@ describe("ElementAspectPerformance", () => {
   it("MultiAspectElement-Insert-Update-Delete-Read", async () => {
     const snapshotPath = path.join(KnownTestLocations.outputDir, "MultiApectELe.bim");
     assert.exists(iModelDbHub);
-    const iModelDb = iModelDbHub.createSnapshot(snapshotPath);
+    const iModelDb = SnapshotIModelDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
     const count1 = 10000;
@@ -263,7 +266,7 @@ describe("ElementAspectPerformance", () => {
       const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
       totalTimeDelete = totalTimeDelete + elapsedTime3;
     }
-    iModelDb.closeSnapshot();
+    iModelDb.close();
     reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeInsert, { ElementCount: count1, Operation: "Insert" });
     reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeUpdate, { ElementCount: count1, Operation: "Update" });
     reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeDelete, { ElementCount: count1, Operation: "Delete" });

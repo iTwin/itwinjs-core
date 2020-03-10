@@ -32,7 +32,6 @@ export * from "./ModelState";
 export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./QuantityFormatter";
-export * from "./RenderCompatibility";
 export * from "./RenderScheduleState";
 export * from "./SelectionSet";
 export * from "./Sheet";
@@ -51,7 +50,7 @@ export * from "./ViewState";
 export * from "./Viewport";
 export * from "./oidc/OidcBrowserClient";
 export * from "./oidc/OidcDesktopClientRenderer";
-export * from "./plugin/Plugin";
+export * from "./extension/Extension";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";
@@ -148,8 +147,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * See [the learning articles]($docs/learning/frontend/index.md).
  */
 /**
- * @docs-group-description Plugins
- * Classes for creating and managing runtime [Plugins]($docs/learning/frontend/Plugins.md)
+ * @docs-group-description Extensions
+ * Classes for creating and managing runtime [Extensions]($docs/learning/frontend/Extensions.md)
  */
 /**
  * @docs-group-description Properties
@@ -183,4 +182,8 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
 /**
  * @docs-group-description Features
  * Classes for Feature Tracking classification.
+ */
+/**
+ * @docs-group-description Tiles
+ * Classes representing graphics as [hierarchical 3d tiles](https://github.com/CesiumGS/3d-tiles).
  */

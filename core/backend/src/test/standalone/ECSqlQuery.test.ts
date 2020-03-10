@@ -2,10 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelDb } from "../../IModelDb";
 import { Id64 } from "@bentley/bentleyjs-core";
+import { assert } from "chai";
+import { IModelDb, SnapshotIModelDb } from "../../imodeljs-backend";
+import { IModelTestUtils } from "../IModelTestUtils";
+
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object): Promise<any[]> {
   const rows: any[] = [];
   for await (const row of iModel.query(ecsql, bindings)) {
@@ -15,26 +16,26 @@ async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | 
 }
 
 describe("ECSql Query", () => {
-  let imodel1: IModelDb;
-  let imodel2: IModelDb;
-  let imodel3: IModelDb;
-  let imodel4: IModelDb;
-  let imodel5: IModelDb;
+  let imodel1: SnapshotIModelDb;
+  let imodel2: SnapshotIModelDb;
+  let imodel3: SnapshotIModelDb;
+  let imodel4: SnapshotIModelDb;
+  let imodel5: SnapshotIModelDb;
 
   before(async () => {
-    imodel1 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("test.bim"));
-    imodel2 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
-    imodel3 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
-    imodel4 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
-    imodel5 = IModelDb.openSnapshot(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel1 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel2 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    imodel3 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
+    imodel4 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("GetSetAutoHandledArrayProperties.bim"));
+    imodel5 = SnapshotIModelDb.open(IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
   });
 
   after(async () => {
-    imodel1.closeSnapshot();
-    imodel2.closeSnapshot();
-    imodel3.closeSnapshot();
-    imodel4.closeSnapshot();
-    imodel5.closeSnapshot();
+    imodel1.close();
+    imodel2.close();
+    imodel3.close();
+    imodel4.close();
+    imodel5.close();
   });
 
   // new new addon build

@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { IModelError } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelDb, BackendRequestContext } from "../../imodeljs-backend";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { BackendRequestContext, SnapshotIModelDb } from "../../imodeljs-backend";
 import { IModelSchemaLoader } from "../../IModelSchemaLoader";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelError } from "@bentley/imodeljs-common";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("IModelSchemaLoader", () => {
-  let imodel: IModelDb;
+  let imodel: SnapshotIModelDb;
   const requestContext = new BackendRequestContext();
 
   before(async () => {
@@ -23,7 +23,7 @@ describe("IModelSchemaLoader", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
   });
 
   it("should load a known EC Schema by name from an existing iModel", () => {

@@ -1,0 +1,101 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/z-index";
+@import "~@bentley/ui-core/lib/ui-core/geometry";
+@import "variables";
+
+.components-toolbar-popup-panel-container {
+  @include uicore-z-index(toolbar-panels);
+  position: absolute;
+  width: fit-content;
+  background: $buic-background-1;
+  border-color: $buic-background-5;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 3px;
+
+  &.components-direction-right {
+    left: $components-items-border-width;
+    transform: translateX($components-desktop-item-width);
+    top:0;
+  }
+
+  &.components-direction-left {
+    right: $components-items-border-width;
+    transform: translateX(-$components-desktop-item-width);
+    top:0;
+  }
+
+  &.components-direction-bottom {
+    top: $components-items-border-width;
+    transform: translateY($components-desktop-item-width);
+
+    &.components-panel-alignment-end {
+      right: $components-items-border-width;
+    }
+  }
+
+  &.components-direction-top {
+    bottom: 100%;
+
+    &.components-panel-alignment-end {
+      right: $components-items-border-width;
+    }
+  }
+}
+
+.components-toolbar-expandable-button {
+  $triangle-width: 4px;
+  $triangle-height: $triangle-width;
+  $shadow-vertical-offset: 1px;
+  $margin-from-triangle-to-stroke: 3px;
+  $arrow-shadow: $icon-shadow;
+  position: relative;
+
+  > * {
+    &:not(.components-triangle) {
+      height: 100%;
+      width: 100%;
+    }
+  }
+
+  &:hover > .components-triangle {
+    @include triangle-bottom-right-color($hovered-icon-color);
+  }
+
+  > .components-triangle {
+    border-radius: 0;
+    position: absolute;
+    right: $margin-from-triangle-to-stroke;
+    bottom: $margin-from-triangle-to-stroke;
+    filter: $arrow-shadow;
+    pointer-events: none;
+
+    @include triangle-bottom-right($width: $triangle-width, $height: $triangle-height, $color: $buic-icon-color);
+  }
+
+  &:active > .components-triangle {
+    filter: $no-shadow;
+
+    @include triangle-bottom-right-color($pressed-icon-color);
+  }
+
+  &.components-active {
+    &:not(:active):not(.components-disabled) {
+      > .components-triangle {
+        filter: $no-shadow;
+
+        @include triangle-bottom-right-color($active-icon-color);
+      }
+    }
+  }
+
+  &.components-disabled {
+    > .components-triangle {
+      @include triangle-bottom-right-color($disabled-icon-color);
+    }
+  }
+
+}

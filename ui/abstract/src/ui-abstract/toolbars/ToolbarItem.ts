@@ -82,20 +82,25 @@ export interface GroupButton extends ToolbarItem {
   /** label shown as the title in at top of group panel. */
   readonly panelLabel?: string | ConditionalStringValue;
   /** children of the group */
-  readonly items: Array<ActionButton | GroupButton>;
+  readonly items: ReadonlyArray<ActionButton | GroupButton>;
 }
 
 /** Describes the data needed to insert a custom button into a toolbar.
  * @beta
  */
-export interface CustomDefinition extends ToolbarItem {
+export interface CustomButtonDefinition extends ToolbarItem {
+  /** Name of icon WebFont entry or if specifying an SVG symbol added by plug on use "svg:" prefix to imported symbol Id. */
+  readonly icon?: string | ConditionalStringValue;
+  /** label, shown as tool tip on group button or a group button label in a group panel. */
+  readonly label?: string | ConditionalStringValue;
+  /** parameter that marks data as being a custom definition. */
   readonly isCustom: true;
 }
 
 /** Any Button Type that can be inserted into a toolbar.
  * @beta
  */
-export type CommonToolbarItem = ActionButton | GroupButton | CustomDefinition;
+export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
 /** Type for Toolbar Item Id
  * @beta
@@ -115,7 +120,7 @@ export class ToolbarItemUtilities {
   })
 
   /** Creates a Group button */
-  public static createGroupButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: Array<ActionButton | GroupButton>, overrides?: Partial<GroupButton>): GroupButton => ({
+  public static createGroupButton = (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: ReadonlyArray<ActionButton | GroupButton>, overrides?: Partial<GroupButton>): GroupButton => ({
     id, itemPriority,
     icon, label,
     items,
@@ -132,8 +137,8 @@ export class ToolbarItemUtilities {
     return (item as GroupButton).items !== undefined;
   }
 
-  /** CustomDefinition type guard. */
-  public static isCustomDefinition(item: CommonToolbarItem): item is CustomDefinition {
-    return !!(item as CustomDefinition).isCustom;
+  /** CustomButtonDefinition type guard. */
+  public static isCustomDefinition(item: CommonToolbarItem): item is CustomButtonDefinition {
+    return !!(item as CustomButtonDefinition).isCustom;
   }
 }

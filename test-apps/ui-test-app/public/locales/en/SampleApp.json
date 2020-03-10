@@ -36,7 +36,9 @@
     "autoHideTitle": "Auto-Hide UI",
     "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
     "dragInteractionTitle": "Drag Interaction",
-    "dragInteractionDescription": "Toggle the toolbar interaction between click and drag"
+    "dragInteractionDescription": "Toggle the toolbar interaction between click and drag",
+    "newUiTitle": "Use 2.0 Ui",
+    "newUiDescription": "Use new 2.0 UI layout"
   },
   "backstage": {
     "command": "Command",
@@ -161,7 +163,8 @@
     "showHeightEditor": "Show Height Editor",
     "showContextMenu": "Show Context Menu",
     "showToolbar": "Show Toolbar",
-    "showHTMLElement": "Show HTML Element"
+    "showHTMLElement": "Show HTML Element",
+    "clearMessages": "Clear Messages"
   },
   "tools": {
     "ToolWithSettings": {

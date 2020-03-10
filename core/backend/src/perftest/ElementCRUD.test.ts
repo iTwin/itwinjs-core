@@ -2,19 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Arc3d, Point3d } from "@bentley/geometry-core";
+import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { SpatialCategory, Element, IModelDb } from "../imodeljs-backend";
-import { ECSqlStatement } from "../ECSqlStatement";
+import { BackendRequestContext, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotIModelDb, SpatialCategory } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
-import { GeometricElementProps, Code, SubCategoryAppearance, ColorDef, IModel, GeometryStreamProps } from "@bentley/imodeljs-common";
-import { Point3d, Arc3d } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { KnownTestLocations } from "../test/KnownTestLocations";
-import { IModelJsFs } from "../IModelJsFs";
-import { BackendRequestContext } from "../BackendRequestContext";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 
 describe("PerformanceElementsTests", () => {
   const reporter = new Reporter();
@@ -119,10 +116,11 @@ describe("PerformanceElementsTests", () => {
         if (IModelJsFs.existsSync(pathname))
           return;
 
-        const seedIModel = IModelDb.createSnapshot(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotIModelDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
-        seedIModel.setAsMaster();
+        const result: DbResult = seedIModel.nativeDb.setAsMaster();
+        assert.equal(DbResult.BE_SQLITE_OK, result);
         assert.isDefined(seedIModel.getMetaData("PerfTestDomain:" + name), name + "is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -137,7 +135,7 @@ describe("PerformanceElementsTests", () => {
         }
 
         seedIModel.saveChanges();
-        seedIModel.closeSnapshot();
+        seedIModel.close();
       }
     }
   });
@@ -179,7 +177,7 @@ describe("PerformanceElementsTests", () => {
             const row = stmt.getRow();
             assert.equal(row.count, size + opCount);
           });
-          perfimodel.closeSnapshot();
+          perfimodel.close();
         }
       }
     }
@@ -215,7 +213,7 @@ describe("PerformanceElementsTests", () => {
             const row = stmt.getRow();
             assert.equal(row.count, size - opCount);
           });
-          perfimodel.closeSnapshot();
+          perfimodel.close();
         }
       }
     }
@@ -252,7 +250,7 @@ describe("PerformanceElementsTests", () => {
 
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsRead", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });
-          perfimodel.closeSnapshot();
+          perfimodel.close();
         }
       }
     }
@@ -306,7 +304,7 @@ describe("PerformanceElementsTests", () => {
           }
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("PerformanceElementsTests", "ElementsUpdate", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount });
-          perfimodel.closeSnapshot();
+          perfimodel.close();
         }
       }
     }

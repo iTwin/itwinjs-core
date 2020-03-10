@@ -8,7 +8,7 @@
 
 import { CachedGeometry } from "./CachedGeometry";
 import { Id64, Id64String, assert } from "@bentley/bentleyjs-core";
-import { ViewFlag } from "@bentley/imodeljs-common";
+import { ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { Batch, Branch } from "./Graphic";
 import { BranchState } from "./BranchState";
@@ -144,7 +144,7 @@ export function getAnimationBranchState(branch: Branch, target: Target): Animati
 export class PushBranchCommand {
   public readonly opcode = "pushBranch";
 
-  private static _viewFlagOverrides?: ViewFlag.Overrides;
+  private static _viewFlagOverrides?: ViewFlagOverrides;
 
   public constructor(public readonly branch: Branch) { }
 
@@ -166,7 +166,7 @@ export class PushBranchCommand {
     if (anim.clip !== undefined && anim.clip.type === ClippingType.Planes) {
       this.branch.clips = anim.clip as ClipPlanesVolume;
       if (undefined === PushBranchCommand._viewFlagOverrides) {
-        PushBranchCommand._viewFlagOverrides = new ViewFlag.Overrides();
+        PushBranchCommand._viewFlagOverrides = new ViewFlagOverrides();
         PushBranchCommand._viewFlagOverrides.setShowClipVolume(true);
       }
 

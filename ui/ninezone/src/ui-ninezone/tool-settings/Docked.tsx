@@ -8,10 +8,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { useRefs } from "../base/useRefs";
-import { useResizeObserver } from "../base/useResizeObserver";
-import { useOnOutsideClick } from "../base/useOnOutsideClick";
+import { CommonProps, useRefs, useResizeObserver, useOnOutsideClick } from "@bentley/ui-core";
 import { DockedToolSettingsOverflow } from "./Overflow";
 import { ToolSettingsOverflowPanel } from "./Panel";
 import { DockedToolSettingsHandle } from "./Handle";
@@ -48,6 +45,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
     onResize();
   }, [onResize]);
   const resizeObserverRef = useResizeObserver(handleResize);
+
   const onOverflowClick = React.useCallback(() => {
     setIsOverflowPanelOpen((prev) => !prev);
   }, []);
@@ -75,6 +73,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
     }
     return acc;
   }, []) : [];
+
   // tslint:disable-next-line: variable-name
   const PanelContainer = props.panelContainer ? props.panelContainer : DefaultPanelContainer;
   const className = classnames(

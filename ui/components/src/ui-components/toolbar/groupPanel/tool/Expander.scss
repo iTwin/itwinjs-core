@@ -1,0 +1,29 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/math";
+@import "variables";
+
+.components-toolbar-item-expandable-group-tool-expander {
+  > .components-expansion-indicator {
+    $border: solid $expander-arrow-thickness currentColor;
+    $size: sqrt($expander-arrow-size-val * $expander-arrow-size-val * 8) / 2 + px;
+
+    width: $size;
+    height: $size;
+    border-top: $border;
+    border-left: $border;
+    margin-left: $expander-arrow-thickness;
+    margin-top: $expander-arrow-thickness;
+    margin-right: $space-after-expander;
+    box-sizing: border-box;
+    transform: rotate(135deg);
+  }
+
+  &:active:not(.components-disabled) {
+    > .components-expansion-indicator {
+      filter: $no-shadow;
+    }
+  }
+}

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-ninezone/lib/ui-ninezone/footer/_variables";
+@import "~@bentley/ui-core/lib/ui-core/index";
 
 $outline-size: 2px;
 
@@ -22,14 +22,14 @@ $border-color: #eee;
   //border: 2px solid white;
   box-sizing: border-box;
   cursor: pointer;
-  -webkit-transition: background-color .2s ease;
-  -moz-transition: background-color .2s ease;
-  -o-transition: background-color .2s ease;
-  transition: background-color .2s ease;
+  -webkit-transition: background-color 0.2s ease;
+  -moz-transition: background-color 0.2s ease;
+  -o-transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease;
 
   /* draw a line below each item */
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -101,7 +101,7 @@ $border-color: #eee;
 
 /* Thumbnail container */
 .view-item-thumbnail-container {
-  height:100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -147,7 +147,8 @@ $border-color: #eee;
   > .no-thumbnail {
     width: 50%;
 
-    path, circle {
+    path,
+    circle {
       fill: #cccccc;
     }
   }
@@ -162,13 +163,13 @@ $border-color: #eee;
 /* Thumbnail container in list view */
 .thumbnail-container-small {
   height: 57px; // arbitrary height
-  width: 85px;  // arbitrary width
+  width: 85px; // arbitrary width
   margin-left: $uicore-xs;
 }
 
 /* More (...) icon */
 .view-item-more {
-  opacity: .85;
+  opacity: 0.85;
   padding: 2px;
   cursor: pointer;
 

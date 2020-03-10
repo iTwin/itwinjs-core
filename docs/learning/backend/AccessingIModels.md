@@ -5,7 +5,7 @@ iModel.js is an open platform for creating, maintaining, and accessing Infrastru
 These two somewhat competing goals are addressed internally by iModel.js by two important details:
 
 1. **Snapshot** iModels
-1. The `@bentley/imodeljs-native` module
+2. The `@bentley/imodeljs-native` module
 
 ## Snapshot iModels
 
@@ -14,24 +14,22 @@ Snapshot iModels are a **static** point-in-time representation of the state of a
 There are two common use cases for Snapshot iModels:
 
 1. Export the state of an iModel at a point in time, for archival purposes.
-1. A static but intelligent format for exchange of Infrastructure Digital Twins.
+2. A static but intelligent format for exchange of Infrastructure Digital Twins.
 
 When you create a Snapshot iModel, you implicitly *opt-out of enforcement* of any user or application authentication. *Snapshot iModels may be accessed by any iModel.js program*, so there is no need or requirement for authentication by iModel.js.
 
-> Note: Although not currently supported, all iModels (including Snapshot iModels) are designed for optional encryption or password-protection. These enhancements are on the iModel.js roadmap.
+> Note: A password can optionally be provided when creating and opening Snapshot iModels.
 
 ### Creating Snapshot iModels
 
-The iModel.js api has two ways to create a Snapshot iModel. Both are methods on the [IModelDb]($backend) class:
+The iModel.js api has two ways to create a Snapshot iModel. Both are methods on the [SnapshotIModelDb]($backend) class:
 
-```ts
-  public createSnapshot(snapshotFile: string): IModelDb
-  public static createSnapshot(snapshotFile: string, args: CreateIModelProps): IModelDb
-```
+1. [SnapshotIModelDb.createFrom]($backend)
+2. [SnapshotIModelDb.createEmpty]($backend)
 
-The first method creates a SnapShot iModel from an existing iModel into the supplied filename.  This requires permission from the owner of the original iModel (which obviously must have been previously obtained to open the source iModel.) The Snapshot `IModelDb` may be used to modify and/or extend the copy of the original iModel, but once closed it becomes immutable.
+The first method creates a SnapShot iModel from an existing iModel into the supplied filename.  This requires permission from the owner of the original iModel (which obviously must have been previously obtained to open the source iModel.) The `SnapshotIModelDb` may be used to modify and/or extend the copy of the original iModel, but once closed it becomes immutable.
 
-The second method creates a *blank* Snapshot iModel given a filename. This is useful for applications that wish to create static iModels from external data sources. The `IModelDb` may be used to populate the Snapshot, but once closed it becomes immutable.
+The second method creates an *empty* Snapshot iModel given a filename. This is useful for applications that wish to create static iModels from external data sources. The `SnapshotIModelDb` may be used to populate the Snapshot, but once closed it becomes immutable.
 
 ### Important properties of Snapshot iModels
 

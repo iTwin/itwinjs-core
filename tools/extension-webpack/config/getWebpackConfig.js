@@ -10,11 +10,10 @@ const webpack = require("webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const getCSSModuleLocalIdent = require("react-dev-utils/getCSSModuleLocalIdent");
 const { paths } = require("@bentley/webpack-tools-core/lib/utils/paths");
-const { FrontendDefaultsPlugin } = require("@bentley/webpack-tools-core");
+const { FrontendDefaultsPlugin, IModeljsLibraryImportsPlugin } = require("@bentley/webpack-tools-core");
 const ForkTsCheckerWebpackPlugin = require("react-dev-utils/ForkTsCheckerWebpackPlugin");
 const typescriptFormatter = require("react-dev-utils/typescriptFormatter");
 const postcssNormalize = require("postcss-normalize");
-const ImjsSharedLibConsumerPlugin = require("./sharedLibConsumerPlugin");
 
 const appPackageJson = require(paths.appPackageJson);
 
@@ -352,7 +351,7 @@ module.exports = function (srcFile, outDir) {
       ],
     },
     plugins: [
-      new ImjsSharedLibConsumerPlugin(),
+      new IModeljsLibraryImportsPlugin(),
       new FrontendDefaultsPlugin(shouldUseSourceMap),
       // new MiniCssExtractPlugin({
       //   // Options similar to the same options in webpackOptions.output

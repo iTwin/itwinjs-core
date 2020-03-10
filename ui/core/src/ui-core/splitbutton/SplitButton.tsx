@@ -103,10 +103,12 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   }
 
   private _open = () => {
+    // istanbul ignore else
     if (!this.state.expanded && !this._closing) {
       this.setState(
         { expanded: true },
         () => {
+          // istanbul ignore else
           if (this._menu && this.state.expanded)
             this._menu.focus();
         });
@@ -125,6 +127,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   }
 
   private _handleClose = (event: any) => {
+    // istanbul ignore else
     if (this._arrowElement) {
       if (this.state.expanded && "target" in event && this._arrowElement.contains(event.target))
         this._closing = true;

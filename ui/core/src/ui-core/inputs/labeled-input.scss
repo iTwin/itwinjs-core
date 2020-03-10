@@ -6,96 +6,96 @@
 
 @mixin uicore-inputs-labeled-input {
 
-    display:                    block;
-    padding:                    0;
-    margin:                     0 0 $uicore-unbordered-padding;
-    text-align:                 left;
-    font-size:                  $uicore-font-size;
-    font-weight:                $uicore-font-weight-normal;
-    cursor:                     pointer;
+  display:                    block;
+  padding:                    0;
+  margin:                     0 0 $uicore-unbordered-padding;
+  text-align:                 left;
+  font-size:                  $uicore-font-size;
+  font-weight:                $uicore-font-weight-normal;
+  cursor:                     pointer;
 
-    > .uicore-label {
+  > .uicore-label {
 
-        padding:                0;
-        margin:                 0;
-        border:                 0 none transparent;
-        display:                block;
-        font-size:              $uicore-font-size;
-        font-weight:            $uicore-font-weight-semibold;
-        line-height:            $uicore-line-height;
-        text-align:             left;
-        color:                  $buic-text-color;
+    padding:                0;
+    margin:                 0;
+    border:                 0 none transparent;
+    display:                block;
+    font-size:              $uicore-font-size;
+    font-weight:            $uicore-font-weight-semibold;
+    line-height:            $uicore-line-height;
+    text-align:             left;
+    color:                  $buic-text-color;
+  }
+
+  > .input {
+
+    position:               relative;
+    /// Needed to vertically align the icon:
+    display:                inline-block;
+    width:                  100%;
+
+    &.with-icon {
+
+      > input,
+      > .bwx-inputs-input {
+
+        padding-right:  $uicore-bordered-padding + $uicore-line-height;
+      }
     }
 
-    > .input {
+    > .icon {
 
-        position:               relative;
-        /// Needed to vertically align the icon:
-        display:                inline-block;
-        width:                  100%;
+      display:            block;
+      position:           absolute;
+      right:              0;
+      top:                0;
+      bottom:             0;
+      padding:            $uicore-unbordered-padding;
 
-        &.with-icon {
+      font-size:          16px;
+      font-weight:        normal;
+      line-height:        $uicore-line-height;
+    }
+  }
 
-            > input,
-            > .bwx-inputs-input {
+  > .uicore-message {
 
-                padding-right:  $uicore-bordered-padding + $uicore-line-height;
-            }
-        }
+    display:                block;
+    font-size:              $uicore-font-size-small;
+    line-height:            $uicore-line-height;
+    color:                  $buic-text-color-muted;
+  }
 
-        > .icon {
 
-            display:            block;
-            position:           absolute;
-            right:              0;
-            top:                0;
-            bottom:             0;
-            padding:            $uicore-unbordered-padding;
+  /// Status colors ----------------------------------------------------------
 
-            font-size:          16px;
-            font-weight:        normal;
-            line-height:        $uicore-line-height;
-        }
+  $status-colors: (
+    success:    $uicore-green,
+    warning:    $uicore-orange,
+    error:      $uicore-red
+  );
+
+  @each $status, $color in $status-colors {
+
+    &.#{$status},
+    &.#{$status} > .uicore-message {
+
+      color:              $color;
     }
 
-    > .uicore-message {
+    &.#{$status} > .input {
+      > input,
+      > .uicore-inputs-input {
 
-        display:                block;
-        font-size:              $uicore-font-size-small;
-        line-height:            $uicore-line-height;
-        color:                  $buic-text-color-muted;
-    }
+        border-color:       $color;
+        box-shadow:         $buic-inputs-boxshadow 0px 1px 1px inset;
 
+        &:focus {
 
-    /// Status colors ----------------------------------------------------------
-
-    $status-colors: (
-        success:    $uicore-green,
-        warning:    $uicore-orange,
-        error:      $uicore-red
-    );
-
-    @each $status, $color in $status-colors {
-
-        &.#{$status},
-        &.#{$status} > .uicore-message {
-
-            color:              $color;
+          border-color:   $color;
+          box-shadow:     $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, rgba( $color, 0.15 ) 0px 0px 0px 2px;
         }
-
-        &.#{$status} > .input {
-            > input,
-            > .uicore-inputs-input {
-
-                border-color:       $color;
-                box-shadow:         $buic-inputs-boxshadow 0px 1px 1px inset;
-
-                &:focus {
-
-                    border-color:   $color;
-                    box-shadow:     $buic-inputs-focus-boxshadow-gradient1 0px 1px 1px inset, rgba( $color, 0.15 ) 0px 0px 0px 2px;
-                }
-            }
-        }
+      }
     }
+  }
 }

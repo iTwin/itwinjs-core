@@ -2,10 +2,9 @@
 
 exports[`<Toolbar /> renders correctly 1`] = `
 <ContextProvider
-  value={3}
+  value={4}
 >
   <PanelsProvider
-    histories={null}
     panels={null}
   >
     <Component />
@@ -17,9 +16,6 @@ exports[`<Toolbar /> renders with expandsTo 1`] = `
 <div
   className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
 >
-  <div
-    className="nz-expanded nz-histories"
-  />
   <div
     className="nz-expanded nz-panels"
   />
@@ -34,9 +30,6 @@ exports[`<Toolbar /> renders with panelAlignment 1`] = `
 <div
   className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-end"
 >
-  <div
-    className="nz-expanded nz-histories"
-  />
   <div
     className="nz-expanded nz-panels"
   />

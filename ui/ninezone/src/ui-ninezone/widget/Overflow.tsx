@@ -8,10 +8,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
-import { useResizeObserver } from "../base/useResizeObserver";
-import { useOnOutsideClick } from "../base/useOnOutsideClick";
-import { useRefs } from "../base/useRefs";
+import { CommonProps, useResizeObserver, useOnOutsideClick, useRefs } from "@bentley/ui-core";
 import { WidgetMenu } from "./Menu";
 import { useWidgetTab } from "./Tabs";
 import "./Overflow.scss";

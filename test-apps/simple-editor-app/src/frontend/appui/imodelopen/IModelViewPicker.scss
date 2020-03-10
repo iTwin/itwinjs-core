@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/index";
 
- $view-card-width: 215px;
- $view-card-height: 150px;
+$view-card-width: 215px;
+$view-card-height: 150px;
 
 /* The Modal (background) */
 .modal-background {
@@ -19,8 +19,8 @@
   width: 100%; /* Full width */
   height: 100%; /* Full height */
   overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
 }
 
 .views {
@@ -54,7 +54,7 @@
 }
 
 .views-empty {
-  flex:  1;
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -136,23 +136,31 @@
 /* Add Zoom Animation */
 .animate {
   -webkit-animation: animatezoom 0.6s;
-  animation: animatezoom 0.6s
+  animation: animatezoom 0.6s;
 }
 
 @-webkit-keyframes animatezoom {
-  from {-webkit-transform: scale(0)}
-  to {-webkit-transform: scale(1)}
+  from {
+    -webkit-transform: scale(0);
+  }
+  to {
+    -webkit-transform: scale(1);
+  }
 }
 
 @keyframes animatezoom {
-  from {transform: scale(0)}
-  to {transform: scale(1)}
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
 }
 
 $view-card-width: 190px;
- $view-card-height: 150px;
+$view-card-height: 150px;
 
- .view-card {
+.view-card {
   width: $view-card-width;
   height: $view-card-height;
   color: #444;
@@ -168,7 +176,8 @@ $view-card-width: 190px;
   //box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
   //-webkit-box-shadow: 0 4px 8px 0 rgba(0,0,0,0.25);
 
-  &:hover, &:focus{
+  &:hover,
+  &:focus {
   }
 }
 
@@ -195,7 +204,7 @@ $view-card-width: 190px;
 
 .view-card-name {
   flex: initial;
-  padding: .5em;
+  padding: 0.5em;
   background: $uicore-white;
   font-size: $uicore-font-size-small;
   text-overflow: ellipsis;

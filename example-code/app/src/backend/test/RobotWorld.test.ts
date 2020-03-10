@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ClientRequestContext, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Angle, Point3d } from "@bentley/geometry-core";
+import { IModelJsFs, PhysicalModel, StandaloneIModelDb } from "@bentley/imodeljs-backend";
+import { IModel } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import { IModelDb, IModelJsFs, PhysicalModel } from "@bentley/imodeljs-backend";
-import { IModelTestUtils } from "./Utils";
+import { Barrier } from "../BarrierElement";
+import { Robot } from "../RobotElement";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
-import { Point3d, Angle } from "@bentley/geometry-core";
-import { IModel } from "@bentley/imodeljs-common";
-import { Barrier } from "../BarrierElement";
-import { Id64String, OpenMode, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Robot } from "../RobotElement";
+import { IModelTestUtils } from "./Utils";
 
 const requestContext = new ClientRequestContext();
 
@@ -22,7 +22,7 @@ describe("RobotWorld", () => {
     const iModelFile = IModelTestUtils.prepareOutputFile("should-run-robotworld.bim");
     const seedFile = IModelTestUtils.resolveAssetFile("empty.bim");
     IModelJsFs.copySync(seedFile, iModelFile);
-    const iModel: IModelDb = IModelDb.openStandalone(iModelFile, OpenMode.ReadWrite);
+    const iModel = StandaloneIModelDb.open(iModelFile, OpenMode.ReadWrite);
     assert.isTrue(iModel !== undefined);
 
     try {
@@ -83,7 +83,7 @@ describe("RobotWorld", () => {
     }
 
     iModel.saveChanges();
-    iModel.closeStandalone();
+    iModel.close();
 
     RobotWorldEngine.shutdown();
   });

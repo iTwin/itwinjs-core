@@ -15,7 +15,7 @@ import { IModelBankClient } from "@bentley/imodeljs-clients/lib/imodelbank/IMode
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
 import {
   ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus,
-  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration, Guid,
+  BentleyStatus, IModelHubStatus, PerfLogger, GuidString, Id64, IModelStatus, AsyncMutex, BeDuration,
 } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps, MobileRpcConfiguration, BriefcaseProps, IModelEncryptionProps } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -222,19 +222,31 @@ export class BriefcaseEntry {
    */
   public getDebugInfo(): any {
     return {
+      ...this.toJson(),
+      isOpen: this.isOpen,
+      currentChangeSetId: this.currentChangeSetId,
+      currentChangeSetIndex: this.currentChangeSetIndex,
+    };
+  }
+
+  /** Get the information on this briefcase as JSON */
+  public toJson(): any {
+    return {
       key: this.getKey(),
       contextId: this.contextId,
       iModelId: this.iModelId,
-      pathname: this.pathname.replace(/\\/g, "/"),
-      isOpen: this.isOpen,
+      briefcaseId: this.briefcaseId,
+      fileId: this.fileId,
+      pathname: this.pathname,
       targetChangeSetId: this.targetChangeSetId,
       targetChangeSetIndex: this.targetChangeSetIndex,
       parentChangeSetId: this.parentChangeSetId,
       parentChangeSetIndex: this.parentChangeSetIndex,
       reversedChangeSetId: this.reversedChangeSetId,
       reversedChangeSetIndex: this.reversedChangeSetIndex,
-      currentChangeSetId: this.currentChangeSetId,
-      currentChangeSetIndex: this.currentChangeSetIndex,
+      openParams: {
+        ...this.openParams,
+      },
     };
   }
 
@@ -246,7 +258,6 @@ export class BriefcaseEntry {
     this.briefcaseId = nativeDb.getBriefcaseId();
     this.isOpen = nativeDb.isOpen();
   }
-
 }
 
 /** In-memory cache of briefcases
@@ -371,44 +382,39 @@ export class BriefcaseManager {
    * @param requestContext Context of the authorized user
    * @internal
    */
-  public static async initializeBriefcaseCacheFromDisk(requestContext: AuthorizedClientRequestContext) {
+  public static initializeBriefcaseCacheFromDisk() {
     if (this._initBriefcaseCacheFromDisk)
       return;
     if (!IModelJsFs.existsSync(BriefcaseManager.cacheDir))
       return;
+
     const iModelDirs = IModelJsFs.readdirSync(BriefcaseManager.cacheDir);
     for (const iModelId of iModelDirs) {
-      const fullPath = path.join(BriefcaseManager.cacheDir, iModelId);
-      const isDir = IModelJsFs.lstatSync(fullPath)?.isDirectory;
-      if (!isDir || !Guid.isGuid(iModelId))
+      const iModelPath = path.join(BriefcaseManager.cacheDir, iModelId);
+      if (!IModelJsFs.lstatSync(iModelPath)?.isDirectory)
         continue;
 
-      const contextId = ""; // NEEDS_WORK: Cache the iModelInfo including contextId, and read it here.
-      this.initializeAllFixedVersionBriefcasesOnDisk(requestContext, contextId, iModelId);
-      await this.initializeAllVariableVersionBriefcasesOnDisk(requestContext, contextId, iModelId, OpenParams.pullOnly());
-      await this.initializeAllVariableVersionBriefcasesOnDisk(requestContext, contextId, iModelId, OpenParams.pullAndPush());
+      const bcRootPaths = [
+        this.getFixedVersionBriefcasePath(iModelId),
+        this.getVariableVersionBriefcasePath(iModelId, SyncMode.PullAndPush),
+        this.getVariableVersionBriefcasePath(iModelId, SyncMode.PullOnly),
+      ];
+
+      for (const bcRootPath of bcRootPaths) {
+        if (!IModelJsFs.existsSync(bcRootPath))
+          continue;
+
+        const bcDirs = IModelJsFs.readdirSync(bcRootPath);
+        for (const bcDir of bcDirs) {
+          const briefcasePath = path.join(bcRootPath, bcDir);
+          if (!IModelJsFs.lstatSync(briefcasePath)?.isDirectory)
+            continue;
+
+          this.initializeBriefcaseOffline(briefcasePath);
+        }
+      }
     }
     this._initBriefcaseCacheFromDisk = true;
-  }
-
-  private static initializeAllFixedVersionBriefcasesOnDisk(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString) {
-    const fixedVersionPath = this.getFixedVersionBriefcasePath(iModelId);
-    if (!IModelJsFs.existsSync(fixedVersionPath))
-      return;
-
-    for (const changeSetId of IModelJsFs.readdirSync(fixedVersionPath))
-      this.initializeFixedVersionBriefcaseOnDisk(requestContext, contextId, iModelId, changeSetId);
-  }
-
-  private static async initializeAllVariableVersionBriefcasesOnDisk(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams): Promise<void> {
-    const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe().selectDownloadUrl());
-    requestContext.enter();
-
-    const foundEntry: { pathname: string, briefcaseId: number } | undefined = this.findVariableVersionBriefcaseOnDisk(iModelId, hubBriefcases, openParams.syncMode!);
-    if (foundEntry !== undefined) {
-      const briefcaseId = foundEntry.briefcaseId; // Reuse the briefcase id
-      this.initializeBriefcase(requestContext, contextId, iModelId, undefined, foundEntry.pathname, openParams, briefcaseId);
-    }
   }
 
   private static getFixedVersionBriefcasePath(iModelId: GuidString) {
@@ -521,7 +527,7 @@ export class BriefcaseManager {
     IModelJsFs.mkdirSync(dirPath);
   }
 
-  private static readonly _cacheMajorVersion: number = 3;
+  private static readonly _cacheMajorVersion: number = 4;
   private static readonly _cacheMinorVersion: number = 0;
 
   private static buildCacheSubDir(): string {
@@ -770,20 +776,13 @@ export class BriefcaseManager {
     return BriefcaseValidity.Update;
   }
 
-  private static initializeBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString | undefined, pathname: string, openParams: OpenParams, briefcaseId: number): BriefcaseEntry | undefined {
+  private static initializeBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, pathname: string, openParams: OpenParams, briefcaseId: number): BriefcaseEntry | undefined {
     const nativeDb = new IModelHost.platform.DgnDb();
     const res = nativeDb.openIModel(pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, `Cannot open briefcase at ${pathname}`, Logger.logError, loggerCategory, () => ({ iModelId, pathname, openParams }));
 
-    let targetChangeSetId = changeSetId;
-    if (targetChangeSetId === undefined) {
-      targetChangeSetId = nativeDb.getReversedChangeSetId();
-      if (targetChangeSetId === undefined)
-        targetChangeSetId = nativeDb.getParentChangeSetId();
-    }
-
-    const briefcase = new BriefcaseEntry(contextId, iModelId, targetChangeSetId, pathname, openParams, briefcaseId);
+    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, openParams, briefcaseId);
     briefcase.setNativeDb(nativeDb); // Note: Sets briefcaseId, currentChangeSetId in BriefcaseEntry by reading the values from nativeDb
     assert(briefcase.isOpen);
 
@@ -798,7 +797,37 @@ export class BriefcaseManager {
     assert(!this._cache.findBriefcase(briefcase), "Attempting to open or create briefcase twice");
     BriefcaseManager._cache.addBriefcase(briefcase);
 
-    briefcase.isPending = this.finishInitializeBriefcase(requestContext, briefcase);
+    briefcase.isPending = this.finishInitializeBriefcase(requestContext as AuthorizedClientRequestContext, briefcase);
+    return briefcase;
+  }
+
+  private static initializeBriefcaseOffline(briefcasePath: string) {
+    const briefcasePathname = path.join(briefcasePath, "bc.bim");
+    if (!IModelJsFs.existsSync(briefcasePathname))
+      return;
+
+    const briefcaseInfo = this.readCachedBriefcaseInfo(briefcasePath);
+
+    const openParams = new OpenParams(briefcaseInfo.openParams.openMode, briefcaseInfo.openParams.syncMode);
+    const briefcase = new BriefcaseEntry(briefcaseInfo.contextId, briefcaseInfo.iModelId, briefcaseInfo.targetChangeSetId, briefcasePathname, openParams, briefcaseInfo.briefcaseId);
+    briefcase.targetChangeSetIndex = briefcaseInfo.targetChangeSetIndex;
+    briefcase.parentChangeSetIndex = briefcaseInfo.parentChangeSetIndex;
+    briefcase.reversedChangeSetIndex = briefcaseInfo.reversedChangeSetIndex;
+
+    const nativeDb = new IModelHost.platform.DgnDb();
+    const res = nativeDb.openIModel(briefcasePathname, openParams.openMode);
+    if (DbResult.BE_SQLITE_OK !== res)
+      throw new IModelError(res, "Cannot open briefcase", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+
+    briefcase.setNativeDb(nativeDb); // Note: Sets briefcaseId, currentChangeSetId in BriefcaseEntry by reading the values from nativeDb
+    assert(briefcase.isOpen);
+
+    if (briefcaseInfo.parentChangeSetId !== briefcase.parentChangeSetId || briefcaseInfo.reversedChangeSetId !== briefcase.reversedChangeSetId)
+      throw new IModelError(res, "Briefcase does not match the cached info", Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
+
+    assert(!this._cache.findBriefcase(briefcase), "Attempting to open or create briefcase twice");
+    BriefcaseManager._cache.addBriefcase(briefcase);
+
     return briefcase;
   }
 
@@ -807,9 +836,9 @@ export class BriefcaseManager {
 
     const briefcaseHasChanges = briefcase.nativeDb!.hasSavedChanges();
     try {
-      await this.initBriefcaseChangeSetIndexes(requestContext, briefcase);
+      await this.initBriefcaseChangeSetIndexes(requestContext as AuthorizedClientRequestContext, briefcase);
       requestContext.enter();
-      await this.initBriefcaseFileId(requestContext, briefcase);
+      await this.initBriefcaseFileId(requestContext as AuthorizedClientRequestContext, briefcase);
       requestContext.enter();
 
       // Apply change sets if necessary
@@ -829,9 +858,10 @@ export class BriefcaseManager {
       if (briefcaseHasChanges && briefcase.openParams.syncMode === SyncMode.PullAndPush)
         Logger.logError(loggerCategory, "Unable to update existing briefcase to the required version. Since it has changes that may have to be pushed, leaving it as is.", () => briefcase.getDebugInfo());
       else {
-        Logger.logError(loggerCategory, "Initializing a briefcase fails. Deleting it to allow retries", () => briefcase.getDebugInfo());
-        await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
+        Logger.logError(loggerCategory, "Initializing a briefcase fails - deleting it to allow retries", () => briefcase.getDebugInfo());
+        await BriefcaseManager.deleteBriefcase(requestContext as AuthorizedClientRequestContext, briefcase);
         requestContext.enter();
+        throw error;
       }
     }
   }
@@ -882,6 +912,31 @@ export class BriefcaseManager {
     BriefcaseManager._cache.addBriefcase(briefcase);
 
     return briefcase;
+  }
+
+  /** Cache briefcase meta data */
+  private static writeCachedBriefcaseInfo(briefcase: BriefcaseEntry) {
+    const briefcaseInfoPathname = path.join(path.dirname(briefcase.pathname), "bc.json");
+    const briefcaseInfo = briefcase.toJson();
+    IModelJsFs.writeFileSync(briefcaseInfoPathname, JSON.stringify(briefcaseInfo));
+  }
+
+  /** Read the cached briefcase meta data.
+   * @return The cached meta data
+   * @throws Error if there was no file containing the meta data, or there was an error reading it
+   */
+  private static readCachedBriefcaseInfo(briefcasePath: string): any {
+    const briefcaseInfoPathname = path.join(briefcasePath, "bc.json");
+    if (!IModelJsFs.existsSync(briefcaseInfoPathname))
+      throw new IModelError(BentleyStatus.ERROR, "No cached information for briefcase", Logger.logError, loggerCategory, () => ({ briefcaseInfoPathname }));
+
+    try {
+      const str = IModelJsFs.readFileSync(briefcaseInfoPathname);
+      return JSON.parse(str as string);
+    } catch (err) {
+      Logger.logError(loggerCategory, "Error reading cached briefcase meta data", () => ({ briefcaseInfoPathname }));
+      throw err;
+    }
   }
 
   private static async finishCreateBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void> {
@@ -935,6 +990,9 @@ export class BriefcaseManager {
         requestContext.enter();
         briefcase.openParams = backupOpenParams;
       }
+
+      // Cache information on the briefcase
+      BriefcaseManager.writeCachedBriefcaseInfo(briefcase);
 
       // Close the briefcase to complete the download/initialization
       BriefcaseManager.closeBriefcase(briefcase, false);
@@ -1146,7 +1204,7 @@ export class BriefcaseManager {
   /** Open a standalone iModel from the local disk
    * @param encryptionPropsString `JSON.stringify(IModelEncryptionProps) | undefined`
    */
-  public static openStandalone(pathname: string, openMode: OpenMode, enableTransactions: boolean, encryptionPropsString?: string): BriefcaseEntry {
+  public static openStandalone(pathname: string, openMode: OpenMode, encryptionPropsString?: string): BriefcaseEntry {
     if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname, undefined, undefined, undefined, openMode)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open standalone iModel at ${pathname} again - it has already been opened once`, Logger.logError, loggerCategory);
 
@@ -1156,15 +1214,7 @@ export class BriefcaseManager {
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, "Could not open standalone iModel", Logger.logError, loggerCategory, () => ({ pathname }));
 
-    let briefcaseId: number = nativeDb.getBriefcaseId();
-    if (enableTransactions) {
-      if (briefcaseId === BriefcaseId.Illegal || briefcaseId === BriefcaseId.Master) {
-        briefcaseId = BriefcaseId.Standalone;
-        nativeDb.setBriefcaseId(briefcaseId, encryptionPropsString);
-      }
-      assert(nativeDb.getBriefcaseId() !== BriefcaseId.Illegal || nativeDb.getBriefcaseId() !== BriefcaseId.Master);
-    }
-
+    const briefcaseId: number = nativeDb.getBriefcaseId();
     const briefcase = new BriefcaseEntry("", nativeDb.getDbGuid(), nativeDb.getParentChangeSetId(), pathname, OpenParams.standalone(openMode), briefcaseId);
     briefcase.setNativeDb(nativeDb);
 

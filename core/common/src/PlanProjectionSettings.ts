@@ -8,7 +8,7 @@
 
 /** Describes how to draw a "plan projection" model. A plan projection model is a 3d model whose geometry
  * lies in the XY plane. Multiple such models can be combined in a single view as "layers".
- * @alpha
+ * @beta
  */
 export interface PlanProjectionSettingsProps {
   /** If defined, the absolute height in meters at which to display the model. */
@@ -27,7 +27,7 @@ export interface PlanProjectionSettingsProps {
 
 /** An immutable description of how to draw a "plan projection" models.
  * @see [[PlanProjectionSettingsProps]].
- * @alpha
+ * @beta
  */
 export class PlanProjectionSettings {
   /** @see [[PlanProjectionSettingsProps.elevation]] */

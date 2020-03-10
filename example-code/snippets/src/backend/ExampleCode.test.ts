@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { BisCoreSchema, ConcurrencyControl, Element, ElementAspect, IModelDb, PhysicalModel, ClassRegistry } from "@bentley/imodeljs-backend";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
-import { Id64, Id64String, Logger, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
+import { ClientRequestContext, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
+import { BisCoreSchema, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneIModelDb, BriefcaseIModelDb } from "@bentley/imodeljs-backend";
+import { AccessToken, AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
+import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
+import { assert } from "chai";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
-  let iModel: IModelDb;
+  let iModel: StandaloneIModelDb;
 
   const accessToken: AccessToken = (AccessToken as any);
   const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken);
@@ -22,7 +22,7 @@ describe("Example Code", () => {
   });
 
   after(() => {
-    iModel.closeStandalone();
+    iModel.close();
   });
 
   // __PUBLISH_EXTRACT_START__ ClientRequestContext.asyncCallback
@@ -118,12 +118,17 @@ describe("Example Code", () => {
     // Later, when the app downloads and merges changeSets from iModelHub,
     // IModelDb's ConcurrencyControl will merge changes and handle conflicts,
     // as specified by this policy.
-    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    if (iModel instanceof BriefcaseIModelDb) {
+      iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    }
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ ConcurrencyControl_Codes.reserve
     try {
-      await iModel.concurrencyControl.codes.reserve(authorizedRequestContext);
+      if (iModel instanceof BriefcaseIModelDb) {
+        await iModel.concurrencyControl.codes.reserve(authorizedRequestContext);
+        authorizedRequestContext.enter();
+      }
     } catch (err) {
       if (err instanceof IModelHubError) {
         // Do something about unavailable Codes ...
@@ -138,7 +143,10 @@ describe("Example Code", () => {
     // Now acquire all locks and reserve all codes needed.
     // This is a *perquisite* to saving local changes.
     try {
-      await iModel.concurrencyControl.request(authorizedRequestContext);
+      if (iModel instanceof BriefcaseIModelDb) {
+        await iModel.concurrencyControl.request(authorizedRequestContext);
+        authorizedRequestContext.enter();
+      }
     } catch (err) {
       // If we can't get *all* of the locks and codes that are needed,
       // then we can't go on with this transaction as is.

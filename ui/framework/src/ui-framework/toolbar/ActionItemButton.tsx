@@ -132,7 +132,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
     const { actionItem, ...props } = this.props;
     const icon = <Icon iconSpec={actionItem.iconSpec} />;
-    const badge = BadgeUtilities.getComponentForBadge(actionItem.badgeType, actionItem.betaBadge);  // tslint:disable-line: deprecation
+    const badge = BadgeUtilities.getComponentForBadgeType(actionItem.badgeType);
 
     return (
       <Item

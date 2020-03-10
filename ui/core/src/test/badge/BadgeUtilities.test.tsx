@@ -29,33 +29,6 @@ describe("BadgeUtilities", () => {
     }
   };
 
-  describe("determineBadgeType", () => {
-    it("BadgeType.None should return BadgeType.None", () => {
-      const badgeType = BadgeUtilities.determineBadgeType(BadgeType.None);
-      expect(badgeType).to.eq(BadgeType.None);
-    });
-
-    it("BadgeType.New should return BadgeType.New", () => {
-      const badgeType = BadgeUtilities.determineBadgeType(BadgeType.New);
-      expect(badgeType).to.eq(BadgeType.New);
-    });
-
-    it("BadgeType.TechnicalPreview should return BadgeType.TechnicalPreview", () => {
-      const badgeType = BadgeUtilities.determineBadgeType(BadgeType.TechnicalPreview);
-      expect(badgeType).to.eq(BadgeType.TechnicalPreview);
-    });
-
-    it("betaBadge of true should return BadgeType.TechnicalPreview", () => {
-      const badgeType = BadgeUtilities.determineBadgeType(undefined, true);
-      expect(badgeType).to.eq(BadgeType.TechnicalPreview);
-    });
-
-    it("betaBadge of false should return BadgeType.None", () => {
-      const badgeType = BadgeUtilities.determineBadgeType(undefined, false);
-      expect(badgeType).to.eq(BadgeType.None);
-    });
-  });
-
   describe("getComponentForBadgeType", () => {
     it("undefined should return undefined", () => {
       const component = BadgeUtilities.getComponentForBadgeType(undefined);
@@ -79,26 +52,6 @@ describe("BadgeUtilities", () => {
       expectBetaBadge(component);
     });
 
-  });
-
-  describe("getComponentForBadge", () => {
-    it("BadgeType.New should return BadgeType.New", () => {
-      const component = BadgeUtilities.getComponentForBadge(BadgeType.New);
-      expect(component).to.not.be.undefined;
-      expectNewBadge(component);
-    });
-
-    it("BadgeType.TechnicalPreview should return BadgeType.TechnicalPreview", () => {
-      const component = BadgeUtilities.getComponentForBadge(BadgeType.TechnicalPreview);
-      expect(component).to.not.be.undefined;
-      expectBetaBadge(component);
-    });
-
-    it("betaBadge of true should return BetaBadge", () => {
-      const component = BadgeUtilities.getComponentForBadge(undefined, true);
-      expect(component).to.not.be.undefined;
-      expectBetaBadge(component);
-    });
   });
 
 });

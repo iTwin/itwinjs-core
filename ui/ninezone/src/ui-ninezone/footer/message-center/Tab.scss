@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "../../geometry";
-@import "../../typography";
+@import "~@bentley/ui-core/lib/ui-core/geometry";
+@import "~@bentley/ui-core/lib/ui-core/typography";
 
 .nz-footer-messageCenter-tab {
   $bar-size: 2px;

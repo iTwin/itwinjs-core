@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
   assert,
   BeDuration,
+  BeTimePoint,
   dispose,
   Id64,
   Id64String,
@@ -38,7 +39,7 @@ import {
   RenderMode,
   RenderTexture,
   ViewAttachmentProps,
-  ViewFlag,
+  ViewFlagOverrides,
   ViewFlags,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -144,6 +145,8 @@ class Tile3d extends SheetTile {
   private static _DRAW_DEBUG_POLYFACE_GRAPHICS: boolean = false;
   // ------------------------------------------------------------------------------------------
   private _tilePolyfaces: IndexedPolyface[] = [];
+  private _lastUsedTime = BeTimePoint.now();
+  private _childrenLastUsedTime = BeTimePoint.now();
 
   private constructor(root: Tree3d, parent: Tile3d | undefined, tileRange: ElementAlignedBox3d) {
     super({
@@ -202,6 +205,22 @@ class Tile3d extends SheetTile {
   public get hasGraphics(): boolean { return this.isReady; }
   public get hasChildren(): boolean { return true; }  // << means that "there are children and creation may be necessary"... NOT "definitely have children in children list"
 
+  public prune(olderThan: BeTimePoint): void {
+    // Tiles for 3d view attachments are never associated with more than one viewport, so no need to worry about discarding tiles currently in use by another viewport.
+    if (this._lastUsedTime.milliseconds < olderThan.milliseconds)
+      this.disposeContents();
+
+    if (this._childrenLastUsedTime.milliseconds < olderThan.milliseconds) {
+      this.disposeChildren();
+      return;
+    }
+
+    const children = this.children as Tile3d[] | undefined;
+    if (undefined !== children)
+      for (const child of children)
+        child.prune(olderThan);
+  }
+
   public selectTiles(selected: Tile[], args: TileDrawArgs): SelectParent {
     if (this.depth === 1)
       this._rootAsTree3d.viewport.rendering = false;
@@ -210,10 +229,8 @@ class Tile3d extends SheetTile {
       return SelectParent.No;  // indicates no elements in this tile's range (or some unexpected error occurred during scene creation)
 
     const vis = this.computeVisibility(args);
-    if (vis === TileVisibility.OutsideFrustum) {
-      this.unloadChildren(args.purgeOlderThan);
+    if (vis === TileVisibility.OutsideFrustum)
       return SelectParent.No;
-    }
 
     const tooCoarse = TileVisibility.TooCoarse === vis;
     if (tooCoarse)
@@ -223,13 +240,14 @@ class Tile3d extends SheetTile {
 
     if (children !== undefined) {
       const initialSize = selected.length;
-      this._childrenLastUsed = args.now;
+      this._childrenLastUsedTime = args.now;
       for (const child of children) {
         if (child.selectTiles(selected, args) === SelectParent.Yes) {
           // At lease one of the selected children is not ready to draw. If the parent (this) is drawable, draw in place of all the children.
           selected.length = initialSize;
           if (this.isReady) {
             selected.push(this);
+            this._lastUsedTime = args.now;
             return SelectParent.No;
           } else {
             // This tile isn't ready to draw either. Try drawing its own parent in its place.
@@ -242,6 +260,7 @@ class Tile3d extends SheetTile {
     }
 
     // This tile is of appropriate resolution to draw. Enqueue it for loading if necessary.
+    this._lastUsedTime = args.now;
     if (!this.isReady) {
       if (this._tilePolyfaces.length === 0) {
         this.createPolyfaces(args.context);   // graphicsClip on tree must be set before creating polys (the polys that represent the tile)
@@ -250,12 +269,13 @@ class Tile3d extends SheetTile {
           return SelectParent.No;
         }
       }
+
       this.createGraphics(args.context);
     }
 
     if (this.isReady) {
+      args.markReady(this);
       selected.push(this);
-      this.unloadChildren(args.purgeOlderThan);
       return SelectParent.No;
     }
 
@@ -413,10 +433,10 @@ class Tile3d extends SheetTile {
 }
 
 abstract class Tree extends TileTree {
-  private readonly _viewFlagOverrides: ViewFlag.Overrides;
+  private readonly _viewFlagOverrides: ViewFlagOverrides;
   public graphicsClip?: RenderClipVolume;
 
-  protected constructor(iModel: IModelConnection, modelId: Id64String, vfOvrs: ViewFlag.Overrides) {
+  protected constructor(iModel: IModelConnection, modelId: Id64String, vfOvrs: ViewFlagOverrides) {
     super({
       id: modelId,
       modelId,
@@ -447,7 +467,6 @@ abstract class Tree extends TileTree {
       tile.drawGraphics(args);
 
     args.drawGraphics();
-    args.context.viewport.numSelectedTiles += tiles.length;
   }
 
   protected _selectTiles(args: TileDrawArgs): Tile[] {
@@ -468,7 +487,7 @@ class Tree2d extends Tree {
   public get maxDepth() { return 1; }
 
   private constructor(iModel: IModelConnection, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
-    const vfOvrs = new ViewFlag.Overrides(view.viewFlags);
+    const vfOvrs = new ViewFlagOverrides(view.viewFlags);
     vfOvrs.setApplyLighting(false);
 
     super(iModel, attachment.id, vfOvrs);
@@ -521,6 +540,10 @@ class Tree2d extends Tree {
     }
 
     this._rootTile = new Tile2d(this, attachment.placement.bbox);
+  }
+
+  public prune(): void {
+    // Our one and only tile is only a proxy - the drawing tile tree will be pruned separately.
   }
 
   /** Create a Tree2d tile tree for a 2d attachment. Returns a Tree2d if the model tile tree is ready. Otherwise, returns the status of the tiles. */
@@ -588,7 +611,7 @@ class Tree3d extends Tree {
   public get maxDepth() { return 32; }
 
   private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
-    const vfOvrs = new ViewFlag.Overrides(ViewFlags.fromJSON({
+    const vfOvrs = new ViewFlagOverrides(ViewFlags.fromJSON({
       renderMode: RenderMode.SmoothShade,
       noCameraLights: true,
       noSourceLights: true,
@@ -662,6 +685,10 @@ class Tree3d extends Tree {
     const view = attachment.view as ViewState3d;
     const viewport = new AttachmentViewport(view);
     return new Tree3d(sheetView, attachment, sceneContext, viewport, view);
+  }
+
+  public prune(): void {
+    this.rootTile.prune(BeTimePoint.now().minus(this.expirationTime));
   }
 
   /** Get the load state from the owner attachment's array at this tile's depth. */

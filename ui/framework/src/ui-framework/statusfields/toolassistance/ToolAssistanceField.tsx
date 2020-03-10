@@ -15,9 +15,10 @@ import {
   ToolAssistanceInstructions, ToolAssistanceInstruction, ToolAssistanceSection, ToolAssistanceImage,
   ToolAssistanceKeyboardInfo, ToolAssistanceInputMethod,
 } from "@bentley/imodeljs-frontend";
+import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
   SvgSprite, FillCentered, LocalUiSettings, UiSettingsStatus, UiSettings,
-  HorizontalTabs, UiCore, LabeledToggle, Icon,
+  HorizontalTabs, UiCore, LabeledToggle, Icon, UiSettingsResult,
 } from "@bentley/ui-core";
 import {
   ToolAssistance, ToolAssistanceDialog, FooterPopup,
@@ -133,15 +134,19 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
 
   /** @internal */
   public componentDidMount() {
+    let result: UiSettingsResult;
+
     MessageManager.onToolAssistanceChangedEvent.addListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
 
     let showPromptAtCursor = this.props.defaultPromptAtCursor;
-    let result = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
+    if (this.props.includePromptAtCursor) {
+      result = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._showPromptAtCursorKey);
 
-    // istanbul ignore else
-    if (result.status === UiSettingsStatus.Success)
-      showPromptAtCursor = result.setting as boolean;
+      // istanbul ignore else
+      if (result.status === UiSettingsStatus.Success)
+        showPromptAtCursor = result.setting as boolean;
+    }
 
     let mouseTouchTabIndex = 0;
     result = this.props.uiSettings.getSetting(ToolAssistanceField._toolAssistanceKey, ToolAssistanceField._mouseTouchTabIndexKey);
@@ -339,7 +344,8 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
               </>
             }
             indicatorRef={this._indicator}
-            className="uifw-statusFields-toolassistance"
+            className={classnames("uifw-statusFields-toolassistance", this.props.className)}
+            style={this.props.style}
             isInFooterMode={this.props.isInFooterMode}
             onClick={this._handleToolAssistanceIndicatorClick}
           >
@@ -406,8 +412,6 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private _handleToolAssistanceIndicatorClick = () => {
     const isOpen = this.props.openWidget === this._className;
     if (isOpen) {
-      if (this.state.isPinned)
-        this.setState({ isPinned: false });
       this.setOpenWidget(null);
     } else
       this.setOpenWidget(this._className);
@@ -418,7 +422,6 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   private _handleCloseButtonClick = () => {
-    this.setState({ isPinned: false });
     this._handleClose();
   }
 
@@ -426,6 +429,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     // istanbul ignore else
     if (this.props.onOpenWidget)
       this.props.onOpenWidget(openWidget);
+
+    if (!openWidget && this.state.isPinned)
+      this.setState({ isPinned: false });
   }
 
   /** @internal */
@@ -449,8 +455,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
         Logger.logError(UiFramework.loggerCategory(this), `getInstructionImage: Invalid keyboardInfo provided with image`);
       }
     } else if (typeof instruction.image === "string") {
-      if (instruction.image)
-        image = <div className="uifw-toolassistance-icon-large"><Icon iconSpec={instruction.image} /></div>;
+      if (instruction.image.length > 0) {
+        const svgSource = IconSpecUtilities.getSvgSource(instruction.image);
+        const className = (svgSource !== undefined) ? "uifw-toolassistance-svg" : "uifw-toolassistance-icon-large";
+        image = <div className={className}><Icon iconSpec={instruction.image} /></div>;
+      }
     } else if (instruction.image === ToolAssistanceImage.Keyboard) {
       if (instruction.keyboardInfo) {
         image = ToolAssistanceField.getInstructionKeyboardImage(instruction.keyboardInfo);

@@ -34,7 +34,6 @@ internal;createVerticalPanelState(side: VerticalWidgetPanelSide): VerticalPanelS
 internal;createWidgetState(id: WidgetState["id"]): WidgetState
 internal;Css
 internal;CssProperties
-alpha;DefaultHistoryManager: HistoryManager
 beta;Dialog 
 beta;DialogProps 
 beta;Direction
@@ -102,15 +101,6 @@ alpha;GroupToolExpanderProps
 alpha;GroupToolProps 
 alpha;HandleMode
 alpha;HandleModeHelpers
-alpha;History
-alpha;HistoryEntry
-alpha;HistoryIcon 
-alpha;HistoryItem 
-alpha;HistoryItemProps 
-alpha;HistoryKey = number | string
-alpha;HistoryManager
-alpha;HistoryTray 
-alpha;HistoryTrayProps 
 beta;HorizontalAnchor
 internal;HorizontalAnchorHelpers
 internal;HorizontalPanelState 
@@ -142,6 +132,8 @@ beta;MessageLayout
 beta;MessageLayoutProps 
 beta;MessageProgress 
 internal;MINIMIZE_WIDGET = "MINIMIZE_WIDGET"
+alpha;NavigationArea 
+alpha;NavigationAreaProps 
 alpha;NestedGroup 
 alpha;NestedGroupProps 
 beta;NestedStagePanelKey
@@ -196,8 +188,6 @@ alpha;ResizeGrip
 alpha;ResizeGripProps 
 alpha;ResizeGripResizeArgs
 beta;ResizeHandle
-internal;ResizeObserver: ResizeObserverType
-internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
 internal;ResizePanelAction
 internal;RESTORE_WIDGET = "RESTORE_WIDGET"
 beta;SafeAreaInsets
@@ -280,6 +270,8 @@ beta;ToolbarPanelAlignment
 alpha;ToolbarPanelAlignmentHelpers
 beta;ToolbarProps 
 alpha;Tools 
+alpha;ToolsArea 
+alpha;ToolsAreaProps 
 internal;ToolSettingProps 
 beta;ToolSettings 
 internal;ToolSettingsOverflowPanel: React.ForwardRefExoticComponent
@@ -301,15 +293,11 @@ internal;useOverflow(children: React.ReactNode): [ReadonlyArray
 internal;usePanel(): VerticalPanelState | HorizontalPanelState
 internal;usePanelBySide(side: WidgetPanelSide): VerticalPanelState | HorizontalPanelState
 internal;usePointerCaptor: 
-internal;useRefEffect
-internal;useRefs
 internal;useResizeGrip: 
-internal;useResizeObserver
 beta;UserProfile 
 beta;UserProfileProps 
 internal;useSingleDoubleClick
 internal;useTabById(id: TabState["id"]): TabState
-internal;useTargeted: (elementRef: React.RefObject
 internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs
 internal;useWidget(): WidgetState
 internal;useWidgetById(id: WidgetState["id"]): WidgetState

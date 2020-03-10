@@ -2,20 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { assert } from "chai";
-import { OpenMode, GuidString, Logger, LogLevel, ChangeSetStatus, ChangeSetApplyOption } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { RequestGlobalOptions, Version, UserInfoQuery, HubUserInfo } from "@bentley/imodeljs-clients";
 import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
-import { Version, RequestGlobalOptions } from "@bentley/imodeljs-clients";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import {
-  IModelDb, OpenParams, PhysicalModel, AuthorizedBackendRequestContext,
-  BriefcaseManager, IModelJsFs,
-} from "../../imodeljs-backend";
+import { assert } from "chai";
+import * as path from "path";
+import { AuthorizedBackendRequestContext, BriefcaseIModelDb, BriefcaseManager, ChangeSetToken, OpenParams, PhysicalModel, StandaloneIModelDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { ChangeSetToken } from "../../BriefcaseManager";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe.skip("DebugHubIssues (#integration)", () => {
@@ -34,7 +30,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     };
     // IModelTestUtils.setupDebugLogLevels();
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Only needed for DEV
-    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
+    requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.manager);
   });
 
   it.skip("should be able to open the Retail Building Sample", async () => {
@@ -44,7 +40,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    const iModel = await BriefcaseIModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
@@ -114,8 +110,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
-    const projectName = "iModelJsTest";
-    const iModelName = "ReadOnlyTest";
+    const projectName = "iModelJsIntegrationTest";
+    const iModelName = "Stadium Dataset 1";
 
     const iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
@@ -123,22 +119,47 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
   it.skip("should be able to upload required test files to the Hub", async () => {
     const projectName = "iModelJsIntegrationTest";
+    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    console.log(`Uploading test iModels into ${projectName}: ${projectId}`); // tslint:disable-line:no-console
 
     let iModelName = "ReadOnlyTest";
     let iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
 
     iModelName = "ReadWriteTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
 
     iModelName = "NoVersionsTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
 
     iModelName = "ConnectionReadTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
+
+    iModelName = "Stadium Dataset 1";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
+
+    iModelName = "seedFileTest";
+    let destIModelName = "ReadOnlyFullStackTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
+    let iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, destIModelName);
+    console.log(`Uploaded test iModel ${destIModelName}: ${iModelId}`); // tslint:disable-line:no-console
+
+    iModelName = "seedFileTest";
+    destIModelName = "ReadWriteFullStackTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
+    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, destIModelName);
+    console.log(`Uploaded test iModel ${destIModelName}: ${iModelId}`); // tslint:disable-line:no-console
   });
 
   it.skip("should be able to download required test files from the Hub", async () => {
@@ -230,10 +251,9 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
   it.skip("should be able to apply specific change set to the briefcase on disk", async () => {
     const iModelName = "ReadOnlyTest";
-
     const iModelDir = path.join(iModelRootDir, iModelName);
     const briefcasePathname = HubUtility.getBriefcasePathname(iModelDir);
-    const iModel: IModelDb = IModelDb.openStandalone(briefcasePathname, OpenMode.ReadWrite);
+    const iModel = StandaloneIModelDb.open(briefcasePathname, OpenMode.ReadWrite);
     assert.isDefined(iModel);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
@@ -260,7 +280,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const iModelId: GuidString = await HubUtility.pushIModel(requestContext, projectId, pathname);
 
-    const iModelDb = await IModelDb.open(requestContext, projectId, iModelId.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelDb = await BriefcaseIModelDb.open(requestContext, projectId, iModelId.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
     assert(!!iModelDb);
 
     // Create and upload a dummy change set to the Hub
@@ -285,22 +305,11 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    const iModel = await BriefcaseIModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
     await iModel.close(requestContext);
-  });
-
-  it.skip("should be able to create a change set from a standalone iModel)", async () => {
-    const dbName = "D:\\temp\\Defects\\879278\\DPIntegrationTestProj79.bim";
-    const iModel: IModelDb = IModelDb.openStandalone(dbName, OpenMode.ReadWrite, true); // could throw Error
-    assert.exists(iModel);
-
-    const changeSetToken = BriefcaseManager.createStandaloneChangeSet(iModel.briefcase);
-    assert(IModelJsFs.existsSync(changeSetToken.pathname));
-
-    BriefcaseManager.dumpChangeSet(iModel.briefcase, changeSetToken);
   });
 
   it.skip("should be able to open any iModel on the Hub", async () => {
@@ -310,7 +319,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
 
-    const iModel: IModelDb = await IModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    const iModel = await BriefcaseIModelDb.open(requestContext, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
@@ -321,4 +330,28 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await BriefcaseManager.purgeCache(requestContext);
   });
 
+  it.skip("display info of all test users that accessed a specific iModel", async () => {
+    const projectName = "iModelJsIntegrationTest";
+    const iModelName = "ReadOnlyFullStackTest";
+
+    const myProjectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(requestContext, myProjectId, iModelName);
+
+    const users: HubUserInfo[] = await BriefcaseManager.imodelClient.users.get(requestContext, myIModelId, new UserInfoQuery().select("*"));
+    for (const user of users) {
+      console.log(`iModel ${projectName}:${iModelName} (${myIModelId}) was accessed by these users:`); // tslint:disable-line
+      console.log(`${user.email}: ${user.id}`); // tslint:disable-line
+    }
+  });
+
+  it.skip("display all test user ids", async () => {
+    let token = await TestUtility.getAccessToken(TestUsers.regular);
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+    token = await TestUtility.getAccessToken(TestUsers.manager);
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+    token = await TestUtility.getAccessToken(TestUsers.super);
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+    token = await TestUtility.getAccessToken(TestUsers.superManager);
+    console.log(`${token.getUserInfo()!.email!.id}: ${token.getUserInfo()!.id}`); // tslint:disable-line
+  });
 });

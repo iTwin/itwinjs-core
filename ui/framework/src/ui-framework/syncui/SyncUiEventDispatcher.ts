@@ -22,7 +22,7 @@ import { SelectionScope, getInstancesCount } from "@bentley/presentation-common"
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, backstageevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
-// cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged
+// cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged viewstatechanged
 
 /** Event Id used to sync UI components. Used to refresh visibility or enable state of control.
  * @public
@@ -63,7 +63,7 @@ export enum SyncUiEventId {
   /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",
   /** The current view state has changed (used by view undo/redo toolbar buttons). */
-  ViewStateChanged = "viewstateshanged",
+  ViewStateChanged = "viewstatechanged",
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.

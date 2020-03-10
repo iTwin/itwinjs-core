@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
@@ -18,7 +18,7 @@ import {
   BatchType,
   CompositeTileHeader,
   TileFormat,
-  ViewFlag,
+  ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { Viewport } from "../Viewport";
 import {
@@ -140,7 +140,7 @@ export abstract class RealityTileLoader {
     return content;
   }
 
-  public get viewFlagOverrides(): ViewFlag.Overrides { return defaultViewFlagOverrides; }
+  public get viewFlagOverrides(): ViewFlagOverrides { return defaultViewFlagOverrides; }
 
   public static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number {
     // Prioritize tiles closer to eye.

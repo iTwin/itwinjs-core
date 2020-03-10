@@ -16,7 +16,7 @@ import { isPromiseLike } from "@bentley/ui-core";
 import { TreeNodeItem, TreeDataChangesListener, SelectionMode } from "@bentley/ui-components";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { SelectionManager, SelectionChangeEvent, Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
-import { NodeKey, KeySet, ECInstancesNodeKey, StandardNodeTypes, InstanceKey, BaseNodeKey } from "@bentley/presentation-common";
+import { NodeKey, KeySet, ECInstancesNodeKey, StandardNodeTypes, InstanceKey, BaseNodeKey, NodePathElement, Node, LabelDefinition } from "@bentley/presentation-common";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting, HierarchyBuilder } from "@bentley/presentation-testing";
 import { ModelsTree, VisibilityHandler, RULESET_MODELS, VisibilityHandlerProps, ModelsTreeNodeType } from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
 import TestUtils from "../../TestUtils";
@@ -403,6 +403,42 @@ describe("ModelsTree", () => {
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
           selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        });
+
+      });
+
+      describe("filtering", () => {
+
+        beforeEach(() => {
+          dataProvider.getNodeKey = (node: TreeNodeItem) => (node as any)["__presentation-components/key"];
+          visibilityHandlerMock.setup(async (x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(async () => ({ isDisplayed: false }));
+        });
+
+        it("filters nodes", async () => {
+          const filteredNode: Node = {
+            key: createKey("element", "filtered-element"),
+            label: LabelDefinition.fromLabelString("filtered-node"),
+          };
+          const filterPromise = Promise.resolve<NodePathElement[]>([{ node: filteredNode, children: [], index: 0 }]);
+          dataProvider.getFilteredNodePaths = async () => filterPromise;
+
+          const result = render(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider} modelsVisibilityHandler={visibilityHandlerMock.object} filterInfo={{ filter: "filtered-node", activeMatchIndex: 0 }} />);
+          await waitForElement(() => result.getByText("filtered-node"));
+        });
+
+        it("invokes onFilterApplied callback", async () => {
+          const filteredNode: Node = {
+            key: createKey("element", "filtered-element"),
+            label: LabelDefinition.fromLabelString("filtered-node"),
+          };
+          const filterPromise = Promise.resolve<NodePathElement[]>([{ node: filteredNode, children: [], index: 0 }]);
+          dataProvider.getFilteredNodePaths = async () => filterPromise;
+          const spy = sinon.spy();
+
+          const result = render(<ModelsTree iModel={imodelMock.object} dataProvider={dataProvider} modelsVisibilityHandler={visibilityHandlerMock.object} filterInfo={{ filter: "filtered-node", activeMatchIndex: 0 }} onFilterApplied={spy} />);
+          await waitForElement(() => result.getByText("filtered-node"));
+
+          expect(spy).to.be.calledOnce;
         });
 
       });

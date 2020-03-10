@@ -7,6 +7,7 @@
  */
 import { GL } from "./GL";
 import { dispose, assert } from "@bentley/bentleyjs-core";
+import { RenderType } from "@bentley/webgl-compatibility";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Vector3d, Point3d, Map4d, Matrix3d, Matrix4d, Transform, Range3d } from "@bentley/geometry-core";
@@ -16,7 +17,7 @@ import { FrameBuffer } from "./FrameBuffer";
 import { SceneContext } from "../../ViewContext";
 import { Tile, TileDrawArgs, TileTreeReference, TileVisibility } from "../../tile/internal";
 import { Frustum, FrustumPlanes, RenderTexture, RenderMode, SolarShadows, ViewFlags } from "@bentley/imodeljs-common";
-import { System, RenderType } from "./System";
+import { System } from "./System";
 import { RenderState } from "./RenderState";
 import { BatchState, BranchStack } from "./BranchState";
 import { RenderCommands } from "./RenderCommands";
@@ -30,7 +31,7 @@ function createDrawArgs(sceneContext: SceneContext, solarShadowMap: SolarShadowM
     private _useViewportMap?: boolean;
 
     constructor(private _mapFrustumPlanes: FrustumPlanes, private _shadowMap: SolarShadowMap, args: TileDrawArgs) {
-      super(args.context, args.location, args.tree, args.now, args.purgeOlderThan, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
+      super(args.context, args.location, args.tree, args.now, args.graphics.viewFlagOverrides, args.clipVolume, args.parentsAndChildrenExclusive, args.graphics.symbologyOverrides);
     }
 
     public get frustumPlanes(): FrustumPlanes {

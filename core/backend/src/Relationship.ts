@@ -10,7 +10,7 @@ import { DbOpcode, DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs
 import { EntityProps, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
+import { IModelDb, BriefcaseIModelDb } from "./IModelDb";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 
 const loggerCategory = BackendLoggerCategory.Relationship;
@@ -66,11 +66,14 @@ export class Relationship extends Entity implements RelationshipProps {
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 
-  /**
-   * Add a request for the locks that would be needed to carry out the specified operation.
+  /** Add a request for the locks that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the Relationship instance.
    */
-  public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode); }
+  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
+    if (this.iModel instanceof BriefcaseIModelDb) {
+      this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode);
+    }
+  }
 }
 
 /**A Relationship where one Element refers to another Element

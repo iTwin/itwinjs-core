@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
@@ -344,7 +344,6 @@ export abstract class MapTile extends RealityTile {
     }
 
     this.loadChildren(); // NB: asynchronous
-    this._childrenLastUsed = args.now;
 
     if (undefined !== this.children) {
       for (const child of this.children) {
@@ -574,6 +573,9 @@ export async function calculateEcefToDb(iModel: IModelConnection, bimElevationBi
   if (undefined === iModel.ecefLocation)
     return Transform.createIdentity();
 
+  if (iModel.noGcsDefined)
+    return iModel.ecefLocation.getTransform().inverse()!;
+
   const geoConverter = iModel.geoServices.getConverter("WGS84");
   if (geoConverter === undefined)
     return iModel.ecefLocation.getTransform().inverse()!;
@@ -658,7 +660,7 @@ export class MapTileTree extends RealityTileTree {
       this._mercatorFractionToDb.multiplyPoint3dArrayInPlace(corners);
       range = Range3d.createArray(PlanarMapTile.computeRangeCorners(corners, Vector3d.create(0, 0, 1), 0, scratchCorners, globalHeightRange));
     }
-    this._rootTile = new GlobeMapTile({  contentId: quadId.contentId, maximumSize: 0, range }, this, quadId, range.corners(), globalRectangle, rootPatch, undefined);
+    this._rootTile = new GlobeMapTile({ contentId: quadId.contentId, maximumSize: 0, range }, this, quadId, range.corners(), globalRectangle, rootPatch, undefined);
     this._gcsConverter = gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
     this.globeMode = globeMode; this.yAxisUp;
   }

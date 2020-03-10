@@ -1115,7 +1115,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   protected setupAndPromptForNextAction(): void {
     this._useSelection = (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive);
     if (!this._useSelection)
-      IModelApp.accuSnap.enableLocate(true);
+      this.initLocateElements();
     this.showPrompt();
   }
 

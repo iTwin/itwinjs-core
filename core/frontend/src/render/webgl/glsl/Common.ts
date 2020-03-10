@@ -11,7 +11,8 @@ import { ShaderBuilder, ProgramBuilder, VariableType, ShaderType } from "../Shad
 import { UniformHandle } from "../Handle";
 import { DrawParams } from "../DrawCommand";
 import { ShaderFlags } from "../ShaderProgram";
-import { System, RenderType } from "../System";
+import { System } from "../System";
+import { RenderType } from "@bentley/webgl-compatibility";
 
 const chooseFloatWithBitFlag = `
 float chooseFloatWithBitFlag(float f1, float f2, float flags, float n) { return mix(f1, f2, extractNthBit(floor(flags + 0.5), n)); }

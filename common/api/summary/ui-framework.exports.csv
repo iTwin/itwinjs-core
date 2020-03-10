@@ -24,6 +24,8 @@ public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 public;AppNotificationManager 
 public;Backstage 
 beta;BackstageActionItem 
+beta;BackstageAppButton(props: BackstageAppButtonProps): JSX.Element
+beta;BackstageAppButtonProps
 beta;BackstageComposer(props: BackstageComposerProps): JSX.Element
 internal;BackstageComposerActionItem({ item }: BackstageComposerActionItemProps): JSX.Element
 internal;BackstageComposerActionItemProps
@@ -62,11 +64,8 @@ alpha;CardContainerProps
 alpha;CardInfo
 alpha;CardSelectedEvent 
 alpha;CardSelectedEventArgs
-internal;Category
 public;CategoryTree(props: CategoryTreeProps): JSX.Element
 public;CategoryTreeProps
-internal;CategoryVisibilityHandler 
-internal;CategoryVisibilityHandlerParams
 internal;ChangeSetInfo
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 beta;COLOR_THEME_DEFAULT = ColorTheme.Light
@@ -138,7 +137,6 @@ beta;CursorUpdatedEvent
 beta;CursorUpdatedEventArgs
 beta;CustomItemDef 
 beta;CustomItemProps 
-beta;CustomToolbarButton 
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
@@ -161,7 +159,6 @@ beta;DragDropLayerRenderer: typeof DragDropLayerRendererComponent & DndComponent
 beta;DragDropLayerRendererComponent 
 beta;DragDropLayerRendererProps 
 beta;DrawingNavigationAidControl 
-internal;dummy_node = React.ReactNode
 public;ElementTooltip 
 public;ElementTooltipChangedEvent 
 public;ElementTooltipChangedEventArgs
@@ -169,6 +166,7 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 beta;ExtensibleToolbarProps
 public;FooterModeField 
+public;FooterModeFieldProps 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
@@ -201,6 +199,7 @@ internal;FrontstageRuntimeProps
 public;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
+alpha;getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise
 internal;getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps
 internal;getFirstItem: (groupItemDef: GroupItemDef) => ActionButtonItemDef | import("../shared/CommandItemDef").CommandItemDef | import("../shared/ToolItemDef").ToolItemDef | GroupItemDef | undefined
 internal;getFirstItemId: (groupItemDef: GroupItemDef) => string
@@ -220,10 +219,6 @@ public;GroupItemDef
 public;GroupItemProps 
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
-public;Icon: typeof Icon_2
-beta;IconHelper
-public;IconProps 
-public;IconSpec = IconSpec_2
 beta;IModelConnectedCategoryTree: any
 alpha;IModelConnectedModelsTree: any
 beta;IModelConnectedNavigationWidget: any
@@ -294,6 +289,7 @@ public;MessageAddedEventArgs
 public;MessageCenterField 
 public;MessageCenterFieldProps 
 public;MessageManager
+public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
 public;ModalDialogManager
 public;ModalDialogRenderer 
@@ -357,8 +353,6 @@ internal;ProjectScope
 internal;ProjectServices
 public;PromptField: any
 public;PropsHelper
-alpha;RealityDataPicker 
-alpha;RealityDataPickerControl 
 public;Reducer
 public;ReducerActions
 public;ReducerMapActions
@@ -466,6 +460,7 @@ public;TaskProps
 public;TaskPropsList
 beta;ThemeManager: any
 beta;TileLoadingIndicator 
+alpha;toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise
 public;ToolActivatedEvent 
 public;ToolActivatedEventArgs
 beta;ToolAssistanceChangedEvent 
@@ -497,6 +492,8 @@ internal;ToolSettingsZoneProps
 internal;ToolUiManager
 public;ToolUiProvider 
 public;ToolWidget 
+beta;ToolWidgetComposer(props: ToolWidgetComposerProps): JSX.Element
+beta;ToolWidgetComposerProps
 public;ToolWidgetDef 
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
@@ -522,6 +519,7 @@ public;UserProfileBackstageItemProps
 internal;useToolSettings(): React.ReactNode
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
+alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider
 alpha;useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element
 internal;useWidgetDef(): WidgetDef | undefined
 alpha;ValidationTextbox 
@@ -544,6 +542,7 @@ internal;VisibilityHandlerProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
+alpha;VisibilityTreeFilterInfo
 alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
 alpha;VisibilityWidget 

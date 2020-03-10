@@ -171,6 +171,9 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     if (this._popup && this._popup.contains(event.target as Node))
       return;
 
+    if (this.props.isPinned)
+      return;
+
     if (this.props.onOutsideClick)
       return this.props.onOutsideClick(event);
 
@@ -182,12 +185,18 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _handleKeyboard = (event: KeyboardEvent): void => {
+    if (this.props.isPinned)
+      return;
+
     if (event.key === "Escape" || event.key === "Enter") {
       this._onClose();
     }
   }
 
   private _hide = () => {
+    if (this.props.isPinned)
+      return;
+
     this._onClose();
   }
 
@@ -203,9 +212,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   }
 
   private _onClose() {
-    if (!this.state.isOpen || this.props.isPinned) {
+    if (!this.state.isOpen)
       return;
-    }
 
     this._unBindWindowEvents();
 

@@ -1,22 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ToolWidgetComposer ToolWidgetComposer should render correctly 1`] = `
-<Tools
-  isNavigation={false}
+<ToolsArea
   onMouseEnter={[Function]}
-  preserveSpace={true}
 />
 `;
 
 exports[`ToolWidgetComposer ToolWidgetComposer with should render 1`] = `
-<Tools
+<ToolsArea
   button={
     <BackstageAppButton
       icon="icon-test"
     />
   }
-  isNavigation={false}
   onMouseEnter={[Function]}
-  preserveSpace={true}
 />
 `;

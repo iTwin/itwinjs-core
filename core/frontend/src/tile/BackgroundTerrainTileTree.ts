@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
@@ -199,12 +199,11 @@ export class TerrainMapTile extends MapTile {
     super(params, tree, quadId, rectangle, cornerNormals);
     this._heightRange = heightRange ? heightRange.clone() : undefined;
   }
-  public setLastUsed(lastUsed: BeTimePoint) {
-    super.setLastUsed(lastUsed);
+  public markUsed(args: TileDrawArgs) {
+    super.markUsed(args);
     if (this.drapeTiles)
       for (const drapeTile of this.drapeTiles)
-        drapeTile.setLastUsed(lastUsed);
-
+        drapeTile.markUsed(args);
   }
 
   public produceGraphics(): RenderGraphic | undefined {
@@ -291,10 +290,12 @@ export class TerrainMapTile extends MapTile {
 
     this.drapeTiles = this.terrainTree.drapeTree.selectCartoDrapeTiles(this, args);
 
-    for (const drapeTile of this.drapeTiles)
-      if (!drapeTile.isReady) {
+    for (const drapeTile of this.drapeTiles) {
+      if (drapeTile.isReady)
+        args.markReady(drapeTile);
+      else
         context.missing.push(drapeTile);
-      }
+    }
   }
 
   private static _scratchRectangle1 = new MapCartoRectangle();

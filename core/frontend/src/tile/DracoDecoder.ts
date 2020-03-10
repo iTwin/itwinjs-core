@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 import { createDecoderModule } from "draco3d";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";

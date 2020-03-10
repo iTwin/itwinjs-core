@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/index";
 
 .uifw-cursor-prompt {
   padding: 5px;
@@ -18,6 +18,9 @@
   > .uifw-cursor-prompt-icon {
     padding-left: 3px;
     padding-right: 3px;
+
+    width: $uicore-icons-small;
+    height: $uicore-icons-small;
   }
 
   > .uifw-cursor-prompt-text {

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
+import { BriefcaseIModelDb, ConcurrencyControl, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
 import { OpenMode, EnvMacroSubst } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
 
@@ -46,7 +46,9 @@ function configureIModel() {
       return;
 
     // Setting a concurrency control policy is an example of something you might do in an onOpened event handler.
-    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    if (iModel instanceof BriefcaseIModelDb) {
+      iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    }
   });
   // __PUBLISH_EXTRACT_END__
 }

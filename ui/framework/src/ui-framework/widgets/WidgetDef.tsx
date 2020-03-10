@@ -136,9 +136,6 @@ export class WidgetDef {
   public get widgetType(): WidgetType { return this._widgetType; }
   public set widgetType(type: WidgetType) { this._widgetType = type; }
 
-  /** @deprecated - use badgeType instead */
-  public get betaBadge(): boolean { return this._badgeType === BadgeType.TechnicalPreview; }
-
   constructor(widgetProps: WidgetProps) {
     if (widgetProps.id !== undefined)
       this._id = widgetProps.id;
@@ -199,8 +196,6 @@ export class WidgetDef {
     if (widgetProps.icon !== undefined)
       me._iconSpec = widgetProps.icon;
 
-    if (widgetProps.betaBadge !== undefined)    // tslint:disable-line: deprecation
-      me._badgeType = widgetProps.betaBadge ? BadgeType.TechnicalPreview : BadgeType.None;     // tslint:disable-line: deprecation
     if (widgetProps.badgeType !== undefined)
       me._badgeType = widgetProps.badgeType;
 

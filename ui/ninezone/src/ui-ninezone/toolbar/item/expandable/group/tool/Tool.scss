@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "../../../../../target";
-@import "../../../../../typography";
+@import "~@bentley/ui-core/lib/ui-core/typography";
 @import "variables";
 
 .nz-toolbar-item-expandable-group-tool-item {

@@ -63,9 +63,10 @@ export class BranchUniforms {
 
   // Working state
   private readonly _scratchTransform = Transform.createIdentity();
+  private readonly _scratchTransform2 = Transform.createIdentity();
   private readonly _scratchViewToWorld = Matrix3d.createIdentity();
-  private readonly _scratchAboutOrigin = Transform.createIdentity();
   private readonly _scratchVIModelMatrix = Transform.createIdentity();
+  private readonly _zeroPoint = new Point3d(0, 0, 0);
 
   public constructor(target: Target) {
     this._target = target;
@@ -146,6 +147,11 @@ export class BranchUniforms {
       // Zero out Z for silly clipping tools...
       mv = modelMatrix.clone(this._scratchTransform);
       mv.matrix.coffs[2] = mv.matrix.coffs[5] = mv.matrix.coffs[8] = 0.0;
+
+      // Scale based on device-pixel ratio.
+      const scale = this._target.devicePixelRatio;
+      const viewMatrix = Transform.createScaleAboutPoint(this._zeroPoint, scale, this._scratchTransform2);
+      viewMatrix.multiplyTransformTransform(mv, mv);
     } else {
       const viewMatrix = this._target.uniforms.frustum.viewMatrix;
       mv = viewMatrix.clone(this._scratchTransform);
@@ -157,7 +163,7 @@ export class BranchUniforms {
       } else {
         if (undefined !== vio) {
           const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
-          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchAboutOrigin);
+          const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
           const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(modelMatrix, this._scratchVIModelMatrix);
           mv.multiplyTransformTransform(viModelMatrix, mv);
         } else {

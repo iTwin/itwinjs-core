@@ -2,16 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Tiles
+ */
 
 import { MapTilingScheme, MapCartoRectangle } from "./internal";
 import { Cartographic } from "@bentley/imodeljs-common";
 import { SortedArray } from "@bentley/bentleyjs-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
-/** @packageDocumentation
- * @module Tile
- */
-
 /** @internal */
 class RectangleWithLevel extends MapCartoRectangle {
   constructor(public level: number, west: number, south: number, east: number, north: number) {

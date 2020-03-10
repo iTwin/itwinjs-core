@@ -105,8 +105,8 @@ export declare interface AzCopy {
   on(event: "azinit", listener: (args: InitEventArgs) => void): this;
   on(event: "azinfo", listener: (args: StringEventArgs) => void): this;
   on(event: "azprogress", listener: (args: ProgressEventArgs) => void): this;
-  on(event: "azexit", listener: (args: ProgressEventArgs) => void): this;
-  on(event: "azerror", listener: (args: StringEventArgs) => void): this;
+  on(event: "azexit", listener: (args: ProgressEventArgs) => void): this; // tslint:disable-line:unified-signatures
+  on(event: "azerror", listener: (args: StringEventArgs) => void): this; // tslint:disable-line:unified-signatures
   on(event: "azruntimeerror", listener: (args: string) => void): this;
 }
 

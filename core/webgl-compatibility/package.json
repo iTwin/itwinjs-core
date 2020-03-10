@@ -1,0 +1,63 @@
+{
+  "name": "@bentley/webgl-compatibility",
+  "version": "2.0.0-dev.27",
+  "description": "APIs for determining the level of compatibility of a browser+device with the iModel.js rendering system.",
+  "license": "MIT",
+  "main": "lib/webgl-compatibility.js",
+  "imodeljsSharedLibrary": true,
+  "scripts": {
+    "build": "buildIModelJsModule",
+    "clean": "rimraf lib .rush package-deps.json",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson %TYPEDOC_THEME%",
+    "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=webgl-compatibility",
+    "lint": "tslint --project . 1>&2",
+    "test": "npm run webpackTests && node ./node_modules/@bentley/certa/bin/certa.js -r chrome",
+    "cover": "npm test -- --cover",
+    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
+  },
+  "iModelJs": {
+    "buildModule": {
+      "type": "system",
+      "webpack": {
+        "dest": "./lib/module",
+        "entry": "./lib/webgl-compatibility.js",
+        "bundleName": "webgl-compatibility"
+      }
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/webgl-compatibility"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "Compatibility",
+    "Capabilities",
+    "WebGL"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {},
+  "peerDependencies": {},
+  "devDependencies": {
+    "@bentley/build-tools": "2.0.0-dev.27",
+    "@bentley/webpack-tools": "2.0.0-dev.27",
+    "@bentley/certa": "2.0.0-dev.27",
+    "@types/node": "10.14.1",
+    "@types/mocha": "^5.2.5",
+    "@types/chai": "^4.1.4",
+    "typescript": "~3.7.4",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "rimraf": "^2.6.2",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "source-map-loader": "^0.2.3",
+    "glob": "^7.1.2",
+    "webpack": "^4.20.2"
+  }
+}

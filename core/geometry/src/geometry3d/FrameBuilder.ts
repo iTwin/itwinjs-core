@@ -160,7 +160,7 @@ export class FrameBuilder {
         const ray = data.fractionToPointAndDerivative(0.0);
         this.announcePoint(ray.origin);
         this.announceVector(ray.direction);
-        this.announceVector(data.matrix.columnZCrossVector(ray.direction));
+        this.announceVector(data.matrixRef.columnZCrossVector(ray.direction));
       } else if (data instanceof LineString3d) {
         for (const point of data.points) {
           this.announcePoint(point);

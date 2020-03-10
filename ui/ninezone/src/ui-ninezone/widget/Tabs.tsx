@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { useResizeObserver } from "../base/useResizeObserver";
+import { useResizeObserver } from "@bentley/ui-core";
 import { useOverflow, getChildKey } from "../tool-settings/Docked";
 import { WidgetOverflow } from "./Overflow";
 import { useWidgetPanelSide, isHorizontalWidgetPanelSide } from "../widget-panels/Panel";

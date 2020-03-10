@@ -954,7 +954,7 @@ class IModelJsModuleBuilder {
                 if (!fs.existsSync(destWebResources)) {
                     return Promise.resolve(new Result("installPlugin", 1, undefined, undefined, `cannot find the output webresources directory of the destination: ${destWebResources}`));
                 }
-                const pluginDirectory = path.join(destWebResources, "imjs_plugins");
+                const pluginDirectory = path.join(destWebResources, "imjs_extensions");
                 if (!fs.existsSync(pluginDirectory)) {
                     fs.mkdirSync(pluginDirectory);
                 }

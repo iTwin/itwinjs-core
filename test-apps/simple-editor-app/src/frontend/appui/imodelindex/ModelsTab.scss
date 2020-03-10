@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/index";
 
 $border-color: #eeeeee;
 
@@ -91,7 +91,7 @@ $border-color: #eeeeee;
       .dc-table-content {
         flex: 1;
         border-width: 0px 1px 1px 1px;
-        border-color: #dce0e3 ;
+        border-color: #dce0e3;
         border-style: solid;
         overflow-y: auto;
       }
@@ -115,7 +115,7 @@ $border-color: #eeeeee;
     display: flex;
     align-items: center;
     background-color: $uicore-white;
-    color: rgba(black, .85);
+    color: rgba(black, 0.85);
     border: 1px solid $uicore-blue;
     border-radius: 3px;
 
@@ -137,7 +137,7 @@ $border-color: #eeeeee;
 
       > span:first-child {
         font-size: 14px;
-        color: rgba($uicore-text-color,.85);
+        color: rgba($uicore-text-color, 0.85);
       }
 
       > span:last-child {
@@ -160,11 +160,11 @@ $border-color: #eeeeee;
       font-size: 2em;
       margin-left: $uicore-m;
       margin-right: $uicore-sm;
-      color: rgba(0,0,0,.85);
+      color: rgba(0, 0, 0, 0.85);
       cursor: pointer;
 
       &:hover {
-        color: rgba(0,0,0,1);
+        color: rgba(0, 0, 0, 1);
       }
     }
   }
@@ -191,9 +191,13 @@ $border-color: #eeeeee;
 }
 
 @-webkit-keyframes slide {
-  100% { bottom: 15px }
+  100% {
+    bottom: 15px;
+  }
 }
 
 @keyframes slide {
-  100% { bottom: 15px }
+  100% {
+    bottom: 15px;
+  }
 }

@@ -6,14 +6,14 @@
  * @module iModels
  */
 
-import * as deepAssign from "deep-assign";
-import { GeometryStreamBuilder, GeometricElement3dProps, Placement3d } from "@bentley/imodeljs-common";
-import { IModelDb } from "./IModelDb";
-import { DbOpcode, BentleyError, IModelStatus, Id64Array, Id64, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, DbOpcode, Id64, Id64Array, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { GeometryQuery, IModelJson, Point3d, Transform, TransformProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-import { Transform, Point3d, YawPitchRollAngles, IModelJson, GeometryQuery, TransformProps } from "@bentley/geometry-core";
-import { GeometricElement3d } from "./Element";
+import { GeometricElement3dProps, GeometryStreamBuilder, Placement3d } from "@bentley/imodeljs-common";
+import * as deepAssign from "deep-assign";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { GeometricElement3d } from "./Element";
+import { IModelDb, BriefcaseIModelDb } from "./IModelDb";
 
 const loggingCategory = BackendLoggerCategory.Editing;
 
@@ -75,15 +75,17 @@ export class GeometricElement3dEditor implements IElementEditor {
   }
 
   /**
-   * The tool is delcaring its intention to edit the specified elements. The editor
+   * The tool is declaring its intention to edit the specified elements. The editor
    * will make sure that the required locks and codes are held. The editor will then
    * start tracking the state of these elements.
    */
   public async startModifyingElements(ctx: AuthorizedClientRequestContext, elementIds: Id64Array): Promise<void> {
     ctx.enter();
     const elements = elementIds.map((id: string) => ({ element: this.iModel.elements.getElement<GeometricElement3d>(id), opcode: DbOpcode.Update }));
-    await this.iModel.concurrencyControl.requestResources(ctx, elements);  // don't allow the tool to start editing this element until we have locked them and their models.
-    ctx.enter();
+    if (this.iModel instanceof BriefcaseIModelDb) {
+      await this.iModel.concurrencyControl.requestResources(ctx, elements); // don't allow the tool to start editing this element until we have locked them and their models.
+      ctx.enter();
+    }
     elements.forEach((e) => this._targets.push({ element: e.element }));
   }
 

@@ -4,7 +4,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
 <NavigationWidgetWithDef
   horizontalToolbar={
     <Toolbar
-      expandsTo={3}
+      expandsTo={4}
       items={
         <UNDEFINED>
           <ToolButton
@@ -45,17 +45,17 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "_toolbarBaseName": "[TestFrontstage]NavigationWidget",
       "_tooltip": "",
       "_widgetType": 1,
-      "horizontalDirection": 3,
+      "horizontalDirection": 4,
       "horizontalItems": undefined,
       "horizontalPanelAlignment": 1,
-      "verticalDirection": 0,
+      "verticalDirection": 1,
       "verticalItems": undefined,
       "verticalPanelAlignment": 0,
     }
   }
   verticalToolbar={
     <Toolbar
-      expandsTo={0}
+      expandsTo={1}
       items={
         <UNDEFINED>
           <ToolButton

@@ -1,12 +1,12 @@
 # Hosting iModel.js Plugins on an External Web Server
 
-[Plugins](./Plugins.md) can be hosted on the same web server that hosts the iModel.js application, but quite often a user wants to run a plugin in an application hosted by a web server that he or she does not control. In that case, the plugin can be hosted on a different web server (one that the user does control, so the appropriate files can be placed on it). A limitation is that the web server must allow [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing) (Cross Origin Resource Sharing) from the web origin where the iModel.js application is hosted. For example, if a Plugin is to be run in Bentley's Design Review, the web server hosting the Plugin must allow CORS requests from bentley.com. See [CORS considerations](#cors-considerations) for more information.
+[Extensions](./Extensions.md) can be hosted on the same web server that hosts the iModel.js application, but quite often a user wants to run a plugin in an application hosted by a web server that he or she does not control. In that case, the plugin can be hosted on a different web server (one that the user does control, so the appropriate files can be placed on it). A limitation is that the web server must allow [CORS](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing) (Cross Origin Resource Sharing) from the web origin where the iModel.js application is hosted. For example, if a Plugin is to be run in Bentley's Design Review, the web server hosting the Plugin must allow CORS requests from bentley.com. See [CORS considerations](#cors-considerations) for more information.
 
 A Plugin that is hosted on an external web server may require a few source code modifications. See [Source Code Modifications](#source-code-modifications) for details.
 
 ## Hosting the Plugin
 
-As mentioned in [BuildingIModelJsModules](./BuildingIModelJsModules.md), when a Plugin is built, a directory structure is created that contains the various files associated with the Plugin, and a separate [tar file](https://en.wikipedia.org/wiki/Tar_%28computing%29) that packages all plugin resources into one file is also created. Either the build directory or the tar file can be used to install the files on the hosting web server. Below, we discuss a few scenarios that you may encounter.
+As mentioned in [BuildingIModelJsModules](./BuildingIModelJsModules.md), when a Extension is built, a directory structure is created that contains the various files associated with the Plugin, and a separate [tar file](https://en.wikipedia.org/wiki/Tar_%28computing%29) that packages all plugin resources into one file is also created. Either the build directory or the tar file can be used to install the files on the hosting web server. Below, we discuss a few scenarios that you may encounter.
 
 ### 1 - Developing the Plugin
 

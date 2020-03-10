@@ -28,6 +28,7 @@ public;BackendRequestContext
 public;BisCoreSchema 
 internal;BriefcaseEntry
 public;BriefcaseId
+public;BriefcaseIModelDb 
 internal;BriefcaseManager
 public;CachedECSqlStatement
 internal;CachedSqliteStatement
@@ -169,7 +170,7 @@ beta;ILinearLocationLocatesElement
 beta;ILinearlyLocatedAlongILinearElement 
 beta;ILinearlyLocatedAttributesElement 
 beta;IModelCloneContext
-public;IModelDb 
+public;class IModelDb 
 public;IModelDb
 internal;TileContentState
 internal;Tiles
@@ -262,6 +263,7 @@ public;SheetBorderTemplate
 public;SheetModel 
 public;SheetTemplate 
 public;SheetViewDefinition 
+beta;SnapshotIModelDb 
 public;SourceAndTarget
 public;SpatialCategory 
 public;class SpatialElement 
@@ -277,6 +279,7 @@ internal;SqliteStatement
 internal;SqliteStatementCache
 internal;SqliteValue
 internal;SqliteValueType
+internal;StandaloneIModelDb 
 internal;StringParam
 public;SubCategory 
 public;Subject 

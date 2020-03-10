@@ -2,13 +2,12 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { LockLevel, LockType } from "@bentley/imodeljs-clients";
+import { CodeProps } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { LockType, LockLevel } from "@bentley/imodeljs-clients";
-import { CodeProps } from "@bentley/imodeljs-common";
+import { ConcurrencyControl, IModelJsFs } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelJsFs } from "../../IModelJsFs";
 
 describe("ConcurrencyControl.StateCache", () => {
 
@@ -28,7 +27,7 @@ describe("ConcurrencyControl.StateCache", () => {
       },
     };
 
-    const cctl = new ConcurrencyControl.StateCache(concurrencyControlMock as ConcurrencyControl);
+    const cctl = new ConcurrencyControl.StateCache(concurrencyControlMock as unknown as ConcurrencyControl);
     if (!cctl.open())
       cctl.create();
 

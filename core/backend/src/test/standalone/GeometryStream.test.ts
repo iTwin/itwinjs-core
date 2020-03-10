@@ -32,7 +32,7 @@ import {
   TextStringProps,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
-import { BackendRequestContext, GeometricElement, GeometryPart, IModelDb, LineStyleDefinition, PhysicalObject, Platform } from "../../imodeljs-backend";
+import { BackendRequestContext, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotIModelDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
@@ -40,7 +40,7 @@ function assertTrue(expr: boolean): asserts expr {
 }
 
 describe("GeometryStream", () => {
-  let imodel: IModelDb;
+  let imodel: SnapshotIModelDb;
 
   before(() => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
@@ -49,7 +49,7 @@ describe("GeometryStream", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
   });
 
   it("create GeometricElement3d using line codes 1-7", async () => {
@@ -958,7 +958,7 @@ describe("GeometryStream", () => {
 });
 
 describe("Mass Properties", () => {
-  let imodel: IModelDb;
+  let imodel: SnapshotIModelDb;
 
   before(() => {
     const seedFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
@@ -967,7 +967,7 @@ describe("Mass Properties", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
   });
 
   it("volume", async () => {

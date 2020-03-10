@@ -252,8 +252,13 @@ export type ChangeState = "new" | "modified" | "deleted";
 
 // @beta
 export enum ChangesType {
+    Definition = 2,
+    GlobalProperties = 32,
     Regular = 0,
-    Schema = 1
+    Schema = 1,
+    SheetsAndDrawings = 8,
+    SpatialData = 4,
+    ViewsAndModels = 16
 }
 
 // @alpha
@@ -1118,6 +1123,9 @@ export interface IOidcFrontendClient extends IDisposable, IAuthorizationClient {
     signIn(requestContext: ClientRequestContext): Promise<void>;
     signOut(requestContext: ClientRequestContext): Promise<void>;
 }
+
+// @beta
+export const isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext;
 
 // @beta
 export const isIOidcFrontendClient: (client: IAuthorizationClient | undefined) => client is IOidcFrontendClient;

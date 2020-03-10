@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
+import { SnapshotIModelDb } from "@bentley/imodeljs-backend";
+import { DuplicateRulesetHandlingStrategy, Presentation, PresentationManagerMode, RulesetEmbedder } from "@bentley/presentation-backend";
+import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
+import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presentation-common";
+import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
+import { expect } from "chai";
 import faker from "faker";
 import fs from "fs";
-import { expect } from "chai";
-import { createRandomRuleset } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { ClientRequestContext, Id64 } from "@bentley/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { Ruleset, RuleTypes, ChildNodeSpecificationTypes } from "@bentley/presentation-common";
-import { Presentation, RulesetEmbedder, DuplicateRulesetHandlingStrategy, PresentationManagerMode } from "@bentley/presentation-backend";
-import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
-import { tweakRuleset } from "./Helpers";
 import { initialize, terminate } from "../IntegrationTests";
+import { tweakRuleset } from "./Helpers";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
@@ -39,7 +39,7 @@ const RULESET_2: Ruleset = {
 };
 
 describe("RulesEmbedding", () => {
-  let imodel: IModelDb;
+  let imodel: SnapshotIModelDb;
   let embedder: RulesetEmbedder;
   let ruleset: Ruleset;
   let nativePlatform: NativePlatformDefinition;
@@ -55,10 +55,10 @@ describe("RulesEmbedding", () => {
     expect(expected).to.not.deep.equal(actual);
   }
 
-  function createSnapshotFromSeed(testFileName: string, seedFileName: string): IModelDb {
-    const seedDb: IModelDb = IModelDb.openSnapshot(seedFileName);
-    const testDb: IModelDb = seedDb.createSnapshot(testFileName);
-    seedDb.closeSnapshot();
+  function createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotIModelDb {
+    const seedDb = SnapshotIModelDb.open(seedFileName);
+    const testDb = SnapshotIModelDb.createFrom(seedDb, testFileName);
+    seedDb.close();
     return testDb;
   }
 
@@ -76,7 +76,7 @@ describe("RulesEmbedding", () => {
   });
 
   after(() => {
-    imodel.closeSnapshot();
+    imodel.close();
     nativePlatform.dispose();
 
     fs.unlink(testIModelName, (err: Error) => {

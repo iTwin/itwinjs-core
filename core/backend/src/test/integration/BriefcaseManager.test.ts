@@ -11,7 +11,7 @@ import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import {
   KeepBriefcase, IModelDb, OpenParams, Element, IModelJsFs,
-  IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry, AuthorizedBackendRequestContext, BackendLoggerCategory,
+  IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry, AuthorizedBackendRequestContext, BackendLoggerCategory, BriefcaseIModelDb,
 } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
@@ -105,7 +105,7 @@ describe("BriefcaseManager (#integration)", () => {
     };
 
     try {
-      const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.first());
+      const iModel = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.first());
       assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
 
       iModel.onBeforeClose.addListener(onBeforeCloseListener);
@@ -133,14 +133,14 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should reuse fixed version briefcases", async () => {
-    const iModel1: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("FirstVersion"));
+    const iModel1 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("FirstVersion"));
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel2: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("FirstVersion"));
+    const iModel2 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("FirstVersion"));
     assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel1, iModel2, "previously open briefcase was expected to be shared");
 
-    const iModel3: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("SecondVersion"));
+    const iModel3 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("SecondVersion"));
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.notEqual(iModel3, iModel2, "opening two different versions should not cause briefcases to be shared when the older one is open");
     assert.notEqual(iModel3.briefcase, iModel2.briefcase, "opening two different versions should not cause briefcases to be shared when the older one is open");
@@ -155,11 +155,11 @@ describe("BriefcaseManager (#integration)", () => {
     await iModel3.close(requestContext);
     assert.isTrue(IModelJsFs.existsSync(pathname3));
 
-    const iModel4: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("FirstVersion"));
+    const iModel4 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("FirstVersion"));
     assert.exists(iModel4, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel4.briefcase.pathname, briefcase2.pathname, "previously closed briefcase was expected to be shared");
 
-    const iModel5: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("SecondVersion"));
+    const iModel5 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named("SecondVersion"));
     assert.exists(iModel5, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel5.briefcase.pathname, briefcase3.pathname, "previously closed briefcase was expected to be shared");
 
@@ -171,17 +171,17 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should reuse open or closed PullAndPush briefcases", async () => {
-    const iModel1: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModel1 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel2: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModel2 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
 
     assert.equal(iModel1, iModel2);
     const pathname = iModel1.briefcase.pathname;
     await iModel1.close(requestContext, KeepBriefcase.Yes);
 
-    const iModel3: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModel3 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel3.briefcase.pathname, pathname, "previously closed briefcase was expected to be shared");
 
@@ -189,17 +189,17 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should reuse open or closed PullOnly briefcases", async () => {
-    const iModel1: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
+    const iModel1 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel2: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
+    const iModel2 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
     assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
 
     assert.equal(iModel1, iModel2);
     const pathname = iModel1.briefcase.pathname;
     await iModel1.close(requestContext, KeepBriefcase.Yes);
 
-    const iModel3: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
+    const iModel3 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel3.briefcase.pathname, pathname, "previously closed briefcase was expected to be shared");
 
@@ -207,16 +207,16 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should open iModels of specific versions from the Hub", async () => {
-    const iModelFirstVersion: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.first());
+    const iModelFirstVersion = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.first());
     assert.exists(iModelFirstVersion);
     assert.strictEqual<string>(iModelFirstVersion.briefcase.currentChangeSetId, "");
 
     for (const [arrayIndex, versionName] of readOnlyTestVersions.entries()) {
-      const iModelFromVersion = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(readOnlyTestIModel.changeSets[arrayIndex + 1].wsgId));
+      const iModelFromVersion = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(readOnlyTestIModel.changeSets[arrayIndex + 1].wsgId));
       assert.exists(iModelFromVersion);
       assert.strictEqual<string>(iModelFromVersion.briefcase.currentChangeSetId, readOnlyTestIModel.changeSets[arrayIndex + 1].wsgId);
 
-      const iModelFromChangeSet = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named(versionName));
+      const iModelFromChangeSet = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named(versionName));
       assert.exists(iModelFromChangeSet);
       assert.strictEqual(iModelFromChangeSet, iModelFromVersion);
       assert.strictEqual<string>(iModelFromChangeSet.briefcase.currentChangeSetId, readOnlyTestIModel.changeSets[arrayIndex + 1].wsgId);
@@ -227,7 +227,7 @@ describe("BriefcaseManager (#integration)", () => {
       await iModelFromVersion.close(requestContext, KeepBriefcase.Yes);
     }
 
-    const iModelLatestVersion: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
+    const iModelLatestVersion = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelLatestVersion);
     assert.isUndefined(iModelLatestVersion.briefcase.reversedChangeSetId);
     assert.strictEqual<string>(iModelLatestVersion.briefcase.parentChangeSetId, readOnlyTestIModel.changeSets[3].wsgId);
@@ -239,7 +239,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should open an iModel with no versions", async () => {
-    const iModelNoVer: IModelDb = await IModelDb.open(requestContext, testProjectId, noVersionsTestIModel.id, OpenParams.fixedVersion());
+    const iModelNoVer = await BriefcaseIModelDb.open(requestContext, testProjectId, noVersionsTestIModel.id, OpenParams.fixedVersion());
     assert.exists(iModelNoVer);
     assert(iModelNoVer.iModelToken.iModelId && iModelNoVer.iModelToken.iModelId === noVersionsTestIModel.id, "Correct iModel not found");
   });
@@ -247,7 +247,7 @@ describe("BriefcaseManager (#integration)", () => {
   it("should be able to pull or reverse changes only if allowed", async () => {
     const secondChangeSetId = readOnlyTestIModel.changeSets[1].wsgId;
 
-    const iModelFixed: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(secondChangeSetId));
+    const iModelFixed = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(secondChangeSetId));
     assert.exists(iModelFixed);
     assert.strictEqual<string>(iModelFixed.briefcase.currentChangeSetId, secondChangeSetId);
 
@@ -277,14 +277,14 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should be able to edit only if it's allowed", async () => {
-    const iModelFixed: IModelDb = await IModelDb.open(requestContext, testProjectId, readWriteTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
+    const iModelFixed = await BriefcaseIModelDb.open(requestContext, testProjectId, readWriteTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelFixed);
 
     let rootEl: Element = iModelFixed.elements.getRootSubject();
     rootEl.userLabel = rootEl.userLabel + "changed";
     assert.throws(() => iModelFixed.elements.updateElement(rootEl));
 
-    const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelPullAndPush = await BriefcaseIModelDb.open(requestContext, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelPullAndPush);
 
     rootEl = iModelPullAndPush.elements.getRootSubject();
@@ -300,17 +300,17 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should be able to reuse existing briefcases from a previous session", async () => {
-    let iModelShared: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
+    let iModelShared = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelShared);
     assert.strictEqual(iModelShared.openParams.openMode, OpenMode.Readonly);
     const sharedPathname = iModelShared.briefcase.pathname;
 
-    let iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    let iModelPullAndPush = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelPullAndPush);
     assert.strictEqual(iModelPullAndPush.openParams.openMode, OpenMode.ReadWrite);
     const pullAndPushPathname = iModelPullAndPush.briefcase.pathname;
 
-    let iModelPullOnly: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
+    let iModelPullOnly = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
     assert.exists(iModelPullOnly);
     assert.strictEqual(iModelPullOnly.openParams.openMode, OpenMode.ReadWrite); // Note: PullOnly briefcases must be set to ReadWrite to accept change sets
     const pullOnlyPathname = iModelPullOnly.briefcase.pathname;
@@ -327,15 +327,15 @@ describe("BriefcaseManager (#integration)", () => {
 
     IModelHost.startup();
 
-    iModelShared = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
+    iModelShared = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelShared);
     assert.strictEqual<string>(iModelShared.briefcase.pathname, sharedPathname);
 
-    iModelPullAndPush = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    iModelPullAndPush = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelPullAndPush);
     assert.strictEqual<string>(iModelPullAndPush.briefcase.pathname, pullAndPushPathname);
 
-    iModelPullOnly = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
+    iModelPullOnly = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
     assert.exists(iModelPullOnly);
     assert.strictEqual<string>(iModelPullOnly.briefcase.pathname, pullOnlyPathname);
 
@@ -367,8 +367,8 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should be able to reverse and reinstate changes", async () => {
-    const iModelPullAndPush: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
-    const iModelPullOnly: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
+    const iModelPullAndPush = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelPullOnly = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
 
     let arrayIndex: number;
     for (arrayIndex = readOnlyTestVersions.length - 1; arrayIndex >= 0; arrayIndex--) {
@@ -407,12 +407,12 @@ describe("BriefcaseManager (#integration)", () => {
   };
 
   it("should allow purging the cache and delete any acquired briefcases from the hub", async () => {
-    const iModel1: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModel1 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     const briefcaseId1: number = iModel1.briefcase.briefcaseId;
     let exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId1);
     assert.isTrue(exists);
 
-    const iModel2: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
+    const iModel2 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
     const briefcaseId2: number = iModel2.briefcase.briefcaseId;
     exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId2);
     assert.isTrue(exists);
@@ -432,13 +432,13 @@ describe("BriefcaseManager (#integration)", () => {
     let iModelName = "iModel Name With Spaces";
     let iModelId = await createIModelOnHub(managerRequestContext, projectId, iModelName);
     assert.isDefined(iModelId);
-    let iModel = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    let iModel = await BriefcaseIModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.isDefined(iModel);
 
     iModelName = "iModel Name With :\/<>?* Characters";
     iModelId = await createIModelOnHub(managerRequestContext, projectId, iModelName);
     assert.isDefined(iModelId);
-    iModel = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    iModel = await BriefcaseIModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.isDefined(iModel);
 
     iModelName = "iModel Name Thats Excessively Long " +
@@ -449,25 +449,25 @@ describe("BriefcaseManager (#integration)", () => {
     assert.equal(255, iModelName.length);
     iModelId = await createIModelOnHub(managerRequestContext, projectId, iModelName);
     assert.isDefined(iModelId);
-    iModel = await IModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
+    iModel = await BriefcaseIModelDb.open(requestContext, projectId, iModelId, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.isDefined(iModel);
   });
 
   it("should reuse a briefcaseId when re-opening iModel-s for pullOnly and pullAndPush workflows", async () => {
-    const iModel1: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModel1 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     const briefcaseId1: number = iModel1.briefcase.briefcaseId;
-    const iModel2: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
+    const iModel2 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
     const briefcaseId2: number = iModel2.briefcase.briefcaseId;
     assert.notStrictEqual(briefcaseId1, briefcaseId2); // PullOnly and PullAndPush should allocate different briefcase ids
 
     await iModel1.close(requestContext); // Keeps the briefcase by default
     await iModel2.close(requestContext); // Keeps the briefcase by default
 
-    const iModel3: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModel3 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     const briefcaseId3: number = iModel3.briefcase.briefcaseId;
     assert.strictEqual(briefcaseId3, briefcaseId1);
 
-    const iModel4: IModelDb = await IModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
+    const iModel4 = await BriefcaseIModelDb.open(requestContext, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
     const briefcaseId4: number = iModel4.briefcase.briefcaseId;
     assert.strictEqual(briefcaseId4, briefcaseId2);
 
@@ -484,12 +484,12 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens and then closes the iModel pullOnly/pullPush, keeping the briefcase
-    const iModelPullAndPush = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelPullAndPush = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
     const briefcaseIdPullAndPush: number = iModelPullAndPush.briefcase.briefcaseId;
     const changeSetIdPullAndPush = iModelPullAndPush.iModelToken.changeSetId;
     await iModelPullAndPush.close(userContext2);
 
-    const iModelPullOnly = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
+    const iModelPullOnly = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
     const briefcaseIdPullOnly: number = iModelPullOnly.briefcase.briefcaseId;
     const changeSetIdPullOnly = iModelPullOnly.iModelToken.changeSetId;
     await iModelPullOnly.close(userContext2);
@@ -498,14 +498,14 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.pushTestChangeSet();
 
     // User 2 reopens the iModel pullOnly/pullPush => Expect the same briefcase to be re-used, but the changeSet should have been updated!!
-    const iModelPullAndPush2: IModelDb = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelPullAndPush2 = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
     const briefcaseIdPullAndPush2: number = iModelPullAndPush2.briefcase.briefcaseId;
     assert.strictEqual(briefcaseIdPullAndPush2, briefcaseIdPullAndPush);
     const changeSetIdPullAndPush2 = iModelPullAndPush2.iModelToken.changeSetId;
     assert.notStrictEqual(changeSetIdPullAndPush2, changeSetIdPullAndPush);
     await iModelPullAndPush2.close(userContext2, KeepBriefcase.No); // Delete iModel from disk
 
-    const iModelPullOnly2: IModelDb = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
+    const iModelPullOnly2 = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
     const briefcaseIdPullOnly2: number = iModelPullOnly2.briefcase.briefcaseId;
     assert.strictEqual(briefcaseIdPullOnly2, briefcaseIdPullOnly);
     const changeSetIdPullOnly2 = iModelPullOnly2.iModelToken.changeSetId;
@@ -525,7 +525,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens the iModel pullOnly and is able to edit and save changes (it's after all ReadWrite!!)
-    let iModelPullOnly: IModelDb = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
+    let iModelPullOnly = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
     assert.exists(iModelPullOnly);
     const briefcaseId = iModelPullOnly.briefcase.briefcaseId;
     const pathname = iModelPullOnly.briefcase.pathname;
@@ -546,7 +546,7 @@ describe("BriefcaseManager (#integration)", () => {
 
     // User2 should be able to re-open the iModel pullOnly again
     // - the changes will still be there
-    iModelPullOnly = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
+    iModelPullOnly = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
     const changeSetIdPullAndPush = iModelPullOnly.iModelToken.changeSetId;
     assert.strictEqual(iModelPullOnly.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullOnly.briefcase.pathname, pathname);
@@ -559,7 +559,7 @@ describe("BriefcaseManager (#integration)", () => {
     // User2 should be able to re-open the iModel pullOnly again as of a newer version
     // - the changes will still be there, but
     // - the briefcase will NOT be upgraded to the newer version since it was left open.
-    iModelPullOnly = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
+    iModelPullOnly = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
     const changeSetIdPullAndPush2 = iModelPullOnly.iModelToken.changeSetId;
     assert.strictEqual(changeSetIdPullAndPush2, changeSetIdPullAndPush); // Briefcase remains at the same version
     assert.strictEqual(iModelPullOnly.briefcase.briefcaseId, briefcaseId);
@@ -571,7 +571,7 @@ describe("BriefcaseManager (#integration)", () => {
     // - the changes will still be there, AND
     // - the briefcase will be upgraded to the newer version since it was closed and re-opened.
     await iModelPullOnly.close(userContext2, KeepBriefcase.Yes);
-    iModelPullOnly = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
+    iModelPullOnly = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullOnly(), IModelVersion.latest());
     const changeSetIdPullAndPush3 = iModelPullOnly.iModelToken.changeSetId;
     assert.notStrictEqual(changeSetIdPullAndPush3, changeSetIdPullAndPush);
     assert.strictEqual(iModelPullOnly.briefcase.briefcaseId, briefcaseId);
@@ -612,7 +612,7 @@ describe("BriefcaseManager (#integration)", () => {
     await testUtility.createTestIModel();
 
     // User2 opens the iModel pullAndPush and is able to edit and save changes
-    let iModelPullAndPush: IModelDb = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    let iModelPullAndPush = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelPullAndPush);
     const briefcaseId = iModelPullAndPush.briefcase.briefcaseId;
     const pathname = iModelPullAndPush.briefcase.pathname;
@@ -633,7 +633,7 @@ describe("BriefcaseManager (#integration)", () => {
 
     // User2 should be able to re-open the iModel pullAndPush again
     // - the changes will still be there
-    iModelPullAndPush = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    iModelPullAndPush = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
     const changeSetIdPullAndPush = iModelPullAndPush.iModelToken.changeSetId;
     assert.strictEqual(iModelPullAndPush.briefcase.briefcaseId, briefcaseId);
     assert.strictEqual(iModelPullAndPush.briefcase.pathname, pathname);
@@ -646,7 +646,7 @@ describe("BriefcaseManager (#integration)", () => {
     // User2 should be able to re-open the iModel pullAndPush again as of a newer version
     // - the changes will still be there, but
     // - the briefcase will NOT be upgraded to the newer version since it was left open.
-    iModelPullAndPush = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    iModelPullAndPush = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
     const changeSetIdPullAndPush2 = iModelPullAndPush.iModelToken.changeSetId;
     assert.strictEqual(changeSetIdPullAndPush2, changeSetIdPullAndPush); // Briefcase remains at the same version
     assert.strictEqual(iModelPullAndPush.briefcase.briefcaseId, briefcaseId);
@@ -658,7 +658,7 @@ describe("BriefcaseManager (#integration)", () => {
     // - the changes will still be there, AND
     // - the briefcase will be upgraded to the newer version since it was closed and re-opened.
     await iModelPullAndPush.close(userContext2, KeepBriefcase.Yes);
-    iModelPullAndPush = await IModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
+    iModelPullAndPush = await BriefcaseIModelDb.open(userContext2, testUtility.projectId, testUtility.iModelId, OpenParams.pullAndPush(), IModelVersion.latest());
     const changeSetIdPullAndPush3 = iModelPullAndPush.iModelToken.changeSetId;
     assert.notStrictEqual(changeSetIdPullAndPush3, changeSetIdPullAndPush);
     assert.strictEqual(iModelPullAndPush.briefcase.briefcaseId, briefcaseId);

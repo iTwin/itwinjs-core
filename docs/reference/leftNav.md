@@ -12,9 +12,10 @@ packageClassification:  [
          "imodeljs-markup",
          "imodeljs-i18n",
          "bentleyjs-core",
-         "frontend-devtools",
          "geometry-core",
-         "logger-config"
+         "logger-config",
+         "frontend-devtools",
+         "webgl-compatibility"
       ]
    },
    {

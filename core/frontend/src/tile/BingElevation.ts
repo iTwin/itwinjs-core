@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 import { Range3d, Range1d, Point3d, Point2d, Range2d, Angle, BilinearPatch } from "@bentley/geometry-core";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";

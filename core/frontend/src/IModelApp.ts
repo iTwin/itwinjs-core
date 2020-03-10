@@ -8,7 +8,15 @@
 
 const copyrightNotice = 'Copyright © 2017-2019 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { dispose, Guid, GuidString, ClientRequestContext, SerializedClientRequestContext, Logger, BeDuration, BeTimePoint } from "@bentley/bentleyjs-core";
+import {
+  BeDuration,
+  ClientRequestContext,
+  Guid,
+  GuidString,
+  Logger,
+  SerializedClientRequestContext,
+  dispose,
+} from "@bentley/bentleyjs-core";
 import {
   AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient,
   SettingsAdmin, IAuthorizationClient, IncludePrefix,
@@ -26,12 +34,12 @@ import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
-import { WebGLRenderCompatibilityInfo } from "./RenderCompatibility";
+import { WebGLRenderCompatibilityInfo, queryRenderCompatibility } from "@bentley/webgl-compatibility";
 import { TileAdmin } from "./tile/internal";
 import { EntityState } from "./EntityState";
 import { TerrainProvider } from "./TerrainProvider";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { PluginAdmin } from "./plugin/Plugin";
+import { ExtensionAdmin } from "./extension/Extension";
 import { UiAdmin } from "@bentley/ui-abstract";
 import { FeatureTrackingManager } from "./FeatureTrackingManager";
 import { FeatureToggleClient } from "./FeatureToggleClient";
@@ -39,7 +47,7 @@ import { System } from "./render/webgl/System";
 
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
-import * as pluginTool from "./tools/PluginTool";
+import * as extensionTool from "./tools/ExtensionTool";
 import * as viewTool from "./tools/ViewTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as measureTool from "./tools/MeasureTool";
@@ -104,7 +112,7 @@ export interface IModelAppOptions {
   /** @internal */
   terrainProvider?: TerrainProvider;
   /** @internal */
-  pluginAdmin?: PluginAdmin;
+  extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
   /** if present, supplies the [[FeatureTrackingManager]] for this session
@@ -168,7 +176,7 @@ export class IModelApp {
   private static _imodelClient: IModelClient;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
-  private static _pluginAdmin: PluginAdmin;
+  private static _extensionAdmin: ExtensionAdmin;
   private static _quantityFormatter: QuantityFormatter;
   private static _renderSystem?: RenderSystem;
   private static _settings: SettingsAdmin;
@@ -182,8 +190,6 @@ export class IModelApp {
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
   private static _animationIntervalId?: number;
-  private static _tileTreePurgeTime?: BeTimePoint;
-  private static _tileTreePurgeInterval?: BeDuration;
   private static _features: FeatureTrackingManager;
   private static _nativeApp: boolean = false;
   private static _featureToggles: FeatureToggleClient;
@@ -248,7 +254,7 @@ export class IModelApp {
   /** @internal */
   public static get terrainProvider() { return this._terrainProvider; }
   /** @internal */
-  public static get pluginAdmin() { return this._pluginAdmin; }
+  public static get extensionAdmin() { return this._extensionAdmin; }
   /** The [[UiAdmin]] for this session. */
   public static get uiAdmin() { return this._uiAdmin; }
   /** The [[FeatureTrackingManager]] for this session
@@ -299,7 +305,7 @@ export class IModelApp {
    * and/or performance.
    * @beta
    */
-  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return System.queryRenderCompatibility(); }
+  public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo { return queryRenderCompatibility(System.createContext); }
 
   /**
    * This method must be called before any iModel.js frontend services are used.
@@ -343,7 +349,7 @@ export class IModelApp {
       clipViewTool,
       measureTool,
       accudrawTool,
-      pluginTool,
+      extensionTool,
     ].forEach((tool) => this.tools.registerModule(tool, coreNamespace));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
@@ -368,7 +374,7 @@ export class IModelApp {
     this._accuSnap = (opts.accuSnap !== undefined) ? opts.accuSnap : new AccuSnap();
     this._locateManager = (opts.locateManager !== undefined) ? opts.locateManager : new ElementLocateManager();
     this._tentativePoint = (opts.tentativePoint !== undefined) ? opts.tentativePoint : new TentativePoint();
-    this._pluginAdmin = (opts.pluginAdmin !== undefined) ? opts.pluginAdmin : new PluginAdmin();
+    this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin();
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._terrainProvider = opts.terrainProvider;
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
@@ -383,7 +389,7 @@ export class IModelApp {
       this.accuSnap,
       this.locateManager,
       this.tentativePoint,
-      this.pluginAdmin,
+      this.extensionAdmin,
       this.quantityFormatter,
       this._terrainProvider,
       this.uiAdmin,
@@ -457,12 +463,6 @@ export class IModelApp {
   public static startEventLoop() {
     if (!IModelApp._wantEventLoop) {
       IModelApp._wantEventLoop = true;
-      const treeExpirationTime = IModelApp.tileAdmin.tileTreeExpirationTime;
-      if (undefined !== treeExpirationTime) {
-        IModelApp._tileTreePurgeInterval = treeExpirationTime;
-        IModelApp._tileTreePurgeTime = BeTimePoint.now().plus(treeExpirationTime);
-      }
-
       window.addEventListener("resize", IModelApp.requestNextAnimation);
       IModelApp.requestIntervalAnimation();
       IModelApp.requestNextAnimation();
@@ -479,12 +479,6 @@ export class IModelApp {
       IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
       IModelApp.viewManager.renderLoop();
       IModelApp.tileAdmin.process();
-
-      if (undefined !== IModelApp._tileTreePurgeTime && IModelApp._tileTreePurgeTime.milliseconds < Date.now()) {
-        const now = BeTimePoint.now();
-        IModelApp._tileTreePurgeTime = now.plus(IModelApp._tileTreePurgeInterval!);
-        IModelApp.viewManager.purgeTileTrees(now.minus(IModelApp._tileTreePurgeInterval!));
-      }
     } catch (exception) {
       ToolAdmin.exceptionHandler(exception).then(() => { // tslint:disable-line:no-floating-promises
         close(); // this does nothing in a web browser, closes electron.

@@ -403,8 +403,16 @@ export class SurfaceGeometry extends MeshGeometry {
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isTextured() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isGlyph() { return this.mesh.isGlyph; }
+  public get alwaysRenderTranslucent() { return this.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
   public get isClassifier() { return SurfaceType.VolumeClassifier === this.surfaceType; }
+
+  public get allowColorOverride() {
+    // Text background color should not be overridden by feature symbology overrides - otherwise it becomes unreadable...
+    // We don't actually know if we have text.
+    // We do know that text background color uses blanking fill. So do ImageGraphics, so they're also going to forbid overriding their color.
+    return FillFlags.Blanking !== (this.fillFlags & FillFlags.Blanking);
+  }
 
   public get asSurface() { return this; }
   public get asEdge() { return undefined; }

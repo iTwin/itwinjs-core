@@ -1,14 +1,15 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "2.0.0-dev.21",
+  "version": "2.0.0-dev.27",
   "description": "iModel.js Nine-zone React UI components",
+  "main": "lib/ui-ninezone.js",
+  "typings": "lib/ui-ninezone",
+  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/ninezone"
   },
-  "main": "lib/ui-ninezone.js",
-  "typings": "lib/ui-ninezone",
   "scripts": {
     "build": "buildIModelJsModule",
     "build:watch": "tsc -w",
@@ -57,17 +58,19 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-core": "^2.0.0-dev.21"
+    "@bentley/ui-core": "^2.0.0-dev.27"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.21",
+    "@bentley/build-tools": "2.0.0-dev.27",
     "@bentley/icons-generic-webfont": "^1.0.0",
-    "@bentley/ui-core": "2.0.0-dev.21",
-    "@bentley/webpack-tools": "2.0.0-dev.21",
+    "@bentley/ui-abstract": "2.0.0-dev.27",
+    "@bentley/ui-components": "2.0.0-dev.27",
+    "@bentley/ui-core": "2.0.0-dev.27",
+    "@bentley/webpack-tools": "2.0.0-dev.27",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -113,7 +116,6 @@
     "react-markdown": "^3.2.1",
     "react-resize-detector": "^3.2.0",
     "react-router-dom": "^4.2.2",
-    "resize-observer-polyfill": "1.5.1",
     "rimraf": "^2.6.2",
     "sass-loader": "^7.1.0",
     "sinon": "^7.5.0",

@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "@bentley/imodeljs-backend";
-import { GeometryStreamBuilder, GeometryStreamProps, Gradient, Code, GeometricElement3dProps, ViewFlags, ColorDef, RenderMode, AnalysisStyleProps } from "@bentley/imodeljs-common";
-import { Id64, Id64String, Id64Array } from "@bentley/bentleyjs-core";
-import { Angle, Polyface, IModelJson, AuxChannelDataType, AuxChannel, PolyfaceBuilder, Point3d, StrokeOptions, AuxChannelData, PolyfaceAuxData } from "@bentley/geometry-core";
-import * as path from "path";
+import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions } from "@bentley/geometry-core";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotIModelDb, SpatialCategory } from "@bentley/imodeljs-backend";
+import { AnalysisStyleProps, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, Gradient, RenderMode, ViewFlags } from "@bentley/imodeljs-common";
 import { readFileSync } from "fs";
+import * as path from "path";
 
 export class AnalysisImporter {
-  public iModelDb: IModelDb;
+  public iModelDb: SnapshotIModelDb;
   public definitionModelId: Id64String = Id64.invalid;
 
   public constructor(iModelFileName: string) {
-    this.iModelDb = IModelDb.createSnapshot(iModelFileName, { rootSubject: { name: "Analysis Example" } });
+    this.iModelDb = SnapshotIModelDb.createEmpty(iModelFileName, { rootSubject: { name: "Analysis Example" } });
   }
   /** Create a geometry stream from a Polyface. */
   private generateGeometryStreamFromPolyface(polyface: Polyface): GeometryStreamProps {
@@ -120,13 +120,15 @@ export class AnalysisImporter {
     const nDimensions = 100;
     const spacing = 1.0;
 
-    /** Create a simple flat mesh with 10,000 points (100x100) */
+    /* Create a simple flat mesh with 10,000 points (100x100) */
     for (let iRow = 0; iRow < nDimensions - 1; iRow++) {
       for (let iColumn = 0; iColumn < nDimensions - 1; iColumn++) {
-        const quad = [Point3d.create(iRow * spacing, iColumn * spacing, 0.0),
+        const quad = [
+          Point3d.create(iRow * spacing, iColumn * spacing, 0.0),
           Point3d.create((iRow + 1) * spacing, iColumn * spacing, 0.0),
           Point3d.create((iRow + 1) * spacing, (iColumn + 1) * spacing, 0.0),
-          Point3d.create(iRow * spacing, (iColumn + 1) * spacing)];
+          Point3d.create(iRow * spacing, (iColumn + 1) * spacing),
+        ];
         builder.addQuadFacet(quad);
       }
     }

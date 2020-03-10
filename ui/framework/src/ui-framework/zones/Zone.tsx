@@ -157,6 +157,7 @@ export class Zone extends React.Component<ZoneProps> {
           />
         );
       } else if (zoneDef.isStatusBar) {
+        // istanbul ignore next
         if (runtimeProps.zone.id !== 8)
           throw new TypeError();
 

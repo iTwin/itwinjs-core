@@ -20,24 +20,24 @@ function linkDir(srcpath, destpath, dirName) {
   }
 }
 
-// create a symbolic link to the Markup.js plugin, simulating how the plugin will be delivered in production
+// create a symbolic link to the Markup.js extension, simulating how the extension will be delivered in production
 const dest = path.resolve("lib", "webresources");
 
-let src = path.resolve("..", "..", "plugins", "markup", "lib", "webresources");
-linkFile(src, dest, "MarkupPlugin.js");
-linkFile(src, dest, "MarkupPlugin.js.map");
+let src = path.resolve("..", "..", "extensions", "markup", "lib", "webresources");
+linkFile(src, dest, "MarkupExtension.js");
+linkFile(src, dest, "MarkupExtension.js.map");
 
-src = path.resolve("..", "..", "plugins", "markup", "public");
+src = path.resolve("..", "..", "extensions", "markup", "public");
 linkDir(src, dest, "Markup");
 
 const enLocaleDest = path.resolve(dest, "locales", "en");
 const enLocaleSrc = path.resolve(src, "locales", "en");
 linkFile(enLocaleSrc, enLocaleDest, "MarkupTools.json");
 
-// create a symbolic link to the Markup.js plugin, simulating how the plugin will be delivered in production
+// create a symbolic link to the Markup.js extension, simulating how the Extension will be delivered in production
 src = path.resolve("..", "webworker-test-app", "lib", "webresources");
-linkFile(src, dest, "startWebWorkerPlugin.js");
-linkFile(src, dest, "startWebWorkerPlugin.js.map");
+linkFile(src, dest, "startWebWorkerExtension.js");
+linkFile(src, dest, "startWebWorkerExtension.js.map");
 
 linkFile(src, dest, "testWebWorker.js");
 linkFile(src, dest, "testWebWorker.js.map");
@@ -47,6 +47,3 @@ linkFile(src, dest, "galvanized03.jpg");
 
 src = path.resolve("..", "..", "docs/core/learning/frontend");
 linkFile(src, dest, "accudraw.png");
-
-
-

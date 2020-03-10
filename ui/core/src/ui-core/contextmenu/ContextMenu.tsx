@@ -543,7 +543,7 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
   public readonly state: Readonly<ContextMenuItemState> = {};
   public render(): JSX.Element {
     const { onClick, className, style, onSelect, icon, disabled, onHover, isSelected, parentMenu, onHotKeyParsed, badgeType, ...props } = this.props;
-    const badge = BadgeUtilities.getComponentForBadge(badgeType);
+    const badge = BadgeUtilities.getComponentForBadgeType(badgeType);
 
     if (this._lastChildren !== this.props.children) {
       this._parsedChildren = TildeFinder.findAfterTilde(this.props.children).node;
@@ -699,7 +699,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       onSelect, icon, disabled, onHover, isSelected, onHotKeyParsed,
       children, onClick, className, badgeType, ...props } = this.props;
     const contextMenuProps = { onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu };
-    const badge = BadgeUtilities.getComponentForBadge(badgeType);
+    const badge = BadgeUtilities.getComponentForBadgeType(badgeType);
     const renderDirection = this.state.direction;
 
     if (this._lastLabel !== label) {
@@ -800,6 +800,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       if (this._menuElement)
         this._menuElement.blur();
     });
+    // istanbul ignore next
     if (propagate && this.props.parentMenu && this.props.parentMenu.props.parentSubmenu) {
       this.props.parentMenu.props.parentSubmenu.close(true);
     }
@@ -819,6 +820,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       // istanbul ignore else
       if (this.props.onClick !== undefined)
         this.props.onClick(event);
+      // istanbul ignore next
       if (this.props.opened)
         this.close();
       else

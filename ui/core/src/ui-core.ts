@@ -130,15 +130,14 @@ export * from "./ui-core/uisettings/UiSettings";
 export * from "./ui-core/uisettings/LocalUiSettings";
 export * from "./ui-core/uisettings/SessionUiSettings";
 
+export * from "./ui-core/utils/IconHelper";
 export * from "./ui-core/utils/Point";
 export * from "./ui-core/utils/Props";
 export * from "./ui-core/utils/Rectangle";
 export * from "./ui-core/utils/Size";
 export * from "./ui-core/utils/Timer";
-export * from "./ui-core/utils/UiError";
 export * from "./ui-core/utils/UiEvent";
 export * from "./ui-core/utils/flattenChildren";
-export * from "./ui-core/utils/getClassName";
 export * from "./ui-core/utils/getDisplayName";
 export * from "./ui-core/utils/getUserColor";
 export * from "./ui-core/utils/shallowDiffers";
@@ -147,6 +146,12 @@ export * from "./ui-core/utils/isPromiseLike";
 export * from "./ui-core/utils/ScrollPositionMaintainer";
 export * from "./ui-core/utils/hooks/useDisposable";
 export * from "./ui-core/utils/hooks/useEffectSkipFirst";
+export * from "./ui-core/utils/hooks/ResizeObserverPolyfill";
+export * from "./ui-core/utils/hooks/useOnOutsideClick";
+export * from "./ui-core/utils/hooks/useRefEffect";
+export * from "./ui-core/utils/hooks/useRefs";
+export * from "./ui-core/utils/hooks/useResizeObserver";
+export * from "./ui-core/utils/hooks/useTargeted";
 
 // Set the version number so it can be found at runtime. BUILD_SEMVER is replaced at build time by the webpack DefinePlugin.
 declare var BUILD_SEMVER: string;

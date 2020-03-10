@@ -53,9 +53,7 @@ export interface GeometryAppearanceProps {
   transparency?: number;
   /** Optional display priority (2d only), 0 if undefined. Effective display priority is a combination of this value and [[SubCategoryAppearance.priority]]. */
   displayPriority?: number;
-  /** Optional GeometryClass (for DGN compatibility, subCategories preferred), [[GeometryClass.Primary]] if undefined.
-   * @alpha
-   */
+  /** Optional GeometryClass (for DGN compatibility, subCategories preferred), [[GeometryClass.Primary]] if undefined. */
   geometryClass?: GeometryClass;
 }
 

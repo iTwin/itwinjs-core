@@ -6,12 +6,12 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 
 import {
-  CommonToolbarItem, ConditionalBooleanValue, ToolbarItemUtilities, ToolbarItemsManager, BadgeType, CustomDefinition, ConditionalStringValue,
+  CommonToolbarItem, ConditionalBooleanValue, ToolbarItemUtilities, ToolbarItemsManager, BadgeType, CustomButtonDefinition, ConditionalStringValue,
 } from "../../ui-abstract";
 
 describe("ToolbarItemsManager", () => {
 
-  const customSpec: CustomDefinition = {
+  const customSpec: CustomButtonDefinition = {
     id: "custom", itemPriority: 1,
     isCustom: true,
   };

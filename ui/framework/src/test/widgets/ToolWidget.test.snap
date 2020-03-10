@@ -4,7 +4,7 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
 <ToolWidgetWithDef
   horizontalToolbar={
     <Toolbar
-      expandsTo={3}
+      expandsTo={4}
       items={
         <UNDEFINED>
           <ActionItemButton
@@ -20,7 +20,6 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
                 "_onItemExecuted": undefined,
                 "_tooltip": "",
                 "badgeType": undefined,
-                "betaBadge": false,
                 "execute": [Function],
                 "getKey": [Function],
                 "handleSizeKnown": [Function],
@@ -47,7 +46,7 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
             toolId="tool2a"
           />
           <GroupButton
-            direction={3}
+            direction={4}
             iconSpec="icon-placeholder"
             items={
               Array [
@@ -57,7 +56,6 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
                   "_onItemExecuted": undefined,
                   "_tooltip": "",
                   "badgeType": undefined,
-                  "betaBadge": false,
                   "commandId": "cmd:tool1",
                   "execute": [Function],
                   "getKey": [Function],
@@ -80,7 +78,6 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
                     "key": "value",
                   },
                   "badgeType": undefined,
-                  "betaBadge": false,
                   "commandId": "cmd:tool2",
                   "execute": [Function],
                   "getKey": [Function],
@@ -116,7 +113,6 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
         "_onItemExecuted": undefined,
         "_tooltip": "",
         "badgeType": undefined,
-        "betaBadge": false,
         "commandId": "SampleApp.BackstageToggle",
         "execute": [Function],
         "getKey": [Function],
@@ -150,17 +146,17 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
       "_toolbarBaseName": "[TestFrontstage]ToolWidget",
       "_tooltip": "",
       "_widgetType": 0,
-      "horizontalDirection": 3,
+      "horizontalDirection": 4,
       "horizontalItems": undefined,
       "horizontalPanelAlignment": 0,
-      "verticalDirection": 2,
+      "verticalDirection": 3,
       "verticalItems": undefined,
       "verticalPanelAlignment": 0,
     }
   }
   verticalToolbar={
     <Toolbar
-      expandsTo={2}
+      expandsTo={3}
       items={
         <UNDEFINED>
           <ToolButton
@@ -195,7 +191,6 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
                   "_onItemExecuted": undefined,
                   "_tooltip": "",
                   "badgeType": undefined,
-                  "betaBadge": false,
                   "commandId": "cmd:tool1",
                   "execute": [Function],
                   "getKey": [Function],
@@ -218,7 +213,6 @@ exports[`ToolWidget Not Plugin-compatible ToolWidget should render correctly 1`]
                     "key": "value",
                   },
                   "badgeType": undefined,
-                  "betaBadge": false,
                   "commandId": "cmd:tool2",
                   "execute": [Function],
                   "getKey": [Function],

@@ -71,7 +71,7 @@ export class NativeApp {
     IModelApp.shutdown();
   }
 
-  public static async downloadBriefcase(contextId: string, iModelId: string, purpose: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+  public static async downloadBriefcase(contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<void> {
     // openMode: OpenMode = OpenMode.Readonly
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
@@ -82,18 +82,18 @@ export class NativeApp {
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
     requestContext.enter();
 
-    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, purpose);
+    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
 
     await NativeAppRpcInterface.getClient().downloadBriefcase(iModelToken.toJSON());
   }
 
-  public static async openBriefcase(contextId: string, iModelId: string, changeSetId: string, openMode: OpenMode = OpenMode.Readonly): Promise<IModelConnection> {
+  public static async openBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<IModelConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
 
-    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
+    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
     const token = await NativeAppRpcInterface.getClient().openBriefcase(iModelToken.toJSON());
-    return IModelConnection.createForNativeAppBriefcase(token, openMode);
+    return IModelConnection.createForNativeAppBriefcase(token, OpenMode.ReadWrite);
   }
 
   /**

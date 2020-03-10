@@ -12,7 +12,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import {
-  ViewFlag,
+  ViewFlagOverrides,
   ViewFlags,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
@@ -35,7 +35,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
   public readonly ownsEntries: boolean;
-  public viewFlagOverrides = new ViewFlag.Overrides();
+  public viewFlagOverrides = new ViewFlagOverrides();
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
   /** Optional animation branch Id.
@@ -55,7 +55,7 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
   /** @internal */
   public setViewFlags(flags: ViewFlags): void { this.viewFlagOverrides.overrideAll(flags); }
   /** @internal */
-  public setViewFlagOverrides(ovr: ViewFlag.Overrides): void { this.viewFlagOverrides.copyFrom(ovr); }
+  public setViewFlagOverrides(ovr: ViewFlagOverrides): void { this.viewFlagOverrides.copyFrom(ovr); }
 
   public dispose() { this.clear(); }
   public get isEmpty(): boolean { return 0 === this.entries.length; }

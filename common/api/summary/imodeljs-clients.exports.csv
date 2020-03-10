@@ -109,6 +109,7 @@ internal;IncludePrefix
 beta;InitializationState
 beta;InstanceIdQuery 
 beta;IOidcFrontendClient 
+beta;isAuthorizedClientRequestContext: (requestContext: ClientRequestContext) => requestContext is AuthorizedClientRequestContext
 beta;isIOidcFrontendClient: (client: IAuthorizationClient | undefined) => client is IOidcFrontendClient
 alpha;LargeThumbnail 
 alpha;Lock 

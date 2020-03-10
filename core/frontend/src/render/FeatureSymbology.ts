@@ -217,7 +217,7 @@ export namespace FeatureSymbology {
     public isAlwaysDrawnExclusive = false;
     /** If true, the always-drawn elements are drawn even if their subcategories are not visible.
      * @see [[setAlwaysDrawn]]
-     * @alpha
+     * @beta
      */
     public alwaysDrawnIgnoresSubCategory = true;
 

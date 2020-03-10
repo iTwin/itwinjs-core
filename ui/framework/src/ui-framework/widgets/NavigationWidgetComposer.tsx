@@ -8,7 +8,7 @@
 
 import * as React from "react";
 
-import { Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
+import { NavigationArea } from "@bentley/ui-ninezone";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { NavigationAidControl } from "../navigationaids/NavigationAidControl";
@@ -110,11 +110,10 @@ export function NavigationWidgetComposer(props: NavigationWidgetComposerProps) {
   const navigationAidHost = props.navigationAidHost ? props.navigationAidHost : <NavigationAidHost />;
 
   return (
-    <NZ_ToolsWidget isNavigation
-      button={navigationAidHost}
+    <NavigationArea
+      navigationAid={navigationAidHost}
       horizontalToolbar={props.horizontalToolbar}
       verticalToolbar={props.verticalToolbar}
-      preserveSpace={true}
       onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
     />
   );

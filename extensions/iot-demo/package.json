@@ -1,0 +1,96 @@
+{
+  "name": "iot-demo",
+  "version": "1.0.0",
+  "description": "IoT Demonstration",
+  "main": "index.js",
+  "scripts": {
+    "build": "buildIModelJsModule",
+    "clean": "rimraf lib .rush",
+    "lint": "tslint -p . 1>&2",
+    "test": "",
+    "cover": "",
+    "docs": ""
+  },
+  "keywords": [
+    "iModel",
+    "BIM",
+    "iot",
+    "extension"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "license": "MIT",
+  "iModelJs": {
+    "buildModule": {
+      "type": "plugin",
+      "sourceResources": [
+        {
+          "source": "./src/**/*.scss",
+          "dest": "./lib"
+        },
+        {
+          "source": "./src/**/*.svg",
+          "dest": "./lib"
+        },
+        {
+          "source": "./src/public/**/*",
+          "dest": "./lib/build"
+        },
+        {
+          "source": "./src/assets/**/*",
+          "dest": "./lib/build/assets"
+        }
+      ],
+      "webpack": {
+        "build": "./lib/build",
+        "dest": "./lib/plugin",
+        "entry": "./lib/iotDemo.js",
+        "styleSheets": true,
+        "bundleName": "iotDemo"
+      },
+      "pseudoLocalize": {
+        "source": "./lib/build/locales/en",
+        "dest": "./lib/build/locales/en-PSEUDO"
+      }
+    }
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "2.0.0-dev.27",
+    "@bentley/webpack-tools": "2.0.0-dev.27",
+    "@types/node": "10.14.1",
+    "@types/react": "^16.8.0",
+    "@types/react-dom": "^16.8.0",
+    "@types/react-redux": "^7.0.1",
+    "@types/classnames": "^2.2.3",
+    "rimraf": "^2.6.2",
+    "tsconfig-paths": "^3.3.2",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.0",
+    "svg-baker-runtime": "^1.4.2"
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "2.0.0-dev.27",
+    "@bentley/geometry-core": "2.0.0-dev.27",
+    "@bentley/imodeljs-clients": "2.0.0-dev.27",
+    "@bentley/imodeljs-common": "2.0.0-dev.27",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.27",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.27",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.27",
+    "@bentley/ui-abstract": "2.0.0-dev.27",
+    "@bentley/ui-components": "2.0.0-dev.27",
+    "@bentley/ui-core": "2.0.0-dev.27",
+    "@bentley/ui-framework": "2.0.0-dev.27",
+    "@bentley/ui-ninezone": "2.0.0-dev.27",
+    "classnames": "^2.2.5",
+    "react-dom": "^16.8.0",
+    "react-redux": "^5.0.7",
+    "react": "^16.8.0",
+    "redux": "^4.0.3",
+    "svg-sprite-loader": "^3.8.0"
+  }
+}

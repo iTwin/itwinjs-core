@@ -3,24 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import { Range3d } from "@bentley/geometry-core";
 import {
   createDefaultViewFlagOverrides,
   ImageryProvider,
-  Tile,
   TileDrawArgs,
   TileGraphicType,
   TileTree,
   TileTreeReference,
 } from "./internal";
-import {
-  ScreenViewport,
-  Viewport,
-} from "../Viewport";
-import { SceneContext } from "../ViewContext";
+import { ScreenViewport } from "../Viewport";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 
 const viewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false });
@@ -38,18 +33,6 @@ export abstract class MapTileTreeReference extends TileTreeReference {
 
   /** Map tiles do not contribute to the range used by "fit view". */
   public unionFitRange(_range: Range3d): void { }
-
-  /** Select the tiles that would be displayed in the viewport. */
-  public getTilesForView(viewport: Viewport): Tile[] {
-    const sceneContext = viewport.createSceneContext();
-    const args = this.createDrawArgs(sceneContext);
-
-    let tiles: Tile[] = [];
-    if (undefined !== args)
-      tiles = args.tree.selectTiles(args);
-
-    return tiles;
-  }
 
   /** Add logo cards to container div. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {

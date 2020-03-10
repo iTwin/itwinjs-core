@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "@bentley/ui-core/lib/ui-core/index";
+@import "~@bentley/ui-core/lib/ui-core/index";
 
 $appbar-height: 65px;
 $navbar-width: 72px;
 $projectpicker-min-width: 250px; /* project picker minimum width */
 $projectpicker-max-width: 450px; /* project picker maximum width */
-$open-background: #FCFDFD;
+$open-background: #fcfdfd;
 $open-color: #6d6e77;
 $content-background: $uicore-white;
 $border-color: #e7e9ec;
@@ -94,10 +94,10 @@ $border-color: #e7e9ec;
   overflow: hidden;
   position: absolute;
   background: $content-background;
-  -webkit-transition: all .2s linear;
-  -moz-transition: all .2s linear;
-  -o-transition: all .2s linear;
-  transition: all .2s linear;
+  -webkit-transition: all 0.2s linear;
+  -moz-transition: all 0.2s linear;
+  -o-transition: all 0.2s linear;
+  transition: all 0.2s linear;
 }
 
 .open-content.pinned {

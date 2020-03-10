@@ -307,6 +307,7 @@ export enum IModelHubStatus {
 
   FailedToGetAssetPermissions = IMODELHUBERROR_BASE + 45,
   FailedToGetAssetMembers = IMODELHUBERROR_BASE + 46,
+  ContextDoesNotExist = IMODELHUBERROR_BASE + 47,
 
   // Errors that are returned for incorrect iModelHub request.
   UndefinedArgumentError = IMODELHUBERROR_REQUESTERRORBASE + 1,
@@ -656,6 +657,7 @@ export class BentleyError extends Error {
       case IModelHubStatus.ConflictsAggregate: return "Codes or locks are owned by another briefcase";
       case IModelHubStatus.FailedToGetProjectById: return "Failed to query project by its id";
       case IModelHubStatus.DatabaseOperationFailed: return "Database operation has failed";
+      case IModelHubStatus.ContextDoesNotExist: return "Context does not exist";
 
       // errors that are returned for incorrect iModelHub request.
       case IModelHubStatus.UndefinedArgumentError: return "Undefined argument";

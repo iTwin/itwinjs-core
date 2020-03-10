@@ -23,6 +23,16 @@
     }
   }
 
+  &.nz-toolbar-button-icon-small {
+    font-size: $mls-small-button-icon-size;
+    > .nz-icon {
+       > * {
+        width: $mls-small-button-icon-size;
+        height: $mls-small-button-icon-size;
+       }
+    }
+  }
+
   &:hover {
     > .nz-icon {
       > * {

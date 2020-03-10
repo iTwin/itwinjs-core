@@ -8,11 +8,9 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "@bentley/ui-core";
+import { CommonProps, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { usePointerCaptor } from "../base/PointerCaptor";
-import { useRefs } from "../base/useRefs";
 import { useToolSettingsEntry } from "./Docked";
-import { useResizeObserver } from "../base/useResizeObserver";
 import "./Handle.scss";
 
 /** Properties of [[DockedToolSettingsHandle]] component.

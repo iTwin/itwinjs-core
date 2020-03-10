@@ -2,15 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import {
-  IModelHubClient, HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType, Version,
-  AuthorizedClientRequestContext, VersionQuery, BriefcaseQuery,
-} from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
-import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../imodeljs-backend";
-
-import * as path from "path";
+import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
+import { AuthorizedClientRequestContext, Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Project, Version, VersionQuery } from "@bentley/imodeljs-clients";
 import * as os from "os";
+import * as path from "path";
+import { BriefcaseId, BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, StandaloneIModelDb } from "../../imodeljs-backend";
 
 /** Utility to work with the iModel Hub */
 export class HubUtility {
@@ -222,7 +218,7 @@ export class HubUtility {
 
     Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
     HubUtility.createStandaloneIModel(briefcasePathname, iModelDir);
-    const iModel: IModelDb = IModelDb.openStandalone(briefcasePathname, OpenMode.ReadWrite);
+    const iModel = StandaloneIModelDb.open(briefcasePathname, OpenMode.ReadWrite);
 
     const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
 
@@ -246,7 +242,7 @@ export class HubUtility {
       status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Reinstate);
     }
 
-    iModel.closeStandalone();
+    iModel.close();
     assert(status === ChangeSetStatus.Success, "Error applying change sets");
   }
 
@@ -394,10 +390,10 @@ export class HubUtility {
       IModelJsFs.unlinkSync(iModelPathname);
     IModelJsFs.copySync(seedPathname, iModelPathname);
 
-    const iModel = IModelDb.openStandalone(iModelPathname, OpenMode.ReadWrite);
+    const iModel = StandaloneIModelDb.open(iModelPathname, OpenMode.ReadWrite);
     iModel.briefcase.nativeDb.setBriefcaseId(BriefcaseId.Standalone);
     iModel.briefcase.briefcaseId = BriefcaseId.Standalone;
-    iModel.closeStandalone();
+    iModel.close();
 
     return iModelPathname;
   }
@@ -432,8 +428,8 @@ export class HubUtility {
 
   /** Generate a name (for an iModel) that's unique for the user + host */
   public static generateUniqueName(baseName: string) {
-    let username = "";
-    let hostname = "";
+    let username = "AnonymousUser";
+    let hostname = "AnonymousHost";
     try {
       hostname = os.hostname();
       username = os.userInfo().username;

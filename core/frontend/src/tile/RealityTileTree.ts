@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
   assert,
-  BeDuration,
   BeTimePoint,
 } from "@bentley/bentleyjs-core";
 import {
@@ -16,7 +15,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   ColorDef,
-  ViewFlag,
+  ViewFlagOverrides,
   Frustum,
   FrustumPlanes,
 } from "@bentley/imodeljs-common";
@@ -35,6 +34,7 @@ import {
   TileTreeParams,
 } from "./internal";
 import { SceneContext } from "../ViewContext";
+import { IModelApp } from "../IModelApp";
 
 /** @internal */
 export class TraversalDetails {
@@ -85,8 +85,9 @@ export class TraversalSelectionContext {
 
   public selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     tile.selectSecondaryTiles(args, this);
-    tile.setLastUsed(args.now);
+    tile.markUsed(args);
     if (tile.isReady) {
+      args.markReady(tile);
       this.selected.push(tile);
       this.displayedDescendants.push((traversalDetails.childrenSelected) ? traversalDetails.queuedChildren.slice() : []);
       traversalDetails.queuedChildren.length = 0;
@@ -97,20 +98,23 @@ export class TraversalSelectionContext {
       this.missing.push(tile);
     }
   }
+
   public preload(tile: RealityTile, args: TileDrawArgs): void {
     if (!this.preloaded.has(tile)) {
       if (this.preloadDebugBuilder)
         tile.addBoundingGraphic(this.preloadDebugBuilder, ColorDef.red);
-      tile.setLastUsed(args.now);
+
+      tile.markUsed(args);
       tile.selectSecondaryTiles(args, this);
       this.preloaded.add(tile);
       if (!tile.isReady)
         this.missing.push(tile);
     }
   }
+
   public select(tiles: RealityTile[], args: TileDrawArgs): void {
     for (const tile of tiles) {
-      tile.setLastUsed(args.now);
+      tile.markUsed(args);
       this.selected.push(tile);
       this.displayedDescendants.push([]);
     }
@@ -129,8 +133,6 @@ export interface RealityTileTreeParams extends TileTreeParams {
 
 /** @internal */
 export class RealityTileTree extends TileTree {
-  private static _purgeInterval = BeDuration.fromSeconds(5);
-  private _nextPurge: BeTimePoint = BeTimePoint.fromNow(RealityTileTree._purgeInterval);
   public traversalChildrenByDepth: TraversalChildrenDetails[] = [];
   public readonly loader: RealityTileLoader;
   public readonly yAxisUp: boolean;
@@ -153,6 +155,11 @@ export class RealityTileTree extends TileTree {
   public get parentsAndChildrenExclusive() { return this.loader.parentsAndChildrenExclusive; }
 
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
+
+  public prune(): void {
+    const olderThan = BeTimePoint.now().minus(this.expirationTime);
+    this.rootTile.purgeContents(olderThan);
+  }
 
   public draw(args: TileDrawArgs): void {
     const displayedTileDescendants = new Array<RealityTile[]>();
@@ -197,9 +204,13 @@ export class RealityTileTree extends TileTree {
               targetBranch.add(graphics);
             } else {
               clipVector.transformInPlace(args.location);
+              for (const primitive of clipVector.clips)
+                for (const clipPlanes of primitive.fetchClipPlanesRef()!.convexSets)
+                  for (const plane of clipPlanes.planes)
+                    plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
 
               const branch = new GraphicBranch();
-              const doClipOverride = new ViewFlag.Overrides();
+              const doClipOverride = new ViewFlagOverrides();
               doClipOverride.setShowClipVolume(true);
               branch.add(graphics);
               branch.setViewFlagOverrides(doClipOverride);
@@ -223,15 +234,6 @@ export class RealityTileTree extends TileTree {
     args.drawGraphics();
     for (const graphicTypeBranch of graphicTypeBranches) {
       args.drawGraphicsWithType(graphicTypeBranch[0], graphicTypeBranch[1]);
-    }
-
-    args.context.viewport.numSelectedTiles += selectedTiles.length;
-
-    if (args.now.milliseconds > this._nextPurge.milliseconds) {
-      this.purgeRealityTiles(args.purgeOlderThan);        // Purge stale tiles....
-      this._nextPurge = args.now.plus(RealityTileTree._purgeInterval);
-      if (debugControl && debugControl.logRealityTiles)
-        console.log("Purging reality tiles");    // tslint:disable-line
     }
   }
 
@@ -270,7 +272,7 @@ export class RealityTileTree extends TileTree {
       for (const tile of context.missing) {
         const loadableTile = tile.loadableTile;
 
-        loadableTile.setLastUsed(args.now);
+        loadableTile.markUsed(args);
         args.insertMissing(tile.loadableTile);
       }
 
@@ -284,6 +286,7 @@ export class RealityTileTree extends TileTree {
       this.logTiles("Missing: ", context.missing.values());
     }
 
+    IModelApp.tileAdmin.addTilesForViewport(args.context.viewport, selected, args.readyTiles);
     return selected;
   }
 

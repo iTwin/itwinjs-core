@@ -2,18 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { DbResult } from "@bentley/bentleyjs-core";
 import { ChangeSet } from "@bentley/imodeljs-clients";
-import { IModelVersion, ChangedElements } from "@bentley/imodeljs-common";
+import { ChangedElements, IModelVersion } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import {
-  BriefcaseManager, ChangedElementsDb, AuthorizedBackendRequestContext,
-  IModelDb, OpenParams, IModelJsFs,
-} from "../../imodeljs-backend";
+import { assert } from "chai";
+import { ChangedElementsManager } from "../../ChangedElementsManager";
+import { AuthorizedBackendRequestContext, BriefcaseIModelDb, BriefcaseManager, ChangedElementsDb, IModelJsFs, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { ChangedElementsManager } from "../../ChangedElementsManager";
 
 function setupTest(iModelId: string): void {
   const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModelId);
@@ -40,7 +37,7 @@ describe("ChangedElements (#integration)", () => {
   it("Create ChangedElements Cache and process changesets", async () => {
     setupTest(testIModel.id);
 
-    const iModel: IModelDb = await IModelDb.open(requestContext, testProjectId, testIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
+    const iModel = await BriefcaseIModelDb.open(requestContext, testProjectId, testIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
     const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(requestContext, testIModel.id);
     assert.exists(iModel);
 

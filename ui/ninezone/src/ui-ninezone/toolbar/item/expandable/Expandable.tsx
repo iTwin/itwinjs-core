@@ -19,25 +19,16 @@ import "./Expandable.scss";
 export interface ExpandableItemProps extends CommonProps {
   /** Describes if expandable item triangle indicator should be hidden. */
   hideIndicator?: boolean;
-  /** History of the toolbar.
-   * @deprecated
-   */
-  history?: React.ReactNode;
   /** Describes if item is active. */
   isActive?: boolean;
   /** Describes if item is disabled. */
   isDisabled?: boolean;
-  /** Function called when history tray should be extended or shrank.
-   * @deprecated
-   */
-  onIsHistoryExtendedChange?: (isExtended: boolean) => void;
   /** Panel of the toolbar. */
   panel?: React.ReactNode;
 }
 
 class ActualItem extends React.PureComponent<ExpandableItemProps> implements ToolbarItem {
   public readonly panel = document.createElement("div");
-  public readonly history = document.createElement("div");
 
   public render() {
     const className = classnames(
@@ -51,32 +42,16 @@ class ActualItem extends React.PureComponent<ExpandableItemProps> implements Too
         {this.props.panel}
       </div>
     ), this.panel);
-    const history = ReactDOM.createPortal((
-      <div className="nz-history">
-        {this.props.history /* tslint:disable-line: deprecation */}
-      </div>
-    ), this.history);
     return (
       <div
-        onMouseEnter={this._handleMouseEnter}
-        onMouseLeave={this._handleMouseLeave}
         className={className}
         style={this.props.style}
       >
         {this.props.children}
         {this.props.hideIndicator ? undefined : <div className="nz-triangle" />}
         {panel}
-        {history}
       </div>
     );
-  }
-
-  private _handleMouseEnter = () => {
-    this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(true); // tslint:disable-line: deprecation
-  }
-
-  private _handleMouseLeave = () => {
-    this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(false); // tslint:disable-line: deprecation
   }
 }
 

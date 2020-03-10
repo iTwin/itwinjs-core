@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
@@ -253,9 +253,9 @@ class BingImageryProvider extends ImageryProvider {
   }
 
   // gets the attributions that match the tile set.
-  private getMatchingAttributions(tiles: Tile[]): BingAttribution[] {
+  private getMatchingAttributions(tiles: Set<Tile> | undefined): BingAttribution[] {
     const matchingAttributions: BingAttribution[] = new Array<BingAttribution>();
-    if (!this._attributions)
+    if (!this._attributions || !tiles)
       return matchingAttributions;
 
     const unmatchedSet: BingAttribution[] = this._attributions.slice();
@@ -272,8 +272,8 @@ class BingImageryProvider extends ImageryProvider {
     return matchingAttributions;
   }
 
-  public getImageryLogo(tileProvider: MapTileTreeReference, vp: ScreenViewport) {
-    const tiles = tileProvider.getTilesForView(vp);
+  public getImageryLogo(_tileProvider: MapTileTreeReference, vp: ScreenViewport) {
+    const tiles = IModelApp.tileAdmin.getTilesForViewport(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);
     const copyrights: string[] = [];
     for (const match of matchingAttributions)

@@ -1,0 +1,66 @@
+{
+  "name": "test-tools",
+  "version": "1.0.0",
+  "description": "Test Tools",
+  "main": "index.js",
+  "scripts": {
+    "build": "buildIModelJsModule",
+    "clean": "rimraf lib .rush",
+    "lint": "tslint -p . 1>&2",
+    "test": "",
+    "cover": "",
+    "docs": ""
+  },
+  "keywords": [
+    "iModel",
+    "BIM",
+    "plugin"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "license": "MIT",
+  "iModelJs": {
+    "buildModule": {
+      "type": "plugin",
+      "sourceResources": [
+        {
+          "source": "./src/public/**/*",
+          "dest": "./lib/build"
+        }
+      ],
+      "webpack": {
+        "build": "./lib/build",
+        "dest": "./lib/plugin",
+        "entry": "./lib/testTools.js",
+        "bundleName": "testTools"
+      },
+      "pseudoLocalize": {
+        "source": "./lib/build/locales/en",
+        "dest": "./lib/build/locales/en-PSEUDO"
+      }
+    }
+  },
+  "devDependencies": {
+    "@bentley/build-tools": "2.0.0-dev.27",
+    "@bentley/webpack-tools": "2.0.0-dev.27",
+    "@types/node": "10.14.1",
+    "rimraf": "^2.6.2",
+    "tsconfig-paths": "^3.3.2",
+    "tslint": "^5.11.0",
+    "tslint-etc": "^1.5.2",
+    "typescript": "~3.7.4",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.0"
+  },
+  "dependencies": {
+    "@bentley/bentleyjs-core": "2.0.0-dev.27",
+    "@bentley/geometry-core": "2.0.0-dev.27",
+    "@bentley/imodeljs-clients": "2.0.0-dev.27",
+    "@bentley/imodeljs-common": "2.0.0-dev.27",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.27",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.27",
+    "@bentley/imodeljs-quantity": "2.0.0-dev.27"
+  }
+}

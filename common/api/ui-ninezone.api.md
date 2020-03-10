@@ -31,6 +31,8 @@ export class AppButton extends React.PureComponent<AppButtonProps> {
 
 // @alpha
 export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoChildrenProps {
+    // (undocumented)
+    small?: boolean;
 }
 
 // @internal
@@ -212,9 +214,6 @@ export class CssProperties {
     static fromPosition(props: PointProps): React_2.CSSProperties;
 }
 
-// @alpha @deprecated
-export const DefaultHistoryManager: HistoryManager;
-
 // @beta
 export class Dialog extends React.PureComponent<DialogProps> {
     // (undocumented)
@@ -230,13 +229,13 @@ export interface DialogProps extends CommonProps {
 // @beta
 export enum Direction {
     // (undocumented)
-    Bottom = 3,
+    Bottom = 4,
     // (undocumented)
-    Left = 0,
+    Left = 1,
     // (undocumented)
-    Right = 2,
+    Right = 3,
     // (undocumented)
-    Top = 1
+    Top = 2
 }
 
 // @internal
@@ -367,12 +366,8 @@ export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
 // @beta
 export interface ExpandableItemProps extends CommonProps {
     hideIndicator?: boolean;
-    // @deprecated
-    history?: React.ReactNode;
     isActive?: boolean;
     isDisabled?: boolean;
-    // @deprecated
-    onIsHistoryExtendedChange?: (isExtended: boolean) => void;
     panel?: React.ReactNode;
 }
 
@@ -585,61 +580,6 @@ export class HandleModeHelpers {
     static readonly VISIBLE_CLASS_NAME = "nz-handle-visible";
 }
 
-// @alpha @deprecated
-export type History<TItem> = Array<HistoryEntry<TItem>>;
-
-// @alpha @deprecated
-export interface HistoryEntry<TItem> {
-    item: TItem;
-    key: HistoryKey;
-}
-
-// @alpha @deprecated
-export class HistoryIcon extends React.PureComponent<HistoryItemProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha @deprecated
-export class HistoryItem extends React.PureComponent<HistoryItemProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha @deprecated
-export interface HistoryItemProps extends CommonProps {
-    children?: React.ReactNode;
-    isActive?: boolean;
-    isDisabled?: boolean;
-    onClick?: () => void;
-    title?: string;
-}
-
-// @alpha @deprecated
-export type HistoryKey = number | string;
-
-// @alpha @deprecated
-export class HistoryManager {
-    constructor(maxItemCount: number);
-    addItem<TItem extends {}>(key: HistoryKey, item: TItem, history: History<TItem>): History<TItem>;
-    // (undocumented)
-    readonly maxItemCount: number;
-}
-
-// @alpha @deprecated
-export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
-
-// @alpha @deprecated
-export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
-    direction?: Direction;
-    isExtended?: boolean;
-    items?: React.ReactNode;
-    onIsHistoryExtendedChange?: (isExtended: boolean) => void;
-}
-
 // @beta
 export enum HorizontalAnchor {
     // (undocumented)
@@ -834,6 +774,21 @@ export class MessageProgress extends React.PureComponent<ProgressProps> {
 
 // @internal
 export const MINIMIZE_WIDGET = "MINIMIZE_WIDGET";
+
+// @alpha
+export class NavigationArea extends React.PureComponent<NavigationAreaProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @alpha
+export interface NavigationAreaProps extends CommonProps, NoChildrenProps {
+    horizontalToolbar?: React.ReactNode;
+    navigationAid?: React.ReactNode;
+    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    verticalToolbar?: React.ReactNode;
+}
 
 // @alpha
 export class NestedGroup extends React.PureComponent<NestedGroupProps> {
@@ -1152,7 +1107,6 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
 // @alpha
 export interface PanelsProviderProps {
     children?: (items: React.ReactNode) => React.ReactNode;
-    histories: HTMLElement | null;
     items?: React.ReactNode;
     panels: HTMLElement | null;
 }
@@ -1276,12 +1230,6 @@ export enum ResizeHandle {
     // (undocumented)
     Top = 1
 }
-
-// @internal (undocumented)
-export const ResizeObserver: ResizeObserverType;
-
-// @internal (undocumented)
-export type ResizeObserverType = typeof import("resize-observer-polyfill").default;
 
 // @internal
 export interface ResizePanelAction {
@@ -1859,7 +1807,6 @@ export class Toolbar extends React.PureComponent<ToolbarProps, ToolbarState> {
     render(): JSX.Element;
     // @internal (undocumented)
     readonly state: {
-        histories: null;
         panels: null;
     };
 }
@@ -1888,12 +1835,12 @@ export class ToolbarIcon extends React.PureComponent<ToolbarIconProps> {
 // @alpha
 export interface ToolbarIconProps extends ToolbarButtonProps {
     icon?: React.ReactNode;
+    // (undocumented)
+    small?: boolean;
 }
 
 // @alpha
 export interface ToolbarItem {
-    // @deprecated (undocumented)
-    readonly history: HTMLElement;
     // (undocumented)
     readonly panel: HTMLElement;
 }
@@ -1931,6 +1878,21 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
 export class Tools extends React.PureComponent<ToolsProps> {
     // (undocumented)
     render(): JSX.Element;
+}
+
+// @alpha
+export class ToolsArea extends React.PureComponent<ToolsAreaProps> {
+    // (undocumented)
+    render(): JSX.Element;
+}
+
+// @alpha
+export interface ToolsAreaProps extends CommonProps, NoChildrenProps {
+    button?: React.ReactNode;
+    horizontalToolbar?: React.ReactNode;
+    onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+    verticalToolbar?: React.ReactNode;
 }
 
 // @internal
@@ -2055,10 +2017,6 @@ export function useNineZone(): NineZoneState;
 export function useNineZoneDispatch(): NineZoneDispatch;
 
 // @internal
-export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
-outsideEventPredicate?: (e: PointerEvent) => boolean): React.MutableRefObject<T | null>;
-
-// @internal
 export function useOverflow(children: React.ReactNode): [ReadonlyArray<string> | undefined, (size: number) => void, (size: number) => void, (key: string) => (size: number) => void];
 
 // @internal
@@ -2070,17 +2028,8 @@ export function usePanelBySide(side: WidgetPanelSide): VerticalPanelState | Hori
 // @internal
 export const usePointerCaptor: <T extends HTMLElement>(onPointerDown?: ((e: PointerEvent) => void) | undefined, onPointerMove?: ((e: PointerEvent) => void) | undefined, onPointerUp?: ((e: PointerEvent) => void) | undefined) => (instance: T | null) => void;
 
-// @internal
-export function useRefEffect<T>(callback: (instance: T | null) => (void | (() => void)), deps: ReadonlyArray<any>): (instance: T | null) => void;
-
-// @internal
-export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
-
 // @internal (undocumented)
 export const useResizeGrip: <T extends HTMLElement>(side: WidgetPanelSide, onResize?: ((resizeBy: number) => void) | undefined, onResizeEnd?: (() => void) | undefined) => [(instance: T | null) => void, boolean];
-
-// @internal
-export function useResizeObserver<T extends Element>(onResize?: (width: number) => void): (instance: T | null) => void;
 
 // @beta
 export class UserProfile extends React.PureComponent<UserProfileProps> {
@@ -2102,9 +2051,6 @@ export function useSingleDoubleClick<T extends HTMLElement>(onClick?: () => void
 
 // @internal
 export function useTabById(id: TabState["id"]): TabState;
-
-// @internal
-export const useTargeted: (elementRef: React.RefObject<Element>) => boolean;
 
 // @internal (undocumented)
 export function useToolSettingsEntry(): DockedToolSettingsEntryContextArgs;

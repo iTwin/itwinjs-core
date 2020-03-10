@@ -13,7 +13,7 @@ These classes should be considered a framework and not confused with the actual 
 
 The [IModelExporter]($backend) and [IModelExportHandler]($backend) base classes are used when the **source** data in an ETL workflow is contained within an iModel.
 
-While it is possible to export data from an iModel using the standard [IModelDb] API, the [IModelExporter]($backend) and [IModelExportHandler]($backend) base classes offer the following capabilities:
+While it is possible to export data from an iModel using the standard [IModelDb]($backend) API, the [IModelExporter]($backend) and [IModelExportHandler]($backend) base classes offer the following capabilities:
 
 - An implementation of a [visitor](https://en.wikipedia.org/wiki/Visitor_pattern) pattern that makes it easy to iterate the iModel in a prescribed order that attempts to visit dependencies/prerequisites before dependents.
 - Visit the entire iModel using [IModelExporter.exportAll]($backend)
@@ -32,7 +32,7 @@ Below is an example of using [IModelExporter]($backend) and [IModelExportHandler
 
 The [IModelImporter]($backend) base class is used when the **target** in an ETL workflow is an iModel.
 
-While it is possible to import data into an iModel using the standard [IModelDb] API, the [IModelImporter]($backend) class offers the following capabilities:
+While it is possible to import data into an iModel using the standard [IModelDb]($backend) API, the [IModelImporter]($backend) class offers the following capabilities:
 
 - Callbacks whenever IModelImporter is used to insert, update, or delete entities. Simply override one of the protected `onInsert*`, `onUpdate*`, or `onDelete*` methods.
 - Optionally auto-extend [IModel.projectExtents]($common) during import

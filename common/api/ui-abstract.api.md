@@ -265,7 +265,7 @@ export interface CommonItemProps {
 export type CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem;
 
 // @beta
-export type CommonToolbarItem = ActionButton | GroupButton | CustomDefinition;
+export type CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition;
 
 // @beta
 export class ConditionalBooleanValue {
@@ -294,9 +294,10 @@ export class ConditionalStringValue {
     }
 
 // @beta
-export interface CustomDefinition extends ToolbarItem {
-    // (undocumented)
+export interface CustomButtonDefinition extends ToolbarItem {
+    readonly icon?: string | ConditionalStringValue;
     readonly isCustom: true;
+    readonly label?: string | ConditionalStringValue;
 }
 
 // @beta
@@ -419,7 +420,7 @@ export const getClassName: (obj: any) => string;
 // @beta
 export interface GroupButton extends ToolbarItem {
     readonly icon: string | ConditionalStringValue;
-    readonly items: Array<ActionButton | GroupButton>;
+    readonly items: ReadonlyArray<ActionButton | GroupButton>;
     readonly label: string | ConditionalStringValue;
     readonly panelLabel?: string | ConditionalStringValue;
 }
@@ -858,9 +859,9 @@ export class ToolbarItemsManager {
 // @beta
 export class ToolbarItemUtilities {
     static createActionButton: (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, execute: () => void, overrides?: Partial<ActionButton> | undefined) => ActionButton;
-    static createGroupButton: (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: (ActionButton | GroupButton)[], overrides?: Partial<GroupButton> | undefined) => GroupButton;
+    static createGroupButton: (id: string, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, items: readonly (ActionButton | GroupButton)[], overrides?: Partial<GroupButton> | undefined) => GroupButton;
     static isActionButton(item: CommonToolbarItem): item is ActionButton;
-    static isCustomDefinition(item: CommonToolbarItem): item is CustomDefinition;
+    static isCustomDefinition(item: CommonToolbarItem): item is CustomButtonDefinition;
     static isGroupButton(item: CommonToolbarItem): item is GroupButton;
 }
 

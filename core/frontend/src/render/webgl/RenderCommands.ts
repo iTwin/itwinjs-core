@@ -249,7 +249,7 @@ export class RenderCommands {
     switch (pass) {
       // If this command ordinarily renders translucent, but some features have been overridden to be opaque, must draw in both passes
       case RenderPass.Translucent:
-        if (this._opaqueOverrides && haveFeatureOverrides) {
+        if (this._opaqueOverrides && haveFeatureOverrides && !command.primitive.cachedGeometry.alwaysRenderTranslucent) {
           let opaquePass: RenderPass;
           switch (command.renderOrder) {
             case RenderOrder.PlanarLitSurface:

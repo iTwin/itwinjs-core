@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 /* The order of exports below is based on dependencies between the types in each file.
@@ -35,6 +35,7 @@ export * from "./TileTreeOwner";
 export * from "./TileTreeReference";
 export * from "./TileAdmin";
 export * from "./TileRequest";
+export * from "./TileUsageMarker";
 export * from "./GltfReader";
 export * from "./I3dmReader";
 export * from "./B3dmReader";

@@ -55,14 +55,14 @@ program
   .option("--extractFrom [extractPath]", "The path at which the sample code files are located")
   .option("--out [outPath]", "The path at which to output the selected code")
   .option("--fileExt [fileExt]", "The extension of the files to include ")
-  .option("-r, --recurisve", "Recursively search subdirectories from ")
+  .option("-r, --recursive", "Recursively search subdirectories from ")
   .action((options) => extractCommand(options));
 
 program
   .command("pseudolocalize")
-  .description("Psuedolocalizes an english localization JSON file.")
+  .description("Pseudo-localizes an english localization JSON file.")
   .option("--englishDir [englishPath]", "The path to the English localization folder.  Default is `./public/locales/en`")
-  .option("--out [outPath]", "The output path to put the pseudolocalized files.  Default is `./public/locales/en-pseudo`")
+  .option("--out [outPath]", "The output path to put the pseudo-localized files.  Default is `./public/locales/en-pseudo`")
   .action((options) => pseudolocalizeCommand(options));
 
 program.parse(process.argv);
@@ -102,12 +102,12 @@ function extractCommand(options) {
   const extractOpt = options.extractDir ? ["--extractDir", options.extractDir] : [];
   const outOpt = options.outDir ? ["--outDir", options.outdir] : [];
   const fileExt = options.fileExt ? ["--fileExt", options.fileExt] : [];
-  const recurisve = options.recurisve ? ["--recursive"] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/extract.js"), ...extractOpt, ...outOpt, ...fileExt, ...recurisve]);
+  const recursive = options.recursive ? ["--recursive"] : [];
+  exec(["node", path.resolve(__dirname, "../scripts/extract.js"), ...extractOpt, ...outOpt, ...fileExt, ...recursive]);
 }
 
 function pseudolocalizeCommand(options) {
-  const englishDir = options.englishDir ? ["--pseudolocalize", options.englishDir] : [];
+  const englishDir = options.englishDir ? ["--englishDir", options.englishDir] : [];
   const outOpt = options.out ? ["--out", options.out] : [];
   exec(["node", path.resolve(__dirname, "../scripts/pseudolocalize"), ...englishDir, ...outOpt]);
 }

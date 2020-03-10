@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Passing on style props from ui-framework Toolbar to ui-ninezone Toolbar",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "gintaras.volkvicius@bentley.com"
+}

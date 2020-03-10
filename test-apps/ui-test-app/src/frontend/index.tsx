@@ -74,12 +74,14 @@ export enum SampleAppUiActionId {
   setAnimationViewId = "sampleapp:setAnimationViewId",
   setIsIModelLocal = "sampleapp:setisimodellocal",
   toggleDragInteraction = "sampleapp:toggledraginteraction",
+  toggleFrameworkVersion = "sampleapp:toggleframeworkversion",
 }
 
 export interface SampleAppState {
   testProperty: string;
   animationViewId: string;
   dragInteraction: boolean;
+  frameworkVersion: string;
   isIModelLocal: boolean;
 }
 
@@ -87,6 +89,7 @@ const initialState: SampleAppState = {
   testProperty: "",
   animationViewId: "",
   dragInteraction: true,
+  frameworkVersion: "1",
   isIModelLocal: false,
 };
 
@@ -97,6 +100,7 @@ export const SampleAppActions = {
   setAnimationViewId: (viewId: string) => createAction(SampleAppUiActionId.setAnimationViewId, viewId),
   setIsIModelLocal: (isIModelLocal: boolean) => createAction(SampleAppUiActionId.setIsIModelLocal, isIModelLocal),
   toggleDragInteraction: () => createAction(SampleAppUiActionId.toggleDragInteraction),
+  toggleFrameworkVersion: () => createAction(SampleAppUiActionId.toggleFrameworkVersion),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -134,8 +138,10 @@ function SampleAppReducer(state: SampleAppState = initialState, action: SampleAp
     case SampleAppUiActionId.toggleDragInteraction: {
       return { ...state, dragInteraction: !state.dragInteraction };
     }
+    case SampleAppUiActionId.toggleFrameworkVersion: {
+      return { ...state, frameworkVersion: state.frameworkVersion === "1" ? "2" : "1" };
+    }
   }
-
   return state;
 }
 
@@ -485,12 +491,26 @@ function AppDragInteractionComponent(props: { dragInteraction: boolean, children
   );
 }
 
-function mapStateToProps(state: RootState) {
+function AppFrameworkVersionComponent(props: { frameworkVersion: string, children: React.ReactNode }) {
+  return (
+    <FrameworkVersion version={props.frameworkVersion === "2" ? "2" : "1"}>
+      {props.children}
+    </FrameworkVersion>
+  );
+}
+
+function mapDragInteractionStateToProps(state: RootState) {
   return { dragInteraction: state.sampleAppState.dragInteraction };
 }
 
+function mapFrameworkVersionStateToProps(state: RootState) {
+  return { frameworkVersion: state.sampleAppState.frameworkVersion };
+}
+
 // tslint:disable-next-line:variable-name
-const AppDragInteraction = connect(mapStateToProps)(AppDragInteractionComponent);
+const AppDragInteraction = connect(mapDragInteractionStateToProps)(AppDragInteractionComponent);
+// tslint:disable-next-line: variable-name
+const AppFrameworkVersion = connect(mapFrameworkVersionStateToProps)(AppFrameworkVersionComponent);
 
 export class SampleAppViewer extends React.Component<any> {
 
@@ -528,11 +548,11 @@ export class SampleAppViewer extends React.Component<any> {
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
-                <FrameworkVersion version="1">
+                <AppFrameworkVersion>
                   <ConfigurableUiContent
                     appBackstage={<AppBackstageComposer />}
                   />
-                </FrameworkVersion>
+                </AppFrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>
             <DragDropLayerRenderer />

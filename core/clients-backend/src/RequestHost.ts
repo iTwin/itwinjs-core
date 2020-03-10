@@ -31,7 +31,7 @@ export class RequestHost {
     const isProxyReachable = await RequestHost.isHostReachable(proxyUrl);
     if (!isProxyReachable) {
       if (errorIfUnreachable)
-        console.log(`Unable to reach proxy server defined by HTTPS_PROXY: ${process.env.HTTPS_PROXY}. Proxy server not setup!`);
+        console.log(`Unable to reach proxy server defined by HTTPS_PROXY: ${process.env.HTTPS_PROXY}. Proxy server not setup!`); // tslint:disable-line:no-console
       return false;
     }
 
