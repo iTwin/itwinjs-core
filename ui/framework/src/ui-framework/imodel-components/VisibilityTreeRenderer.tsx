@@ -8,7 +8,9 @@
 
 import * as React from "react";
 import { NodeCheckboxRenderProps, ImageCheckBox } from "@bentley/ui-core";
-import { TreeRendererProps, TreeRenderer, TreeImageLoader, TreeNodeRendererProps, TreeNodeRenderer } from "@bentley/ui-components";
+import { TreeRendererProps, TreeRenderer, TreeImageLoader, TreeNodeRendererProps, TreeNodeRenderer, AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
+import { IPresentationTreeDataProvider, useControlledTreeFiltering } from "@bentley/presentation-components";
+import { VisibilityTreeFilterInfo } from "./VisibilityTreeEventHandler";
 
 /**
  * Creates Visibility tree renderer which renders nodes with eye checkbox.
@@ -55,3 +57,31 @@ export const visibilityTreeNodeCheckboxRenderer = (props: NodeCheckboxRenderProp
     tooltip={props.title}
   />
 );
+
+/**
+ * Filters data provider used in supplied node loader and invokes onFilterApplied when filtering is completed.
+ * @alpha
+ */
+export const useVisibilityTreeFiltering = (
+  nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,
+  filterInfo?: VisibilityTreeFilterInfo,
+  onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void,
+) => {
+  const { filter, activeMatchIndex } = filterInfo ?? { filter: undefined, activeMatchIndex: undefined };
+  const {
+    filteredNodeLoader,
+    isFiltering,
+    matchesCount,
+    nodeHighlightingProps,
+  } = useControlledTreeFiltering({ nodeLoader, filter, activeMatchIndex });
+
+  React.useEffect(
+    () => {
+      if (filter && matchesCount !== undefined && filteredNodeLoader !== nodeLoader)
+        onFilterApplied && onFilterApplied(filteredNodeLoader.dataProvider, matchesCount);
+    },
+    [filter, matchesCount, nodeLoader, filteredNodeLoader, onFilterApplied],
+  );
+
+  return { filteredNodeLoader, isFiltering, nodeHighlightingProps };
+};

@@ -8,6 +8,7 @@ import * as _ from 'lodash';
 import { AbstractMenuItemProps } from '@bentley/ui-abstract';
 import { AbstractStatusBarCustomItem } from '@bentley/ui-abstract';
 import { AbstractToolbarProps } from '@bentley/ui-abstract';
+import { AbstractTreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { AbstractWidgetProps } from '@bentley/ui-abstract';
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { ActionButton } from '@bentley/ui-abstract';
@@ -148,6 +149,7 @@ import { UnifiedSelectionTreeEventHandlerParams } from '@bentley/presentation-co
 import { VerticalAnchor } from '@bentley/ui-ninezone';
 import { ViewDefinitionProps } from '@bentley/imodeljs-common';
 import { ViewFlagProps } from '@bentley/imodeljs-common';
+import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
@@ -705,14 +707,6 @@ export interface CardSelectedEventArgs {
     index: number;
 }
 
-// @internal (undocumented)
-export interface Category {
-    // (undocumented)
-    children?: string[];
-    // (undocumented)
-    key: string;
-}
-
 // @public
 export function CategoryTree(props: CategoryTreeProps): JSX.Element;
 
@@ -726,53 +720,11 @@ export interface CategoryTreeProps {
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     // @alpha
-    hideAll?: BeUiEvent<void>;
+    filterInfo?: VisibilityTreeFilterInfo;
     iModel: IModelConnection;
-    // @alpha
-    showAll?: BeUiEvent<void>;
-    showSearchBox?: boolean;
-}
-
-// @internal (undocumented)
-export class CategoryVisibilityHandler implements IVisibilityHandler {
-    constructor(params: CategoryVisibilityHandlerParams);
-    // (undocumented)
-    changeVisibility(node: TreeNodeItem, nodeKey: NodeKey, shouldDisplay: boolean): Promise<void>;
-    // (undocumented)
-    dispose(): void;
-    enableCategory(ids: string[], enabled: boolean, enableAllSubCategories?: boolean): void;
-    enableSubCategory(key: string, enabled: boolean): void;
-    // (undocumented)
-    getParent(key: string): Category | undefined;
-    // (undocumented)
-    getVisibilityStatus(node: TreeNodeItem, nodeKey: NodeKey): VisibilityStatus;
-    // (undocumented)
-    hideAll(filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
-    // (undocumented)
-    isCategoryVisible(id: string): boolean;
-    // (undocumented)
-    isSubCategoryVisible(id: string): boolean;
-    // (undocumented)
-    get onVisibilityChange(): (() => void) | undefined;
-    set onVisibilityChange(callback: (() => void) | undefined);
-    // (undocumented)
-    setEnableAll(enable: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
-    // (undocumented)
-    showAll(filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
-    }
-
-// @internal (undocumented)
-export interface CategoryVisibilityHandlerParams {
-    // (undocumented)
-    activeView?: Viewport;
-    // (undocumented)
-    allViewports?: boolean;
-    // (undocumented)
-    categories: Category[];
-    // (undocumented)
-    imodel: IModelConnection;
-    // (undocumented)
-    onVisibilityChange?: () => void;
+    onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
+    // @internal
+    viewManager?: ViewManager;
 }
 
 // @internal
@@ -2260,6 +2212,9 @@ export type FunctionType = (...args: any[]) => any;
 
 // @public @deprecated
 export const getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState;
+
+// @alpha
+export function getCategories(imodel: IModelConnection, viewport?: Viewport, filteredProvider?: IPresentationTreeDataProvider): Promise<string[]>;
 
 // @internal (undocumented)
 export const getExtendedZone: (zoneId: WidgetZoneId, zones: ZonesManagerProps, defProvider: ZoneDefProvider) => ZoneManagerProps;
@@ -4582,6 +4537,9 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     render(): JSX.Element;
     }
 
+// @alpha
+export function toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise<void>;
+
 // @public
 export class ToolActivatedEvent extends UiEvent<ToolActivatedEventArgs> {
 }
@@ -5107,6 +5065,13 @@ export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2
 
 // @beta
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
+
+// @alpha
+export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
+    filteredNodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> | AbstractTreeNodeLoaderWithProvider<import("@bentley/presentation-components/lib/presentation-components/tree/FilteredDataProvider").FilteredPresentationTreeDataProvider>;
+    isFiltering: boolean;
+    nodeHighlightingProps: import("@bentley/ui-components").HighlightableTreeProps | undefined;
+};
 
 // @alpha
 export const useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element;

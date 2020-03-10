@@ -15,7 +15,6 @@ import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { ContextMenu, ContextMenuItem, SelectionMode } from "@bentley/ui-components";
 import { connectIModelConnection } from "../redux/connectIModel";
 
-import { CategoryTree } from "../imodel-components/category-tree/CategoriesTree";
 import { SpatialContainmentTree } from "../imodel-components/spatial-tree/SpatialContainmentTree";
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
@@ -25,6 +24,7 @@ import "./VisibilityWidget.scss";
 
 import widgetIconSvg from "@bentley/icons-generic/icons/hierarchy-tree.svg";
 import { ModelsTree, ModelsTreeSelectionPredicate } from "../imodel-components/models-tree/ModelsTree";
+import { CategoryTreeWithSearchBox } from "../imodel-components/category-tree/CategoriesTreeWithSearchBox";
 
 /**
  * Types of hierarchies displayed in the `VisibilityComponent`
@@ -159,7 +159,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
   private _renderCategoriesTree() {
     const { iModelConnection } = this.props;
     const { viewport, showSearchBox, showAll, hideAll } = this.state;
-    return <CategoryTree
+    return <CategoryTreeWithSearchBox // tslint:disable-line: deprecation
       iModel={iModelConnection}
       activeView={viewport}
       showSearchBox={showSearchBox}
