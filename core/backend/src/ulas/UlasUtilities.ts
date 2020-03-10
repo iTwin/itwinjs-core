@@ -32,7 +32,7 @@ export class UlasUtilities {
       UlasUtilities.getSessionId(requestContext));
   }
 
-  public static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus {
+  public static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): void {
     return IModelHost.platform.NativeUlasClient.trackUsage(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
       requestContext.applicationVersion,
@@ -57,7 +57,7 @@ export class UlasUtilities {
    * @param additionalData A collection of arbitrary data that will be attached to the feature usage log
    * @throws [[TypeError]] when an invalid property is given, [[Error]] when logging fails due to internal issues.
    */
-  public static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, additionalData?: AdditionalFeatureData): BentleyStatus {
+  public static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): void {
     const featureUserData: IModelJsNative.FeatureUserDataKeyValuePair[] = [];
     for (const propName in additionalData) { // tslint:disable-line: forin
       featureUserData.push({
@@ -66,16 +66,18 @@ export class UlasUtilities {
       });
     }
 
+    const featureEvent: IModelJsNative.NativeUlasClientFeatureEvent = {
+      featureId,
+      versionStr: requestContext.applicationVersion,
+      projectId: contextId,
+      startDateZ: startDateZ ? startDateZ.toISOString() : undefined,
+      endDateZ: endDateZ ? endDateZ.toISOString() : undefined,
+      featureUserData,
+    };
+
     return IModelHost.platform.NativeUlasClient.markFeature(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
-      {
-        featureId,
-        versionStr: requestContext.applicationVersion,
-        projectId: contextId,
-        featureUserData,
-        // startDateZ: startDateZ ? startDateZ.toISOString() : "foo",
-        // endDateZ: endDateZ ? endDateZ.toISOString() : "foo",
-      },
+      featureEvent,
       authType,
       UlasUtilities.getApplicationId(requestContext),
       UlasUtilities.prepareMachineName(hostName),

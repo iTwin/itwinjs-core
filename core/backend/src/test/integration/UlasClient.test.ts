@@ -2,13 +2,13 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { Guid } from "@bentley/bentleyjs-core";
+import { AccessToken, AuthorizedClientRequestContext, Config } from "@bentley/imodeljs-clients";
+import { getTestOidcToken, TestOidcConfiguration, TestUsers } from "@bentley/oidc-signin-tool";
 import { assert } from "chai";
-import { Guid, BentleyStatus } from "@bentley/bentleyjs-core";
-import { Config, AuthorizedClientRequestContext, AccessToken } from "@bentley/imodeljs-clients";
 import * as os from "os";
 import { AuthorizedBackendRequestContext, IModelJsNative } from "../../imodeljs-backend";
-import { UlasUtilities } from "../../ulas/UlasUtilities";
-import { getTestOidcToken, TestOidcConfiguration, TestUsers } from "@bentley/oidc-signin-tool";
+import { AdditionalFeatureData, UlasUtilities } from "../../ulas/UlasUtilities";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 // Configuration needed
@@ -18,7 +18,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 //    imjs_oidc_ulas_test_redirect_uri
 //    imjs_oidc_ulas_test_scopes
 
-describe("UlasUtilities - OIDC Token (#integration)", () => {
+describe.only("UlasUtilities - OIDC Token (#integration)", () => {
   const imodelJsProductId = 2686;
   let requestContext: AuthorizedBackendRequestContext;
   const defaultOidcAuthType = IModelJsNative.AuthType.OIDC;
@@ -69,25 +69,20 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
 
   it("Post usage log (#integration)", async function (this: Mocha.Context) {
     for (const usageType of [IModelJsNative.UsageType.Beta, IModelJsNative.UsageType.HomeUse, IModelJsNative.UsageType.PreActivation, IModelJsNative.UsageType.Production, IModelJsNative.UsageType.Trial]) {
-      const status: BentleyStatus = UlasUtilities.trackUsage(requestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), usageType);
-      assert.equal(status, BentleyStatus.SUCCESS);
+      UlasUtilities.trackUsage(requestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), usageType);
     }
   });
 
   it("Post usage log with session id (#integration)", async function (this: Mocha.Context) {
-    const status: BentleyStatus = UlasUtilities.trackUsage(requestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Trial);
-    assert.equal(status, BentleyStatus.SUCCESS);
+    UlasUtilities.trackUsage(requestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Trial);
   });
 
   it("Post usage log without product version (#integration)", async function (this: Mocha.Context) {
-    let exceptionThrown = false;
-    try {
-      const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43");
-      UlasUtilities.trackUsage(localRequestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Trial);
-    } catch (error) {
-      exceptionThrown = true;
-    }
-    assert.isTrue(exceptionThrown);
+    const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43");
+    assert.doesNotThrow(
+      () => UlasUtilities.trackUsage(localRequestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Trial),
+      "Expected usage log posted without product version to be rejected",
+    );
   });
 
   it("Post usage log - hostName special cases (#integration)", async function (this: Mocha.Context) {
@@ -97,13 +92,11 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
       "127.0.0.1",
       "localhost",
     ]) {
-      const status: BentleyStatus = UlasUtilities.trackUsage(localRequestContext, Guid.createValue(), defaultOidcAuthType, hostName, IModelJsNative.UsageType.Beta);
-
-      assert.equal(status, BentleyStatus.SUCCESS);
+      UlasUtilities.trackUsage(localRequestContext, Guid.createValue(), defaultOidcAuthType, hostName, IModelJsNative.UsageType.Beta);
     }
   });
 
-  it("Invalid usage log entry (#integration)", async function (this: Mocha.Context) {
+  it("Post usage log - invalid usage type (#integration)", async function (this: Mocha.Context) {
     let exceptionThrown = false;
     try {
       const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.5.101");
@@ -111,7 +104,7 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
     } catch (error) {
       exceptionThrown = true;
     }
-    assert.isTrue(exceptionThrown);
+    assert.isTrue(exceptionThrown, "expected usage log with invalid usage type to be rejected");
   });
 
   it("AccessToken without feature tracking claims (#integration)", async function (this: Mocha.Context) {
@@ -171,47 +164,56 @@ describe("UlasUtilities - OIDC Token (#integration)", () => {
     }
   });
 
-  // NEEDS_WORK: Fix failing test - VSTS#277802
-  it.skip("Post feature log (#integration)", async function (this: Mocha.Context) {
+  it("Post feature log (#integration)", async function (this: Mocha.Context) {
     for (const usageType of [IModelJsNative.UsageType.Beta, IModelJsNative.UsageType.HomeUse, IModelJsNative.UsageType.PreActivation, IModelJsNative.UsageType.Production, IModelJsNative.UsageType.Trial]) {
-      const status = UlasUtilities.markFeature(requestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), usageType);
-
-      assert.equal(status, BentleyStatus.SUCCESS);
+      UlasUtilities.markFeature(requestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), usageType);
     }
   });
 
   it("Post feature log with project id (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
-    const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Production, Guid.createValue());
-
-    assert.equal(status, BentleyStatus.SUCCESS);
+    UlasUtilities.markFeature(localRequestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Production, Guid.createValue());
   });
 
-  // NEEDS_WORK: Fix failing test - VSTS#277802
-  it.skip("Post feature log without product version (#integration)", async function (this: Mocha.Context) {
+  it("Post feature log with invalid project id (#integration)", async function (this: Mocha.Context) {
+    const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
+    assert.doesNotThrow(
+      () => UlasUtilities.markFeature(localRequestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Production, "Non-Guid project id"),
+      "Providing an invalid projectId is not expected to fail. The invalid projectId should be ignored.",
+    );
+  });
+
+  it.only("Post feature log without product version (#integration)", async function (this: Mocha.Context) {
     const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43");
-    const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Production);
-    assert.equal(status, BentleyStatus.SUCCESS);
+    assert.throws(
+      () => UlasUtilities.markFeature(localRequestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Production),
+      "Attempting to track feature logs without a product version should throw an exception.",
+    );
   });
 
-  // NEEDS_WORK: Fix failing test - VSTS#277802
-  it.skip("Post feature log - hostName special cases (#integration)", async function (this: Mocha.Context) {
+  it("Post feature log - hostName special cases (#integration)", async function (this: Mocha.Context) {
     for (const hostName of [
       "::1",
       "127.0.0.1",
       "localhost",
     ]) {
-      const status = UlasUtilities.markFeature(requestContext, Guid.createValue(), defaultOidcAuthType, hostName, IModelJsNative.UsageType.Production);
-      assert.equal(status, BentleyStatus.SUCCESS);
+      UlasUtilities.markFeature(requestContext, Guid.createValue(), defaultOidcAuthType, hostName, IModelJsNative.UsageType.Production);
     }
   });
 
-  // it("Post feature log - with startDate and endDate (#integration)", async function (this: Mocha.Context) {
-  //   const startDate = new Date();
-  //   const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
-  //   const endDate = new Date();
-  //   const status = UlasUtilities.markFeature(localRequestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate, endDate);
+  it("Post feature log - with startDate and endDate (#integration)", async function (this: Mocha.Context) {
+    const startDate = new Date();
+    const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
+    const endDate = new Date();
+    UlasUtilities.markFeature(localRequestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, startDate, endDate);
+  });
 
-  //   assert.equal(status, BentleyStatus.SUCCESS);
-  // });
+  it("Post feature log - with additional metadata (#integration)", async function (this: Mocha.Context) {
+    const localRequestContext = new AuthorizedClientRequestContext(requestContext.accessToken, undefined, "43", "3.4.99");
+    const metadata: AdditionalFeatureData = {
+      iModelId: Guid.createValue(),
+      iModelJsVersion: "1.2.3.4",
+    };
+    UlasUtilities.markFeature(localRequestContext, Guid.createValue(), defaultOidcAuthType, os.hostname(), IModelJsNative.UsageType.Production, undefined, undefined, undefined, metadata);
+  });
 });
