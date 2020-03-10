@@ -63,6 +63,9 @@ function setupStandaloneConfiguration(): SVTConfiguration {
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 
+  if (undefined !== process.env.SVT_DISABLE_IDLE_WORK)
+    configuration.doIdleWork = false;
+
   configuration.useProjectExtents = undefined === process.env.SVT_NO_USE_PROJECT_EXTENTS;
   const treeExpiration = process.env.SVT_TILETREE_EXPIRATION_SECONDS;
   if (undefined !== treeExpiration)

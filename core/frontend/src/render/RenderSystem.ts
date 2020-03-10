@@ -203,6 +203,11 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
 
+  /** Perform a small unit of idle work and return true if more idle work remains to be done. This function is invoked on each tick of the javascript event loop as long as no viewports are registered with the ViewManager, until it returns false to indicate all idle work has been completed.
+   * @internal
+   */
+  public abstract doIdleWork(): boolean;
+
   /** Find a previously-created [RenderMaterial]($common) by its ID.
    * @param _key The unique ID of the material within the context of the IModelConnection. Typically an element ID.
    * @param _imodel The IModelConnection with which the material is associated.
@@ -534,5 +539,16 @@ export namespace RenderSystem {
      * @internal
      */
     planProjections?: boolean;
+
+    /** By default, shader programs used by the [[RenderSystem]] are not compiled until the first time they are used. This can produce noticeable delays when the user interacts with a [[Viewport]].
+     * To prevent such delays, set this to `true` to allow the RenderSystem to precompile shader programs before any Viewport is opened.
+     * Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and a view through the user interface.
+     * Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [[ViewManager]]).
+     *
+     * Default value: false
+     *
+     * @beta
+     */
+    doIdleWork?: boolean;
   }
 }

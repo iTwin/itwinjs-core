@@ -16,6 +16,7 @@ import {
   ProgramBuilder,
   VertexShaderComponent,
   FragmentShaderComponent,
+  CompileStatus,
 } from "../webgl";
 
 describe("Variable declaration tests", () => {
@@ -107,7 +108,7 @@ describe("Test shader compilation", () => {
     const prog = builder.buildProgram(System.instance.context);
     expect(prog.isDisposed).to.equal(false);
     expect(prog.isUncompiled).to.equal(true);
-    expect(prog.compile()).to.equal(true);
+    expect(prog.compile()).to.equal(CompileStatus.Success);
     expect(prog.isUncompiled).to.equal(false);
 
     prog.dispose();

@@ -126,6 +126,8 @@ export namespace MockRender {
 
     public constructor() { super(); }
 
+    public doIdleWork(): boolean { return false; }
+
     public createTarget(canvas: HTMLCanvasElement) { return new OnScreenTarget(this, canvas); }
     public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
 

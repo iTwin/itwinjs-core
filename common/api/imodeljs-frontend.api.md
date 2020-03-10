@@ -5193,6 +5193,8 @@ export namespace MockRender {
         // (undocumented)
         dispose(): void;
         // (undocumented)
+        doIdleWork(): boolean;
+        // (undocumented)
         get isValid(): boolean;
         // (undocumented)
         get maxTextureSize(): number;
@@ -5405,6 +5407,8 @@ export class NullRenderSystem extends RenderSystem {
     createTarget(): NullTarget;
     // (undocumented)
     dispose(): void;
+    // (undocumented)
+    doIdleWork(): boolean;
     // (undocumented)
     get isValid(): boolean;
 }
@@ -6625,6 +6629,8 @@ export abstract class RenderSystem implements IDisposable {
     get debugControl(): RenderSystemDebugControl | undefined;
     // @internal (undocumented)
     abstract dispose(): void;
+    // @internal
+    abstract doIdleWork(): boolean;
     // @internal (undocumented)
     enableDiagnostics(_enable: RenderDiagnostics): void;
     findMaterial(_key: string, _imodel: IModelConnection): RenderMaterial | undefined;
@@ -6656,6 +6662,7 @@ export namespace RenderSystem {
         // @internal
         disabledExtensions?: WebGLExtensionName[];
         displaySolarShadows?: boolean;
+        doIdleWork?: boolean;
         dpiAwareViewports?: boolean;
         // @internal
         filterMapDrapeTextures?: boolean;
