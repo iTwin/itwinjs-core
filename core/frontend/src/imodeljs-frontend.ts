@@ -183,3 +183,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  * @docs-group-description Features
  * Classes for Feature Tracking classification.
  */
+/**
+ * @docs-group-description Tiles
+ * Classes representing graphics as [hierarchical 3d tiles](https://github.com/CesiumGS/3d-tiles).
+ */

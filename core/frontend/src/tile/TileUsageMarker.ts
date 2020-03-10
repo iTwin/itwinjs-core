@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import { BeTimePoint } from "@bentley/bentleyjs-core";
@@ -16,12 +16,13 @@ import { ReadonlyViewportSet } from "../ViewportSet";
  *  - the set of [[Viewport]]s in which the tile is in use for some purpose (displayed, preloaded, requested, selected for shadow map, etc); and
  *  - the most recent time at which any viewport declared its use of the tile.
  * The marker is used to allow tiles to be discarded after they become disused by any viewport, via [[Tile.prune]].
- * @internal
+ * @beta
  */
 export class TileUsageMarker {
   private _viewports: ReadonlyViewportSet;
   private _timePoint = BeTimePoint.now();
 
+  /** Constructs a usage marker with its timepoint set to the current time and its set of viewports empty. */
   public constructor() {
     this._viewports = IModelApp.tileAdmin.emptyViewportSet;
   }

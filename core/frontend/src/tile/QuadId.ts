@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import { assert } from "@bentley/bentleyjs-core";

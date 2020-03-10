@@ -609,7 +609,7 @@ export class Techniques implements WebGLDisposable {
 
   /** Execute the commands for a single given classification primitive (the first 3 commands should be a push, the primitive, then a pop) */
   public executeForIndexedClassifier(target: Target, cmdsByIndex: DrawCommands, renderPass: RenderPass) {
-    // ###TODO: Disable shadows. Probably in the ClassifierTileTree's ViewFlag.Overrides.
+    // ###TODO: Disable shadows. Probably in the ClassifierTileTree's ViewFlagOverrides.
     this.execute(target, cmdsByIndex, renderPass);
   }
 

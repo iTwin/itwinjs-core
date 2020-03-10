@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
@@ -20,7 +20,7 @@ import {
   ElementAlignedBox3d,
   TileProps,
   TileTreeProps,
-  ViewFlag,
+  ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
@@ -43,7 +43,7 @@ export interface IModelTileTreeOptions {
 }
 
 // Overrides nothing.
-const viewFlagOverrides = new ViewFlag.Overrides();
+const viewFlagOverrides = new ViewFlagOverrides();
 
 /** Parameters used to construct an [[IModelTileTree]]
  * @internal

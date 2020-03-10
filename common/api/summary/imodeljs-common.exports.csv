@@ -291,8 +291,8 @@ public;Placement2dProps
 public;Placement3d 
 public;Placement3dProps
 public;PlacementProps = Placement2dProps | Placement3dProps
-alpha;PlanProjectionSettings
-alpha;PlanProjectionSettingsProps
+beta;PlanProjectionSettings
+beta;PlanProjectionSettingsProps
 internal;PntsHeader 
 beta;PointWithStatus
 internal;POLICY: unique symbol
@@ -415,10 +415,10 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryProps 
 public;SubjectProps 
-alpha;TerrainHeightOriginMode
-alpha;TerrainProps
-alpha;TerrainProviderName = "CesiumWorldTerrain"
-alpha;TerrainSettings
+beta;TerrainHeightOriginMode
+beta;TerrainProps
+beta;TerrainProviderName = "CesiumWorldTerrain"
+beta;TerrainSettings
 internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
@@ -461,7 +461,8 @@ beta;ViewDetails
 beta;ViewDetails3d 
 internal;ViewDetails3dProps 
 internal;ViewDetailsProps
-alpha;ViewFlag
+public;ViewFlagOverrides
+public;enum ViewFlagPresence
 public;ViewFlagProps
 public;ViewFlags
 public;ViewQueryParams 

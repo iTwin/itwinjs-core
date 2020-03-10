@@ -168,7 +168,7 @@ class HilitedElementIds extends HilitedIds {
  * @note Typically, elements are hilited by virtue of their presence in the IModelConnection's [[SelectionSet]]. The HiliteSet allows additional
  * elements to be displayed with the hilite effect without adding them to the [[SelectionSet]].
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
- * @alpha
+ * @beta
  */
 export class HiliteSet {
   private readonly _elements: HilitedElementIds;
@@ -202,6 +202,7 @@ export class HiliteSet {
     this.models.clear();
   }
 
+  /** Returns true if nothing is hilited. */
   public get isEmpty(): boolean { return this.elements.isEmpty && this.subcategories.isEmpty && this.models.isEmpty; }
 
   /** Toggle the hilited state of one or more elements.

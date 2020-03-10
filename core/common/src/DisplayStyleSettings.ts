@@ -130,7 +130,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
    */
   sceneLights?: SceneLightsProps;
   /** Settings controlling how plan projection models are to be rendered. The key for each entry is the Id of the model to which the settings apply.
-   * @alpha
+   * @beta
    */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
 }
@@ -237,7 +237,7 @@ export class DisplayStyleSettings {
     this._json.monochromeColor = color.toJSON();
   }
 
-  /** @alpha */
+  /** Settings controlling display of the background map within the view. */
   public get backgroundMap(): BackgroundMapSettings { return this._backgroundMap; }
 
   public set backgroundMap(map: BackgroundMapSettings) {
@@ -461,12 +461,16 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._json3d.sceneLights.sunDir = dir.toJSON();
   }
 
-  /** @alpha */
+  /** Get the plan projection settings associated with the specified model, if defined.
+   * @beta
+   */
   public getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined {
     return undefined !== this._planProjections ? this._planProjections.get(modelId) : undefined;
   }
 
-  /** @alpha */
+  /** Set or clear the plan projection settings associated with the specified model.
+   * @beta
+   */
   public setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void {
     if (undefined === settings) {
       if (undefined !== this._planProjections) {
@@ -493,7 +497,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._json3d.planProjections![modelId] = settings.toJSON();
   }
 
-  /** @alpha */
+  /** An iterator over all of the defined plan projection settings. The iterator includes the Id of the model associated with each settings object.
+   * @beta
+   */
   public get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined {
     return undefined !== this._planProjections ? this._planProjections.entries() : undefined;
   }

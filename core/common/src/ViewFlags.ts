@@ -337,128 +337,141 @@ export class ViewFlags {
   }
 }
 
-/** @alpha */
-export namespace ViewFlag {
-  /** @alpha */
-  export const enum PresenceFlag { // tslint:disable-line:no-const-enum
-    RenderMode,
-    Text,
-    Dimensions,
-    Patterns,
-    Weights,
-    Styles,
-    Transparency,
-    Unused,
-    Fill,
-    Textures,
-    Materials,
-    VisibleEdges,
-    HiddenEdges,
-    Lighting,
-    Shadows,
-    ClipVolume,
-    Constructions,
-    Monochrome,
-    GeometryMap,
-    HlineMaterialColors,
-    EdgeMask,
-    BackgroundMap,
-    ForceSurfaceDiscard,
+/** Values used by [[ViewFlagOverrides]] to indicate which aspects of the [[ViewFlags]] are overridden.
+ * @public
+ */
+export const enum ViewFlagPresence { // tslint:disable-line:no-const-enum
+  RenderMode,
+  Dimensions,
+  Patterns,
+  Weights,
+  Styles,
+  Transparency,
+  Unused,
+  Fill,
+  Textures,
+  Materials,
+  VisibleEdges,
+  HiddenEdges,
+  Lighting,
+  Shadows,
+  ClipVolume,
+  Constructions,
+  Monochrome,
+  GeometryMap,
+  HlineMaterialColors,
+  EdgeMask,
+  BackgroundMap,
+  ForceSurfaceDiscard,
+}
+
+/** Overrides a subset of [[ViewFlags]].
+ * @public
+ */
+export class ViewFlagOverrides {
+  private _present = 0;
+  private readonly _values = new ViewFlags();
+
+  /** Returns true if the specified flag is overridden. */
+  public isPresent(flag: ViewFlagPresence): boolean { return 0 !== (this._present & (1 << flag)); }
+  /** Mark the specified flag as overridden. */
+  public setPresent(flag: ViewFlagPresence) { this._present |= (1 << flag); }
+  /** Mark the specified flag as not overridden. */
+  public clearPresent(flag: ViewFlagPresence) { this._present &= ~(1 << flag); }
+
+  /** Construct a ViewFlagOverrides which overrides all flags to match the specified ViewFlags, or overrides nothing if no ViewFlags are supplied. */
+  constructor(flags?: ViewFlags) {
+    if (undefined !== flags)
+      this.overrideAll(flags);
   }
 
-  /** Overrides a subset of ViewFlags.
-   * @alpha
+  /** Marks all view flags as overridden.
+   * @param flags If supplied, these overrides will match the input view flags; otherwise, they will match the default view flags.
    */
-  export class Overrides {
-    private _present = 0;
-    private readonly _values = new ViewFlags();
+  public overrideAll(flags?: ViewFlags) {
+    ViewFlags.createFrom(flags, this._values);
+    this._present = 0xffffffff;
+  }
 
-    public setPresent(flag: PresenceFlag) { this._present |= (1 << flag); }
-    public clearPresent(flag: PresenceFlag) { this._present &= ~(1 << flag); }
-    public isPresent(flag: PresenceFlag): boolean { return 0 !== (this._present & (1 << flag)); }
+  /** Create a copy of these overrides.
+   * @param out If supplied, the input overrides will be modified to match these overrides; otherwise, a new ViewFlagOverrides object will be created as the clone.
+   * @returns A copy of these overrides.
+   */
+  public clone(out?: ViewFlagOverrides): ViewFlagOverrides {
+    const result = undefined !== out ? out : new ViewFlagOverrides();
+    result.copyFrom(this);
+    return result;
+  }
 
-    /** Construct a ViewFlagsOverrides which overrides all flags to match the specified ViewFlags, or overrides nothing if no ViewFlags are supplied. */
-    constructor(flags?: ViewFlags) {
-      if (undefined !== flags)
-        this.overrideAll(flags);
-    }
+  /** Modify these overrides to match the input overrides. */
+  public copyFrom(other: ViewFlagOverrides): void {
+    other._values.clone(this._values);
+    this._present = other._present;
+  }
 
-    public overrideAll(flags?: ViewFlags) {
-      ViewFlags.createFrom(flags, this._values);
-      this._present = 0xffffffff;
-    }
+  public setShowDimensions(val: boolean) { this._values.dimensions = val; this.setPresent(ViewFlagPresence.Dimensions); }
+  public setShowPatterns(val: boolean) { this._values.patterns = val; this.setPresent(ViewFlagPresence.Patterns); }
+  public setShowWeights(val: boolean) { this._values.weights = val; this.setPresent(ViewFlagPresence.Weights); }
+  public setShowStyles(val: boolean) { this._values.styles = val; this.setPresent(ViewFlagPresence.Styles); }
+  public setShowTransparency(val: boolean) { this._values.transparency = val; this.setPresent(ViewFlagPresence.Transparency); }
+  public setShowFill(val: boolean) { this._values.fill = val; this.setPresent(ViewFlagPresence.Fill); }
+  public setShowTextures(val: boolean) { this._values.textures = val; this.setPresent(ViewFlagPresence.Textures); }
+  public setShowMaterials(val: boolean) { this._values.materials = val; this.setPresent(ViewFlagPresence.Materials); }
+  public setApplyLighting(val: boolean) { this._values.lighting = val; this.setPresent(ViewFlagPresence.Lighting); }
+  public setShowVisibleEdges(val: boolean) { this._values.visibleEdges = val; this.setPresent(ViewFlagPresence.VisibleEdges); }
+  public setShowHiddenEdges(val: boolean) { this._values.hiddenEdges = val; this.setPresent(ViewFlagPresence.HiddenEdges); }
+  public setShowShadows(val: boolean) { this._values.shadows = val; this.setPresent(ViewFlagPresence.Shadows); }
+  public setShowClipVolume(val: boolean) { this._values.clipVolume = val; this.setPresent(ViewFlagPresence.ClipVolume); }
+  public setShowConstructions(val: boolean) { this._values.constructions = val; this.setPresent(ViewFlagPresence.Constructions); }
+  public setMonochrome(val: boolean) { this._values.monochrome = val; this.setPresent(ViewFlagPresence.Monochrome); }
+  public setIgnoreGeometryMap(val: boolean) { this._values.noGeometryMap = val; this.setPresent(ViewFlagPresence.GeometryMap); }
+  public setShowBackgroundMap(val: boolean) { this._values.backgroundMap = val; this.setPresent(ViewFlagPresence.BackgroundMap); }
+  public setUseHlineMaterialColors(val: boolean) { this._values.hLineMaterialColors = val; this.setPresent(ViewFlagPresence.HlineMaterialColors); }
+  public setForceSurfaceDiscard(val: boolean) { this._values.forceSurfaceDiscard = val; this.setPresent(ViewFlagPresence.ForceSurfaceDiscard); }
+  public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(ViewFlagPresence.EdgeMask); }
+  public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(ViewFlagPresence.RenderMode); }
 
-    public clone(out?: Overrides) {
-      const result = undefined !== out ? out : new Overrides();
-      result.copyFrom(this);
-      return result;
-    }
-    public copyFrom(other: Overrides): void {
-      other._values.clone(this._values);
-      this._present = other._present;
-    }
+  /** Returns true if any view flags are overridden. */
+  public anyOverridden() { return 0 !== this._present; }
 
-    public setShowDimensions(val: boolean) { this._values.dimensions = val; this.setPresent(PresenceFlag.Dimensions); }
-    public setShowPatterns(val: boolean) { this._values.patterns = val; this.setPresent(PresenceFlag.Patterns); }
-    public setShowWeights(val: boolean) { this._values.weights = val; this.setPresent(PresenceFlag.Weights); }
-    public setShowStyles(val: boolean) { this._values.styles = val; this.setPresent(PresenceFlag.Styles); }
-    public setShowTransparency(val: boolean) { this._values.transparency = val; this.setPresent(PresenceFlag.Transparency); }
-    public setShowFill(val: boolean) { this._values.fill = val; this.setPresent(PresenceFlag.Fill); }
-    public setShowTextures(val: boolean) { this._values.textures = val; this.setPresent(PresenceFlag.Textures); }
-    public setShowMaterials(val: boolean) { this._values.materials = val; this.setPresent(PresenceFlag.Materials); }
-    public setApplyLighting(val: boolean) { this._values.lighting = val; this.setPresent(PresenceFlag.Lighting); }
-    public setShowVisibleEdges(val: boolean) { this._values.visibleEdges = val; this.setPresent(PresenceFlag.VisibleEdges); }
-    public setShowHiddenEdges(val: boolean) { this._values.hiddenEdges = val; this.setPresent(PresenceFlag.HiddenEdges); }
-    public setShowShadows(val: boolean) { this._values.shadows = val; this.setPresent(PresenceFlag.Shadows); }
-    public setShowClipVolume(val: boolean) { this._values.clipVolume = val; this.setPresent(PresenceFlag.ClipVolume); }
-    public setShowConstructions(val: boolean) { this._values.constructions = val; this.setPresent(PresenceFlag.Constructions); }
-    public setMonochrome(val: boolean) { this._values.monochrome = val; this.setPresent(PresenceFlag.Monochrome); }
-    public setIgnoreGeometryMap(val: boolean) { this._values.noGeometryMap = val; this.setPresent(PresenceFlag.GeometryMap); }
-    public setShowBackgroundMap(val: boolean) { this._values.backgroundMap = val; this.setPresent(PresenceFlag.BackgroundMap); }
-    public setUseHlineMaterialColors(val: boolean) { this._values.hLineMaterialColors = val; this.setPresent(PresenceFlag.HlineMaterialColors); }
-    public setForceSurfaceDiscard(val: boolean) { this._values.forceSurfaceDiscard = val; this.setPresent(PresenceFlag.ForceSurfaceDiscard); }
-    public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(PresenceFlag.EdgeMask); }
-    public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(PresenceFlag.RenderMode); }
+  /** Marks all view flags as not overridden. */
+  public clear() { this._present = 0; }
 
-    public anyOverridden() { return 0 !== this._present; }
+  public clearClipVolume() { this.clearPresent(ViewFlagPresence.ClipVolume); }
 
-    public clear() { this._present = 0; }
-    public clearClipVolume() { this.clearPresent(PresenceFlag.ClipVolume); }
+  /** If ViewFlags.clipVolume is overridden, return the override value; else return undefined.
+   * @internal
+   */
+  public get clipVolumeOverride(): boolean | undefined {
+    return this.isPresent(ViewFlagPresence.ClipVolume) ? this._values.clipVolume : undefined;
+  }
 
-    /** If ViewFlags.clipVolume is overridden, return the override value; else return undefined.
-     * @internal
-     */
-    public get clipVolumeOverride(): boolean | undefined {
-      return this.isPresent(PresenceFlag.ClipVolume) ? this._values.clipVolume : undefined;
-    }
-
-    /** Apply these overrides to the supplied ViewFlags */
-    public apply(base: ViewFlags): ViewFlags {
-      if (!this.anyOverridden())
-        return base;
-
-      if (this.isPresent(PresenceFlag.Dimensions)) base.dimensions = this._values.dimensions;
-      if (this.isPresent(PresenceFlag.Patterns)) base.patterns = this._values.patterns;
-      if (this.isPresent(PresenceFlag.Weights)) base.weights = this._values.weights;
-      if (this.isPresent(PresenceFlag.Styles)) base.styles = this._values.styles;
-      if (this.isPresent(PresenceFlag.Transparency)) base.transparency = this._values.transparency;
-      if (this.isPresent(PresenceFlag.Fill)) base.fill = this._values.fill;
-      if (this.isPresent(PresenceFlag.Textures)) base.textures = this._values.textures;
-      if (this.isPresent(PresenceFlag.Materials)) base.materials = this._values.materials;
-      if (this.isPresent(PresenceFlag.Lighting)) base.lighting = this._values.lighting;
-      if (this.isPresent(PresenceFlag.VisibleEdges)) base.visibleEdges = this._values.visibleEdges;
-      if (this.isPresent(PresenceFlag.HiddenEdges)) base.hiddenEdges = this._values.hiddenEdges;
-      if (this.isPresent(PresenceFlag.Shadows)) base.shadows = this._values.shadows;
-      if (this.isPresent(PresenceFlag.ClipVolume)) base.clipVolume = this._values.clipVolume;
-      if (this.isPresent(PresenceFlag.Constructions)) base.constructions = this._values.constructions;
-      if (this.isPresent(PresenceFlag.Monochrome)) base.monochrome = this._values.monochrome;
-      if (this.isPresent(PresenceFlag.GeometryMap)) base.noGeometryMap = this._values.noGeometryMap;
-      if (this.isPresent(PresenceFlag.BackgroundMap)) base.backgroundMap = this._values.backgroundMap;
-      if (this.isPresent(PresenceFlag.HlineMaterialColors)) base.hLineMaterialColors = this._values.hLineMaterialColors;
-      if (this.isPresent(PresenceFlag.ForceSurfaceDiscard)) base.forceSurfaceDiscard = this._values.forceSurfaceDiscard;
-      if (this.isPresent(PresenceFlag.EdgeMask)) base.edgeMask = this._values.edgeMask;
-      if (this.isPresent(PresenceFlag.RenderMode)) base.renderMode = this._values.renderMode;
+  /** Apply these overrides to the supplied ViewFlags. The values of any flags that are overridden will be replaced by the override values; the rest of the flags are untouched. */
+  public apply(base: ViewFlags): ViewFlags {
+    if (!this.anyOverridden())
       return base;
-    }
+
+    if (this.isPresent(ViewFlagPresence.Dimensions)) base.dimensions = this._values.dimensions;
+    if (this.isPresent(ViewFlagPresence.Patterns)) base.patterns = this._values.patterns;
+    if (this.isPresent(ViewFlagPresence.Weights)) base.weights = this._values.weights;
+    if (this.isPresent(ViewFlagPresence.Styles)) base.styles = this._values.styles;
+    if (this.isPresent(ViewFlagPresence.Transparency)) base.transparency = this._values.transparency;
+    if (this.isPresent(ViewFlagPresence.Fill)) base.fill = this._values.fill;
+    if (this.isPresent(ViewFlagPresence.Textures)) base.textures = this._values.textures;
+    if (this.isPresent(ViewFlagPresence.Materials)) base.materials = this._values.materials;
+    if (this.isPresent(ViewFlagPresence.Lighting)) base.lighting = this._values.lighting;
+    if (this.isPresent(ViewFlagPresence.VisibleEdges)) base.visibleEdges = this._values.visibleEdges;
+    if (this.isPresent(ViewFlagPresence.HiddenEdges)) base.hiddenEdges = this._values.hiddenEdges;
+    if (this.isPresent(ViewFlagPresence.Shadows)) base.shadows = this._values.shadows;
+    if (this.isPresent(ViewFlagPresence.ClipVolume)) base.clipVolume = this._values.clipVolume;
+    if (this.isPresent(ViewFlagPresence.Constructions)) base.constructions = this._values.constructions;
+    if (this.isPresent(ViewFlagPresence.Monochrome)) base.monochrome = this._values.monochrome;
+    if (this.isPresent(ViewFlagPresence.GeometryMap)) base.noGeometryMap = this._values.noGeometryMap;
+    if (this.isPresent(ViewFlagPresence.BackgroundMap)) base.backgroundMap = this._values.backgroundMap;
+    if (this.isPresent(ViewFlagPresence.HlineMaterialColors)) base.hLineMaterialColors = this._values.hLineMaterialColors;
+    if (this.isPresent(ViewFlagPresence.ForceSurfaceDiscard)) base.forceSurfaceDiscard = this._values.forceSurfaceDiscard;
+    if (this.isPresent(ViewFlagPresence.EdgeMask)) base.edgeMask = this._values.edgeMask;
+    if (this.isPresent(ViewFlagPresence.RenderMode)) base.renderMode = this._values.renderMode;
+    return base;
   }
 }

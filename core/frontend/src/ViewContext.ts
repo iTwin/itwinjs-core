@@ -439,14 +439,18 @@ export class DecorateContext extends RenderContext {
 }
 
 /** Context used to create the scene for a [[Viewport]]. The scene consists of a set of [[RenderGraphic]]s produced by the
- * [[TileTree]]s visible within the viewport. Creating the scene may result in the enqueueing of [[TileRequest]]s for [[Tile]]s which
+ * [[TileTree]]s visible within the viewport. Creating the scene may result in the enqueueing of requests for [[Tile]]s which
  * should be displayed in the viewport but are not yet loaded.
- * @internal
+ * @beta
  */
 export class SceneContext extends RenderContext {
+  /** The graphics comprising the scene. */
   public readonly scene = new Scene();
+  /** @internal */
   public readonly missingTiles = new Set<Tile>();
+  /** @internal */
   public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
+  /** @internal */
   public readonly modelClassifiers = new Map<Id64String, Id64String>();    // Model id to classifier model Id.
   private _viewingSpace?: ViewingSpace;
   private _graphicType: TileGraphicType = TileGraphicType.Scene;
@@ -459,8 +463,10 @@ export class SceneContext extends RenderContext {
     return undefined !== this._viewingSpace ? this._viewingSpace : this.viewport.viewingSpace;
   }
 
+  /** @internal */
   public get graphicType() { return this._graphicType; }
 
+  /** @internal */
   public outputGraphic(graphic: RenderGraphic): void {
     switch (this._graphicType) {
       case TileGraphicType.BackgroundMap:
@@ -475,6 +481,7 @@ export class SceneContext extends RenderContext {
     }
   }
 
+  /** Indicate that the specified tile is desired for the scene but is not yet ready. A request to load its contents will later be enqueued. */
   public insertMissingTile(tile: Tile): void {
     switch (tile.loadStatus) {
       case TileLoadStatus.NotLoaded:
@@ -485,10 +492,12 @@ export class SceneContext extends RenderContext {
     }
   }
 
+  /** @internal */
   public requestMissingTiles(): void {
     IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
   }
 
+  /** @internal */
   public addPlanarClassifier(props: SpatialClassificationProps.Classifier, tileTree: TileTreeReference, classifiedTree: TileTreeReference): RenderPlanarClassifier | undefined {
     // Have we already seen this classifier before?
     const id = props.modelId;
@@ -510,11 +519,13 @@ export class SceneContext extends RenderContext {
     return classifier;
   }
 
+  /** @internal */
   public getPlanarClassifierForModel(modelId: Id64String) {
     const classifierId = this.modelClassifiers.get(modelId);
     return undefined === classifierId ? undefined : this.planarClassifiers.get(classifierId);
   }
 
+  /** @internal */
   public addBackgroundDrapedModel(drapedTreeRef: TileTreeReference, _heightRange: Range1d | undefined): RenderTextureDrape | undefined {
     const drapedTree = drapedTreeRef.treeOwner.tileTree;
     if (undefined === drapedTree)
@@ -535,10 +546,12 @@ export class SceneContext extends RenderContext {
     return drape;
   }
 
+  /** @internal */
   public getTextureDrapeForModel(modelId: Id64String) {
     return this.textureDrapes.get(modelId);
   }
 
+  /** @internal */
   public withGraphicType(type: TileGraphicType, func: () => void): void {
     const prevType = this._graphicType;
     this._graphicType = type;
@@ -548,12 +561,18 @@ export class SceneContext extends RenderContext {
     this._graphicType = prevType;
   }
 
+  /** @internal */
   public get graphics() { return this.scene.foreground; }
+  /** @internal */
   public get backgroundGraphics() { return this.scene.background; }
+  /** @internal */
   public get overlayGraphics() { return this.scene.overlay; }
+  /** @internal */
   public get planarClassifiers() { return this.scene.planarClassifiers; }
+  /** @internal */
   public get textureDrapes() { return this.scene.textureDrapes; }
 
+  /** @internal */
   public setVolumeClassifier(classifier: SpatialClassificationProps.Classifier, modelId: Id64String): void {
     this.scene.volumeClassifier = { classifier, modelId };
   }

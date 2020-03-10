@@ -16,7 +16,7 @@ import {
   RelatedElement,
   SectionLocationProps,
   ViewAttachmentProps,
-  ViewFlag,
+  ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import {
   FeatureSymbology,
@@ -117,7 +117,7 @@ class ProxyTreeReference extends TileTreeReference {
 /** A proxy for a 2d tile tree to be drawn in the context of a spatial view. */
 class ProxyTree extends TileTree {
   private readonly _rootTile: ProxyTile;
-  private readonly _viewFlagOverrides: ViewFlag.Overrides;
+  private readonly _viewFlagOverrides: ViewFlagOverrides;
   public readonly tree: TileTree;
   public readonly ref: TileTreeReference;
   public readonly symbologyOverrides: FeatureSymbology.Overrides;
@@ -152,7 +152,7 @@ class ProxyTree extends TileTree {
     if (undefined !== inverse)
       inverse.multiplyRange(range, range);
 
-    this._viewFlagOverrides = new ViewFlag.Overrides(view.viewFlags);
+    this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
     this._viewFlagOverrides.setApplyLighting(false);
     this._viewFlagOverrides.setShowClipVolume(false);
 

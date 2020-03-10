@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
@@ -15,7 +15,7 @@ import {
 } from "@bentley/geometry-core";
 import {
   ColorDef,
-  ViewFlag,
+  ViewFlagOverrides,
   Frustum,
   FrustumPlanes,
 } from "@bentley/imodeljs-common";
@@ -210,7 +210,7 @@ export class RealityTileTree extends TileTree {
                     plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
 
               const branch = new GraphicBranch();
-              const doClipOverride = new ViewFlag.Overrides();
+              const doClipOverride = new ViewFlagOverrides();
               doClipOverride.setShowClipVolume(true);
               branch.add(graphics);
               branch.setViewFlagOverrides(doClipOverride);

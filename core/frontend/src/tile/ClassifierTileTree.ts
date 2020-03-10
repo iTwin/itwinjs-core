@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 import { compareStrings, compareStringsOrUndefined, Id64String, Id64 } from "@bentley/bentleyjs-core";
 import {

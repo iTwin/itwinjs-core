@@ -100,13 +100,11 @@ export interface FeatureOverrideProvider {
 }
 
 /** Provides a way for applications to inject additional non-decorative graphics into a [[Viewport]] by supplying one or more [[TileTreeReference]]s capable of loading and drawing the graphics.
- * Typical use cases involve drawing cartographic imagery like weather, traffic conditions, etc.
- * @see [[MapTileTreeReference]] and [[MapImageryTileTreeReference]] for examples of ways to create a TileTree reference.
- * @see [[Viewport.addTiledGraphicsProvider]] and [[Viewport.dropTiledGraphicsProvider]].
- * @internal
+ * @see [[Viewport.addTiledGraphicsProvider]]
+ * @beta
  */
 export interface TiledGraphicsProvider {
-  /** Apply the supplied function to each [[TileTreeReference]] to be drawn in the specified Viewport. */
+  /** Apply the supplied function to each [[TileTreeReference]] to be drawn in the specified [[Viewport]]. */
   forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
 }
 
@@ -157,9 +155,7 @@ export class ChangeFlags {
   /** [[changeView]] was used to replace the previous [[ViewState]] with a new one. */
   public get viewState() { return this.isSet(ChangeFlag.ViewState); }
   public setViewState() { this.set(ChangeFlag.ViewState); }
-  /** The [[PerModelCategoryVisibility.Overrides]] associated with the viewport have changed.
-   * @alpha
-   */
+  /** The [[PerModelCategoryVisibility.Overrides]] associated with the viewport have changed. */
   public get viewedCategoriesPerModel() { return this.isSet(ChangeFlag.ViewedCategoriesPerModel); }
   public setViewedCategoriesPerModel() { this.set(ChangeFlag.ViewedCategoriesPerModel); }
 
@@ -566,7 +562,6 @@ export enum ViewUndoEvent { Undo = 0, Redo = 1 }
  */
 export namespace PerModelCategoryVisibility {
   /** Describes whether and how a category's visibility is overridden.
-   * @beta
    */
   export enum Override {
     /** The category's visibility is not overridden; its visibility is wholly controlled by the [[Viewport]]'s [[CategorySelectorState]]. */
@@ -579,7 +574,6 @@ export namespace PerModelCategoryVisibility {
 
   /** Describes a set of per-model category visibility overrides. Changes to these overrides invoke the [[Viewport.onViewedCategoriesPerModelChanged]] event.
    * @see [[Viewport.perModelCategoryVisibility]].
-   * @beta
    */
   export interface Overrides {
     /** Returns the override state of the specified category within the specified model. */
@@ -783,7 +777,6 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
  * @see [[ViewManager]]
  * @public
  */
-
 export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
    * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
@@ -797,36 +790,28 @@ export abstract class Viewport implements IDisposable {
    */
   public readonly onViewUndoRedo = new BeEvent<(vp: Viewport, event: ViewUndoEvent) => void>();
   /** Event called on the next frame after this viewport's set of always-drawn elements changes.
-   * @beta
    */
   public readonly onAlwaysDrawnChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of never-drawn elements changes.
-   * @beta
    */
   public readonly onNeverDrawnChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's [[DisplayStyleState]] or its members change.
    * Aspects of the display style include [ViewFlags]($common), [SubCategoryOverride]($common)s, and [[Environment]] settings.
-   * @beta
    */
   public readonly onDisplayStyleChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of displayed categories changes.
-   * @beta
    */
   public readonly onViewedCategoriesChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of [[PerModelCategoryVisibility.Overrides]] changes.
-   * @beta
    */
   public readonly onViewedCategoriesPerModelChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's set of displayed models changes.
-   * @beta
    */
   public readonly onViewedModelsChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's [[FeatureOverrideProvider]] changes, or the internal state of the provider changes such that the overrides needed to be recomputed.
-   * @beta
    */
   public readonly onFeatureOverrideProviderChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after this viewport's [[FeatureSymbology.Overrides]] change.
-   * @beta
    */
   public readonly onFeatureOverridesChanged = new BeEvent<(vp: Viewport) => void>();
   /** Event called on the next frame after any of the viewport's [[ChangeFlags]] changes.
@@ -834,7 +819,6 @@ export abstract class Viewport implements IDisposable {
    */
   public readonly onViewportChanged = new BeEvent<(vp: Viewport, changed: ChangeFlags) => void>();
   /** Event invoked immediately when [[changeView]] is called to replace the current [[ViewState]] with a different one.
-   * @beta
    */
   public readonly onChangeView = new BeEvent<(vp: Viewport, previousViewState: ViewState) => void>();
 
@@ -867,7 +851,6 @@ export abstract class Viewport implements IDisposable {
    * them to be recreated to show the changes.
    * @note On the next frame, the `decorate` method of all [[ViewManager.decorators]] will be called. There is no way (or need) to
    * invalidate individual decorations.
-   * @beta
    */
   public invalidateDecorations(): void {
     this._decorationsValid = false;
@@ -1001,7 +984,6 @@ export abstract class Viewport implements IDisposable {
 
   /** The settings that control how emphasized elements are displayed in this Viewport. The default settings apply a thick black silhouette to the emphasized elements.
    * @see [FeatureSymbology.Appearance.emphasized].
-   * @beta
    */
   public get emphasisSettings(): Hilite.Settings { return this._emphasis; }
   public set emphasisSettings(settings: Hilite.Settings) {
@@ -1047,7 +1029,7 @@ export abstract class Viewport implements IDisposable {
   /** This setting controls the color overrride for pixels outside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
    * @note The transparency component of the color object is ignored.
    * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
-   * @alpha
+   * @beta
    */
   public get outsideClipColor(): ColorDef | undefined { return this._outsideClipColor; }
   public set outsideClipColor(color: ColorDef | undefined) {
@@ -1058,7 +1040,7 @@ export abstract class Viewport implements IDisposable {
   /** This setting controls the color overrride for pixels inside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
    * @note The transparency component of the color object is ignored.
    * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
-   * @alpha
+   * @beta
    */
   public get insideClipColor(): ColorDef | undefined { return this._insideClipColor; }
   public set insideClipColor(color: ColorDef | undefined) {
@@ -1173,7 +1155,6 @@ export abstract class Viewport implements IDisposable {
   /** Change the visibility of geometry belonging to the specified subcategory when displayed in this viewport.
    * @param subCategoryId The Id of the subcategory
    * @param display: True to make geometry belonging to the subcategory visible within this viewport, false to make it invisible.
-   * @alpha
    */
   public changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
     const app = this.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
@@ -1194,7 +1175,6 @@ export abstract class Viewport implements IDisposable {
 
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
-   * @beta
    */
   public get backgroundMapSettings(): BackgroundMapSettings { return this.displayStyle.backgroundMapSettings; }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
@@ -1210,7 +1190,6 @@ export abstract class Viewport implements IDisposable {
    * ``` ts
    *  viewport.changeBackgroundMapProps({ groundBias: 16.2 });
    * ```
-   * @beta
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
@@ -1497,7 +1476,7 @@ export abstract class Viewport implements IDisposable {
   public get isAlwaysDrawnExclusive(): boolean { return this._alwaysDrawnExclusive; }
 
   /** Allows visibility of categories within this viewport to be overridden on a per-model basis.
-   * @alpha
+   * @beta
    */
   public get perModelCategoryVisibility(): PerModelCategoryVisibility.Overrides { return this._perModelCategoryVisibility; }
 
@@ -1553,12 +1532,19 @@ export abstract class Viewport implements IDisposable {
     trees.disclose(this.view);
   }
 
-  /** @internal */
+  /** Register a provider of tile graphics to be drawn in this viewport.
+   * @see [[dropTiledGraphicsProvider]]
+   * @beta
+   */
   public addTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this._tiledGraphicsProviders.add(provider);
     this.invalidateScene();
   }
-  /** @internal */
+
+  /** Remove a previously-registered provider of tile graphics.
+   * @see [[addTiledGraphicsProvider]]
+   * @beta
+   */
   public dropTiledGraphicsProvider(provider: TiledGraphicsProvider): void {
     this._tiledGraphicsProviders.delete(provider);
     this.invalidateScene();
@@ -2526,7 +2512,6 @@ export abstract class Viewport implements IDisposable {
 
   /** The device pixel ratio used by this Viewport. This value is *not* necessarily equal to `window.devicePixelRatio`.
    * See: https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
-   * @beta
    */
   public get devicePixelRatio(): number {
     return this.target.devicePixelRatio;
@@ -2536,7 +2521,6 @@ export abstract class Viewport implements IDisposable {
    * See: https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
    * @param num The number in CSS pixels to scale
    * @returns The resulting number in device pixels
-   * @beta
    */
   public cssPixelsToDevicePixels(cssPixels: number): number {
     return this.target.cssPixelsToDevicePixels(cssPixels);
@@ -2571,7 +2555,6 @@ export abstract class Viewport implements IDisposable {
  * @public
  */
 export class ScreenViewport extends Viewport {
-
   /** Settings that may be adjusted to control the way animations of viewing operations work.
    * @beta
    */
@@ -3146,7 +3129,7 @@ export class ScreenViewport extends Viewport {
 /** Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
  * For example, Navigator uses this class to synchronize two views for revision comparison.
  * @note It is possible to synchronize two Viewports from two different [[IModelConnection]]s of the same iModel.
- * @alpha
+ * @beta
  */
 export class TwoWayViewportSync {
   private _removals: VoidFunction[] = [];

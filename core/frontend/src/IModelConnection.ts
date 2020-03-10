@@ -68,13 +68,13 @@ export class IModelConnection extends IModel {
    */
   public readonly eventSource: EventSource | undefined;
   /** The set of currently hilited elements for this IModelConnection.
-   * @alpha
+   * @beta
    */
   public readonly hilited: HiliteSet;
   /** The set of currently selected elements for this IModelConnection. */
   public readonly selectionSet: SelectionSet;
   /** The set of Tiles for this IModelConnection.
-   * @internal
+   * @beta
    */
   public readonly tiles: IModelConnection.Tiles;
   /** A cache of information about SubCategories chiefly used for rendering.
@@ -737,7 +737,7 @@ export namespace IModelConnection {
     /** Given a set of modelIds, return the subset of corresponding models that are not currently loaded.
      * @param modelIds The set of model Ids
      * @returns The subset of the supplied Ids corresponding to models that are not currently loaded, or undefined if all of the specified models are loaded.
-     * @alpha
+     * @beta
      */
     public filterLoaded(modelIds: Id64Arg): Id64Set | undefined {
       let unloaded: Set<string> | undefined;
@@ -799,9 +799,7 @@ export namespace IModelConnection {
       return IModelReadRpcInterface.getClient().queryModelProps(iModel.iModelToken.toJSON(), params);
     }
 
-    /** Asynchronously stream ModelProps using the specified ModelQueryParams.
-     * @alpha This method will replace IModelConnection.Models.queryProps as soon as auto-paging support is added
-     */
+    /** Asynchronously stream ModelProps using the specified ModelQueryParams. */
     public async * query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps> {
       // NOTE: this implementation has the desired API signature, but its implementation must be improved to actually page results
       const modelPropsArray: ModelProps[] = await this.queryProps(queryParams);
@@ -988,24 +986,28 @@ export namespace IModelConnection {
 
   }
 
-  /** Provides access to tiles associated with an IModelConnection
-   * @internal
+  /** Provides access to [[TileTree]]s associated with an IModelConnection.
+   * @beta
    */
   export class Tiles {
     private _iModel: IModelConnection;
     private readonly _treesBySupplier = new Map<TileTreeSupplier, Dictionary<any, TreeOwner>>();
     private _disposed = false;
 
+    /** @internal */
     public get isDisposed() { return this._disposed; }
 
     constructor(iModel: IModelConnection) { this._iModel = iModel; }
 
+    /** @internal */
     public dispose(): void {
       this.reset();
       this._disposed = true;
     }
 
-    /** Intended strictly for tests. */
+    /** Intended strictly for tests.
+     * @internal
+     */
     public reset(): void {
       for (const supplier of this._treesBySupplier)
         supplier[1].forEach((_key, value) => value.dispose());
@@ -1013,18 +1015,22 @@ export namespace IModelConnection {
       this._treesBySupplier.clear();
     }
 
+    /** @internal */
     public async getTileTreeProps(id: string): Promise<TileTreeProps> {
       return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
     }
 
+    /** @internal */
     public async getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
       return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled, guid, qualifier);
     }
 
+    /** @internal */
     public async purgeTileTrees(modelIds: Id64Array | undefined): Promise<void> {
       return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
     }
 
+    /** Obtain the owner of a TileTree. The `id` is unique within all tile trees associated with `supplier`; its specific structure is an implementation detail known only to the supplier. */
     public getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner {
       let trees = this._treesBySupplier.get(supplier);
       if (undefined === trees) {
@@ -1041,6 +1047,7 @@ export namespace IModelConnection {
       return tree;
     }
 
+    /** Disposes of all [[TileTree]]s belonging to `supplier` and removes `supplier` from the set of known tile tree suppliers. */
     public dropSupplier(supplier: TileTreeSupplier): void {
       const trees = this._treesBySupplier.get(supplier);
       if (undefined === trees)
@@ -1050,6 +1057,7 @@ export namespace IModelConnection {
       this._treesBySupplier.delete(supplier);
     }
 
+    /** Invokes a function on each extant TileTreeOwner. */
     public forEachTreeOwner(func: (owner: TileTreeOwner) => void): void {
       for (const dict of this._treesBySupplier.values())
         dict.forEach((_key, value) => func(value));

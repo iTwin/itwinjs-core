@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
@@ -74,26 +74,40 @@ const scratchPoint4d = Point4d.createZero();
 const scratchFrustum = new Frustum();
 
 /** A 3d tile within a [[TileTree]].
- * @internal
+ * @beta
  */
 export abstract class Tile {
   private _state: TileState = TileState.NotReady;
   private _children: Tile[] | undefined;
   private _rangeGraphic?: RenderGraphic;
   private _rangeGraphicType: TileBoundingBoxes = TileBoundingBoxes.None;
+  /** This tile's renderable content. */
   protected _graphic?: RenderGraphic;
+  /** Uniquely identifies this tile's content. */
   protected _contentId: string;
+  /** Child tiles are loaded on-demand, potentially asynchronously. This tracks their current loading state. */
   protected _childrenLoadStatus: TileTreeLoadStatus;
+  /** @internal */
   protected _request?: TileRequest;
+  /** @internal */
   protected _isLeaf: boolean;
+  /** @internal */
   protected _contentRange?: ElementAlignedBox3d;
+  /** The maximum size in pixels this tile can be drawn. If the size of the tile on screen exceeds this maximum, a higher-resolution tile should be drawn in its place. */
   protected _maximumSize: number;
+  /** The [[TileTree]] to which this tile belongs. */
   public readonly tree: TileTree;
+  /** The volume of space occupied by this tile. Its children are guaranteed to also be contained within this volume. */
   public readonly range: ElementAlignedBox3d;
+  /** The parent of this tile, or undefined if it is the [[TileTree]]'s root tile. */
   public readonly parent: Tile | undefined;
+  /** The depth of this tile within its [[TileTree]. The root tile has a depth of zero. */
   public readonly depth: number;
+  /** The point at the center of this tile's volume. */
   public readonly center: Point3d;
+  /** The radius of a sphere fully encompassing this tile's volume - used for culling. */
   public readonly radius: number;
+  /** Tracks the usage of this tile. After a period of disuse, the tile may be [[prune]]d to free up memory. */
   public readonly usageMarker = new TileUsageMarker();
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
@@ -105,6 +119,7 @@ export abstract class Tile {
   /** Return a Promise that deserializes this tile's content from raw format produced by [[requestContent]]. */
   public abstract async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent>;
 
+  /** Constructor */
   protected constructor(params: TileParams, tree: TileTree) {
     this.tree = tree;
     this.parent = params.parent;
@@ -139,25 +154,36 @@ export abstract class Tile {
     this.disposeChildren();
   }
 
-  /** Return whether this tile can be drawn. */
+  /** This tile's child tiles, if they exist and are loaded. The children are fully contained within this tile's volume and provide higher-resolution graphics than this tile.
+   * @see [[loadChildren]]
+   */
   public get children(): Tile[] | undefined { return this._children; }
+  /** The [[IModelConnection]] to which this tile belongs. */
   public get iModel() { return this.tree.iModel; }
+  /** Uniquely identifies this tile's content. */
   public get contentId(): string { return this._contentId; }
 
+  /** True if this tile's content is currently being loaded. */
   public get isLoading(): boolean { return TileLoadStatus.Loading === this.loadStatus; }
+  /** True if a request for this tile's content has been enqueued. */
   public get isQueued(): boolean { return TileLoadStatus.Queued === this.loadStatus; }
+  /** True if an attempt to load this tile's content failed. */
   public get isNotFound(): boolean { return TileLoadStatus.NotFound === this.loadStatus; }
+  /** True if this tile's content has been loaded and is ready to be drawn. */
   public get isReady(): boolean { return TileLoadStatus.Ready === this.loadStatus; }
 
+  /** @internal */
   public setNotFound(): void {
     this._state = TileState.NotFound;
   }
 
+  /** @internal */
   public setIsReady(): void {
     this._state = TileState.Ready;
     IModelApp.viewManager.onNewTilesReady();
   }
 
+  /** @internal */
   public setLeaf(): void {
     // Don't potentially re-request the children later.
     this.disposeChildren();
@@ -165,26 +191,39 @@ export abstract class Tile {
     this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
   }
 
+  /** True if this tile has no child tiles. */
   public get isLeaf(): boolean { return this._isLeaf; }
+  /** @internal */
   public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && this.isLeaf; }
+  /** @internal */
   public get isDisplayable(): boolean { return 0 < this.maximumSize; }
+  /** The maximum size in pixels this tile can be drawn. If the size of the tile on screen exceeds this maximum, a higher-resolution tile should be drawn in its place. */
   public get maximumSize(): number { return this._maximumSize; }
+  /** @internal */
   public get isParentDisplayable(): boolean { return undefined !== this.parent && this.parent.isDisplayable; }
+  /** @internal */
   public get isUndisplayableRootTile(): boolean { return undefined === this.parent && !this.isDisplayable; }
 
+  /** @internal */
   public get request(): TileRequest | undefined { return this._request; }
   public set request(request: TileRequest | undefined) {
     assert(undefined === request || undefined === this.request);
     this._request = request;
   }
 
+  /** @internal */
   public onActiveRequestCanceled(): void { }
+
+  /** @internal */
   public computeLoadPriority(_viewports: Iterable<Viewport>): number {
     return this.depth;
   }
 
+  /** True if this tile has graphics ready to draw. */
   protected get hasGraphics(): boolean { return undefined !== this._graphic; }
+  /** True if this tile has a known volume tightly encompassing its graphics. */
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
+  /** A volume no larger than this tile's `range`, and optionally more tightly encompassing its contents. Used for more accurate culling. */
   public get contentRange(): ElementAlignedBox3d {
     if (undefined !== this._contentRange)
       return this._contentRange;
@@ -194,6 +233,7 @@ export abstract class Tile {
       return this.range;
   }
 
+  /** Tile contents are loaded asynchronously on demand. This member tracks the current loading status of this tile's contents. */
   public get loadStatus(): TileLoadStatus {
     switch (this._state) {
       case TileState.NotReady: {
@@ -249,10 +289,14 @@ export abstract class Tile {
     this.setIsReady();
   }
 
-  /** Disclose any additional resources owned by this tile. */
+  /** Disclose any additional resources owned by this tile.
+   * @internal
+   */
   protected _collectStatistics(_stats: RenderMemory.Statistics): void { }
 
-  /** Disclose resources owned by this tile and all of its child tiles. */
+  /** Disclose resources owned by this tile and all of its child tiles.
+   * @internal
+   */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     if (undefined !== this._graphic)
       this._graphic.collectStatistics(stats);
@@ -265,7 +309,10 @@ export abstract class Tile {
         child.collectStatistics(stats);
   }
 
-  /** Don't override this method. Implement [[_loadChildren]]. */
+  /** If this tile's child tiles have not yet been requested, enqueue an asynchronous request to load them.
+   * @note This function itself is *not* asynchronous - it immediately returns the current loading status.
+   * @note Do not override this method - implement [[_loadChildren]].
+   */
   protected loadChildren(): TileTreeLoadStatus {
     if (this._childrenLoadStatus !== TileTreeLoadStatus.NotLoaded)
       return this._childrenLoadStatus;
@@ -290,6 +337,7 @@ export abstract class Tile {
     return this._childrenLoadStatus;
   }
 
+  /** Dispose of this tile's child tiles and mark them as "not loaded". */
   protected disposeChildren(): void {
     const children = this.children;
     if (undefined === children)
@@ -302,11 +350,13 @@ export abstract class Tile {
     this._children = undefined;
   }
 
+  /** Returns true if this tile's bounding volume is culled by the frustum or clip volumes specified by `args`. */
   protected isRegionCulled(args: TileDrawArgs): boolean {
     scratchRootSphere.init(this.center, this.radius);
     return this.isCulled(this.range, args, scratchRootSphere);
   }
 
+  /** Returns true if this tile's content bounding volume is culled by the frustum or clip volumes specified by `args`. */
   protected isContentCulled(args: TileDrawArgs): boolean {
     return this.isCulled(this.contentRange, args);
   }
@@ -331,6 +381,7 @@ export abstract class Tile {
     return false;
   }
 
+  /** Determine the visibility of this tile according to the specified args. */
   public computeVisibility(args: TileDrawArgs): TileVisibility {
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
     // they are outside frustum
@@ -353,6 +404,7 @@ export abstract class Tile {
     return pixelSize > maxSize ? TileVisibility.TooCoarse : TileVisibility.Visible;
   }
 
+  /** @internal */
   public extendRangeForContent(range: Range3d, matrix: Matrix4d, treeTransform: Transform, frustumPlanes?: FrustumPlanes): void {
     if (this.isEmpty || this.contentRange.isNull)
       return;
@@ -376,6 +428,7 @@ export abstract class Tile {
     }
   }
 
+  /** @internal */
   public countDescendants(): number {
     const children = this.children;
     if (undefined === children || 0 === children.length)
@@ -388,6 +441,7 @@ export abstract class Tile {
     return count;
   }
 
+  /** Output this tile's graphics. */
   public drawGraphics(args: TileDrawArgs): void {
     const gfx = this.produceGraphics();
     if (undefined === gfx)
@@ -399,10 +453,12 @@ export abstract class Tile {
       args.graphics.add(rangeGfx);
   }
 
+  /** @internal */
   protected get rangeGraphicColor(): ColorDef {
     return this.isLeaf ? ColorDef.blue : ColorDef.green;
   }
 
+  /** @internal */
   public getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
     const type = context.viewport.debugBoundingBoxes;
     if (type === this._rangeGraphicType)
@@ -419,6 +475,7 @@ export abstract class Tile {
     return this._rangeGraphic;
   }
 
+  /** @internal */
   protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {
     if (TileBoundingBoxes.Both === type) {
       builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
@@ -450,41 +507,50 @@ export abstract class Tile {
 // tslint:disable:no-const-enum
 
 /**
- * Describes the current status of a Tile. Tiles are loaded by making asynchronous requests to the backend.
- * @internal
+ * Describes the current status of a Tile's content. Tile content is loaded via an asynchronous [[TileRequest]].
+ * @beta
  */
 export const enum TileLoadStatus {
-  NotLoaded = 0, // No attempt to load the tile has been made, or the tile has since been unloaded. It currently has no graphics.
-  Queued = 1, // A request has been made to load the tile from the backend, and a response is pending.
-  Loading = 2, // A response has been received and the tile's graphics and other data are being loaded on the frontend.
-  Ready = 3, // The tile has been loaded, and if the tile is displayable it has graphics.
-  NotFound = 4, // The tile was requested, and the response from the backend indicated the tile could not be found.
-  Abandoned = 5, // The tile has been discarded.
+  /** No attempt to load the tile's content has been made, or the tile has since been unloaded. It currently has no graphics. */
+  NotLoaded = 0,
+  /** A request has been dispatched to load the tile's contents, and a response is pending. */
+  Queued = 1,
+  /** A response has been received and the tile's graphics and other data are being loaded on the frontend. */
+  Loading = 2,
+  /** The tile has been loaded, and if the tile is displayable it has graphics. */
+  Ready = 3,
+  /** A request to load the tile's contents failed. */
+  NotFound = 4,
+  /** The tile has been disposed. */
+  Abandoned = 5,
 }
 
 /**
  * Describes the visibility of a tile based on its size and a view frustum.
- * @internal
+ * @beta
  */
 export const enum TileVisibility {
-  OutsideFrustum, // this tile is entirely outside of the viewing frustum
-  TooCoarse, // this tile is too coarse to be drawn
-  Visible, // this tile is of the correct size to be drawn
+  /** The tile is entirely outside of the viewing frustum. */
+  OutsideFrustum,
+  /** The tile's graphics are of too low a resolution for the viewing frustum. */
+  TooCoarse,
+  /** The tile's graphics are of appropriate resolution for the viewing frustum. */
+  Visible,
 }
 
 /**
  * Loosely describes the "importance" of a tile. Requests for tiles of more "importance" are prioritized for loading.
  * @note A lower LoadPriority value indicates higher importance.
- * @internal
+ * @beta
  */
 export const enum TileLoadPriority {
   /** Background map tiles. */
   Map = 15,
   /** Typically, tiles generated from the contents of geometric models. */
   Primary = 20,
-  /** Terrain -- requires background/map tiles for drape. */
+  /** 3d terrain tiles onto which background map imagery is draped. */
   Terrain = 10,
-  /** Typically, context reality models. */
+  /** Typically, reality models. */
   Context = 40,
   /** Supplementary tiles used to classify the contents of geometric or reality models. */
   Classifier = 50,
@@ -514,6 +580,7 @@ export const enum TileBoundingBoxes {
   /** Display bounding sphere. */
   Sphere,
 }
+
 // TileLoadStatus is computed from the combination of Tile._state and, if Tile.request is defined, Tile.request.state.
 const enum TileState {
   NotReady = TileLoadStatus.NotLoaded, // Tile requires loading, but no request has yet completed.

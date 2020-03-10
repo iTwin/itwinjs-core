@@ -183,7 +183,7 @@ public;GraphicType
 internal;GroupMark
 internal;HilitedState
 internal;Hilites
-alpha;HiliteSet
+beta;HiliteSet
 public;HitDetail
 public;HitDetailType
 public;HitGeomType
@@ -210,7 +210,7 @@ public;IModelConnection
 public;IModelConnection
 alpha;EditingFunctions
 alpha;EditingFunctions
-internal;Tiles
+beta;Tiles
 internal;IModelFrameLifecycle
 internal;IModelTile 
 internal;IModelTileContent 
@@ -338,8 +338,8 @@ internal;SavedClipCache
 alpha;SavedClipEntry
 internal;SavedClipProps
 internal;SavedState
-internal;Scene
-internal;SceneContext 
+beta;Scene
+beta;SceneContext 
 internal;SceneVolumeClassifier
 public;ScreenViewport 
 public;ScrollViewTool 
@@ -402,30 +402,31 @@ internal;class TerrainTileLoaderBase
 internal;TextureDrapeMap = Map
 internal;TextureImage
 internal;ThreeAxes
-internal;class Tile
+beta;class Tile
 alpha;class TileAdmin
 alpha;TileAdmin
 internal;TileAvailability
 internal;enum TileBoundingBoxes
-internal;TileContent
-internal;TiledGraphicsProvider
-internal;TileDrawArgs
-internal;TileGraphicType
-internal;enum TileLoadPriority
-internal;enum TileLoadStatus
-internal;TileParams
-internal;TileRequest
-internal;TileRequest
-internal;class TileTree
-internal;TileTreeDiscloser
-internal;TileTreeLoadStatus
-internal;TileTreeOwner
-internal;TileTreeParams
-internal;class TileTreeReference 
-internal;TileTreeSet
-internal;TileTreeSupplier
-internal;TileUsageMarker
-internal;enum TileVisibility
+beta;TileContent
+beta;TiledGraphicsProvider
+beta;TileDrawArgs
+beta;TileGraphicType
+beta;enum TileLoadPriority
+beta;enum TileLoadStatus
+beta;TileParams
+beta;TileRequest
+beta;TileRequest
+internal;enum State
+beta;class TileTree
+beta;TileTreeDiscloser
+beta;TileTreeLoadStatus
+beta;TileTreeOwner
+beta;TileTreeParams
+beta;class TileTreeReference
+beta;TileTreeSet
+beta;TileTreeSupplier
+beta;TileUsageMarker
+beta;enum TileVisibility
 public;Tool
 public;ToolAdmin
 public;ToolAdmin
@@ -449,7 +450,7 @@ internal;TouchCursor
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
-alpha;TwoWayViewportSync
+beta;TwoWayViewportSync
 internal;UsesDragSelect
 internal;UsesFence
 internal;UsesSelection
@@ -469,13 +470,13 @@ alpha;ViewClipPlanesModifyTool
 alpha;ViewClipSettingsProvider
 alpha;ViewClipShapeModifyTool 
 alpha;ViewClipTool 
-alpha;ViewGlobeBirdTool 
-alpha;ViewGlobeIModelTool 
-alpha;ViewGlobeLocationTool 
-alpha;ViewGlobeSatelliteTool 
+beta;ViewGlobeBirdTool 
+beta;ViewGlobeIModelTool 
+beta;ViewGlobeLocationTool 
+beta;ViewGlobeSatelliteTool 
 internal;ViewHandleArray
 internal;enum ViewHandleType
-internal;ViewingSpace
+beta;ViewingSpace
 internal;class ViewingToolHandle
 public;ViewManager
 public;class ViewManip 

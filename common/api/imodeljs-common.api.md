@@ -322,7 +322,7 @@ export interface BackgroundMapProps {
         mapType?: BackgroundMapType;
     };
     providerName?: string;
-    // @alpha
+    // @beta
     terrainSettings?: TerrainProps;
     transparency?: number | false;
     useDepthBuffer?: boolean;
@@ -343,7 +343,6 @@ export class BackgroundMapSettings {
     readonly groundBias: number;
     readonly mapType: BackgroundMapType;
     readonly providerName: BackgroundMapProviderName;
-    // @alpha
     readonly terrainSettings: TerrainSettings;
     // (undocumented)
     toJSON(): BackgroundMapProps;
@@ -1393,13 +1392,10 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     // @internal (undocumented)
     get environment(): EnvironmentProps;
     set environment(environment: EnvironmentProps);
-    // @alpha (undocumented)
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
     get hiddenLineSettings(): HiddenLine.Settings;
     set hiddenLineSettings(hline: HiddenLine.Settings);
-    // @alpha (undocumented)
     get planProjectionSettings(): Iterable<[Id64String, PlanProjectionSettings]> | undefined;
-    // @alpha (undocumented)
     setPlanProjectionSettings(modelId: Id64String, settings: PlanProjectionSettings | undefined): void;
     get solarShadowsSettings(): SolarShadows.Settings;
     set solarShadowsSettings(solarShadows: SolarShadows.Settings);
@@ -1417,7 +1413,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     environment?: EnvironmentProps;
     // @beta
     hline?: HiddenLine.SettingsProps;
-    // @alpha
+    // @beta
     planProjections?: {
         [modelId: string]: PlanProjectionSettingsProps;
     };
@@ -1442,7 +1438,6 @@ export class DisplayStyleSettings {
     addExcludedElements(id: Id64String): void;
     get backgroundColor(): ColorDef;
     set backgroundColor(color: ColorDef);
-    // @alpha (undocumented)
     get backgroundMap(): BackgroundMapSettings;
     set backgroundMap(map: BackgroundMapSettings);
     dropExcludedElement(id: Id64String): void;
@@ -2167,7 +2162,6 @@ export interface GeometricModelProps extends ModelProps {
 export interface GeometryAppearanceProps {
     color?: ColorDefProps;
     displayPriority?: number;
-    // @alpha
     geometryClass?: GeometryClass;
     style?: Id64String;
     subCategory?: Id64String;
@@ -4123,7 +4117,7 @@ export interface Placement3dProps {
 // @public (undocumented)
 export type PlacementProps = Placement2dProps | Placement3dProps;
 
-// @alpha
+// @beta
 export class PlanProjectionSettings {
     constructor(props: PlanProjectionSettingsProps);
     clone(changedProps?: PlanProjectionSettingsProps): PlanProjectionSettings;
@@ -4137,7 +4131,7 @@ export class PlanProjectionSettings {
     readonly transparency?: number;
 }
 
-// @alpha
+// @beta
 export interface PlanProjectionSettingsProps {
     elevation?: number;
     enforceDisplayPriority?: boolean;
@@ -5533,7 +5527,7 @@ export interface SnapRequestProps {
     closePoint: XYZProps;
     // (undocumented)
     decorationGeometry?: DecorationGeometryProps[];
-    // @alpha (undocumented)
+    // (undocumented)
     geometryClass?: GeometryClass;
     // (undocumented)
     id: Id64String;
@@ -5775,14 +5769,14 @@ export interface SubjectProps extends ElementProps {
     description?: string;
 }
 
-// @alpha
+// @beta
 export enum TerrainHeightOriginMode {
     Geodetic = 0,
     Geoid = 1,
     Ground = 2
 }
 
-// @alpha
+// @beta
 export interface TerrainProps {
     applyLighting?: boolean;
     exaggeration?: number;
@@ -5791,10 +5785,10 @@ export interface TerrainProps {
     providerName?: string;
 }
 
-// @alpha
+// @beta
 export type TerrainProviderName = "CesiumWorldTerrain";
 
-// @alpha
+// @beta
 export class TerrainSettings {
     constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
     readonly applyLighting: boolean;
@@ -6340,123 +6334,112 @@ export interface ViewDetailsProps {
     gridSpaceY?: number;
 }
 
-// @alpha (undocumented)
-export namespace ViewFlag {
-    export class Overrides {
-        constructor(flags?: ViewFlags);
-        // (undocumented)
-        anyOverridden(): boolean;
-        apply(base: ViewFlags): ViewFlags;
-        // (undocumented)
-        clear(): void;
-        // (undocumented)
-        clearClipVolume(): void;
-        // (undocumented)
-        clearPresent(flag: PresenceFlag): void;
-        // @internal
-        get clipVolumeOverride(): boolean | undefined;
-        // (undocumented)
-        clone(out?: Overrides): Overrides;
-        // (undocumented)
-        copyFrom(other: Overrides): void;
-        // (undocumented)
-        isPresent(flag: PresenceFlag): boolean;
-        // (undocumented)
-        overrideAll(flags?: ViewFlags): void;
-        // (undocumented)
-        setApplyLighting(val: boolean): void;
-        // (undocumented)
-        setEdgeMask(val: number): void;
-        // (undocumented)
-        setForceSurfaceDiscard(val: boolean): void;
-        // (undocumented)
-        setIgnoreGeometryMap(val: boolean): void;
-        // (undocumented)
-        setMonochrome(val: boolean): void;
-        // (undocumented)
-        setPresent(flag: PresenceFlag): void;
-        // (undocumented)
-        setRenderMode(val: RenderMode): void;
-        // (undocumented)
-        setShowBackgroundMap(val: boolean): void;
-        // (undocumented)
-        setShowClipVolume(val: boolean): void;
-        // (undocumented)
-        setShowConstructions(val: boolean): void;
-        // (undocumented)
-        setShowDimensions(val: boolean): void;
-        // (undocumented)
-        setShowFill(val: boolean): void;
-        // (undocumented)
-        setShowHiddenEdges(val: boolean): void;
-        // (undocumented)
-        setShowMaterials(val: boolean): void;
-        // (undocumented)
-        setShowPatterns(val: boolean): void;
-        // (undocumented)
-        setShowShadows(val: boolean): void;
-        // (undocumented)
-        setShowStyles(val: boolean): void;
-        // (undocumented)
-        setShowTextures(val: boolean): void;
-        // (undocumented)
-        setShowTransparency(val: boolean): void;
-        // (undocumented)
-        setShowVisibleEdges(val: boolean): void;
-        // (undocumented)
-        setShowWeights(val: boolean): void;
-        // (undocumented)
-        setUseHlineMaterialColors(val: boolean): void;
-        }
+// @public
+export class ViewFlagOverrides {
+    constructor(flags?: ViewFlags);
+    anyOverridden(): boolean;
+    apply(base: ViewFlags): ViewFlags;
+    clear(): void;
     // (undocumented)
-    export const enum PresenceFlag {
-        // (undocumented)
-        BackgroundMap = 21,
-        // (undocumented)
-        ClipVolume = 15,
-        // (undocumented)
-        Constructions = 16,
-        // (undocumented)
-        Dimensions = 2,
-        // (undocumented)
-        EdgeMask = 20,
-        // (undocumented)
-        Fill = 8,
-        // (undocumented)
-        ForceSurfaceDiscard = 22,
-        // (undocumented)
-        GeometryMap = 18,
-        // (undocumented)
-        HiddenEdges = 12,
-        // (undocumented)
-        HlineMaterialColors = 19,
-        // (undocumented)
-        Lighting = 13,
-        // (undocumented)
-        Materials = 10,
-        // (undocumented)
-        Monochrome = 17,
-        // (undocumented)
-        Patterns = 3,
-        // (undocumented)
-        RenderMode = 0,
-        // (undocumented)
-        Shadows = 14,
-        // (undocumented)
-        Styles = 5,
-        // (undocumented)
-        Text = 1,
-        // (undocumented)
-        Textures = 9,
-        // (undocumented)
-        Transparency = 6,
-        // (undocumented)
-        Unused = 7,
-        // (undocumented)
-        VisibleEdges = 11,
-        // (undocumented)
-        Weights = 4
+    clearClipVolume(): void;
+    clearPresent(flag: ViewFlagPresence): void;
+    // @internal
+    get clipVolumeOverride(): boolean | undefined;
+    clone(out?: ViewFlagOverrides): ViewFlagOverrides;
+    copyFrom(other: ViewFlagOverrides): void;
+    isPresent(flag: ViewFlagPresence): boolean;
+    overrideAll(flags?: ViewFlags): void;
+    // (undocumented)
+    setApplyLighting(val: boolean): void;
+    // (undocumented)
+    setEdgeMask(val: number): void;
+    // (undocumented)
+    setForceSurfaceDiscard(val: boolean): void;
+    // (undocumented)
+    setIgnoreGeometryMap(val: boolean): void;
+    // (undocumented)
+    setMonochrome(val: boolean): void;
+    setPresent(flag: ViewFlagPresence): void;
+    // (undocumented)
+    setRenderMode(val: RenderMode): void;
+    // (undocumented)
+    setShowBackgroundMap(val: boolean): void;
+    // (undocumented)
+    setShowClipVolume(val: boolean): void;
+    // (undocumented)
+    setShowConstructions(val: boolean): void;
+    // (undocumented)
+    setShowDimensions(val: boolean): void;
+    // (undocumented)
+    setShowFill(val: boolean): void;
+    // (undocumented)
+    setShowHiddenEdges(val: boolean): void;
+    // (undocumented)
+    setShowMaterials(val: boolean): void;
+    // (undocumented)
+    setShowPatterns(val: boolean): void;
+    // (undocumented)
+    setShowShadows(val: boolean): void;
+    // (undocumented)
+    setShowStyles(val: boolean): void;
+    // (undocumented)
+    setShowTextures(val: boolean): void;
+    // (undocumented)
+    setShowTransparency(val: boolean): void;
+    // (undocumented)
+    setShowVisibleEdges(val: boolean): void;
+    // (undocumented)
+    setShowWeights(val: boolean): void;
+    // (undocumented)
+    setUseHlineMaterialColors(val: boolean): void;
     }
+
+// @public
+export const enum ViewFlagPresence {
+    // (undocumented)
+    BackgroundMap = 20,
+    // (undocumented)
+    ClipVolume = 14,
+    // (undocumented)
+    Constructions = 15,
+    // (undocumented)
+    Dimensions = 1,
+    // (undocumented)
+    EdgeMask = 19,
+    // (undocumented)
+    Fill = 7,
+    // (undocumented)
+    ForceSurfaceDiscard = 21,
+    // (undocumented)
+    GeometryMap = 17,
+    // (undocumented)
+    HiddenEdges = 11,
+    // (undocumented)
+    HlineMaterialColors = 18,
+    // (undocumented)
+    Lighting = 12,
+    // (undocumented)
+    Materials = 9,
+    // (undocumented)
+    Monochrome = 16,
+    // (undocumented)
+    Patterns = 2,
+    // (undocumented)
+    RenderMode = 0,
+    // (undocumented)
+    Shadows = 13,
+    // (undocumented)
+    Styles = 4,
+    // (undocumented)
+    Textures = 8,
+    // (undocumented)
+    Transparency = 5,
+    // (undocumented)
+    Unused = 6,
+    // (undocumented)
+    VisibleEdges = 10,
+    // (undocumented)
+    Weights = 3
 }
 
 // @public

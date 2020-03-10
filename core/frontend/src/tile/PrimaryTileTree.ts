@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
@@ -21,7 +21,7 @@ import {
   compareIModelTileTreeIds,
   iModelTileTreeIdToString,
   PrimaryTileTreeId,
-  ViewFlag,
+  ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import {
@@ -168,7 +168,7 @@ class PrimaryTreeReference extends TileTreeReference {
 class PlanProjectionTreeReference extends PrimaryTreeReference {
   private get _view3d() { return this._view as ViewState3d; }
   private _curTransform?: { transform: Transform, elevation: number };
-  private readonly _viewFlagOverrides = new ViewFlag.Overrides();
+  private readonly _viewFlagOverrides = new ViewFlagOverrides();
 
   public constructor(view: ViewState3d, model: GeometricModelState) {
     super(view, model, true);

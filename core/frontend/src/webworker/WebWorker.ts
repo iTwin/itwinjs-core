@@ -22,18 +22,23 @@ To restore it, uncomment the use of it in in GltfTileIO.ts, and add the lines be
 }
 
 ------------------------------------------- */
-// reply sent through PostMessage
+/** reply sent through PostMessage
+ * @alpha
+ */
 class WorkerReply {
   constructor(public msgId: number, public result: any) { }
 }
 
-// error thrown when we detect or catch an error.
+/** error thrown when we detect or catch an error.
+ * @alpha
+ */
 class WorkerError extends Error {
   constructor(public msgId: number, public originalError: Error) {
     super("Worker Error");
   }
 }
 
+/** @internal */
 class TestWebWorker {
   public static add(a: number, b: number): Promise<number> {
     return Promise.resolve(a + b);

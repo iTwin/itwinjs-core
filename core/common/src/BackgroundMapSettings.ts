@@ -57,8 +57,8 @@ export interface BackgroundMapProps {
   useDepthBuffer?: boolean;
   /** If true, terrain heights will be applied to the map; otherwise the map will be rendered as a plane. */
   applyTerrain?: boolean;
-  /** Properties associated with terrain display
-   * @alpha
+  /** Properties associated with terrain display.
+   * @beta
    */
   terrainSettings?: TerrainProps;
   /** Globe Mode. Default value: GlobeMode.Ellipsoid
@@ -89,7 +89,7 @@ export class BackgroundMapSettings {
   /** If true, terrain heights will be applied to the map; otherwise the map will be rendered as a plane. */
   public readonly applyTerrain: boolean;
   /**  Settings associated with terrain display
-   * @alpha
+   * @beta
    */
   public readonly terrainSettings: TerrainSettings;
   /**  Globe display mode

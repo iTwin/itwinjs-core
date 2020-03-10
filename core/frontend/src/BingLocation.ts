@@ -2,7 +2,10 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tile */
+/** @packageDocumentation
+ * @module Tiles
+ */
+
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { Cartographic } from "@bentley/imodeljs-common";

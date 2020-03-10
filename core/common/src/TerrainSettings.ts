@@ -9,7 +9,7 @@
 import { BackgroundMapProps } from "./BackgroundMapSettings";
 
 /** The current set of supported terrain providers. Currently only CesiumWorldTerrain.
- * @alpha
+ * @beta
  * @see [[TerrainProps]]
  */
 export type TerrainProviderName = "CesiumWorldTerrain";
@@ -17,7 +17,7 @@ export type TerrainProviderName = "CesiumWorldTerrain";
 /**  JSON representation of the settings of the terrain applied to background map display by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
  * @see [[BackgroundMapProps]]
- * @alpha
+ * @beta
  */
 export interface TerrainProps {
   /** Identifies the provider currently only CesiumWorldTerrain is supported. */
@@ -33,7 +33,7 @@ export interface TerrainProps {
 }
 
 /** Correction modes for terrain height
- * @alpha
+ * @beta
  * @see [[TerrainProps]]
  */
 export enum TerrainHeightOriginMode {
@@ -46,7 +46,7 @@ export enum TerrainHeightOriginMode {
 }
 
 /**  Normalized version of [[TerrainProps]] for which provider has been validated and default values of all members are used.
- * @alpha
+ * @beta
  */
 export class TerrainSettings {
   /** Identifies the provider currently only CesiumWorldTerrain supported. */

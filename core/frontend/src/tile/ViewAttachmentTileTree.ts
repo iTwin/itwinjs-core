@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module Tile
+ * @module Tiles
  */
 
 import {
@@ -39,7 +39,7 @@ import {
   RenderMode,
   RenderTexture,
   ViewAttachmentProps,
-  ViewFlag,
+  ViewFlagOverrides,
   ViewFlags,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -433,10 +433,10 @@ class Tile3d extends SheetTile {
 }
 
 abstract class Tree extends TileTree {
-  private readonly _viewFlagOverrides: ViewFlag.Overrides;
+  private readonly _viewFlagOverrides: ViewFlagOverrides;
   public graphicsClip?: RenderClipVolume;
 
-  protected constructor(iModel: IModelConnection, modelId: Id64String, vfOvrs: ViewFlag.Overrides) {
+  protected constructor(iModel: IModelConnection, modelId: Id64String, vfOvrs: ViewFlagOverrides) {
     super({
       id: modelId,
       modelId,
@@ -487,7 +487,7 @@ class Tree2d extends Tree {
   public get maxDepth() { return 1; }
 
   private constructor(iModel: IModelConnection, attachment: Attachment2d, view: ViewState2d, viewRoot: TileTree) {
-    const vfOvrs = new ViewFlag.Overrides(view.viewFlags);
+    const vfOvrs = new ViewFlagOverrides(view.viewFlags);
     vfOvrs.setApplyLighting(false);
 
     super(iModel, attachment.id, vfOvrs);
@@ -611,7 +611,7 @@ class Tree3d extends Tree {
   public get maxDepth() { return 32; }
 
   private constructor(sheetView: SheetViewState, attachment: Attachment3d, sceneContext: SceneContext, viewport: AttachmentViewport, view: ViewState3d) {
-    const vfOvrs = new ViewFlag.Overrides(ViewFlags.fromJSON({
+    const vfOvrs = new ViewFlagOverrides(ViewFlags.fromJSON({
       renderMode: RenderMode.SmoothShade,
       noCameraLights: true,
       noSourceLights: true,
