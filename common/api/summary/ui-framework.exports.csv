@@ -169,6 +169,7 @@ beta;ExpandableSection
 beta;ExpandableSectionProps 
 beta;ExtensibleToolbarProps
 public;FooterModeField 
+public;FooterModeFieldProps 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps

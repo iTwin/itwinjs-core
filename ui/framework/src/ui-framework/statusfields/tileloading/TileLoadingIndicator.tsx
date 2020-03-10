@@ -11,11 +11,11 @@ import classnames from "classnames";
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
+import { LoadingBar } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";
 
 import "./TileLoadingIndicator.scss";
-import { LoadingBar } from "@bentley/ui-core";
 
 let onViewOpen: (vp: ScreenViewport) => void;
 let onRenderUpdate: () => void;

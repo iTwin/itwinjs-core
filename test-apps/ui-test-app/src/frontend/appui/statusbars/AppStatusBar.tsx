@@ -25,7 +25,7 @@ const ToolAssistance = withStatusFieldProps(ToolAssistanceField);
 // tslint:disable-next-line: variable-name
 const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
 // tslint:disable-next-line: variable-name
-const SnapMode = withMessageCenterFieldProps(SnapModeField);
+const SnapMode = withStatusFieldProps(SnapModeField);
 // tslint:disable-next-line: variable-name
 const DisplayStyle = withStatusFieldProps(DisplayStyleField);
 // tslint:disable-next-line: variable-name
@@ -57,7 +57,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
       const isHiddenCondition = new ConditionalBooleanValue(() => SampleAppIModelApp.getTestProperty() === "HIDE", [SampleAppUiActionId.setTestProperty]);
 
       this._statusBarItems = [
-        StatusBarItemUtilities.createStatusBarItem("ToolAssistance", StatusBarSection.Left, 10, <ToolAssistance />),
+        StatusBarItemUtilities.createStatusBarItem("ToolAssistance", StatusBarSection.Left, 10, <ToolAssistance style={{ minWidth: "21em" }} />),
         StatusBarItemUtilities.createStatusBarItem("ToolAssistanceSeparator", StatusBarSection.Left, 15, (<FooterMode> <FooterSeparator /> </FooterMode>)),
         StatusBarItemUtilities.createStatusBarItem("MessageCenter", StatusBarSection.Left, 20, <MessageCenter />),
         StatusBarItemUtilities.createStatusBarItem("MessageCenterSeparator", StatusBarSection.Left, 25, (<FooterMode> <FooterSeparator /> </FooterMode>)),

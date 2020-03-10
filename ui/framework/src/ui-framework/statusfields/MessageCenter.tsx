@@ -9,14 +9,14 @@
 import * as React from "react";
 
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import {
+  MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog, FooterPopup,
+} from "@bentley/ui-ninezone";
 
 import { UiFramework } from "../UiFramework";
 
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { MessageManager } from "../messages/MessageManager";
-import {
-  MessageCenter, MessageCenterTab, MessageCenterMessage, MessageCenterDialog, FooterPopup,
-} from "@bentley/ui-ninezone";
 import { StatusFieldProps } from "./StatusFieldProps";
 import { MessageSpan } from "../messages/MessageSpan";
 
@@ -37,7 +37,7 @@ interface MessageCenterState {
   messageCount: number;
 }
 
-/** Properties of [[MessageCenterField]] component.
+/** Properties for withMessageCenterFieldProps HOC.
  * @public
  */
 export interface MessageCenterFieldProps extends StatusFieldProps {

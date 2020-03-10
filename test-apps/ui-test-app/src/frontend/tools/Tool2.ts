@@ -15,7 +15,7 @@ import placeholderSvg from "@bentley/icons-generic/icons/placeholder.svg";
 
 export class Tool2 extends PrimitiveTool {
   public static toolId = "Tool2";
-  public static iconSpec = "icon-placeholder";
+  public static iconSpec = IconSpecUtilities.createSvgIconSpec(placeholderSvg);
   public readonly points: Point3d[] = [];
 
   public requireWriteableTarget(): boolean { return false; }
