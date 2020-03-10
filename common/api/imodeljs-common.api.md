@@ -1202,6 +1202,7 @@ export class ColorDef {
     toHSL(opt?: HSLColor): HSLColor;
     toHSV(out?: HSVColor): HSVColor;
     toJSON(): ColorDefProps;
+    toRgbaString(): string;
     toRgbString(): string;
     static readonly white: ColorDef;
 }

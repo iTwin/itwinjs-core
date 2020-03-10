@@ -267,7 +267,7 @@ export class ColorDef {
    *
    * If a string, must be in one of the following forms:
    * *"rgb(255,0,0)"*
-   * *"rgba(255,0,0,255)"*
+   * *"rgba(255,0,0,.2)"*
    * *"rgb(100%,0%,0%)"*
    * *"hsl(120,50%,50%)"*
    * *"#rrbbgg"*
@@ -347,8 +347,14 @@ export class ColorDef {
   /** Convert this ColorDef to a string in the form "#rrggbb" where values are hex digits of the respective colors */
   public toHexString(): string { return "#" + ("000000" + this.getRgb().toString(16)).slice(-6); }
 
+  private getColorsString() { const c = this.colors; return c.r + "," + c.g + "," + c.b; }
+
   /** Convert this ColorDef to a string in the form "rgb(r,g,b)" where values are decimal digits of the respective colors */
-  public toRgbString(): string { const c = this.colors; return "rgb(" + (c.r | 0) + "," + (c.g | 0) + "," + (c.b | 0) + ")"; }
+  public toRgbString(): string { return "rgb(" + this.getColorsString() + ")"; }
+
+  /** Convert this ColorDef to a string in the form "rgba(r,g,b,a)" where color values are decimal digits and a is a fraction */
+  public toRgbaString(): string { return "rgba(" + this.getColorsString() + "," + this.getAlpha() / 255. + ")"; }
+
   private fromString(val: string): ColorDef {
     if (typeof val !== "string")
       return this;

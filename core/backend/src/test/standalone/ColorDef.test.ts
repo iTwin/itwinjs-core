@@ -55,7 +55,8 @@ describe("ColorDef", () => {
     assert.isTrue(yellow.equals(yellow4));
     yellow4 = new ColorDef("Yellow"); // wrong case, should still work
     assert.isTrue(yellow.equals(yellow4));
-    let yellow5 = new ColorDef("rgba(255,255,0,.2)");
+    let yellow5 = new ColorDef("rgba(255,255,0,0.2)");
+    assert.equal(yellow5.toRgbaString(), "rgba(255,255,0,0.2)");
     assert.isTrue(yellow.getRgb() === yellow5.getRgb());
     assert.equal(51, yellow5.getAlpha(), "Alpha from rgba");
     assert.equal(204, yellow5.getTransparency(), "transparency from rgba");
@@ -71,7 +72,9 @@ describe("ColorDef", () => {
     assert.equal(25, t1.t);
 
     const str = yellow.toHexString();
+    assert.equal(str, "#ffff00");
     const str2 = yellow.toRgbString();
+    assert.equal(str2, "rgb(255,255,0)");
     yellow4 = new ColorDef(str);
     assert.isTrue(yellow.equals(yellow4));
     yellow4 = new ColorDef(str2);
