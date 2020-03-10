@@ -952,7 +952,7 @@ export class AccuSnap implements Decorator {
     }
 
     const hit = IModelApp.tentativePoint.getCurrSnap();
-    if (hit)
+    if (hit && !hit.isModelHit) // Don't hilite reality models.
       hit.draw(context);
   }
 
