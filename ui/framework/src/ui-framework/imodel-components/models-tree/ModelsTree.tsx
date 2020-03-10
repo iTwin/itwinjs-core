@@ -11,11 +11,11 @@ import { Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { useDisposable } from "@bentley/ui-core";
 import { IModelConnection, Viewport, PerModelCategoryVisibility } from "@bentley/imodeljs-frontend";
 import { NodeKey, Ruleset, InstanceKey, KeySet, DescriptorOverrides, ContentFlags } from "@bentley/presentation-common";
-import { ContentDataProvider, usePresentationTreeNodeLoader, IPresentationTreeDataProvider } from "@bentley/presentation-components";
-import { TreeNodeItem, ControlledTree, useVisibleTreeNodes, SelectionMode } from "@bentley/ui-components";
+import { ContentDataProvider, usePresentationTreeNodeLoader, IPresentationTreeDataProvider, useControlledTreeFiltering } from "@bentley/presentation-components";
+import { TreeNodeItem, ControlledTree, useVisibleTreeNodes, SelectionMode, AbstractTreeNodeLoaderWithProvider } from "@bentley/ui-components";
 import { UiFramework } from "../../../ui-framework/UiFramework";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
-import { IVisibilityHandler, VisibilityStatus, VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
+import { IVisibilityHandler, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
 import { useVisibilityTreeRenderer } from "../VisibilityTreeRenderer";
 
 import "./ModelsTree.scss";
@@ -27,6 +27,8 @@ const PAGING_SIZE = 20;
  * @internal
  */
 export const RULESET_MODELS: Ruleset = require("./Hierarchy.json"); // tslint:disable-line: no-var-requires
+
+const RULESET_MODELS_SEARCH: Ruleset = require("./ModelsTreeSearch.json"); // tslint:disable-line: no-var-requires
 
 /**
  * Visibility tree node types.
@@ -68,21 +70,32 @@ export interface ModelsTreeProps {
    */
   enablePreloading?: boolean;
   /**
+   * Active view used to determine and control visibility
+   */
+  activeView?: Viewport;
+  /**
+   * Ref to the root HTML element used by this component
+   */
+  rootElementRef?: React.Ref<HTMLDivElement>;
+  /**
+   * Information for tree filtering.
+   * @alpha
+   */
+  filterInfo?: VisibilityTreeFilterInfo;
+  /**
+   * Callback invoked when tree is filtered.
+   */
+  onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
+  /**
    * Custom data provider to use for testing
    * @internal
    */
   dataProvider?: IPresentationTreeDataProvider;
-  /** Active view used to determine and control visibility */
-  activeView?: Viewport;
   /**
    * Custom visibility handler to use for testing
    * @internal
    */
   modelsVisibilityHandler?: VisibilityHandler;
-  /**
-   * Ref to the root HTML element used by this component
-   */
-  rootElementRef?: React.Ref<HTMLDivElement>;
 }
 
 /**
@@ -99,6 +112,15 @@ export function ModelsTree(props: ModelsTreeProps) {
     pageSize: PAGING_SIZE,
     preloadingEnabled: props.enablePreloading,
   });
+  const searchNodeLoader = usePresentationTreeNodeLoader({
+    imodel: props.iModel,
+    dataProvider: props.dataProvider,
+    ruleset: RULESET_MODELS_SEARCH,
+    pageSize: PAGING_SIZE,
+  });
+
+  const nodeLoaderInUse = props.filterInfo?.filter ? searchNodeLoader : nodeLoader;
+  const { filteredNodeLoader, isFiltering, nodeHighlightingProps } = useFiltering(nodeLoaderInUse, props.filterInfo, props.onFilterApplied);
 
   const { activeView, modelsVisibilityHandler, selectionPredicate } = props;
   const nodeSelectionPredicate = React.useCallback((key: NodeKey, node: TreeNodeItem) => {
@@ -107,24 +129,28 @@ export function ModelsTree(props: ModelsTreeProps) {
 
   const visibilityHandler = useVisibilityHandler(activeView, modelsVisibilityHandler);
   const eventHandler = useDisposable(React.useCallback(() => new VisibilityTreeEventHandler({
-    nodeLoader,
+    nodeLoader: filteredNodeLoader,
     visibilityHandler,
     collapsedChildrenDisposalEnabled: true,
     selectionPredicate: nodeSelectionPredicate,
-  }), [nodeLoader, visibilityHandler, nodeSelectionPredicate]));
+  }), [filteredNodeLoader, visibilityHandler, nodeSelectionPredicate]));
 
-  const visibleNodes = useVisibleTreeNodes(nodeLoader.modelSource);
+  const visibleNodes = useVisibleTreeNodes(filteredNodeLoader.modelSource);
   const treeRenderer = useVisibilityTreeRenderer(true, false);
+
+  const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
 
   return (
     <div className="ui-fw-models-tree" ref={props.rootElementRef}>
       <ControlledTree
-        nodeLoader={nodeLoader}
+        nodeLoader={filteredNodeLoader}
         visibleNodes={visibleNodes}
         selectionMode={props.selectionMode || SelectionMode.None}
         treeEvents={eventHandler}
         treeRenderer={treeRenderer}
+        nodeHighlightingProps={nodeHighlightingProps}
       />
+      {overlay}
     </div>
   );
 }
@@ -151,15 +177,32 @@ const useVisibilityHandler = (activeView?: Viewport, visibilityHandler?: Visibil
   }, [activeView, visibilityHandler]);
 };
 
-const createVisibilityHandler = (activeView?: Viewport): IVisibilityHandler | undefined => {
-  // istanbul ignore else
-  if (!activeView)
-    return undefined;
+const useFiltering = (
+  nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>,
+  filterInfo?: VisibilityTreeFilterInfo,
+  onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void,
+) => {
+  const { filter, activeMatchIndex } = filterInfo ?? { filter: undefined, activeMatchIndex: undefined };
+  const {
+    filteredNodeLoader,
+    isFiltering,
+    matchesCount,
+    nodeHighlightingProps,
+  } = useControlledTreeFiltering({ nodeLoader, filter, activeMatchIndex });
 
-  // istanbul ignore next
-  return new VisibilityHandler({
-    viewport: activeView,
-  });
+  React.useEffect(
+    () => {
+      if (filter && matchesCount !== undefined && filteredNodeLoader !== nodeLoader)
+        onFilterApplied && onFilterApplied(filteredNodeLoader.dataProvider, matchesCount);
+    },
+    [filter, matchesCount, nodeLoader, filteredNodeLoader, onFilterApplied],
+  );
+
+  return { filteredNodeLoader, isFiltering, nodeHighlightingProps };
+};
+
+const createVisibilityHandler = (activeView?: Viewport): IVisibilityHandler | undefined => {
+  return activeView ? new VisibilityHandler({ viewport: activeView }) : undefined;
 };
 
 const getNodeType = (item: TreeNodeItem) => {

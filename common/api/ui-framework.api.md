@@ -3241,9 +3241,12 @@ export interface ModelsTreeProps {
     // @internal
     dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
+    // @alpha
+    filterInfo?: VisibilityTreeFilterInfo;
     iModel: IModelConnection;
     // @internal
     modelsVisibilityHandler?: VisibilityHandler;
+    onFilterApplied?: (filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void;
     rootElementRef?: React.Ref<HTMLDivElement>;
     selectionMode?: SelectionMode;
     // @alpha
@@ -5321,6 +5324,14 @@ export interface VisibilityTreeEventHandlerParams extends UnifiedSelectionTreeEv
     selectionPredicate?: VisibilityTreeSelectionPredicate;
     // (undocumented)
     visibilityHandler: IVisibilityHandler | undefined;
+}
+
+// @alpha
+export interface VisibilityTreeFilterInfo {
+    // (undocumented)
+    activeMatchIndex?: number;
+    // (undocumented)
+    filter: string;
 }
 
 // @alpha
