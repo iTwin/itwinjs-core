@@ -4021,8 +4021,11 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
 export class UlasUtilities {
     // (undocumented)
     static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
-    static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, additionalData?: AdditionalFeatureData): BentleyStatus;
-    // (undocumented)
+    // @deprecated (undocumented)
+    static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): BentleyStatus;
+    static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): void;
+    static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): void;
+    // @deprecated (undocumented)
     static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus;
 }
 
