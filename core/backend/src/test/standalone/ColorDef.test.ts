@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
 
-// cspell:ignore cadetblue
+// cspell:ignore cadetblue hsla
 
 describe("ColorDef", () => {
   it("should compare ColorDef RGB values", () => {
@@ -94,5 +94,23 @@ describe("ColorDef", () => {
 
     color1.tbgr = 1.1;
     assert.equal(color1.tbgr, 1); // should get rounded down
+
+    let t2 = new ColorDef("hsla(180, 50%, 50%, .2)").colors;
+    assert.equal(64, t2.r);
+    assert.equal(191, t2.g);
+    assert.equal(191, t2.b);
+    assert.equal(204, t2.t);
+
+    t2 = new ColorDef("hsl(180, 50%, 50%)").colors;
+    assert.equal(64, t2.r);
+    assert.equal(191, t2.g);
+    assert.equal(191, t2.b);
+    assert.equal(0, t2.t);
+
+    t2 = new ColorDef("hsl(0, 0%, 97%)").colors; // s===0 is a special case
+    assert.equal(247, t2.r);
+    assert.equal(247, t2.g);
+    assert.equal(247, t2.b);
+    assert.equal(0, t2.t);
   });
 });

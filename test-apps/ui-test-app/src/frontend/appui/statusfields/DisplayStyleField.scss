@@ -11,6 +11,10 @@
   overflow: hidden;
   padding-right: 0px;
 
+  .uifw-statusFields-displayStyle-selector {
+    max-width: 20em;
+  }
+
   @include for-tablet-portrait-down {
     font-size: $font-size-medium;
 

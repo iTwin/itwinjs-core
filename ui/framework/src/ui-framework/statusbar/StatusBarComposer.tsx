@@ -74,7 +74,17 @@ function combineItems(stageItems: ReadonlyArray<CommonStatusBarItem>, addonItems
  * @beta
  */
 export interface StatusBarComposerProps {
+  /** Status Bar items */
   items: CommonStatusBarItem[];
+
+  /** CSS class name override for the overall Status Bar */
+  mainClassName?: string;
+  /** CSS class name override for the left section */
+  leftClassName?: string;
+  /** CSS class name override for the center section */
+  centerClassName?: string;
+  /** CSS class name override for the right section */
+  rightClassName?: string;
 }
 
 /** Component to load components into the [[StatusBar]].
@@ -135,15 +145,15 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
   const contextItems = getSectionItems(StatusBarSection.Context);
 
   return (
-    <StatusBarSpaceBetween>
-      <StatusBarLeftSection>
+    <StatusBarSpaceBetween className={props.mainClassName}>
+      <StatusBarLeftSection className={props.leftClassName}>
         {leftItems}
       </StatusBarLeftSection>
-      <StatusBarCenterSection>
+      <StatusBarCenterSection className={props.centerClassName}>
         {centerItems}
         {contextItems}
       </StatusBarCenterSection>
-      <StatusBarRightSection>
+      <StatusBarRightSection className={props.rightClassName}>
         {rightItems}
       </StatusBarRightSection>
     </StatusBarSpaceBetween>

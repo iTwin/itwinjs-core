@@ -154,6 +154,7 @@ export class ShaderProgram implements WebGLDisposable {
 
   public get glProgram(): WebGLProgram | undefined { return this._glProgram; }
   public get isUncompiled() { return CompileStatus.Uncompiled === this._status; }
+  public get isCompiled() { return CompileStatus.Success === this._status; }
 
   private compileShader(type: GL.ShaderType): WebGLShader | undefined {
     const gl = System.instance.context;
@@ -203,14 +204,14 @@ export class ShaderProgram implements WebGLDisposable {
 
     return true;
   }
-  public compile(): boolean {
+  public compile(): CompileStatus {
     switch (this._status) {
-      case CompileStatus.Failure: return false;
-      case CompileStatus.Success: return true;
+      case CompileStatus.Failure: return CompileStatus.Failure;
+      case CompileStatus.Success: return CompileStatus.Success;
       default: {
         if (this.isDisposed) {
           this._status = CompileStatus.Failure;
-          return false;
+          return CompileStatus.Failure;
         }
         break;
       }
@@ -227,11 +228,11 @@ export class ShaderProgram implements WebGLDisposable {
     if (true !== System.instance.options.preserveShaderSourceCode)
       this.vertSource = this.fragSource = "";
 
-    return CompileStatus.Success === this._status;
+    return this._status;
   }
 
   public use(params: ShaderProgramParams): boolean {
-    if (!this.compile()) {
+    if (this.compile() !== CompileStatus.Success) {
       return false;
     }
 

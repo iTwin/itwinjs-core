@@ -995,14 +995,27 @@ export abstract class Viewport implements IDisposable {
    * @return true if the grid display is on.
    */
   public get isGridOn(): boolean { return this.viewFlags.grid; }
-  /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered. */
+  /** The [ViewFlags]($common) that determine how the contents of this Viewport are rendered.
+   * @note Do **not** modify the ViewFlags directly. Instead do something like:
+   * ```ts
+   *   const vf = viewport.viewFlags.clone();
+   *   vf.backgroundMap = true; // Or any other modifications
+   *   viewport.viewFlags = vf;
+   * ```
+   */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }
   public set viewFlags(viewFlags: ViewFlags) {
-    if (!this.viewFlags.equals(viewFlags)) {
-      this._changeFlags.setDisplayStyle();
+    if (this.viewFlags.equals(viewFlags))
+      return;
+
+    // Toggling the map requires z-plane adjustment.
+    if (viewFlags.backgroundMap !== this.viewFlags.backgroundMap)
+      this.invalidateController();
+    else
       this.invalidateRenderPlan();
-      this.view.displayStyle.viewFlags = viewFlags;
-    }
+
+    this._changeFlags.setDisplayStyle();
+    this.view.displayStyle.viewFlags = viewFlags;
   }
 
   /** The display style controller how the contents of this viewport are rendered.

@@ -54,22 +54,31 @@ export interface FrontstageProps extends CommonProps {
   /** Usage type for this Frontstage. */
   usage?: string;
 
-  /** The Zone in the top-left corner. */
+  /** The Zone in the top-left corner. @deprecated Use 'contentManipulationTools' property. */
   topLeft?: React.ReactElement<ZoneProps>;
-  /** The Zone along the top-center edge. */
+  /** The Zone along the top-center edge. @deprecated Use 'toolSettings' property. */
   topCenter?: React.ReactElement<ZoneProps>;
-  /** The Zone in the top-right corner. */
+  /** The Zone in the top-right corner. @deprecated Use 'viewNavigationTools' property. */
   topRight?: React.ReactElement<ZoneProps>;
-  /** The Zone along the center-left edge. */
+  /** The Zone along the center-left edge. @deprecated Place widgets in appropriate stage panel zone. */
   centerLeft?: React.ReactElement<ZoneProps>;
-  /** The Zone along the center-right edge. */
+  /** The Zone along the center-right edge.  @deprecated  Place widgets in appropriate stage panel zone. */
   centerRight?: React.ReactElement<ZoneProps>;
-  /** The Zone in the bottom-left corner. */
+  /** The Zone in the bottom-left corner.  @deprecated Place widgets in appropriate stage panel zone.  */
   bottomLeft?: React.ReactElement<ZoneProps>;
-  /** The Zone along the bottom-center edge. */
+  /** The Zone along the bottom-center edge. @deprecated use statusBar property */
   bottomCenter?: React.ReactElement<ZoneProps>;
-  /** The Zone in the bottom-right corner. */
+  /** The Zone in the bottom-right corner.  @deprecated Place widgets in appropriate stage panel zone. */
   bottomRight?: React.ReactElement<ZoneProps>;
+
+  /** The Zone in the top-left corner that shows tools typically used to query and modify content. To be used in place of deprecated topLeft zone definition.  @alpha */
+  contentManipulationTools?: React.ReactElement<ZoneProps>;
+  /** The Zone the that shows settings for the active tool. To be used in place of deprecated topCenter zone definition. @alpha */
+  toolSettings?: React.ReactElement<ZoneProps>;
+  /** The Zone in the top-right corner that shows view navigation tools. To be used in place of deprecated topRight zone definition.  @alpha */
+  viewNavigationTools?: React.ReactElement<ZoneProps>;
+  /** The status bar Zone shown as the application footer. To be used in place of deprecated bottomCenter zone definition.  @alpha */
+  statusBar?: React.ReactElement<ZoneProps>;
 
   /** The StagePanel on the top of the 9-zone area. @alpha */
   topPanel?: React.ReactElement<StagePanelProps>;
@@ -194,11 +203,11 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   private static getZoneElement(zoneId: WidgetZoneId, props: FrontstageProps): React.ReactElement<ZoneProps> | undefined {
     switch (zoneId) {
       case ZoneLocation.TopLeft:
-        return props.topLeft;
+        return props.contentManipulationTools ? props.contentManipulationTools : props.topLeft;
       case ZoneLocation.TopCenter:
-        return props.topCenter;
+        return props.toolSettings ? props.toolSettings : props.topCenter;
       case ZoneLocation.TopRight:
-        return props.topRight;
+        return props.viewNavigationTools ? props.viewNavigationTools : props.topRight;
       case ZoneLocation.CenterLeft:
         return props.centerLeft;
       case ZoneLocation.CenterRight:
@@ -206,7 +215,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       case ZoneLocation.BottomLeft:
         return props.bottomLeft;
       case ZoneLocation.BottomCenter:
-        return props.bottomCenter;
+        return props.statusBar ? props.statusBar : props.bottomCenter;
       case ZoneLocation.BottomRight:
         return props.bottomRight;
     }

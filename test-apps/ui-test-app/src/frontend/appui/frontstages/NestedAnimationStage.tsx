@@ -36,7 +36,7 @@ export class NestedAnimationStage extends FrontstageProvider {
         contentGroup={myContentGroup}
         isInFooterMode={false}
         applicationData={{ key: "value" }}
-        topLeft={
+        contentManipulationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={<FrontstageToolWidget />} />,

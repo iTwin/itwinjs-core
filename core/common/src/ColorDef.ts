@@ -8,6 +8,8 @@
 
 import { Geometry } from "@bentley/geometry-core";
 
+// portions adapted from Three.js Copyright © 2010-2017 three.js authors
+
 // spell-checker: disable
 /** A set of known colors by name, as a 32-bit integer in the form 0xBBGGRR (red is the low byte).
  * This is different than color values in #RRGGBB format for HTML pages (red and blue are swapped).
@@ -370,7 +372,7 @@ export class ColorDef {
       const hasPercent = (str: string) => str[str.length - 1] === "%";
       const floatOrPercent = (str: string) => {
         const v = parseFloat(str);
-        return Geometry.clamp(hasPercent(str) ? v / 100. : v, 0, 1);
+        return 255 * Geometry.clamp(hasPercent(str) ? v / 100. : v, 0, 1);
       };
       const intOrPercent = (str: string) => {
         const v = hasPercent(str) ? (parseFloat(str) / 100.) * 255 : parseInt(str, 10);
@@ -386,7 +388,7 @@ export class ColorDef {
               intOrPercent(color[1]),
               intOrPercent(color[2]),
               intOrPercent(color[3]),
-              typeof color[5] === "string" ? 255 - (255 * floatOrPercent(color[5])) : 0, this);
+              typeof color[5] === "string" ? 255 - floatOrPercent(color[5]) : 0, this);
           }
 
           break;
@@ -394,11 +396,14 @@ export class ColorDef {
         case "hsl":
         case "hsla":
           color = /^([0-9]*\.?[0-9]+)\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(,\s*([0-9]*\.?[0-9]+)\s*)?$/.exec(components);
-          if (color) {        // hsl(120,50%,50%) hsla(120,50%,50%,0.5)
+          if (color) { // hsl(120,50%,50%) hsla(120,50%,50%,0.5)
             const h = parseFloat(color[1]) / 360;
             const s = parseInt(color[2], 10) / 100;
             const l = parseInt(color[3], 10) / 100;
-            return ColorDef.fromHSL(h, s, l, this);
+            const c = ColorDef.fromHSL(h, s, l, this);
+            if (typeof color[5] === "string")
+              c.setAlpha(floatOrPercent(color[5]));
+            return c;
           }
           break;
       }
@@ -468,8 +473,10 @@ export class ColorDef {
     s = Geometry.clamp(s, 0, 1);
     l = Geometry.clamp(l, 0, 1);
 
-    if (s === 0)
+    if (s === 0) {
+      l *= 255;
       return ColorDef.from(l, l, l, 0, out);
+    }
 
     const p = l <= 0.5 ? l * (1 + s) : l + s - (l * s);
     const q = (2 * l) - p;

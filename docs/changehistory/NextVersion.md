@@ -49,6 +49,14 @@ The following are view tools that allow a user to navigate a plane or three-dime
 ![Clipped geometry drawn in yellow](assets/section-color.png)
 <p align="center">Clipped geometry drawn in yellow - arrow indicates direction of clip plane</p>
 
+## Incremental Precompilation of Shaders
+
+Previously, shader programs used by the [RenderSystem]($frontend) were never compiled until the first time they were used. This could produce very noticeable delays when the user interacts with a [Viewport]($frontend). The [RenderSystem]($frontend) can now precompile shader programs before any [Viewport]($frontend) is opened.
+
+* To enable this functionality, set the `doIdleWork` property of the `RenderSystem.Options` object passed to `IModelApp.startup` to true.
+* Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and  a view through the user interface.
+* Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [ViewManager]($frontend)).
+
 ## Opening iModels
 
 * Can open iModels at the backend with a new [SyncMode.pullOnly]($backend).

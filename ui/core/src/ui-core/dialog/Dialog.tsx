@@ -397,7 +397,6 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
   public componentDidMount(): void {
     window.addEventListener("pointerup", this._handlePointerUp, true);
-    window.addEventListener("pointermove", this._handlePointerMove, true);
 
     document.addEventListener("keyup", this._handleKeyUp, true);
   }
@@ -425,16 +424,19 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   private _handleStartResizeRight = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ rightResizing: true });
+    window.addEventListener("pointermove", this._handlePointerMove, true);
   }
 
   private _handleStartResizeDown = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ downResizing: true });
+    window.addEventListener("pointermove", this._handlePointerMove, true);
   }
 
   private _handleStartResizeDownRight = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ downResizing: true, rightResizing: true });
+    window.addEventListener("pointermove", this._handlePointerMove, true);
   }
 
   private _handleStartMove = (event: React.PointerEvent): void => {
@@ -453,6 +455,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         moving: true,
       });
     }
+
+    window.addEventListener("pointermove", this._handlePointerMove, true);
   }
 
   private _handlePointerMove = (event: PointerEvent): void => {
@@ -484,14 +488,15 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         if (maxHeight !== undefined)
           height = Math.min(height, maxHeight);
       }
+
+      this.setState({ width, height });
     }
 
     if (movable && this.state.moving) {
       x = event.clientX - this.state.grabOffsetX;
       y = event.clientY - this.state.grabOffsetY;
+      this.setState({ x, y, positionSet: true });
     }
-
-    this.setState({ x, y, width, height, positionSet: true });
   }
 
   private _handlePointerUp = (_event: PointerEvent): void => {
@@ -505,6 +510,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       grabOffsetX: 0,
       grabOffsetY: 0,
     });
+
+    window.removeEventListener("pointermove", this._handlePointerMove, true);
   }
 }
 

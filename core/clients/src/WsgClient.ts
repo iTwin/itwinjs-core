@@ -81,7 +81,8 @@ export class WsgError extends ResponseError {
       return super.shouldRetry(error, response);
     }
 
-    const errorCodesToRetry: number[] = [WSStatus.LoginFailed,
+    const errorCodesToRetry: number[] = [
+      WSStatus.LoginFailed,
       WSStatus.SslRequired,
       WSStatus.NotEnoughRights,
       WSStatus.RepositoryNotFound,
@@ -96,7 +97,8 @@ export class WsgError extends ResponseError {
       WSStatus.TooManyBadLoginAttempts,
       HttpStatus.ServerError,
       HttpStatus.ClientError,
-      WSStatus.Unknown];
+      WSStatus.Unknown,
+    ];
     const errorStatus = WsgError.getErrorStatus(parsedError.name !== undefined ?
       WsgError.getWSStatusId(parsedError.name) : WSStatus.Unknown, response.statusType);
     return errorCodesToRetry.includes(errorStatus);
@@ -248,13 +250,13 @@ export abstract class WsgClient extends Client {
     }
 
     return super.getUrl(requestContext)
-    .then(async (url: string): Promise<string> => {
-      this._url = url;
-      if (!excludeApiVersion) {
-        this._url += "/" + this.apiVersion;
-      }
-      return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
-    });
+      .then(async (url: string): Promise<string> => {
+        this._url = url;
+        if (!excludeApiVersion) {
+          this._url += "/" + this.apiVersion;
+        }
+        return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
+      });
   }
 
   /**

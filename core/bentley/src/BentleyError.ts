@@ -328,6 +328,21 @@ export enum AuthStatus {
   Error = AUTHSTATUS_BASE,
 }
 
+/** iModel.js Extensions
+ * @beta
+ */
+export enum ExtensionStatus {
+  Success = 0,
+  EXTENSIONSTATUS_BASE = 0x23000,
+  UnknownError = EXTENSIONSTATUS_BASE + 1,
+  BadRequest = EXTENSIONSTATUS_BASE + 2,
+  FileNotFound = EXTENSIONSTATUS_BASE + 3,
+  BadExtension = EXTENSIONSTATUS_BASE + 4,
+  ExtensionAlreadyExists = EXTENSIONSTATUS_BASE + 5,
+  UploadError = EXTENSIONSTATUS_BASE + 6,
+  DownloadError = EXTENSIONSTATUS_BASE + 7,
+}
+
 /** When you want to associate an explanatory message with an error status value.
  * @beta Internal?
  */
@@ -669,6 +684,14 @@ export class BentleyError extends Error {
 
       // errors returned from authorization
       case AuthStatus.Error: return "Authorization error";
+
+      // errors returned by iModel.js Extension client
+      case ExtensionStatus.UnknownError: return "Unknown error from backend";
+      case ExtensionStatus.BadExtension: return "Bad file extension";
+      case ExtensionStatus.BadRequest: return "Bad request";
+      case ExtensionStatus.ExtensionAlreadyExists: return "Extension with the given name and version already exists";
+      case ExtensionStatus.FileNotFound: return "Extension file not found";
+      case ExtensionStatus.UploadError: return "Failed to upload file";
 
       // Unexpected cases
       case IModelStatus.Success:

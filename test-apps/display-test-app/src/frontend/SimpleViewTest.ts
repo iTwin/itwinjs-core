@@ -150,6 +150,7 @@ async function main() {
     filterMapTextures: true === configuration.filterMapTextures,
     filterMapDrapeTextures: false !== configuration.filterMapDrapeTextures,
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
+    doIdleWork: false !== configuration.doIdleWork,
     useWebGL2: true === configuration.useWebGL2,
     planProjections: true,
   };

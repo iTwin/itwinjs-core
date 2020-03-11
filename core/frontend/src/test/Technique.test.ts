@@ -21,6 +21,7 @@ import {
   VariableType,
   VertexShaderComponent,
   ViewportQuadGeometry,
+  CompileStatus,
 } from "../webgl";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
@@ -133,7 +134,7 @@ describe("Techniques", () => {
 
     const tech = System.instance.techniques.getTechnique(TechniqueId.Surface);
     const prog = tech.getShader(flags);
-    expect(prog.compile()).to.be.true;
+    expect(prog.compile() === CompileStatus.Success).to.be.true;
   });
 
   it("should produce exception on syntax error", () => {
@@ -144,7 +145,7 @@ describe("Techniques", () => {
     let compiled = false;
     let ex: Error | undefined;
     try {
-      compiled = prog.compile();
+      compiled = prog.compile() === CompileStatus.Success;
     } catch (err) {
       ex = err;
     }
@@ -171,7 +172,7 @@ describe("Techniques", () => {
     let compiled = false;
     let ex: Error | undefined;
     try {
-      compiled = program.compile();
+      compiled = program.compile() === CompileStatus.Success;
     } catch (err) {
       ex = err;
     }

@@ -86,8 +86,19 @@ export class ViewManager {
   private _selectedView?: ScreenViewport;
   private _invalidateScenes = false;
   private _skipSceneCreation = false;
+  private _doIdleWork = false;
   /** @internal */
   public readonly toolTipProviders: ToolTipProvider[] = [];
+
+  private _beginIdleWork() {
+    const idleWork = () => {
+      if (this._viewports.length > 0)
+        return;
+      if (IModelApp.renderSystem.doIdleWork())
+        setTimeout(idleWork, 1);
+    };
+    setTimeout(idleWork, 1);
+  }
 
   /** @internal */
   public onInitialized() {
@@ -96,6 +107,11 @@ export class ViewManager {
     this.addDecorator(IModelApp.accuDraw);
     this.addDecorator(IModelApp.toolAdmin);
     this.cursor = "default";
+
+    const options = IModelApp.renderSystem.options;
+    this._doIdleWork = true === options.doIdleWork;
+    if (this._doIdleWork)
+      this._beginIdleWork();
   }
 
   /** @internal */
@@ -270,6 +286,9 @@ export class ViewManager {
 
     if (disposeOfViewport)
       vp.dispose();
+
+    if (this._doIdleWork && this._viewports.length === 0)
+      this._beginIdleWork();
 
     return BentleyStatus.SUCCESS;
   }

@@ -99,6 +99,8 @@ export interface ViewFlagProps {
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
   forceSurfaceDiscard?: boolean;
+  /** Disables the "white-on-white reversal" employed by some CAD applications. White-on-white reversal causes white geometry to be drawn as black if the view's background color is also white. */
+  noWhiteOnWhiteReversal?: boolean;
 }
 
 /** Flags for controlling how graphics appear within a View.
@@ -171,6 +173,8 @@ export class ViewFlags {
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
   public forceSurfaceDiscard: boolean = false;
+  /** White-on-white reversal is used by some CAD applications to cause white geometry to be drawn as black if the view's background color is also white. */
+  public whiteOnWhiteReversal = true;
 
   /** Controls whether or not lighting is applied.
    * @note Has no effect unless `renderMode` is set to [[RenderMode.SmoothShade]].
@@ -208,7 +212,9 @@ export class ViewFlags {
       val.edgeMask = other.edgeMask;
       val.ambientOcclusion = other.ambientOcclusion;
       val.forceSurfaceDiscard = other.forceSurfaceDiscard;
+      val.whiteOnWhiteReversal = other.whiteOnWhiteReversal;
     }
+
     return val;
   }
 
@@ -261,6 +267,7 @@ export class ViewFlags {
     if (this.edgeMask !== 0) out.edgeMask = this.edgeMask;
     if (this.ambientOcclusion) out.ambientOcclusion = true;
     if (this.forceSurfaceDiscard) out.forceSurfaceDiscard = true;
+    if (!this.whiteOnWhiteReversal) out.noWhiteOnWhiteReversal = true;
 
     out.renderMode = this.renderMode;
     return out;
@@ -295,6 +302,7 @@ export class ViewFlags {
     val.backgroundMap = JsonUtils.asBool(json.backgroundMap);
     val.ambientOcclusion = JsonUtils.asBool(json.ambientOcclusion);
     val.forceSurfaceDiscard = JsonUtils.asBool(json.forceSurfaceDiscard);
+    val.whiteOnWhiteReversal = !JsonUtils.asBool(json.noWhiteOnWhiteReversal);
 
     const renderModeValue = JsonUtils.asInt(json.renderMode);
     if (renderModeValue < RenderMode.HiddenLine)
@@ -333,7 +341,8 @@ export class ViewFlags {
       && this.backgroundMap === other.backgroundMap
       && this.edgeMask === other.edgeMask
       && this.ambientOcclusion === other.ambientOcclusion
-      && this.forceSurfaceDiscard === other.forceSurfaceDiscard;
+      && this.forceSurfaceDiscard === other.forceSurfaceDiscard
+      && this.whiteOnWhiteReversal === other.whiteOnWhiteReversal;
   }
 }
 
@@ -363,6 +372,7 @@ export const enum ViewFlagPresence { // tslint:disable-line:no-const-enum
   EdgeMask,
   BackgroundMap,
   ForceSurfaceDiscard,
+  WhiteOnWhiteReversal,
 }
 
 /** Overrides a subset of [[ViewFlags]].
@@ -428,6 +438,7 @@ export class ViewFlagOverrides {
   public setShowBackgroundMap(val: boolean) { this._values.backgroundMap = val; this.setPresent(ViewFlagPresence.BackgroundMap); }
   public setUseHlineMaterialColors(val: boolean) { this._values.hLineMaterialColors = val; this.setPresent(ViewFlagPresence.HlineMaterialColors); }
   public setForceSurfaceDiscard(val: boolean) { this._values.forceSurfaceDiscard = val; this.setPresent(ViewFlagPresence.ForceSurfaceDiscard); }
+  public setWhiteOnWhiteReversal(val: boolean) { this._values.whiteOnWhiteReversal = val; this.setPresent(ViewFlagPresence.WhiteOnWhiteReversal); }
   public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(ViewFlagPresence.EdgeMask); }
   public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(ViewFlagPresence.RenderMode); }
 
@@ -470,6 +481,7 @@ export class ViewFlagOverrides {
     if (this.isPresent(ViewFlagPresence.BackgroundMap)) base.backgroundMap = this._values.backgroundMap;
     if (this.isPresent(ViewFlagPresence.HlineMaterialColors)) base.hLineMaterialColors = this._values.hLineMaterialColors;
     if (this.isPresent(ViewFlagPresence.ForceSurfaceDiscard)) base.forceSurfaceDiscard = this._values.forceSurfaceDiscard;
+    if (this.isPresent(ViewFlagPresence.WhiteOnWhiteReversal)) base.whiteOnWhiteReversal = this._values.whiteOnWhiteReversal;
     if (this.isPresent(ViewFlagPresence.EdgeMask)) base.edgeMask = this._values.edgeMask;
     if (this.isPresent(ViewFlagPresence.RenderMode)) base.renderMode = this._values.renderMode;
     return base;

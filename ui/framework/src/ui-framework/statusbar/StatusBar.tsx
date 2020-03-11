@@ -356,28 +356,28 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
  * @beta
  */
 export function StatusBarSpaceBetween(props: CommonDivProps) {
-  return <Div {...props} mainClassName="uifw-statusbar-space-between" />;
+  return <Div {...props} mainClassName={props.className ? props.className : "uifw-statusbar-space-between"} />;
 }
 
 /** StatusBar Left Section React functional component
  * @beta
  */
 export function StatusBarLeftSection(props: CommonDivProps) {
-  return <Div {...props} mainClassName="uifw-statusbar-left" />;
+  return <Div {...props} mainClassName={props.className ? props.className : "uifw-statusbar-left"} />;
 }
 
 /** StatusBar Center Section React functional component
  * @beta
  */
 export function StatusBarCenterSection(props: CommonDivProps) {
-  return <Div {...props} mainClassName="uifw-statusbar-center" />;
+  return <Div {...props} mainClassName={props.className ? props.className : "uifw-statusbar-center"} />;
 }
 
 /** StatusBar Right Section React functional component
  * @beta
  */
 export function StatusBarRightSection(props: CommonDivProps) {
-  return <Div {...props} mainClassName="uifw-statusbar-right" />;
+  return <Div {...props} mainClassName={props.className ? props.className : "uifw-statusbar-right"} />;
 }
 
 /** Context providing values for StatusFieldProps and MessageCenterFieldProps

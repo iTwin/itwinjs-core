@@ -391,8 +391,8 @@ export class HubUtility {
     IModelJsFs.copySync(seedPathname, iModelPathname);
 
     const iModel = StandaloneIModelDb.open(iModelPathname, OpenMode.ReadWrite);
-    iModel.briefcase.nativeDb.setBriefcaseId(BriefcaseId.Standalone);
-    iModel.briefcase.briefcaseId = BriefcaseId.Standalone;
+    iModel.briefcase.nativeDb.setBriefcaseId(BriefcaseId.LegacyStandalone);
+    iModel.briefcase.briefcaseId = BriefcaseId.LegacyStandalone;
     iModel.close();
 
     return iModelPathname;

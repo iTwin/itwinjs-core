@@ -8,7 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ClippingType } from "../RenderClipVolume";
-import { ShaderProgram } from "./ShaderProgram";
+import { ShaderProgram, CompileStatus } from "./ShaderProgram";
 import { System } from "./System";
 import { ClipDef } from "./TechniqueFlags";
 import { vertexDiscard, earlyVertexDiscard, lateVertexDiscard, addPosition } from "./glsl/Vertex";
@@ -1064,7 +1064,7 @@ export class ClippingShaders {
   }
 
   public compileShaders(): boolean {
-    return undefined === this.maskShader || this.maskShader.compile();
+    return undefined === this.maskShader || this.maskShader.compile() === CompileStatus.Success;
   }
 
   private static roundUpToNearestMultipleOf(value: number, factor: number): number {

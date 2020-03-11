@@ -473,17 +473,24 @@ export class BriefcaseEntry {
 // @public
 export class BriefcaseId {
     constructor(value?: number);
-    // (undocumented)
+    // @beta
+    static get CheckpointSnapshot(): number;
+    // @internal
+    static get FutureStandalone(): number;
     static get Illegal(): number;
+    // @beta
+    get isSnapshot(): boolean;
+    // @beta
+    static isSnapshot(value: number): boolean;
     // @internal (undocumented)
-    static get Master(): number;
-    // @beta (undocumented)
+    static get LegacyMaster(): number;
+    // @internal
+    static get LegacyStandalone(): number;
+    // @internal
+    static get MaxRepo(): number;
+    // @beta
     static get Snapshot(): number;
-    // @internal (undocumented)
-    static get Standalone(): number;
-    // (undocumented)
     toString(): string;
-    // (undocumented)
     get value(): number;
     }
 

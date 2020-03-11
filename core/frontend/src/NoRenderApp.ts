@@ -47,6 +47,7 @@ export class NullTarget extends RenderTarget {
  */
 export class NullRenderSystem extends RenderSystem {
   public get isValid(): boolean { return false; }
+  public doIdleWork(): boolean { return false; }
   public createTarget() { return new NullTarget(); }
   public createOffscreenTarget() { return new NullTarget(); }
   public createGraphicBuilder() { return undefined as any; }

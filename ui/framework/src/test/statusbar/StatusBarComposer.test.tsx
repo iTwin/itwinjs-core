@@ -327,4 +327,33 @@ describe("StatusBarComposer", () => {
     wrapper.unmount();
   });
 
+  it("StatusBarComposer should render items with custom CSS classes", () => {
+    const items: StatusBarItem[] = [
+      StatusBarItemUtilities.createStatusBarItem("item1", StatusBarSection.Left, 1, <AppStatusBarComponent />),
+      StatusBarItemUtilities.createStatusBarItem("item2", StatusBarSection.Center, 1, <AppStatusBarComponent />),
+      StatusBarItemUtilities.createStatusBarItem("item3", StatusBarSection.Right, 1, <AppStatusBarComponent />),
+    ];
+
+    expect(items.length).to.eq(3);
+
+    const wrapper = mount(<StatusBarComposer items={items} mainClassName="main-test" leftClassName="left-test" centerClassName="center-test" rightClassName="right-test" />);
+
+    const mainSB = wrapper.find("div.main-test");
+    expect(mainSB.length).to.eq(1);
+
+    const leftItems = wrapper.find("div.left-test");
+    expect(leftItems.length).to.eq(1);
+    expect(leftItems.find(AppStatusBarComponent).length).to.eq(1);
+
+    const centerItems = wrapper.find("div.center-test");
+    expect(centerItems.length).to.eq(1);
+    expect(centerItems.find(AppStatusBarComponent).length).to.eq(1);
+
+    const rightItems = wrapper.find("div.right-test");
+    expect(rightItems.length).to.eq(1);
+    expect(rightItems.find(AppStatusBarComponent).length).to.eq(1);
+
+    wrapper.unmount();
+  });
+
 });

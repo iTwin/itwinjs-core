@@ -43,6 +43,10 @@
       "allowedCategories": [ "extensions", "internal", "tools" ]
     },
     {
+      "name": "@bentley/extension-client",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@bentley/frontend-devtools",
       "allowedCategories": [ "internal" ]
     },
@@ -60,7 +64,7 @@
     },
     {
       "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "backend", "extensions", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-clients",
@@ -68,7 +72,7 @@
     },
     {
       "name": "@bentley/imodeljs-clients-backend",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-common",
@@ -88,7 +92,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-quantity",
@@ -356,7 +360,7 @@
     },
     {
       "name": "electron",
-      "allowedCategories": [ "backend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "electron-chromedriver",
@@ -921,6 +925,10 @@
     {
       "name": "tsutils",
       "allowedCategories": [ "frontend", "tools" ]
+    },
+    {
+      "name": "typed-rest-client",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "typedoc",

@@ -25,6 +25,20 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/extension-client",
+      "projectFolder": "clients/extension",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/extension-cli",
+      "projectFolder": "tools/extension-cli",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/config-loader",
       "projectFolder": "tools/config-loader",
       "reviewCategory": "tools",

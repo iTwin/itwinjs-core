@@ -93,7 +93,9 @@ export class IModelConnection extends IModel {
   public get noGcsDefined(): boolean | undefined { return this._noGcsDefined; }
   /** @internal */
   public disableGCS(disable: boolean): void { this._noGcsDefined = disable ? true : undefined; }
-  /** @internal The displayed extents. Union of the the project extents and all displayed models. */
+  /** @internal The displayed extents. Union of the the project extents and all displayed reality models.
+   * Don't modify this directly - use [[expandDisplayedExtents]].
+   */
   public readonly displayedExtents: AxisAlignedBox3d;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
@@ -690,6 +692,17 @@ export class IModelConnection extends IModel {
       }
     }
     return (this._noGcsDefined ? this.cartographicToSpatialFromEcef(cartographic, result) : this.cartographicToSpatialFromGcs(cartographic, result));
+  }
+
+  /** Expand this iModel's [[displayedExtents]] with the specified range.
+   * @internal
+   */
+  public expandDisplayedExtents(range: Range3d): void {
+    this.displayedExtents.extendRange(range);
+    IModelApp.viewManager.forEachViewport((vp) => {
+      if (vp.view.isSpatialView() && vp.iModel === this)
+        vp.invalidateController();
+    });
   }
 }
 

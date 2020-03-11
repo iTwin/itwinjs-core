@@ -8,7 +8,7 @@
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "./Token";
 import { UserInfo } from "./UserInfo";
-import { Project, Asset } from "./ConnectClients";
+import { Project, Asset } from "./ConnectClient";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { IModelClient } from "./IModelClient";
 import { IAuthorizationClient } from "./imodeljs-clients";

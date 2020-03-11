@@ -88,13 +88,13 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
           className={this.props.className}
           style={this.props.style}
           title={tooltip}
+          ref={this._handleTargetRef}
         >
           <MessageCenter
             indicatorRef={this._indicator}
             isInFooterMode={this.props.isInFooterMode}
             label={this.props.isInFooterMode ? this._title : undefined}
             onClick={this._handleMessageIndicatorClick}
-            targetRef={this._handleTargetRef}
           >
             {this.state.messageCount.toString()}
           </MessageCenter>

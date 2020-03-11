@@ -101,40 +101,6 @@ export class Asset extends CommonContext {
   public assetType?: string;
 }
 
-/** RBAC project
- * @internal
- */
-@ECJsonTypeMap.classToJson("wsg", "RBAC.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class RbacProject extends WsgInstance {
-  // Empty!
-}
-
-/** RBAC user
- * @internal
- */
-@ECJsonTypeMap.classToJson("wsg", "RBAC.User", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class RbacUser extends WsgInstance {
-  // Empty!
-}
-
-/** RBAC permission
- * @internal
- */
-@ECJsonTypeMap.classToJson("wsg", "RBAC.Permission", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class Permission extends WsgInstance {
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
-  public name?: string;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
-  public description?: string;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.ServiceGPRId")
-  public serviceGprId?: number;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.CategoryId")
-  public categoryId?: number;
-}
-
 /** Options to request connect projects
  * @beta
  */
@@ -146,11 +112,6 @@ export interface ConnectRequestQueryOptions extends RequestQueryOptions {
   isFavorite?: boolean;
 }
 
-/** @internal */
-export interface RbacRequestQueryOptions extends RequestQueryOptions {
-  rbacOnly?: boolean;
-}
-
 /** Client API to access the connect services.
  * @beta
  */
@@ -159,7 +120,7 @@ export class ConnectClient extends WsgClient {
   public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
 
   public constructor() {
-    super("sv1.0");
+    super("v2.5");
   }
 
   /**
@@ -198,6 +159,7 @@ export class ConnectClient extends WsgClient {
    * @returns Resolves to an array of projects.
    */
   public async getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
+    requestContext.enter();
     return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
   }
 
@@ -208,7 +170,9 @@ export class ConnectClient extends WsgClient {
    * @returns Resolves to the found project. Rejects if no projects, or more than one project is found.
    */
   public async getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project> {
+    requestContext.enter();
     const projects: Project[] = await this.getProjects(requestContext, queryOptions);
+    requestContext.enter();
     if (projects.length === 0)
       throw new Error("Could not find a project with the specified criteria that the user has access to");
     else if (projects.length > 1)
@@ -223,6 +187,7 @@ export class ConnectClient extends WsgClient {
    * @returns Resolves to an array of invited projects.
    */
   public async getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
+    requestContext.enter();
     return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project?rbaconly=true", queryOptions);
   }
 
@@ -233,7 +198,9 @@ export class ConnectClient extends WsgClient {
    * @returns Resolves to the found asset. Rejects if no assets, or more than one asset is found.
    */
   public async getAsset(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset> {
+    requestContext.enter();
     const assets: Asset[] = await this.getAssets(requestContext, queryOptions);
+    requestContext.enter();
     if (assets.length === 0)
       throw new Error("Could not find an asset with the specified criteria that the user has access to");
     else if (assets.length > 1)
@@ -249,6 +216,7 @@ export class ConnectClient extends WsgClient {
    * @returns Resolves to an array of assets.
    */
   public async getAssets(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset[]> {
+    requestContext.enter();
     return this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Asset", queryOptions);
   }
 }

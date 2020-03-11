@@ -2243,9 +2243,13 @@ export class BriefcaseIModelDb extends IModelDb {
  * @beta
  */
 export class SnapshotIModelDb extends IModelDb {
-  // WIP: remove BriefcaseEntry and IModelToken from this constructor
-  private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
+  // WIP: remove BriefcaseEntry from this constructor
+  private constructor(briefcaseEntry: BriefcaseEntry, openParams: OpenParams) {
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openParams.openMode);
     super(briefcaseEntry, iModelToken, openParams);
+    if (!this.getBriefcaseId().isSnapshot) {
+      throw new IModelError(IModelStatus.BadRequest, "Not a snapshot iModel", Logger.logError, loggerCategory);
+    }
   }
 
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
@@ -2259,8 +2263,7 @@ export class SnapshotIModelDb extends IModelDb {
    */
   public static createEmpty(snapshotFile: string, args: CreateIModelProps & IModelEncryptionProps): SnapshotIModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, args);
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, briefcaseEntry.openParams.openMode);
-    return new SnapshotIModelDb(briefcaseEntry, iModelToken, briefcaseEntry.openParams);
+    return new SnapshotIModelDb(briefcaseEntry, OpenParams.createSnapshot());
   }
 
   /** Create a local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file, using this iModel as a *seed* or starting point.
@@ -2291,7 +2294,7 @@ export class SnapshotIModelDb extends IModelDb {
       }
     }
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, encryptionPropsString);
-    const isSeedFileMaster: boolean = BriefcaseId.Master === briefcaseEntry.briefcaseId;
+    const isSeedFileMaster: boolean = BriefcaseId.LegacyMaster === briefcaseEntry.briefcaseId;
     const isSeedFileSnapshot: boolean = BriefcaseId.Snapshot === briefcaseEntry.briefcaseId;
     // Replace iModelId if seedFile is a master or snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
     if ((isSeedFileMaster) || (isSeedFileSnapshot)) {
@@ -2299,9 +2302,7 @@ export class SnapshotIModelDb extends IModelDb {
     }
     briefcaseEntry.briefcaseId = BriefcaseId.Snapshot;
 
-    const openMode = OpenMode.ReadWrite;
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
-    const snapshotDb = new SnapshotIModelDb(briefcaseEntry, iModelToken, OpenParams.createSnapshot()); // WIP: clean up copied file on error?
+    const snapshotDb = new SnapshotIModelDb(briefcaseEntry, OpenParams.createSnapshot()); // WIP: clean up copied file on error?
     if (isSeedFileMaster) {
       snapshotDb.setGuid(briefcaseEntry.iModelId);
     } else {
@@ -2321,13 +2322,7 @@ export class SnapshotIModelDb extends IModelDb {
   public static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb {
     const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(filePath, OpenMode.Readonly, encryptionPropsString);
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, OpenMode.Readonly);
-    const iModelDb: SnapshotIModelDb = new SnapshotIModelDb(briefcaseEntry, iModelToken, OpenParams.openSnapshot());
-    const briefcaseId: number = iModelDb.getBriefcaseId().value;
-    if ((BriefcaseId.Snapshot === briefcaseId) || (BriefcaseId.Master === briefcaseId)) {
-      return iModelDb;
-    }
-    throw new IModelError(IModelStatus.BadRequest, "SnapshotIModelDb.open cannot be used to open a briefcase", Logger.logError, loggerCategory);
+    return new SnapshotIModelDb(briefcaseEntry, OpenParams.openSnapshot());
   }
 
   /** Close this local read-only iModel *snapshot*, if it is currently open.
@@ -2356,22 +2351,24 @@ export class SnapshotIModelDb extends IModelDb {
  * - Standalone iModels are known to the application developer and end user as unmanaged files
  * - Standalone iModels are read/write
  * - Cannot apply a changeset to nor generate a changeset from a Standalone iModel
+ * - Standalone iModels support undo/redo via txns
  * - The Standalone iModel capability is only available to authorized applications
  *
  * @internal
  */
 export class StandaloneIModelDb extends IModelDb {
-  // WIP: remove BriefcaseEntry and IModelToken from this constructor
-  private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
+  // WIP: remove BriefcaseEntry from this constructor
+  private constructor(briefcaseEntry: BriefcaseEntry, openParams: OpenParams) {
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openParams.openMode);
     super(briefcaseEntry, iModelToken, openParams);
   }
 
-  // WIP: enable create after set new/high Standalone briefcaseId
-  // /** Create a standalone local Db.
+  // WIP: enable createEmpty after new/high FutureStandalone briefcaseId is available
+  // /** Create an empty standalone local Db.
   //  * @param fileName The name for the iModel
   //  * @param args The parameters that define the new iModel
   //  */
-  // public static createStandalone(fileName: string, args: CreateIModelProps): StandaloneIModelDb {
+  // public static createEmpty(fileName: string, args: CreateIModelProps): StandaloneIModelDb {
   //   const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(fileName, args);
   //   const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, briefcaseEntry.openParams.openMode);
   //   return new StandaloneIModelDb(briefcaseEntry, iModelToken, briefcaseEntry.openParams);
@@ -2385,8 +2382,7 @@ export class StandaloneIModelDb extends IModelDb {
    */
   public static open(filePath: string, openMode: OpenMode = OpenMode.ReadWrite): StandaloneIModelDb {
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(filePath, openMode);
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openMode);
-    return new StandaloneIModelDb(briefcaseEntry, iModelToken, OpenParams.standalone(openMode));
+    return new StandaloneIModelDb(briefcaseEntry, OpenParams.standalone(openMode));
   }
 
   /** Close this standalone iModel, if it is currently open

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { ConnectClient, Project, ConnectRequestQueryOptions } from "../ConnectClients";
+import { ConnectClient, Project, ConnectRequestQueryOptions } from "../ConnectClient";
 import { AuthorizationToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";

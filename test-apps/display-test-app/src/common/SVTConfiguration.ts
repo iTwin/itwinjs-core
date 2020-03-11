@@ -30,4 +30,5 @@ export interface SVTConfiguration {
   cancelBackendTileRequests?: boolean; // default ON
   disableEdges?: boolean; // default OFF
   useWebGL2?: boolean; // default OFF
+  doIdleWork?: boolean; // default ON
 }

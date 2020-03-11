@@ -38,7 +38,7 @@ import {
 import {
   Capabilities,
   DepthType,
- } from "@bentley/webgl-compatibility";
+} from "@bentley/webgl-compatibility";
 import {
   GraphicBranch,
   GraphicBranchOptions,
@@ -382,6 +382,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
 
   public setDrawBuffers(attachments: GLenum[]): void { this._extensions.setDrawBuffers(attachments); }
+
+  public doIdleWork(): boolean {
+    return this.techniques.idleCompileNextShader();
+  }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
   public static createContext(canvas: HTMLCanvasElement, inputContextAttributes?: WebGLContextAttributes, useWebGL2?: boolean): WebGLRenderingContext | WebGL2RenderingContext | undefined {

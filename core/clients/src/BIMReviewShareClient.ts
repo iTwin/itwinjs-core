@@ -226,15 +226,15 @@ export class BIMReviewShareClient extends WsgClient {
    * @param data JSON string with the data that wants to be saved
    * @param instanceId Wsg Instance Id if updating the instance instead of creating a new one
    */
-  public async postContent(requestContext: AuthorizedClientRequestContext, filter: string, groupLabel: string, module: string, moduleVersion: string, name: string, owner: string, projectId: string, data: any, instanceId?: string) {
+  public async postContent(requestContext: AuthorizedClientRequestContext, filter: string, groupLabel: string, module: string, moduleVersion: string, name: string, owner: string, projectId: string, data: any, instanceId?: string): Promise<Content> {
+    requestContext.enter();
     const content = new Content();
     Object.assign(content, { filter, groupLabel, module, moduleVersion, name, owner, projectId });
     let url = `/Repositories/ContentPlugin--default/ContentSchema/Content`;
     if (instanceId !== undefined)
       url += `/${instanceId}`;
 
-    const instance = await this.postInstanceAndData<Content>(requestContext, Content, url, content, data);
-    return instance;
+    return this.postInstanceAndData<Content>(requestContext, Content, url, content, data);
   }
 
   /**
@@ -243,13 +243,13 @@ export class BIMReviewShareClient extends WsgClient {
    * @param content instance of the Content
    * @param data updated data
    */
-  public async updateContent(requestContext: AuthorizedClientRequestContext, content: Content, data: any) {
+  public async updateContent(requestContext: AuthorizedClientRequestContext, content: Content, data: any): Promise<Content> {
+    requestContext.enter();
     let url = `/Repositories/ContentPlugin--default/ContentSchema/Content`;
     if (content.wsgId !== undefined)
       url += `/${content.wsgId}`;
 
-    const instance = await this.postInstanceAndData<Content>(requestContext, Content, url, content, data);
-    return instance;
+    return this.postInstanceAndData<Content>(requestContext, Content, url, content, data);
   }
 
   /**
@@ -258,7 +258,8 @@ export class BIMReviewShareClient extends WsgClient {
    * @param projectId Id of the project to get the instances from
    * @param module Name of the module (e.g. 'DataViz')
    */
-  public async getContentInstances(requestContext: AuthorizedClientRequestContext, projectId: string, module: string, owner?: string) {
+  public async getContentInstances(requestContext: AuthorizedClientRequestContext, projectId: string, module: string, owner?: string): Promise<Content[]> {
+    requestContext.enter();
     const queryOptions: RequestQueryOptions = {
       $filter: `ProjectId+eq+'${projectId}'+and+Module+eq+'${module}'` + (owner ? `+and+owner+eq+'${owner}'` : ``),
     };
@@ -274,7 +275,8 @@ export class BIMReviewShareClient extends WsgClient {
    * @param instanceId Instance Id of the Content
    * @param queryOptions Query options for filtering
    */
-  public async getContentInstance(requestContext: AuthorizedClientRequestContext, projectId: string, moduleName: string, instanceId: string, queryOptions?: RequestQueryOptions) {
+  public async getContentInstance(requestContext: AuthorizedClientRequestContext, projectId: string, moduleName: string, instanceId: string, queryOptions?: RequestQueryOptions): Promise<Content[]> {
+    requestContext.enter();
     const url = `/Repositories/ContentPlugin--default/ContentSchema/Content/${projectId}${moduleName}${instanceId}`;
     return this.getInstances<Content>(requestContext, Content, url, queryOptions);
   }
@@ -285,7 +287,8 @@ export class BIMReviewShareClient extends WsgClient {
    * @param content Content instance
    * @param options WsgRequestOptions optional
    */
-  public async deleteContentInstance(requestContext: AuthorizedClientRequestContext, content: Content, options?: WsgRequestOptions) {
+  public async deleteContentInstance(requestContext: AuthorizedClientRequestContext, content: Content, options?: WsgRequestOptions): Promise<void> {
+    requestContext.enter();
     const url = `/Repositories/ContentPlugin--default/ContentSchema/Content/${content.wsgId}`;
     return this.deleteInstance(requestContext, url, content, options);
   }
@@ -296,7 +299,8 @@ export class BIMReviewShareClient extends WsgClient {
    * @param instanceId Instance Id of the Content instance
    * @param queryOptions Query options for filtering
    */
-  public async getContentData(requestContext: AuthorizedClientRequestContext, instanceId: string, queryOptions?: RequestQueryOptions) {
+  public async getContentData(requestContext: AuthorizedClientRequestContext, instanceId: string, queryOptions?: RequestQueryOptions): Promise<any> {
+    requestContext.enter();
     const url = `/Repositories/ContentPlugin--default/ContentSchema/Content/${instanceId}/$file`;
     return this.getBlob(requestContext, url, queryOptions);
   }
