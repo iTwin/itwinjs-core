@@ -49,6 +49,7 @@ export class BranchState {
     const vf = new ViewFlags();
     vf.renderMode = RenderMode.SmoothShade;
     vf.lighting = false;
+    vf.whiteOnWhiteReversal = false;
     return new BranchState(vf, Transform.createIdentity(), new FeatureSymbology.Overrides());
   }
 

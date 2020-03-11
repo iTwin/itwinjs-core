@@ -116,7 +116,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
     }
   }
   public wantWoWReversal(params: ShaderProgramParams): boolean {
-    return !params.isOverlayPass && this._wantWoWReversal(params.target);
+    return params.target.currentViewFlags.whiteOnWhiteReversal && this._wantWoWReversal(params.target);
   }
   public getLineCode(params: ShaderProgramParams): number {
     return params.target.currentViewFlags.styles ? this._getLineCode(params) : LineCode.solid;
