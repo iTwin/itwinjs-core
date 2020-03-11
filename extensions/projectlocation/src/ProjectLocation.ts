@@ -3,10 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelApp, Extension, PrimitiveTool, CoordinateLockOverrides, BeButtonEvent, HitDetail, EventHandled, LocateResponse, ManipulatorToolEvent, BeTouchEvent, LocateFilterStatus, Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Extension, PrimitiveTool, CoordinateLockOverrides, BeButtonEvent, HitDetail, EventHandled, LocateResponse, ManipulatorToolEvent, BeTouchEvent, LocateFilterStatus, Tool, CoreTools, ToolAssistance, ToolAssistanceSection, ToolAssistanceInstruction, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
 import { ProjectGeolocationPointTool, ProjectGeolocationNorthTool } from "./ProjectGeolocation";
+
+/** @internal */
+export function translateInput(key: string) { return ProjectLocationExtension.extension!.i18n.translate("ProjectLocation:Inputs." + key); }
+/** @internal */
+export function translatePrompt(key: string) { return ProjectLocationExtension.extension!.i18n.translate("ProjectLocation:Prompts." + key); }
+/** @internal */
+export function translateMessage(key: string) { return ProjectLocationExtension.extension!.i18n.translate("ProjectLocation:Message." + key); }
+/** @internal */
+export function translateMessageBold(key: string) { return "<b>" + translateMessage(key) + ":</b> "; }
+/** @internal */
+export function translateCoreMeasureBold(key: string) { return "<b>" + CoreTools.translate("Measure.Labels." + key) + ":</b> "; }
 
 /** Parses a string case-insensitively returning true for "ON", false for "OFF", undefined for "TOGGLE" or undefined, and the input string for anything else. */
 function parseToggle(arg: string | undefined): string | boolean | undefined {
@@ -92,7 +103,23 @@ export class ProjectLocationSelectTool extends PrimitiveTool {
   public requireWriteableTarget(): boolean { return false; }
   public autoLockTarget(): void { } // NOTE: For picking decorations we only care about iModel, so don't lock target model automatically.
 
-  protected provideToolAssistance(): void { } // ### TODO: Tool assistance...
+  protected provideToolAssistance(): void {
+    const promptMsg = translatePrompt("IdentifyHandle");
+    const acceptMsg = translateInput("AcceptHandle");
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, promptMsg);
+    const sections: ToolAssistanceSection[] = [];
+
+    const mouseInstructions: ToolAssistanceInstruction[] = [];
+    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
+    sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
+
+    const touchInstructions: ToolAssistanceInstruction[] = [];
+    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
+    sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
+
+    const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
+    IModelApp.notifications.setToolAssistance(instructions);
+  }
 
   protected initTool(): void {
     this.initLocateElements(true, false, "default", CoordinateLockOverrides.All);

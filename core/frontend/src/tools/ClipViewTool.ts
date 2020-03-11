@@ -259,11 +259,29 @@ export class ViewClipTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builderHid);
   }
 
+  private static isHilited(vp: Viewport, id?: string): boolean {
+    return (undefined !== id ? vp.iModel.hilited.elements.has(Id64.getLowerUint32(id), Id64.getUpperUint32(id)) : false);
+  }
+
+  private static isFlashed(vp: Viewport, id?: string): boolean {
+    return (undefined !== id ? vp.lastFlashedElem === id : false);
+  }
+
   public static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void {
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, shape.transformFromClip, id); // Use WorldDecoration not WorldOverlay to make sure handles have priority...
     builder.setSymbology(color, ColorDef.black, weight);
     ViewClipTool.addClipShape(builder, shape, extents);
     context.addDecorationFromBuilder(builder);
+
+    // NOTE: We want to display hidden edges when clip decoration isn't hilited (not selected or drawn in dynamics).
+    // This isn't required and is messy looking when the clip is being drawn hilited.
+    // If the clip decoration is being flashed, draw using the hilite color to match the pickable world decoration display.
+    if (!this.isHilited(context.viewport, id)) {
+      const builderHid = context.createGraphicBuilder(GraphicType.WorldOverlay, shape.transformFromClip);
+      builderHid.setSymbology(this.isFlashed(context.viewport, id) ? context.viewport.hilite.color : color, ColorDef.black, 1, LinePixels.Code2);
+      ViewClipTool.addClipShape(builderHid, shape, extents);
+      context.addDecorationFromBuilder(builderHid);
+    }
   }
 
   public static getClipShapePoints(shape: ClipShape, z: number): Point3d[] {
@@ -308,12 +326,25 @@ export class ViewClipTool extends PrimitiveTool {
   public static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, dashed?: boolean, fill?: ColorDef, id?: string): void {
     if (loops.length < 1)
       return;
+
     const builderEdge = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, id); // Use WorldDecoration not WorldOverlay to make sure handles have priority...
     builderEdge.setSymbology(color, ColorDef.black, weight, dashed ? LinePixels.Code2 : undefined);
     ViewClipTool.addClipPlanesLoops(builderEdge, loops, true);
     context.addDecorationFromBuilder(builderEdge);
+
+    // NOTE: We want to display hidden edges when clip decoration isn't hilited (not selected or drawn in dynamics).
+    // This isn't required and is messy looking when the clip is being drawn hilited.
+    // If the clip decoration is being flashed, draw using the hilite color to match the pickable world decoration display.
+    if (!this.isHilited(context.viewport, id)) {
+      const builderEdgeHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
+      builderEdgeHid.setSymbology(this.isFlashed(context.viewport, id) ? context.viewport.hilite.color : color, ColorDef.black, 1, LinePixels.Code2);
+      ViewClipTool.addClipPlanesLoops(builderEdgeHid, loops, true);
+      context.addDecorationFromBuilder(builderEdgeHid);
+    }
+
     if (undefined === fill)
       return;
+
     const builderFace = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
     builderFace.setSymbology(fill, fill, 0);
     ViewClipTool.addClipPlanesLoops(builderFace, loops, false);
