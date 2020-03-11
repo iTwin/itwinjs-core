@@ -6,7 +6,7 @@ import { ImsActiveSecureTokenClient, ImsUserCredentials } from "../ImsClients";
 import { AuthorizationToken } from "../Token";
 import { HubIModel } from "../imodelhub/iModels";
 import { IModelHubClient, IModelClient } from "../imodeljs-clients";
-import { ConnectClient, Project } from "../ConnectClients";
+import { ConnectClient, Project } from "../ConnectClient";
 
 import { Logger, GuidString, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";

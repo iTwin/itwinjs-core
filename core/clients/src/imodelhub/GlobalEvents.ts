@@ -14,7 +14,7 @@ import { request, RequestOptions, Response } from "./../Request";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { BaseEventSAS, EventBaseHandler, EventListener, GetEventOperationToRequestType, IModelHubBaseEvent, ListenerSubscription } from "./EventsBase";
-import { ContextType } from "../ConnectClients";
+import { ContextType } from "../ConnectClient";
 
 const loggerCategory: string = ClientsLoggerCategory.IModelHub;
 

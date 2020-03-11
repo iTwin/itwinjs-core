@@ -101,40 +101,6 @@ export class Asset extends CommonContext {
   public assetType?: string;
 }
 
-/** RBAC project
- * @internal
- */
-@ECJsonTypeMap.classToJson("wsg", "RBAC.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class RbacProject extends WsgInstance {
-  // Empty!
-}
-
-/** RBAC user
- * @internal
- */
-@ECJsonTypeMap.classToJson("wsg", "RBAC.User", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class RbacUser extends WsgInstance {
-  // Empty!
-}
-
-/** RBAC permission
- * @internal
- */
-@ECJsonTypeMap.classToJson("wsg", "RBAC.Permission", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class Permission extends WsgInstance {
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
-  public name?: string;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
-  public description?: string;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.ServiceGPRId")
-  public serviceGprId?: number;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.CategoryId")
-  public categoryId?: number;
-}
-
 /** Options to request connect projects
  * @beta
  */
@@ -146,11 +112,6 @@ export interface ConnectRequestQueryOptions extends RequestQueryOptions {
   isFavorite?: boolean;
 }
 
-/** @internal */
-export interface RbacRequestQueryOptions extends RequestQueryOptions {
-  rbacOnly?: boolean;
-}
-
 /** Client API to access the connect services.
  * @beta
  */
@@ -159,7 +120,7 @@ export class ConnectClient extends WsgClient {
   public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
 
   public constructor() {
-    super("sv1.0");
+    super("v2.5");
   }
 
   /**

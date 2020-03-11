@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelHubStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { Project, Asset } from "../ConnectClients";
+import { Project, Asset } from "../ConnectClient";
 import { ContextManagerClient } from "../IModelCloudEnvironment";
 import { IModelHubClientError } from "../imodelhub/Errors";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";

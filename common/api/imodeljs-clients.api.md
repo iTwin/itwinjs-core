@@ -1019,6 +1019,24 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     projectId?: string;
 }
 
+// @internal
+export enum IModelHubPermission {
+    // (undocumented)
+    Create = 1,
+    // (undocumented)
+    Delete = 8,
+    // (undocumented)
+    ManageResources = 16,
+    // (undocumented)
+    ManageVersions = 32,
+    // (undocumented)
+    Modify = 4,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Read = 2
+}
+
 // @beta
 export class IModelQuery extends InstanceIdQuery {
     byName(name: string): this;
@@ -1423,17 +1441,16 @@ export class ProjectShareQuery extends WsgQuery {
 }
 
 // @internal
-export class RbacProject extends WsgInstance {
-}
-
-// @internal (undocumented)
-export interface RbacRequestQueryOptions extends RequestQueryOptions {
+export class RbacClient extends WsgClient {
+    constructor();
     // (undocumented)
-    rbacOnly?: boolean;
-}
-
-// @internal
-export class RbacUser extends WsgInstance {
+    static readonly configRelyingPartyUri = "imjs_rbac_relying_party_uri";
+    getIModelHubPermissions(requestContext: AuthorizedClientRequestContext, projectId: string): Promise<IModelHubPermission>;
+    getPermissions(requestContext: AuthorizedClientRequestContext, projectId: string, serviceGPRId: number): Promise<Permission[]>;
+    protected getRelyingPartyUrl(): string;
+    protected getUrlSearchKey(): string;
+    // (undocumented)
+    static readonly searchKey: string;
 }
 
 // @internal
