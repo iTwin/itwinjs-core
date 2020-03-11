@@ -6393,6 +6393,8 @@ export class ViewFlagOverrides {
     setShowWeights(val: boolean): void;
     // (undocumented)
     setUseHlineMaterialColors(val: boolean): void;
+    // (undocumented)
+    setWhiteOnWhiteReversal(val: boolean): void;
     }
 
 // @public
@@ -6440,7 +6442,9 @@ export const enum ViewFlagPresence {
     // (undocumented)
     VisibleEdges = 10,
     // (undocumented)
-    Weights = 3
+    Weights = 3,
+    // (undocumented)
+    WhiteOnWhiteReversal = 22
 }
 
 // @public
@@ -6468,6 +6472,7 @@ export interface ViewFlagProps {
     noTexture?: boolean;
     noTransp?: boolean;
     noWeight?: boolean;
+    noWhiteOnWhiteReversal?: boolean;
     renderMode?: number;
     shadows?: boolean;
     visEdges?: boolean;
@@ -6519,6 +6524,7 @@ export class ViewFlags {
     transparency: boolean;
     visibleEdges: boolean;
     weights: boolean;
+    whiteOnWhiteReversal: boolean;
 }
 
 // @public
