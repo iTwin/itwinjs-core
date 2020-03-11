@@ -147,7 +147,9 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
 
   // Private function that can retrieve either user specific settings or non-user-specific settings
   private async saveAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settings: any, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {
+    requestContext.enter();
     const baseUrl: string = await this.getUrl(requestContext);
+    requestContext.enter();
     const accessTokenString: string | undefined = requestContext.accessToken.toTokenString();
 
     const options: RequestOptions = {
@@ -158,6 +160,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
       },
     };
     await this.setupOptionDefaults(options);
+    requestContext.enter();
 
     const urlOptions: string = this.getUrlOptions(false, settingNamespace, settingName, userSpecific, applicationSpecific, shared, projectId, iModelId);
     const url: string = baseUrl.concat(urlOptions);
@@ -216,7 +219,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     url = url.concat(queryString);
 
     const collector = new SettingsFromNamespaceCollector(this, requestContext, options, url);
-    return new Promise (collector.executor.bind(collector));
+    return new Promise(collector.executor.bind(collector));
   }
 
   private async deleteAnySetting(requestContext: AuthorizedClientRequestContext, userSpecific: boolean, settingNamespace: string, settingName: string, applicationSpecific: boolean, shared: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult> {

@@ -277,18 +277,17 @@ export class ProjectShareClient extends WsgClient {
    * @returns URL for the service
    */
   public async getUrl(requestContext: AuthorizedClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
-    if (this._url) {
-      return Promise.resolve(this._url);
-    }
+    requestContext.enter();
+    if (this._url)
+      return this._url;
 
-    return super.getUrl(requestContext, excludeApiVersion)
-      .then(async (url: string): Promise<string> => {
-        this._url = url;
-        // Handle proxy in UN
-        // if (window.location.href.includes("localhost"))
-        //  this._url = "http://localhost:3001/" + this._url;
-        return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
-      });
+    this._url = await super.getUrl(requestContext, excludeApiVersion);
+    requestContext.enter();
+
+    // Handle proxy in UN
+    // if (window.location.href.includes("localhost"))
+    //  this._url = "http://localhost:3001/" + this._url;
+    return this._url;
   }
 
   /**
@@ -298,6 +297,7 @@ export class ProjectShareClient extends WsgClient {
    * @param query ProjectShareQuery
    */
   public async getFolders(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFolder[]> {
+    requestContext.enter();
     const url = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/Folder`;
     return this.getInstances<ProjectShareFolder>(requestContext, ProjectShareFolder, url, query.getQueryOptions());
   }
@@ -310,6 +310,7 @@ export class ProjectShareClient extends WsgClient {
    * @note The accessUrl in a ProjectShareFile is only valid for one hour after it has been initialized by the server.
    */
   public async getFiles(requestContext: AuthorizedClientRequestContext, contextId: GuidString, query: ProjectShareQuery): Promise<ProjectShareFile[]> {
+    requestContext.enter();
     const url = `/repositories/BentleyCONNECT.ProjectShareV2--${contextId}/ProjectShare/File/`;
     return this.getInstances<ProjectShareFile>(requestContext, ProjectShareFile, url, query.getQueryOptions());
   }
@@ -336,9 +337,8 @@ export class ProjectShareClient extends WsgClient {
     requestContext.enter();
 
     const byteArray = new Uint8Array(response.body);
-    if (!byteArray || byteArray.length === 0) {
+    if (!byteArray || byteArray.length === 0)
       throw new BentleyError(BentleyStatus.ERROR, "Expected an image to be returned from the query", Logger.logError, loggerCategory);
-    }
 
     return byteArray;
   }
@@ -415,6 +415,8 @@ export class ProjectShareClient extends WsgClient {
    * @return The instance after the changes
    */
   public async updateCustomProperties(requestContext: AuthorizedClientRequestContext, contextId: GuidString, file: ProjectShareFile, updateProperties?: Array<{ Name: string, Value: string }>, deleteProperties?: string[]): Promise<ProjectShareFile> {
+    requestContext.enter();
+
     const customProperties: any[] = updateProperties === undefined ? new Array<any>() : updateProperties;
     if (deleteProperties) {
       deleteProperties.forEach((value: string) => customProperties.push({
