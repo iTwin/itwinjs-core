@@ -32,7 +32,16 @@ export class UlasUtilities {
       UlasUtilities.getSessionId(requestContext));
   }
 
-  public static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): void {
+  /**
+   * @deprecated use postUserUsage instead
+   * Attempts to send a single request to log user usage with the Bentley Usage Logging and Analysis Service
+   * @param requestContext
+   * @param contextId
+   * @param authType
+   * @param hostName
+   * @param usageType
+   */
+  public static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus {
     return IModelHost.platform.NativeUlasClient.trackUsage(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
       requestContext.applicationVersion,
@@ -45,7 +54,29 @@ export class UlasUtilities {
   }
 
   /**
-   * Attempts to send a feature tracking request to the Bentley Usage Logging and Analysis Service
+   * Attempts to send a single request to log user usage with the Bentley Usage Logging and Analysis Service
+   * @throws When configurations are invalid or the request is rejected
+   * @param requestContext
+   * @param contextId
+   * @param authType
+   * @param hostName
+   * @param usageType
+   */
+  public static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): void {
+    return IModelHost.platform.NativeUlasClient.postUserUsage(
+      requestContext.accessToken.toTokenString(IncludePrefix.No),
+      requestContext.applicationVersion,
+      contextId,
+      authType,
+      UlasUtilities.getApplicationId(requestContext),
+      UlasUtilities.prepareMachineName(hostName),
+      usageType,
+      UlasUtilities.getSessionId(requestContext));
+  }
+
+  /**
+   * @deprecated use postFeatureUsage instead
+   * Attempts to send a single request to log feature usage with the Bentley Usage Logging and Analysis Service
    * @param requestContext The client request context
    * @param featureId The unique id of the feature to be tracked
    * @param authType The authentication mechanism used to authorize the request
@@ -55,9 +86,8 @@ export class UlasUtilities {
    * @param startTimeZ The time at which feature usage began
    * @param endTimeZ The time at which feature usage was completed
    * @param additionalData A collection of arbitrary data that will be attached to the feature usage log
-   * @throws [[TypeError]] when an invalid property is given, [[Error]] when logging fails due to internal issues.
    */
-  public static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): void {
+  public static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): BentleyStatus {
     const featureUserData: IModelJsNative.FeatureUserDataKeyValuePair[] = [];
     for (const propName in additionalData) { // tslint:disable-line: forin
       featureUserData.push({
@@ -76,6 +106,48 @@ export class UlasUtilities {
     };
 
     return IModelHost.platform.NativeUlasClient.markFeature(
+      requestContext.accessToken.toTokenString(IncludePrefix.No),
+      featureEvent,
+      authType,
+      UlasUtilities.getApplicationId(requestContext),
+      UlasUtilities.prepareMachineName(hostName),
+      usageType,
+      UlasUtilities.getSessionId(requestContext),
+    );
+  }
+
+  /**
+   * Attempts to send a single request to log feature usage with the Bentley Usage Logging and Analysis Service
+   * @throws When configurations are invalid or the request is rejected
+   * @param requestContext The client request context
+   * @param featureId The unique id of the feature to be tracked
+   * @param authType The authentication mechanism used to authorize the request
+   * @param hostName The name of the machine which utilized the feature
+   * @param usageType The type of usage which occurred on the client.
+   * @param contextId The context in which the feature was used (i.e. a specific projectId). When omitted, the Guid 99999999-9999-9999-9999-999999999999 is substituted internally.
+   * @param startTimeZ The time at which feature usage began
+   * @param endTimeZ The time at which feature usage was completed
+   * @param additionalData A collection of arbitrary data that will be attached to the feature usage log
+   */
+  public static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): void {
+    const featureUserData: IModelJsNative.FeatureUserDataKeyValuePair[] = [];
+    for (const propName in additionalData) { // tslint:disable-line: forin
+      featureUserData.push({
+        key: propName,
+        value: (additionalData as any)[propName],
+      });
+    }
+
+    const featureEvent: IModelJsNative.NativeUlasClientFeatureEvent = {
+      featureId,
+      versionStr: requestContext.applicationVersion,
+      projectId: contextId,
+      startDateZ: startDateZ ? startDateZ.toISOString() : undefined,
+      endDateZ: endDateZ ? endDateZ.toISOString() : undefined,
+      featureUserData,
+    };
+
+    return IModelHost.platform.NativeUlasClient.postFeatureUsage(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
       featureEvent,
       authType,
