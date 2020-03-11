@@ -3803,6 +3803,8 @@ export class IModelConnection extends IModel {
     readonly elements: IModelConnection.Elements;
     // @internal
     readonly eventSource: EventSource | undefined;
+    // @internal
+    expandDisplayedExtents(range: Range3d): void;
     findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined>;
     fontMap?: FontMap;
     // @internal

@@ -368,7 +368,7 @@ export class RealityModelTileTree extends RealityTileTree {
 
     if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
       const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
-      this.iModel.displayedExtents.extendRange(worldContentRange);
+      this.iModel.expandDisplayedExtents(worldContentRange);
     }
   }
 }
