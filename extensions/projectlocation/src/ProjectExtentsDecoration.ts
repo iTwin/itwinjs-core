@@ -522,6 +522,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   private enableBackgroundMap(viewport: Viewport): boolean {
     if (viewport.viewFlags.backgroundMap)
       return false;
+
     const viewFlags = viewport.viewFlags.clone();
     viewFlags.backgroundMap = true;
     viewport.viewFlags = viewFlags;
@@ -532,7 +533,6 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     vp.displayStyle.backgroundMap.treeOwner.dispose(); // Recreate background map on next update...this is NOT something that should normally be done by applications!
     if (enableBackgroundMap)
       this.enableBackgroundMap(vp);
-    vp.invalidateRenderPlan();
   }
 
   public resetEcefLocation(): boolean {
