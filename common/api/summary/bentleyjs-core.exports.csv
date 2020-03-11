@@ -41,6 +41,7 @@ internal;electronRenderer: any
 public;Entry
 public;EntryContainer
 alpha;EnvMacroSubst
+beta;ExtensionStatus
 public;GetMetaDataFunction = () => any
 public;Guid
 public;GuidString = string

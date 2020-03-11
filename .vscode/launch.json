@@ -263,6 +263,34 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run Extension Client Tests (Integration)",
+      "program": "${workspaceFolder}/clients/extension/node_modules/@bentley/build-tools/scripts/test.js",
+      "cwd": "${workspaceFolder}/clients/extension",
+      "args": [
+        "--testDir=${workspaceFolder}/clients/extension/lib/test",
+        "--inspect"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Extension CLI Tests (Integration)",
+      "program": "${workspaceFolder}/tools/extension-cli/node_modules/@bentley/build-tools/scripts/test.js",
+      "cwd": "${workspaceFolder}/tools/extension-cli",
+      "args": [
+        "--testDir=${workspaceFolder}/tools/extension-cli/lib/test",
+        "--inspect"
+      ],
+      "port": 9229,
+      "protocol": "inspector",
+      "outputCapture": "std"
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "example-code backend snippet tests",
       "program": "${workspaceFolder}/example-code/snippets/node_modules/@bentley/build-tools/scripts/test",
       "cwd": "${workspaceFolder}/example-code/snippets",
