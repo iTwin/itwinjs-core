@@ -38,21 +38,21 @@ export class NestedFrontstage1 extends FrontstageProvider {
         contentGroup="TestContentGroup2"
         isInFooterMode={false}
         applicationData={{ key: "value" }}
-        topLeft={
+        contentManipulationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={<FrontstageToolWidget />} />,
             ]}
           />
         }
-        topCenter={
+        toolSettings={
           <Zone
             widgets={[
               <Widget isToolSettings={true} />,
             ]}
           />
         }
-        topRight={
+        viewNavigationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={<FrontstageNavigationWidget />} />,
@@ -66,7 +66,7 @@ export class NestedFrontstage1 extends FrontstageProvider {
           <Zone defaultState={ZoneState.Open} allowsMerging={true} mergeWithZone={ZoneLocation.BottomRight}
           />
         }
-        bottomCenter={
+        statusBar={
           <Zone defaultState={ZoneState.Open}
             widgets={[
               <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={SmallStatusBarWidgetControl} />,
@@ -100,8 +100,7 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconSpec="icon-placeholder"
-            items={[AppTools.tool1, AppTools.tool2, AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+            items={[AppTools.tool1, AppTools.tool2, AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5, AppTools.item6, AppTools.item7, AppTools.item8]}
             direction={Direction.Bottom}
             itemsInColumn={7}
           />
@@ -120,8 +119,7 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
             iconSpec="icon-placeholder"
-            items={[AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+            items={[AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5, AppTools.item6, AppTools.item7, AppTools.item8]}
           />
         </>
       }

@@ -449,13 +449,13 @@ export class FrontstageDef {
 
     this._usage = props.usage;
 
-    this._topLeft = Frontstage.createZoneDef(props.topLeft, ZoneLocation.TopLeft, props);
-    this._topCenter = Frontstage.createZoneDef(props.topCenter, ZoneLocation.TopCenter, props);
-    this._topRight = Frontstage.createZoneDef(props.topRight, ZoneLocation.TopRight, props);
+    this._topLeft = Frontstage.createZoneDef(props.contentManipulationTools ? props.contentManipulationTools : props.topLeft, ZoneLocation.TopLeft, props);
+    this._topCenter = Frontstage.createZoneDef(props.toolSettings ? props.toolSettings : props.topCenter, ZoneLocation.TopCenter, props);
+    this._topRight = Frontstage.createZoneDef(props.viewNavigationTools ? props.viewNavigationTools : props.topRight, ZoneLocation.TopRight, props);
     this._centerLeft = Frontstage.createZoneDef(props.centerLeft, ZoneLocation.CenterLeft, props);
     this._centerRight = Frontstage.createZoneDef(props.centerRight, ZoneLocation.CenterRight, props);
     this._bottomLeft = Frontstage.createZoneDef(props.bottomLeft, ZoneLocation.BottomLeft, props);
-    this._bottomCenter = Frontstage.createZoneDef(props.bottomCenter, ZoneLocation.BottomCenter, props);
+    this._bottomCenter = Frontstage.createZoneDef(props.statusBar ? props.statusBar : props.bottomCenter, ZoneLocation.BottomCenter, props);
     this._bottomRight = Frontstage.createZoneDef(props.bottomRight, ZoneLocation.BottomRight, props);
 
     this._topPanel = Frontstage.createStagePanelDef(props.topPanel, StagePanelLocation.Top, props);

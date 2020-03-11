@@ -2111,16 +2111,23 @@ export class FrontstageManager {
 // @public
 export interface FrontstageProps extends CommonProps {
     applicationData?: any;
+    // @deprecated
     bottomCenter?: React.ReactElement<ZoneProps>;
+    // @deprecated
     bottomLeft?: React.ReactElement<ZoneProps>;
     // @alpha
     bottomMostPanel?: React.ReactElement<StagePanelProps>;
     // @alpha
     bottomPanel?: React.ReactElement<StagePanelProps>;
+    // @deprecated
     bottomRight?: React.ReactElement<ZoneProps>;
+    // @deprecated
     centerLeft?: React.ReactElement<ZoneProps>;
+    // @deprecated
     centerRight?: React.ReactElement<ZoneProps>;
     contentGroup: string | ContentGroup;
+    // @alpha
+    contentManipulationTools?: React.ReactElement<ZoneProps>;
     defaultContentId?: string;
     defaultLayout: string | ContentLayoutDef;
     defaultTool: ToolItemDef;
@@ -2132,14 +2139,23 @@ export interface FrontstageProps extends CommonProps {
     rightPanel?: React.ReactElement<StagePanelProps>;
     // @internal (undocumented)
     runtimeProps?: FrontstageRuntimeProps;
+    // @alpha
+    statusBar?: React.ReactElement<ZoneProps>;
+    // @alpha
+    toolSettings?: React.ReactElement<ZoneProps>;
+    // @deprecated
     topCenter?: React.ReactElement<ZoneProps>;
+    // @deprecated
     topLeft?: React.ReactElement<ZoneProps>;
     // @alpha
     topMostPanel?: React.ReactElement<StagePanelProps>;
     // @alpha
     topPanel?: React.ReactElement<StagePanelProps>;
+    // @deprecated
     topRight?: React.ReactElement<ZoneProps>;
     usage?: string;
+    // @alpha
+    viewNavigationTools?: React.ReactElement<ZoneProps>;
 }
 
 // @public

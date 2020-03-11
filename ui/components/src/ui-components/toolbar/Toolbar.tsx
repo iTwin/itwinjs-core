@@ -100,22 +100,23 @@ export const ToolbarWithOverflowDirectionContext = React.createContext<ToolbarOv
 function CustomItem({ item }: { item: CustomToolbarItem }) {
   const { useDragInteraction } = useToolbarWithOverflowDirectionContext();
 
-  if (item.buttonNode !== undefined)
+  if (item.panelContentNode) {
+    const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
+    const title = ConditionalStringValue.getValue(item.label);
+    return <PopupItem
+      icon={item.icon ? IconHelper.getIconReactNode(item.icon, item.internalData) : /* istanbul ignore next */ <i className="icon icon-placeholder" />}
+      isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
+      title={title ? title : /* istanbul ignore next */ item.id}
+      panel={item.panelContentNode}
+      hideIndicator={useDragInteraction}
+      badge={badge}
+    />;
+  }
+
+  if (item.buttonNode)
     return <>{item.buttonNode}</>;
 
-  if (item.panelContentNode === undefined)
-    return null;
-
-  const badge = BadgeUtilities.getComponentForBadgeType(item.badgeType);
-  const title = ConditionalStringValue.getValue(item.label);
-  return <PopupItem
-    icon={item.icon ? IconHelper.getIconReactNode(item.icon, item.internalData) : /* istanbul ignore next */ <i className="icon icon-placeholder" />}
-    isDisabled={ConditionalBooleanValue.getValue(item.isDisabled)}
-    title={title ? title : /* istanbul ignore next */ item.id}
-    panel={item.panelContentNode}
-    hideIndicator={useDragInteraction}
-    badge={badge}
-  />;
+  return null;
 }
 
 function GroupPopupItem({ item }: { item: GroupButton }) {

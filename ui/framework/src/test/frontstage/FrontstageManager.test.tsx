@@ -14,7 +14,7 @@ import {
   FrontstageManager,
   CoreTools,
 } from "../../ui-framework";
-import { TestFrontstage } from "./FrontstageTestUtils";
+import { TestFrontstage, TestFrontstage2 } from "./FrontstageTestUtils";
 import TestUtils, { storageMock } from "../TestUtils";
 
 const mySessionStorage = storageMock();
@@ -79,6 +79,22 @@ describe("FrontstageManager", () => {
       expect(widgetDef.isVisible).to.eq(true);
       expect(FrontstageManager.setWidgetState("widget1", WidgetState.Hidden)).to.be.true;
       expect(widgetDef.isVisible).to.eq(false);
+    }
+  });
+
+  it("setActiveFrontstage2 should set active frontstage", async () => {
+    const frontstageProvider = new TestFrontstage2();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    expect(frontstageProvider.frontstageDef).to.not.be.undefined;
+    const frontstageDef = frontstageProvider.frontstageDef;
+    if (frontstageDef) {
+      // make sure zones defined by new names are properly placed into the proper spot in frontstageDef
+      expect(frontstageDef.getZoneDef(1)).not.to.be.undefined;
+      expect(frontstageDef.getZoneDef(2)).not.to.be.undefined;
+      expect(frontstageDef.getZoneDef(8)).not.to.be.undefined;
+      expect(frontstageDef.getZoneDef(3)).to.be.undefined;
+      await FrontstageManager.setActiveFrontstage(frontstageDef.id);
+      expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
     }
   });
 

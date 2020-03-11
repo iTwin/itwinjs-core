@@ -22,7 +22,7 @@ import {
   StagePanel,
   StagePanelState,
 } from "@bentley/ui-framework";
-import {  DialogItemsManager } from "@bentley/ui-abstract";
+import { DialogItemsManager } from "@bentley/ui-abstract";
 
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
@@ -62,21 +62,21 @@ export class Frontstage4 extends FrontstageProvider {
         defaultContentId="TestContent1"
         isInFooterMode={true}
         applicationData={{ key: "value" }}
-        topLeft={
+        contentManipulationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={this.getToolWidget()} />,
             ]}
           />
         }
-        topCenter={
+        toolSettings={
           <Zone
             widgets={[
               <Widget isToolSettings={true} />,
             ]}
           />
         }
-        topRight={
+        viewNavigationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={this.getNavigationWidget()} />,
@@ -103,7 +103,7 @@ export class Frontstage4 extends FrontstageProvider {
             },
           }}
         />}
-        bottomCenter={
+        statusBar={
           <Zone
             widgets={[
               <Widget isStatusBar={true} classId="SmallStatusBar" />,

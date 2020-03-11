@@ -75,21 +75,21 @@ export class Frontstage2 extends FrontstageProvider {
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={false} applicationData={{ key: "value" }}
 
-        topLeft={
+        contentManipulationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={<FrontstageToolWidget />} />,
             ]}
           />
         }
-        topCenter={
+        toolSettings={
           <Zone
             widgets={[
               <Widget isToolSettings={true} />,
             ]}
           />
         }
-        topRight={
+        viewNavigationTools={
           <Zone
             widgets={[
               <Widget isFreeform={true} element={<FrontstageNavigationWidget />} />,
@@ -110,7 +110,7 @@ export class Frontstage2 extends FrontstageProvider {
             ]}
           />
         }
-        bottomCenter={
+        statusBar={
           <Zone defaultState={ZoneState.Open}
             widgets={[
               <Widget isStatusBar={true} control={SmallStatusBarWidgetControl} />,
@@ -159,8 +159,7 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
             iconSpec="icon-placeholder"
-            items={[AppTools.item3, AppTools.item4, AppTools.item5,
-              AppTools.item6, AppTools.item7, AppTools.item8]}
+            items={[AppTools.item3, AppTools.item4, AppTools.item5, AppTools.item6, AppTools.item7, AppTools.item8]}
           />
         </>
       }

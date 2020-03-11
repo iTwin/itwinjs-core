@@ -131,7 +131,7 @@ export class ViewsFrontstage extends FrontstageProvider {
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
         usage="MyUsage"
-        topLeft={
+        contentManipulationTools={
           < Zone
             widgets={
               [
@@ -140,7 +140,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               ]}
           />
         }
-        topCenter={
+        toolSettings={
           < Zone
             allowsMerging
             widgets={
@@ -152,7 +152,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               ]}
           />
         }
-        topRight={
+        viewNavigationTools={
           < Zone
             widgets={
               [
@@ -209,7 +209,7 @@ export class ViewsFrontstage extends FrontstageProvider {
               ]}
           />
         }
-        bottomCenter={
+        statusBar={
           < Zone
             widgets={
               [
