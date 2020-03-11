@@ -1,6 +1,6 @@
 {
   "name": "@bentley/projectlocation-extension",
-  "version": "2.0.0-dev.27",
+  "version": "2.0.0-dev.28",
   "description": "Project extents and geolocation",
   "main": "index.js",
   "scripts": {
@@ -50,10 +50,10 @@
     }
   },
   "devDependencies": {
-    "@bentley/certa": "2.0.0-dev.27",
-    "@bentley/build-tools": "2.0.0-dev.27",
-    "@bentley/webpack-tools": "2.0.0-dev.27",
-    "@bentley/config-loader": "2.0.0-dev.27",
+    "@bentley/certa": "2.0.0-dev.28",
+    "@bentley/build-tools": "2.0.0-dev.28",
+    "@bentley/webpack-tools": "2.0.0-dev.28",
+    "@bentley/config-loader": "2.0.0-dev.28",
     "ui-test-app": "0.0.0",
     "display-test-app": "1.8.0",
     "@types/node": "10.14.1",
@@ -71,12 +71,12 @@
     "source-map-loader": "^0.2.3"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.27",
-    "@bentley/geometry-core": "2.0.0-dev.27",
-    "@bentley/imodeljs-clients": "2.0.0-dev.27",
-    "@bentley/imodeljs-common": "2.0.0-dev.27",
-    "@bentley/imodeljs-i18n": "2.0.0-dev.27",
-    "@bentley/imodeljs-frontend": "2.0.0-dev.27",
-    "@bentley/ui-abstract": "2.0.0-dev.27"
+    "@bentley/bentleyjs-core": "2.0.0-dev.28",
+    "@bentley/geometry-core": "2.0.0-dev.28",
+    "@bentley/imodeljs-clients": "2.0.0-dev.28",
+    "@bentley/imodeljs-common": "2.0.0-dev.28",
+    "@bentley/imodeljs-i18n": "2.0.0-dev.28",
+    "@bentley/imodeljs-frontend": "2.0.0-dev.28",
+    "@bentley/ui-abstract": "2.0.0-dev.28"
   }
 }
