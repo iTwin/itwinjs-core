@@ -17,9 +17,11 @@ import { System } from "../System";
 // We are using Equation 10 from the above paper.  Equation 10 directly uses screen-space gl_FragCoord.z.
 // flatAlphaWeight bit is set if we want to apply OIT transparency using a constant Z value of 1.
 // computeLinearDepth() removes the perspective and puts z in linear [0..1]
+// To avoid excessively low weight for fragments close to the far plane, scale depth to [0.15, 1.0].
 const computeAlphaWeight = `
 float computeAlphaWeight(float a) {
-  float z = chooseFloatWithBitFlag(computeLinearDepth(v_eyeSpace.z), 1.0, u_shaderFlags, kShaderBit_OITFlatAlphaWeight);
+  float d = computeLinearDepth(v_eyeSpace.z) * .85 + .15;
+  float z = chooseFloatWithBitFlag(d, 1.0, u_shaderFlags, kShaderBit_OITFlatAlphaWeight);
   return pow(a + 0.01, 4.0) + max(1e-2, 3.0 * 1e3 * pow(z, 3.0));
 }
 `;
