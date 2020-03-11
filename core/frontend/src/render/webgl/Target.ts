@@ -279,6 +279,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       const vf = new ViewFlags();
       vf.renderMode = RenderMode.SmoothShade;
       vf.clipVolume = false;
+      vf.whiteOnWhiteReversal = false;
 
       vf.lighting = !this.is2d;
       vf.shadows = false; // don't want shadows applied to these
