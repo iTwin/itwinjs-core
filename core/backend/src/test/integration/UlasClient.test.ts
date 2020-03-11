@@ -18,7 +18,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 //    imjs_oidc_ulas_test_redirect_uri
 //    imjs_oidc_ulas_test_scopes
 
-describe.only("UlasUtilities - OIDC Token (#integration)", () => {
+describe("UlasUtilities - OIDC Token (#integration)", () => {
   const imodelJsProductId = 2686;
   let requestContext: AuthorizedBackendRequestContext;
   const defaultOidcAuthType = IModelJsNative.AuthType.OIDC;
