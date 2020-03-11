@@ -1008,7 +1008,7 @@ describe("White-on-white reversal", async () => {
   });
 
   it("should not apply to decorations", async () => {
-    class Decorator {
+    class TestDecorator {
       public decorate(context: DecorateContext) {
         const vp = context.viewport;
         const rect = vp.viewRect;
@@ -1070,7 +1070,7 @@ describe("White-on-white reversal", async () => {
       }
     }
 
-    const decorator = new Decorator();
+    const decorator = new TestDecorator();
     const yellow = Color.fromRgba(255, 255, 0, 255);
     const green = Color.fromRgba(0, 255, 0, 255);
 
