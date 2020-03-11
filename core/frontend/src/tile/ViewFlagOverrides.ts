@@ -14,7 +14,7 @@ import {
 } from "@bentley/imodeljs-common";
 
 /** Create ViewFlagOverrides suitable for most non-iModel tile trees (reality/map tiles).
- * @param options Customize the overrides. Any properties left unspecified use the current view settings.
+ * @param options Customize the overrides. Any properties left unspecified use the current view settings, except white-on-white reversal is always disabled.
  * @internal
  */
 export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean }): ViewFlagOverrides {
@@ -26,6 +26,7 @@ export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, 
     noSolarLight: noLights,
     clipVol: options.clipVolume,
     shadows: options.shadows,
+    noWhiteOnWhiteReversal: true,
   }));
 
   if (undefined === options.clipVolume)

@@ -44,7 +44,7 @@ import { EnvironmentEditor } from "./EnvironmentEditor";
 
 type UpdateAttribute = (view: ViewState) => void;
 
-type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume" | "shadows" | "forceSurfaceDiscard";
+type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume" | "shadows" | "forceSurfaceDiscard" | "whiteOnWhiteReversal";
 
 export class ViewAttributes {
   private static _expandViewFlags = false;
@@ -103,6 +103,7 @@ export class ViewAttributes {
     this.addViewFlagAttribute(flagsDiv, "Line Styles", "styles");
     this.addViewFlagAttribute(flagsDiv, "Clip Volume", "clipVolume", true);
     this.addViewFlagAttribute(flagsDiv, "Force Surface Discard", "forceSurfaceDiscard", true);
+    this.addViewFlagAttribute(flagsDiv, "White-on-white Reversal", "whiteOnWhiteReversal");
 
     this.addShadowsToggle(flagsDiv);
     this.addLightingToggle(flagsDiv);
