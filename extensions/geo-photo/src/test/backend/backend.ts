@@ -8,7 +8,7 @@ import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { init as initOidc } from "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import { initOidc } from "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 
 // tslint:disable no-console
@@ -28,7 +28,7 @@ Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Error);  // Change to trac
 Logger.setLevel("Performance", LogLevel.Error);  // Change to Info to capture
 
 async function init() {
-  await initOidc();
+  initOidc();
 
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeImpl({}, rpcInterfaces);

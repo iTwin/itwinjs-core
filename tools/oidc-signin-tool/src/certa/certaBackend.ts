@@ -46,6 +46,12 @@ registerBackendCallback(getTokenCallbackName, async (user: any): Promise<string>
   return JSON.stringify(serializeToken(accessToken));
 });
 
-export async function init() {
+/** Supports initializing the setup within an already existing backend */
+export function initOidc() {
   IModelJsConfig.init(true, true, Config.App);
 }
+/** Supports being used directly within the backendInitModule for certa instead of having a separate backend. */
+module.exports = () => {
+  initOidc();
+};
+module.exports.initOidc = initOidc;

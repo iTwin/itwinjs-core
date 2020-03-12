@@ -8,7 +8,7 @@ import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { init as initOidc } from "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import { initOidc } from "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import "./RpcImpl";
@@ -20,7 +20,7 @@ async function init() {
   IModelJsConfig.init(true, true, Config.App);
   RpcConfiguration.developmentMode = true;
 
-  await initOidc();
+  initOidc();
 
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
