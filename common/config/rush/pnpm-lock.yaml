@@ -18567,7 +18567,7 @@ packages:
     dev: false
     name: '@rush-temp/oidc-signin-tool'
     resolution:
-      integrity: sha512-aFYQnLFcmAA+GrcrU9AeQlMXhiE3dxYrvUL2p9Dk956zLoVnEGgnyJ8SQBL5jyWnknXNXkJiXxCks26VhFk1fA==
+      integrity: sha512-QGvPJ2+JxwAMBzFUmm/ExF7AttL/D29gmE+qqsL5ttQVZHtJJX5AW99mRm6TLLQX/F9I6SOJDZ374K+wSXh+8A==
       tarball: 'file:projects/oidc-signin-tool.tgz'
     version: 0.0.0
   'file:projects/perf-tools.tgz':

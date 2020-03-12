@@ -36,7 +36,7 @@ describe("ExtensionClient (#integration)", () => {
     const token = await getTestOidcToken(oidcConfig, TestUsers.regular);
     requestContext = new AuthorizedClientRequestContext(token);
 
-    projectName = Config.App.getString("imjs_test_project");
+    projectName = Config.App.getString("imjs_test_project_name");
 
     const connectClient = new ConnectClient();
     const project = await connectClient.getProject(requestContext, {

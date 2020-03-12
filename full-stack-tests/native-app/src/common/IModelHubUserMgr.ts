@@ -5,7 +5,7 @@
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { IModelAuthorizationClient } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
 import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
-import { getAccessTokenFromBackend } from "./SideChannels";
+import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 
 export class IModelHubUserMgr implements IModelAuthorizationClient {
   private _token: AccessToken | undefined;

@@ -16,7 +16,7 @@
     "clean": "rimraf lib .rush package-deps.json",
     "lint": "tslint --project . 1>&2",
     "test": "",
-    "test:integration": "node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "test:integration": "",
     "docs": "",
     "cover": ""
   },

@@ -10,7 +10,7 @@ import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { OidcDesktopClient, IModelHost } from "@bentley/imodeljs-backend";
 import { signIn } from "../signIn";
 
-describe("ExtensionClient CLI (#integration)", () => {
+describe.skip("ExtensionClient CLI (#integration)", () => {
   it("gets token", async () => {
     IModelHost.startup();
 

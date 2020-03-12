@@ -7,13 +7,11 @@ import { Project, IModelQuery, Briefcase as HubBriefcase, BriefcaseQuery, Access
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { Logger, ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { IModelCloudEnvironment } from "@bentley/imodeljs-clients/lib/IModelCloudEnvironment";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
+import { TestUserCredentials, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
-
-import { getAccessTokenFromBackend } from "../../common/SideChannels";
 
 export class TestUtility {
   public static imodelCloudEnv: IModelCloudEnvironment;

@@ -11,9 +11,7 @@ import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
 
-import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
-
-import { getAccessTokenFromBackend } from "../../common/SideChannels";
+import { TestUserCredentials, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 
 export class TestUtility {
   public static imodelCloudEnv: IModelCloudEnvironment;
