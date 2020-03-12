@@ -2061,6 +2061,7 @@ export function WebFontIcon(props: WebFontIconProps): JSX.Element;
 
 // @public
 export interface WebFontIconProps extends CommonProps {
+    iconClassName?: string;
     iconName: string;
     iconSize?: "small" | "medium" | "large" | "x-large";
     onClick?: React.MouseEventHandler<HTMLSpanElement>;

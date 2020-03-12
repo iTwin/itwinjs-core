@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Added new type of ImageSourceType \"webfont-icon\" which allows to load custom font-family icons by providing {className}:{iconName} format image value. It defaults to core-icon if value does not match this format.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Ainoras.Zukauskas@bentley.com"
+}

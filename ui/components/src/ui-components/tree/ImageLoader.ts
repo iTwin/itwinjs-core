@@ -31,7 +31,7 @@ export class TreeImageLoader implements ITreeImageLoader {
       return undefined;
 
     return {
-      sourceType: "core-icon",
+      sourceType: "webfont-icon",
       value: item.icon,
     };
   }
