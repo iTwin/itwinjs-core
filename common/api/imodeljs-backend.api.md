@@ -488,14 +488,24 @@ export class BriefcaseId {
 
 // @public
 export class BriefcaseIModelDb extends IModelDb {
+    // @internal (undocumented)
+    protected clearBriefcaseEntry(): void;
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
     // @beta
     get concurrencyControl(): ConcurrencyControl;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<BriefcaseIModelDb>;
     // @internal
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
+    // @internal
+    get eventSink(): EventSink | undefined;
     // (undocumented)
     static find(iModelToken: IModelToken): BriefcaseIModelDb;
+    readonly onBeforeClose: BeEvent<() => void>;
+    readonly onChangesetApplied: BeEvent<() => void>;
+    static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
+    static readonly onCreated: BeEvent<(_imodelDb: BriefcaseIModelDb) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>;
+    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: BriefcaseIModelDb) => void>;
     static open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<BriefcaseIModelDb>;
     // @internal
     static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<BriefcaseIModelDb>;
@@ -507,7 +517,9 @@ export class BriefcaseIModelDb extends IModelDb {
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @beta
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    }
+    // @internal (undocumented)
+    protected setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry): void;
+}
 
 // @internal
 export class BriefcaseManager {
@@ -2255,8 +2267,6 @@ export abstract class IModelDb extends IModel {
     get classMetaDataRegistry(): MetaDataRegistry;
     // @internal (undocumented)
     protected clearBriefcaseEntry(): void;
-    // @internal (undocumented)
-    protected clearEventSink(): void;
     clearSqliteStatementCache(): void;
     clearStatementCache(): void;
     get codeSpecs(): CodeSpecs;
@@ -2269,8 +2279,6 @@ export abstract class IModelDb extends IModel {
     readonly elements: IModelDb.Elements;
     // (undocumented)
     embedFont(prop: FontProps): FontProps;
-    // @internal
-    get eventSink(): EventSink | undefined;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
     static find(iModelToken: IModelToken): IModelDb;
@@ -2305,12 +2313,6 @@ export abstract class IModelDb extends IModel {
     readonly models: IModelDb.Models;
     // @internal
     get nativeDb(): IModelJsNative.DgnDb;
-    readonly onBeforeClose: BeEvent<() => void>;
-    readonly onChangesetApplied: BeEvent<() => void>;
-    static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
-    static readonly onCreated: BeEvent<(_imodelDb: IModelDb) => void>;
-    static readonly onOpen: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>;
-    static readonly onOpened: BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: IModelDb) => void>;
     readonly openParams: OpenParams;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
@@ -2332,6 +2334,8 @@ export abstract class IModelDb extends IModel {
     saveChanges(description?: string): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): DbResult;
     setGuid(guid: GuidString): DbResult;
+    // @internal (undocumented)
+    protected setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry): void;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
     // @beta (undocumented)

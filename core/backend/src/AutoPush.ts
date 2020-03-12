@@ -78,13 +78,13 @@ export enum AutoPushEventType {
 export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
 
 /** Use AutoPush to automatically push local changes to a specified IModel. To do this,
- * create an AutoPush object, specifying the IModelDb that should be monitored.
+ * create an AutoPush object, specifying the BriefcaseIModelDb that should be monitored.
  * The instance registers itself to react to events and timers. Often, backend will start
- * auto-pushing when an IModelDb is opened for read-write.
+ * auto-pushing when a BriefcaseIModelDb is opened for read-write.
  *
  * *Example:*
  * ``` ts
- * [[include:IModelDb.onOpened]]
+ * [[include:BriefcaseIModelDb.onOpened]]
  * ```
  * A service or agent would normally get its [[AutoPushParams]] parameters from data provided
  * at deployment time. For example, a service might read configuration data from a .json file

@@ -74,7 +74,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async queryRows(tokenProps: IModelTokenProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModelDb = BriefcaseIModelDb.find(iModelToken);
+    const iModelDb = IModelDb.find(iModelToken);
     return iModelDb.queryRows(ecsql, bindings, limit, quota, priority);
   }
 

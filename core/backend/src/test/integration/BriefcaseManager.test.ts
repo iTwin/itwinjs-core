@@ -90,14 +90,14 @@ describe("BriefcaseManager (#integration)", () => {
       assert.equal(iModelIdIn, readOnlyTestIModel.id);
       assert.equal(openParams.openMode, OpenMode.Readonly);
     };
-    IModelDb.onOpen.addListener(onOpenListener);
+    BriefcaseIModelDb.onOpen.addListener(onOpenListener);
 
     let onOpenedCalled: boolean = false;
     const onOpenedListener = (_requestContextIn: AuthorizedClientRequestContext, iModelDb: IModelDb) => {
       onOpenedCalled = true;
       assert.equal(iModelDb.iModelToken.iModelId, readOnlyTestIModel.id);
     };
-    IModelDb.onOpened.addListener(onOpenedListener);
+    BriefcaseIModelDb.onOpened.addListener(onOpenedListener);
 
     let onBeforeCloseCalled: boolean = false;
     const onBeforeCloseListener = () => {
@@ -127,8 +127,8 @@ describe("BriefcaseManager (#integration)", () => {
       assert.isTrue(onBeforeCloseCalled);
     } finally {
 
-      IModelDb.onOpen.removeListener(onOpenListener);
-      IModelDb.onOpened.removeListener(onOpenedListener);
+      BriefcaseIModelDb.onOpen.removeListener(onOpenListener);
+      BriefcaseIModelDb.onOpened.removeListener(onOpenedListener);
     }
   });
 

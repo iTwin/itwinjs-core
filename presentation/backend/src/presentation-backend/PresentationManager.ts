@@ -9,7 +9,7 @@
 import * as path from "path";
 import * as hash from "object-hash";
 import { ClientRequestContext, Id64String, Id64, DbResult, Logger } from "@bentley/bentleyjs-core";
-import { IModelDb, Element, GeometricElement, GeometricElement3d } from "@bentley/imodeljs-backend";
+import { BriefcaseIModelDb, IModelDb, Element, GeometricElement, GeometricElement3d } from "@bentley/imodeljs-backend";
 import {
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, NodeKey, Node, NodePathElement,
@@ -69,7 +69,7 @@ export interface PresentationManagerProps {
 
   /**
    * Should schemas preloading be enabled. If true, presentation manager listens
-   * for `IModelDb.onOpened` event and force pre-loads all ECSchemas.
+   * for `BriefcaseIModelDb.onOpened` event and force pre-loads all ECSchemas.
    */
   enableSchemasPreload?: boolean;
 
@@ -168,7 +168,7 @@ export class PresentationManager {
       this.activeLocale = props.activeLocale;
     this._rulesets = new RulesetManagerImpl(this.getNativePlatform);
     if (this._props.enableSchemasPreload)
-      this._disposeIModelOpenedListener = IModelDb.onOpened.addListener(this.onIModelOpened);
+      this._disposeIModelOpenedListener = BriefcaseIModelDb.onOpened.addListener(this.onIModelOpened);
   }
 
   /**
@@ -201,7 +201,7 @@ export class PresentationManager {
   }
 
   // tslint:disable-next-line: naming-convention
-  private onIModelOpened = (requestContext: ClientRequestContext, imodel: IModelDb) => {
+  private onIModelOpened = (requestContext: ClientRequestContext, imodel: BriefcaseIModelDb) => {
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
     // tslint:disable-next-line:no-floating-promises
     this.getNativePlatform().forceLoadSchemas(requestContext, imodelAddon);
