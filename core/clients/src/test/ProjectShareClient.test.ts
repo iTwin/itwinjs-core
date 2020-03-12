@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ClientRequestContext, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizationToken } from "../Token";
+import { GuidString } from "@bentley/bentleyjs-core";
 import { TestConfig } from "./TestConfig";
 import { ProjectShareClient, ProjectShareFolder, ProjectShareFile, ProjectShareFileQuery, ProjectShareFolderQuery } from "../projectshare/ProjectShareClient";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
@@ -24,9 +23,7 @@ describe("ProjectShareClient (#integration)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    const authToken: AuthorizationToken = await TestConfig.login();
-    const accessToken = await projectShareClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
     const project = await TestConfig.queryProject(requestContext, "iModelJsIntegrationTest");
     projectId = project.wsgId;

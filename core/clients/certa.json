@@ -2,6 +2,7 @@
   // Comments are allowed here!
   "testBundle": "./lib/test/webpack/bundled-tests.js",
   "instrumentedTestBundle": "./lib/test/webpack/bundled-tests.instrumented.js",
+  "backendInitModule": "./lib/test/utils/backend.js",
   "ports": {
     "frontend": 3000,
     "frontendDebugging": 9223

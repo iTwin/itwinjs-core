@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ImsActiveSecureTokenClient, ImsUserCredentials } from "../ImsClients";
-import { AuthorizationToken } from "../Token";
+import { Logger, GuidString } from "@bentley/bentleyjs-core";
+import { TestUserCredentials, TestUsers, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
+
 import { HubIModel } from "../imodelhub/iModels";
 import { IModelHubClient, IModelClient } from "../imodeljs-clients";
 import { ConnectClient, Project } from "../ConnectClient";
 
-import { Logger, GuidString, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { Config } from "../Config";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
+import { AccessToken } from "../Token";
 
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,
@@ -34,12 +34,9 @@ export class TestConfig {
   public static readonly enableMocks: boolean = isOfflineSet();
 
   /** Login the specified user and return the AuthorizationToken */
-  public static async login(user: ImsUserCredentials = TestUsers.regular): Promise<AuthorizationToken> {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== 0)
-      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Dev requires that SSL certificate checks be bypassed
-
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(new ClientRequestContext(), user);
-    return authToken;
+  public static async getAuthorizedClientRequestContext(user: TestUserCredentials = TestUsers.regular): Promise<AuthorizedClientRequestContext> {
+    const accessToken = await getAccessTokenFromBackend(user);
+    return new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
   }
 
   public static async queryProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
@@ -60,46 +57,4 @@ export class TestConfig {
       throw new Error(`Primary iModel not found for project ${projectId}`);
     return iModel;
   }
-}
-
-/** Test users with various permissions */
-export class TestUsers {
-  /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
-  public static get regular(): ImsUserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_regular_user_name"),
-      password: Config.App.getString("imjs_test_regular_user_password"),
-    };
-  }
-
-  /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
-  public static get manager(): ImsUserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_manager_user_name"),
-      password: Config.App.getString("imjs_test_manager_user_password"),
-    };
-  }
-
-  /** User with the typical permissions of the connected services administrator - Co-Admin: No, Connect-Services-Admin: Yes */
-  public static get super(): ImsUserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_super_user_name"),
-      password: Config.App.getString("imjs_test_super_user_password"),
-    };
-  }
-
-  /** User with the typical permissions of the connected services administrator - Co-Admin: Yes, Connect-Services-Admin: Yes */
-  public static get superManager(): ImsUserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_super_manager_user_name"),
-      password: Config.App.getString("imjs_test_super_manager_user_password"),
-    };
-  }
-  public static get serviceAccount1(): ImsUserCredentials {
-    return {
-      email: Config.App.getString("imjs_test_serviceAccount1_user_name"),
-      password: Config.App.getString("imjs_test_serviceAccount1_user_password"),
-    };
-  }
-
 }
