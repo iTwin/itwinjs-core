@@ -9,17 +9,19 @@ import {
   ButtonGroupEditorParams,
   DialogItemsManager,
   DialogItem,
+  DialogItemSyncArgs,
   DialogItemValue,
   DialogRow,
+  DialogPropertySyncItem,
   PropertyEditorParamTypes,
-  PropertyValueFormat,
   PropertyDescription,
   SuppressLabelEditorParams } from "../../ui-abstract";
+import { PrimitiveValue } from "../../ui-abstract/properties/Value";
 
-const value1: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: 3 };
-const value2: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: 10 };
-const lockValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: true };
-const buttonGroupValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: "One" };
+const value1: DialogItemValue = { value: 3 };
+const value2: DialogItemValue = { value: 10 };
+const lockValue: DialogItemValue = { value: true };
+const buttonGroupValue: DialogItemValue = { value: "One" };
 
 const getItem1Description = (): PropertyDescription => {
   return {
@@ -75,10 +77,10 @@ const getButtonGroupItemDescription = (): PropertyDescription => {
   };
 };
 
-const lockItem: DialogItem = {value: lockValue, property: getLockToggleDescription(), itemName: "Lock Item", editorPosition: {rowPriority: 0, columnIndex: 0}};
-const item1: DialogItem = {value: value1, property: getItem1Description(), itemName: "Item 1", editorPosition: {rowPriority: 0, columnIndex: 1}, lockProperty: lockItem};
-const item2: DialogItem = {value: value2, property: getItem2Description(), itemName: "Item 2", editorPosition: {rowPriority: 0, columnIndex: 2}};
-const buttonGroupItem: DialogItem = {value: buttonGroupValue, property: getButtonGroupItemDescription(), itemName: "Item 3", editorPosition: {rowPriority: 1, columnIndex: 0}};
+const lockItem: DialogItem = {value: lockValue, property: getLockToggleDescription(), editorPosition: {rowPriority: 0, columnIndex: 0}};
+const item1: DialogItem = {value: value1, property: getItem1Description(), editorPosition: {rowPriority: 0, columnIndex: 1}, lockProperty: lockItem};
+const item2: DialogItem = {value: value2, property: getItem2Description(), editorPosition: {rowPriority: 0, columnIndex: 2}, isDisabled: true};
+const buttonGroupItem: DialogItem = {value: buttonGroupValue, property: getButtonGroupItemDescription(), editorPosition: {rowPriority: 1, columnIndex: 0}};
 const dialogItems: DialogItem[] = [item1, item2, buttonGroupItem];
 
 describe("DialogItemsManager", () => {
@@ -115,6 +117,37 @@ describe("DialogItemsManager", () => {
 
       expect(items.length).to.eq(3);
     });
+    it("should raise onPropertiesChanged event when new items are set", () => {
+      const sut = new DialogItemsManager();
+      const spy = sinon.spy();
+      sut.onPropertiesChanged.addListener(spy);
+
+      const syncItem: DialogPropertySyncItem = { value: {value: 10}, propertyName: "myname", isDisabled: false};
+      const syncEventArgs: DialogItemSyncArgs = {items: [syncItem]};
+      sut.onPropertiesChanged.emit(syncEventArgs);
+      spy.calledOnce.should.true;
+    });
+    it("should update disabled state of DialogItem", () => {
+      const sut = new DialogItemsManager(dialogItems);
+
+      const itemToUpdate = sut.items[1];
+      const syncItem: DialogPropertySyncItem = { value: itemToUpdate.value, propertyName: itemToUpdate.property.name, isDisabled: true };
+      const syncEventArgs: DialogItemSyncArgs = {items: [syncItem]};
+      sut.updateItemProperties(syncEventArgs);
+      const itemDisabled = sut.items[1].isDisabled;
+      expect (itemDisabled).to.be.true;
+    });
+    it("should update value of DialogItem", () => {
+      const sut = new DialogItemsManager(dialogItems);
+
+      const itemToUpdate = sut.items[1];
+      const updateItemValue = { value: 50 };
+      const syncItem: DialogPropertySyncItem = { value: updateItemValue as DialogItemValue, propertyName: itemToUpdate.property.name};
+      const syncEventArgs: DialogItemSyncArgs = {items: [syncItem]};
+      sut.updateItemProperties(syncEventArgs);
+      const itemValue = sut.items[1].value.value;
+      expect (itemValue).to.be.eq(50);
+    });
   });
   describe ("dialogItem", () => {
     it("should want label", () => {
@@ -132,6 +165,15 @@ describe("DialogItemsManager", () => {
     it("has no lock property", () => {
       const hasLockProperty = DialogItemsManager.hasAssociatedLockProperty(item2);
       expect (hasLockProperty).to.be.false;
+    });
+  });
+  describe ("property record", () => {
+    it("should reflect value", () => {
+      const record = DialogItemsManager.getPropertyRecord(buttonGroupItem);
+      record.should.not.be.undefined;
+      const primitiveValue = record.value as PrimitiveValue;
+      primitiveValue.should.not.be.undefined;
+      expect (primitiveValue.value).to.eq("One");
     });
   });
   describe ("row", () => {

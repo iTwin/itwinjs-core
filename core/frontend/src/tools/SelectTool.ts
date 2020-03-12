@@ -8,8 +8,8 @@
 
 import {
   PropertyEditorParamTypes, ButtonGroupEditorParams, SuppressLabelEditorParams,
-  ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
-  PrimitiveValue, PropertyDescription,
+  DialogItem, DialogPropertySyncItem, DialogItemValue,
+  PropertyDescription,
 } from "@bentley/ui-abstract";
 import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range2d } from "@bentley/geometry-core";
@@ -75,8 +75,8 @@ export class SelectionTool extends PrimitiveTool {
   protected _isSelectByPoints = false;
   protected _isSuspended = false;
   protected readonly _points: Point3d[] = [];
-  private _selectionMethodValue = new ToolSettingsValue(SelectionMethod.Pick);
-  private _selectionModeValue = new ToolSettingsValue(SelectionMode.Replace);
+  private _selectionMethodValue: DialogItemValue = { value: SelectionMethod.Pick };
+  private _selectionModeValue: DialogItemValue = { value: SelectionMode.Replace };
 
   public requireWriteableTarget(): boolean { return false; }
   public autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
@@ -606,7 +606,7 @@ export class SelectionTool extends PrimitiveTool {
       this.initSelectTool();
     }
     if (this.wantToolSettings()) {
-      const syncMode: ToolSettingsPropertySyncItem = { value: this._selectionModeValue.clone(), propertyName: SelectionTool._modesName };
+      const syncMode: DialogPropertySyncItem = { value: this._selectionModeValue, propertyName: SelectionTool._modesName };
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, syncMode);
       this.syncToolSettingsProperties([syncMode]);
     }
@@ -615,7 +615,7 @@ export class SelectionTool extends PrimitiveTool {
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed
    * @beta
    */
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
     if (!this.wantToolSettings())
       return undefined;
 
@@ -630,21 +630,22 @@ export class SelectionTool extends PrimitiveTool {
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
     }
 
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
+    const toolSettings = new Array<DialogItem>();
     // generate 3 columns - label will be placed in column 0 and button group editors in columns 1 and 2.
-    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionMethodValue.clone() as PrimitiveValue, SelectionTool._getMethodsDescription(), { rowPriority: 0, columnIndex: 1 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._selectionModeValue.clone() as PrimitiveValue, SelectionTool._getModesDescription(), { rowPriority: 0, columnIndex: 2 }));
+    toolSettings.push({ value: this._selectionMethodValue, property: SelectionTool._getMethodsDescription(), editorPosition: { rowPriority: 0, columnIndex: 1 } });
+    toolSettings.push({ value: this._selectionModeValue, property: SelectionTool._getModesDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     return toolSettings;
   }
 
   /** Used to send changes from UI back to Tool
    * @beta
    */
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     let changed = false;
     if (updatedValue.propertyName === SelectionTool._methodsName) {
       const saveWantManipulators = this.wantEditManipulators();
-      if (this._selectionMethodValue.update(updatedValue.value)) {
+      this._selectionMethodValue = updatedValue.value;
+      if (this._selectionMethodValue) {
         const currWantManipulators = this.wantEditManipulators();
         if (saveWantManipulators !== currWantManipulators)
           IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, currWantManipulators ? ManipulatorToolEvent.Start : ManipulatorToolEvent.Stop);
@@ -652,7 +653,8 @@ export class SelectionTool extends PrimitiveTool {
       }
     }
     if (updatedValue.propertyName === SelectionTool._modesName) {
-      if (this._selectionModeValue.update(updatedValue.value)) {
+      this._selectionModeValue = updatedValue.value;
+      if (this._selectionModeValue) {
         if (this.wantToolSettings())
           IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
         changed = true;

@@ -36,10 +36,11 @@ beta;CustomFormattedNumberParams
 beta;DialogItem
 beta;DialogItemsChangedArgs
 beta;DialogItemsManager
-beta;DialogItemsSyncArgs
-beta;DialogItemValue 
+beta;DialogItemSyncArgs
+beta;DialogItemValue
+beta;DialogPropertyItem
+beta;DialogPropertySyncItem 
 beta;DialogRow
-beta;DialogSyncItem 
 beta;EditorPosition
 beta;EnumerationChoice
 beta;EnumerationChoicesInfo
@@ -99,7 +100,7 @@ internal;ToolbarItemsManager
 beta;ToolbarItemUtilities
 beta;ToolbarOrientation
 beta;ToolbarUsage
-beta;ToolSettingsPropertyItem
+beta;ToolSettingsPropertyItem 
 beta;ToolSettingsPropertyRecord 
 beta;ToolSettingsPropertySyncItem 
 beta;ToolSettingsValue 

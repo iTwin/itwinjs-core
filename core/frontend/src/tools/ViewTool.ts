@@ -8,8 +8,7 @@
 
 import {
   PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams,
-  ToolSettingsValue, ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem,
-  PrimitiveValue,
+  DialogItemValue, DialogItem, DialogPropertySyncItem,
 } from "@bentley/ui-abstract";
 import { Angle, Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, Vector3d, YawPitchRollAngles, ClipUtilities, Geometry, Constant, Arc3d, AngleSweep, Plane3dByOriginAndUnitNormal, XAndY } from "@bentley/geometry-core";
 import { ColorDef, Frustum, Npc, NpcCenter, LinePixels, Cartographic } from "@bentley/imodeljs-common";
@@ -3636,7 +3635,7 @@ export class SetupCameraTool extends PrimitiveTool {
     vp.synchWithView();
   }
 
-  private _useCameraHeightValue = new ToolSettingsValue(false);
+  private _useCameraHeightValue: DialogItemValue = { value: false };
   public get useCameraHeight(): boolean { return this._useCameraHeightValue.value as boolean; }
   public set useCameraHeight(option: boolean) { this._useCameraHeightValue.value = option; }
   private static _useCameraHeightName = "useCameraHeight";
@@ -3656,7 +3655,7 @@ export class SetupCameraTool extends PrimitiveTool {
     };
   }
 
-  private _useTargetHeightValue = new ToolSettingsValue(false);
+  private _useTargetHeightValue: DialogItemValue = { value: false };
   public get useTargetHeight(): boolean { return this._useTargetHeightValue.value as boolean; }
   public set useTargetHeight(option: boolean) { this._useTargetHeightValue.value = option; }
   private static _useTargetHeightName = "useTargetHeight";
@@ -3675,7 +3674,7 @@ export class SetupCameraTool extends PrimitiveTool {
     };
   }
 
-  private _cameraHeightValue = new ToolSettingsValue(0.0);
+  private _cameraHeightValue: DialogItemValue = { value: 0.0 };
   public get cameraHeight(): number { return this._cameraHeightValue.value as number; }
   public set cameraHeight(option: number) { this._cameraHeightValue.value = option; }
   private static _cameraHeightName = "cameraHeight";
@@ -3686,7 +3685,7 @@ export class SetupCameraTool extends PrimitiveTool {
     return SetupCameraTool._cameraHeightDescription;
   }
 
-  private _targetHeightValue = new ToolSettingsValue(0.0);
+  private _targetHeightValue: DialogItemValue = { value: 0.0 };
   public get targetHeight(): number { return this._targetHeightValue.value as number; }
   public set targetHeight(option: number) { this._targetHeightValue.value = option; }
   private static _targetHeightName = "targetHeight";
@@ -3698,20 +3697,20 @@ export class SetupCameraTool extends PrimitiveTool {
   }
 
   private syncCameraHeightState(): void {
-    const cameraHeightValue = new ToolSettingsValue(this.cameraHeight);
-    cameraHeightValue.displayValue = SetupCameraTool._cameraHeightDescription!.format(cameraHeightValue.value as number);
-    const syncItem: ToolSettingsPropertySyncItem = { value: cameraHeightValue, propertyName: SetupCameraTool._cameraHeightName, isDisabled: !this.useCameraHeight };
+    const newDisplayValue = SetupCameraTool._cameraHeightDescription!.format(this.cameraHeight as number);
+    const cameraHeightValue: DialogItemValue = { value: this.cameraHeight, displayValue: newDisplayValue };
+    const syncItem: DialogPropertySyncItem = { value: cameraHeightValue, propertyName: SetupCameraTool._cameraHeightName, isDisabled: !this.useCameraHeight };
     this.syncToolSettingsProperties([syncItem]);
   }
 
   private syncTargetHeightState(): void {
-    const targetHeightValue = new ToolSettingsValue(this.targetHeight);
-    targetHeightValue.displayValue = SetupCameraTool._targetHeightDescription!.format(targetHeightValue.value as number);
-    const syncItem: ToolSettingsPropertySyncItem = { value: targetHeightValue, propertyName: SetupCameraTool._targetHeightName, isDisabled: !this.useTargetHeight };
+    const newDisplayValue = SetupCameraTool._targetHeightDescription!.format(this.targetHeight as number);
+    const targetHeightValue: DialogItemValue = { value: this.targetHeight, displayValue: newDisplayValue };
+    const syncItem: DialogPropertySyncItem = { value: targetHeightValue, propertyName: SetupCameraTool._targetHeightName, isDisabled: !this.useTargetHeight };
     this.syncToolSettingsProperties([syncItem]);
   }
 
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === SetupCameraTool._useCameraHeightName) {
       this.useCameraHeight = updatedValue.value.value as boolean;
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SetupCameraTool._useCameraHeightName, value: this._useCameraHeightValue });
@@ -3730,7 +3729,7 @@ export class SetupCameraTool extends PrimitiveTool {
     return true;
   }
 
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperties(this.toolId, [
       { propertyName: SetupCameraTool._useCameraHeightName, value: this._useCameraHeightValue },
       { propertyName: SetupCameraTool._cameraHeightName, value: this._cameraHeightValue },
@@ -3738,11 +3737,11 @@ export class SetupCameraTool extends PrimitiveTool {
       { propertyName: SetupCameraTool._targetHeightName, value: this._targetHeightValue },
     ]);
 
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._useCameraHeightValue.clone() as PrimitiveValue, SetupCameraTool._getUseCameraHeightDescription(), { rowPriority: 1, columnIndex: 0 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._cameraHeightValue.clone() as PrimitiveValue, this._getCameraHeightDescription(), { rowPriority: 1, columnIndex: 2 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._useTargetHeightValue.clone() as PrimitiveValue, SetupCameraTool._getUseTargetHeightDescription(), { rowPriority: 2, columnIndex: 0 }));
-    toolSettings.push(new ToolSettingsPropertyRecord(this._targetHeightValue.clone() as PrimitiveValue, this._getTargetHeightDescription(), { rowPriority: 2, columnIndex: 2 }));
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push({ value: this._useCameraHeightValue, property: SetupCameraTool._getUseCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 0 } });
+    toolSettings.push({ value: this._cameraHeightValue, property: this._getCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 2 } });
+    toolSettings.push({ value: this._useTargetHeightValue, property: SetupCameraTool._getUseTargetHeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 0 } });
+    toolSettings.push({ value: this._targetHeightValue, property: this._getTargetHeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 } });
     return toolSettings;
   }
 }

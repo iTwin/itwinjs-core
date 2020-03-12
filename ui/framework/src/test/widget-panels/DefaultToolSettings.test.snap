@@ -8,7 +8,6 @@ exports[`WidgetPanelsDefaultToolSettings should render 1`] = `
     <EditorContainer
       onCancel={[Function]}
       onCommit={[Function]}
-      propertyRecord={null}
       setFocus={false}
     />
   </DockedToolSetting>

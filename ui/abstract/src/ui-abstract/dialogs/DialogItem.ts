@@ -5,15 +5,13 @@
 /** @packageDocumentation
  * @module Dialog
  */
-import { PrimitiveValue, PropertyValueFormat } from "../properties/Value";
 import { PropertyDescription } from "../properties/Description";
 /** DialogItemValue interface of PrimitiveValue types that have type editor support for use in dialogs
  * @beta
  */
-export interface DialogItemValue extends PrimitiveValue {
-  readonly valueFormat: PropertyValueFormat.Primitive;
+export interface DialogItemValue {
   value?: number | string | boolean | Date;
-  readonly displayValue?: string;
+  displayValue?: string;
 }
 /** Interface used to identify the location of the item a DialogItem property value.
  * @beta
@@ -32,16 +30,25 @@ export interface EditorPosition {
  */
 export interface DialogItem {
   readonly value: DialogItemValue;
-  readonly itemName: string;
   readonly property: PropertyDescription;
   readonly editorPosition: EditorPosition;
   readonly isDisabled?: boolean;
+  readonly isReadonly?: boolean;
   readonly lockProperty?: DialogItem;
 }
 
-/** DialogSyncItem used to identify an item's enable/disable state in the UI
+/** DialogPropertyItem us the specification to use if you are defining the components directly, e.g., in React
  * @beta
  */
-export interface DialogSyncItem extends DialogItem {
+export interface DialogPropertyItem {
+  readonly value: DialogItemValue;
+  readonly propertyName: string;
+}
+
+/** DialogPropertySyncItem is used to pass sync messages for DialogPropertyItems
+ * @beta
+ */
+
+export interface DialogPropertySyncItem extends DialogPropertyItem {
   readonly isDisabled?: boolean;
 }

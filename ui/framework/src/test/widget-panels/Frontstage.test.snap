@@ -73,6 +73,76 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
 </NineZoneProvider>
 `;
 
+exports[`WidgetPanelsFrontstage should render content 1`] = `
+<NineZoneProvider
+  dispatch={[Function]}
+  state={
+    Object {
+      "panels": Object {
+        "bottom": Object {
+          "collapseOffset": 100,
+          "collapsed": true,
+          "maxSize": 600,
+          "minSize": 200,
+          "pinned": true,
+          "side": "bottom",
+          "size": undefined,
+          "span": true,
+          "widgets": Array [],
+        },
+        "left": Object {
+          "collapseOffset": 100,
+          "collapsed": true,
+          "maxSize": 600,
+          "minSize": 200,
+          "pinned": true,
+          "side": "left",
+          "size": undefined,
+          "widgets": Array [],
+        },
+        "right": Object {
+          "collapseOffset": 100,
+          "collapsed": true,
+          "maxSize": 600,
+          "minSize": 200,
+          "pinned": true,
+          "side": "right",
+          "size": undefined,
+          "widgets": Array [],
+        },
+        "top": Object {
+          "collapseOffset": 100,
+          "collapsed": true,
+          "maxSize": 600,
+          "minSize": 200,
+          "pinned": true,
+          "side": "top",
+          "size": undefined,
+          "span": true,
+          "widgets": Array [],
+        },
+      },
+      "tabs": Object {},
+      "widgets": Object {},
+    }
+  }
+>
+  <div
+    className="uifw-widgetPanels-frontstage"
+  >
+    <WidgetPanelsToolSettings />
+    <WidgetPanels
+      centerContent={<WidgetPanelsToolbars />}
+      className="uifw-widgetPanels"
+      widgetContent={<WidgetContent />}
+    >
+      <WidgetPanelsFrontstageContent />
+    </WidgetPanels>
+    <WidgetPanelsStatusBar />
+  </div>
+</NineZoneProvider>
+`;
+
 exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
 <NineZoneProvider
   dispatch={[Function]}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Update tools that use the DefaultToolSettingsProvider to match its refactor using DialogItem interfaces rather that ToolSettings classes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Nancy.McCall@Bentley.com"
+}

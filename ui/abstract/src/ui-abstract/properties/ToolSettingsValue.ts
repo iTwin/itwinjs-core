@@ -6,15 +6,15 @@
  * @module Properties
  */
 
+import { DialogItemValue, DialogPropertyItem, EditorPosition, DialogPropertySyncItem } from "../dialogs/DialogItem";
 import { PropertyDescription } from "./Description";
-import { PrimitiveValue, PropertyValue, PropertyValueFormat } from "./Value";
+import { PropertyValue, PropertyValueFormat } from "./Value";
 import { PropertyRecord } from "./Record";
-import { EditorPosition } from "../dialogs/DialogItem";
 
 /** Primitive ToolSettings Value.
  * @beta
  */
-export class ToolSettingsValue implements PrimitiveValue {
+export class ToolSettingsValue implements DialogItemValue {
   public readonly valueFormat = PropertyValueFormat.Primitive;
   public value?: number | string | boolean | Date;
   public displayValue?: string;
@@ -55,7 +55,7 @@ export class ToolSettingsValue implements PrimitiveValue {
  * display property in UI, save and retrieve the state of the property, and to allow the UI to inform the Tool code about property changes.
  * @beta
  */
-export class ToolSettingsPropertyItem {
+export class ToolSettingsPropertyItem implements DialogPropertyItem {
   public value: ToolSettingsValue;
   public propertyName: string;
 
@@ -67,7 +67,7 @@ export class ToolSettingsPropertyItem {
 /** Class used to identify a specific ToolSettings property value that can be enabled/disabled in UI.
  * @beta
  */
-export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
+export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem implements DialogPropertySyncItem {
   /** used to pass enable state to Ui from Tool so property record can be updated */
   public isDisabled?: boolean;
 

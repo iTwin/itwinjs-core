@@ -40,6 +40,7 @@ import { CustomToolbarItem } from '@bentley/ui-components';
 import { DelayLoadedTreeNodeItem } from '@bentley/ui-components';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogItemsManager } from '@bentley/ui-abstract';
+import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DialogProps } from '@bentley/ui-core';
 import { Direction } from '@bentley/ui-ninezone';
 import { DisabledResizeHandles } from '@bentley/ui-ninezone';
@@ -129,8 +130,6 @@ import { ToolbarItemsManager } from '@bentley/ui-abstract';
 import { ToolbarOrientation } from '@bentley/ui-abstract';
 import { ToolbarPanelAlignment } from '@bentley/ui-ninezone';
 import { ToolbarUsage } from '@bentley/ui-abstract';
-import { ToolSettingsPropertyRecord } from '@bentley/ui-abstract';
-import { ToolSettingsPropertySyncItem } from '@bentley/ui-abstract';
 import { ToolSettingsWidgetManagerProps } from '@bentley/ui-ninezone';
 import { ToolTipOptions } from '@bentley/imodeljs-frontend';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
@@ -142,6 +141,7 @@ import { TreeRendererProps } from '@bentley/ui-components';
 import { TreeSelectionModificationEventArgs } from '@bentley/ui-components';
 import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { UiAdmin } from '@bentley/ui-abstract';
+import { UiDataProvider } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
 import { UnifiedSelectionTreeEventHandler } from '@bentley/presentation-components';
@@ -1468,11 +1468,13 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     // (undocumented)
     execute(): void;
     // (undocumented)
+    getEditorRecord: (dialogItem: DialogItem) => PropertyRecord;
+    // (undocumented)
     onInitialize(): void;
     // (undocumented)
     rows: TsRow[];
     // (undocumented)
-    valueMap: Map<string, ToolSettingsPropertyRecord>;
+    valueMap: Map<string, DialogItem>;
 }
 
 // @alpha
@@ -4400,7 +4402,7 @@ export class SyncToolSettingsPropertiesEvent extends UiEvent<SyncToolSettingsPro
 // @public
 export interface SyncToolSettingsPropertiesEventArgs {
     // (undocumented)
-    syncProperties: ToolSettingsPropertySyncItem[];
+    syncProperties: DialogPropertySyncItem[];
     // (undocumented)
     toolId: string;
 }
@@ -4836,10 +4838,10 @@ export class ToolUiManager {
     static clearToolSettingsData(): void;
     static initialize(): void;
     static initializeDataForTool(tool: InteractiveTool): void;
-    static initializeToolSettingsData(toolSettingsProperties: ToolSettingsPropertyRecord[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
+    static initializeToolSettingsData(toolSettingsProperties: DialogItem[] | undefined, toolId?: string, toolLabel?: string, toolDescription?: string): boolean;
     static readonly onSyncToolSettingsProperties: SyncToolSettingsPropertiesEvent;
     static get toolIdForToolSettings(): string;
-    static get toolSettingsProperties(): ToolSettingsPropertyRecord[];
+    static get toolSettingsProperties(): DialogItem[];
     static get useDefaultToolSettingsProvider(): boolean;
     static set useDefaultToolSettingsProvider(useDefaultToolSettings: boolean);
     }
@@ -4847,6 +4849,8 @@ export class ToolUiManager {
 // @public
 export class ToolUiProvider extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
+    get dataProvider(): UiDataProvider | undefined;
+    set dataProvider(d: UiDataProvider | undefined);
     getType(): ConfigurableUiControlType;
     get toolSettingsNode(): React.ReactNode;
     set toolSettingsNode(r: React.ReactNode);

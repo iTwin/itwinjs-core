@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { StopWatch } from "@bentley/bentleyjs-core";
-import { UiItemsProvider, StageUsage, ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities, ToolSettingsPropertyItem, ToolSettingsValue, UiDataProvider } from "@bentley/ui-abstract";
+import { UiItemsProvider, DialogPropertySyncItem, StageUsage, ToolbarUsage, ToolbarOrientation, CommonToolbarItem, ToolbarItemUtilities, UiDataProvider } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { ModelessDialogManager } from "@bentley/ui-framework";
 import { ITreeDataProvider } from "@bentley/ui-components";
@@ -79,23 +79,23 @@ export class GPDialogUiProvider extends UiDataProvider implements UiItemsProvide
   }
 
   public syncLoadPhaseInUi() {
-    const properties = [new ToolSettingsPropertyItem(new ToolSettingsValue(this.loadPhase), this.loadPhasePropertyName)];
-    this.onSyncPropertiesChangeEvent.emit({ properties });
+    const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.loadPhase }, propertyName: this.loadPhasePropertyName }];
+    this.onSyncPropertiesChangeEvent.emit({properties: syncArgs});
   }
 
   private syncFolderCountInUi() {
-    const properties = [new ToolSettingsPropertyItem(new ToolSettingsValue(this.folderCount), this.folderCountPropertyName)];
-    this.onSyncPropertiesChangeEvent.emit({ properties });
+    const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.folderCount }, propertyName: this.folderCountPropertyName }];
+    this.onSyncPropertiesChangeEvent.emit({properties: syncArgs});
   }
 
   private syncFolderNameInUi() {
-    const properties = [new ToolSettingsPropertyItem(new ToolSettingsValue(this.folderName), this.folderNamePropertyName)];
-    this.onSyncPropertiesChangeEvent.emit({ properties });
+    const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.folderName }, propertyName: this.folderNamePropertyName }];
+    this.onSyncPropertiesChangeEvent.emit({properties: syncArgs});
   }
 
   private syncFileCountInUi() {
-    const properties = [new ToolSettingsPropertyItem(new ToolSettingsValue(this.fileCount), this.fileCountPropertyName)];
-    this.onSyncPropertiesChangeEvent.emit({ properties });
+    const syncArgs: DialogPropertySyncItem[] = [{ value: { value: this.fileCount }, propertyName: this.folderNamePropertyName }];
+    this.onSyncPropertiesChangeEvent.emit({properties: syncArgs});
   }
 
   // synch the Phase1 Counts (folders, files, photos, and panoramas) every .1 second.
@@ -113,13 +113,13 @@ export class GPDialogUiProvider extends UiDataProvider implements UiItemsProvide
       }
       this._nextET += 200;
     }
-    const properties = [
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.currentFolder), this.currentFolderPropertyName),
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.currentFile), this.currentFilePropertyName),
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.photoCount), this.photoCountPropertyName),
-      new ToolSettingsPropertyItem(new ToolSettingsValue(this.panoramaCount), this.panoramaCountPropertyName),
+    const syncArgs: DialogPropertySyncItem[] = [
+      { value: { value: this.currentFolder }, propertyName: this.currentFolderPropertyName },
+      { value: { value: this.currentFile }, propertyName: this.currentFilePropertyName },
+      { value: { value: this.photoCount }, propertyName: this.photoCountPropertyName },
+      { value: { value: this.panoramaCount }, propertyName: this.panoramaCountPropertyName },
     ];
-    this.onSyncPropertiesChangeEvent.emit({ properties });
+    this.onSyncPropertiesChangeEvent.emit({properties: syncArgs});
   }
 
   public syncTitle(title: string) {

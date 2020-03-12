@@ -7,8 +7,8 @@
  */
 
 import {
-  ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
-  PrimitiveValue, PropertyDescription,
+  DialogItem, DialogPropertySyncItem,
+  DialogItemValue, PropertyDescription,
 } from "@bentley/ui-abstract";
 import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d, GrowableXYZArray, PolylineOps, AxisOrder } from "@bentley/geometry-core";
 import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels, IModelError } from "@bentley/imodeljs-common";
@@ -444,22 +444,24 @@ export class ViewClipClearTool extends ViewClipTool {
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
   public static iconSpec = "icon-section-plane";
-  private _orientationValue = new ToolSettingsValue(EditManipulator.RotationType.Face);
+  private _orientationValue: DialogItemValue = { value: EditManipulator.RotationType.Face };
   constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
 
   public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._orientationValue.clone() as PrimitiveValue, ViewClipTool._getEnumAsOrientationDescription(), { rowPriority: 0, columnIndex: 2 }));
+    const toolSettings = new Array<DialogItem>();
+    const settingsItem: DialogItem = { value: this._orientationValue, property: ViewClipTool._getEnumAsOrientationDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } };
+    toolSettings.push(settingsItem);
     return toolSettings;
   }
 
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === ViewClipTool._orientationName) {
-      if (this._orientationValue.update(updatedValue.value)) {
+      this._orientationValue = updatedValue.value;
+      if (this._orientationValue) {
         IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
         return true;
       }
@@ -512,7 +514,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
 export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
   public static iconSpec = "icon-section-shape";
-  private _orientationValue = new ToolSettingsValue(EditManipulator.RotationType.Top);
+  private _orientationValue: DialogItemValue = { value: EditManipulator.RotationType.Top };
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
   protected _zLow?: number;
@@ -521,16 +523,17 @@ export class ViewClipByShapeTool extends ViewClipTool {
   public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._orientationValue.clone() as PrimitiveValue, ViewClipTool._getEnumAsOrientationDescription(), { rowPriority: 0, columnIndex: 2 }));
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push({ value: this._orientationValue, property: ViewClipTool._getEnumAsOrientationDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     return toolSettings;
   }
 
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === ViewClipTool._orientationName) {
-      if (!this._orientationValue.update(updatedValue.value))
+      this._orientationValue = updatedValue.value;
+      if (!this._orientationValue)
         return false;
       this._points.length = 0;
       this._matrix = undefined;

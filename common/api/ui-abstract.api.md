@@ -317,7 +317,7 @@ export interface DialogItem {
     // (undocumented)
     readonly isDisabled?: boolean;
     // (undocumented)
-    readonly itemName: string;
+    readonly isReadonly?: boolean;
     // (undocumented)
     readonly lockProperty?: DialogItem;
     // (undocumented)
@@ -329,50 +329,68 @@ export interface DialogItem {
 // @beta
 export interface DialogItemsChangedArgs {
     // (undocumented)
-    readonly items: ReadonlyArray<DialogItem>;
+    readonly items: ReadonlyArray<DialogPropertySyncItem>;
 }
 
 // @beta
 export class DialogItemsManager {
     constructor(items?: ReadonlyArray<DialogItem>);
     // (undocumented)
-    static editorWantsLabel(record: DialogItem): boolean;
+    applyUiPropertyChange: (_item: DialogPropertySyncItem) => void;
+    // (undocumented)
+    static editorWantsLabel(item: DialogItem): boolean;
     // (undocumented)
     execute(): void;
     // (undocumented)
-    static hasAssociatedLockProperty(record: DialogItem): boolean;
+    static getPropertyRecord: (dialogItem: DialogItem) => PropertyRecord;
+    // (undocumented)
+    static hasAssociatedLockProperty(item: DialogItem): boolean;
     // (undocumented)
     get items(): ReadonlyArray<DialogItem>;
     set items(items: ReadonlyArray<DialogItem>);
     // (undocumented)
     layoutDialogRows(): boolean;
     // (undocumented)
-    readonly onDataChanged: BeUiEvent<DialogSyncItem>;
+    readonly onDataChanged: BeUiEvent<DialogPropertySyncItem>;
     readonly onItemsChanged: BeUiEvent<(args: DialogItemsChangedArgs) => void>;
     // (undocumented)
     static onlyContainButtonGroupEditors(row: DialogRow): boolean;
     // (undocumented)
-    readonly onPropertiesChanged: BeUiEvent<DialogItemsSyncArgs>;
+    readonly onPropertiesChanged: BeUiEvent<DialogItemSyncArgs>;
     // (undocumented)
     rows: DialogRow[];
+    // (undocumented)
+    updateItemProperties: (syncItems: DialogItemSyncArgs) => void;
     // (undocumented)
     valueMap: Map<string, DialogItem>;
 }
 
 // @beta
-export interface DialogItemsSyncArgs {
+export interface DialogItemSyncArgs {
     // (undocumented)
-    readonly items: ReadonlyArray<DialogSyncItem>;
+    readonly items: ReadonlyArray<DialogPropertySyncItem>;
 }
 
 // @beta
-export interface DialogItemValue extends PrimitiveValue {
+export interface DialogItemValue {
     // (undocumented)
-    readonly displayValue?: string;
+    displayValue?: string;
     // (undocumented)
     value?: number | string | boolean | Date;
+}
+
+// @beta
+export interface DialogPropertyItem {
     // (undocumented)
-    readonly valueFormat: PropertyValueFormat.Primitive;
+    readonly propertyName: string;
+    // (undocumented)
+    readonly value: DialogItemValue;
+}
+
+// @beta
+export interface DialogPropertySyncItem extends DialogPropertyItem {
+    // (undocumented)
+    readonly isDisabled?: boolean;
 }
 
 // @beta
@@ -381,12 +399,6 @@ export interface DialogRow {
     priority: number;
     // (undocumented)
     records: DialogItem[];
-}
-
-// @beta
-export interface DialogSyncItem extends DialogItem {
-    // (undocumented)
-    readonly isDisabled?: boolean;
 }
 
 // @beta
@@ -807,7 +819,7 @@ export class SyncPropertiesChangeEvent extends BeUiEvent<SyncPropertiesChangeEve
 // @beta
 export interface SyncPropertiesChangeEventArgs {
     // (undocumented)
-    properties: ToolSettingsPropertySyncItem[];
+    properties: DialogPropertySyncItem[];
 }
 
 // @beta
@@ -878,7 +890,7 @@ export enum ToolbarUsage {
 }
 
 // @beta
-export class ToolSettingsPropertyItem {
+export class ToolSettingsPropertyItem implements DialogPropertyItem {
     constructor(value: ToolSettingsValue, propertyName: string);
     // (undocumented)
     propertyName: string;
@@ -898,13 +910,13 @@ export class ToolSettingsPropertyRecord extends PropertyRecord {
 }
 
 // @beta
-export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem {
+export class ToolSettingsPropertySyncItem extends ToolSettingsPropertyItem implements DialogPropertySyncItem {
     constructor(value: ToolSettingsValue, propertyName: string, isDisabled?: boolean);
     isDisabled?: boolean;
 }
 
 // @beta
-export class ToolSettingsValue implements PrimitiveValue {
+export class ToolSettingsValue implements DialogItemValue {
     constructor(value?: number | string | boolean | Date, displayValue?: string);
     // (undocumented)
     clone(): ToolSettingsValue;
@@ -961,9 +973,10 @@ export class UiAdmin {
 export abstract class UiDataProvider {
     // (undocumented)
     onSyncPropertiesChangeEvent: SyncPropertiesChangeEvent;
-    processChangesInUi(_properties: ToolSettingsPropertyItem[]): PropertyChangeResult;
-    supplyAvailableProperties(): ToolSettingsPropertyItem[];
-    validateProperty(_item: ToolSettingsPropertyItem): PropertyChangeResult;
+    processChangesInUi(_properties: DialogPropertyItem[]): PropertyChangeResult;
+    supplyAvailableProperties(): DialogPropertyItem[];
+    syncProperties(_syncProperties: DialogPropertySyncItem[]): void;
+    validateProperty(_item: DialogPropertyItem): PropertyChangeResult;
 }
 
 // @public

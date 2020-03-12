@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { ToolSettingsPropertySyncItem, ToolSettingsPropertyItem, ToolSettingsValue } from "@bentley/ui-abstract";
+import { DialogPropertySyncItem, DialogPropertyItem, DialogItemValue } from "@bentley/ui-abstract";
 import { BeEvent, AbandonedError, Logger, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
 import { GeometryStreamProps, NpcCenter, Easing } from "@bentley/imodeljs-common";
@@ -43,33 +43,32 @@ const enum MouseButton { Left = 0, Middle = 1, Right = 2 }
  */
 export class ToolSettingsState {
   /** Initialize single tool settings value */
-  public initializeToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void {
+  public initializeToolSettingProperty(toolId: string, item: DialogPropertyItem): void {
     const key = `${toolId}:${item.propertyName}`;
     const savedValue = window.sessionStorage.getItem(key);
     if (null !== savedValue) {
-      const readValue = JSON.parse(savedValue) as ToolSettingsValue;
+      const readValue = JSON.parse(savedValue) as DialogItemValue;
       // set the primitive value to the saved value - note: tool settings only support primitive values.
-      item.value.value = readValue.value;
-      if (readValue.hasDisplayValue)
-        item.value.displayValue = readValue.displayValue;
+      const newItem = { value: readValue, propertyName: item.propertyName };
+      item = newItem;
     }
   }
 
   /** Initialize an array of tool settings values */
-  public initializeToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void {
-    tsProps.forEach((item: ToolSettingsPropertyItem) => this.initializeToolSettingProperty(toolId, item));
+  public initializeToolSettingProperties(toolId: string, tsProps: DialogPropertyItem[]): void {
+    tsProps.forEach((item: DialogPropertyItem) => this.initializeToolSettingProperty(toolId, item));
   }
 
   /** Save single tool settings value */
-  public saveToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void {
+  public saveToolSettingProperty(toolId: string, item: DialogPropertyItem): void {
     const key = `${toolId}:${item.propertyName}`;
     const objectAsString = JSON.stringify(item.value);
     window.sessionStorage.setItem(key, objectAsString);
   }
 
   /** Save an array of tool settings values */
-  public saveToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void {
-    tsProps.forEach((item: ToolSettingsPropertyItem) => this.saveToolSettingProperty(toolId, item));
+  public saveToolSettingProperties(toolId: string, tsProps: DialogPropertyItem[]): void {
+    tsProps.forEach((item: DialogPropertyItem) => this.saveToolSettingProperty(toolId, item));
   }
 }
 
@@ -388,13 +387,13 @@ export class ToolAdmin {
   /** The registered handler method that will update the UI with any property value changes.
    *  @internal
    */
-  private _toolSettingsChangeHandler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined = undefined;
+  private _toolSettingsChangeHandler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined = undefined;
 
   /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool.
    * @internal
    */
   public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
-  public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined) {
+  public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined) {
     this._toolSettingsChangeHandler = handler;
   }
 
@@ -1389,7 +1388,7 @@ export class ToolAdmin {
   /** Method used by interactive tools to send updated values to UI components, typically showing tool settings.
    * @beta
    */
-  public syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void {
+  public syncToolSettingsProperties(toolId: string, syncProperties: DialogPropertySyncItem[]): void {
     if (this.toolSettingsChangeHandler)
       this.toolSettingsChangeHandler(toolId, syncProperties);
   }
