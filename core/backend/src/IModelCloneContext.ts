@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { Element } from "./Element";
@@ -69,6 +69,9 @@ export class IModelCloneContext {
    * @returns the target CodeSpecId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetCodeSpecId(sourceId: Id64String): Id64String {
+    if (Id64.invalid === sourceId) {
+      return Id64.invalid;
+    }
     return this._nativeContext.findCodeSpecId(sourceId);
   }
 
@@ -76,6 +79,9 @@ export class IModelCloneContext {
    * @returns the target ElementId or [Id64.invalid]($bentley) if a mapping not found.
    */
   public findTargetElementId(sourceElementId: Id64String): Id64String {
+    if (Id64.invalid === sourceElementId) {
+      return Id64.invalid;
+    }
     return this._nativeContext.findElementId(sourceElementId);
   }
 

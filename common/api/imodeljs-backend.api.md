@@ -2448,6 +2448,7 @@ export class IModelExporter {
     exportModel(modeledElementId: Id64String): void;
     exportModelContents(modelId: Id64String, elementClassFullName?: string): void;
     exportRelationships(baseRelClassFullName: string): void;
+    exportRepositoryLinks(): void;
     exportSubModels(parentModelId: Id64String): void;
     protected get handler(): IModelExportHandler;
     registerHandler(handler: IModelExportHandler): void;
