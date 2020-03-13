@@ -3697,15 +3697,13 @@ export class SetupCameraTool extends PrimitiveTool {
   }
 
   private syncCameraHeightState(): void {
-    const newDisplayValue = SetupCameraTool._cameraHeightDescription!.format(this.cameraHeight as number);
-    const cameraHeightValue: DialogItemValue = { value: this.cameraHeight, displayValue: newDisplayValue };
+    const cameraHeightValue = { value: this.cameraHeight, displayValue: SetupCameraTool._cameraHeightDescription!.format(this.cameraHeight) };
     const syncItem: DialogPropertySyncItem = { value: cameraHeightValue, propertyName: SetupCameraTool._cameraHeightName, isDisabled: !this.useCameraHeight };
     this.syncToolSettingsProperties([syncItem]);
   }
 
   private syncTargetHeightState(): void {
-    const newDisplayValue = SetupCameraTool._targetHeightDescription!.format(this.targetHeight as number);
-    const targetHeightValue: DialogItemValue = { value: this.targetHeight, displayValue: newDisplayValue };
+    const targetHeightValue = { value: this.targetHeight, displayValue: SetupCameraTool._cameraHeightDescription!.format(this.targetHeight) };
     const syncItem: DialogPropertySyncItem = { value: targetHeightValue, propertyName: SetupCameraTool._targetHeightName, isDisabled: !this.useTargetHeight };
     this.syncToolSettingsProperties([syncItem]);
   }
@@ -3737,11 +3735,12 @@ export class SetupCameraTool extends PrimitiveTool {
       { propertyName: SetupCameraTool._targetHeightName, value: this._targetHeightValue },
     ]);
 
+    const useCameraHeight = { value: this._useCameraHeightValue, property: SetupCameraTool._getUseCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 0 } };
+    const useTargetHeight = { value: this._useTargetHeightValue, property: SetupCameraTool._getUseTargetHeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 0 } };
+
     const toolSettings = new Array<DialogItem>();
-    toolSettings.push({ value: this._useCameraHeightValue, property: SetupCameraTool._getUseCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 0 } });
-    toolSettings.push({ value: this._cameraHeightValue, property: this._getCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 2 } });
-    toolSettings.push({ value: this._useTargetHeightValue, property: SetupCameraTool._getUseTargetHeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 0 } });
-    toolSettings.push({ value: this._targetHeightValue, property: this._getTargetHeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 } });
+    toolSettings.push({ value: this._cameraHeightValue, property: this._getCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 2 }, lockProperty: useCameraHeight });
+    toolSettings.push({ value: this._targetHeightValue, property: this._getTargetHeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 2 }, lockProperty: useTargetHeight });
     return toolSettings;
   }
 }
