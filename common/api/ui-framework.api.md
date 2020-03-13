@@ -5331,6 +5331,17 @@ export interface VisibilityTreeFilterInfo {
 export const visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element;
 
 // @alpha
+export function VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element;
+
+// @alpha
+export interface VisibilityTreeNoFilteredDataProps {
+    // (undocumented)
+    message: string;
+    // (undocumented)
+    title: string;
+}
+
+// @alpha
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
 // @alpha

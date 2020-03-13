@@ -85,3 +85,25 @@ export const useVisibilityTreeFiltering = (
 
   return { filteredNodeLoader, isFiltering, nodeHighlightingProps };
 };
+
+/**
+ * Properties for [[VisibilityTreeNoFilteredData]] component.
+ * @alpha
+ */
+export interface VisibilityTreeNoFilteredDataProps {
+  title: string;
+  message: string;
+}
+
+/**
+ * Renders message that no nodes was found for filter.
+ * @alpha
+ */
+export function VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps) {
+  return (
+    <div className="components-tree-errormessage">
+      <span className="errormessage-header">{props.title}</span>
+      <span className="errormessage-body">{props.message}</span>
+    </div>
+  );
+}
