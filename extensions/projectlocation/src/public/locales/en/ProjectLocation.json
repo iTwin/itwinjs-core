@@ -27,14 +27,15 @@
     }
   },
   "Prompts": {
-    "IdentifyHandle": "Identify handle to modify",
+    "IdentifyHandle": "Identify project extents or handle",
     "IdentifyRefPoint": "Identify reference point",
-    "ConfirmCoordinates": "Confirm coordinates",
     "DefineAngle": "Enter point to define angle",
+    "IdentifyKnownLocation": "Identify location of known coordinate",
+    "ConfirmCoordinates": "Confirm coordinates",
     "SpecifyCoordinates": "Specify coordinates then accept"
   },
   "Inputs": {
-    "AcceptHandle": "Accept handle"
+    "AcceptHandle": "Accept project extents or handle"
   },
   "Message": {
     "NotActive": "Geolocation tool is not enabled for a spatial view",
@@ -45,6 +46,8 @@
     "Length": "Length",
     "Width": "Width",
     "Height": "Height",
+    "Latitude": "Latitude",
+    "Longitude": "Longitude",
     "North": "North"
   }
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/projectlocation-extension",
+      "comment": "Tool settings to enter new lat/long, altitude, and north angle.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/projectlocation-extension",
+  "email": "Brien.Bastings@bentley.com"
+}
