@@ -62,7 +62,7 @@ export class UlasUtilities {
    * @param hostName
    * @param usageType
    */
-  public static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): void {
+  public static async postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): Promise<void> {
     return IModelHost.platform.NativeUlasClient.postUserUsage(
       requestContext.accessToken.toTokenString(IncludePrefix.No),
       requestContext.applicationVersion,
@@ -129,7 +129,7 @@ export class UlasUtilities {
    * @param endTimeZ The time at which feature usage was completed
    * @param additionalData A collection of arbitrary data that will be attached to the feature usage log
    */
-  public static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): void {
+  public static async postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): Promise<void> {
     const featureUserData: IModelJsNative.FeatureUserDataKeyValuePair[] = [];
     for (const propName in additionalData) { // tslint:disable-line: forin
       featureUserData.push({
