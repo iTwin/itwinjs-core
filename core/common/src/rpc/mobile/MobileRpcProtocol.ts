@@ -13,6 +13,7 @@ import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { RpcEndpoint } from "../core/RpcConstants";
+import { RpcRequest } from "../core/RpcRequest";
 /** @internal */
 declare var bentley: any;
 
@@ -35,9 +36,9 @@ export const interop = (() => {
 export type MobileRpcChunks = Array<string | Uint8Array>;
 
 interface MobileRpcGateway {
-  handler: (payload: ArrayBuffer | string) => void;
-  sendString: (message: string) => void;
-  sendBinary: (message: Uint8Array) => void;
+  handler: (payload: ArrayBuffer | string, connectionId: number) => void;
+  sendString: (message: string, connectionId: number) => void;
+  sendBinary: (message: Uint8Array, connectionId: number) => void;
   port: number;
 }
 
@@ -89,10 +90,80 @@ export class MobileRpcProtocol extends RpcProtocol {
     if (!MobileRpcConfiguration.args.port) {
       throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol require 'port' parameter");
     }
-    this.socket = new WebSocket(`ws://localhost:${MobileRpcConfiguration.args.port}`);
-    this.socket.binaryType = "arraybuffer";
-    this.socket.addEventListener("message", async (event) => this.handleMessageFromBackend(event.data));
-    this.socket.addEventListener("open", (_event) => this.scheduleSend());
+
+    this.connect(MobileRpcConfiguration.args.port, false);
+
+    (window as any)._imodeljs_rpc_reconnect = (port: number) => {
+      this.socket.close();
+      window.location.hash = window.location.hash.replace(`port=${MobileRpcConfiguration.args.port}`, `port=${port}`);
+      MobileRpcConfiguration.args.port = port;
+      this.connect(port, true);
+    };
+  }
+
+  private connect(port: number, reset: boolean) {
+    const socket = new WebSocket(`ws://localhost:${port}`);
+    socket.binaryType = "arraybuffer";
+    this.connectMessageHandler(socket);
+    this.connectOpenHandler(socket, reset);
+    this.connectErrorHandler(socket);
+    this.socket = socket;
+  }
+
+  private connectMessageHandler(socket: WebSocket) {
+    socket.addEventListener("message", async (event) => {
+      if (this.socket !== socket) {
+        return;
+      }
+
+      this.handleMessageFromBackend(event.data);
+    });
+  }
+
+  private connectOpenHandler(socket: WebSocket, reset: boolean) {
+    socket.addEventListener("open", (_event) => {
+      if (this.socket !== socket) {
+        return;
+      }
+
+      if (reset) {
+        this.reset();
+
+        const requests = new Map(RpcRequest.activeRequests);
+        requests.forEach((req) => {
+          req.cancel();
+          // tslint:disable-next-line: no-floating-promises
+          req.submit();
+        });
+      }
+
+      this.scheduleSend();
+    });
+  }
+
+  private connectErrorHandler(socket: WebSocket) {
+    socket.addEventListener("error", (_event) => {
+      if (this.socket !== socket) {
+        return;
+      }
+
+      throw new IModelError(BentleyStatus.ERROR, "Socket error.");
+    });
+  }
+
+  private reset() {
+    this.requests.clear();
+    this._pending.length = 0;
+    this._capacity = 1;
+
+    if (typeof (this._sendInterval) !== "undefined") {
+      window.clearInterval(this._sendInterval);
+      this._sendInterval = undefined;
+    }
+
+    this._partialRequest = undefined;
+    this._partialFulfillment = undefined;
+    this._partialData.length = 0;
   }
 
   private scheduleSend() {
@@ -188,19 +259,20 @@ export class MobileRpcProtocol extends RpcProtocol {
       throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on backend require native bridge to be setup");
     }
 
-    mobilegateway.handler = (payload) => this.handleMessageFromFrontend(payload);
+    mobilegateway.handler = (payload, connectionId) => this.handleMessageFromFrontend(payload, connectionId);
     (self as any).__imodeljs_mobilegateway_handler__ = mobilegateway.handler;
+    (self as any)._imodeljs_rpc_reconnect_backend = () => this.reset();
   }
 
-  private handleMessageFromFrontend(data: string | ArrayBuffer) {
+  private handleMessageFromFrontend(data: string | ArrayBuffer, connectionId: number) {
     if (typeof (data) === "string") {
-      this.handleStringFromFrontend(data);
+      this.handleStringFromFrontend(data, connectionId);
     } else {
-      this.handleBinaryFromFrontend(data);
+      this.handleBinaryFromFrontend(data, connectionId);
     }
   }
 
-  private handleStringFromFrontend(data: string) {
+  private handleStringFromFrontend(data: string, connection: number) {
     if (this._partialRequest) {
       throw new IModelError(BentleyStatus.ERROR, "Invalid state (already receiving request).");
     }
@@ -209,11 +281,11 @@ export class MobileRpcProtocol extends RpcProtocol {
     this._partialRequest = request;
 
     if (!request.parameters.data.length) {
-      this.notifyRequest(); // tslint:disable-line:no-floating-promises
+      this.notifyRequest(connection); // tslint:disable-line:no-floating-promises
     }
   }
 
-  private handleBinaryFromFrontend(data: ArrayBuffer) {
+  private handleBinaryFromFrontend(data: ArrayBuffer, connection: number) {
     const request = this._partialRequest;
     if (!request) {
       throw new IModelError(BentleyStatus.ERROR, "Invalid state (no request received).");
@@ -221,11 +293,11 @@ export class MobileRpcProtocol extends RpcProtocol {
 
     this._partialData.push(new Uint8Array(data));
     if (this._partialData.length === request.parameters.data.length) {
-      this.notifyRequest(); // tslint:disable-line:no-floating-promises
+      this.notifyRequest(connection); // tslint:disable-line:no-floating-promises
     }
   }
 
-  private async notifyRequest() {
+  private async notifyRequest(connection: number) {
     const request = this._partialRequest;
     if (!request) {
       throw new IModelError(BentleyStatus.ERROR, "Invalid state (no request exists).");
@@ -236,7 +308,7 @@ export class MobileRpcProtocol extends RpcProtocol {
 
     const fulfillment = await this.fulfill(request);
     const response = MobileRpcProtocol.encodeResponse(fulfillment);
-    this.sendToFrontend(response);
+    this.sendToFrontend(response, connection);
   }
 
   public sendToBackend(message: MobileRpcChunks): void {
@@ -244,14 +316,14 @@ export class MobileRpcProtocol extends RpcProtocol {
     this.scheduleSend();
   }
 
-  private sendToFrontend(message: MobileRpcChunks): void {
+  private sendToFrontend(message: MobileRpcChunks, connection: number): void {
     const mobilegateway: MobileRpcGateway = interop as MobileRpcGateway;
 
     for (const chunk of message) {
       if (typeof (chunk) === "string") {
-        mobilegateway.sendString(chunk);
+        mobilegateway.sendString(chunk, connection);
       } else {
-        mobilegateway.sendBinary(chunk);
+        mobilegateway.sendBinary(chunk, connection);
       }
     }
   }

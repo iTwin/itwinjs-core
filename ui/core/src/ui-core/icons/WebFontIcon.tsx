@@ -26,6 +26,8 @@ export interface WebFontIconProps extends CommonProps {
   title?: string;
   /** Size of the icon */
   iconSize?: "small" | "medium" | "large" | "x-large";
+  /** Class name of icon used for custom font-family icons */
+  iconClassName?: string;
 }
 
 /** WebFontIcon React component
@@ -33,7 +35,7 @@ export interface WebFontIconProps extends CommonProps {
  */
 export function WebFontIcon(props: WebFontIconProps) {
   const className = classnames(
-    "bui-webfont-icon",
+    props.iconClassName || "bui-webfont-icon",
     props.iconName,
     props.iconSize ? `uicore-icons-${props.iconSize}` : undefined,
     props.className,

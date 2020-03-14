@@ -2,24 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-
 import { GuidString } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext,
   ConnectClient, HubIModel, IModelHubClient,
   IModelClient, IModelQuery, Project,
 } from "@bentley/imodeljs-clients";
-import { getAccessTokensFromBackend } from "./common/SideChannels";
+import { TestUsers, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 
 /**
  * Basic configuration used by all tests
  */
 export class TestConfig {
   public static async getAuthorizedClientRequestContext(): Promise<AuthorizedClientRequestContext> {
-    const accessTokens = await getAccessTokensFromBackend();
-    chai.assert.isAtLeast(accessTokens.length, 1);
-    return new AuthorizedClientRequestContext(accessTokens[0]);
+    const accessToken = await getAccessTokenFromBackend(TestUsers.regular);
+    return new AuthorizedClientRequestContext(accessToken);
   }
 
   public static async queryProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {

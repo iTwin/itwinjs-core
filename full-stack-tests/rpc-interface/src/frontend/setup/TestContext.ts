@@ -9,12 +9,13 @@ import { OpenAPIInfo, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { Config, AccessToken } from "@bentley/imodeljs-clients";
 import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
 
 import { Settings, getRpcInterfaces } from "../../common/Settings";
 import { IModelSession } from "./IModelSession";
 import { AuthorizationClient } from "./AuthorizationClient";
 
-import { getAccessTokensFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
+import { getProcessEnvFromBackend } from "../../common/SideChannels";
 
 declare const PACKAGE_VERSION: string;
 
@@ -64,8 +65,10 @@ export class TestContext {
     Config.App.set("imjs_buddi_resolve_url_using_region", this.settings.env);
 
     if (undefined !== this.settings.oidcClientId) {
-      const accessTokens = await getAccessTokensFromBackend();
-      this.adminUserAccessToken = accessTokens[0];
+      this.adminUserAccessToken = await getAccessTokenFromBackend({
+        email: this.settings.users[0].email,
+        password: this.settings.users[0].password,
+      } as TestUserCredentials);
     }
 
     const iModelData = this.settings.iModel;

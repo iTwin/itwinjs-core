@@ -12,9 +12,9 @@ import * as classnames from "classnames";
 // cSpell:Ignore configurableui
 
 import {
-  PropertyRecord, ToolSettingsPropertyRecord,
+  PropertyRecord, DialogItem,
   PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams, PrimitiveValue,
-  ToolSettingsPropertySyncItem, ToolSettingsValue, PropertyValueFormat,
+  DialogPropertySyncItem, DialogItemValue, PropertyValueFormat, UiDataProvider,
 } from "@bentley/ui-abstract";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -41,14 +41,14 @@ enum LayoutMode {
 /** @internal */
 class TsRow {
   public priority = 0;
-  public records: ToolSettingsPropertyRecord[] = [];
+  public records: DialogItem[] = [];
 
-  constructor(priority: number, record: ToolSettingsPropertyRecord) {
+  constructor(priority: number, record: DialogItem) {
     this.priority = priority;
     this.records.push(record);
   }
 
-  public static editorWantsLabel(record: ToolSettingsPropertyRecord): boolean {
+  public static editorWantsLabel(record: DialogItem): boolean {
     if (record.property.editor && record.property.editor.params) {
       const params = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel) as SuppressLabelEditorParams;
       // istanbul ignore else
@@ -58,7 +58,7 @@ class TsRow {
     return true;
   }
 
-  public static hasAssociatedLockProperty(record: ToolSettingsPropertyRecord): boolean {
+  public static hasAssociatedLockProperty(record: DialogItem): boolean {
     return !!record.lockProperty;
   }
 
@@ -79,7 +79,7 @@ interface TsProps {
 
 interface TsState {
   toolId: string;
-  valueMap: Map<string, ToolSettingsPropertyRecord>;
+  valueMap: Map<string, DialogItem>;
 }
 
 /** Component to populate ToolSetting for ToolSettings properties
@@ -96,17 +96,16 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
 
   /** Process Tool code's request to update one or more properties */
   private _handleSyncToolSettingsPropertiesEvent = (args: SyncToolSettingsPropertiesEventArgs): void => {
-    const newValueMap = new Map<string, ToolSettingsPropertyRecord>(this.state.valueMap);
+    const newValueMap = new Map<string, DialogItem>(this.state.valueMap);
 
-    args.syncProperties.forEach((syncItem: ToolSettingsPropertySyncItem) => {
+    args.syncProperties.forEach((syncItem: DialogPropertySyncItem) => {
       Logger.logInfo(UiFramework.loggerCategory(this),
-        `handleSyncToolSettingsPropertiesEvent - Tool updating '${syncItem.propertyName}' to value of ${(syncItem.value as ToolSettingsValue).value}`);
+        `handleSyncToolSettingsPropertiesEvent - Tool updating '${syncItem.propertyName}' to value of ${(syncItem.value as DialogItemValue).value}`);
 
       const propertyRecord = newValueMap.get(syncItem.propertyName);
       /* istanbul ignore else */
       if (propertyRecord) {
-        const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(propertyRecord, syncItem.value as ToolSettingsValue);
-        updatedPropertyRecord.isDisabled = syncItem.isDisabled;
+        const updatedPropertyRecord: DialogItem = { value: syncItem.value, property: propertyRecord.property, isDisabled: syncItem.isDisabled, editorPosition: propertyRecord.editorPosition, lockProperty: propertyRecord.lockProperty };
         newValueMap.set(syncItem.propertyName, updatedPropertyRecord);
       }
     });
@@ -140,11 +139,11 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
 
       const propertyRecord = this.state.valueMap.get(propertyName);
       if (propertyRecord) {
-        const newValueMap = new Map<string, ToolSettingsPropertyRecord>(this.state.valueMap);
-        const updatedPropertyRecord = ToolSettingsPropertyRecord.clone(propertyRecord, commit.newValue as ToolSettingsValue);
+        const newValueMap = new Map<string, DialogItem>(this.state.valueMap);
+        const updatedPropertyRecord: DialogItem = { value: commit.newValue as DialogItemValue, property: propertyRecord.property, isDisabled: propertyRecord.isDisabled, editorPosition: propertyRecord.editorPosition, lockProperty: propertyRecord.lockProperty };
         newValueMap.set(propertyName, updatedPropertyRecord);
         this.setState({ valueMap: newValueMap }, () => {
-          const syncItem: ToolSettingsPropertySyncItem = { value: commit.newValue as ToolSettingsValue, propertyName };
+          const syncItem: DialogPropertySyncItem = { value: commit.newValue as DialogItemValue, propertyName };
           // tslint:disable-next-line:no-console
           // console.log(`Sending new value of ${ (commit.newValue as PrimitiveValue).value } for '${propertyName}' to tool`);
           activeTool.applyToolSettingPropertyChange(syncItem);
@@ -154,16 +153,18 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
   }
 
   private static getStateFromProps(props: TsProps): TsState {
-    const valueMap = new Map<string, ToolSettingsPropertyRecord>(props.dataProvider.valueMap);
+    const valueMap = new Map<string, DialogItem>(props.dataProvider.valueMap);
     const { toolId } = props;
     return { toolId, valueMap };
   }
 
-  private getEditor(rowRecord: PropertyRecord, isLock = false, setFocus = false): React.ReactNode {
-    const record = this.state.valueMap.get(rowRecord.property.name);
+  private getEditor(rowRecord: DialogItem, isLock = false, setFocus = false): React.ReactNode {
+    const item = this.state.valueMap.get(rowRecord.property.name);
     // istanbul ignore next
-    if (!record)
+    if (!item)
       throw (new Error("No record found in value map for tool setting."));
+
+    const record = this.props.dataProvider.getEditorRecord(item);
 
     const className = isLock ? "uifw-default-toolsettings-property-lock" : "uifw-default-toolsettings-editor";
     return (
@@ -191,11 +192,11 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     );
   }
 
-  private getPropertyId(record: ToolSettingsPropertyRecord): string {
+  private getPropertyId(record: DialogItem): string {
     return `toolSettingsProperty-${record.property.name}`;
   }
 
-  private getPropertyLabelClass(record: ToolSettingsPropertyRecord, isLeftmostRecord: boolean): string {
+  private getPropertyLabelClass(record: DialogItem, isLeftmostRecord: boolean): string {
     const lockProperty = record.lockProperty ? this.state.valueMap.get(record.lockProperty.property.name) : null;
 
     return classnames(
@@ -206,11 +207,11 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     );
   }
 
-  private getPropertyLabel(rowRecord: ToolSettingsPropertyRecord): string {
+  private getPropertyLabel(rowRecord: DialogItem): string {
     return rowRecord.property.displayLabel ? rowRecord.property.displayLabel : rowRecord.property.name;
   }
 
-  private getEditorLabel(rowRecord: ToolSettingsPropertyRecord, isLeftmostRecord = false): React.ReactNode {
+  private getEditorLabel(rowRecord: DialogItem, isLeftmostRecord = false): React.ReactNode {
     const record = this.state.valueMap.get(rowRecord.property.name);
     // istanbul ignore next
     if (!record)
@@ -219,7 +220,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     return <label className={this.getPropertyLabelClass(record, isLeftmostRecord)} htmlFor={this.getPropertyId(rowRecord)}>{this.getPropertyLabel(rowRecord)}:</label>;
   }
 
-  private getLeftLockAndLabel(rowRecord: ToolSettingsPropertyRecord, multiplePropertiesOnRow: boolean): React.ReactNode {
+  private getLeftLockAndLabel(rowRecord: DialogItem, multiplePropertiesOnRow: boolean): React.ReactNode {
     const record = this.state.valueMap.get(rowRecord.property.name);
     // istanbul ignore next
     if (!record)
@@ -236,7 +237,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
     );
   }
 
-  private getInlineLabelAndEditor(record: ToolSettingsPropertyRecord, isLeftmostRecord: boolean): React.ReactNode {
+  private getInlineLabelAndEditor(record: DialogItem, isLeftmostRecord: boolean): React.ReactNode {
     const label = (TsRow.editorWantsLabel(record)) ? this.getEditorLabel(record, isLeftmostRecord) : null;
     return (
       <div key={record.property.name} className="uifw-default-toolsettings-inline-label-and-editor">
@@ -248,7 +249,7 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
 
   private getRowWithMultipleEditors(row: TsRow): React.ReactNode {
     return <div className="uifw-default-toolsettings-inline-editor-group">
-      {row.records.map((record: ToolSettingsPropertyRecord, index: number) => this.getInlineLabelAndEditor(record, 0 === index))}
+      {row.records.map((record: DialogItem, index: number) => this.getInlineLabelAndEditor(record, 0 === index))}
     </div>;
   }
 
@@ -298,15 +299,33 @@ class DefaultToolSettings extends React.Component<TsProps, TsState> {
   }
 }
 
+/** DataProvider that keep underlying data in sync with UI display */
+class ToolSettingsDataProvider extends UiDataProvider {
+
+  private _toolSettingsNode?: DefaultToolSettings;
+  constructor() {
+    super();
+  }
+  // istanbul ignore next
+  public get toolSettingsNode(): DefaultToolSettings | undefined { return this._toolSettingsNode; }
+  // istanbul ignore next
+  public set toolSettingsNode(r: DefaultToolSettings | undefined) { this._toolSettingsNode = r; }
+
+  public syncProperties(_props: DialogPropertySyncItem[]) {
+  }
+
+}
 /** ToolUiProvider class that informs ConfigurableUi that Tool Settings are provided for the specified tool.
  * @internal
  */
 export class DefaultToolSettingsProvider extends ToolUiProvider {
   public rows: TsRow[] = [];
-  public valueMap = new Map<string, ToolSettingsPropertyRecord>();  // allows easy lookup of record given the property name
+  public valueMap = new Map<string, DialogItem>();  // allows easy lookup of record given the property name
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
+
+    const toolSettingsDP = new ToolSettingsDataProvider();
 
     // istanbul ignore else
     if (this.layoutToolSettingRows())
@@ -318,6 +337,8 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
       );
     else
       this.toolSettingsNode = null;
+    toolSettingsDP.toolSettingsNode = this.toolSettingsNode as DefaultToolSettings;
+    this.dataProvider = toolSettingsDP;
   }
 
   private layoutToolSettingRows(): boolean {
@@ -326,7 +347,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     toolSettingsProperties.forEach((record) => {
       this.valueMap.set(record.property.name, record);
       if (record.lockProperty)
-        this.valueMap.set(record.lockProperty.property.name, record.lockProperty as ToolSettingsPropertyRecord);
+        this.valueMap.set(record.lockProperty.property.name, record.lockProperty as DialogItem);
 
       const row = this.rows.find((value) => value.priority === record.editorPosition.rowPriority);
       if (row) {
@@ -339,8 +360,15 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     // sort rows
     this.rows.sort((a: TsRow, b: TsRow) => a.priority - b.priority);
     // sort records
-    this.rows.forEach((row: TsRow) => row.records.sort((a: ToolSettingsPropertyRecord, b: ToolSettingsPropertyRecord) => a.editorPosition.columnIndex - b.editorPosition.columnIndex));
+    this.rows.forEach((row: TsRow) => row.records.sort((a: DialogItem, b: DialogItem) => a.editorPosition.columnIndex - b.editorPosition.columnIndex));
     return this.rows.length > 0;
+  }
+
+  public getEditorRecord = (dialogItem: DialogItem): PropertyRecord => {
+    const propertyValue = { valueFormat: PropertyValueFormat.Primitive, value: dialogItem.value.value, displayValue: dialogItem.value.displayValue };
+    const record = new PropertyRecord(propertyValue as PrimitiveValue, dialogItem.property);
+    record.isDisabled = dialogItem.lockProperty ? !dialogItem.lockProperty.value.value as boolean : !!dialogItem.isDisabled;
+    return record;
   }
 
   /* istanbul ignore next */

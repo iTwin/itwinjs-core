@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Refactor DefaultToolSettingsProvider to use the DialogItem interfaces in place of ToolSettings classes.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "Nancy.McCall@Bentley.com"
+}

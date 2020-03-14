@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, IncludePrefix, UserInfo } from "@bentley/imodeljs-clients";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
+
+import { TestUserCredentials } from "../TestUsers";
 
 // Shared by both the frontend and backend side of the tests
 export const getTokenCallbackName = "getToken";

@@ -106,6 +106,7 @@ describe("ToolUiProvider", () => {
 
       const toolSettingsNode = FrontstageManager.activeToolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
+
     }
   });
 

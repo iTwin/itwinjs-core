@@ -33,7 +33,6 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
 
 function applyOneChangeSet(imodel: IModelDb, csToken: ChangeSetToken) {
   const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(imodel.briefcase!.nativeDb!, JSON.stringify([csToken]), ChangeSetApplyOption.Merge);
-  imodel.onChangesetApplied.raiseEvent();
   assert.equal(status, ChangeSetStatus.Success);
 }
 
@@ -69,9 +68,6 @@ describe("ChangeMerging", () => {
     const secondDb = StandaloneIModelDb.open(secondFileName, OpenMode.ReadWrite);
     const neutralDb = StandaloneIModelDb.open(neutralFileName, OpenMode.ReadWrite);
     assert.isTrue(firstDb !== secondDb);
-    // firstDb.nativeDb.enableTxnTesting();
-    // secondDb.nativeDb.enableTxnTesting();
-    // neutralDb.nativeDb.enableTxnTesting();
     firstDb.nativeDb.setBriefcaseId(BriefcaseId.FutureStandalone);
     secondDb.nativeDb.setBriefcaseId(BriefcaseId.FutureStandalone);
     neutralDb.nativeDb.setBriefcaseId(BriefcaseId.FutureStandalone);

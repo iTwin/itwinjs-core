@@ -1,6 +1,15 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- Added ability to customize selection handling in VisibilityWidget's Models tree
+- Passing on style props from ui-framework Toolbar to ui-ninezone Toolbar
+- Updated ModelTree ruleset to use RelationshipPathSpecification
 
 ## 1.12.0
 Wed, 12 Feb 2020 17:45:50 GMT

@@ -1,6 +1,14 @@
 # Change Log - @bentley/oidc-signin-tool
 
-This log was last generated on Wed, 12 Feb 2020 17:45:50 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Mar 2020 16:16:31 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 04 Mar 2020 16:16:31 GMT
+
+### Updates
+
+- Fix federated workflow with slow network speed
+- Update to support new Bentley sign-in and consent pages 
 
 ## 1.12.0
 Wed, 12 Feb 2020 17:45:50 GMT

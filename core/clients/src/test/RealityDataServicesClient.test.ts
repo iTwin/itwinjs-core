@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ClientRequestContext, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizationToken } from "../Token";
-import { TestConfig, TestUsers } from "./TestConfig";
-import { RealityDataServicesClient, RealityData, RealityDataRelationship } from "../RealityDataServicesClient";
+import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { Range2d, Angle } from "@bentley/geometry-core";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+
+import { TestConfig } from "./TestConfig";
+import { RealityDataServicesClient, RealityData, RealityDataRelationship } from "../RealityDataServicesClient";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 chai.should();
@@ -22,9 +23,7 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    const authToken: AuthorizationToken = await TestConfig.login();
-    const accessToken = await realityDataServiceClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
     chai.assert.isDefined(projectId);
@@ -593,9 +592,7 @@ describe("RealityDataServicesClient Admin (#integration)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    const authToken: AuthorizationToken = await TestConfig.login(TestUsers.manager);
-    const accessToken = await realityDataServiceClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.manager);
   });
 
   // NEEDS_WORK: Reality Data Services team - filed TFS#265604

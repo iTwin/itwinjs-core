@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ClientRequestContext, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@bentley/bentleyjs-core";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
+
 import { ConnectSettingsClient } from "../SettingsClient";
 import { SettingsStatus, SettingsResult, SettingsMapResult } from "../SettingsAdmin";
-import { AuthorizationToken, AccessToken } from "../Token";
-import { TestConfig, TestUsers } from "./TestConfig";
+import { TestConfig } from "./TestConfig";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 // compare simple arrays
@@ -34,9 +35,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    const authToken: AuthorizationToken = await TestConfig.login();
-    const accessToken = await settingsClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
     chai.assert.isDefined(projectId);
@@ -259,9 +258,8 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
       return;
 
     settingsClient = new ConnectSettingsClient("1001");
-    const authToken: AuthorizationToken = await TestConfig.login(TestUsers.super);
-    const accessToken = await settingsClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+
+    requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
 
     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
     chai.assert.isDefined(projectId);
@@ -494,9 +492,7 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
 
   before(async () => {
     settingsClient = new ConnectSettingsClient("1001");
-    const authToken: AuthorizationToken = await TestConfig.login();
-    const accessToken: AccessToken = await settingsClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
     chai.assert.isDefined(projectId);
@@ -557,9 +553,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    const authToken: AuthorizationToken = await TestConfig.login();
-    const accessToken = await settingsClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
     chai.assert.isDefined(projectId);
@@ -728,7 +722,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.assert(((undefined !== readResult.settingsMap) && (40 === readResult.settingsMap.size)), "NamespaceTest should contain 40 settings");
     for (let iSetting = 0; iSetting < 40; iSetting++) {
       const returnedValue: any = readResult.settingsMap!.get(`ManySettings${iSetting}`);
-      chai.assert (((undefined !== returnedValue) && (returnedValue.testString === `Setting${iSetting}`) && (returnedValue.value === iSetting)), `Returned Setting ${iSetting} should contain the right values`);
+      chai.assert(((undefined !== returnedValue) && (returnedValue.testString === `Setting${iSetting}`) && (returnedValue.value === iSetting)), `Returned Setting ${iSetting} should contain the right values`);
     }
 
     // add two more and read again.
@@ -744,7 +738,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
     chai.assert(((undefined !== readResult.settingsMap) && (42 === readResult.settingsMap.size)), "NamespaceTest should contain 40 settings");
     for (let iSetting = 0; iSetting < 42; iSetting++) {
       const returnedValue: any = readResult.settingsMap!.get(`ManySettings${iSetting}`);
-      chai.assert (((undefined !== returnedValue) && (returnedValue.testString === `Setting${iSetting}`) && (returnedValue.value === iSetting)), `Returned Setting ${iSetting} should contain the right values`);
+      chai.assert(((undefined !== returnedValue) && (returnedValue.testString === `Setting${iSetting}`) && (returnedValue.value === iSetting)), `Returned Setting ${iSetting} should contain the right values`);
     }
 
   });
@@ -758,9 +752,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
-    const authToken: AuthorizationToken = await TestConfig.login();
-    const accessToken = await settingsClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
     chai.assert.isDefined(projectId);

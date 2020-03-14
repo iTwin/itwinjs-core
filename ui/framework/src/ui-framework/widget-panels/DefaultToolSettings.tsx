@@ -20,12 +20,16 @@ export interface WidgetPanelsDefaultToolSettingsProps {
 export function WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSettingsProps) {
   return (<>{props.dataProvider.rows.map((row) => {
     return row.records.map((record) => {
+      const editorRecord = props.dataProvider.getEditorRecord (record);
+      // istanbul ignore else
+      if (editorRecord)
+        editorRecord.isDisabled = !!record.isDisabled;
       return (
         <DockedToolSetting
           key={record.property.name}
         >
           <EditorContainer
-            propertyRecord={record}
+            propertyRecord={editorRecord}
             setFocus={false}
             onCommit={() => { }}
             onCancel={() => { }}

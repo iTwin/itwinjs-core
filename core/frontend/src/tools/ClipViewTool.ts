@@ -7,8 +7,8 @@
  */
 
 import {
-  ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
-  PrimitiveValue, PropertyDescription,
+  DialogItem, DialogPropertySyncItem,
+  DialogItemValue, PropertyDescription,
 } from "@bentley/ui-abstract";
 import { Range3d, ClipVector, ClipShape, ClipPrimitive, ClipPlane, ConvexClipPlaneSet, Plane3dByOriginAndUnitNormal, Vector3d, Point3d, Transform, Matrix3d, ClipMaskXYZRangePlanes, Range1d, PolygonOps, Geometry, Ray3d, ClipUtilities, Loop, Path, GeometryQuery, LineString3d, GrowableXYZArray, PolylineOps, AxisOrder } from "@bentley/geometry-core";
 import { Placement2d, Placement3d, Placement2dProps, ColorDef, LinePixels, IModelError } from "@bentley/imodeljs-common";
@@ -259,11 +259,29 @@ export class ViewClipTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builderHid);
   }
 
+  private static isHilited(vp: Viewport, id?: string): boolean {
+    return (undefined !== id ? vp.iModel.hilited.elements.has(Id64.getLowerUint32(id), Id64.getUpperUint32(id)) : false);
+  }
+
+  private static isFlashed(vp: Viewport, id?: string): boolean {
+    return (undefined !== id ? vp.lastFlashedElem === id : false);
+  }
+
   public static drawClipShape(context: DecorateContext, shape: ClipShape, extents: Range1d, color: ColorDef, weight: number, id?: string): void {
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, shape.transformFromClip, id); // Use WorldDecoration not WorldOverlay to make sure handles have priority...
     builder.setSymbology(color, ColorDef.black, weight);
     ViewClipTool.addClipShape(builder, shape, extents);
     context.addDecorationFromBuilder(builder);
+
+    // NOTE: We want to display hidden edges when clip decoration isn't hilited (not selected or drawn in dynamics).
+    // This isn't required and is messy looking when the clip is being drawn hilited.
+    // If the clip decoration is being flashed, draw using the hilite color to match the pickable world decoration display.
+    if (!this.isHilited(context.viewport, id)) {
+      const builderHid = context.createGraphicBuilder(GraphicType.WorldOverlay, shape.transformFromClip);
+      builderHid.setSymbology(this.isFlashed(context.viewport, id) ? context.viewport.hilite.color : color, ColorDef.black, 1, LinePixels.Code2);
+      ViewClipTool.addClipShape(builderHid, shape, extents);
+      context.addDecorationFromBuilder(builderHid);
+    }
   }
 
   public static getClipShapePoints(shape: ClipShape, z: number): Point3d[] {
@@ -308,12 +326,25 @@ export class ViewClipTool extends PrimitiveTool {
   public static drawClipPlanesLoops(context: DecorateContext, loops: GeometryQuery[], color: ColorDef, weight: number, dashed?: boolean, fill?: ColorDef, id?: string): void {
     if (loops.length < 1)
       return;
+
     const builderEdge = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, id); // Use WorldDecoration not WorldOverlay to make sure handles have priority...
     builderEdge.setSymbology(color, ColorDef.black, weight, dashed ? LinePixels.Code2 : undefined);
     ViewClipTool.addClipPlanesLoops(builderEdge, loops, true);
     context.addDecorationFromBuilder(builderEdge);
+
+    // NOTE: We want to display hidden edges when clip decoration isn't hilited (not selected or drawn in dynamics).
+    // This isn't required and is messy looking when the clip is being drawn hilited.
+    // If the clip decoration is being flashed, draw using the hilite color to match the pickable world decoration display.
+    if (!this.isHilited(context.viewport, id)) {
+      const builderEdgeHid = context.createGraphicBuilder(GraphicType.WorldOverlay);
+      builderEdgeHid.setSymbology(this.isFlashed(context.viewport, id) ? context.viewport.hilite.color : color, ColorDef.black, 1, LinePixels.Code2);
+      ViewClipTool.addClipPlanesLoops(builderEdgeHid, loops, true);
+      context.addDecorationFromBuilder(builderEdgeHid);
+    }
+
     if (undefined === fill)
       return;
+
     const builderFace = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined);
     builderFace.setSymbology(fill, fill, 0);
     ViewClipTool.addClipPlanesLoops(builderFace, loops, false);
@@ -413,22 +444,24 @@ export class ViewClipClearTool extends ViewClipTool {
 export class ViewClipByPlaneTool extends ViewClipTool {
   public static toolId = "ViewClip.ByPlane";
   public static iconSpec = "icon-section-plane";
-  private _orientationValue = new ToolSettingsValue(EditManipulator.RotationType.Face);
+  private _orientationValue: DialogItemValue = { value: EditManipulator.RotationType.Face };
   constructor(clipEventHandler?: ViewClipEventHandler, protected _clearExistingPlanes: boolean = false) { super(clipEventHandler); }
 
   public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._orientationValue.clone() as PrimitiveValue, ViewClipTool._getEnumAsOrientationDescription(), { rowPriority: 0, columnIndex: 2 }));
+    const toolSettings = new Array<DialogItem>();
+    const settingsItem: DialogItem = { value: this._orientationValue, property: ViewClipTool._getEnumAsOrientationDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } };
+    toolSettings.push(settingsItem);
     return toolSettings;
   }
 
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === ViewClipTool._orientationName) {
-      if (this._orientationValue.update(updatedValue.value)) {
+      this._orientationValue = updatedValue.value;
+      if (this._orientationValue) {
         IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
         return true;
       }
@@ -481,7 +514,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
 export class ViewClipByShapeTool extends ViewClipTool {
   public static toolId = "ViewClip.ByShape";
   public static iconSpec = "icon-section-shape";
-  private _orientationValue = new ToolSettingsValue(EditManipulator.RotationType.Top);
+  private _orientationValue: DialogItemValue = { value: EditManipulator.RotationType.Top };
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
   protected _zLow?: number;
@@ -490,16 +523,17 @@ export class ViewClipByShapeTool extends ViewClipTool {
   public get orientation(): EditManipulator.RotationType { return this._orientationValue.value as EditManipulator.RotationType; }
   public set orientation(option: EditManipulator.RotationType) { this._orientationValue.value = option; }
 
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: ViewClipTool._orientationName, value: this._orientationValue });
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._orientationValue.clone() as PrimitiveValue, ViewClipTool._getEnumAsOrientationDescription(), { rowPriority: 0, columnIndex: 2 }));
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push({ value: this._orientationValue, property: ViewClipTool._getEnumAsOrientationDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     return toolSettings;
   }
 
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === ViewClipTool._orientationName) {
-      if (!this._orientationValue.update(updatedValue.value))
+      this._orientationValue = updatedValue.value;
+      if (!this._orientationValue)
         return false;
       this._points.length = 0;
       this._matrix = undefined;

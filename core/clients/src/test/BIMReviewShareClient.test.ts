@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ClientRequestContext, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { AuthorizationToken } from "../Token";
+import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { TestConfig } from "./TestConfig";
 import { BIMReviewShareClient, Content } from "../BIMReviewShareClient";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
@@ -26,9 +25,7 @@ describe("BIMReviewShareClient", () => {
       return;
     }
 
-    const authToken: AuthorizationToken = await TestConfig.login();
-    const accessToken = await bimReviewShareClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
     projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
 

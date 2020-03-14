@@ -26,12 +26,28 @@
       }
     }
   },
+  "Prompts": {
+    "IdentifyHandle": "Identify project extents or handle",
+    "IdentifyRefPoint": "Identify reference point",
+    "DefineAngle": "Enter point to define angle",
+    "IdentifyKnownLocation": "Identify location of known coordinate",
+    "ConfirmCoordinates": "Confirm coordinates",
+    "SpecifyCoordinates": "Specify coordinates then accept"
+  },
+  "Inputs": {
+    "AcceptHandle": "Accept project extents or handle"
+  },
   "Message": {
+    "NotActive": "Geolocation tool is not enabled for a spatial view",
+    "NotAllowed": "A valid projected coordinate system already exists",
+    "NotGeolocated": "Not geolocated",
     "ProjectExtents": "Project Extents",
     "ModifyProjectExtents": "Modify Project Extents",
     "Length": "Length",
     "Width": "Width",
     "Height": "Height",
+    "Latitude": "Latitude",
+    "Longitude": "Longitude",
     "North": "North"
   }
 }

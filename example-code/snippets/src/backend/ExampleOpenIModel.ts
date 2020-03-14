@@ -2,12 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BriefcaseIModelDb, ConcurrencyControl, IModelDb, OpenParams } from "@bentley/imodeljs-backend";
-import { OpenMode, EnvMacroSubst } from "@bentley/bentleyjs-core";
+import { EnvMacroSubst, OpenMode } from "@bentley/bentleyjs-core";
+import { BriefcaseIModelDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
+import { AccessToken, AuthorizedClientRequestContext, Config } from "@bentley/imodeljs-clients";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
-
-import { AccessToken, Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
-
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 
 async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {
@@ -32,23 +30,21 @@ export function readConfigParams(): any {
 // __PUBLISH_EXTRACT_END__
 
 function configureIModel() {
-  // __PUBLISH_EXTRACT_START__ IModelDb.onOpen
-  IModelDb.onOpen.addListener((_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, openParams: OpenParams, _version: IModelVersion) => {
+  // __PUBLISH_EXTRACT_START__ BriefcaseIModelDb.onOpen
+  BriefcaseIModelDb.onOpen.addListener((_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, openParams: OpenParams, _version: IModelVersion) => {
     // A read-only service might want to reject all requests to open an iModel for writing. It can do this in the onOpen event.
     if (openParams.openMode !== OpenMode.Readonly)
       throw new IModelError(IModelStatus.BadRequest, "Navigator is readonly");
   });
   // __PUBLISH_EXTRACT_END__
 
-  // __PUBLISH_EXTRACT_START__ IModelDb.onOpened
-  IModelDb.onOpened.addListener((_requestContext: AuthorizedClientRequestContext, iModel: IModelDb) => {
+  // __PUBLISH_EXTRACT_START__ BriefcaseIModelDb.onOpened
+  BriefcaseIModelDb.onOpened.addListener((_requestContext: AuthorizedClientRequestContext, iModel: BriefcaseIModelDb) => {
     if (iModel.openParams.openMode !== OpenMode.ReadWrite)
       return;
 
     // Setting a concurrency control policy is an example of something you might do in an onOpened event handler.
-    if (iModel instanceof BriefcaseIModelDb) {
-      iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-    }
+    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
   });
   // __PUBLISH_EXTRACT_END__
 }

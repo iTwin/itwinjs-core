@@ -43,6 +43,11 @@
     transform: translate(-50%,-50%);
     font-style: italic;
     color: $buic-foreground-muted;
+
+    .errormessage-header {
+      display: block;
+      font-weight: bold;
+    }
   }
 
 }

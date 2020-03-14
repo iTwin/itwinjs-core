@@ -11,13 +11,12 @@ import {
   DialogItemsManager,
   DialogItem,
   DialogItemValue,
-  DialogSyncItem,
+  DialogPropertySyncItem,
   PropertyDescription,
   PropertyEditorParamTypes,
-  PropertyValueFormat,
   SuppressLabelEditorParams,
-  DialogItemsSyncArgs,
- } from "@bentley/ui-abstract";
+  DialogItemSyncArgs,
+} from "@bentley/ui-abstract";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
 import {
   IModelApp,
@@ -54,8 +53,8 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
   private _dialogItems?: DialogItem[];
   public readonly state: Readonly<TestUiProviderDialogState>;
 
-  constructor (props: TestUiProviderDialogProps) {
-    super (props);
+  constructor(props: TestUiProviderDialogProps) {
+    super(props);
     this._itemsManager = props.itemsManager;
     this._dialogItems = props.dialogItems === undefined ? this.supplyDialogItems() : props.dialogItems;
     this.state = {
@@ -65,9 +64,10 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
       overlay: true,
     };
     this._itemsManager.items = this._dialogItems;
+    this._itemsManager.applyUiPropertyChange = this.applyUiPropertyChange;
   }
   public render(): JSX.Element {
-    return ( <Dialog
+    return (<Dialog
       title={"UI Provider Modal Dialog"}
       opened={this.state.opened}
       resizable={this.state.resizable}
@@ -82,7 +82,6 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
       minHeight={200}
       maxHeight={500}
       maxWidth={400}
-      onOutsideClick={this._handleCancel}
     >
       <DefaultReactDisplay itemsManager={this._itemsManager} key={Date.now()} />
     </Dialog>
@@ -90,9 +89,8 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
   }
 
   private _handleOK = () => {
+    this.storeValues();
     this._closeDialog(() => {
-      if (this.props.onResult)
-        this.props.onResult(DialogButtonType.OK);
     });
   }
 
@@ -137,14 +135,14 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
     };
   }
 
-  private _optionsValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: ColorOptions.Blue as number };
+  private _optionsValue: DialogItemValue = { value: ColorOptions.Blue as number };
 
   public get option(): ColorOptions {
     return this._optionsValue.value as ColorOptions;
   }
 
   public set option(option: ColorOptions) {
-    this._optionsValue.value = option;
+    this._optionsValue = { value: option };
   }
 
   // ------------- Color ---------------
@@ -175,22 +173,22 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
     };
   }
 
-  private _colorValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: ColorByName.blue as number };
+  private _colorValue: DialogItemValue = { value: ColorByName.blue as number };
 
   public get colorValue(): number {
-    return this._optionsValue.value as number;
+    return this._colorValue.value as number;
   }
 
-  public set colorValue(value: number) {
-    this._optionsValue.value = value;
+  public set colorValue(newValue: number) {
+    this._colorValue.value = newValue;
   }
 
   public get colorDef(): ColorDef {
     return new ColorDef(this._optionsValue.value as number);
   }
 
-  public set colorDef(value: ColorDef) {
-    this._optionsValue.value = value.tbgr;
+  public set colorDef(colorValue: ColorDef) {
+    this._optionsValue.value = colorValue.tbgr;
   }
 
   // ------------- use length toggle  ---------------
@@ -219,13 +217,13 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
   }
 
   // ------------- Length ---------------
-  private _useLengthValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: true };
+  private _useLengthValue: DialogItemValue = { value: true };
 
   private _lengthDescription = new LengthDescription();
   private static _lengthName = "length";
 
   // if _lengthValue also sets up display value then the "number-custom" type editor would not need to format the value before initially displaying it.
-  private _lengthValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: 1.5 };  // value in meters
+  private _lengthValue: DialogItemValue = { value: 1.5 };  // value in meters
 
   public get length(): number {
     return this._lengthValue.value as number;
@@ -248,17 +246,17 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
     };
   }
 
-  private _weightValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: 3 };
+  private _weightValue: DialogItemValue = { value: 3 };
 
   public get weight(): number {
     return this._weightValue.value as number;
   }
 
-  public set weight(value: number) {
-    this._weightValue.value = value;
+  public set weight(weightValue: number) {
+    this._weightValue.value = weightValue;
   }
 
-    // ------------- boolean based toggle button ---------------
+  // ------------- boolean based toggle button ---------------
   private static _lockToggleName = "lockToggle";
   private static _getLockToggleDescription = (): PropertyDescription => {
     return {
@@ -269,7 +267,7 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
     };
   }
 
-  private _lockValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: true };
+  private _lockValue: DialogItemValue = { value: true };
 
   public get lock(): boolean {
     return this._lockValue.value as boolean;
@@ -289,7 +287,7 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
     };
   }
 
-  private _cityValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: "Huntsville" };
+  private _cityValue: DialogItemValue = { value: "Huntsville" };
 
   public get city(): string {
     return this._cityValue.value as string;
@@ -317,7 +315,7 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
     };
   }
 
-  private _stateValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: "AL" };
+  private _stateValue: DialogItemValue = { value: "AL" };
 
   public get stateName(): string {
     return this._stateValue.value as string;
@@ -327,86 +325,107 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
     this._stateValue.value = option;
   }
 
-  // ------------- text based edit field ---------------
-  private static _coordinateName = "coordinate";
-  private static _getCoordinateDescription = (): PropertyDescription => {
-    return {
-      name: TestUiProviderDialog._coordinateName,
-      displayLabel: "Coordinate",
-      typename: "string",
-    };
+  private getValueByItemName(itemName: string): DialogItemValue | undefined {
+    const dialogItem = this._dialogItems === undefined ? undefined : this._dialogItems.find((item) => item.property.name === itemName);
+    if (dialogItem !== undefined)
+      return dialogItem.value;
+    else
+      return undefined;
   }
+  private storeValues(): void {
+    this._dialogItems = [...this._itemsManager.items];
+    const newOptionsValue = this.getValueByItemName(TestUiProviderDialog._optionsName);
+    this._optionsValue = newOptionsValue === undefined ? this._optionsValue : newOptionsValue;
 
-  private _coordinateValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: "0.0, 0.0, 0.0" };
+    const newColorValue = this.getValueByItemName(TestUiProviderDialog._colorName);
+    this._colorValue = newColorValue === undefined ? this._colorValue : newColorValue;
 
-  public get coordinate(): string {
-    return this._coordinateValue.value as string;
+    const newWeightValue = this.getValueByItemName(TestUiProviderDialog._weightName);
+    this._weightValue = newWeightValue === undefined ? this._weightValue : newWeightValue;
+
+    const newLockValue = this.getValueByItemName(TestUiProviderDialog._lockToggleName);
+    this._lockValue = newLockValue === undefined ? this._lockValue : newLockValue;
+
+    const newCityValue = this.getValueByItemName(TestUiProviderDialog._cityName);
+    this._cityValue = newCityValue === undefined ? this._cityValue : newCityValue;
+
+    const newStateValue = this.getValueByItemName(TestUiProviderDialog._stateName);
+    this._stateValue = newStateValue === undefined ? this._stateValue : newStateValue;
+
+    const newLengthValue = this.getValueByItemName(TestUiProviderDialog._lengthName);
+    this._lengthValue = newLengthValue === undefined ? this._lengthValue : newLengthValue;
   }
-
-  public set coordinate(option: string) {
-    this._coordinateValue.value = option;
-  }
-
   private supplyDialogItems(): DialogItem[] {
     const dialogItems = new Array<DialogItem>();
-    dialogItems.push({ value: this._optionsValue, itemName: TestUiProviderDialog._optionsName, property: TestUiProviderDialog._getEnumAsPicklistDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 }});
-    dialogItems.push({ value: this._colorValue, itemName: TestUiProviderDialog._colorName, property: TestUiProviderDialog._getColorDescription(), editorPosition: { rowPriority: 0, columnIndex: 4 } });
-    dialogItems.push({ value: this._weightValue, itemName: TestUiProviderDialog._weightName, property: TestUiProviderDialog._getWeightDescription(), editorPosition: { rowPriority: 3, columnIndex: 2 } });
-    dialogItems.push({ value: this._lockValue, itemName: TestUiProviderDialog._lockToggleName, property: TestUiProviderDialog._getLockToggleDescription(), editorPosition: { rowPriority: 5, columnIndex: 2 } });
-    dialogItems.push({ value: this._cityValue, itemName: TestUiProviderDialog._cityName, property: TestUiProviderDialog._getCityDescription(), editorPosition: { rowPriority: 10, columnIndex: 2 } });
-    dialogItems.push({ value: this._stateValue, itemName: TestUiProviderDialog._stateName, property: TestUiProviderDialog._getStateDescription(), editorPosition: { rowPriority: 10, columnIndex: 4 } });
-    dialogItems.push({ value: this._coordinateValue, itemName: TestUiProviderDialog._coordinateName, property: TestUiProviderDialog._getCoordinateDescription(), editorPosition: { rowPriority: 15, columnIndex: 2, columnSpan: 3 } });
-    const lengthLock: DialogItem = {value: this._useLengthValue, itemName: TestUiProviderDialog._useLengthName, property: TestUiProviderDialog._getUseLengthDescription(), editorPosition: { rowPriority: 20, columnIndex: 0 }};
-    dialogItems.push({value: this._lengthValue, itemName: TestUiProviderDialog._lengthName, property: this._lengthDescription, editorPosition: { rowPriority: 20, columnIndex: 2 }, isDisabled: false, lockProperty: lengthLock });
+    dialogItems.push({ value: this._optionsValue, property: TestUiProviderDialog._getEnumAsPicklistDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
+    dialogItems.push({ value: this._colorValue, property: TestUiProviderDialog._getColorDescription(), editorPosition: { rowPriority: 0, columnIndex: 4 } });
+    dialogItems.push({ value: this._weightValue, property: TestUiProviderDialog._getWeightDescription(), editorPosition: { rowPriority: 3, columnIndex: 2 } });
+    dialogItems.push({ value: this._lockValue, property: TestUiProviderDialog._getLockToggleDescription(), editorPosition: { rowPriority: 5, columnIndex: 2 } });
+    dialogItems.push({ value: this._cityValue, property: TestUiProviderDialog._getCityDescription(), editorPosition: { rowPriority: 10, columnIndex: 2 } });
+    dialogItems.push({ value: this._stateValue, property: TestUiProviderDialog._getStateDescription(), editorPosition: { rowPriority: 10, columnIndex: 4 } });
+    const lengthLock: DialogItem = { value: this._useLengthValue, property: TestUiProviderDialog._getUseLengthDescription(), editorPosition: { rowPriority: 20, columnIndex: 0 } };
+    dialogItems.push({ value: this._lengthValue, property: this._lengthDescription, editorPosition: { rowPriority: 20, columnIndex: 2 }, isDisabled: false, lockProperty: lengthLock });
     return dialogItems;
   }
 
-  private showColorInfoFromUi(updatedValue: DialogSyncItem) {
-    const msg = `Property '${updatedValue.property.name}' updated to value ${this.colorDef.toRgbString()}`;
+  private showColorInfoFromUi(updatedValue: DialogPropertySyncItem) {
+    const msg = `Property '${updatedValue.propertyName}' updated to value ${this.colorDef.toRgbString()}`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 
-  private showInfoFromUi(updatedValue: DialogSyncItem) {
-    const msg = `Property '${updatedValue.property.name}' updated to value ${updatedValue.value.value}`;
+  private showInfoFromUi(updatedValue: DialogPropertySyncItem) {
+    const msg = `Property '${updatedValue.propertyName}' updated to value ${updatedValue.value.value}`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 
-  private syncLengthState(): void {
-    const lengthValue: DialogItemValue = { valueFormat: PropertyValueFormat.Primitive, value: this.length, displayValue:  this._lengthDescription.format(this.length as number) };
-    const syncItem: DialogSyncItem = { value: lengthValue, itemName: TestUiProviderDialog._lengthName, isDisabled: !this.useLength, property: this._lengthDescription, editorPosition: {rowPriority: 0, columnIndex: 0} };
-    const synchEventArgs: DialogItemsSyncArgs = { items: [syncItem] };
-    this._itemsManager.onPropertiesChanged.emit (synchEventArgs);
+  private syncLengthState() {
+    const lengthItem = this._dialogItems?.find((item) => item.property.name === TestUiProviderDialog._lengthName);
+    const useLengthItem = lengthItem ? lengthItem.lockProperty : undefined;
+    if (!lengthItem || !useLengthItem)
+      return;
+
+    const lockSyncItem: DialogPropertySyncItem = { value: useLengthItem.value, propertyName: TestUiProviderDialog._useLengthName };
+    const syncItem: DialogPropertySyncItem = { value: lengthItem.value, propertyName: TestUiProviderDialog._lengthName, isDisabled: !this.useLength };
+    const synchEventArgs: DialogItemSyncArgs = { items: [lockSyncItem, syncItem] };
+    this._itemsManager.onPropertiesChanged.emit(synchEventArgs);
   }
 
   /** Used to send changes from UI */
-  public applyUiPropertyChange = (updatedValue: DialogSyncItem): void => {
-    if (updatedValue.property.name === TestUiProviderDialog._optionsName) {
+  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+    if (updatedValue.propertyName === TestUiProviderDialog._useLengthName) {
+      this.useLength = updatedValue.value.value as boolean;
+      this.showInfoFromUi(updatedValue);
+      this.syncLengthState();
+      return;
+    }
+    if (updatedValue.propertyName === TestUiProviderDialog._optionsName) {
       if (this._optionsValue.value !== updatedValue.value.value) {
         this.option = updatedValue.value.value as ColorOptions;
         this.showInfoFromUi(updatedValue);
       }
-    } else if (updatedValue.property.name === TestUiProviderDialog._lockToggleName) {
+    } else if (updatedValue.propertyName === TestUiProviderDialog._lockToggleName) {
       this.lock = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.property.name === TestUiProviderDialog._cityName) {
+    } else if (updatedValue.propertyName === TestUiProviderDialog._cityName) {
       this.city = updatedValue.value.value as string;
       this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.property.name === TestUiProviderDialog._stateName) {
+    } else if (updatedValue.propertyName === TestUiProviderDialog._stateName) {
       this.stateName = updatedValue.value.value as string;
       this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.property.name === TestUiProviderDialog._useLengthName) {
-      this.useLength = updatedValue.value.value as boolean;
-      this.showInfoFromUi(updatedValue);
-      this.syncLengthState();
-    } else if (updatedValue.property.name === TestUiProviderDialog._lengthName) {
+    } else if (updatedValue.propertyName === TestUiProviderDialog._lengthName) {
       this.length = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
-    } else if (updatedValue.property.name === TestUiProviderDialog._colorName) {
+    } else if (updatedValue.propertyName === TestUiProviderDialog._colorName) {
       this.colorValue = updatedValue.value.value as number;
       this.showColorInfoFromUi(updatedValue);
-    } else if (updatedValue.property.name === TestUiProviderDialog._weightName) {
+    } else if (updatedValue.propertyName === TestUiProviderDialog._weightName) {
       this.weight = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
+    } else {
+      // not an item we know about
+      return;
     }
+    const synchEventArgs: DialogItemSyncArgs = { items: [updatedValue] };
+    this._itemsManager.onPropertiesChanged.emit(synchEventArgs);
   }
 }

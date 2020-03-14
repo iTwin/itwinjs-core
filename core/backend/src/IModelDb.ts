@@ -129,8 +129,6 @@ export class OpenParams {
 }
 
 /** An iModel database file. The database file is either a local copy (briefcase) of an iModel managed by iModelHub or a read-only *snapshot* used for archival and data transfer purposes.
- *
- * IModelDb raises a set of events to allow apps and subsystems to track IModelDb object life cycle, including [[onOpen]] and [[onOpened]].
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
  * @public
@@ -138,8 +136,6 @@ export class OpenParams {
 export abstract class IModelDb extends IModel {
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
-  /** Event called after a changeset is applied to this IModelDb. */
-  public readonly onChangesetApplied = new BeEvent<() => void>();
   public readonly models = new IModelDb.Models(this);
   public readonly elements = new IModelDb.Elements(this);
   public readonly views = new IModelDb.Views(this);
@@ -152,43 +148,14 @@ export abstract class IModelDb extends IModel {
   private readonly _sqliteStatementCache = new SqliteStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
-  private _eventSink?: EventSink;
   protected _fontMap?: FontMap;
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
 
   public readFontJson(): string { return this.nativeDb.readFontMap(); }
   public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
-  /** Return event sink for associated [[IModelDb]].
-   * @internal
-   */
-  public get eventSink(): EventSink | undefined { return this._eventSink; }
   /** Get the parameters used to open this iModel */
   public readonly openParams: OpenParams;
-
-  /** Event raised just before an IModelDb is opened.
-   * @note This event is *not* raised for snapshot IModelDbs.
-   *
-   * **Example:**
-   * ``` ts
-   * [[include:IModelDb.onOpen]]
-   * ```
-   */
-  public static readonly onOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>();
-
-  /** Event raised just after an IModelDb is opened.
-   * @note This event is *not* raised for snapshot IModelDbs.
-   *
-   * **Example:**
-   * ``` ts
-   * [[include:IModelDb.onOpened]]
-   * ```
-   */
-  public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: IModelDb) => void>();
-  /** Event raised just before an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for snapshot IModelDbs. */
-  public static readonly onCreate = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>();
-  /** Event raised just after an IModelDb is created in iModelHub. This event is raised only for iModel access initiated by this app only. This event is not raised for snapshot IModelDbs. */
-  public static readonly onCreated = new BeEvent<(_imodelDb: IModelDb) => void>();
 
   private _briefcase?: BriefcaseEntry;
 
@@ -209,21 +176,9 @@ export abstract class IModelDb extends IModel {
     this.openParams = openParams;
     this.setupBriefcaseEntry(briefcaseEntry);
     this.initializeIModelDb();
-    this.initializeEventSink();
   }
   /** @internal */
-  protected clearEventSink() { // WIP: move to BriefcaseIModelDb?
-    if (this._eventSink) {
-      EventSinkManager.delete(this._eventSink.id);
-    }
-  }
-  private initializeEventSink() {
-    if (this.iModelToken.key) {
-      this._eventSink = EventSinkManager.get(this.iModelToken.key);
-    }
-  }
-  /** @internal */
-  protected initializeIModelDb() { // WIP: move to BriefcaseIModelDb?
+  protected initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
     super.initialize(name, props);
@@ -263,54 +218,17 @@ export abstract class IModelDb extends IModel {
     return this.briefcase.openParams.isSnapshot;
   }
 
-  private forwardChangesetApplied() { this.onChangesetApplied.raiseEvent(); }
-
-  private setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
+  /** @internal */
+  protected setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
     briefcaseEntry.iModelDb = this;
-    briefcaseEntry.onBeforeClose.addListener(this.onBriefcaseBeforeCloseHandler, this);
-    briefcaseEntry.onBeforeVersionUpdate.addListener(this.onBriefcaseVersionUpdatedHandler, this);
-    briefcaseEntry.onChangesetApplied.addListener(this.forwardChangesetApplied, this);
-    briefcaseEntry.onBeforeOpen.addListener(this.onBriefcaseBeforeOpenHandler, this);
-    briefcaseEntry.onAfterOpen.addListener(this.onBriefcaseAfterOpenHandler, this);
     this._briefcase = briefcaseEntry;
   }
 
   /** @internal */
   protected clearBriefcaseEntry(): void {
-    const briefcaseEntry = this.briefcase;
-    briefcaseEntry.onBeforeClose.removeListener(this.onBriefcaseBeforeCloseHandler, this);
-    briefcaseEntry.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
-    briefcaseEntry.onChangesetApplied.removeListener(this.forwardChangesetApplied, this);
-    briefcaseEntry.onBeforeOpen.removeListener(this.onBriefcaseBeforeOpenHandler, this);
-    briefcaseEntry.onAfterOpen.removeListener(this.onBriefcaseAfterOpenHandler, this);
-    briefcaseEntry.iModelDb = undefined;
+    this.briefcase.iModelDb = undefined;
     this._briefcase = undefined;
   }
-
-  private onBriefcaseBeforeCloseHandler() {
-    this.onBeforeClose.raiseEvent();
-    this.clearStatementCache();
-    this.clearSqliteStatementCache();
-  }
-
-  private onBriefcaseBeforeOpenHandler(requestContext: AuthorizedClientRequestContext) {
-    if (!this.briefcase.iModelDb)
-      return;
-    IModelDb.onOpen.raiseEvent(requestContext, this.briefcase.contextId, this.briefcase.iModelId, this.briefcase.openParams, this.briefcase.contextId, IModelVersion.asOfChangeSet(this.briefcase.targetChangeSetId));
-  }
-
-  private onBriefcaseAfterOpenHandler(requestContext: AuthorizedClientRequestContext) {
-    if (!this.briefcase.iModelDb)
-      return;
-    IModelDb.onOpened.raiseEvent(requestContext, this.briefcase.iModelDb);
-  }
-
-  private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase.currentChangeSetId; }
-
-  /** Event called when the iModel is about to be closed
-   * @note This event is *not* raised for snapshot IModelDbs.
-   */
-  public readonly onBeforeClose = new BeEvent<() => void>();
 
   /** Get the in-memory handle of the native Db
    * @internal
@@ -1798,7 +1716,7 @@ export interface ValidationError {
   message?: string;
 }
 
-/** Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
+/** Local Txns in an IModelDb. Local Txns persist only until [[BriefcaseIModelDb.pushChanges]] is called.
  * @beta
  */
 export class TxnManager {
@@ -1972,19 +1890,30 @@ export class TxnManager {
 }
 
 /** A local copy of an iModel from iModelHub.
+ *
+ * BriefcaseIModelDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
  * @public
  */
 export class BriefcaseIModelDb extends IModelDb {
   private _concurrencyControl!: ConcurrencyControl;
+  private _eventSink?: EventSink;
 
   /** Get the ConcurrencyControl for this IModel.
    * @beta
    */
   public get concurrencyControl(): ConcurrencyControl { return this._concurrencyControl; }
 
+  /** Return event sink for associated [[BriefcaseIModelDb]].
+   * @internal
+   */
+  public get eventSink(): EventSink | undefined { return this._eventSink; }
+  private clearEventSink() { if (this._eventSink) { EventSinkManager.delete(this._eventSink.id); } }
+  private initializeEventSink() { if (this.iModelToken.key) { this._eventSink = EventSinkManager.get(this.iModelToken.key); } }
+
   private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
     super(briefcaseEntry, iModelToken, openParams);
     this.setDefaultConcurrentControlAndPolicy();
+    this.initializeEventSink();
   }
 
   private setDefaultConcurrentControlAndPolicy() {
@@ -1995,7 +1924,7 @@ export class BriefcaseIModelDb extends IModelDb {
   /** Create an iModel on iModelHub */
   public static async create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<BriefcaseIModelDb> {
     requestContext.enter();
-    IModelDb.onCreate.raiseEvent(requestContext, contextId, args);
+    this.onCreate.raiseEvent(requestContext, contextId, args);
     const iModelId: string = await BriefcaseManager.create(requestContext, contextId, iModelName, args);
     requestContext.enter();
     return this.open(requestContext, contextId, iModelId);
@@ -2013,7 +1942,7 @@ export class BriefcaseIModelDb extends IModelDb {
   public static async open(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<BriefcaseIModelDb> {
     requestContext.enter();
 
-    IModelDb.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
+    this.onOpen.raiseEvent(requestContext, contextId, iModelId, openParams, version);
 
     let iModelDb: BriefcaseIModelDb | undefined;
     const finishOpen = async (): Promise<void> => {
@@ -2131,7 +2060,7 @@ export class BriefcaseIModelDb extends IModelDb {
 
       iModelDb.setDefaultConcurrentControlAndPolicy();
       await iModelDb.concurrencyControl.onOpened(requestContext);
-      IModelDb.onOpened.raiseEvent(requestContext, iModelDb);
+      this.onOpened.raiseEvent(requestContext, iModelDb);
     }
 
     await this.logUsage(requestContext, briefcaseEntry.contextId, briefcaseEntry.iModelDb);
@@ -2235,6 +2164,77 @@ export class BriefcaseIModelDb extends IModelDb {
     requestContext.enter();
     this.initializeIModelDb();
   }
+
+  /** Event raised just before a BriefcaseIModelDb is opened.
+   *
+   * **Example:**
+   * ``` ts
+   * [[include:BriefcaseIModelDb.onOpen]]
+   * ```
+   */
+  public static readonly onOpen = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _iModelId: string, _openParams: OpenParams, _version: IModelVersion) => void>();
+  /** Event raised just after a BriefcaseIModelDb is opened.
+   *
+   * **Example:**
+   * ``` ts
+   * [[include:BriefcaseIModelDb.onOpened]]
+   * ```
+   */
+  public static readonly onOpened = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _imodelDb: BriefcaseIModelDb) => void>();
+  /** Event raised just before a BriefcaseIModelDb is created in iModelHub.
+   * This event is raised only for iModel access initiated by this app only.
+   */
+  public static readonly onCreate = new BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>();
+  /** Event raised just after a BriefcaseIModelDb is created in iModelHub.
+   * This event is raised only for iModel access initiated by this app only.
+   */
+  public static readonly onCreated = new BeEvent<(_imodelDb: BriefcaseIModelDb) => void>();
+  /** Event called when the iModel is about to be closed */
+  public readonly onBeforeClose = new BeEvent<() => void>();
+  /** Event called after a changeset is applied to this IModelDb. */
+  public readonly onChangesetApplied = new BeEvent<() => void>();
+
+  private onBriefcaseBeforeCloseHandler() {
+    this.onBeforeClose.raiseEvent();
+    this.clearStatementCache();
+    this.clearSqliteStatementCache();
+  }
+
+  private onBriefcaseBeforeOpenHandler(requestContext: AuthorizedClientRequestContext) {
+    if (this.briefcase?.iModelDb) {
+      BriefcaseIModelDb.onOpen.raiseEvent(requestContext, this.briefcase.contextId, this.briefcase.iModelId, this.briefcase.openParams, this.briefcase.contextId, IModelVersion.asOfChangeSet(this.briefcase.targetChangeSetId));
+    }
+  }
+
+  private onBriefcaseAfterOpenHandler(requestContext: AuthorizedClientRequestContext) {
+    if (this.briefcase?.iModelDb) {
+      BriefcaseIModelDb.onOpened.raiseEvent(requestContext, this.briefcase.iModelDb);
+    }
+  }
+
+  private onBriefcaseVersionUpdatedHandler() { this.iModelToken.changeSetId = this.briefcase.currentChangeSetId; }
+  private forwardChangesetApplied() { this.onChangesetApplied.raiseEvent(); }
+
+  /** @internal */
+  protected setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
+    super.setupBriefcaseEntry(briefcaseEntry);
+    briefcaseEntry.onBeforeClose.addListener(this.onBriefcaseBeforeCloseHandler, this);
+    briefcaseEntry.onBeforeVersionUpdate.addListener(this.onBriefcaseVersionUpdatedHandler, this);
+    briefcaseEntry.onChangesetApplied.addListener(this.forwardChangesetApplied, this);
+    briefcaseEntry.onBeforeOpen.addListener(this.onBriefcaseBeforeOpenHandler, this);
+    briefcaseEntry.onAfterOpen.addListener(this.onBriefcaseAfterOpenHandler, this);
+  }
+
+  /** @internal */
+  protected clearBriefcaseEntry(): void {
+    const briefcaseEntry = this.briefcase;
+    briefcaseEntry.onBeforeClose.removeListener(this.onBriefcaseBeforeCloseHandler, this);
+    briefcaseEntry.onBeforeVersionUpdate.removeListener(this.onBriefcaseVersionUpdatedHandler, this);
+    briefcaseEntry.onChangesetApplied.removeListener(this.forwardChangesetApplied, this);
+    briefcaseEntry.onBeforeOpen.removeListener(this.onBriefcaseBeforeOpenHandler, this);
+    briefcaseEntry.onAfterOpen.removeListener(this.onBriefcaseAfterOpenHandler, this);
+    super.clearBriefcaseEntry();
+  }
 }
 
 /** A *snapshot* iModel database file that is typically used for archival and data transfer purposes.
@@ -2331,6 +2331,8 @@ export class SnapshotIModelDb extends IModelDb {
    * @beta
    */
   public close(): void {
+    this.clearStatementCache(); // clear cache held in JavaScript
+    this.clearSqliteStatementCache(); // clear cache held in JavaScript
     BriefcaseManager.closeStandalone(this.briefcase);
     this.clearBriefcaseEntry(); // WIP: should not need to call this for snapshots
   }
@@ -2389,6 +2391,8 @@ export class StandaloneIModelDb extends IModelDb {
    * @throws IModelError if the iModel is not open, or is not standalone
    */
   public close(): void {
+    this.clearStatementCache(); // clear cache held in JavaScript
+    this.clearSqliteStatementCache(); // clear cache held in JavaScript
     BriefcaseManager.closeStandalone(this.briefcase);
     this.clearBriefcaseEntry();
   }

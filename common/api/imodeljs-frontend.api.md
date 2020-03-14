@@ -48,6 +48,9 @@ import { ContextRealityModelProps } from '@bentley/imodeljs-common';
 import { ConvexClipPlaneSet } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
 import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
+import { DialogItem } from '@bentley/ui-abstract';
+import { DialogPropertyItem } from '@bentley/ui-abstract';
+import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { Dictionary } from '@bentley/bentleyjs-core';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
@@ -212,9 +215,6 @@ import { ThumbnailProps } from '@bentley/imodeljs-common';
 import { TileProps } from '@bentley/imodeljs-common';
 import { TileReadStatus } from '@bentley/imodeljs-common';
 import { TileTreeProps } from '@bentley/imodeljs-common';
-import { ToolSettingsPropertyItem } from '@bentley/ui-abstract';
-import { ToolSettingsPropertyRecord } from '@bentley/ui-abstract';
-import { ToolSettingsPropertySyncItem } from '@bentley/ui-abstract';
 import { Transform } from '@bentley/geometry-core';
 import { TransformProps } from '@bentley/geometry-core';
 import { TransientIdSequence } from '@bentley/bentleyjs-core';
@@ -4118,7 +4118,7 @@ export interface InstancedGraphicParams {
 // @public
 export abstract class InteractiveTool extends Tool {
     // @beta
-    applyToolSettingPropertyChange(_updatedValue: ToolSettingsPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): boolean;
     beginDynamics(): void;
     changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void;
     decorate(_context: DecorateContext): void;
@@ -4165,9 +4165,9 @@ export abstract class InteractiveTool extends Tool {
     onUnsuspend(): void;
     receivedDownEvent: boolean;
     // @beta
-    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
     // @beta
-    syncToolSettingsProperties(syncData: ToolSettingsPropertySyncItem[]): void;
+    syncToolSettingsProperties(syncData: DialogPropertySyncItem[]): void;
     testDecorationHit(_id: string): boolean;
 }
 
@@ -4748,7 +4748,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     protected allowView(vp: Viewport): boolean;
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     protected _area: number;
     // (undocumented)
@@ -4813,7 +4813,7 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
-    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
     // (undocumented)
@@ -7142,7 +7142,7 @@ export enum SelectionSetEventType {
 // @public
 export class SelectionTool extends PrimitiveTool {
     // @beta
-    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     autoLockTarget(): void;
     // (undocumented)
@@ -7216,7 +7216,7 @@ export class SelectionTool extends PrimitiveTool {
     // (undocumented)
     static startTool(): boolean;
     // @beta
-    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
     // (undocumented)
@@ -7260,7 +7260,7 @@ export interface SelectReplaceEvent {
 // @alpha
 export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     get cameraHeight(): number;
     set cameraHeight(option: number);
@@ -7303,7 +7303,7 @@ export class SetupCameraTool extends PrimitiveTool {
     // (undocumented)
     protected setupAndPromptForNextAction(): void;
     // (undocumented)
-    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     get targetHeight(): number;
     set targetHeight(option: number);
@@ -8894,12 +8894,12 @@ export class ToolAdmin {
     // @internal (undocumented)
     startViewTool(newTool: ViewTool): void;
     // @beta
-    syncToolSettingsProperties(toolId: string, syncProperties: ToolSettingsPropertySyncItem[]): void;
+    syncToolSettingsProperties(toolId: string, syncProperties: DialogPropertySyncItem[]): void;
     // @internal (undocumented)
     testDecorationHit(id: string): boolean;
     // @internal
-    get toolSettingsChangeHandler(): ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined;
-    set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: ToolSettingsPropertySyncItem[]) => void) | undefined);
+    get toolSettingsChangeHandler(): ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined;
+    set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined);
     // @internal (undocumented)
     readonly toolSettingsState: ToolSettingsState;
     // @internal (undocumented)
@@ -9062,10 +9062,10 @@ export class ToolSettings {
 
 // @internal
 export class ToolSettingsState {
-    initializeToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void;
-    initializeToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void;
-    saveToolSettingProperties(toolId: string, tsProps: ToolSettingsPropertyItem[]): void;
-    saveToolSettingProperty(toolId: string, item: ToolSettingsPropertyItem): void;
+    initializeToolSettingProperties(toolId: string, tsProps: DialogPropertyItem[]): void;
+    initializeToolSettingProperty(toolId: string, item: DialogPropertyItem): void;
+    saveToolSettingProperties(toolId: string, tsProps: DialogPropertyItem[]): void;
+    saveToolSettingProperty(toolId: string, item: DialogPropertyItem): void;
 }
 
 // @internal (undocumented)
@@ -9246,7 +9246,7 @@ export class ViewClipByElementTool extends ViewClipTool {
 export class ViewClipByPlaneTool extends ViewClipTool {
     constructor(clipEventHandler?: ViewClipEventHandler, _clearExistingPlanes?: boolean);
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     protected _clearExistingPlanes: boolean;
     // (undocumented)
@@ -9261,7 +9261,7 @@ export class ViewClipByPlaneTool extends ViewClipTool {
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
-    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
 }
@@ -9293,7 +9293,7 @@ export class ViewClipByRangeTool extends ViewClipTool {
 // @alpha
 export class ViewClipByShapeTool extends ViewClipTool {
     // (undocumented)
-    applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean;
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
@@ -9322,7 +9322,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
     // (undocumented)
     protected showPrompt(): void;
     // (undocumented)
-    supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined;
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
     // (undocumented)

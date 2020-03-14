@@ -390,7 +390,7 @@ export class ConcurrencyControl {
     // Must do this to guarantee that the cache does not become stale if the client crashes after pushing but
     // before performing the various post-push clean-up tasks, such as marking reserved codes as used and releasing
     // locks. I cannot know what state things are in until all of that is done. If onPushedChanges is called, then
-    // I can re-populate from the iModel server. If onPushedChanges is never called becuase of a crash, I need to be
+    // I can re-populate from the iModel server. If onPushedChanges is never called because of a crash, I need to be
     // able to detect that. The only way I can do that reliably is to find, the next time the briefcase is opened,
     // that the cache does not exist.
     this._cache.deleteFile();
@@ -415,7 +415,7 @@ export class ConcurrencyControl {
     if (this._iModel.isReadonly)
       return;
 
-    assert(!this._iModel.concurrencyControl._cache.isOpen, "iModelDb.onOpened should be raised only once");
+    assert(!this._iModel.concurrencyControl._cache.isOpen, "BriefcaseIModelDb.onOpened should be raised only once");
 
     this._iModel.txns.onCommitted.addListener(this.emitOnSavedChangesEvent, this);
 
@@ -462,7 +462,7 @@ export class ConcurrencyControl {
     return this._cache.isLockHeld(ConcurrencyControl.Request.schemaLock);
   }
 
-  /** Returns `true` if the codespecs lock is held.
+  /** Returns `true` if the CodeSpecs lock is held.
    * @param requestContext The client request context
    * @alpha Need to determine if we want this method
    */
@@ -803,7 +803,7 @@ export namespace ConcurrencyControl {
     public removeLocks(filter: (l: LockProps) => boolean, context: any) {
       // NB: The supplied `filter` function chooses the locks to *remove*.
       // The JS array filter function takes as its argument a function that indicates which items to *retain*.
-      // Therefore, we return the negation of the supplied `filter` function to the JS filter opertion.
+      // Therefore, we return the negation of the supplied `filter` function to the JS filter operation.
       this._locks = this._locks.filter((lock) => !filter.apply(context, [lock]));
     }
 

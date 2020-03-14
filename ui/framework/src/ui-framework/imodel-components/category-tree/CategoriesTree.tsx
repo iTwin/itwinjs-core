@@ -15,8 +15,9 @@ import { IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@b
 import { Ruleset } from "@bentley/presentation-common";
 import { CategoryVisibilityHandler, Category, useCategories, loadCategoriesFromViewport } from "./CategoryVisibilityHandler";
 import { connectIModelConnection } from "../../redux/connectIModel";
-import { useVisibilityTreeRenderer, useVisibilityTreeFiltering } from "../VisibilityTreeRenderer";
+import { useVisibilityTreeRenderer, useVisibilityTreeFiltering, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
 import { VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
+import { UiFramework } from "../../UiFramework";
 
 import "./CategoriesTree.scss";
 
@@ -105,6 +106,14 @@ export function CategoryTree(props: CategoryTreeProps) {
 
   const treeRenderer = useVisibilityTreeRenderer(false, true);
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
+  const filterApplied = filteredNodeLoader !== nodeLoader;
+
+  const noFilteredDataRenderer = React.useCallback(() => {
+    return <VisibilityTreeNoFilteredData
+      title={UiFramework.i18n.translate("UiFramework:categoriesTree.noCategoryFound")}
+      message={UiFramework.i18n.translate("UiFramework:categoriesTree.noMatchingCategoryNames")}
+    />;
+  }, []);
 
   return (
     <div className="ui-fw-categories-tree">
@@ -116,6 +125,7 @@ export function CategoryTree(props: CategoryTreeProps) {
         treeRenderer={treeRenderer}
         descriptionsEnabled={true}
         nodeHighlightingProps={nodeHighlightingProps}
+        noDataRenderer={filterApplied ? noFilteredDataRenderer : undefined}
       />
       {overlay}
     </div>

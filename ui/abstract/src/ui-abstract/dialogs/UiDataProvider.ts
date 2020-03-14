@@ -6,7 +6,7 @@
  * @module Dialog
  */
 
-import { ToolSettingsPropertyItem, ToolSettingsPropertySyncItem } from "../properties/ToolSettingsValue";
+import { DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 
 /** Sync UI Control Properties Event class.
@@ -22,28 +22,31 @@ export abstract class UiDataProvider {
   /** Called by UI to inform data provider of changes. If used by modal dialog then this is typically only called
    * when "OK" or "Apply" button is selected.
    */
-  public processChangesInUi(_properties: ToolSettingsPropertyItem[]): PropertyChangeResult {
+  public processChangesInUi(_properties: DialogPropertyItem[]): PropertyChangeResult {
     return { status: PropertyChangeStatus.Success };
   }
 
   /** Called by UI to request available properties. */
-  public supplyAvailableProperties(): ToolSettingsPropertyItem[] {
+  public supplyAvailableProperties(): DialogPropertyItem[] {
     return [];
   }
 
   public onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
 
   /** Called by UI to validate a property value */
-  public validateProperty(_item: ToolSettingsPropertyItem): PropertyChangeResult {
+  public validateProperty(_item: DialogPropertyItem): PropertyChangeResult {
     return { status: PropertyChangeStatus.Success };
   }
-
+  /** Called to sync properties synchronously if a UiDataProvider is active for the UI */
+  public syncProperties(_syncProperties: DialogPropertySyncItem[]) {
+    return;
+  }
 }
 /** Sync UI Control Properties Event Args interface.
  * @beta
  */
 export interface SyncPropertiesChangeEventArgs {
-  properties: ToolSettingsPropertySyncItem[];
+  properties: DialogPropertySyncItem[];
 }
 
 /** Status of Proposed property changes from UI to UiDataProvider

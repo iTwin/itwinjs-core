@@ -8,9 +8,9 @@
 
 import { DbResult, Id64, Id64String, Logger } from "@bentley/bentleyjs-core";
 import { CodeScopeSpec, CodeSpec, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { ECSqlStatement } from "./ECSqlStatement";
-import { IModelDb } from "./IModelDb";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { ECSqlStatement } from "./ECSqlStatement";
+import { BriefcaseIModelDb, IModelDb } from "./IModelDb";
 
 const loggerCategory = BackendLoggerCategory.CodeSpecs;
 
@@ -23,7 +23,9 @@ export class CodeSpecs {
 
   constructor(imodel: IModelDb) {
     this._imodel = imodel;
-    imodel.onChangesetApplied.addListener(() => this._loadedCodeSpecs.length = 0);
+    if (imodel instanceof BriefcaseIModelDb) {
+      imodel.onChangesetApplied.addListener(() => this._loadedCodeSpecs.length = 0);
+    }
   }
 
   /** Look up the Id of the CodeSpec with the specified name. */

@@ -13,7 +13,7 @@ import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
-import { ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem } from "@bentley/ui-abstract";
+import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 
@@ -672,18 +672,18 @@ export abstract class InteractiveTool extends Tool {
   /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed
    * @beta
    */
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined { return undefined; }
+  public supplyToolSettingsProperties(): DialogItem[] | undefined { return undefined; }
 
   /** Used to receive property changes from UI. Return false if there was an error applying updatedValue.
    * @beta
    */
-  public applyToolSettingPropertyChange(_updatedValue: ToolSettingsPropertySyncItem): boolean { return true; }
+  public applyToolSettingPropertyChange(_updatedValue: DialogPropertySyncItem): boolean { return true; }
 
   /** Called by tool to synchronize the UI with property changes made by tool. This is typically used to provide user feedback during tool dynamics.
    * If the syncData contains a quantity value and if the displayValue is not defined, the displayValue will be generated in the UI layer before displaying the value.
    * @beta
    */
-  public syncToolSettingsProperties(syncData: ToolSettingsPropertySyncItem[]) {
+  public syncToolSettingsProperties(syncData: DialogPropertySyncItem[]) {
     IModelApp.toolAdmin.syncToolSettingsProperties(this.toolId, syncData);
   }
 }

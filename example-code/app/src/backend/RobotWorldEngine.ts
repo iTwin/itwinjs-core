@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, Code, TestRpcManager, FeatureGates } from "@bentley/imodeljs-common";
-import { IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
+import { BriefcaseIModelDb, IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
 import { DbResult, Id64String, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
@@ -129,7 +129,7 @@ export class RobotWorldEngine {
     RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl); // register impls that we don't want in the doc example
     this.registerImpls();
     const interfaces = this.chooseInterfacesToExpose();
-    if (this._features.check("robot.imodel.readwrite"))  // choose add'l interfaces that we don't want in the doc example
+    if (this._features.check("robot.imodel.readwrite"))  // choose additional interfaces that we don't want in the doc example
       interfaces.push(IModelWriteRpcInterface);
     TestRpcManager.initialize(interfaces);
 
@@ -140,7 +140,7 @@ export class RobotWorldEngine {
 
     // __PUBLISH_EXTRACT_START__ Schema.importSchema
     // Make sure the RobotWorld schema is in the iModel.
-    IModelDb.onOpened.addListener((requestContext: AuthorizedClientRequestContext, iModel: IModelDb) => {
+    BriefcaseIModelDb.onOpened.addListener((requestContext: AuthorizedClientRequestContext, iModel: IModelDb) => {
       RobotWorld.importSchema(requestContext, iModel); // tslint:disable-line:no-floating-promises
     });
     // __PUBLISH_EXTRACT_END__

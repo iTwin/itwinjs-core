@@ -544,6 +544,8 @@ alpha;VisibilityTreeEventHandler
 alpha;VisibilityTreeEventHandlerParams 
 alpha;VisibilityTreeFilterInfo
 alpha;visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element
+alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element
+alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
 alpha;VisibilityWidget 
 public;Widget 

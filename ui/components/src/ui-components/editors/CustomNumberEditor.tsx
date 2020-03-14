@@ -62,7 +62,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     // istanbul ignore else
     if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
       const parseResults = (this._formatParams as CustomFormattedNumberParams).parseFunction(this.state.inputValue);
-      if (!parseResults.parseError && parseResults.value) {
+      if (!parseResults.parseError && undefined !== parseResults.value) {
         const newDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(parseResults.value as number);
         propertyValue = {
           valueFormat: PropertyValueFormat.Primitive,

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { UiError } from "@bentley/ui-abstract";
-import { WebFontIcon, SvgSprite } from "@bentley/ui-core";
+import { WebFontIcon, SvgSprite, WebFontIconProps } from "@bentley/ui-core";
 import { ImageFileFormat, Image, LoadedBinaryImage, LoadedImage } from "./IImageLoader";
 import { UiComponents } from "../UiComponents";
 
@@ -51,6 +51,38 @@ export class ImageRenderer {
     return (<WebFontIcon iconName={iconName} />);
   }
 
+  /** Replaces the escaped instances of "\:" with ":" */
+  private normalizeEscapedIconString(escapedIconString: string) {
+    return escapedIconString.replace(/\\:/g, ":");
+  }
+
+  /**
+   * Extract class and name from icon name, if the name follows format "{className}:{fontName}".
+   * className and fontName can be escaped using \ if : is needed.
+   */
+  private extractIconClassAndName(iconName: string): Pick<WebFontIconProps, "iconClassName" | "iconName"> {
+    const matches = iconName.match(/(\\.|[^:])+/g);
+    if (!matches || matches.length !== 2)
+      return {
+        iconClassName: undefined,
+        iconName,
+      };
+
+    return {
+      iconClassName: this.normalizeEscapedIconString(matches[0]),
+      iconName: this.normalizeEscapedIconString(matches[1]),
+    };
+  }
+
+  /**
+   * Render image as provided webfont icon.
+   * Defaults to ui-core icon if iconName does not contain className.
+   */
+  private renderWebfontIcon(iconName: string) {
+    const iconInfo = this.extractIconClassAndName(iconName);
+    return (<WebFontIcon {...iconInfo} />);
+  }
+
   /** Render image from data provided by an image loader */
   public render(loadedImage: Image): React.ReactNode {
     switch (loadedImage.sourceType) {
@@ -67,8 +99,12 @@ export class ImageRenderer {
       case "core-icon":
         return this.renderCoreIcon((loadedImage as LoadedImage).value);
 
+      case "webfont-icon":
+        return this.renderWebfontIcon((loadedImage as LoadedImage).value);
+
       default:
-        throw new UiError(UiComponents.loggerCategory(this), `Can't handle sourceType: "${loadedImage.sourceType}"`);
+        const unhandledSourceType: never = loadedImage.sourceType; // Compile time check that all cases are handled
+        throw new UiError(UiComponents.loggerCategory(this), `Can't handle sourceType: "${unhandledSourceType}"`);
     }
   }
 }

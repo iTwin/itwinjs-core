@@ -21,13 +21,11 @@ import {
   QuantityType,
   BeButton,
   CoreTools,
+  NotifyMessageDetails,
+  OutputMessagePriority,
 } from "@bentley/imodeljs-frontend";
-import { ProjectLocationExtension } from "./ProjectLocation";
+import { translateCoreMeasureBold, translateMessageBold, translateMessage } from "./ProjectLocation";
 import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
-
-function translateMessage(key: string) { return ProjectLocationExtension.extension!.i18n.translate("ProjectLocation:Message." + key); }
-function translateMessageBold(key: string) { return "<b>" + translateMessage(key) + ":</b> "; }
-function translateCoreMeasureBold(key: string) { return "<b>" + CoreTools.translate("Measure.Labels." + key) + ":</b> "; }
 
 function clearViewClip(vp: ScreenViewport): boolean {
   if (!ViewClipTool.doClipClear(vp))
@@ -35,6 +33,22 @@ function clearViewClip(vp: ScreenViewport): boolean {
   ViewClipDecorationProvider.create().onClearClip(vp); // Send clear event...
   ViewClipDecorationProvider.clear();
   return true;
+}
+
+function enableBackgroundMap(viewport: Viewport, onOff: boolean): boolean {
+  if (onOff === viewport.viewFlags.backgroundMap)
+    return false;
+
+  const viewFlags = viewport.viewFlags.clone();
+  viewFlags.backgroundMap = onOff;
+  viewport.viewFlags = viewFlags;
+  return true;
+}
+
+function updateMapDisplay(vp: ScreenViewport, turnOnMap: boolean): void {
+  vp.displayStyle.backgroundMap.treeOwner.dispose(); // Recreate background map on next update after ecef transform change...this is NOT something that should normally be done by applications!
+  if (!turnOnMap || !enableBackgroundMap(vp, true))
+    vp.invalidateRenderPlan();
 }
 
 /** @alpha Controls to modify project extents shown using view clip */
@@ -59,8 +73,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   protected _removeViewCloseListener?: () => void;
   public suspendGeolocationDecorations = false;
 
-  public constructor(protected _clipView: ScreenViewport) {
-    super(_clipView.iModel);
+  public constructor(public viewport: ScreenViewport) {
+    super(viewport.iModel);
     if (!this.getClipData())
       return;
     this._ecefLocation = this.iModel.ecefLocation;
@@ -91,13 +105,13 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   public onViewClose(vp: ScreenViewport): void {
-    if (this._clipView === vp)
+    if (this.viewport === vp)
       ProjectExtentsClipDecoration.clear();
   }
 
   private getClipData(): boolean {
     this._clip = this._clipShape = this._clipShapeExtents = this._clipRange = undefined;
-    const clip = this._clipView.view.getViewClip();
+    const clip = this.viewport.view.getViewClip();
     if (undefined === clip)
       return false;
 
@@ -220,7 +234,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
     const saveQualifiers = IModelApp.toolAdmin.currentInputState.qualifiers;
     if (undefined !== this._clipShape) {
-      const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this._clipView, hit.sourceId, this._controlIds, this._controls);
+      const clipShapeModifyTool = new ViewClipShapeModifyTool(this, this._clip, this.viewport, hit.sourceId, this._controlIds, this._controls);
       this._suspendDecorator = clipShapeModifyTool.run();
     }
 
@@ -270,7 +284,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       }
 
       const latLongFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.LatLong);
-      if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec) {
+      if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec && this.iModel.isGeoLocated) {
         const cartographic = this.iModel.spatialToCartographicFromEcef(this._monumentPoint!);
         const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
         const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
@@ -344,9 +358,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
   public getNorthDirection(refOrigin?: Point3d): Ray3d {
     const origin = (undefined !== refOrigin ? refOrigin : this.iModel.projectExtents.center);
-    const ecefLocation = this.iModel.ecefLocation; // Check existing north direction...
 
-    if (undefined === ecefLocation)
+    if (!this.iModel.isGeoLocated)
       return Ray3d.create(origin, Vector3d.unitY());
 
     const cartographic = this.iModel.spatialToCartographicFromEcef(origin);
@@ -416,9 +429,9 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     context.addDecorationFromBuilder(northArrowBuilder);
   }
 
-  public drawMonumentPoint(context: DecorateContext, point: Point3d, id?: string): void {
+  public drawMonumentPoint(context: DecorateContext, point: Point3d, scaleFactor: number, id?: string): void {
     const vp = context.viewport;
-    const pixelSize = vp.pixelsFromInches(0.25);
+    const pixelSize = vp.pixelsFromInches(0.25) * scaleFactor;
     const scale = vp.viewingSpace.getPixelSizeAtPoint(point) * pixelSize;
     const matrix = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(45.0));
 
@@ -447,7 +460,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       return;
 
     const vp = context.viewport;
-    if (this._clipView !== vp)
+    if (this.viewport !== vp)
       return;
 
     if (!this.suspendGeolocationDecorations && undefined !== this._northDirection && this._allowEcefLocationChange && this.iModel.isGeoLocated)
@@ -458,7 +471,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       return;
 
     if (!this.suspendGeolocationDecorations && undefined !== this._monumentPoint && this._allowEcefLocationChange)
-      this.drawMonumentPoint(context, this._monumentPoint, this._monumentId);
+      this.drawMonumentPoint(context, this._monumentPoint, 1.0, this._monumentId);
 
     ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents!, ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor), 3, this._clipId);
 
@@ -519,28 +532,14 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     }
   }
 
-  private enableBackgroundMap(viewport: Viewport): boolean {
-    if (viewport.viewFlags.backgroundMap)
-      return false;
-
-    const viewFlags = viewport.viewFlags.clone();
-    viewFlags.backgroundMap = true;
-    viewport.viewFlags = viewFlags;
-    return true;
-  }
-
-  private updateMapDisplay(vp: ScreenViewport, enableBackgroundMap: boolean): void {
-    vp.displayStyle.backgroundMap.treeOwner.dispose(); // Recreate background map on next update...this is NOT something that should normally be done by applications!
-    if (enableBackgroundMap)
-      this.enableBackgroundMap(vp);
-  }
-
   public resetEcefLocation(): boolean {
     if (!this._allowEcefLocationChange)
       return false;
 
-    if (undefined === this._ecefLocation)
-      return false; // ### TODO: Wasn't geolocated originally, can't clear...
+    if (undefined === this._ecefLocation) {
+      enableBackgroundMap(this.viewport, false); // Wasn't geolocated originally, can't clear...but we can turn off map.
+      return false;
+    }
 
     if (undefined === this.getModifiedEcefLocation())
       return false; // Wasn't changed...
@@ -553,7 +552,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     this._monumentPoint = this.getMonumentPoint();
     this._northDirection = this.getNorthDirection();
 
-    this.updateMapDisplay(this._clipView, false);
+    updateMapDisplay(this.viewport, false);
     return true;
   }
 
@@ -561,7 +560,12 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this._allowEcefLocationChange)
       return false;
 
-    this.iModel.setEcefLocation(EcefLocation.createFromCartographicOrigin(origin, point, (undefined !== angle ? angle : this.getNorthAngle()))); // Preserve modified north direction...
+    const newEcefLocation = EcefLocation.createFromCartographicOrigin(origin, point, (undefined !== angle ? angle : this.getNorthAngle())); // Preserve modified north direction...
+    const ecefLocation = this.iModel.ecefLocation;
+    if (undefined !== ecefLocation && this.isAlmostEqualEcefLocations(ecefLocation, newEcefLocation))
+      return false;
+
+    this.iModel.setEcefLocation(newEcefLocation);
     if (this._hasGCSDefined)
       this.iModel.disableGCS(true); // Map display will ignore change to ecef location when GCS is present...
 
@@ -569,29 +573,31 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     this._monumentPoint = this.iModel.cartographicToSpatialFromEcef(origin);
     this._northDirection = this.getNorthDirection(undefined !== this._northDirection ? this._northDirection.origin : undefined); // Preserve modified north reference point...
 
-    this.updateMapDisplay(this._clipView, true);
+    updateMapDisplay(this.viewport, true);
     return true;
   }
 
   public updateNorthDirection(northDir: Ray3d): boolean {
-    if (!this._allowEcefLocationChange)
-      return false;
-
-    const ecefLocation = this.iModel.ecefLocation;
-    if (undefined === ecefLocation)
+    if (!this._allowEcefLocationChange || !this.iModel.isGeoLocated)
       return false;
 
     const point = (undefined !== this._monumentPoint ? this._monumentPoint : this.getMonumentPoint()); // Preserve modified monument point...
     const origin = this.iModel.spatialToCartographicFromEcef(point);
-    if (undefined === origin)
-      return false;
 
+    const saveDirection = this._northDirection;
     this._northDirection = northDir; // Change reference point to input location...
-    const angle = northDir.direction.angleToXY(Vector3d.unitY());
-    if (!this.updateEcefLocation(origin, point, angle))
+    const angle = this.getNorthAngle();
+
+    if (!this.updateEcefLocation(origin, point, angle)) {
+      this._northDirection = saveDirection;
       return false;
+    }
 
     return true;
+  }
+
+  private isAlmostEqualEcefLocations(loc1: EcefLocation, loc2: EcefLocation): boolean {
+    return (loc1.origin.isAlmostEqual(loc2.origin) && loc1.orientation.isAlmostEqual(loc2.orientation));
   }
 
   public getModifiedEcefLocation(): EcefLocation | undefined {
@@ -602,7 +608,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (undefined === this._ecefLocation)
       return ecefLocation; // geolocation didn't exist previously...
 
-    return ((ecefLocation.origin.isAlmostEqual(this._ecefLocation.origin) && ecefLocation.orientation.isAlmostEqual(this._ecefLocation.orientation)) ? undefined : ecefLocation);
+    return (this.isAlmostEqualEcefLocations(ecefLocation, this._ecefLocation) ? undefined : ecefLocation);
   }
 
   public getModifiedExtents(): Range3d | undefined {
@@ -610,17 +616,27 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       return undefined;
     // ### TODO: Validate that size is reasonable...something like the following:
     //   20km for non-projected
-    //   322km for projected
+    //   350km for projected
+    //   2km height?
     //   Show some visual indication when extents too big...
     return this._clipRange.isAlmostEqual(this.iModel.projectExtents) ? undefined : this._clipRange;
   }
 
-  public static allowEcefLocationChange(requireExisting: boolean): boolean {
-    if (undefined === ProjectExtentsClipDecoration._decorator)
+  public static allowEcefLocationChange(requireExisting: boolean, outputError: boolean = true): boolean {
+    if (undefined === ProjectExtentsClipDecoration._decorator) {
+      if (outputError)
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotActive")));
       return false;
-    if (!ProjectExtentsClipDecoration._decorator._allowEcefLocationChange)
+    } else if (!ProjectExtentsClipDecoration._decorator._allowEcefLocationChange) {
+      if (outputError)
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotAllowed")));
       return false;
-    return (requireExisting ? undefined !== ProjectExtentsClipDecoration._decorator.iModel.ecefLocation : true);
+    } else if (requireExisting && !ProjectExtentsClipDecoration._decorator.iModel.isGeoLocated) {
+      if (outputError)
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotGeolocated")));
+      return false;
+    }
+    return true;
   }
 
   public static get(): ProjectExtentsClipDecoration | undefined {
@@ -635,7 +651,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
     if (undefined !== ProjectExtentsClipDecoration._decorator) {
       const deco = ProjectExtentsClipDecoration._decorator;
-      if (vp === deco._clipView && undefined !== deco._clipId && undefined !== deco._clip) {
+      if (vp === deco.viewport && undefined !== deco._clipId && undefined !== deco._clip) {
         if (deco._clip !== vp.view.getViewClip()) {
           clearViewClip(vp);
           ViewClipTool.enableClipVolume(vp);
@@ -672,7 +688,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (undefined === ProjectExtentsClipDecoration._decorator)
       return;
     if (clearClip)
-      clearViewClip(ProjectExtentsClipDecoration._decorator._clipView); // Clear project extents view clip...
+      clearViewClip(ProjectExtentsClipDecoration._decorator.viewport); // Clear project extents view clip...
     if (resetEcef)
       ProjectExtentsClipDecoration._decorator.resetEcefLocation(); // Restore modified ecef location back to create state...
     ProjectExtentsClipDecoration._decorator.stop();

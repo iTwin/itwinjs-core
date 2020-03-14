@@ -1864,7 +1864,7 @@ export type Image = LoadedImage | LoadedBinaryImage;
 export type ImageFileFormat = "png" | "jpg" | "jpge";
 
 // @public
-export type ImageSourceType = "svg" | "url" | "binary" | "core-icon";
+export type ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon";
 
 // @public
 export interface ImmediatelyLoadedTreeNodeItem extends TreeNodeItem {

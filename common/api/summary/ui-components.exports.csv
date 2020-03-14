@@ -164,7 +164,7 @@ beta;IElementPropertyDataProvider
 public;IImageLoader
 public;Image = LoadedImage | LoadedBinaryImage
 public;ImageFileFormat = "png" | "jpg" | "jpge"
-public;ImageSourceType = "svg" | "url" | "binary" | "core-icon"
+public;ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon"
 public;ImmediatelyLoadedTreeNodeItem 
 internal;InlineEdit 
 internal;InputContext

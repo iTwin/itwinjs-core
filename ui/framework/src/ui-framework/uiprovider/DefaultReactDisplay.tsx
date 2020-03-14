@@ -9,8 +9,8 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import {
-  DialogItemsManager, DialogItem, DialogItemValue, DialogItemsSyncArgs, DialogRow, DialogSyncItem, PrimitiveValue,
-  PropertyValueFormat, PropertyRecord,
+  DialogItemsManager, DialogItem, DialogItemValue, DialogItemSyncArgs, DialogRow, DialogPropertySyncItem, PrimitiveValue,
+  PropertyValueFormat,
 } from "@bentley/ui-abstract";
 import { PropertyUpdatedArgs, EditorContainer } from "@bentley/ui-components";
 import { Logger } from "@bentley/bentleyjs-core";
@@ -53,21 +53,25 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
   public set itemsManager(itemsManager: DialogItemsManager) { this._itemsManager = itemsManager; }
 
   /** Process request to update one or more properties */
-  private _handleSyncPropertiesChangeEvent = (args: DialogItemsSyncArgs): void => {
+  private _handleSyncPropertiesChangeEvent = (args: DialogItemSyncArgs): void => {
     const newValueMap = new Map<string, DialogItem>(this.state.valueMap);
 
-    args.items.forEach((syncItem: DialogSyncItem) => {
+    args.items.forEach((syncItem: DialogPropertySyncItem) => {
       Logger.logInfo(UiFramework.loggerCategory(this),
-        `handleSyncPropertiesChangeEvent - UI updating '${syncItem.itemName}' to value of ${(syncItem.value as DialogItemValue).value}`);
-
-      const dialogItem = newValueMap.get(syncItem.itemName);
-      /* istanbul ignore else */
-      if (dialogItem) {
-        const updatedDialogItem = { value: dialogItem.value, itemName: dialogItem.itemName, property: dialogItem.property, editorPosition: dialogItem.editorPosition, isDisabled: syncItem.isDisabled, lockProperty: dialogItem.lockProperty };
-        newValueMap.set(syncItem.itemName, updatedDialogItem);
-        /** Update property items */
+        `handleSyncPropertiesChangeEvent - UI updating '${syncItem.propertyName}' to value of ${(syncItem.value as DialogItemValue).value}`);
+      if (syncItem.propertyName !== undefined) {
+        const itemName = syncItem.propertyName;
+        const dialogItem = newValueMap.get(itemName);
+        /* istanbul ignore else */
+        if (dialogItem) {
+          const newLockProperty = (dialogItem.lockProperty ? newValueMap.get(dialogItem.lockProperty.property.name) : undefined);
+          const updatedDialogItem: DialogItem = { value: dialogItem.value, property: dialogItem.property, editorPosition: dialogItem.editorPosition, isDisabled: syncItem.isDisabled, lockProperty: newLockProperty };
+          newValueMap.set(itemName, updatedDialogItem);
+          /** Update property items */
+        }
       }
     });
+
     this.setState({ valueMap: newValueMap });
   }
 
@@ -85,26 +89,26 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
 
   // istanbul ignore next
   private _handleCommit = (commit: PropertyUpdatedArgs): void => {
-    const propertyName = commit.propertyRecord.property.name;
+    const propertyUpdateName = commit.propertyRecord.property.name;
 
-    // ToolSettings supports only primitive property types
+    // DialogItemsManager supports only primitive property types
     if (commit.newValue.valueFormat === PropertyValueFormat.Primitive && commit.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive) {
       const newPrimitiveValue = (commit.newValue as PrimitiveValue).value;
       if (newPrimitiveValue === (commit.propertyRecord.value as PrimitiveValue).value) {
         // tslint:disable-next-line:no-console
-        // console.log(`Ignore commit - value of '${propertyName}' has not changed`);
+        // console.log(`Ignore commit - value of '${propertyUpdateName}' has not changed`);
         return;  // don't sync if no change occurred
       }
 
-      const dialogItem = this.state.valueMap.get(propertyName);
+      const dialogItem = this.state.valueMap.get(propertyUpdateName);
       if (dialogItem) {
         const propertyRecord = commit.propertyRecord;
         const newValueMap = new Map<string, DialogItem>(this.state.valueMap);
-        const updatedDialogItem = { value: commit.newValue as DialogItemValue, itemName: dialogItem.itemName, property: propertyRecord.property, editorPosition: dialogItem.editorPosition, isDisabled: dialogItem.isDisabled, lockProperty: dialogItem.lockProperty };
-        newValueMap.set(propertyName, updatedDialogItem);
+        const updatedDialogItem = { value: commit.newValue as DialogItemValue, property: propertyRecord.property, editorPosition: dialogItem.editorPosition, isDisabled: dialogItem.isDisabled, lockProperty: dialogItem.lockProperty };
+        newValueMap.set(propertyUpdateName, updatedDialogItem);
         this.setState({ valueMap: newValueMap }, () => {
-          const syncItem: DialogSyncItem = { value: commit.newValue as DialogItemValue, itemName: updatedDialogItem.itemName, property: updatedDialogItem.property, editorPosition: updatedDialogItem.editorPosition, isDisabled: updatedDialogItem.isDisabled, lockProperty: updatedDialogItem.lockProperty };
-          this._itemsManager.onDataChanged.emit(syncItem);
+          const syncItem: DialogPropertySyncItem = { value: commit.newValue as DialogItemValue, propertyName: propertyUpdateName, isDisabled: updatedDialogItem.isDisabled };
+          this._itemsManager.applyUiPropertyChange (syncItem);
         });
       }
     }
@@ -119,8 +123,13 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
     const dialogItem = this.state.valueMap.get(item.property.name);
     // istanbul ignore next
     if (!dialogItem)
-      throw (new Error("No record found in value map for tool setting."));
-    const record = new PropertyRecord(dialogItem.value, dialogItem.property);
+      throw (new Error("No record found in value map for dialog."));
+
+    const record = DialogItemsManager.getPropertyRecord(item);
+
+    if (!record)
+      throw (new Error("Could not create property record for dialog item"));
+
     const className = isLock ? "uifw-default-property-lock" : "uifw-default-editor";
     return (
       <div key={record.property.name} className={className} >
@@ -148,7 +157,7 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
   }
 
   private getPropertyId(record: DialogItem): string {
-    return `toolSettingsProperty-${record.property.name}`;
+    return `dialogItemProperty-${record.property.name}`;
   }
 
   private getPropertyLabelClass(record: DialogItem, isLeftmostRecord: boolean): string {
@@ -170,7 +179,7 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
     const record = this.state.valueMap.get(rowRecord.property.name);
     // istanbul ignore next
     if (!record)
-      throw (new Error("No record found in value map for tool setting."));
+      throw (new Error("No record found in value map for dialog item."));
 
     return <label className={this.getPropertyLabelClass(record, isLeftmostRecord)} htmlFor={this.getPropertyId(rowRecord)}>{this.getPropertyLabel(rowRecord)}:</label>;
   }
@@ -179,7 +188,7 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
     const record = this.state.valueMap.get(rowRecord.property.name);
     // istanbul ignore next
     if (!record)
-      throw (new Error("No record found in value map for tool setting."));
+      throw (new Error("No record found in value map for dialog item."));
 
     const lockEditor = (DialogItemsManager.hasAssociatedLockProperty(record)) ? this.getEditor(record.lockProperty!, true) : null;
     const label = (DialogItemsManager.editorWantsLabel(record)) ? this.getEditorLabel(record) : null;

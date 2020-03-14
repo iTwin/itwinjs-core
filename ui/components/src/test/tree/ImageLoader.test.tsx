@@ -14,7 +14,7 @@ describe("TreeImageLoader", () => {
 
       expect(image).is.not.undefined;
 
-      expect(image!.sourceType).to.equal("core-icon");
+      expect(image!.sourceType).to.equal("webfont-icon");
       expect(image!.value).to.equal("test-icon");
     });
 

@@ -7,8 +7,8 @@
  */
 
 import {
-  ToolSettingsPropertyRecord, ToolSettingsPropertySyncItem, ToolSettingsValue,
-  PrimitiveValue, PropertyDescription,
+  DialogItem, DialogPropertySyncItem, DialogItemValue,
+  PropertyDescription,
 } from "@bentley/ui-abstract";
 import { CanvasDecoration } from "../render/CanvasDecoration";
 import { GraphicType } from "../render/GraphicBuilder";
@@ -715,7 +715,7 @@ export class MeasureLocationTool extends PrimitiveTool {
 export class MeasureAreaByPointsTool extends PrimitiveTool {
   public static toolId = "Measure.AreaByPoints";
   public static iconSpec = "icon-measure-2d";
-  private _orientationValue = new ToolSettingsValue(EditManipulator.RotationType.Top);
+  private _orientationValue: DialogItemValue = { value: EditManipulator.RotationType.Top };
   protected readonly _points: Point3d[] = [];
   protected _matrix?: Matrix3d;
   protected _isComplete = false;
@@ -750,16 +750,17 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
     };
   }
 
-  public supplyToolSettingsProperties(): ToolSettingsPropertyRecord[] | undefined {
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
     IModelApp.toolAdmin.toolSettingsState.initializeToolSettingProperty(this.toolId, { propertyName: MeasureAreaByPointsTool._orientationName, value: this._orientationValue });
-    const toolSettings = new Array<ToolSettingsPropertyRecord>();
-    toolSettings.push(new ToolSettingsPropertyRecord(this._orientationValue.clone() as PrimitiveValue, MeasureAreaByPointsTool._getEnumAsOrientationDescription(), { rowPriority: 0, columnIndex: 2 }));
+    const toolSettings = new Array<DialogItem>();
+    toolSettings.push({ value: this._orientationValue, property: MeasureAreaByPointsTool._getEnumAsOrientationDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
     return toolSettings;
   }
 
-  public applyToolSettingPropertyChange(updatedValue: ToolSettingsPropertySyncItem): boolean {
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === MeasureAreaByPointsTool._orientationName) {
-      if (!this._orientationValue.update(updatedValue.value))
+      this._orientationValue = updatedValue.value;
+      if (!this._orientationValue)
         return false;
       this.onReinitialize();
       IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: MeasureAreaByPointsTool._orientationName, value: this._orientationValue });
