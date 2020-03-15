@@ -92,7 +92,7 @@
     },
     {
       "name": "@bentley/imodeljs-native",
-      "allowedCategories": [ "backend", "tools" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/imodeljs-quantity",
@@ -228,11 +228,11 @@
     },
     {
       "name": "bunyan",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "bunyan-seq",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "cache-loader",
@@ -444,7 +444,7 @@
     },
     {
       "name": "glob",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
       "name": "highlight.js",
@@ -925,10 +925,6 @@
     {
       "name": "tsutils",
       "allowedCategories": [ "frontend", "tools" ]
-    },
-    {
-      "name": "typed-rest-client",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "typedoc",
