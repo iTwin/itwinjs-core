@@ -173,6 +173,22 @@ export interface IModelEncryptionProps {
   password?: string;
 }
 
+/** Options that can be supplied when creating snapshot iModels.
+ * @beta
+ */
+export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
+  /** If true, then create SQLite views for Model, Element, ElementAspect, and Relationship classes.
+   * These database views can often be useful for interoperability workflows.
+   */
+  createClassViews?: boolean;
+}
+
+/** The options that can be specified when creating an *empty* snapshot iModel.
+ * @see [[SnapshotIModelDb.createEmpty]]
+ * @beta
+ */
+export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
+
 /** @public */
 export interface FilePropertyProps {
   namespace: string;

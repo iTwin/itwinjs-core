@@ -6,17 +6,16 @@
  * @module iModels
  */
 import {
-  ClientRequestContext, BeEvent, BentleyStatus, DbResult, AuthStatus, Guid, GuidString, Id64, Id64Arg, Id64Set,
-  Id64String, JsonUtils, Logger, OpenMode, PerfLogger, BeDuration, ChangeSetStatus,
+  AuthStatus, BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
+  Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType } from "@bentley/imodeljs-clients";
 import {
-  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
-  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
-  IModel, IModelEncryptionProps, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
-  PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps, QueryResponseStatus, QueryResponse, QueryPriority,
-  QueryLimit, QueryQuota, RpcPendingResponse, MassPropertiesResponseProps, MassPropertiesRequestProps, SpatialViewDefinitionProps,
+  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
+  EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
+  GeoCoordinatesResponseProps, IModel, IModelCoordinatesResponseProps, IModelEncryptionProps, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelSelectorProps, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
+  RpcPendingResponse, SheetProps, SnapRequestProps, SnapResponseProps, SpatialViewDefinitionProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
@@ -2256,14 +2255,18 @@ export class SnapshotIModelDb extends IModelDb {
    * Snapshots are not synchronized with iModelHub, so do not have a change timeline.
    * > Note: A *snapshot* cannot be modified after [[close]] is called.
    * @param snapshotFile The file that will contain the new iModel *snapshot*
-   * @param args The parameters that define the new iModel *snapshot*
+   * @param options The parameters that define the new iModel *snapshot*
    * @returns A writeable SnapshotIModelDb
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    * @beta
    */
-  public static createEmpty(snapshotFile: string, args: CreateIModelProps & IModelEncryptionProps): SnapshotIModelDb {
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, args);
-    return new SnapshotIModelDb(briefcaseEntry, OpenParams.createSnapshot());
+  public static createEmpty(snapshotFile: string, options: CreateEmptySnapshotIModelProps): SnapshotIModelDb {
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.createStandalone(snapshotFile, options);
+    const snapshotDb = new SnapshotIModelDb(briefcaseEntry, OpenParams.createSnapshot());
+    if (options.createClassViews) {
+      (snapshotDb as any).createClassViewsOnClose = true; // save flag that will be checked when close() is called
+    }
+    return snapshotDb;
   }
 
   /** Create a local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file, using this iModel as a *seed* or starting point.
@@ -2271,19 +2274,19 @@ export class SnapshotIModelDb extends IModelDb {
    * > Note: A *snapshot* cannot be modified after [[closeSnapshot]] is called.
    * @param iModelDb The snapshot will be initialized from the current contents of this iModelDb
    * @param snapshotFile The file that will contain the new iModel *snapshot*
-   * @param encryptionProps Properties optionally used to encrypt the new snapshot.
+   * @param options Optional properties that determine how the snapshot iModel is created.
    * @returns A writeable SnapshotIModelDb
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    * @beta
    */
-  public static createFrom(iModelDb: IModelDb, snapshotFile: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb {
+  public static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotIModelDb {
     if (iModelDb.nativeDb.isEncrypted()) {
       throw new IModelError(DbResult.BE_SQLITE_MISUSE, "Cannot create a snapshot from an encrypted iModel", Logger.logError, loggerCategory);
     }
     IModelJsFs.copySync(iModelDb.briefcase.pathname, snapshotFile);
-    const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
-    if (encryptionPropsString) {
-      const status: DbResult = IModelHost.platform.DgnDb.encryptDb(snapshotFile, encryptionPropsString);
+    const optionsString: string | undefined = options ? JSON.stringify(options) : undefined;
+    if (options?.password) {
+      const status: DbResult = IModelHost.platform.DgnDb.encryptDb(snapshotFile, optionsString!);
       if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Problem encrypting snapshot iModel", Logger.logError, loggerCategory);
       }
@@ -2293,7 +2296,7 @@ export class SnapshotIModelDb extends IModelDb {
         throw new IModelError(status, "Error initializing snapshot iModel", Logger.logError, loggerCategory);
       }
     }
-    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, encryptionPropsString);
+    const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(snapshotFile, OpenMode.ReadWrite, optionsString);
     const isSeedFileMaster: boolean = BriefcaseId.LegacyMaster === briefcaseEntry.briefcaseId;
     const isSeedFileSnapshot: boolean = BriefcaseId.Snapshot === briefcaseEntry.briefcaseId;
     // Replace iModelId if seedFile is a master or snapshot, preserve iModelId if seedFile is an iModelHub-managed briefcase
@@ -2310,7 +2313,10 @@ export class SnapshotIModelDb extends IModelDb {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating snapshot", Logger.logWarning, loggerCategory);
       }
     }
-    snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId, encryptionPropsString);
+    snapshotDb.nativeDb.setBriefcaseId(briefcaseEntry.briefcaseId, optionsString);
+    if (options?.createClassViews) {
+      (snapshotDb as any).createClassViewsOnClose = true; // save flag that will be checked when close() is called
+    }
     return snapshotDb;
   }
 
@@ -2331,6 +2337,11 @@ export class SnapshotIModelDb extends IModelDb {
    * @beta
    */
   public close(): void {
+    if ((this as any).createClassViewsOnClose) { // check for flag set during create
+      if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
+        throw new IModelError(IModelStatus.SQLiteError, "Error creating class views", Logger.logError, loggerCategory);
+      }
+    }
     this.clearStatementCache(); // clear cache held in JavaScript
     this.clearSqliteStatementCache(); // clear cache held in JavaScript
     BriefcaseManager.closeStandalone(this.briefcase);

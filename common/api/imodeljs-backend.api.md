@@ -42,7 +42,9 @@ import { ColorDef } from '@bentley/imodeljs-common';
 import { ConflictingCodesError } from '@bentley/imodeljs-clients';
 import { ConnectClient } from '@bentley/imodeljs-clients';
 import { ContextRealityModelProps } from '@bentley/imodeljs-common';
+import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
 import { CreateIModelProps } from '@bentley/imodeljs-common';
+import { CreateSnapshotIModelProps } from '@bentley/imodeljs-common';
 import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { DefinitionElementProps } from '@bentley/imodeljs-common';
@@ -3616,8 +3618,8 @@ export class SheetViewDefinition extends ViewDefinition2d {
 // @beta
 export class SnapshotIModelDb extends IModelDb {
     close(): void;
-    static createEmpty(snapshotFile: string, args: CreateIModelProps & IModelEncryptionProps): SnapshotIModelDb;
-    static createFrom(iModelDb: IModelDb, snapshotFile: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb;
+    static createEmpty(snapshotFile: string, options: CreateEmptySnapshotIModelProps): SnapshotIModelDb;
+    static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotIModelDb;
     // @internal (undocumented)
     static find(iModelToken: IModelToken): SnapshotIModelDb;
     static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb;
