@@ -12,12 +12,16 @@
   "scripts": {
     "build": "tsc 1>&2 && node ./node_modules/@bentley/build-tools/scripts/ignoreargs.js 1>&2",
     "clean": "rimraf lib .rush",
+    "cover": "",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/clients/extension/file.json --tsIndexFile=./ExtensionClient.ts --onlyJson %TYPEDOC_THEME%",
     "extract-api": "node ./node_modules/@bentley/build-tools/scripts/extract-api.js --entry=ExtensionClient",
     "lint": "tslint --project . 1>&2",
     "test": "",
-    "test:integration": "node ./node_modules/@bentley/build-tools/scripts/test.js",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --includes=../../generated-docs/extract --json=../../generated-docs/clients/extension/file.json --tsIndexFile=./ExtensionClient.ts --onlyJson %TYPEDOC_THEME%",
-    "cover": ""
+    "test:integration": "npm run webpackTests && npm run test:integration:chrome",
+    "test:integration:chrome": "node ./node_modules/@bentley/certa/bin/certa.js -r chrome",
+    "test:integration:electron": "node ./node_modules/@bentley/certa/bin/certa.js -r electron",
+    "test:integration:node": "node ./node_modules/@bentley/certa/bin/certa.js -r node",
+    "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },
   "keywords": [
     "Bentley",
@@ -32,13 +36,11 @@
   "dependencies": {
     "@bentley/imodeljs-clients": "2.0.0-dev.32",
     "@bentley/imodeljs-common": "2.0.0-dev.32",
-    "@bentley/bentleyjs-core": "2.0.0-dev.32",
-    "@bentley/imodeljs-backend": "2.0.0-dev.32",
-    "@bentley/imodeljs-clients-backend": "2.0.0-dev.32",
-    "electron": "^6.1.5"
+    "@bentley/bentleyjs-core": "2.0.0-dev.32"
   },
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.32",
+    "@bentley/certa": "2.0.0-dev.32",
     "@bentley/config-loader": "2.0.0-dev.32",
     "@bentley/oidc-signin-tool": "2.0.0-dev.32",
     "@types/chai": "^4.1.4",
@@ -49,10 +51,11 @@
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
     "rimraf": "^2.6.2",
+    "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
-    "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4",
-    "ts-node": "^7.0.1"
+    "ts-node": "^7.0.1",
+    "webpack": "^4.20.2"
   },
   "nyc": {
     "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"

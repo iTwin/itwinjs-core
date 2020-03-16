@@ -5,7 +5,7 @@
 import { AccessToken, IncludePrefix, UserInfo } from "@bentley/imodeljs-clients";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 
-import { TestUserCredentials } from "../TestUsers";
+import { TestUserCredentials, TestOidcConfiguration } from "../TestUsers";
 
 // Shared by both the frontend and backend side of the tests
 export const getTokenCallbackName = "getToken";
@@ -24,7 +24,7 @@ function deserializeToken([tokenStr, userInfo]: SerializedAccessToken): AccessTo
   return token;
 }
 
-export async function getAccessTokenFromBackend(user: TestUserCredentials): Promise<AccessToken> {
-  const accessTokens = await executeBackendCallback(getTokenCallbackName, user);
+export async function getAccessTokenFromBackend(user: TestUserCredentials, oidcConfig?: TestOidcConfiguration): Promise<AccessToken> {
+  const accessTokens = await executeBackendCallback(getTokenCallbackName, user, oidcConfig);
   return deserializeToken(JSON.parse(accessTokens));
 }

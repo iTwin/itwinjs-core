@@ -8,19 +8,19 @@ import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { Config } from "@bentley/imodeljs-clients";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
-import { initOidc } from "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import "./RpcImpl";
 import { CloudEnv } from "./cloudEnv";
+
+// Sets up certa to allow a method on the frontend to get an access token
+import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 
 // tslint:disable:no-console
 
 async function init() {
   IModelJsConfig.init(true, true, Config.App);
   RpcConfiguration.developmentMode = true;
-
-  initOidc();
 
   // Bootstrap the cloud environment
   await CloudEnv.initialize();
