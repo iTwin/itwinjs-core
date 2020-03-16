@@ -180,7 +180,7 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description Common
- * Common classes used across various UI components.
+ * Common classes and enums used across various UI components.
  */
 /**
  * @docs-group-description ContextMenu
@@ -252,9 +252,9 @@ if ((typeof (BUILD_SEMVER) !== "undefined") && (typeof window !== "undefined") &
  */
 /**
  * @docs-group-description UiSettings
- * Interfaces for working with persistent UI settings.
+ * Interfaces and classes for working with persistent UI settings.
  */
 /**
  * @docs-group-description Utilities
- * Various utility classes for working with a UI.
+ * Various utility classes, functions and React hooks for working with a UI.
  */

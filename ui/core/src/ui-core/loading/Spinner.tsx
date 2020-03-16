@@ -33,7 +33,7 @@ export interface SpinnerProps {
 }
 
 /**
- * A spinner component.
+ * An indeterminate spinner component.
  * @public
  */
 export class Spinner extends React.PureComponent<SpinnerProps> {

@@ -44,7 +44,6 @@ import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
-import { Position } from '@bentley/ui-core';
 import { Primitives } from '@bentley/ui-abstract';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
@@ -52,6 +51,7 @@ import { PropertyValue } from '@bentley/ui-abstract';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import ReactDataGrid = require('react-data-grid');
+import { RelativePosition } from '@bentley/ui-abstract';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
@@ -949,7 +949,7 @@ export interface ContextMenuProps extends CommonProps {
     items?: MenuItem[];
     onClickOutside?: () => void;
     parent: HTMLElement | null;
-    position: Position;
+    position: RelativePosition;
 }
 
 // @beta

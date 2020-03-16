@@ -21,7 +21,7 @@ export interface ExpansionToggleProps extends CommonProps {
   ["data-testid"]?: string;
 }
 
-/** ExpansionToggle React component used by the [[TreeNode]] component
+/** ExpansionToggle React component used by the [[TreeNode]] component to show collapsed or expanded state
  * @public
  */
 export class ExpansionToggle extends React.PureComponent<ExpansionToggleProps> {

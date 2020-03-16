@@ -68,6 +68,7 @@ beta;Field
 beta;FieldDef
 beta;FieldDefinitions
 beta;FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox"
+beta;FieldProps 
 beta;FieldValues
 public;FillCentered(props: CommonDivProps): JSX.Element
 internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
@@ -76,6 +77,7 @@ beta;FocusTrap
 beta;Form 
 beta;FormContext: React.Context
 beta;FormContextState 
+beta;FormProps
 internal;getDisplayName: (component: React.ComponentType
 internal;getUserColor(email: string): string
 public;GlobalContextMenu 
@@ -180,8 +182,8 @@ beta;SplitButton
 internal;SplitButtonActionType
 beta;SplitButtonProps 
 beta;StepFunctionProp = number | ((direction: string) => number | undefined)
-internal;StyledText(props: StyledTextProps): JSX.Element
-internal;StyledTextProps 
+beta;StyledText(props: StyledTextProps): JSX.Element
+beta;StyledTextProps 
 public;Subheading(props: TextProps): JSX.Element
 public;Subheading2(props: TextProps): JSX.Element
 public;SvgPath 

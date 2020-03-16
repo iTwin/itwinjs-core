@@ -21,7 +21,7 @@ export interface LoadingSpinnerProps extends SpinnerProps {
 }
 
 /**
- * A loading spinner component.
+ * A loading spinner component that optionally shows a text message.
  * @beta
  */
 export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {

@@ -23,7 +23,7 @@ export interface SearchBoxProps extends CommonProps {
   placeholder?: string;
   /** triggered when the content of SearchBox is changed */
   onValueChanged: (value: string) => void;
-  /** frequency to poll for changes in value */
+  /** frequency to poll for changes in value, in milliseconds */
   valueChangedDelay?: number;
   /** listens for <Enter> keypress */
   onEnterPressed?: () => void;

@@ -124,7 +124,7 @@
     "mobx": "^5.8.0",
     "mobx-react": "^5.4.3",
     "react": "^16.8.0",
-    "react-compound-slider": "^1.2.0",
+    "react-compound-slider": "^2.5.0",
     "react-dom": "^16.8.0",
     "redux": "^4.0.3",
     "semver": "^5.5.0",

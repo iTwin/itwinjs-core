@@ -11,6 +11,8 @@ import { I18N } from '@bentley/imodeljs-i18n';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { Matrix3d } from '@bentley/geometry-core';
 import * as React from 'react';
+import { RelativePosition } from '@bentley/ui-abstract';
+import { SliderModeFunction } from 'react-compound-slider';
 import { TranslationOptions } from '@bentley/imodeljs-i18n';
 
 // @internal
@@ -703,8 +705,8 @@ export enum Face {
 export function FeaturedTile(props: TileProps): JSX.Element;
 
 // @beta
-export class Field extends React.Component<IFieldProps> {
-    constructor(props: IFieldProps);
+export class Field extends React.Component<FieldProps> {
+    constructor(props: FieldProps);
     // (undocumented)
     render(): JSX.Element;
 }
@@ -731,6 +733,12 @@ export interface FieldDefinitions {
 
 // @beta
 export type FieldEditor = "textbox" | "multilinetextbox" | "dropdown" | "checkbox";
+
+// @beta
+export interface FieldProps extends FieldDef {
+    // (undocumented)
+    id: string;
+}
 
 // @beta
 export interface FieldValues {
@@ -761,8 +769,8 @@ export class FocusTrap extends React.Component<Props, State> {
     }
 
 // @beta
-export class Form extends React.Component<IFormProps, FormState> {
-    constructor(props: IFormProps);
+export class Form extends React.Component<FormProps, FormState> {
+    constructor(props: FormProps);
     // (undocumented)
     render(): JSX.Element;
     }
@@ -774,6 +782,13 @@ export const FormContext: React.Context<FormContextState | undefined>;
 export interface FormContextState extends FormState {
     // (undocumented)
     setValues: (values: FieldValues) => void;
+}
+
+// @beta
+export interface FormProps {
+    fields: FieldDefinitions;
+    handleFormSubmit: (values: FieldValues) => Promise<void>;
+    submitButtonLabel?: string;
 }
 
 // @internal
@@ -1016,6 +1031,8 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
 
 // @beta
 export interface LoadingPromptProps {
+    isDeterminate: boolean;
+    // @deprecated
     isDeterministic: boolean;
     message?: string;
     onCancel?: () => void;
@@ -1261,12 +1278,11 @@ export interface PopupProps extends CommonProps {
     isPinned?: boolean;
     left: number;
     moveFocus?: boolean;
-    // (undocumented)
     offset: number;
     onClose?: () => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
-    position: Position;
+    position: RelativePosition;
     role?: "dialog" | "alert" | "alertdialog";
     showArrow: boolean;
     showShadow: boolean;
@@ -1274,24 +1290,24 @@ export interface PopupProps extends CommonProps {
     top: number;
 }
 
-// @beta
+// @beta @deprecated
 export enum Position {
     // (undocumented)
-    Bottom = 5,
+    Bottom = 3,
     // (undocumented)
-    BottomLeft = 2,
+    BottomLeft = 6,
     // (undocumented)
-    BottomRight = 3,
+    BottomRight = 7,
     // (undocumented)
-    Left = 6,
+    Left = 0,
     // (undocumented)
-    Right = 7,
+    Right = 2,
     // (undocumented)
-    Top = 4,
+    Top = 1,
     // (undocumented)
-    TopLeft = 0,
+    TopLeft = 4,
     // (undocumented)
-    TopRight = 1
+    TopRight = 5
 }
 
 // @beta
@@ -1308,7 +1324,7 @@ export class RadialButton extends React.Component<RadialButtonProps, RadialButto
 export interface RadialButtonProps extends CommonProps {
     // @internal (undocumented)
     annularSector?: AnnularSector;
-    icon?: string;
+    icon?: IconSpec;
     labelRotate?: boolean;
     onSelect?: (e: any) => any;
     selected?: boolean;
@@ -1613,7 +1629,7 @@ export interface SliderProps extends CommonProps {
     maxImage?: React.ReactNode;
     min: number;
     minImage?: React.ReactNode;
-    mode?: number;
+    mode?: number | SliderModeFunction;
     onChange?: (values: ReadonlyArray<number>) => void;
     onSlideEnd?: (values: ReadonlyArray<number>) => void;
     onSlideStart?: (values: ReadonlyArray<number>) => void;
@@ -1684,7 +1700,7 @@ export enum SplitButtonActionType {
 // @beta
 export interface SplitButtonProps extends CommonProps {
     drawBorder?: boolean;
-    icon?: string;
+    icon?: IconSpec;
     label: string | React.ReactNode;
     onClick?: (event: any) => any;
 }
@@ -1692,10 +1708,10 @@ export interface SplitButtonProps extends CommonProps {
 // @beta
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
 
-// @internal
+// @beta
 export function StyledText(props: StyledTextProps): JSX.Element;
 
-// @internal
+// @beta
 export interface StyledTextProps extends TextProps {
     mainClassName: string;
 }

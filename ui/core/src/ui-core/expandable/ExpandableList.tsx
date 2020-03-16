@@ -27,7 +27,7 @@ interface ExpandableListState {
 }
 
 /**
- * ExpandableList React component
+ * ExpandableList React component is a container for ExpandableBlock components.
  * @public
  */
 export class ExpandableList extends React.PureComponent<ExpandableListProps, ExpandableListState> {

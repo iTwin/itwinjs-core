@@ -18,7 +18,7 @@
   background: transparent;
   border-style: none;
   padding: 0px;
-  z-index: 1000;
+  @include uicore-z-index(dragdrop);
 
   &--vertical {
     width: 100%;

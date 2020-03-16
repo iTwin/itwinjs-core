@@ -9,7 +9,8 @@
 import * as React from "react";
 import classnames from "classnames";
 import { ColorDef, ColorByName } from "@bentley/imodeljs-common";
-import { Popup, Position, CommonProps } from "@bentley/ui-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Popup, CommonProps } from "@bentley/ui-core";
 import { ColorSwatch } from "./Swatch";
 import "./ColorPickerButton.scss";
 
@@ -141,7 +142,7 @@ export class ColorPickerButton extends React.PureComponent<ColorPickerProps, Col
         <Popup
           className="components-colorpicker-popup"
           isOpen={this.state.showPopup}
-          position={Position.BottomLeft}
+          position={RelativePosition.BottomLeft}
           onClose={this._closePopup}
           target={this._target} >
           {this.renderPopup(this.props.dropDownTitle)}

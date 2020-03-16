@@ -12,7 +12,7 @@ import { IconSpecUtilities, ConditionalStringValue } from "@bentley/ui-abstract"
 
 import "./IconComponent.scss";
 
-/** Prototype for an IconSpec which can be a string or a ReactNode.
+/** Prototype for an IconSpec which can be a string, ReactNode or ConditionalStringValue.
  * @public
  */
 export type IconSpec = string | ConditionalStringValue | React.ReactNode;
@@ -21,11 +21,11 @@ export type IconSpec = string | ConditionalStringValue | React.ReactNode;
  * @public
  */
 export interface IconProps {
-  /** CSS class name or SvgSprite for icon */
+  /** CSS class name or SvgSprite/SvgPath for icon */
   iconSpec?: IconSpec;
 }
 
-/** Icon Functional component
+/** Icon Functional component displays an icon based on an [[IconSpec]].
  * @public
  */
 export function Icon(props: IconProps) {

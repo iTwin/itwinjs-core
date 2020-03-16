@@ -16,7 +16,7 @@ import { LabeledComponentProps } from "./LabeledComponentProps";
  */
 export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps { }
 
-/** Basic radio input component
+/** Basic radio input component is a wrapper for the `<input type="radio">` HTML element.
  * @public
  */
 export class Radio extends React.PureComponent<RadioProps> {

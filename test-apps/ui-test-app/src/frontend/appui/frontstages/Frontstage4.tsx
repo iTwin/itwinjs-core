@@ -193,8 +193,12 @@ export class Frontstage4 extends FrontstageProvider {
   private radialMenu(): React.ReactNode {
     return (
       <TestRadialMenu
-        opened={true} />
+        opened={true} onClose={this._closeModal} />
     );
+  }
+
+  private _closeModal = () => {
+    ModalDialogManager.closeDialog();
   }
 
   private get _spinnerTestDialogItem() {

@@ -18,7 +18,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>,
   setFocus?: boolean;
 }
 
-/** Basic text input
+/** Basic text input, is a wrapper for the `<input type="text">` HTML element.
  * @public
  */
 export class Input extends React.PureComponent<InputProps> {

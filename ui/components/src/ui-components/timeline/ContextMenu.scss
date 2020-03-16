@@ -7,7 +7,7 @@
 .contextmenu-wip {
   cursor: default;
   box-sizing: border-box;
-  z-index: 100;
+  @include uicore-z-index(context-menu-z);
   background: $buic-background-1;
   border-radius: 3px;
   max-width: 250px;

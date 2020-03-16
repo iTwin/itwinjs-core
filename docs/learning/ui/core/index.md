@@ -1,6 +1,6 @@
 # The ui-core package
 
-The ui-core package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.
+The `@bentley/ui-core` package contains general purpose React components, such as Button, ContextMenu, Dialog, MessageBox, SearchBox, RadialMenu and SplitButton. It also contains various input components, such as Input, Radio, Checkbox, NumericInput, Select, Slider and Toggle, and components for styled text.
 
 ## Topics
 
@@ -9,21 +9,20 @@ The ui-core package contains general purpose React components, such as Dialog, M
 * [CheckListBox](./CheckListBox.md) - Components and classes for working with a Check listbox.
 * [Common](./Common.md) - Common classes used across various UI components.
 * [ContextMenu](./ContextMenu.md) - Components and classes for working with a Context Menu.
-* [Cube](./Cube.md) - Component for 3D Cube.
 * [Dialog](./Dialog.md) - Components for working with a Dialog or MessageBox.
-* [ElementSeparator](./ElementSeparator.md) - Components for working with a ElementSeparator.
 * [Expandable](./Expandable.md) - Components for working with a ExpandableBlock or ExpandableList.
 * [Form](./Form.md) - Components used to create a Form using supplied properties to specify fields.
-* [Icon](./Icon.md) - Component that renders ui-core icon when given an icon name or SVG source.
+* [Icon](./Icon.md) - Components that render icons when given an icon name or SVG source or path.
 * [Inputs](./Inputs.md) - Components for working with input controls, such as Input, Radio, Checkbox, Select, Slider and Toggle.
 * [Loading](./Loading.md) - Components for working with Loading spinner and progress indicator.
 * [Popup](./Popup.md) - Components for working with a Popup.
 * [RadialMenu](./RadialMenu.md) - Components for working with a RadialMenu.
 * [SearchBox](./SearchBox.md) - Components for working with a SearchBox.
+* [Slider](./Slider.md) - Components for displaying a range slider.
 * [SplitButton](./SplitButton.md) - Components for working with a SplitButton.
 * [Tabs](./Tabs.md) - Components for working with horizontal or vertical tabs.
 * [Text](./Text.md) - Components for working with styled text.
 * [Tiles](./Tiles.md) - Components for a container rendering elements that can be grouped together.
 * [Tree](./Tree.md) - Presentation React components for working with a Tree.
-* [UiSettings](./UiSettings.md) - Interfaces for working with persistent UI settings.
-* [Utilities](./Utilities.md) - Various utility classes for working with a UI.
+* [UiSettings](./UiSettings.md) - Interfaces and classes for working with persistent UI settings.
+* [Utilities](./Utilities.md) - Various utility classes, functions and React hooks for working with a UI.

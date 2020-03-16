@@ -9,7 +9,8 @@
 import * as React from "react";
 import classnames from "classnames";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { Popup, Position, CommonProps } from "@bentley/ui-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Popup, CommonProps } from "@bentley/ui-core";
 import ReactResizeDetector from "react-resize-detector";
 import { LineWeightSwatch } from "./Swatch";
 import "./WeightPickerButton.scss";
@@ -210,7 +211,7 @@ export class WeightPickerButton extends React.PureComponent<WeightPickerProps, W
               className="components-weightpicker-popup"
               style={{ width: `${width}px` }}
               isOpen={this.state.showPopup}
-              position={Position.Bottom}
+              position={RelativePosition.Bottom}
               offset={0}
               showShadow={false}
               onClose={this._closePopup}

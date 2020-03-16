@@ -475,8 +475,12 @@ class AdditionalTools {
 
   private radialMenu(): React.ReactNode {
     return (
-      <TestRadialMenu opened={true} />
+      <TestRadialMenu opened={true} onClose={this._closeModal} />
     );
+  }
+
+  private _closeModal = () => {
+    ModalDialogManager.closeDialog();
   }
 
   private get _openCalculatorItem() {

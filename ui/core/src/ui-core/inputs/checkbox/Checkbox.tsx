@@ -39,7 +39,8 @@ export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputE
   setFocus?: boolean;
 }
 
-/** A React component that renders a simple checkbox with label
+/** A React component that renders a simple checkbox with label.
+ * It is a wrapper for the `<input type="checkbox">` HTML element.
  * @public
  */
 export class Checkbox extends React.PureComponent<CheckboxProps> {

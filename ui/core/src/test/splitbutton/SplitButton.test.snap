@@ -89,8 +89,8 @@ exports[`<SplitButton /> renders with icon correctly 1`] = `
     className="core-split-button-label"
     data-testid="core-split-button-label"
   >
-    <span
-      className="icon icon-placeholder"
+    <Icon
+      iconSpec="icon-placeholder"
     />
      
     test

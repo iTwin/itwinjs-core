@@ -36,7 +36,7 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
   setFocus?: boolean;
 }
 
-/** Basic select component
+/** Basic select component is a wrapper for the `<select>` HTML element.
  * @public
  */
 export class Select extends React.PureComponent<SelectProps> {
@@ -49,17 +49,17 @@ export class Select extends React.PureComponent<SelectProps> {
   }
 
   public render(): JSX.Element {
-    const { required, setFocus, ...otherProps } = this.props as any; // pluck off values that will be explicitly set below
+    const { required, options, setFocus, className, defaultValue, ...otherProps } = this.props as any; // pluck off values that will be explicitly set below
     const showPlaceholder = !!this.props.placeholder && !this.props.value && !this.props.defaultValue;
     const isRequired = showPlaceholder || required;
-    const options = this.props.options;
+    const placeholderValue = "placeholder";
     return (
       <select ref={this._selectElement} {...otherProps}
         required={isRequired}
-        className={classnames("uicore-inputs-select", this.props.className)}
-        style={this.props.style}>
+        className={classnames("uicore-inputs-select", className)}
+        defaultValue={showPlaceholder ? placeholderValue : defaultValue}>
         {showPlaceholder &&
-          <option className="placeholder" disabled selected key="" value="">{this.props.placeholder}</option>
+          <option className="placeholder" disabled key="" value={placeholderValue}>{this.props.placeholder}</option>
         }
         {options instanceof Array ?
           options.map((value, index) => <option key={index} value={value}>{value}</option>)
