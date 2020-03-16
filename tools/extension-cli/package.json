@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-cli",
-  "version": "2.0.0-dev.31",
+  "version": "2.0.0-dev.32",
   "description": "A CLI client for publishing iModel.js Extensions",
   "license": "MIT",
   "main": "bin/extension-cli.js",
@@ -31,16 +31,16 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/extension-client": "2.0.0-dev.31",
-    "@bentley/bentleyjs-core": "2.0.0-dev.31",
-    "@bentley/imodeljs-backend": "2.0.0-dev.31",
-    "@bentley/imodeljs-common": "2.0.0-dev.31",
-    "@bentley/imodeljs-clients": "2.0.0-dev.31",
+    "@bentley/extension-client": "2.0.0-dev.32",
+    "@bentley/bentleyjs-core": "2.0.0-dev.32",
+    "@bentley/imodeljs-backend": "2.0.0-dev.32",
+    "@bentley/imodeljs-common": "2.0.0-dev.32",
+    "@bentley/imodeljs-clients": "2.0.0-dev.32",
     "electron": "^6.1.5",
     "yargs": "^12.0.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.31",
+    "@bentley/build-tools": "2.0.0-dev.32",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.14.1",
