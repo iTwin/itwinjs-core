@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { WidgetIdContext, NineZoneProvider, NineZoneDispatch, createNineZoneState, addPanelWidget } from "@bentley/ui-ninezone";
+import { NineZoneProvider, NineZoneDispatch, createNineZoneState, addPanelWidget, WidgetStateContext } from "@bentley/ui-ninezone";
 import { render } from "@testing-library/react";
 import { WidgetContent, FrontstageManager, FrontstageDef } from "../../ui-framework";
 import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
@@ -31,9 +31,9 @@ describe("WidgetContent", () => {
         dispatch={sinon.stub<NineZoneDispatch>()}
         state={nineZone}
       >
-        <WidgetIdContext.Provider value="leftStart">
+        <WidgetStateContext.Provider value={nineZone.widgets.leftStart}>
           <WidgetContent />
-        </WidgetIdContext.Provider>
+        </WidgetStateContext.Provider>
       </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
@@ -54,9 +54,9 @@ describe("WidgetContent", () => {
         dispatch={sinon.stub<NineZoneDispatch>()}
         state={nineZone}
       >
-        <WidgetIdContext.Provider value="leftStart">
+        <WidgetStateContext.Provider value={nineZone.widgets.leftStart}>
           <WidgetContent />
-        </WidgetIdContext.Provider>
+        </WidgetStateContext.Provider>
       </NineZoneProvider>,
     );
     (container.firstChild === null).should.true;

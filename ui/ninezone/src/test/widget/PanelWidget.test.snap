@@ -1,0 +1,66 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`PanelWidget should render 1`] = `
+<div
+  class="nz-widget-widget nz-widget-panelWidget"
+  style="flex-grow: 1;"
+>
+  <div
+    class="nz-widget-titleBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+    >
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widget-content"
+  />
+</div>
+`;
+
+exports[`PanelWidget should render minimized 1`] = `
+<div
+  class="nz-widget-widget nz-widget-panelWidget"
+>
+  <div
+    class="nz-widget-titleBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+    >
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widget-content"
+  />
+</div>
+`;

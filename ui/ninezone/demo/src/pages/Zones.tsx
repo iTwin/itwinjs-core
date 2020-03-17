@@ -93,6 +93,7 @@ const NestedToolGroupContained = withContainIn(withOnOutsideClick(NestedGroup, u
 const ItemWithDragInteraction = withDragInteraction(Item);
 // tslint:disable-next-line:variable-name
 const ToolGroupSelectionContext = React.createContext(false);
+ToolGroupSelectionContext.displayName = "nzdemo:ToolGroupSelectionContext";
 
 // tslint:disable-next-line:variable-name
 const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (

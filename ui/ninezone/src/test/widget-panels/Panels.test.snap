@@ -10,5 +10,22 @@ exports[`WidgetPanels should render 1`] = `
   <div
     class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom"
   />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-left"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-right"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-top"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-bottom"
+  />
+  <div
+    class="nz-widget-floatingTab nz-hidden"
+  >
+    <span />
+  </div>
 </div>
 `;

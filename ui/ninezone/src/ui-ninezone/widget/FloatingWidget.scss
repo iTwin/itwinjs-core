@@ -1,0 +1,61 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.nz-widget-floatingWidget {
+  position: absolute;
+
+  &.nz-minimized {
+    flex-grow: 0;
+
+    > .nz-content {
+      width: 0;
+    }
+  }
+
+  &.nz-dragged {
+    pointer-events: none;
+
+    @include uicore-z-index(drag-preview);
+  }
+}
+
+.nz-widget-floatingWidget_handle {
+  $size: 0.5em;
+
+  position: absolute;
+
+  &.nz-left, &.nz-right {
+    height: 100%;
+    width: $size;
+    cursor: ew-resize;
+  }
+
+  &.nz-top, &.nz-bottom {
+    width: 100%;
+    height: $size;
+    cursor: ns-resize;
+  }
+
+  &.nz-left {
+    left: -$size / 2;
+    top: 0;
+  }
+
+  &.nz-right {
+    right: -$size / 2;
+    top: 0;
+  }
+
+  &.nz-top {
+    left: 0;
+    top: -$size / 2;
+  }
+
+  &.nz-bottom {
+    left: 0;
+    bottom: -$size / 2;
+  }
+}

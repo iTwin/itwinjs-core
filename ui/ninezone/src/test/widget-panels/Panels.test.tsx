@@ -4,10 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, render } from "@testing-library/react";
-import { WidgetPanels, NineZoneContext, createNineZoneState, addPanelWidget } from "../../ui-ninezone";
-import { StartResize, Resize, EndResize } from "./Grip.test";
-import { NineZoneDispatchContext, NineZoneDispatch } from "../../ui-ninezone/base/NineZone";
+import { render } from "@testing-library/react";
+import { WidgetPanels, createNineZoneState, NineZoneProvider } from "../../ui-ninezone";
 
 describe("WidgetPanels", () => {
   const sandbox = sinon.createSandbox();
@@ -19,35 +17,13 @@ describe("WidgetPanels", () => {
   it("should render", () => {
     const nineZone = createNineZoneState();
     const { container } = render(
-      <NineZoneContext.Provider value={nineZone}>
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
         <WidgetPanels />
-      </NineZoneContext.Provider>,
+      </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
-  });
-
-  it("should render grip overlay", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1");
-    render(
-      <NineZoneDispatchContext.Provider value={sinon.stub<NineZoneDispatch>()}>
-        <NineZoneContext.Provider value={nineZone}>
-          <WidgetPanels />
-        </NineZoneContext.Provider>
-      </NineZoneDispatchContext.Provider>,
-    );
-    document.getElementsByClassName("nz-widgetPanels-gripOverlay").length.should.eq(0);
-
-    const grip = document.getElementsByClassName("nz-widgetPanels-grip nz-left")[0];
-    act(() => {
-      StartResize(grip);
-      Resize(1, 1);
-    });
-    document.getElementsByClassName("nz-widgetPanels-gripOverlay").length.should.eq(1);
-
-    act(() => {
-      EndResize();
-    });
-    document.getElementsByClassName("nz-widgetPanels-gripOverlay").length.should.eq(0);
   });
 });

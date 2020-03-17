@@ -8,22 +8,22 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps, useResizeObserver, useOnOutsideClick, useRefs } from "@bentley/ui-core";
+import { useResizeObserver, useOnOutsideClick, useRefs } from "@bentley/ui-core";
 import { WidgetMenu } from "./Menu";
-import { useWidgetTab } from "./Tabs";
 import "./Overflow.scss";
 
 /** @internal */
-export interface WidgetOverflowProps extends CommonProps {
+export interface WidgetOverflowProps {
   children?: React.ReactNode;
+  hidden?: boolean;
+  onResize?: (w: number) => void;
 }
 
 /** @internal */
-export function WidgetOverflow(props: WidgetOverflowProps) {
+export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOverflow(props) { // tslint:disable-line: variable-name no-shadowed-variable
   const [open, setOpen] = React.useState(false);
-  const { onResize } = useWidgetTab();
   const ref = React.useRef<HTMLDivElement>(null);
-  const resizeObserverRef = useResizeObserver<HTMLDivElement>(onResize);
+  const resizeObserverRef = useResizeObserver<HTMLDivElement>(props.onResize);
   const refs = useRefs(ref, resizeObserverRef);
   const handleClick = React.useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -38,13 +38,12 @@ export function WidgetOverflow(props: WidgetOverflowProps) {
   const menuRef = useOnOutsideClick<HTMLDivElement>(onOutsideClick, isOutsideEvent);
   const className = classnames(
     "nz-widget-overflow",
-    props.className,
+    props.hidden && "nz-hidden",
   );
   return (
     <div
       className={className}
       ref={refs}
-      style={props.style}
     >
       <div
         className="nz-button"
@@ -58,4 +57,4 @@ export function WidgetOverflow(props: WidgetOverflowProps) {
       />}
     </div>
   );
-}
+});

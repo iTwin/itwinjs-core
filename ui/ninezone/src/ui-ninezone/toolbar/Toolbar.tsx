@@ -232,3 +232,4 @@ export const getToolbarItemProps = <TProps extends {}>(props: TProps): ToolbarIt
  */
 // tslint:disable-next-line: variable-name
 export const ToolbarDirectionContext = React.createContext<Direction>(Direction.Bottom);
+ToolbarDirectionContext.displayName = "nz:ToolbarDirectionContext";

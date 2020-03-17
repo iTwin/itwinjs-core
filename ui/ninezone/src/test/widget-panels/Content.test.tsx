@@ -4,19 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { WidgetPanelContent } from "../../ui-ninezone";
+import { WidgetPanelsContent } from "../../ui-ninezone";
 
-describe("WidgetPanelContent", () => {
+describe("WidgetPanelsContent", () => {
   it("should render", () => {
     const { container } = render(
-      <WidgetPanelContent />,
+      <WidgetPanelsContent />,
     );
     container.firstChild!.should.matchSnapshot();
   });
 
   it("should render pinned left", () => {
     const { container } = render(
-      <WidgetPanelContent
+      <WidgetPanelsContent
         pinnedLeft
       />,
     );
@@ -25,7 +25,7 @@ describe("WidgetPanelContent", () => {
 
   it("should render pinned right", () => {
     const { container } = render(
-      <WidgetPanelContent
+      <WidgetPanelsContent
         pinnedRight
       />,
     );
@@ -34,7 +34,7 @@ describe("WidgetPanelContent", () => {
 
   it("should render pinned top", () => {
     const { container } = render(
-      <WidgetPanelContent
+      <WidgetPanelsContent
         pinnedTop
       />,
     );
@@ -43,7 +43,7 @@ describe("WidgetPanelContent", () => {
 
   it("should render pinned bottom", () => {
     const { container } = render(
-      <WidgetPanelContent
+      <WidgetPanelsContent
         pinnedBottom
       />,
     );

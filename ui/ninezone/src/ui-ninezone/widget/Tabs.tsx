@@ -10,30 +10,51 @@ import * as React from "react";
 import { useResizeObserver } from "@bentley/ui-core";
 import { useOverflow, getChildKey } from "../tool-settings/Docked";
 import { WidgetOverflow } from "./Overflow";
-import { useWidgetPanelSide, isHorizontalWidgetPanelSide } from "../widget-panels/Panel";
-import { useWidget } from "../base/NineZone";
+import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
 import { WidgetTab } from "./Tab";
+import { WidgetTabTarget } from "./TabTarget";
+import { WidgetStateContext } from "./Widget";
+import { assert } from "../base/assert";
+import { TabsStateContext } from "../base/NineZone";
 import "./Tabs.scss";
 
+// tslint:disable: no-console
+
 /** @internal */
-export function WidgetTabs() {
-  const side = useWidgetPanelSide();
-  const widget = useWidget();
+export const WidgetTabs = React.memo(function WidgetTabs() { // tslint:disable-line: variable-name no-shadowed-variable
+  const tabs = React.useContext(TabsStateContext);
+  const side = React.useContext(PanelSideContext);
+  const widget = React.useContext(WidgetStateContext);
+  assert(widget);
   const children = React.useMemo<React.ReactNode>(() => {
-    return widget.tabs.map((tabId) => {
+    const activeIndex = widget.activeTabId ? widget.tabs.indexOf(widget.activeTabId) : undefined;
+    return widget.tabs.map((tabId, index, array) => {
+      const firstInactive = activeIndex === undefined ? undefined : activeIndex + 1 === index;
       return (
-        <WidgetTab
-          id={tabId}
+        <React.Fragment
           key={tabId}
-        />
+        >
+          {index === 0 && <WidgetTabTarget
+            tabIndex={index}
+            first
+          />}
+          <WidgetTab
+            first={index === 0}
+            firstInactive={firstInactive}
+            last={index === array.length - 1}
+            tab={tabs[tabId]}
+          />
+          <WidgetTabTarget
+            tabIndex={index}
+          />
+        </React.Fragment>
       );
     });
-  }, [widget]);
+  }, [widget, tabs]);
   const [overflown, handleResize, handleOverflowResize, handleEntryResize] = useOverflow(children);
-  const horizontal = isHorizontalWidgetPanelSide(side);
+  const horizontal = side && isHorizontalPanelSide(side);
   const ref = useResizeObserver(handleResize);
-
-  const childrenArray = React.Children.toArray(children);
+  const childrenArray = React.useMemo(() => React.Children.toArray(children), [children]);
   const tabChildren = childrenArray.reduce<Array<[string, React.ReactNode]>>((acc, child, index) => {
     const key = getChildKey(child, index);
     if (!overflown) {
@@ -54,56 +75,60 @@ export function WidgetTabs() {
       className="nz-widget-tabs"
       ref={ref}
     >
-      {tabChildren.map(([key, child]) => {
-        const onEntryResize = handleEntryResize(key);
+      {tabChildren.map(([key, child], index, array) => {
         return (
-          <WidgetTabContext.Provider
+          <WidgetTabsEntryProvider
+            children={child}
             key={key}
-            value={{
-              isOverflown: false,
-              onResize: onEntryResize,
-            }}
-          >
-            {child}
-          </WidgetTabContext.Provider>
+            id={key}
+            lastNotOverflown={index === array.length - 1 && panelChildren.length > 0}
+            getOnResize={handleEntryResize}
+          />
         );
       })}
-      {(!overflown || panelChildren.length > 0) && (
-        <WidgetTabContext.Provider
-          value={{
-            isOverflown: false,
-            onResize: handleOverflowResize,
-          }}
-        >
-          <WidgetOverflow>
-            {panelChildren.map(([key, child]) => {
-              return (
-                <WidgetTabContext.Provider
-                  key={key}
-                  value={{
-                    isOverflown: true,
-                  }}
-                >
-                  {child}
-                </WidgetTabContext.Provider>
-              );
-            })}
-          </WidgetOverflow>
-        </WidgetTabContext.Provider>
-      )}
+      <WidgetOverflow
+        hidden={overflown && panelChildren.length === 0}
+        onResize={handleOverflowResize}
+      >
+        {panelChildren.map(([key, child]) => {
+          return (
+            <React.Fragment
+              key={key}
+            >
+              {child}
+            </React.Fragment>
+          );
+        })}
+      </WidgetOverflow>
     </div>
   );
-}
+});
 
-interface WidgetTabContextArgs {
-  readonly isOverflown: boolean;
+interface WidgetTabsEntryContextArgs {
+  readonly lastNotOverflown: boolean;
   readonly onResize?: (w: number) => void;
 }
 
 /** @internal */
-export const WidgetTabContext = React.createContext<WidgetTabContextArgs>(null!); // tslint:disable-line: variable-name
+export const WidgetTabsEntryContext = React.createContext<WidgetTabsEntryContextArgs | undefined>(undefined); // tslint:disable-line: variable-name
+WidgetTabsEntryContext.displayName = "nz:WidgetTabsEntryContext";
 
 /** @internal */
-export function useWidgetTab() {
-  return React.useContext(WidgetTabContext);
+export interface WidgetTabsEntryContextProviderProps {
+  children?: React.ReactNode;
+  id: string;
+  getOnResize: (id: string) => (w: number) => void;
+  lastNotOverflown: boolean;
 }
+
+/** @internal */
+export const WidgetTabsEntryProvider = React.memo<WidgetTabsEntryContextProviderProps>(function WidgetTabsEntryProvider(props) { // tslint:disable-line: variable-name no-shadowed-variable
+  return (
+    <WidgetTabsEntryContext.Provider value={{
+      lastNotOverflown: props.lastNotOverflown,
+      onResize: props.getOnResize(props.id),
+    }}>
+      {props.children}
+    </WidgetTabsEntryContext.Provider>
+  );
+});

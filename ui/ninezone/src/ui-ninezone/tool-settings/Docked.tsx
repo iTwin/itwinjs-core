@@ -234,13 +234,13 @@ export function useOverflow(children: React.ReactNode): [
     calculate && calculateOverflow();
   }, [calculateOverflow]);
 
-  const handleEntryResize = (key: string) => (w: number) => {
+  const handleEntryResize = React.useCallback((key: string) => (w: number) => {
     const oldW = entryWidths.current.get(key);
     if (oldW !== w) {
       entryWidths.current.set(key, w);
       calculateOverflow();
     }
-  };
+  }, [calculateOverflow]);
 
   return [overflown, handleContainerResize, handleOverflowResize, handleEntryResize];
 }
@@ -252,6 +252,7 @@ interface DockedToolSettingsEntryContextArgs {
 
 // tslint:disable-next-line: variable-name
 const DockedToolSettingsEntryContext = React.createContext<DockedToolSettingsEntryContextArgs>(null!);
+DockedToolSettingsEntryContext.displayName = "nz:DockedToolSettingsEntryContext";
 
 /** @internal */
 export function useToolSettingsEntry() {
