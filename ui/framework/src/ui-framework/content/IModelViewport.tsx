@@ -70,12 +70,12 @@ export class IModelViewportControl extends ViewportContentControl {
     const iModelConnection = (typeof options.iModelConnection === "function") ? options.iModelConnection() : options.iModelConnection;
 
     if (this._viewState && iModelConnection) {
-      this.reactElement = this.getImodelViewportReactElement(iModelConnection, this._viewState);
+      this.reactNode = this.getImodelViewportReactElement(iModelConnection, this._viewState);
     } else {
       if (UiFramework.getIModelConnection() && UiFramework.getDefaultViewState()) {
-        this.reactElement = this.getImodelConnectedViewportReactElement();
+        this.reactNode = this.getImodelConnectedViewportReactElement();
       } else {
-        this.reactElement = this.getNoContentReactElement(options);
+        this.reactNode = this.getNoContentReactElement(options);
         this.setIsReady();
       }
     }

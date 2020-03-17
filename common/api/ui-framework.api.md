@@ -976,8 +976,11 @@ export class ContentControl extends ConfigurableUiControl {
     get navigationAidControl(): string;
     onActivated(): void;
     onDeactivated(): void;
+    // @deprecated
     get reactElement(): React.ReactNode;
     set reactElement(r: React.ReactNode);
+    get reactNode(): React.ReactNode;
+    set reactNode(r: React.ReactNode);
     get viewport(): ScreenViewport | undefined;
 }
 
@@ -3267,8 +3270,11 @@ export class NavigationAidControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getSize(): string | undefined;
     getType(): ConfigurableUiControlType;
+    // @deprecated
     get reactElement(): React.ReactNode;
     set reactElement(r: React.ReactNode);
+    get reactNode(): React.ReactNode;
+    set reactNode(r: React.ReactNode);
     }
 
 // @beta
@@ -3308,8 +3314,10 @@ export interface NavigationWidgetComposerProps {
 // @public @deprecated
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     constructor(props: NavigationWidgetProps);
-    // (undocumented)
+    // @deprecated (undocumented)
     get reactElement(): React.ReactNode;
+    // (undocumented)
+    get reactNode(): React.ReactNode;
     // (undocumented)
     renderCornerItem(): React.ReactNode;
     // (undocumented)
@@ -4880,8 +4888,10 @@ export interface ToolWidgetComposerProps {
 // @public @deprecated
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
     constructor(props: ToolWidgetProps);
-    // (undocumented)
+    // @deprecated (undocumented)
     get reactElement(): React.ReactNode;
+    // (undocumented)
+    get reactNode(): React.ReactNode;
     // (undocumented)
     renderCornerItem(): React.ReactNode | undefined;
 }
@@ -5391,8 +5401,11 @@ export class WidgetControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getType(): ConfigurableUiControlType;
     onWidgetStateChanged(): void;
+    // @deprecated
     get reactElement(): React.ReactNode;
     set reactElement(r: React.ReactNode);
+    get reactNode(): React.ReactNode;
+    set reactNode(r: React.ReactNode);
     restoreTransientState(): boolean;
     saveTransientState(): void;
     setWidgetState(state: WidgetState_2): void;
@@ -5446,9 +5459,12 @@ export class WidgetDef {
     onWidgetStateChanged(): void;
     // (undocumented)
     get priority(): number;
-    // (undocumented)
+    // @deprecated (undocumented)
     get reactElement(): React.ReactNode;
     set reactElement(node: React.ReactNode);
+    // (undocumented)
+    get reactNode(): React.ReactNode;
+    set reactNode(node: React.ReactNode);
     restoreTransientState(): boolean;
     saveTransientState(): void;
     setLabel(v: string | ConditionalStringValue | StringGetter): void;

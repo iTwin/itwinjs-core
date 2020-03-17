@@ -51,7 +51,7 @@
 //      const info = new ConfigurableCreateInfo("imodelViewId", "uniqueId", "idString");
 //      const vpControl = new IModelViewportControl(info, options);
 //      expect(vpControl).not.to.be.null;
-//      const reactElement = vpControl.reactElement;
+//      const reactElement = vpControl.reactNode;
 //      expect(reactElement).not.to.be.null;
 //      const wrapper = mount(reactElement as React.ReactElement);
 //

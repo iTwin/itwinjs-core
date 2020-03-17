@@ -25,7 +25,7 @@ describe("WidgetContent", () => {
     });
     sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
     sandbox.stub(frontstage, "findWidgetDef").returns(widget);
-    sandbox.stub(widget, "reactElement").get(() => <>Content</>);
+    sandbox.stub(widget, "reactNode").get(() => <>Content</>);
     const { container } = render(
       <NineZoneProvider
         dispatch={sinon.stub<NineZoneDispatch>()}
@@ -48,7 +48,7 @@ describe("WidgetContent", () => {
     });
     sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
     sandbox.stub(frontstage, "findWidgetDef").returns(widget);
-    sandbox.stub(widget, "reactElement").get(() => <>Content</>);
+    sandbox.stub(widget, "reactNode").get(() => <>Content</>);
     const { container } = render(
       <NineZoneProvider
         dispatch={sinon.stub<NineZoneDispatch>()}

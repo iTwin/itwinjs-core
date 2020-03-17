@@ -71,7 +71,7 @@ describe("WidgetStack", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = (
+      this.reactNode = (
         <div>
           <span>This is the Test Widget 1</span>
         </div>
@@ -83,7 +83,7 @@ describe("WidgetStack", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = (
+      this.reactNode = (
         <div>
           <span>This is the Test Widget 2</span>
         </div>

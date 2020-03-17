@@ -13,7 +13,7 @@ export class FeedbackDemoWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <FeedbackWidget />;
+    this.reactNode = <FeedbackWidget />;
   }
 }
 

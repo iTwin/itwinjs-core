@@ -17,7 +17,7 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 export class TreeSelectionDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <TreeSelectionDemoWidget />;
+    this.reactNode = <TreeSelectionDemoWidget />;
   }
 }
 

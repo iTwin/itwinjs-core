@@ -15,7 +15,7 @@ export function WidgetContent() {
   const widget = useWidgetDef();
   return (
     <>
-      {widget?.reactElement}
+      {widget?.reactNode}
     </>
   );
 }

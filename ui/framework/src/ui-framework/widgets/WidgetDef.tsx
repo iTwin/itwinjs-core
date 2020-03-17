@@ -288,20 +288,30 @@ export class WidgetDef {
     return this._widgetControl;
   }
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     if (!this._widgetReactNode) {
       const widgetControl = this.getWidgetControl(ConfigurableUiControlType.Widget);
 
       // istanbul ignore else
-      if (widgetControl && widgetControl.reactElement)
-        this._widgetReactNode = widgetControl.reactElement;
+      if (widgetControl && widgetControl.reactNode)
+        this._widgetReactNode = widgetControl.reactNode;
     }
 
     return this._widgetReactNode;
   }
 
-  public set reactElement(node: React.ReactNode) {
+  public set reactNode(node: React.ReactNode) {
     this._widgetReactNode = node;
+  }
+
+  /** @deprecated use reactNode */
+  // istanbul ignore next
+  public get reactElement(): React.ReactNode {
+    return this.reactNode;
+  }
+  // istanbul ignore next
+  public set reactElement(node: React.ReactNode) {
+    this.reactNode = node;
   }
 
   public setWidgetState(newState: WidgetState): void {

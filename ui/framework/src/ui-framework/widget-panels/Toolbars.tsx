@@ -13,8 +13,8 @@ import "./Toolbars.scss";
 /** @internal */
 export function WidgetPanelsToolbars() {
   const frontstageDef = useActiveFrontstageDef();
-  const tools = frontstageDef?.topLeft?.getSingleWidgetDef()?.reactElement;
-  const navigation = frontstageDef?.topRight?.getSingleWidgetDef()?.reactElement;
+  const tools = frontstageDef?.topLeft?.getSingleWidgetDef()?.reactNode;
+  const navigation = frontstageDef?.topRight?.getSingleWidgetDef()?.reactNode;
   return (
     <div className="uifw-widgetPanels-toolbars">
       {tools}

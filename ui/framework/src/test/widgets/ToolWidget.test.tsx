@@ -122,11 +122,11 @@ describe("ToolWidget", () => {
       backstageToggleCommand.execute();
       expect(testCallback.calledOnce).to.be.true;
 
-      const reactElement = toolWidgetDef.reactElement;
-      expect(reactElement).to.not.be.undefined;
-
-      const reactNode = toolWidgetDef.renderCornerItem();
+      const reactNode = toolWidgetDef.reactNode;
       expect(reactNode).to.not.be.undefined;
+
+      const cornerNode = toolWidgetDef.renderCornerItem();
+      expect(cornerNode).to.not.be.undefined;
     });
 
     it("ToolWidget should render", () => {

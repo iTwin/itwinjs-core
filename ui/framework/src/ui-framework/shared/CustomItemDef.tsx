@@ -27,7 +27,7 @@ export class CustomItemDef extends ActionButtonItemDef {
   private static _sId = 0;
   public static customIdPrefix = "Custom-";
   public customId: string;
-  public reactElement?: React.ReactNode;
+  public reactElement?: React.ReactNode;  // prefer to use popupPanelNode
   public popupPanelNode?: React.ReactNode;
 
   constructor(props: CustomItemProps) {

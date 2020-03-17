@@ -25,7 +25,7 @@ export interface DataController {
 export abstract class PropertyEditorBase implements DataController {
   public customDataController: DataController | undefined = undefined;
 
-  public abstract get reactElement(): React.ReactNode;
+  public abstract get reactNode(): React.ReactNode;
 
   public applyEditorParams(_property: PropertyDescription, _record: PropertyRecord): void { }
 
@@ -121,7 +121,7 @@ export class PropertyEditorManager {
  */
 export class BasicPropertyEditor extends PropertyEditorBase {
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <TextEditor />;
   }
 }

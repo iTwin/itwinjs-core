@@ -22,7 +22,7 @@ import { UiShowHideManager } from "../utils/UiShowHideManager";
  */
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
   private _appButton: CommandItemDef | undefined;
-  private _reactElement: React.ReactNode;
+  private _reactNode: React.ReactNode;
 
   constructor(props: ToolWidgetProps) {
     super(props);
@@ -36,12 +36,18 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
     this.widgetBaseName = `[${activeStageName}]ToolWidget`;
   }
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     // istanbul ignore else
-    if (!this._reactElement)
-      this._reactElement = <ToolWidgetWithDef toolWidgetDef={this} />;
+    if (!this._reactNode)
+      this._reactNode = <ToolWidgetWithDef toolWidgetDef={this} />;
 
-    return this._reactElement;
+    return this._reactNode;
+  }
+
+  /** @deprecated use reactNode */
+  // istanbul ignore next
+  public get reactElement(): React.ReactNode {
+    return this.reactNode;
   }
 
   public renderCornerItem(): React.ReactNode | undefined {

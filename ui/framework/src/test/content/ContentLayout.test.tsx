@@ -29,7 +29,7 @@ describe("ContentLayout", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div>Test</div>;
+      this.reactNode = <div>Test</div>;
     }
   }
 

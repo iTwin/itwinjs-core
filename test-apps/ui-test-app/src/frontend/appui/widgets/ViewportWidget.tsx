@@ -20,7 +20,7 @@ export class ViewportWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <ViewportWidget projectName={options.projectName} imodelName={options.imodelName} />;
+    this.reactNode = <ViewportWidget projectName={options.projectName} imodelName={options.imodelName} />;
   }
 }
 

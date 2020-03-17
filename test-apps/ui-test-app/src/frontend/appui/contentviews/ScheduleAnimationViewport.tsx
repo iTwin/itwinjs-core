@@ -30,9 +30,9 @@ export class ScheduleAnimationViewportControl extends ViewportContentControl {
     const _iModelConnection = UiFramework.getIModelConnection();
 
     if (_iModelConnection)
-      this.reactElement = <ScheduleAnimationViewport iModelConnection={_iModelConnection} viewportRef={(v: ScreenViewport) => { this.viewport = v; }} />;
+      this.reactNode = <ScheduleAnimationViewport iModelConnection={_iModelConnection} viewportRef={(v: ScreenViewport) => { this.viewport = v; }} />;
     else
-      this.reactElement = null;
+      this.reactNode = null;
   }
 }
 

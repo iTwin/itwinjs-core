@@ -30,7 +30,7 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <StandardRotationNavigationAid />;
+    this.reactNode = <StandardRotationNavigationAid />;
   }
 }
 

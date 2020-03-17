@@ -233,7 +233,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
  */
 export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <EnumButtonGroupEditor />;
   }
 }

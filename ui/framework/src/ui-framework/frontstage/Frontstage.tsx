@@ -566,7 +566,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
       <React.Fragment
         key={this.state.widgetKey}
       >
-        {this.props.widgetDef.reactElement}
+        {this.props.widgetDef.reactNode}
       </React.Fragment>
     ), this._content);
   }

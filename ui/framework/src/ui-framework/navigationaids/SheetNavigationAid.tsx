@@ -30,7 +30,7 @@ export class SheetNavigationAidControl extends NavigationAidControl {
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <SheetNavigationAid iModelConnection={options.imodel} />;
+    this.reactNode = <SheetNavigationAid iModelConnection={options.imodel} />;
   }
 
   public getSize(): string | undefined { return "96px"; }

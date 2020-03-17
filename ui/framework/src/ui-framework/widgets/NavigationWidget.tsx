@@ -32,7 +32,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   private _navigationAidId: string;
   private _imodel: IModelConnection | undefined;
   private _navigationAidControl: NavigationAidControl | undefined;
-  private _reactElement: React.ReactNode;
+  private _reactNode: React.ReactNode;
 
   constructor(props: NavigationWidgetProps) {
     super(props);
@@ -46,12 +46,18 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     this.widgetBaseName = `[${activeStageName}]NavigationWidget`;
   }
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     // istanbul ignore else
-    if (!this._reactElement)
-      this._reactElement = <NavigationWidgetWithDef navigationWidgetDef={this} />;
+    if (!this._reactNode)
+      this._reactNode = <NavigationWidgetWithDef navigationWidgetDef={this} />;
 
-    return this._reactElement;
+    return this._reactNode;
+  }
+
+  /** @deprecated use reactNode */
+  // istanbul ignore next
+  public get reactElement(): React.ReactNode {
+    return this.reactNode;
   }
 
   public renderCornerItem(): React.ReactNode {
@@ -81,7 +87,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 
       return (
         <div style={divStyle}>
-          {this._navigationAidControl.reactElement}
+          {this._navigationAidControl.reactNode}
         </div>
       );
     }

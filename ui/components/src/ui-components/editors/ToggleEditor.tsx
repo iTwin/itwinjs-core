@@ -124,7 +124,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
  */
 export class TogglePropertyEditor extends PropertyEditorBase {
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <ToggleEditor />;
   }
 }

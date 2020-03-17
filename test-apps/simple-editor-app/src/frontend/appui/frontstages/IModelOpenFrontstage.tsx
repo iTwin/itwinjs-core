@@ -17,9 +17,9 @@ class IModelOpenControl extends ContentControl {
     super(info, options);
 
     if (IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized)
-      this.reactElement = <IModelOpen onIModelSelected={this._onOpenIModel} />;
+      this.reactNode = <IModelOpen onIModelSelected={this._onOpenIModel} />;
     else
-      this.reactElement = null;
+      this.reactNode = null;
   }
 
   // called when an imodel has been selected on the IModelOpen
