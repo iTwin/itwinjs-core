@@ -55,15 +55,11 @@ export class FrameworkUiAdmin extends UiAdmin {
 
   /** Resolve location and parent element */
   private resolveHtmlElement(location: XAndY, htmlElement?: HTMLElement): { position: XAndY, el: HTMLElement } {
-    let position = location;
+    const position = location;
     let el = htmlElement!;
 
-    if (htmlElement) {
-      const anchorOffset = htmlElement.getBoundingClientRect();
-      position = { x: anchorOffset.left + location.x, y: anchorOffset.top + location.y };
-    } else {
+    if (!htmlElement)
       el = ConfigurableUiManager.getWrapperElement();
-    }
 
     return { position, el };
   }
