@@ -7,6 +7,8 @@ import { Presentation } from "./Presentation";
 
 const NAMESPACES = ["BisCore", "ECPresentation", "RulesEngine"];
 
+const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
+
 /** @internal */
 export class LocalizationHelper {
   public static async registerNamespaces() {
@@ -18,9 +20,8 @@ export class LocalizationHelper {
     NAMESPACES.map((namespace) => Presentation.i18n.unregisterNamespace(namespace));
   }
 
-  public translate(stringId: string) {
-    const key = stringId.replace(/^@|@$/g, "");
-    return Presentation.i18n.translate(key, { defaultValue: stringId });
+  public translate(text: string) {
+    return text.replace(KEY_PATTERN, (key) => Presentation.i18n.translate(key.replace(/^@|@$/g, ""), { defaultValue: key }));
   }
 
   public getLocalizedNodes(nodes: Node[]): Node[] {
