@@ -90,7 +90,7 @@ export class OpenParams {
   public get isBriefcase(): boolean { return this.syncMode !== undefined; }
 
   /** Returns true if the OpenParams open a snapshot iModel */
-  public get isSnapshot(): boolean { return this.syncMode === undefined; } // tslint:disable-line: deprecation
+  public get isSnapshot(): boolean { return this.syncMode === undefined; }
 
   private validate() {
     if (this.isSnapshot && this.syncMode !== undefined)

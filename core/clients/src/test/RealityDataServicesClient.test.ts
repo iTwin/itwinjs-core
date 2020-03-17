@@ -568,7 +568,7 @@ describe("RealityDataServicesClient Normal (#integration)", () => {
     try {
       // Should fail as we call with an incorrect content path.
       const data: any = await realityData.getTileContent(requestContext, modelName);
-      chai.assert(!data); /// Should never be reached.
+      chai.assert(!data); // Should never be reached.
     } catch {
       exceptionThrown = true;
     }

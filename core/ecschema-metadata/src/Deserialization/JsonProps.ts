@@ -255,7 +255,7 @@ export interface FormatProps extends SchemaItemProps {
     readonly units: Array<{
       readonly name: string;
       readonly label?: string;
-    }>
+    }>;
   };
 }
 

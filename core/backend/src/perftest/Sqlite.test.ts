@@ -190,7 +190,7 @@ async function runReadTest(param: ReadParams) {
 describe.skip("SQLite performance test", () => {
   it("Read Test", async () => {
     const seedDir = path.join(KnownTestLocations.outputDir, "perf_test");
-    const pageSizes = [1, 4 /*, 8, 16, 32, 64, 128, 256, 512*/];
+    const pageSizes = [1, 4 /* , 8, 16, 32, 64, 128, 256, 512 */];
     const targets = ["C:\\test", "F:\\test", "Y:\\test", "Z:\\test"];
     for (const targetFolder of targets) {
       for (const pageSize of pageSizes) {

@@ -14,7 +14,7 @@ import { IModelHost } from "../IModelHost";
 import { IModelDb, SnapshotIModelDb } from "../imodeljs-backend";
 import { IModelJsFs } from "../IModelJsFs";
 import { GeometricModel3d } from "../Model";
-// tslint:disable:no-console
+
 interface ContentIdSpec {
   depth: number;
   i: number;
@@ -250,7 +250,7 @@ async function generateTileFromSnapshot(iModelPath: string, useTileCache: boolea
   if (useConcurrentTask) {
     const tileReqs = [];
     for (const id of contentIds) {
-      tileReqs.push(new Promise(async (resolve) => {
+      tileReqs.push(async (resolve: any) => {
         const tileTime = new StopWatch(undefined, true);
         // console.log(`${id.treeId} ${id.contentId} `);
         const tile = await conn.tiles.requestTileContent(clientReqCtx, id.treeId, id.contentId);
@@ -264,7 +264,7 @@ async function generateTileFromSnapshot(iModelPath: string, useTileCache: boolea
           tileStats.push({ treeId: id.treeId, contentId: id.contentId, sizeInBytes: tile.length, elapsedTime: tileTime.elapsed.milliseconds });
         await reportProgress(nTiles, contentIds.length);
         resolve();
-      }));
+      });
     }
     await Promise.all(tileReqs);
   } else {
@@ -331,6 +331,8 @@ async function generateResultForDataset(params: TileGenParams) {
   for (const bimFile of bimFiles) {
     const bimFilePath = path.join(params.datasetFolder, bimFile);
     const sizeOfFileInGb = (IModelJsFs.lstatSync(bimFilePath)!.size / (1024 * 1024 * 1024)).toFixed(4);
+
+    // tslint:disable-next-line:no-console
     console.log(`Generating Tiles for (${fileIndex}/${bimFiles.length}) [size=${sizeOfFileInGb} GB] [file=${bimFilePath}]`);
     if (params.sqlitePageSizeInKb) {
       changePageSize(bimFilePath, params.sqlitePageSizeInKb);

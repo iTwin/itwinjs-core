@@ -193,6 +193,6 @@ class WMSExtension extends Extension {
   }
 }
 
-declare var PLUGIN_NAME: string;
+declare let PLUGIN_NAME: string;
 
 IModelApp.extensionAdmin.register(new WMSExtension(PLUGIN_NAME));

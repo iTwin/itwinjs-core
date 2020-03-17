@@ -1094,10 +1094,8 @@ export class XmlParser extends AbstractParser<Element> {
     // for now.  Need to review with IModelJs.
     switch (primitiveType) {
       case PrimitiveType.String:
-      /** TODO - Currently treated as strings */
-      case PrimitiveType.Binary:
-      /** TODO - Currently treated as strings */
-      case PrimitiveType.IGeometry:
+      case PrimitiveType.Binary: /** TODO - Currently treated as strings */
+      case PrimitiveType.IGeometry: /** TODO - Currently treated as strings */
         return propElement.textContent;
       case PrimitiveType.DateTime:
         return this.getDatePropertyValue(propElement.textContent, propElement.tagName);
