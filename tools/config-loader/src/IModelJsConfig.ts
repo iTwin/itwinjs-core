@@ -121,7 +121,7 @@ export class IModelJsConfig {
     } catch (err) {
       if (!suppressErrorMessage) {
         // tslint:disable-next-line:no-console
-        console.log(`${chalk.default.redBright(err.message)}`);
+        console.log(`${chalk.redBright(err.message)}`);
       }
       if (!suppressException)
         throw err;

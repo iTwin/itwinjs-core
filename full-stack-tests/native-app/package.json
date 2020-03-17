@@ -30,7 +30,7 @@
     "@bentley/imodeljs-frontend": "2.0.0-dev.33",
     "@bentley/imodeljs-markup": "2.0.0-dev.33",
     "chai": "^4.1.2",
-    "fs-extra": "^6.0.1",
+    "fs-extra": "^8.1.0",
     "electron": "^6.1.5"
   },
   "devDependencies": {
@@ -47,7 +47,7 @@
     "glob": "^7.1.2",
     "istanbul-instrumenter-loader": "^3.0.1",
     "null-loader": "^0.1.1",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",

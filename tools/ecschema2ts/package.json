@@ -47,7 +47,7 @@
     "cpx": "^1.5.0",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "source-map-support": "^0.5.6",
     "ts-node": "^7.0.1",
@@ -65,9 +65,9 @@
     "@types/chai-string": "^1.4.1",
     "@types/xmldom": "^0.1.29",
     "chai-string": "^1.5.0",
-    "chalk": "^2.4.1",
+    "chalk": "^3.0.0",
     "commander": "^2.14.1",
-    "fs-extra": "^6.0.1",
+    "fs-extra": "^8.1.0",
     "xmldom": "^0.1.27"
   },
   "nyc": {

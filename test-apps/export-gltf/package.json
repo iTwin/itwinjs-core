@@ -19,13 +19,13 @@
     "@bentley/imodeljs-clients": "2.0.0-dev.33",
     "@bentley/imodeljs-common": "2.0.0-dev.33",
     "@bentley/imodeljs-backend": "2.0.0-dev.33",
-    "yargs": "^12.0.0"
+    "yargs": "^15.0.0"
   },
   "devDependencies": {
     "@bentley/build-tools": "2.0.0-dev.33",
     "@types/node": "10.14.1",
     "@types/yargs": "^12.0.5",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"
