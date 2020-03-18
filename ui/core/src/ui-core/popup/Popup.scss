@@ -20,7 +20,7 @@
  animation-fill-mode: forwards;
  cursor: default;
 
- @include uicore-z-index(tooltip);
+ @include uicore-z-index(dialog-popup);
 }
 
 .core-popup.arrow::after, .core-popup.arrow::before {

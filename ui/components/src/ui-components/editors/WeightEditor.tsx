@@ -154,7 +154,7 @@ export class WeightEditor extends React.PureComponent<PropertyEditorProps, Weigh
  * @beta
  */
 export class WeightPropertyEditor extends PropertyEditorBase {
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <WeightEditor />;
   }
 }

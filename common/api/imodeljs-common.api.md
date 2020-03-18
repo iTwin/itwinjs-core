@@ -1306,12 +1306,20 @@ export interface ContextRealityModelProps {
     tilesetUrl: string;
 }
 
+// @beta
+export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
+
 // @public
 export interface CreateIModelProps extends IModelProps {
     client?: string;
     guid?: GuidString;
     // @alpha
     thumbnail?: ThumbnailProps;
+}
+
+// @beta
+export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
+    createClassViews?: boolean;
 }
 
 // @internal (undocumented)

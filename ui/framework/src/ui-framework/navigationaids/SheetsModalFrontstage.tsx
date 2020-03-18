@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { ModalFrontstageInfo, FrontstageManager } from "../frontstage/FrontstageManager";
 import { SearchBox, UiEvent, CommonProps, ScrollView, FlexWrapContainer, UiCore } from "@bentley/ui-core";

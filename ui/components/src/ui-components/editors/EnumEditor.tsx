@@ -153,7 +153,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
  */
 export class EnumPropertyEditor extends PropertyEditorBase {
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <EnumEditor />;
   }
 }

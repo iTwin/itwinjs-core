@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 
 /** Properties for the [[Input]] component
@@ -18,7 +18,7 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>,
   setFocus?: boolean;
 }
 
-/** Basic text input
+/** Basic text input, is a wrapper for the `<input type="text">` HTML element.
  * @public
  */
 export class Input extends React.PureComponent<InputProps> {

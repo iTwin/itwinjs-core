@@ -9,8 +9,8 @@
 import * as React from "react";
 
 import { IModelApp, SelectedViewportChangedArgs, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
-import { IconSpecUtilities } from "@bentley/ui-abstract";
-import { Position, ScrollPositionMaintainer } from "@bentley/ui-core";
+import { RelativePosition, IconSpecUtilities } from "@bentley/ui-abstract";
+import { ScrollPositionMaintainer } from "@bentley/ui-core";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { ContextMenu, ContextMenuItem, SelectionMode } from "@bentley/ui-components";
 import { connectIModelConnection } from "../redux/connectIModel";
@@ -199,7 +199,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
         </select>
         <span className="icon icon-search" style={searchStyle} onClick={this._onToggleSearchBox} />
         <span className="uifw-visibility-tree-options icon icon-more-vertical-2" style={searchStyle} title={UiFramework.translate("visibilityWidget.options")} ref={(element) => { this._optionsElement = element; }} onClick={this._onShowOptions.bind(this)}></span>
-        <ContextMenu parent={this._optionsElement} isOpened={this.state.showOptions} onClickOutside={this._onCloseOptions.bind(this)} position={Position.BottomRight}>
+        <ContextMenu parent={this._optionsElement} isOpened={this.state.showOptions} onClickOutside={this._onCloseOptions.bind(this)} position={RelativePosition.BottomRight}>
           <ContextMenuItem key={0} icon="icon-visibility" onClick={this._onSetEnableAll} name={UiFramework.translate("pickerButtons.showAll")} />
           <ContextMenuItem key={1} icon="icon-visibility-hide-2" onClick={this._onClearAll} name={UiFramework.translate("pickerButtons.hideAll")} />
         </ContextMenu>
@@ -233,9 +233,9 @@ export class VisibilityWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
     if (options && options.iModelConnection)
-      this.reactElement = <VisibilityComponent iModelConnection={options.iModelConnection} activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} config={options.config} />;
+      this.reactNode = <VisibilityComponent iModelConnection={options.iModelConnection} activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} config={options.config} />;
     else  // use the connection from redux
-      this.reactElement = <IModelConnectedVisibilityComponent activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} config={options.config} />;
+      this.reactNode = <IModelConnectedVisibilityComponent activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} config={options.config} />;
   }
 
   public saveTransientState(): void {

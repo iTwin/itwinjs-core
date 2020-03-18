@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 import { CommonProps } from "../utils/Props";

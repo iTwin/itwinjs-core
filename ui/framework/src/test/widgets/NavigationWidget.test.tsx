@@ -55,11 +55,11 @@ describe("NavigationWidget", () => {
 
     const navigationWidgetDef = widgetDef as NavigationWidgetDef; // tslint:disable-line:deprecation
 
-    const reactElement = navigationWidgetDef.reactElement;
-    expect(reactElement).to.not.be.undefined;
-
-    const reactNode = navigationWidgetDef.renderCornerItem();
+    const reactNode = navigationWidgetDef.reactNode;
     expect(reactNode).to.not.be.undefined;
+
+    const cornerNode = navigationWidgetDef.renderCornerItem();
+    expect(cornerNode).to.not.be.undefined;
   });
 
   const horizontalToolbar =
@@ -137,7 +137,7 @@ describe("NavigationWidget", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div />;
+      this.reactNode = <div />;
     }
   }
 
@@ -145,7 +145,7 @@ describe("NavigationWidget", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div>Test Navigation Aid</div>;
+      this.reactNode = <div>Test Navigation Aid</div>;
     }
   }
 
@@ -164,8 +164,8 @@ describe("NavigationWidget", () => {
     });
     ConfigurableUiManager.registerControl("Aid1", TestNavigationAidControl);
 
-    const element = def.reactElement;
-    expect(def.reactElement).to.eq(element);
+    const element = def.reactNode;
+    expect(def.reactNode).to.eq(element);
     const wrapper = mount(element as React.ReactElement<any>);
 
     const connection = moq.Mock.ofType<IModelConnection>();

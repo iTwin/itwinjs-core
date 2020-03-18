@@ -25,7 +25,7 @@ export interface CommonProps extends ClassNameProps {
   style?: React.CSSProperties;
 }
 
-/** Common properties using a div element
+/** Common properties using a div element.
  * @public
  */
 export interface CommonDivProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps { }

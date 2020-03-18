@@ -41,7 +41,7 @@ export interface SupportsViewSelectorChange {
  * @public
  */
 export class ContentControl extends ConfigurableUiControl {
-  private _reactElement: React.ReactNode;
+  private _reactNode: React.ReactNode;
   private _keyAdded = false;
 
   /** Creates an instance of ContentControl.
@@ -68,17 +68,27 @@ export class ContentControl extends ConfigurableUiControl {
   /** Returns the ScreenViewport if isViewport is true */
   public get viewport(): ScreenViewport | undefined { return undefined; }
 
-  /** The React element associated with this control. */
-  public get reactElement(): React.ReactNode {
-    if (!this._keyAdded && React.isValidElement(this._reactElement)) {
-      if (!(this._reactElement as React.ReactElement<any>).key)
-        this._reactElement = React.cloneElement(this._reactElement, { key: this.controlId });
+  /** The React node associated with this control. */
+  public get reactNode(): React.ReactNode {
+    if (!this._keyAdded && React.isValidElement(this._reactNode)) {
+      if (!(this._reactNode as React.ReactElement<any>).key)
+        this._reactNode = React.cloneElement(this._reactNode, { key: this.controlId });
       this._keyAdded = true;
     }
 
-    return this._reactElement;
+    return this._reactNode;
   }
-  public set reactElement(r: React.ReactNode) { this._reactElement = r; }
+  public set reactNode(r: React.ReactNode) { this._reactNode = r; }
+
+  /** The React element associated with this control.
+   * @deprecated ues reactNode
+   */
+  // istanbul ignore next
+  public get reactElement(): React.ReactNode {
+    return this.reactNode;
+  }
+  // istanbul ignore next
+  public set reactElement(r: React.ReactNode) { this.reactNode = r; }
 
   /** Get the NavigationAidControl associated with this ContentControl */
   public get navigationAidControl(): string {

@@ -6,8 +6,11 @@
 
 .nz-widget-overflow {
   width: 2em;
-  border: 0 solid $buic-background-5;
   position: relative;
+
+  &.nz-hidden {
+    display: none;
+  }
 
   > .nz-button {
     display: flex;

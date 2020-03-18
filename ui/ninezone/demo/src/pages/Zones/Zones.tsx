@@ -7,17 +7,22 @@ import * as React from "react";
 import ToolSettings from "./ToolSettings";
 import { ToolSettingProps } from "./ToolSetting";
 import { WidgetPanels } from "@src/widget-panels/Panels";
-import { NineZoneProvider, createNineZoneState, NineZoneStateReducer, addPanelWidget, addTab, useNineZoneDispatch, TOGGLE_PANEL_PINNED, TOGGLE_PANEL_SPAN, TOGGLE_PANEL_COLLAPSED, isHorizontalPanelState, usePanel, useWidget } from "@src/base/NineZone";
 import { AppButton } from "@src/widget/tools/button/App";
 import { ToolsArea } from "@src/widget/ToolsArea";
 import { NavigationArea } from "@src/widget/NavigationArea";
 
 import { Direction } from "@src/utilities/Direction";
 import { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
-import { ToolbarWithOverflow, ToolbarUtils, ToolbarItem } from "@bentley/ui-components";
-
+import { ToolbarWithOverflow, ToolbarItem } from "@bentley/ui-components";
+import { NineZoneProvider, NineZoneDispatchContext } from "@src/base/NineZone";
+import {
+  NineZoneStateReducer, createNineZoneState, addPanelWidget, addTab, PANEL_TOGGLE_PINNED, PANEL_TOGGLE_SPAN,
+  PANEL_TOGGLE_COLLAPSED,
+} from "@src/base/NineZoneState";
+import { GroupButton, ActionButton } from "@bentley/ui-abstract";
+import { PanelSideContext, PanelPinnedContext, PanelSpanContext, isHorizontalPanelSide } from "@src/widget-panels/Panel";
+import { WidgetStateContext } from "@src/widget/Widget";
 import "./Zones.scss";
-import { CommonToolbarItem, GroupButton, ActionButton } from "@bentley/ui-abstract";
 
 let id = 0;
 const getId = () => {
@@ -220,7 +225,7 @@ const useSettings = () => {
       type: "select",
     },
   ]);
-  return {
+  return React.useMemo(() => ({
     settings,
     remove: () => {
       setSettings([
@@ -260,7 +265,7 @@ const useSettings = () => {
         },
       ]);
     },
-  };
+  }), [settings]);
 };
 
 export default function Zones() {
@@ -284,6 +289,7 @@ export default function Zones() {
     initialState = addTab(initialState, "topLeft", "topLeft_1", { label: "Tab 1" });
     initialState = addTab(initialState, "topLeft", "topLeft_2", { label: "Tab 2" });
     initialState = addTab(initialState, "topLeft", "topLeft_3", { label: "Tab 3" });
+    initialState = addTab(initialState, "topLeft", "topLeft_4", { label: "Tab 4" });
     initialState = addTab(initialState, "bottomLeft", "bottomLeft_1", { label: "Tab 1" });
     initialState = addTab(initialState, "centerLeft", "centerLeft_1", { label: "Tab 1" });
     initialState = addTab(initialState, "topRight", "topRight_1", { label: "Tab 1" });
@@ -293,75 +299,80 @@ export default function Zones() {
     initialState = addTab(initialState, "bottomPanel3", "bottomPanel3_1", { label: "Tab 1" });
     return initialState;
   });
-
+  const widget = React.useMemo(() => <WidgetContent />, []);
+  const ui = React.useMemo(() => <div className="nzdemo-toolbars">
+    <DemoToolWidget />
+    <DemoNavigationWidget />
+  </div>, []);
+  const content = React.useMemo(() => <>
+    <button onClick={add}>Add</button>
+    <button onClick={addToStart}>Add To Start</button>
+    <button onClick={remove}>Remove</button>
+    <button onClick={removeFromStart}>Remove From Start</button>
+    <button onClick={update}>Update</button>
+  </>, [add, addToStart, remove, removeFromStart, update]);
+  const nineZone = React.useMemo(() => <div
+    className="nzdemo-zones-zones"
+  >
+    <WidgetPanels
+      className="nzdemo-widgetPanels"
+      widgetContent={widget}
+      centerContent={ui}
+    >
+      {content}
+    </WidgetPanels>
+    <ToolSettings
+      settings={settings}
+    />
+  </div>, [content, ui, widget, settings]);
   return (
     <React.StrictMode>
       <NineZoneProvider
         state={state}
         dispatch={dispatch}
       >
-        <div
-          className="nzdemo-zones-zones"
-        >
-          <WidgetPanels
-            className="nzdemo-widgetPanels"
-            widgetContent={<WidgetContent />}
-            centerContent={
-              <div className="nzdemo-toolbars">
-                <DemoToolWidget />
-                <DemoNavigationWidget />
-              </div>
-            }
-          >
-            <button onClick={add}>Add</button>
-            <button onClick={addToStart}>Add To Start</button>
-            <button onClick={remove}>Remove</button>
-            <button onClick={removeFromStart}>Remove From Start</button>
-            <button onClick={update}>Update</button>
-          </WidgetPanels>
-          <ToolSettings
-            settings={settings}
-          />
-        </div>
+        {nineZone}
       </NineZoneProvider>
     </React.StrictMode >
   );
 }
 
 export function WidgetContent() {
-  const panel = usePanel();
-  const widget = useWidget();
-  const dispatch = useNineZoneDispatch();
-  const horizontalPanel = isHorizontalPanelState(panel) ? panel : undefined;
+  const side = React.useContext(PanelSideContext);
+  const widget = React.useContext(WidgetStateContext);
+  const pinned = React.useContext(PanelPinnedContext);
+  const span = React.useContext(PanelSpanContext);
+  const dispatch = React.useContext(NineZoneDispatchContext);
   return (
     <>
-      {widget.activeTabId === undefined ? "No active tab" : `Active tab=${widget.activeTabId}`}
+      {widget?.activeTabId === undefined ? "No active tab" : `Active tab=${widget?.activeTabId}`}
       <br />
-      {panel.side}
-      <button
-        onClick={() => dispatch({
-          type: TOGGLE_PANEL_PINNED,
-          side: panel.side,
-        })}
-      >
-        pinned={String(panel.pinned)}
-      </button>
-      <button
-        onClick={() => dispatch({
-          type: TOGGLE_PANEL_COLLAPSED,
-          side: panel.side,
-        })}
-      >
-        collapse
-      </button>
-      {horizontalPanel && <button
-        onClick={() => dispatch({
-          type: TOGGLE_PANEL_SPAN,
-          side: horizontalPanel.side,
-        })}
-      >
-        span={String(!!horizontalPanel.span)}
-      </button>}
+      {side && <>
+        <button
+          onClick={() => dispatch({
+            type: PANEL_TOGGLE_PINNED,
+            side,
+          })}
+        >
+          pinned={String(pinned)}
+        </button>
+        <button
+          onClick={() => dispatch({
+            type: PANEL_TOGGLE_COLLAPSED,
+            side,
+          })}
+        >
+          collapse
+        </button>
+        {isHorizontalPanelSide(side) && <button
+          onClick={() => dispatch({
+            type: PANEL_TOGGLE_SPAN,
+            side,
+          })}
+        >
+          span={String(!!span)}
+        </button>}
+      </>}
     </>
   );
 }

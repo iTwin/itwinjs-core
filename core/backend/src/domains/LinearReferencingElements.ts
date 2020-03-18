@@ -367,7 +367,7 @@ class QueryLinearLocationsECSQLGen {
       "WHERE Along.TargetECInstanceId = ?) LinearlyLocated ON meta.ECClassDef.ECInstanceId = LinearlyLocated.ClassId ";
   }
 
-  private _addFromClause(impl: ECSQLGenImpl/*bvector<double>& bindVals*/): void {
+  private _addFromClause(impl: ECSQLGenImpl/* bvector<double>& bindVals */): void {
     let from = "FROM ";
     from += this._genLinearlyLocated();
     from += impl.genFromJoin();

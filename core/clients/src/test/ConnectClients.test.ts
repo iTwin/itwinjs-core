@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { ConnectClient, Project, ConnectRequestQueryOptions } from "../ConnectClient";
-import { AuthorizationToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
@@ -16,9 +14,7 @@ describe("ConnectClient (#integration)", () => {
 
   before(async function () {
     this.enableTimeouts(false);
-    const authToken: AuthorizationToken = await TestConfig.login();
-    const accessToken = await connectClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
   });
 
   it("should get a list of projects (#integration)", async () => {

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as classnames from "classnames";
-import { Dialog, Select, Input, Button, ButtonType, Position, Popup } from "@bentley/ui-core";
-import { ToolSettingsPropertyItem, ToolSettingsValue, SyncPropertiesChangeEventArgs } from "@bentley/ui-abstract";
+import classnames from "classnames";
+import { Dialog, Select, Input, Button, ButtonType, Popup } from "@bentley/ui-core";
+import { ToolSettingsPropertyItem, ToolSettingsValue, SyncPropertiesChangeEventArgs, RelativePosition } from "@bentley/ui-abstract";
 import { ModelessDialogManager } from "@bentley/ui-framework";
 import { IotUiProvider } from "./IotUiProvider";
 import { AnimationTypeName } from "../IoTDefinitions";
@@ -322,7 +322,7 @@ class ColorPicker extends React.Component<ColorPickerProps, ColorPickerState> {
         <Popup
           className="iot-color-picker-popup"
           isOpen={showPopup}
-          position={Position.Bottom}
+          position={RelativePosition.Bottom}
           onClose={this._closePopup}
           target={this._target.current}>
           {this.renderPopup()}

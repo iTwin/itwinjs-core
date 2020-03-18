@@ -7,8 +7,9 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
-import { Popup, Position, CommonProps } from "@bentley/ui-core";
+import classnames from "classnames";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Popup, CommonProps } from "@bentley/ui-core";
 import { ViewportComponentEvents } from "@bentley/ui-components";
 import { ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupColumn as NZ_Column, GroupTool as NZ_Item, Group as NZ_Tray, withContainIn, containHorizontally } from "@bentley/ui-ninezone";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
@@ -29,7 +30,7 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <StandardRotationNavigationAid />;
+    this.reactNode = <StandardRotationNavigationAid />;
   }
 }
 
@@ -117,7 +118,7 @@ export class StandardRotationNavigationAid extends React.Component<CommonProps, 
           isOpen={this.state.isExpanded}
           offset={0}
           onClose={this._handlePopupClose}
-          position={Position.Bottom}
+          position={RelativePosition.Bottom}
           target={this.state.element}
         >
           {this.getExpandedContent()}

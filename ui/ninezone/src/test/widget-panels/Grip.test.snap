@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`WidgetPanelGrip should dispatch TOGGLE_PANEL_COLLAPSED 1`] = `
+exports[`WidgetPanelGrip should not start resize via move w/o pointer down 1`] = `
 <div
   class="nz-widgetPanels-grip nz-left"
 >
@@ -19,7 +19,45 @@ exports[`WidgetPanelGrip should dispatch TOGGLE_PANEL_COLLAPSED 1`] = `
 </div>
 `;
 
-exports[`WidgetPanelGrip should render 1`] = `
+exports[`WidgetPanelGrip should not start resize w/o pointer down 1`] = `
+<div
+  class="nz-widgetPanels-grip nz-left"
+>
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+</div>
+`;
+
+exports[`WidgetPanelGrip should render resizing 1`] = `
+<div
+  class="nz-widgetPanels-grip nz-left nz-resizing"
+>
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+  <div
+    class="nz-dot"
+  />
+</div>
+`;
+
+exports[`WidgetPanelGrip should reset initial position on pointer up 1`] = `
 <div
   class="nz-widgetPanels-grip nz-left"
 >

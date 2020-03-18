@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ReactResizeDetector from "react-resize-detector";
@@ -93,6 +93,7 @@ const NestedToolGroupContained = withContainIn(withOnOutsideClick(NestedGroup, u
 const ItemWithDragInteraction = withDragInteraction(Item);
 // tslint:disable-next-line:variable-name
 const ToolGroupSelectionContext = React.createContext(false);
+ToolGroupSelectionContext.displayName = "nzdemo:ToolGroupSelectionContext";
 
 // tslint:disable-next-line:variable-name
 const BlueButton = (props: ButtonProps & Omit<ButtonProps, "type">) => (

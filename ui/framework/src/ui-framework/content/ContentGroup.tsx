@@ -116,7 +116,7 @@ export class ContentGroup {
     this.contentPropsList.forEach((contentProps: ContentProps, index: number) => {
       const control = this.getContentControl(contentProps, index);
       if (control) {
-        contentNodes.push(control.reactElement);
+        contentNodes.push(control.reactNode);
         this._contentSetMap.set(control.controlId, control);
       }
     });

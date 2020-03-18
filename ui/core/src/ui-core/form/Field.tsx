@@ -18,7 +18,7 @@ import { Select } from "../inputs/Select";
 /** Properties used to create a [[Field]] in a [[Form]]
  * @beta
  */
-interface IFieldProps extends FieldDef {
+export interface FieldProps extends FieldDef {
   /* The unique field name */
   id: string;
 }
@@ -26,8 +26,8 @@ interface IFieldProps extends FieldDef {
 /** Component that represents a single field in an input form. Only four type of editors are supported. Field gets/sets state data from/to the context control by the form.
  * @beta
  */
-export class Field extends React.Component<IFieldProps> {
-  constructor(props: IFieldProps) {
+export class Field extends React.Component<FieldProps> {
+  constructor(props: FieldProps) {
     super(props);
   }
 

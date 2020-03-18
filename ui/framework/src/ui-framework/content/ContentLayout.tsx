@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { Orientation, UiEvent, CommonProps } from "@bentley/ui-core";
 

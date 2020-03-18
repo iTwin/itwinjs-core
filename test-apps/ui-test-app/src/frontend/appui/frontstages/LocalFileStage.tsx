@@ -32,7 +32,7 @@ class LocalFileOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <LocalFilePage onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} />;
+    this.reactNode = <LocalFilePage onClose={this._handleClose} onViewsSelected={this._handleViewsSelected} />;
   }
 
   private _handleClose = () => {

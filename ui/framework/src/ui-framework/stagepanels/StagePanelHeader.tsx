@@ -6,7 +6,7 @@
  * @module Frontstage
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";

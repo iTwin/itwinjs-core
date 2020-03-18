@@ -95,6 +95,6 @@ class TestToolsExtension extends Extension {
   }
 }
 
-declare var PLUGIN_NAME: string;
+declare let PLUGIN_NAME: string;
 
 IModelApp.extensionAdmin.register(new TestToolsExtension(PLUGIN_NAME));

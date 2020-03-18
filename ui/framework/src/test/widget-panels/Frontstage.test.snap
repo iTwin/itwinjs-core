@@ -7,6 +7,8 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
   dispatch={[Function]}
   state={
     Object {
+      "draggedTab": undefined,
+      "floatingWidgets": Object {},
       "panels": Object {
         "bottom": Object {
           "collapseOffset": 100,
@@ -56,90 +58,7 @@ exports[`WidgetPanelsFrontstage should render 1`] = `
     }
   }
 >
-  <div
-    className="uifw-widgetPanels-frontstage"
-  >
-    <ModalFrontstageComposer />
-    <WidgetPanelsToolSettings />
-    <WidgetPanels
-      centerContent={<WidgetPanelsToolbars />}
-      className="uifw-widgetPanels"
-      widgetContent={<WidgetContent />}
-    >
-      <WidgetPanelsFrontstageContent />
-    </WidgetPanels>
-    <WidgetPanelsStatusBar />
-  </div>
-</NineZoneProvider>
-`;
-
-exports[`WidgetPanelsFrontstage should render content 1`] = `
-<NineZoneProvider
-  dispatch={[Function]}
-  state={
-    Object {
-      "panels": Object {
-        "bottom": Object {
-          "collapseOffset": 100,
-          "collapsed": true,
-          "maxSize": 600,
-          "minSize": 200,
-          "pinned": true,
-          "side": "bottom",
-          "size": undefined,
-          "span": true,
-          "widgets": Array [],
-        },
-        "left": Object {
-          "collapseOffset": 100,
-          "collapsed": true,
-          "maxSize": 600,
-          "minSize": 200,
-          "pinned": true,
-          "side": "left",
-          "size": undefined,
-          "widgets": Array [],
-        },
-        "right": Object {
-          "collapseOffset": 100,
-          "collapsed": true,
-          "maxSize": 600,
-          "minSize": 200,
-          "pinned": true,
-          "side": "right",
-          "size": undefined,
-          "widgets": Array [],
-        },
-        "top": Object {
-          "collapseOffset": 100,
-          "collapsed": true,
-          "maxSize": 600,
-          "minSize": 200,
-          "pinned": true,
-          "side": "top",
-          "size": undefined,
-          "span": true,
-          "widgets": Array [],
-        },
-      },
-      "tabs": Object {},
-      "widgets": Object {},
-    }
-  }
->
-  <div
-    className="uifw-widgetPanels-frontstage"
-  >
-    <WidgetPanelsToolSettings />
-    <WidgetPanels
-      centerContent={<WidgetPanelsToolbars />}
-      className="uifw-widgetPanels"
-      widgetContent={<WidgetContent />}
-    >
-      <WidgetPanelsFrontstageContent />
-    </WidgetPanels>
-    <WidgetPanelsStatusBar />
-  </div>
+  <WidgetPanelsFrontstageComponent />
 </NineZoneProvider>
 `;
 
@@ -148,6 +67,8 @@ exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
   dispatch={[Function]}
   state={
     Object {
+      "draggedTab": undefined,
+      "floatingWidgets": Object {},
       "panels": Object {
         "bottom": Object {
           "collapseOffset": 100,
@@ -197,34 +118,14 @@ exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
     }
   }
 >
-  <div
-    className="uifw-widgetPanels-frontstage"
-  >
-    <ModalFrontstageComposer
-      stageInfo={
-        Object {
-          "content": <div>
-            Hello World!
-          </div>,
-          "title": "TestModalStage",
-        }
-      }
-    />
-    <WidgetPanelsToolSettings />
-    <WidgetPanels
-      centerContent={<WidgetPanelsToolbars />}
-      className="uifw-widgetPanels"
-      widgetContent={<WidgetContent />}
-    >
-      <WidgetPanelsFrontstageContent />
-    </WidgetPanels>
-    <WidgetPanelsStatusBar />
-  </div>
+  <WidgetPanelsFrontstageComponent />
 </NineZoneProvider>
 `;
 
 exports[`initializeNineZoneState should initialize widgets 1`] = `
 Object {
+  "draggedTab": undefined,
+  "floatingWidgets": Object {},
   "panels": Object {
     "bottom": Object {
       "collapseOffset": 100,

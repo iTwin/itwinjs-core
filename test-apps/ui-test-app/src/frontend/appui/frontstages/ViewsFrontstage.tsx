@@ -99,6 +99,7 @@ import { ExampleForm } from "../forms/ExampleForm";
 
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { SelectionMode } from "@bentley/ui-components";
+import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 
 export class ViewsFrontstage extends FrontstageProvider {
   private _additionalTools = new AdditionalTools();
@@ -232,9 +233,15 @@ export class ViewsFrontstage extends FrontstageProvider {
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VisibilityTree" control={VisibilityTreeWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
+              <Widget iconSpec="icon-visibility" label={VisibilityWidget.label} control={VisibilityWidgetControl}
+                applicationData={{
+                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
+                  config: { modelsTree: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
+                }}
+                fillZone={true} />,
               <Widget iconSpec={VisibilityWidget.iconSpec} label={VisibilityWidget.label} control={VisibilityWidget}
                 applicationData={{
-                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories], useControlledTree: true,
+                  iModelConnection: this.iModelConnection, enableHierarchiesPreloading: [VisibilityComponentHierarchy.Categories],
                   config: { modelsTree: { selectionMode: SelectionMode.Extended, selectionPredicate: (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element } },
                 }}
                 fillZone={true} />,
@@ -468,8 +475,12 @@ class AdditionalTools {
 
   private radialMenu(): React.ReactNode {
     return (
-      <TestRadialMenu opened={true} />
+      <TestRadialMenu opened={true} onClose={this._closeModal} />
     );
+  }
+
+  private _closeModal = () => {
+    ModalDialogManager.closeDialog();
   }
 
   private get _openCalculatorItem() {

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "2.0.0-dev.30",
+  "version": "2.0.0-dev.34",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
@@ -58,19 +58,19 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/ui-core": "^2.0.0-dev.30"
+    "@bentley/ui-core": "^2.0.0-dev.34"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.30",
+    "@bentley/build-tools": "2.0.0-dev.34",
     "@bentley/icons-generic-webfont": "^1.0.0",
-    "@bentley/ui-abstract": "2.0.0-dev.30",
-    "@bentley/ui-components": "2.0.0-dev.30",
-    "@bentley/ui-core": "2.0.0-dev.30",
-    "@bentley/webpack-tools": "2.0.0-dev.30",
+    "@bentley/ui-abstract": "2.0.0-dev.34",
+    "@bentley/ui-components": "2.0.0-dev.34",
+    "@bentley/ui-core": "2.0.0-dev.34",
+    "@bentley/webpack-tools": "2.0.0-dev.34",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -88,6 +88,7 @@
     "@types/react-router-dom": "^4.2.7",
     "@types/sinon": "^7.5.1",
     "@types/testing-library__react-hooks": "^3.1.0",
+    "@types/uuid": "~3.4.4",
     "@types/webpack": "^4.41.2",
     "@types/webpack-merge": "^4.1.5",
     "@types/webpack-dev-server": "^3.1.6",
@@ -116,7 +117,7 @@
     "react-markdown": "^3.2.1",
     "react-resize-detector": "^3.2.0",
     "react-router-dom": "^4.2.2",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "sass-loader": "^7.1.0",
     "sinon": "^7.5.0",
     "sinon-chai": "^3.2.0",
@@ -147,7 +148,8 @@
     "classnames": "^2.2.5",
     "immer": "^5.3.4",
     "react": "^16.8.0",
-    "react-dom": "^16.8.0"
+    "react-dom": "^16.8.0",
+    "uuid": "~3.3.2"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",

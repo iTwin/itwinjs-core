@@ -10,24 +10,16 @@ import * as React from "react";
 import { IModelConnection, Viewport, PerModelCategoryVisibility, ViewManager } from "@bentley/imodeljs-frontend";
 import { NodeKey } from "@bentley/presentation-common";
 import { IVisibilityHandler, VisibilityStatus } from "../VisibilityTreeEventHandler";
-import { TreeNodeItem } from "@bentley/ui-components";
+import { TreeNodeItem, useAsyncValue } from "@bentley/ui-components";
 
 /**
  * Loads categories from viewport or uses provided list of categories.
  * @internal
  */
-export function useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport, providedCategories?: Category[]) {
-  const [categories, setCategories] = React.useState<Category[]>([]);
-
+export function useCategories(viewManager: ViewManager, imodel: IModelConnection, view?: Viewport) {
   const currentView = view || viewManager.getFirstOpenView();
-  React.useEffect(() => {
-    if (providedCategories === undefined)
-      loadCategoriesFromViewport(imodel, currentView).then(setCategories); // tslint:disable-line: no-floating-promises
-    else
-      setCategories(providedCategories);
-  }, [imodel, currentView, providedCategories]);
-
-  return categories;
+  const categoriesPromise = React.useMemo(() => loadCategoriesFromViewport(imodel, currentView), [imodel, currentView]);
+  return useAsyncValue(categoriesPromise) ?? [];
 }
 
 /** @internal */

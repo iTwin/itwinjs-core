@@ -25,9 +25,9 @@ export class TreeDemoWidgetControl extends WidgetControl {
     super(info, options);
 
     if (UiFramework.getIModelConnection())
-      this.reactElement = <TreeDemoWidget iModelConnection={UiFramework.getIModelConnection()} />;
+      this.reactNode = <TreeDemoWidget iModelConnection={UiFramework.getIModelConnection()} />;
     else
-      this.reactElement = null;
+      this.reactNode = null;
   }
 }
 

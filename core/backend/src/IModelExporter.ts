@@ -14,7 +14,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { Element, GeometricElement } from "./Element";
+import { Element, GeometricElement, RepositoryLink } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
@@ -190,6 +190,7 @@ export class IModelExporter {
     this.exportFonts();
     this.exportModelContainer(IModel.repositoryModelId);
     this.exportElement(IModel.rootSubjectId);
+    this.exportRepositoryLinks();
     this.exportSubModels(IModel.repositoryModelId);
     this.exportRelationships(ElementRefersToElements.classFullName);
   }
@@ -456,6 +457,17 @@ export class IModelExporter {
         this.exportElement(childElementId);
       }
     }
+  }
+
+  /** Export RepositoryLinks in the RepositoryModel. */
+  public exportRepositoryLinks(): void {
+    const sql = `SELECT ECInstanceId FROM ${RepositoryLink.classFullName} WHERE Parent.Id IS NULL AND Model.Id=:modelId ORDER BY ECInstanceId`;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      statement.bindId("modelId", IModel.repositoryModelId);
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        this.exportElement(statement.getValue(0).getId());
+      }
+    });
   }
 
   /** Returns true if the specified ElementAspect should be excluded from the export. */

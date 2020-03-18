@@ -12,7 +12,7 @@ An `id` prop may optionally be used to set an Id on a Widget that can be used to
 The content of the widget is ultimately a React component.
 The content may be specified for the Widget component two different ways: a WidgetControl or a React component.
 The `control` prop specifies a WidgetControl and the `element` prop specifies a React component.
-A WidgetControl contains a `reactElement` property, which is where the React component is specified.
+A WidgetControl contains a `reactNode` property, which is where the React component is specified.
 A WidgetControl is useful if you need to centralize some logic pertaining to the widget but outside the React component for the widget.
 
 A widget may be either rectangular or free-form, and the `isFreeform` prop indicates this. The default is rectangular.
@@ -49,7 +49,7 @@ centerRight={
 
 ## WidgetControls
 
-A subclass of [WidgetControl]($ui-framework) may be used to populate a widget. The `reactElement` property specifies the React component.
+A subclass of [WidgetControl]($ui-framework) may be used to populate a widget. The `reactNode` property specifies the React component.
 The `options` parameter in the constructor contains the `applicationData` from the Widget component.
 The `setWidgetState` method may be called to set the state of the widget.
 
@@ -69,7 +69,7 @@ export class TreeWidget extends WidgetControl {
     super(info, options);
 
     if (options.iModelConnection) {
-      this.reactElement = <SimpleTreeComponent imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
+      this.reactNode = <SimpleTreeComponent imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
     }
   }
 }

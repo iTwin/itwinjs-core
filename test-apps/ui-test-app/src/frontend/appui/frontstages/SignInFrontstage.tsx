@@ -17,9 +17,9 @@ class SignInControl extends ContentControl {
 
     const client = IModelApp.authorizationClient;
     if (isIOidcFrontendClient(client))
-      this.reactElement = <SignIn oidcClient={client} onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
+      this.reactNode = <SignIn oidcClient={client} onOffline={this._onWorkOffline} onRegister={this._onRegister} />;
     else
-      this.reactElement = null;
+      this.reactNode = null;
   }
 
   // user chose to work offline from the sign in page

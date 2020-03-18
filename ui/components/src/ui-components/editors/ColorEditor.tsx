@@ -160,7 +160,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
  * @beta
  */
 export class ColorPropertyEditor extends PropertyEditorBase {
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <ColorEditor />;
   }
 }

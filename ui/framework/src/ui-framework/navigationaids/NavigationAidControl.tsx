@@ -28,15 +28,23 @@ export class NavigationAidActivatedEvent extends UiEvent<NavigationAidActivatedE
  * @public
  */
 export class NavigationAidControl extends ConfigurableUiControl {
-  private _reactElement: React.ReactNode;
+  private _reactNode: React.ReactNode;
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }
 
   /** The React element associated with this control */
-  public get reactElement(): React.ReactNode { return this._reactElement; }
-  public set reactElement(r: React.ReactNode) { this._reactElement = r; }
+  public get reactNode(): React.ReactNode { return this._reactNode; }
+  public set reactNode(r: React.ReactNode) { this._reactNode = r; }
+
+  /** The React element associated with this control
+   * @deprecated use reactNode
+   */
+  // istanbul ignore next
+  public get reactElement(): React.ReactNode { return this.reactNode; }
+  // istanbul ignore next
+  public set reactElement(r: React.ReactNode) { this.reactNode = r; }
 
   /** Default size is "64px". Override to set a different size. */
   public getSize(): string | undefined { return undefined; }

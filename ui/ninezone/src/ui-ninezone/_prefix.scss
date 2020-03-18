@@ -26,3 +26,8 @@
   -moz-border-radius: $value;
   border-radius: $value;
 }
+
+@mixin nz-cursor-grabbing() {
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
+}

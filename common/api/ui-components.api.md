@@ -44,7 +44,6 @@ import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
-import { Position } from '@bentley/ui-core';
 import { Primitives } from '@bentley/ui-abstract';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
@@ -52,6 +51,7 @@ import { PropertyValue } from '@bentley/ui-abstract';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
 import ReactDataGrid = require('react-data-grid');
+import { RelativePosition } from '@bentley/ui-abstract';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
@@ -272,7 +272,7 @@ export class BaseTimelineDataProvider implements TimelineDataProvider {
 // @beta
 export class BasicPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactElement(): React.ReactNode;
+    get reactNode(): React.ReactNode;
 }
 
 // @beta
@@ -495,7 +495,7 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
 // @beta
 export class BooleanPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactElement(): React.ReactNode;
+    get reactNode(): React.ReactNode;
 }
 
 // @public
@@ -830,7 +830,7 @@ export interface ColorPickerProps extends React.ButtonHTMLAttributes<HTMLButtonE
 // @beta
 export class ColorPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactElement(): React.ReactNode;
+    get reactNode(): React.ReactNode;
 }
 
 // @beta
@@ -949,7 +949,7 @@ export interface ContextMenuProps extends CommonProps {
     items?: MenuItem[];
     onClickOutside?: () => void;
     parent: HTMLElement | null;
-    position: Position;
+    position: RelativePosition;
 }
 
 // @beta
@@ -1065,7 +1065,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 // @alpha
 export class CustomNumberPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactElement(): React.ReactNode;
+    get reactNode(): React.ReactNode;
 }
 
 // @beta
@@ -1480,13 +1480,13 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 // @beta
 export class EnumPropertyButtonGroupEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactElement(): React.ReactNode;
+    get reactNode(): React.ReactNode;
 }
 
 // @beta
 export class EnumPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactElement(): React.ReactNode;
+    get reactNode(): React.ReactNode;
 }
 
 // @public
@@ -1844,7 +1844,7 @@ export interface IconPickerProps extends React.ButtonHTMLAttributes<HTMLButtonEl
 // @alpha
 export class IconPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactElement(): React.ReactNode;
+    get reactNode(): React.ReactNode;
 }
 
 // @beta
@@ -2570,7 +2570,7 @@ export abstract class PropertyEditorBase implements DataController {
     // (undocumented)
     customDataController: DataController | undefined;
     // (undocumented)
-    abstract get reactElement(): React.ReactNode;
+    abstract get reactNode(): React.ReactNode;
     // (undocumented)
     validateValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult>;
 }
@@ -3592,7 +3592,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 // @beta
 export class TogglePropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactElement(): React.ReactNode;
+    get reactNode(): React.ReactNode;
 }
 
 // @internal (undocumented)
@@ -4424,7 +4424,7 @@ export interface WeightPickerProps extends React.ButtonHTMLAttributes<HTMLButton
 // @beta
 export class WeightPropertyEditor extends PropertyEditorBase {
     // (undocumented)
-    get reactElement(): React.ReactNode;
+    get reactNode(): React.ReactNode;
 }
 
 // @beta

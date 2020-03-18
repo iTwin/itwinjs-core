@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ChangeSet, Config, HubIModel, IModelHubClient, IModelHubError, IModelQuery } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, ChangeSet, HubIModel, IModelHubClient, IModelHubError, IModelQuery } from "@bentley/imodeljs-clients";
 import { IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
@@ -25,7 +25,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   assert.exists(iModelDb);
   const elapsedTime = (endTime - startTime) / 1000.0;
   assert.strictEqual<string>(iModelDb.briefcase.currentChangeSetId, firstChangeSetId);
-  iModelDb.close(requestContext).catch();
+  await iModelDb.close(requestContext).catch();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime, { Description: "from hub first CS", Operation: "Open" });
 
   // open imodel from local cache with second revision
@@ -35,7 +35,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   assert.exists(iModelDb1);
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   assert.strictEqual<string>(iModelDb1.briefcase.currentChangeSetId, secondChangeSetId);
-  iModelDb1.close(requestContext).catch();
+  await iModelDb1.close(requestContext).catch();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime1, { Description: "from cache second CS", Operation: "Open" });
 
   // open imodel from local cache with first revision
@@ -44,7 +44,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const endTime2 = new Date().getTime();
   assert.exists(iModelDb2);
   const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
-  iModelDb2.close(requestContext).catch();
+  await iModelDb2.close(requestContext).catch();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime2, { Description: "from cache first CS", Operation: "Open" });
 
   // open imodel from local cache with latest revision
@@ -53,7 +53,7 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
   const endTime3 = new Date().getTime();
   assert.exists(iModelDb3);
   const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
-  iModelDb3.close(requestContext).catch();
+  await iModelDb3.close(requestContext).catch();
   reporter.addEntry("ImodelChangesetPerformance", "GetImodel", "Execution time(s)", elapsedTime3, { Description: "from cache latest CS", Operation: "Open" });
 }
 
@@ -177,7 +177,7 @@ async function executeQueryTime(requestContext: AuthorizedClientRequestContext, 
   const elapsedTime1 = (endTime - startTime) / 1000.0;
   assert.equal(7, stat.length);
   reporter.addEntry("ImodelChangesetPerformance", "ExecuteQuery", "Execution time(s)", elapsedTime1, { Description: "execute a simple ECSQL query", Operation: "ExecuteQuery" });
-  iModelDb.close(requestContext).catch();
+  await iModelDb.close(requestContext).catch();
 }
 
 async function reverseChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string) {
@@ -256,8 +256,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
-  let imodelInfo: TestIModelInfo;
-  imodelInfo = await IModelTestUtils.getTestModelInfo(requestContext, projectId, iModelName);
+  const imodelInfo: TestIModelInfo = await IModelTestUtils.getTestModelInfo(requestContext, projectId, iModelName);
   const firstChangeSetId = imodelInfo.changeSets[0].wsgId;
   await rwIModel.reverseChanges(requestContext, IModelVersion.asOfChangeSet(firstChangeSetId));
   const reverseCount = getElementCount(rwIModel);
@@ -274,7 +273,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   await rwIModel.close(requestContext, KeepBriefcase.No);
 }
 
-describe("ImodelChangesetPerformance", async () => {
+describe("ImodelChangesetPerformance", () => {
   const reporter = new Reporter();
   let projectId: string;
   let imodelId: string;
@@ -289,11 +288,7 @@ describe("ImodelChangesetPerformance", async () => {
     projectId = configData.projectId;
     imodelId = configData.imodelId;
     imodelPushId = configData.imodelPushId;
-    const myAppConfig = {
-      imjs_buddi_resolve_url_using_region: 102,
-      imjs_default_relying_party_uri: "https://connect-wsg20.bentley.com",
-    };
-    Config.App.merge(myAppConfig);
+
     client = new IModelHubClient();
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);

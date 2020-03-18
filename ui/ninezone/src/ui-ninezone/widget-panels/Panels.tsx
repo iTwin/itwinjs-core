@@ -6,17 +6,20 @@
  * @module WidgetPanels
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
-import { WidgetPanelSide, WidgetPanel } from "./Panel";
-import { WidgetPanelContent } from "./Content";
-import { WidgetPanelsGripOverlay } from "./GripOverlay";
-import { RESIZE_PANEL, useNineZoneDispatch, useNineZone } from "../base/NineZone";
+import { CenterContent } from "./CenterContent";
+import { CursorOverlay } from "./CursorOverlay";
+import { WidgetPanel, panelSides } from "./Panel";
+import { PanelsStateContext } from "../base/NineZone";
+import { FloatingWidgets } from "../widget/FloatingWidgets";
+import { FloatingTab } from "../widget/FloatingTab";
+import { AppContent } from "./AppContent";
 import "./Panels.scss";
 
 /** Properties of [[WidgetPanels]] component.
- * @internal future
+ * @internal
  */
 export interface WidgetPanelsProps extends CommonProps {
   /** Content that is affected by pinned state of panels. */
@@ -27,31 +30,27 @@ export interface WidgetPanelsProps extends CommonProps {
   widgetContent?: React.ReactNode;
 }
 
-const sides: WidgetPanelSide[] = [
-  "left",
-  "right",
-  "top",
-  "bottom",
-];
-
 /** Component that displays widget panels.
- * @internal future
+ * @internal
  */
-export function WidgetPanels(props: WidgetPanelsProps) {
-  const [capturedSide, setCapturedSide] = React.useState<WidgetPanelSide>();
-  const nineZone = useNineZone();
-  const dispatch = useNineZoneDispatch();
-  const handleResize = React.useCallback((side: WidgetPanelSide, resizeBy: number) => {
-    setCapturedSide(side);
-    dispatch({
-      type: RESIZE_PANEL,
-      side,
-      resizeBy,
-    });
-  }, [dispatch]);
-  const handleResizeEnd = React.useCallback(() => {
-    setCapturedSide(undefined);
-  }, []);
+export const WidgetPanels = React.memo<WidgetPanelsProps>(function WidgetPanels(props) { // tslint:disable-line: variable-name no-shadowed-variable
+  return (
+    <ContentNodeContext.Provider value={props.children}>
+      <CenterContentNodeContext.Provider value={props.centerContent}>
+        <WidgetContentNodeContext.Provider value={props.widgetContent}>
+          <WidgetPanelsComponent
+            className={props.className}
+            style={props.style}
+          />
+        </WidgetContentNodeContext.Provider>
+      </CenterContentNodeContext.Provider>
+    </ContentNodeContext.Provider>
+  );
+});
+
+/** @internal */
+const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsComponent(props) { // tslint:disable-line: variable-name no-shadowed-variable
+  const panels = React.useContext(PanelsStateContext);
   const className = classnames(
     "nz-widgetPanels-panels",
     props.className,
@@ -61,38 +60,34 @@ export function WidgetPanels(props: WidgetPanelsProps) {
       className={className}
       style={props.style}
     >
-      <WidgetPanelContent
-        pinnedLeft={nineZone.panels.left.pinned}
-        pinnedRight={nineZone.panels.right.pinned}
-        pinnedTop={nineZone.panels.top.pinned}
-        pinnedBottom={nineZone.panels.bottom.pinned}
-      >
-        {props.children}
-      </WidgetPanelContent>
-      <WidgetPanelContent
-        pinnedLeft
-        pinnedRight
-        pinnedTop
-        pinnedBottom
-      >
-        {props.centerContent}
-      </WidgetPanelContent>
-      {sides.map((side) => {
-        const captured = side === capturedSide;
+      <AppContent />
+      <CenterContent />
+      {panelSides.map((side) => {
+        const panel = panels[side];
         return (
           <WidgetPanel
-            children={props.widgetContent}
-            captured={captured}
             key={side}
-            onResize={handleResize}
-            onResizeEnd={handleResizeEnd}
-            side={side}
+            panel={panel}
+            spanBottom={panels.bottom.span}
+            spanTop={panels.top.span}
           />
         );
       })}
-      {capturedSide && <WidgetPanelsGripOverlay
-        side={capturedSide}
-      />}
+      <FloatingWidgets />
+      <FloatingTab />
+      <CursorOverlay />
     </div>
   );
-}
+});
+
+/** @internal */
+export const WidgetContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
+WidgetContentNodeContext.displayName = "nz:WidgetContentNodeContext";
+
+/** @internal */
+export const ContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
+ContentNodeContext.displayName = "nz:ContentNodeContext";
+
+/** @internal */
+export const CenterContentNodeContext = React.createContext<React.ReactNode>(null); // tslint:disable-line: variable-name
+CenterContentNodeContext.displayName = "nz:CenterContentNodeContext";

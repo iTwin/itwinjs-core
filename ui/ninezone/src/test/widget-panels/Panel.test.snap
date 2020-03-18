@@ -1,31 +1,52 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`WidgetPanel should dispatch INITIALIZE_PANEL 1`] = `
+exports[`WidgetPanel should render captured 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left nz-collapsed nz-span-top nz-span-bottom"
+  class="nz-widgetPanels-panel nz-left nz-captured"
 >
   <div>
     <div
       class="nz-content"
     >
       <div
-        class="nz-widget-widget"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget"
         style="flex-grow: 1;"
       >
         <div
-          class="nz-tabs"
+          class="nz-widget-titleBar"
         >
           <div
-            class="nz-widget-tabs"
+            class="nz-handle"
           />
+          <div
+            class="nz-widget-tabs"
+          >
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div
-          class="nz-content"
+          class="nz-widget-content"
         />
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
     </div>
     <div
-      class="nz-widgetPanels-grip nz-left nz-collapsed"
+      class="nz-widgetPanels-grip nz-left"
     >
       <div
         class="nz-dot"
@@ -46,27 +67,48 @@ exports[`WidgetPanel should dispatch INITIALIZE_PANEL 1`] = `
 
 exports[`WidgetPanel should render collapsed 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left nz-collapsed nz-span-top nz-span-bottom"
+  class="nz-widgetPanels-panel nz-left nz-collapsed"
 >
   <div>
     <div
       class="nz-content"
     >
       <div
-        class="nz-widget-widget"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget"
         style="flex-grow: 1;"
       >
         <div
-          class="nz-tabs"
+          class="nz-widget-titleBar"
         >
           <div
-            class="nz-widget-tabs"
+            class="nz-handle"
           />
+          <div
+            class="nz-widget-tabs"
+          >
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div
-          class="nz-content"
+          class="nz-widget-content"
         />
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
     </div>
     <div
       class="nz-widgetPanels-grip nz-left nz-collapsed"
@@ -98,20 +140,204 @@ exports[`WidgetPanel should render horizontal 1`] = `
       class="nz-content"
     >
       <div
-        class="nz-widget-widget nz-horizontal"
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-horizontal"
         style="flex-grow: 1;"
       >
         <div
-          class="nz-tabs"
+          class="nz-widget-titleBar"
         >
           <div
-            class="nz-widget-tabs"
+            class="nz-handle"
           />
+          <div
+            class="nz-widget-tabs"
+          >
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div
-          class="nz-content"
+          class="nz-widget-content"
         />
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-last"
+      />
+    </div>
+    <div
+      class="nz-widgetPanels-grip nz-top"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WidgetPanel should render multiple widgets 1`] = `
+<div
+  class="nz-widgetPanels-panel nz-left"
+>
+  <div>
+    <div
+      class="nz-content"
+    >
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget"
+        style="flex-grow: 1;"
+      >
+        <div
+          class="nz-widget-titleBar"
+        >
+          <div
+            class="nz-handle"
+          />
+          <div
+            class="nz-widget-tabs"
+          >
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="nz-widget-content"
+        />
+      </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget"
+        style="flex-grow: 1;"
+      >
+        <div
+          class="nz-widget-titleBar"
+        >
+          <div
+            class="nz-handle"
+          />
+          <div
+            class="nz-widget-tabs"
+          >
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="nz-widget-content"
+        />
+      </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
+    </div>
+    <div
+      class="nz-widgetPanels-grip nz-left"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WidgetPanel should render spanned 1`] = `
+<div
+  class="nz-widgetPanels-panel nz-top nz-horizontal nz-span"
+>
+  <div>
+    <div
+      class="nz-content"
+    >
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget nz-horizontal"
+        style="flex-grow: 1;"
+      >
+        <div
+          class="nz-widget-titleBar"
+        >
+          <div
+            class="nz-handle"
+          />
+          <div
+            class="nz-widget-tabs"
+          >
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="nz-widget-content"
+        />
+      </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-last"
+      />
     </div>
     <div
       class="nz-widgetPanels-grip nz-top"
@@ -135,7 +361,7 @@ exports[`WidgetPanel should render horizontal 1`] = `
 
 exports[`WidgetPanel should render vertical 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  class="nz-widgetPanels-panel nz-left"
   style="width: 200px;"
 >
   <div>
@@ -143,20 +369,41 @@ exports[`WidgetPanel should render vertical 1`] = `
       class="nz-content"
     >
       <div
-        class="nz-widget-widget"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget"
         style="flex-grow: 1;"
       >
         <div
-          class="nz-tabs"
+          class="nz-widget-titleBar"
         >
           <div
-            class="nz-widget-tabs"
+            class="nz-handle"
           />
+          <div
+            class="nz-widget-tabs"
+          >
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div
-          class="nz-content"
+          class="nz-widget-content"
         />
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
     </div>
     <div
       class="nz-widgetPanels-grip nz-left"
@@ -178,30 +425,115 @@ exports[`WidgetPanel should render vertical 1`] = `
 </div>
 `;
 
-exports[`WidgetPanel should render vertical size 1`] = `
+exports[`WidgetPanel should render with span bottom 1`] = `
 <div
-  class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
-  style="width: 200px;"
+  class="nz-widgetPanels-panel nz-left nz-span-bottom"
 >
   <div>
     <div
       class="nz-content"
     >
       <div
-        class="nz-widget-widget"
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget"
         style="flex-grow: 1;"
       >
         <div
-          class="nz-tabs"
+          class="nz-widget-titleBar"
         >
           <div
-            class="nz-widget-tabs"
+            class="nz-handle"
           />
+          <div
+            class="nz-widget-tabs"
+          >
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div
-          class="nz-content"
+          class="nz-widget-content"
         />
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
+    </div>
+    <div
+      class="nz-widgetPanels-grip nz-left"
+    >
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+      <div
+        class="nz-dot"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`WidgetPanel should render with top spanned 1`] = `
+<div
+  class="nz-widgetPanels-panel nz-left nz-span-top"
+>
+  <div>
+    <div
+      class="nz-content"
+    >
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
+        class="nz-widget-widget nz-widget-panelWidget"
+        style="flex-grow: 1;"
+      >
+        <div
+          class="nz-widget-titleBar"
+        >
+          <div
+            class="nz-handle"
+          />
+          <div
+            class="nz-widget-tabs"
+          >
+            <div
+              class="nz-widget-overflow nz-hidden"
+            >
+              <div
+                class="nz-button"
+              >
+                <div
+                  class="nz-icon"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="nz-widget-content"
+        />
+      </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
     </div>
     <div
       class="nz-widgetPanels-grip nz-left"

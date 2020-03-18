@@ -7,7 +7,7 @@
  */
 import * as React from "react";
 import produce from "immer";
-import { WidgetPanels, NineZoneStateReducer, createNineZoneState, NineZoneProvider, NineZoneState, addPanelWidget, addTab, WidgetPanelSide, NineZoneActionTypes } from "@bentley/ui-ninezone";
+import { WidgetPanels, NineZoneStateReducer, createNineZoneState, NineZoneProvider, NineZoneState, addPanelWidget, addTab, PanelSide, NineZoneActionTypes } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetPanelsStatusBar } from "./StatusBar";
 import { FrontstageDef } from "../frontstage/FrontstageDef";
@@ -22,38 +22,42 @@ import { ModalFrontstageComposer, useActiveModalFrontstageInfo } from "./ModalFr
 import "./Frontstage.scss";
 
 /** @internal */
-export function WidgetPanelsFrontstage() {
+export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage() { // tslint:disable-line: variable-name no-shadowed-variable
   const frontstageDef = useActiveFrontstageDef();
-  const activeModalFrontstageInfo = useActiveModalFrontstageInfo();
-  const frontstage = frontstageDef?.frontstageProvider?.frontstage;
   const [nineZone, nineZoneDispatch] = useFrontstageDefNineZone(frontstageDef);
-
-  if (!frontstage)
+  if (!frontstageDef)
     return null;
   return (
     <NineZoneProvider
       dispatch={nineZoneDispatch}
       state={nineZone}
     >
-      <div
-        className="uifw-widgetPanels-frontstage"
-      >
-        <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
-        <WidgetPanelsToolSettings />
-        <WidgetPanels className="uifw-widgetPanels"
-          centerContent={<WidgetPanelsToolbars />}
-          widgetContent={<WidgetContent />}
-        >
-          <WidgetPanelsFrontstageContent />
-        </WidgetPanels>
-        <WidgetPanelsStatusBar />
-      </div>
-    </NineZoneProvider>
+      <WidgetPanelsFrontstageComponent />
+    </NineZoneProvider >
   );
-}
+});
+
+const WidgetPanelsFrontstageComponent = React.memo(function WidgetPanelsFrontstageComponent() { // tslint:disable-line: variable-name no-shadowed-variable
+  const activeModalFrontstageInfo = useActiveModalFrontstageInfo();
+  return (
+    <div
+      className="uifw-widgetPanels-frontstage"
+    >
+      <ModalFrontstageComposer stageInfo={activeModalFrontstageInfo} />
+      <WidgetPanelsToolSettings />
+      <WidgetPanels className="uifw-widgetPanels"
+        centerContent={<WidgetPanelsToolbars />}
+        widgetContent={<WidgetContent />}
+      >
+        <WidgetPanelsFrontstageContent />
+      </WidgetPanels>
+      <WidgetPanelsStatusBar />
+    </div>
+  );
+});
 
 /** @internal */
-export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: WidgetPanelSide, widgetId: WidgetIdTypes): NineZoneState {
+export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: PanelSide, widgetId: WidgetIdTypes): NineZoneState {
   if (widgets.length > 0) {
     const activeWidget = widgets.find((widget) => widget.isActive);
     const minimized = !activeWidget;
@@ -84,7 +88,7 @@ type WidgetIdTypes = "leftStart" |
   "top" |
   "bottom";
 
-function getPanelDefKey(side: WidgetPanelSide): FrontstagePanelDefKeys {
+function getPanelDefKey(side: PanelSide): FrontstagePanelDefKeys {
   switch (side) {
     case "bottom":
       return "bottomPanel";
@@ -98,7 +102,7 @@ function getPanelDefKey(side: WidgetPanelSide): FrontstagePanelDefKeys {
 }
 
 /** @internal */
-export function getWidgetId(side: WidgetPanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes {
+export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes {
   switch (side) {
     case "left": {
       if (key === "start") {
@@ -129,7 +133,7 @@ export function getWidgetId(side: WidgetPanelSide, key: StagePanelZoneDefKeys): 
 export function addPanelWidgets(
   state: NineZoneState,
   frontstage: FrontstageDef | undefined,
-  side: WidgetPanelSide,
+  side: PanelSide,
 ): NineZoneState {
   const panelDefKey = getPanelDefKey(side);
   const panelDef = frontstage?.[panelDefKey];

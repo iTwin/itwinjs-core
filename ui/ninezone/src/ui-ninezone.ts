@@ -9,10 +9,12 @@ export * from "./ui-ninezone/backstage/UserProfile";
 
 export * from "./ui-ninezone/base/assert";
 export * from "./ui-ninezone/base/DragHandle";
+export * from "./ui-ninezone/base/DragManager";
 export * from "./ui-ninezone/base/Ellipsis";
+export * from "./ui-ninezone/base/Event";
 export * from "./ui-ninezone/base/NineZone";
+export * from "./ui-ninezone/base/NineZoneState";
 export * from "./ui-ninezone/base/PointerCaptor";
-export * from "./ui-ninezone/base/useSingleDoubleClick";
 export * from "./ui-ninezone/base/WithContainIn";
 
 export * from "./ui-ninezone/footer/dialog/Button";
@@ -94,16 +96,24 @@ export * from "./ui-ninezone/utilities/Direction";
 export * from "./ui-ninezone/utilities/DisabledResizeHandles";
 export * from "./ui-ninezone/utilities/SafeAreaInsets";
 
+export * from "./ui-ninezone/widget/Content";
+export * from "./ui-ninezone/widget/FloatingTab";
+export * from "./ui-ninezone/widget/FloatingWidget";
+export * from "./ui-ninezone/widget/FloatingWidgets";
 export * from "./ui-ninezone/widget/Menu";
 export * from "./ui-ninezone/widget/Overflow";
+export * from "./ui-ninezone/widget/PanelWidget";
 export * from "./ui-ninezone/widget/Stacked";
 export * from "./ui-ninezone/widget/Tab";
 export * from "./ui-ninezone/widget/Tabs";
+export * from "./ui-ninezone/widget/TabTarget";
+export * from "./ui-ninezone/widget/TitleBar";
 export * from "./ui-ninezone/widget/Tools";
 export * from "./ui-ninezone/widget/ToolsArea";
 export * from "./ui-ninezone/widget/NavigationArea";
 export * from "./ui-ninezone/widget/ToolSettings";
 export * from "./ui-ninezone/widget/Widget";
+export * from "./ui-ninezone/widget/WidgetTarget";
 
 export * from "./ui-ninezone/widget/tools/button/App";
 export * from "./ui-ninezone/widget/tools/button/Back";
@@ -123,11 +133,14 @@ export * from "./ui-ninezone/widget/tool-settings/Popup";
 export * from "./ui-ninezone/widget/tool-settings/Scrollable";
 export * from "./ui-ninezone/widget/tool-settings/Tab";
 
+export * from "./ui-ninezone/widget-panels/AppContent";
+export * from "./ui-ninezone/widget-panels/CenterContent";
 export * from "./ui-ninezone/widget-panels/Content";
+export * from "./ui-ninezone/widget-panels/CursorOverlay";
 export * from "./ui-ninezone/widget-panels/Grip";
-export * from "./ui-ninezone/widget-panels/GripOverlay";
 export * from "./ui-ninezone/widget-panels/Panel";
 export * from "./ui-ninezone/widget-panels/Panels";
+export * from "./ui-ninezone/widget-panels/PanelTarget";
 
 export * from "./ui-ninezone/zones/Outline";
 export * from "./ui-ninezone/zones/Zone";

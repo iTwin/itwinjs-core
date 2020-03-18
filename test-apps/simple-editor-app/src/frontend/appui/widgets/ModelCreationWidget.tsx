@@ -94,7 +94,7 @@ export class ModelCreationWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <ModelCreationComponent />;
+    this.reactNode = <ModelCreationComponent />;
   }
 }
 ConfigurableUiManager.registerControl("ModelCreation", ModelCreationWidget);

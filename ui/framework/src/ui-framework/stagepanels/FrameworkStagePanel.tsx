@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { StagePanelLocation } from "@bentley/ui-abstract";
 import {
   StagePanel as NZ_StagePanel,

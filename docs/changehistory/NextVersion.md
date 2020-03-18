@@ -223,9 +223,10 @@ should decide what ruleset it wants to use.
 
 #### Removal of deprecated APIs
 
-The following items that were marked as @deprecated in the 1.x timeframe have been removed:
+The following items that were marked as @deprecated in the 1.x time frame have been removed:
 
 * UiError (use UiError in @bentley/ui-abstract instead)
+* Position for Popup component (Use RelativePosition in @bentley/ui-abstract instead)
 
 ### API changes in `presentation-common` package
 

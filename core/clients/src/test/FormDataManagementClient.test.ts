@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AuthorizationToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { FormDataManagementClient, FormDefinition, FormInstanceData } from "../FormDataManagementClient";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
@@ -21,9 +19,7 @@ describe.skip("FormDataManagementClient", () => {
       return;
     this.enableTimeouts(false);
 
-    const authToken: AuthorizationToken = await TestConfig.login();
-    const accessToken = await formDataManagementClient.getAccessToken(new ClientRequestContext(), authToken);
-    requestContext = new AuthorizedClientRequestContext(accessToken);
+    requestContext = await TestConfig.getAuthorizedClientRequestContext();
   });
 
   it("should be able to retrieve Form Definitions (#integration)", async () => {

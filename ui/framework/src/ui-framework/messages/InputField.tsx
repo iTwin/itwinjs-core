@@ -9,7 +9,8 @@
 import * as React from "react";
 import classnames = require("classnames");
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { Popup, Position } from "@bentley/ui-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Popup } from "@bentley/ui-core";
 
 import { MessageManager, InputFieldMessageEventArgs } from "../messages/MessageManager";
 import { MessageDiv } from "./MessageSpan";
@@ -69,7 +70,7 @@ export class InputFieldMessage extends React.PureComponent<InputFieldMessageProp
     return (
       <Popup
         isOpen={isVisible}
-        position={Position.BottomLeft}
+        position={RelativePosition.BottomLeft}
         onClose={this._onInputMessageClose}
         target={inputFieldElement}>
         <div className="uifw-popup-message-inputField">

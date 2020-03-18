@@ -18,7 +18,7 @@ class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <TableExampleContent />;
+    this.reactNode = <TableExampleContent />;
   }
 }
 

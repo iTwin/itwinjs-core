@@ -9,7 +9,7 @@
 import * as React from "react";
 import classnames from "classnames";
 import { PlayerButton, PlayButton } from "./PlayerButton";
-import { Position } from "@bentley/ui-core";
+import { RelativePosition } from "@bentley/ui-abstract";
 import { Milestone, PlaybackSettings } from "./interfaces";
 import { Timeline } from "./Timeline";
 import { Scrubber } from "./Scrubber";
@@ -284,7 +284,7 @@ export class TimelineComponent extends React.PureComponent<TimelineComponentProp
     return (
       <>
         <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick} ></span>
-        <ContextMenu parent={this._settings} isOpened={this.state.isSettingsOpen} onClickOutside={this._onCloseSettings.bind(this)} position={Position.BottomRight}>
+        <ContextMenu parent={this._settings} isOpened={this.state.isSettingsOpen} onClickOutside={this._onCloseSettings.bind(this)} position={RelativePosition.BottomRight}>
           {!alwaysMinimized && hasDates && <ContextMenuItem name={expandName} onClick={this._onModeChanged} />}
           <ContextMenuItem name={this._repeatLabel} checked={this.state.repeat} onClick={this._onRepeatChanged} />
           <ContextMenuItem isSeparator={true} />

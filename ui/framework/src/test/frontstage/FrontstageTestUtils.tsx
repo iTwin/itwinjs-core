@@ -29,7 +29,7 @@ export class TestContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <div />;
+    this.reactNode = <div />;
   }
 }
 
@@ -37,7 +37,7 @@ export class TestWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <TestWidgetElement />;
+    this.reactNode = <TestWidgetElement />;
   }
 }
 

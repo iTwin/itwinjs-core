@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { WidgetIdContext, NineZoneProvider, NineZoneDispatch, createNineZoneState, addPanelWidget } from "@bentley/ui-ninezone";
+import { NineZoneProvider, NineZoneDispatch, createNineZoneState, addPanelWidget, WidgetStateContext } from "@bentley/ui-ninezone";
 import { render } from "@testing-library/react";
 import { WidgetContent, FrontstageManager, FrontstageDef } from "../../ui-framework";
 import { WidgetDef } from "../../ui-framework/widgets/WidgetDef";
@@ -25,15 +25,15 @@ describe("WidgetContent", () => {
     });
     sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
     sandbox.stub(frontstage, "findWidgetDef").returns(widget);
-    sandbox.stub(widget, "reactElement").get(() => <>Content</>);
+    sandbox.stub(widget, "reactNode").get(() => <>Content</>);
     const { container } = render(
       <NineZoneProvider
         dispatch={sinon.stub<NineZoneDispatch>()}
         state={nineZone}
       >
-        <WidgetIdContext.Provider value="leftStart">
+        <WidgetStateContext.Provider value={nineZone.widgets.leftStart}>
           <WidgetContent />
-        </WidgetIdContext.Provider>
+        </WidgetStateContext.Provider>
       </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
@@ -48,15 +48,15 @@ describe("WidgetContent", () => {
     });
     sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
     sandbox.stub(frontstage, "findWidgetDef").returns(widget);
-    sandbox.stub(widget, "reactElement").get(() => <>Content</>);
+    sandbox.stub(widget, "reactNode").get(() => <>Content</>);
     const { container } = render(
       <NineZoneProvider
         dispatch={sinon.stub<NineZoneDispatch>()}
         state={nineZone}
       >
-        <WidgetIdContext.Provider value="leftStart">
+        <WidgetStateContext.Provider value={nineZone.widgets.leftStart}>
           <WidgetContent />
-        </WidgetIdContext.Provider>
+        </WidgetStateContext.Provider>
       </NineZoneProvider>,
     );
     (container.firstChild === null).should.true;

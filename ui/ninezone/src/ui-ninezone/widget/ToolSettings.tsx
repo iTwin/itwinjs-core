@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, PointProps, RectangleProps, Rectangle, Point } from "@bentley/ui-core";
 import { TitleBar } from "../footer/dialog/TitleBar";

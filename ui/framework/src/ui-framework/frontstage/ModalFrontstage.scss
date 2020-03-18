@@ -20,7 +20,7 @@
   flex-direction: column;
   align-items: stretch;
 
-  @include uicore-z-index(backstage);
+  @include uicore-z-index(modal-frontstage);
 
   .uifw-modal-app-bar {
     transition: transform .125s;
@@ -82,5 +82,5 @@
   opacity: 0.95;
   background: $buic-background-4;
 
-  @include uicore-z-index(backstage-overlay);
+  @include uicore-z-index(modal-frontstage-overlay);
 }

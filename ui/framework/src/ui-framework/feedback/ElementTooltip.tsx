@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { UiEvent, CommonProps, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-core";
 import { Tooltip, offsetAndContainInContainer } from "@bentley/ui-ninezone";

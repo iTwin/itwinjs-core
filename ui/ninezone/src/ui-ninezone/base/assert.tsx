@@ -9,7 +9,7 @@
 /** Asserts given condition.
  * @internal
  */
-export function assert(condition: boolean | undefined | object): asserts condition {
+export function assert(condition: any): asserts condition {
   if (!condition)
     throw new Error();
 }

@@ -1365,12 +1365,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // istanbul ignore else
     if (tableColumn) {
       setTimeout(async () => {
-        if (filter.filterTerm) {
-          await DataGridFilterParser.handleFilterChange(filter, tableColumn.columnFilterDescriptor, tableColumn.columnDescription, this._applyFilter);
-        } else {
-          tableColumn.columnFilterDescriptor.clear();
-          await this._applyFilter();
-        }
+        await DataGridFilterParser.handleFilterChange(filter, tableColumn.columnFilterDescriptor, tableColumn.columnDescription, this._applyFilter);
       });
     }
   }

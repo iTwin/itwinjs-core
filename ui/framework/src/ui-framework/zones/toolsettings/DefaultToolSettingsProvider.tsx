@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 // cSpell:Ignore configurableui
 
@@ -367,7 +367,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
   public getEditorRecord = (dialogItem: DialogItem): PropertyRecord => {
     const propertyValue = { valueFormat: PropertyValueFormat.Primitive, value: dialogItem.value.value, displayValue: dialogItem.value.displayValue };
     const record = new PropertyRecord(propertyValue as PrimitiveValue, dialogItem.property);
-    record.isDisabled = !!dialogItem.isDisabled;
+    record.isDisabled = dialogItem.lockProperty ? !dialogItem.lockProperty.value.value as boolean : !!dialogItem.isDisabled;
     return record;
   }
 

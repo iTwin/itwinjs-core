@@ -1,0 +1,85 @@
+parameters:
+  - name: workingDir
+    type: string
+    default: $(System.DefaultWorkingDirectory)
+
+steps:
+  - script: node common/scripts/install-run-rush.js check
+    displayName: rush check
+    workingDirectory: ${{ parameters.workingDir }}
+  - task: PythonScript@0
+    displayName: "rush change -v"
+    inputs:
+      workingDirectory: ${{ parameters.workingDir }}
+      scriptSource: inline
+      script: |
+        import sys, subprocess
+
+        # First param, is always the python file executing the script, so start at the second.
+        srcBranch = sys.argv[1]
+
+        targetBranch = srcBranch
+
+        # Second param, is the build reason which will be used to determine the target branch.
+        #   If the build reason is for a PR, this changes the target branch that you'll want to point at.
+        buildReason = sys.argv[2]
+
+        if buildReason == "PullRequest":
+            # Third param, if the build reason is a pull request then the target branch will be specified
+            targetBranch = sys.argv[3]
+
+        print ("Current branch: " + srcBranch)
+        print ("Target branch: " + targetBranch)
+
+        if targetBranch.find("refs/heads/release") != -1 or targetBranch.find("refs/heads/hotfix") != -1:
+            # Need to get the current branch with reference to the remote.
+            srcBranch = targetBranch.replace("refs/heads/", "origin/")
+
+            # Retarget the rush change command to look at the state of the changelog files from the released branch instead of the default of master.
+            command = "node common/scripts/install-run-rush.js change -v -b " + srcBranch
+        else:
+            # Defaults back to the default head, i.e. "origin/master"
+            command = "node common/scripts/install-run-rush.js change -v"
+
+        print ("Executing " + command)
+
+        proc = subprocess.Popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, shell=True)
+        exit(proc.returncode)
+
+      arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
+      failOnStderr: true
+  - script: node common/scripts/install-run-rush.js install
+    displayName: rush install
+    workingDirectory: ${{ parameters.workingDir }}
+  - script: node common/scripts/install-run-rush.js audit
+    displayName: rush audit
+    continueOnError: true
+    workingDirectory: ${{ parameters.workingDir }}
+  - script: node common/scripts/install-run-rush.js rebuild -v
+    displayName: rush build
+    workingDirectory: ${{ parameters.workingDir }}
+  - script: node common/scripts/install-run-rush.js rebuild --production -v
+    displayName: rush build prod
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'))
+  - script: node common/scripts/install-run-rush.js extract-api
+    displayName: rush extract-api
+    workingDirectory: ${{ parameters.workingDir }}
+  - script: node common/scripts/install-run-rush.js lint
+    displayName: rush lint
+    workingDirectory: ${{ parameters.workingDir }}
+
+  # By default linux agents do not have a real display so use the virtual framebuffer
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
+    displayName: rush cover
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+  # MacOS and Windows agents work without any virtual display
+  - script: node common/scripts/install-run-rush.js cover --verbose
+    displayName: rush cover
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+  - script: node common/scripts/install-run-rush.js docs
+    displayName: rush docs
+    workingDirectory: ${{ parameters.workingDir }}

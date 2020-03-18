@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import "./ExpandableList.scss";
 
@@ -27,7 +27,7 @@ interface ExpandableListState {
 }
 
 /**
- * ExpandableList React component
+ * ExpandableList React component is a container for ExpandableBlock components.
  * @public
  */
 export class ExpandableList extends React.PureComponent<ExpandableListProps, ExpandableListState> {

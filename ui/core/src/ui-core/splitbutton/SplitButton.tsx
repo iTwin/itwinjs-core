@@ -11,6 +11,7 @@ import classnames from "classnames";
 
 import { ContextMenu } from "../contextmenu/ContextMenu";
 import { CommonProps } from "../utils/Props";
+import { IconSpec, Icon } from "../icons/IconComponent";
 
 import "./SplitButton.scss";
 
@@ -29,8 +30,8 @@ export interface SplitButtonProps extends CommonProps {
   label: string | React.ReactNode;
   /** Listens for click events on button area */
   onClick?: (event: any) => any;
-  /** specifies icon for Splitbutton component */
-  icon?: string;
+  /** Specifies icon for Splitbutton component */
+  icon?: IconSpec;
   /** Indicates whether to draw a border around the button */
   drawBorder?: boolean;
 }
@@ -41,7 +42,7 @@ interface SplitButtonState {
 }
 
 /**
- * SplitButton with a button on the left and a context menu on the right.
+ * SplitButton with an action button on the left and an arrow button that displays a context menu on the right.
  * @beta
  */
 export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
@@ -60,7 +61,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     let icon = (<></>);
     if (this.props.icon !== undefined) {
       icon = (
-        <span className={classnames("icon", this.props.icon)} />
+        <Icon iconSpec={this.props.icon} />
       );
     }
 

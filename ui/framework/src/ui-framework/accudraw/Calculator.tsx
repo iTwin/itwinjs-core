@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { OnNumberCommitFunc, OnCancelFunc } from "@bentley/ui-abstract";
 import { CommonProps, Button, ButtonType, SvgSprite, Omit, Input, IconInput, Icon } from "@bentley/ui-core";

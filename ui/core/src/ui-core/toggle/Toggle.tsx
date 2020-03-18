@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { CommonProps } from "../utils/Props";
 import "./Toggle.scss";
 
@@ -25,21 +25,21 @@ export enum ToggleButtonType {
  * @public
  */
 export interface ToggleProps extends CommonProps {
-  /** Determine if the toggle is disabled or not */
+  /** Indicates whether the Toggle is disabled (default is false) */
   disabled?: boolean;
-  /** Determine if the toggle is "on" or "off" */
+  /** Indicates whether the Toggle is "on" or "off" (default is false) */
   isOn?: boolean;
   /** Show the toggle rounded or square (rounded is default) */
   rounded?: boolean;
-  /** Show a check mark icon when the toggle is "on" */
+  /** Show a check mark icon when the toggle is "on" (false is default) */
   showCheckmark?: boolean;
-  /** Button type, either Primary or Blue */
+  /** Button type, either Primary or Blue (Blue is default) */
   buttonType?: ToggleButtonType;
   /** Function called when the toggle state is changed */
   onChange?: (checked: boolean) => any;
   /** Function called when the toggle loses focus  */
   onBlur?: (event: React.FocusEvent) => any;
-  /** Use larger size */
+  /** Use larger size (default is false) */
   large?: boolean;
   /** Indicates whether to set focus to the input element */
   setFocus?: boolean;

@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ImsUserCredentials } from "../ImsClients";
 import { UserInfo } from "../UserInfo";
-import { TestUsers } from "./TestConfig";
 
 chai.should();
 

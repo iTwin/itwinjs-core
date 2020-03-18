@@ -90,6 +90,7 @@ import { OpenMode } from '@bentley/bentleyjs-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
+import { PanelSide } from '@bentley/ui-ninezone';
 import { PlaybackSettings } from '@bentley/ui-components';
 import { Point } from '@bentley/ui-core';
 import { PointProps } from '@bentley/ui-core';
@@ -153,7 +154,6 @@ import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
-import { WidgetPanelSide } from '@bentley/ui-ninezone';
 import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
 import { WidgetZoneId } from '@bentley/ui-ninezone';
 import { XAndY } from '@bentley/geometry-core';
@@ -300,10 +300,10 @@ export class ActivityMessageUpdatedEvent extends UiEvent<ActivityMessageEventArg
 }
 
 // @internal (undocumented)
-export function addPanelWidgets(state: NineZoneState, frontstage: FrontstageDef | undefined, side: WidgetPanelSide): NineZoneState;
+export function addPanelWidgets(state: NineZoneState, frontstage: FrontstageDef | undefined, side: PanelSide): NineZoneState;
 
 // @internal (undocumented)
-export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: WidgetPanelSide, widgetId: WidgetIdTypes): NineZoneState;
+export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: PanelSide, widgetId: WidgetIdTypes): NineZoneState;
 
 // @alpha
 export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
@@ -976,8 +976,11 @@ export class ContentControl extends ConfigurableUiControl {
     get navigationAidControl(): string;
     onActivated(): void;
     onDeactivated(): void;
+    // @deprecated
     get reactElement(): React.ReactNode;
     set reactElement(r: React.ReactNode);
+    get reactNode(): React.ReactNode;
+    set reactNode(r: React.ReactNode);
     get viewport(): ScreenViewport | undefined;
 }
 
@@ -2265,7 +2268,7 @@ export function getSelectionContextSyncEventIds(): string[];
 export const getStagePanelType: (location: StagePanelLocation_2) => StagePanelType;
 
 // @internal (undocumented)
-export function getWidgetId(side: WidgetPanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
+export function getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes;
 
 // @public
 export function GroupButton(props: GroupButtonProps): JSX.Element;
@@ -3267,8 +3270,11 @@ export class NavigationAidControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getSize(): string | undefined;
     getType(): ConfigurableUiControlType;
+    // @deprecated
     get reactElement(): React.ReactNode;
     set reactElement(r: React.ReactNode);
+    get reactNode(): React.ReactNode;
+    set reactNode(r: React.ReactNode);
     }
 
 // @beta
@@ -3308,8 +3314,10 @@ export interface NavigationWidgetComposerProps {
 // @public @deprecated
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     constructor(props: NavigationWidgetProps);
-    // (undocumented)
+    // @deprecated (undocumented)
     get reactElement(): React.ReactNode;
+    // (undocumented)
+    get reactNode(): React.ReactNode;
     // (undocumented)
     renderCornerItem(): React.ReactNode;
     // (undocumented)
@@ -4880,8 +4888,10 @@ export interface ToolWidgetComposerProps {
 // @public @deprecated
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
     constructor(props: ToolWidgetProps);
-    // (undocumented)
+    // @deprecated (undocumented)
     get reactElement(): React.ReactNode;
+    // (undocumented)
+    get reactNode(): React.ReactNode;
     // (undocumented)
     renderCornerItem(): React.ReactNode | undefined;
 }
@@ -5331,6 +5341,17 @@ export interface VisibilityTreeFilterInfo {
 export const visibilityTreeNodeCheckboxRenderer: (props: NodeCheckboxRenderProps) => JSX.Element;
 
 // @alpha
+export function VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JSX.Element;
+
+// @alpha
+export interface VisibilityTreeNoFilteredDataProps {
+    // (undocumented)
+    message: string;
+    // (undocumented)
+    title: string;
+}
+
+// @alpha
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
 // @alpha
@@ -5380,8 +5401,11 @@ export class WidgetControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getType(): ConfigurableUiControlType;
     onWidgetStateChanged(): void;
+    // @deprecated
     get reactElement(): React.ReactNode;
     set reactElement(r: React.ReactNode);
+    get reactNode(): React.ReactNode;
+    set reactNode(r: React.ReactNode);
     restoreTransientState(): boolean;
     saveTransientState(): void;
     setWidgetState(state: WidgetState_2): void;
@@ -5435,9 +5459,12 @@ export class WidgetDef {
     onWidgetStateChanged(): void;
     // (undocumented)
     get priority(): number;
-    // (undocumented)
+    // @deprecated (undocumented)
     get reactElement(): React.ReactNode;
     set reactElement(node: React.ReactNode);
+    // (undocumented)
+    get reactNode(): React.ReactNode;
+    set reactNode(node: React.ReactNode);
     restoreTransientState(): boolean;
     saveTransientState(): void;
     setLabel(v: string | ConditionalStringValue | StringGetter): void;
@@ -5519,7 +5546,7 @@ export interface WidgetPanelsDefaultToolSettingsProps {
 }
 
 // @internal (undocumented)
-export function WidgetPanelsFrontstage(): JSX.Element | null;
+export const WidgetPanelsFrontstage: React.NamedExoticComponent<object>;
 
 // @internal (undocumented)
 export function WidgetPanelsFrontstageContent(): JSX.Element | null;

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import chalk, { Chalk } from "chalk";
+import * as chalk from "chalk";
 import { Compiler, Stats } from "webpack";
 
 type StatsFormatter = (stats: Stats.ToJsonOutput) => Stats.ToJsonOutput;
@@ -42,7 +42,7 @@ export class PrettyLoggingPlugin {
       console.groupEnd();
 
     const newline = (this.isInteractive) ? "\n" : "";
-    const myChalk: Chalk = (color) ? (chalk as any)[color] : chalk;
+    const myChalk: chalk.Chalk = (color) ? (chalk as any)[color] : chalk;
     if (elapsed)
       console.log(`${newline + myChalk.inverse(this._name)} ${myChalk.bold(message) + chalk.gray("   (in " + elapsed.toLocaleString() + " ms)") + newline}`);
     else

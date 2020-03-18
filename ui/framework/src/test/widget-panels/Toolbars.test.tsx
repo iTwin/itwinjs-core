@@ -31,8 +31,8 @@ describe("WidgetPanelsToolbars", () => {
     sandbox.stub(frontstageDef, "topRight").get(() => topRight);
     sandbox.stub(topLeft, "getSingleWidgetDef").returns(topLeftWidget);
     sandbox.stub(topRight, "getSingleWidgetDef").returns(topRightWidget);
-    sandbox.stub(topLeftWidget, "reactElement").get(() => <>tools</>);
-    sandbox.stub(topRightWidget, "reactElement").get(() => <>navigation</>);
+    sandbox.stub(topLeftWidget, "reactNode").get(() => <>tools</>);
+    sandbox.stub(topRightWidget, "reactNode").get(() => <>navigation</>);
     const sut = shallow(<WidgetPanelsToolbars />);
     sut.should.matchSnapshot();
   });

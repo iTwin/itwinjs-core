@@ -358,9 +358,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
   public getNorthDirection(refOrigin?: Point3d): Ray3d {
     const origin = (undefined !== refOrigin ? refOrigin : this.iModel.projectExtents.center);
-    const ecefLocation = this.iModel.ecefLocation; // Check existing north direction...
 
-    if (undefined === ecefLocation)
+    if (!this.iModel.isGeoLocated)
       return Ray3d.create(origin, Vector3d.unitY());
 
     const cartographic = this.iModel.spatialToCartographicFromEcef(origin);
@@ -561,7 +560,12 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this._allowEcefLocationChange)
       return false;
 
-    this.iModel.setEcefLocation(EcefLocation.createFromCartographicOrigin(origin, point, (undefined !== angle ? angle : this.getNorthAngle()))); // Preserve modified north direction...
+    const newEcefLocation = EcefLocation.createFromCartographicOrigin(origin, point, (undefined !== angle ? angle : this.getNorthAngle())); // Preserve modified north direction...
+    const ecefLocation = this.iModel.ecefLocation;
+    if (undefined !== ecefLocation && this.isAlmostEqualEcefLocations(ecefLocation, newEcefLocation))
+      return false;
+
+    this.iModel.setEcefLocation(newEcefLocation);
     if (this._hasGCSDefined)
       this.iModel.disableGCS(true); // Map display will ignore change to ecef location when GCS is present...
 
@@ -574,24 +578,26 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   public updateNorthDirection(northDir: Ray3d): boolean {
-    if (!this._allowEcefLocationChange)
-      return false;
-
-    const ecefLocation = this.iModel.ecefLocation;
-    if (undefined === ecefLocation)
+    if (!this._allowEcefLocationChange || !this.iModel.isGeoLocated)
       return false;
 
     const point = (undefined !== this._monumentPoint ? this._monumentPoint : this.getMonumentPoint()); // Preserve modified monument point...
     const origin = this.iModel.spatialToCartographicFromEcef(point);
-    if (undefined === origin)
-      return false;
 
+    const saveDirection = this._northDirection;
     this._northDirection = northDir; // Change reference point to input location...
-    const angle = northDir.direction.angleToXY(Vector3d.unitY());
-    if (!this.updateEcefLocation(origin, point, angle))
+    const angle = this.getNorthAngle();
+
+    if (!this.updateEcefLocation(origin, point, angle)) {
+      this._northDirection = saveDirection;
       return false;
+    }
 
     return true;
+  }
+
+  private isAlmostEqualEcefLocations(loc1: EcefLocation, loc2: EcefLocation): boolean {
+    return (loc1.origin.isAlmostEqual(loc2.origin) && loc1.orientation.isAlmostEqual(loc2.orientation));
   }
 
   public getModifiedEcefLocation(): EcefLocation | undefined {
@@ -602,7 +608,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (undefined === this._ecefLocation)
       return ecefLocation; // geolocation didn't exist previously...
 
-    return ((ecefLocation.origin.isAlmostEqual(this._ecefLocation.origin) && ecefLocation.orientation.isAlmostEqual(this._ecefLocation.orientation)) ? undefined : ecefLocation);
+    return (this.isAlmostEqualEcefLocations(ecefLocation, this._ecefLocation) ? undefined : ecefLocation);
   }
 
   public getModifiedExtents(): Range3d | undefined {
@@ -610,7 +616,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       return undefined;
     // ### TODO: Validate that size is reasonable...something like the following:
     //   20km for non-projected
-    //   322km for projected
+    //   350km for projected
+    //   2km height?
     //   Show some visual indication when extents too big...
     return this._clipRange.isAlmostEqual(this.iModel.projectExtents) ? undefined : this._clipRange;
   }
@@ -624,7 +631,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       if (outputError)
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotAllowed")));
       return false;
-    } else if (requireExisting && undefined === ProjectExtentsClipDecoration._decorator.iModel.ecefLocation) {
+    } else if (requireExisting && !ProjectExtentsClipDecoration._decorator.iModel.isGeoLocated) {
       if (outputError)
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NotGeolocated")));
       return false;

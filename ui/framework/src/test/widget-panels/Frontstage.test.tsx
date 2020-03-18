@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { shallow, mount } from "enzyme";
 import { renderHook, act } from "@testing-library/react-hooks";
-import { INITIALIZE_PANEL, createNineZoneState } from "@bentley/ui-ninezone";
+import { PANEL_INITIALIZE, createNineZoneState } from "@bentley/ui-ninezone";
 import {
   addWidgets, FrontstageManager, FrontstageDef, FrontstageProvider, WidgetPanelsFrontstage, ZoneDef,
   useFrontstageDefNineZone, initializeNineZoneState, StagePanelDef, WidgetDef, WidgetState, addPanelWidgets, StagePanelZonesDef, StagePanelZoneDef, getWidgetId,
@@ -135,7 +135,7 @@ describe("useFrontstageDefNineZone", () => {
     const { result } = renderHook(() => useFrontstageDefNineZone(frontstage));
     act(() => {
       result.current[1]({
-        type: INITIALIZE_PANEL,
+        type: PANEL_INITIALIZE,
         side: "left",
         size: 200,
       });

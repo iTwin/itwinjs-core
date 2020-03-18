@@ -16,15 +16,23 @@ import { WidgetDef } from "./WidgetDef";
  */
 export class WidgetControl extends ConfigurableUiControl {
   private _widgetDef!: WidgetDef;
-  private _reactElement: React.ReactNode;
+  private _reactNode: React.ReactNode;
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
   }
 
-  /** The React element associated with this control */
-  public get reactElement(): React.ReactNode { return this._reactElement; }
-  public set reactElement(r: React.ReactNode) { this._reactElement = r; }
+  /** The ReactNode associated with this control */
+  public get reactNode(): React.ReactNode { return this._reactNode; }
+  public set reactNode(r: React.ReactNode) { this._reactNode = r; }
+
+  /** The React element associated with this control
+   * @deprecated use reactNode
+   */
+  // istanbul ignore next
+  public get reactElement(): React.ReactNode { return this.reactNode; }
+  // istanbul ignore next
+  public set reactElement(r: React.ReactNode) { this.reactNode = r; }
 
   /** The [[WidgetDef]] associated with this control */
   public get widgetDef(): WidgetDef { return this._widgetDef; }

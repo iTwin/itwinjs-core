@@ -84,7 +84,7 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
   const divStyle: React.CSSProperties = { minWidth: props.minWidth ? props.minWidth : "64px", minHeight: props.minHeight ? props.minHeight : "64px" };
   return (
     <div style={divStyle}>
-      {navigationAidControl && navigationAidControl.reactElement}
+      {navigationAidControl && navigationAidControl.reactNode}
     </div>
   );
 }

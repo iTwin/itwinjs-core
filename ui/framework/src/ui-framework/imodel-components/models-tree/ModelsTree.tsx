@@ -16,7 +16,7 @@ import { TreeNodeItem, ControlledTree, useVisibleTreeNodes, SelectionMode } from
 import { UiFramework } from "../../../ui-framework/UiFramework";
 import { connectIModelConnection } from "../../../ui-framework/redux/connectIModel";
 import { IVisibilityHandler, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeFilterInfo } from "../VisibilityTreeEventHandler";
-import { useVisibilityTreeRenderer, useVisibilityTreeFiltering } from "../VisibilityTreeRenderer";
+import { useVisibilityTreeRenderer, useVisibilityTreeFiltering, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
 
 import "./ModelsTree.scss";
 
@@ -110,13 +110,13 @@ export function ModelsTree(props: ModelsTreeProps) {
     dataProvider: props.dataProvider,
     ruleset: RULESET_MODELS,
     pageSize: PAGING_SIZE,
-    preloadingEnabled: props.enablePreloading,
   });
   const searchNodeLoader = usePresentationTreeNodeLoader({
     imodel: props.iModel,
     dataProvider: props.dataProvider,
     ruleset: RULESET_MODELS_SEARCH,
     pageSize: PAGING_SIZE,
+    preloadingEnabled: props.enablePreloading,
   });
 
   const nodeLoaderInUse = props.filterInfo?.filter ? searchNodeLoader : nodeLoader;
@@ -135,10 +135,19 @@ export function ModelsTree(props: ModelsTreeProps) {
     selectionPredicate: nodeSelectionPredicate,
   }), [filteredNodeLoader, visibilityHandler, nodeSelectionPredicate]));
 
-  const visibleNodes = useVisibleTreeNodes(filteredNodeLoader.modelSource);
+  const filterApplied = filteredNodeLoader !== nodeLoaderInUse;
+  const modelSource = filterApplied ? filteredNodeLoader.modelSource : nodeLoader.modelSource;
+  const visibleNodes = useVisibleTreeNodes(modelSource);
   const treeRenderer = useVisibilityTreeRenderer(true, false);
 
   const overlay = isFiltering ? <div className="filteredTreeOverlay" /> : undefined;
+
+  const noFilteredDataRenderer = React.useCallback(() => {
+    return <VisibilityTreeNoFilteredData
+      title={UiFramework.i18n.translate("UiFramework:modelTree.noModelFound")}
+      message={UiFramework.i18n.translate("UiFramework:modelTree.noMatchingModelNames")}
+    />;
+  }, []);
 
   return (
     <div className="ui-fw-models-tree" ref={props.rootElementRef}>
@@ -149,6 +158,7 @@ export function ModelsTree(props: ModelsTreeProps) {
         treeEvents={eventHandler}
         treeRenderer={treeRenderer}
         nodeHighlightingProps={nodeHighlightingProps}
+        noDataRenderer={filterApplied ? noFilteredDataRenderer : undefined}
       />
       {overlay}
     </div>
@@ -195,12 +205,12 @@ const getNodeType = (item: TreeNodeItem) => {
 };
 
 const createTooltip = (status: "visible" | "hidden" | "disabled", tooltipStringId: string | undefined): string => {
-  const statusStringId = `UiFramework:visibilityTree.status.${status}`;
+  const statusStringId = `UiFramework:modelTree.status.${status}`;
   const statusString = UiFramework.i18n.translate(statusStringId);
   if (!tooltipStringId)
     return statusString;
 
-  tooltipStringId = `UiFramework:visibilityTree.tooltips.${tooltipStringId}`;
+  tooltipStringId = `UiFramework:modelTree.tooltips.${tooltipStringId}`;
   const tooltipString = UiFramework.i18n.translate(tooltipStringId);
   return `${statusString}: ${tooltipString}`;
 };

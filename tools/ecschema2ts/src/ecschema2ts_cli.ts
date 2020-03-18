@@ -26,7 +26,7 @@ program.parse(process.argv);
 if (process.argv.length === 0) program.help();
 
 if (!program.input || !program.output) {
-  console.log(chalk.default.red("Invalid input. For help use the '-h' option."));
+  console.log(chalk.red("Invalid input. For help use the '-h' option."));
   process.exit(1);
 }
 
@@ -41,8 +41,8 @@ if (undefined !== program.references) {
     try {
       fs.accessSync(refPath);
     } catch (err) {
-      console.warn(chalk.default.yellow(err.toString()));
-      console.warn(chalk.default.yellow(`The reference path ${refPath} does not exist.  Skipping...`));
+      console.warn(chalk.yellow(err.toString()));
+      console.warn(chalk.yellow(`The reference path ${refPath} does not exist.  Skipping...`));
       continue;
     }
 
@@ -57,9 +57,9 @@ try {
   const writer = new ECSchemaToTsXmlWriter(program.output);
   createdFiles = writer.convertSchemaFileSync(new SchemaContext(), program.input, referencePaths);
 } catch (err) {
-  console.log(chalk.default.red("Failed to create: " + err.message));
+  console.log(chalk.red("Failed to create: " + err.message));
   process.exit(1);
 }
 
 // output result
-console.log(chalk.default.green(`${createdFiles}`));
+console.log(chalk.green(`${createdFiles}`));

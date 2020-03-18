@@ -97,7 +97,7 @@ export class ActiveSettingsWidget extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <ActiveSettingsComponent />;
+    this.reactNode = <ActiveSettingsComponent />;
   }
 }
 ConfigurableUiManager.registerControl("ActiveSettings", ActiveSettingsWidget);
