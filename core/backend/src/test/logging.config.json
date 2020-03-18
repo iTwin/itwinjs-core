@@ -1,10 +1,13 @@
 {
-    "defaultLevel": "None",
-    "categoryLevels": [{
-        "category": "BeSQLite",
-        "logLevel": "None"
-    }, {
-        "category": "imodeljs-backend.BriefcaseManager",
-        "logLevel": "Error"
-    }]
+  "defaultLevel": "None",
+  "categoryLevels": [
+    {
+      "category": "BeSQLite",
+      "logLevel": "None"
+    },
+    {
+      "category": "imodeljs-backend.BriefcaseManager",
+      "logLevel": "Error"
+    }
+  ]
 }

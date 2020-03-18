@@ -1,5 +1,6 @@
 sep=;
 Release Tag;API Item
+internal;AdditionalFeatureData
 beta;AliCloudStorageService 
 beta;class AnalyticalElement 
 beta;class AnalyticalModel 
