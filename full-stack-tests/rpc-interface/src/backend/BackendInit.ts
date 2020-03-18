@@ -16,7 +16,9 @@ module.exports = (async () => {
   IModelJsConfig.init(true, true, Config.App);
 
   // Need to create a new one on the backend to properly setup dotenv
-  new Settings(process.env);
+  const settings = new Settings(process.env);
+
+  Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
 
   exposeBackendCallbacks();
 })();
