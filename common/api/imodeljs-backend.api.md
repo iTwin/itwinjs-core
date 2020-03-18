@@ -176,6 +176,14 @@ import { XAndY } from '@bentley/geometry-core';
 import { XYAndZ } from '@bentley/geometry-core';
 import { YawPitchRollAngles } from '@bentley/geometry-core';
 
+// @internal
+export interface AdditionalFeatureData {
+    // (undocumented)
+    iModelId?: GuidString;
+    // (undocumented)
+    iModelJsVersion?: string;
+}
+
 // @beta (undocumented)
 export class AliCloudStorageService extends CloudStorageService {
     constructor(credentials: CloudStorageServiceCredentials);
@@ -4019,11 +4027,13 @@ export abstract class TypeDefinitionElement extends DefinitionElement implements
 // @internal (undocumented)
 export class UlasUtilities {
     // (undocumented)
-    static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: string, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
-    // (undocumented)
-    static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: string): BentleyStatus;
-    // (undocumented)
-    static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus;
+    static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
+    // @deprecated (undocumented)
+    static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): BentleyStatus;
+    static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): void;
+    static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): void;
+    // @deprecated (undocumented)
+    static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus;
 }
 
 // @public

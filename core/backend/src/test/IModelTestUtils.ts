@@ -338,8 +338,9 @@ export class IModelTestUtils {
     Logger.setLevel(ClientsLoggerCategory.Clients, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.IModelHub, reset ? LogLevel.Error : LogLevel.Trace);
     Logger.setLevel(ClientsLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
-    Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Error);
-    Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Error);
+    Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
+    Logger.setLevel(NativeLoggerCategory.Licensing, reset ? LogLevel.Error : LogLevel.Trace);
   }
 
   // Setup typical programmatic log level overrides here
