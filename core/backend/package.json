@@ -96,7 +96,7 @@
     "webpack": "^4.20.2"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "2.0.9",
+    "@bentley/imodeljs-native": "2.0.10",
     "@azure/storage-blob": "10.4.0",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",
