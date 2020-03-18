@@ -19,7 +19,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
-import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { BriefcaseEntry, BriefcaseId, BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
@@ -186,8 +185,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
-    const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
-    super.initialize(name, props);
+    super.initialize(props.rootSubject.name, props);
   }
 
   private static _ulasClient: UlasClient;
@@ -264,10 +262,10 @@ export abstract class IModelDb extends IModel {
     return stmt;
   }
 
-  /** Check if the connection to the briefcase is valid or not
+  /** Return `true` if the underlying nativeDb is open and valid.
    * @internal
    */
-  public get isOpen(): boolean { return undefined !== this._briefcase; }
+  public get isOpen(): boolean { return undefined !== this.nativeDb; }
 
   /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
    *
@@ -2396,7 +2394,7 @@ export class SnapshotIModelDb extends IModelDb {
     }
     this.clearStatementCache(); // clear cache held in JavaScript
     this.clearSqliteStatementCache(); // clear cache held in JavaScript
-    BriefcaseManager.closeStandalone(this.briefcase);
+    this.nativeDb.closeIModel();
     this.clearBriefcaseEntry(); // WIP: should not need to call this for snapshots
     SnapshotIModelDb._openDbs.delete(this.filePath);
     (this as any)._nativeDb = undefined;
@@ -2468,8 +2466,8 @@ export class StandaloneIModelDb extends IModelDb {
   public close(): void {
     this.clearStatementCache(); // clear cache held in JavaScript
     this.clearSqliteStatementCache(); // clear cache held in JavaScript
-    BriefcaseManager.closeStandalone(this.briefcase);
-    this.clearBriefcaseEntry();
+    this.nativeDb.closeIModel();
+    this.clearBriefcaseEntry(); // WIP: should not need to call this for standalone
     StandaloneIModelDb._openDbs.delete(this.filePath);
     (this as any)._nativeDb = undefined;
   }

@@ -531,7 +531,6 @@ export class BriefcaseManager {
     // (undocumented)
     static get cacheDir(): string;
     static close(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
-    static closeStandalone(briefcase: BriefcaseEntry): void;
     static get connectClient(): ConnectClient;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string>;
     static createStandalone(fileName: string, args: CreateIModelProps & IModelEncryptionProps): BriefcaseEntry;

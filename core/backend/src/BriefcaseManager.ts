@@ -1264,12 +1264,6 @@ export class BriefcaseManager {
     return briefcase;
   }
 
-  /** Close the standalone briefcase */
-  public static closeStandalone(briefcase: BriefcaseEntry) {
-    assert(briefcase.openParams.isSnapshot, "Can use IModelDb.closeStandalone() only to close a snapshot iModel. Use IModelDb.close() instead");
-    BriefcaseManager.closeBriefcase(briefcase, true);
-  }
-
   /** Deletes a file
    *  - Does not throw any error, but logs it instead
    *  - Returns true if the delete was successful
