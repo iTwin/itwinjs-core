@@ -500,8 +500,8 @@ export class BriefcaseIModelDb extends IModelDb {
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
     // @internal
     get eventSink(): EventSink | undefined;
-    // (undocumented)
-    static find(iModelToken: IModelToken): BriefcaseIModelDb;
+    // @internal
+    static findByToken(iModelToken: IModelToken): BriefcaseIModelDb;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
@@ -521,6 +521,8 @@ export class BriefcaseIModelDb extends IModelDb {
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @internal (undocumented)
     protected setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry): void;
+    // @internal
+    static tryFindByToken(iModelToken: IModelToken): BriefcaseIModelDb | undefined;
 }
 
 // @internal
@@ -2260,7 +2262,7 @@ export class IModelCloneContext {
 // @public
 export abstract class IModelDb extends IModel {
     // @internal
-    protected constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams);
+    protected constructor(nativeDb: IModelJsNative.DgnDb, briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams);
     abandonChanges(): void;
     // @internal (undocumented)
     get briefcase(): BriefcaseEntry;
@@ -2308,6 +2310,8 @@ export abstract class IModelDb extends IModel {
     get isReadonly(): boolean;
     get isSnapshot(): boolean;
     // @internal
+    get isStandalone(): boolean;
+    // @internal
     protected static logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static readonly maxLimit = 10000;
@@ -2340,6 +2344,7 @@ export abstract class IModelDb extends IModel {
     protected setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry): void;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
+    static tryFind(iModelToken: IModelToken): IModelDb | undefined;
     // @beta (undocumented)
     readonly txns: TxnManager;
     updateEcefLocation(ecef: EcefLocation): void;
@@ -3620,9 +3625,10 @@ export class SnapshotIModelDb extends IModelDb {
     close(): void;
     static createEmpty(snapshotFile: string, options: CreateEmptySnapshotIModelProps): SnapshotIModelDb;
     static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotIModelDb;
-    // @internal (undocumented)
-    static find(iModelToken: IModelToken): SnapshotIModelDb;
+    get filePath(): string;
     static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb;
+    // @internal
+    static tryFindByPath(filePath: string): SnapshotIModelDb | undefined;
 }
 
 // @public
@@ -3794,7 +3800,9 @@ export enum SqliteValueType {
 // @internal
 export class StandaloneIModelDb extends IModelDb {
     close(): void;
+    get filePath(): string;
     static open(filePath: string, openMode?: OpenMode): StandaloneIModelDb;
+    static tryFindByPath(filePath: string): StandaloneIModelDb | undefined;
 }
 
 // @internal

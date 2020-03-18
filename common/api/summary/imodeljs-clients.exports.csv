@@ -98,6 +98,7 @@ beta;IModelHubClientError
 beta;IModelHubError 
 beta;class IModelHubEvent 
 internal;class IModelHubGlobalEvent 
+internal;IModelHubPermission
 beta;IModelQuery 
 beta;IModelsHandler
 internal;ImsActiveSecureTokenClient 
@@ -139,9 +140,7 @@ alpha;ProjectShareFileQuery
 alpha;ProjectShareFolder 
 alpha;ProjectShareFolderQuery 
 alpha;ProjectShareQuery 
-internal;RbacProject 
-internal;RbacRequestQueryOptions 
-internal;RbacUser 
+internal;RbacClient 
 internal;RealityData 
 internal;RealityDataRelationship 
 internal;RealityDataServicesClient 
