@@ -10,7 +10,7 @@ import * as React from "react";
 // tslint:disable-next-line: no-duplicate-imports
 import { useState, useRef, useEffect } from "react";
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { Button, ButtonType, Toggle } from "@bentley/ui-core";
 import { TitleBar, Dialog, FooterPopup } from "@bentley/ui-ninezone";
 import { ViewClipDecorationProvider, IModelApp, ViewClipDecoration, ViewClipClearTool, Viewport, ClipEventType } from "@bentley/imodeljs-frontend";

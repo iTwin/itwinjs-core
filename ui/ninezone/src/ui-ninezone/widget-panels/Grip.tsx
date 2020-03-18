@@ -6,7 +6,7 @@
  * @module WidgetPanels
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Point, Rectangle, Timer } from "@bentley/ui-core";
 import { PanelSide, isHorizontalPanelSide, PanelStateContext } from "./Panel";

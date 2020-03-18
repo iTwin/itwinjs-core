@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { Dialog, Select, Input, Button, ButtonType, Popup } from "@bentley/ui-core";
 import { ToolSettingsPropertyItem, ToolSettingsValue, SyncPropertiesChangeEventArgs, RelativePosition } from "@bentley/ui-abstract";
 import { ModelessDialogManager } from "@bentley/ui-framework";

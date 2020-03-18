@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";

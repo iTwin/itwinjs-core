@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { Button, ButtonType, ButtonProps, Omit } from "@bentley/ui-core";
 
 import "./SquareButton.scss";

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Popup, CommonProps } from "@bentley/ui-core";
 import { ViewportComponentEvents } from "@bentley/ui-components";

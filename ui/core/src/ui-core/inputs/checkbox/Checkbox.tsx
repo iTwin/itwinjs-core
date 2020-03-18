@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { InputStatus } from "../InputStatus";
 import { Omit } from "../../utils/typeUtils";
 import { CommonProps } from "../../utils/Props";

@@ -6,7 +6,7 @@
  * @module ToolSettings
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefs, useResizeObserver, useOnOutsideClick } from "@bentley/ui-core";
 import { DockedToolSettingsOverflow } from "./Overflow";

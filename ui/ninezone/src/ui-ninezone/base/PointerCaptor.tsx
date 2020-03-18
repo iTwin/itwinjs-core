@@ -6,7 +6,7 @@
  * @module Base
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefEffect } from "@bentley/ui-core";
 import "./PointerCaptor.scss";

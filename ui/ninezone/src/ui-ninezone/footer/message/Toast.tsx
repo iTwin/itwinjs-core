@@ -6,7 +6,7 @@
  * @module Message
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Timer, CommonProps, NoChildrenProps, Rectangle } from "@bentley/ui-core";
 import { Css } from "../../utilities/Css";

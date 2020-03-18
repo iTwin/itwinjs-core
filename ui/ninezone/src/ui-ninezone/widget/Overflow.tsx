@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { useResizeObserver, useOnOutsideClick, useRefs } from "@bentley/ui-core";
 import { WidgetMenu } from "./Menu";

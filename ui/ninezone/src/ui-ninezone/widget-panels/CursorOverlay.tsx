@@ -6,7 +6,7 @@
  * @module WidgetPanels
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CursorTypeContext } from "../base/NineZone";
 import "./CursorOverlay.scss";

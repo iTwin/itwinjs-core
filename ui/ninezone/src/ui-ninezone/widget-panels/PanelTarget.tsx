@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WidgetPanels */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { DraggedTabContext, CursorTypeContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";

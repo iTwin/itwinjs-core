@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { Textarea, TextareaProps } from "./Textarea";
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import ReactResizeDetector from "react-resize-detector";

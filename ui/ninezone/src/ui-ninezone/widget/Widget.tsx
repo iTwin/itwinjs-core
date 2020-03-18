@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Widget */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
 import { WidgetState, PANEL_WIDGET_DRAG_START } from "../base/NineZoneState";

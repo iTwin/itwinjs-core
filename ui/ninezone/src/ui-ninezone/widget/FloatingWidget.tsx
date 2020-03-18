@@ -5,7 +5,7 @@
 /** @module Widget */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { Widget, WidgetProvider } from "./Widget";
 import { FloatingWidgetState, WidgetState, FLOATING_WIDGET_RESIZE } from "../base/NineZoneState";
 import { Rectangle, CommonProps, Point, PointProps } from "@bentley/ui-core";

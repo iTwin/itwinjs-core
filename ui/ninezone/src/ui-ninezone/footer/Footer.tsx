@@ -6,7 +6,7 @@
  * @module Footer
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "@bentley/ui-core";
 import { SafeAreaInsets, SafeAreaInsetsHelpers } from "../utilities/SafeAreaInsets";

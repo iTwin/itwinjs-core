@@ -6,7 +6,7 @@
  * @module Icon
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../utils/Props";
 import "./SvgSprite.scss";

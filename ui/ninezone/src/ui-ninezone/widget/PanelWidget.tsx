@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Widget */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { WidgetsStateContext } from "../base/NineZone";
 import { WidgetState } from "../base/NineZoneState";

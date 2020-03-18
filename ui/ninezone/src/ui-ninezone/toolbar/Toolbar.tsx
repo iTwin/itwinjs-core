@@ -6,7 +6,7 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, flattenChildren } from "@bentley/ui-core";
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";

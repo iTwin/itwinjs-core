@@ -12,7 +12,7 @@ import { PopupItem } from "@bentley/ui-components";
 import {
   Group, Panel, GroupColumn, ExpandableItem, withContainIn, Item, containHorizontally,
 } from "@bentley/ui-ninezone";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { UiFramework } from "../UiFramework";
 import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import { FrontstageManager } from "../frontstage/FrontstageManager";

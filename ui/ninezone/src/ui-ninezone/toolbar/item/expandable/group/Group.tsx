@@ -6,7 +6,7 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@bentley/ui-core";
 import { Panel } from "./Panel";

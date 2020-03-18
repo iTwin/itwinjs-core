@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { useResizeObserver, useRefs, Timer, Rectangle, Point } from "@bentley/ui-core";
 import { NineZoneDispatchContext } from "../base/NineZone";

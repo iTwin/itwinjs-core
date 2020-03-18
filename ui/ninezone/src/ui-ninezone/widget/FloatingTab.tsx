@@ -5,7 +5,7 @@
 /** @module Widget */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { DraggedTabStateContext, TabsStateContext, getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
 import { WIDGET_TAB_DRAG, WIDGET_TAB_DRAG_END, TabTargetState } from "../base/NineZoneState";
 import { CssProperties } from "../utilities/Css";

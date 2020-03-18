@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { CommonDivProps } from "../utils/Props";
 import { Icon } from "../icons/IconComponent";
 

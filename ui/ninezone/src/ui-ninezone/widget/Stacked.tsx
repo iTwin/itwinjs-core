@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { ResizeGrip, ResizeDirection, ResizeGripResizeArgs } from "./rectangular/ResizeGrip";
