@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { act, render } from "@testing-library/react";
+import { act, render, fireEvent } from "@testing-library/react";
 import {
-  WidgetTab, createNineZoneState, addPanelWidget, addTab, NineZoneContext, WidgetPanelContext,
-  WidgetIdContext, WidgetTabContext,
+  WidgetTab, createNineZoneState, addPanelWidget, addTab, NineZoneProvider, WidgetStateContext, NineZoneDispatch, WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK, WIDGET_TAB_DRAG_START,
 } from "../../ui-ninezone";
-import { NineZoneDispatchContext, NineZoneDispatch, WIDGET_TAB_CLICK, WIDGET_TAB_DOUBLE_CLICK } from "../../ui-ninezone/base/NineZone";
-import { fireDoubleClick, fireClick } from "../base/useSingleDoubleClick.test";
+import { PanelSideContext } from "../../ui-ninezone/widget-panels/Panel";
+import { WidgetTabsEntryContext } from "../../ui-ninezone/widget/Tabs";
 
 describe("WidgetTab", () => {
   const sandbox = sinon.createSandbox();
@@ -24,17 +23,18 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
     nineZone = addTab(nineZone, "w1", "t1");
     const { container } = render(
-      <NineZoneContext.Provider value={nineZone}>
-        <WidgetPanelContext.Provider value="left">
-          <WidgetIdContext.Provider value="w1">
-            <WidgetTabContext.Provider value={{
-              isOverflown: false,
-            }}>
-              <WidgetTab id="t1" />
-            </WidgetTabContext.Provider>
-          </WidgetIdContext.Provider>
-        </WidgetPanelContext.Provider>
-      </NineZoneContext.Provider>,
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <WidgetTabsEntryContext.Provider value={{
+            lastNotOverflown: false,
+          }}>
+            <WidgetTab tab={nineZone.tabs.t1} />
+          </WidgetTabsEntryContext.Provider>
+        </WidgetStateContext.Provider>
+      </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -44,17 +44,18 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1");
     const { container } = render(
-      <NineZoneContext.Provider value={nineZone}>
-        <WidgetPanelContext.Provider value="left">
-          <WidgetIdContext.Provider value="w1">
-            <WidgetTabContext.Provider value={{
-              isOverflown: true,
-            }}>
-              <WidgetTab id="t1" />
-            </WidgetTabContext.Provider>
-          </WidgetIdContext.Provider>
-        </WidgetPanelContext.Provider>
-      </NineZoneContext.Provider>,
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <WidgetTabsEntryContext.Provider value={{
+            lastNotOverflown: false,
+          }}>
+            <WidgetTab tab={nineZone.tabs.t1} />
+          </WidgetTabsEntryContext.Provider>
+        </WidgetStateContext.Provider>
+      </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -64,44 +65,91 @@ describe("WidgetTab", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1", { minimized: true });
     nineZone = addTab(nineZone, "w1", "t1");
     const { container } = render(
-      <NineZoneContext.Provider value={nineZone}>
-        <WidgetPanelContext.Provider value="left">
-          <WidgetIdContext.Provider value="w1">
-            <WidgetTabContext.Provider value={{
-              isOverflown: false,
-            }}>
-              <WidgetTab id="t1" />
-            </WidgetTabContext.Provider>
-          </WidgetIdContext.Provider>
-        </WidgetPanelContext.Provider>
-      </NineZoneContext.Provider>,
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <WidgetTabsEntryContext.Provider value={{
+            lastNotOverflown: false,
+          }}>
+            <WidgetTab tab={nineZone.tabs.t1} />
+          </WidgetTabsEntryContext.Provider>
+        </WidgetStateContext.Provider>
+      </NineZoneProvider>,
+    );
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should render first inactive", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
+    nineZone = addTab(nineZone, "w1", "t1");
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <WidgetTabsEntryContext.Provider value={{
+            lastNotOverflown: false,
+          }}>
+            <WidgetTab tab={nineZone.tabs.t1} firstInactive />
+          </WidgetTabsEntryContext.Provider>
+        </WidgetStateContext.Provider>
+      </NineZoneProvider>,
+    );
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should render last not overflown", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
+    nineZone = addTab(nineZone, "w1", "t1");
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <WidgetTabsEntryContext.Provider value={{
+            lastNotOverflown: true,
+          }}>
+            <WidgetTab tab={nineZone.tabs.t1} />
+          </WidgetTabsEntryContext.Provider>
+        </WidgetStateContext.Provider>
+      </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
 
   it("should dispatch WIDGET_TAB_CLICK", () => {
+    const fakeTimers = sandbox.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1");
     render(
-      <NineZoneDispatchContext.Provider value={dispatch}>
-        <NineZoneContext.Provider value={nineZone}>
-          <WidgetPanelContext.Provider value="left">
-            <WidgetIdContext.Provider value="w1">
-              <WidgetTabContext.Provider value={{
-                isOverflown: false,
-              }}>
-                <WidgetTab id="t1" />
-              </WidgetTabContext.Provider>
-            </WidgetIdContext.Provider>
-          </WidgetPanelContext.Provider>
-        </NineZoneContext.Provider>
-      </NineZoneDispatchContext.Provider>,
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <PanelSideContext.Provider value="left">
+          <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+            <WidgetTabsEntryContext.Provider value={{
+              lastNotOverflown: false,
+            }}>
+              <WidgetTab tab={nineZone.tabs.t1} />
+            </WidgetTabsEntryContext.Provider>
+          </WidgetStateContext.Provider>
+        </PanelSideContext.Provider>
+      </NineZoneProvider>,
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
-      fireClick(tab, sandbox.useFakeTimers());
+      fireEvent.pointerDown(tab);
+      fireEvent.pointerUp(tab);
+      fakeTimers.tick(300);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: WIDGET_TAB_CLICK,
@@ -112,32 +160,65 @@ describe("WidgetTab", () => {
   });
 
   it("should dispatch WIDGET_TAB_DOUBLE_CLICK", () => {
+    const fakeTimers = sandbox.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1");
     render(
-      <NineZoneDispatchContext.Provider value={dispatch}>
-        <NineZoneContext.Provider value={nineZone}>
-          <WidgetPanelContext.Provider value="left">
-            <WidgetIdContext.Provider value="w1">
-              <WidgetTabContext.Provider value={{
-                isOverflown: false,
-              }}>
-                <WidgetTab id="t1" />
-              </WidgetTabContext.Provider>
-            </WidgetIdContext.Provider>
-          </WidgetPanelContext.Provider>
-        </NineZoneContext.Provider>
-      </NineZoneDispatchContext.Provider>,
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <PanelSideContext.Provider value="left">
+          <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+            <WidgetTabsEntryContext.Provider value={{
+              lastNotOverflown: false,
+            }}>
+              <WidgetTab tab={nineZone.tabs.t1} />
+            </WidgetTabsEntryContext.Provider>
+          </WidgetStateContext.Provider>
+        </PanelSideContext.Provider>
+      </NineZoneProvider>,
     );
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
-      fireDoubleClick(tab, sandbox.useFakeTimers());
+      fireEvent.pointerDown(tab);
+      fireEvent.pointerUp(tab);
+      fireEvent.pointerDown(tab);
+      fireEvent.pointerUp(tab);
+      fakeTimers.tick(300);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: WIDGET_TAB_DOUBLE_CLICK,
       side: "left",
+      widgetId: "w1",
+      id: "t1",
+    })).should.true;
+  });
+
+  it("should dispatch WIDGET_TAB_DRAG_START on pointer move", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
+    render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <WidgetTab tab={nineZone.tabs.t1} />
+        </WidgetStateContext.Provider>
+      </NineZoneProvider>,
+    );
+    const tab = document.getElementsByClassName("nz-widget-tab")[0];
+    act(() => {
+      fireEvent.pointerDown(tab);
+      fireEvent.pointerMove(document);
+    });
+    dispatch.calledOnceWithExactly(sinon.match({
+      type: WIDGET_TAB_DRAG_START,
       widgetId: "w1",
       id: "t1",
     })).should.true;

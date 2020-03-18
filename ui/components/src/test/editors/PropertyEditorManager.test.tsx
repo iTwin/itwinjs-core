@@ -17,7 +17,7 @@ describe("PropertyEditorManager", () => {
     expect(propertyEditor).to.not.be.null;
     if (propertyEditor) {
       expect(propertyEditor).to.be.instanceof(BasicPropertyEditor);
-      expect(React.isValidElement(propertyEditor.reactElement)).to.be.true;
+      expect(React.isValidElement(propertyEditor.reactNode)).to.be.true;
     }
   });
 
@@ -32,7 +32,7 @@ describe("PropertyEditorManager", () => {
   });
 
   class MinePropertyEditor extends PropertyEditorBase {
-    public get reactElement(): React.ReactNode {
+    public get reactNode(): React.ReactNode {
       return <TextEditor />;
     }
   }
@@ -159,7 +159,7 @@ describe("PropertyEditorManager", () => {
   });
 
   class PropertyEditorWithEditorParams extends PropertyEditorBase {
-    public get reactElement(): React.ReactNode {
+    public get reactNode(): React.ReactNode {
       return <TextEditor />;
     }
 

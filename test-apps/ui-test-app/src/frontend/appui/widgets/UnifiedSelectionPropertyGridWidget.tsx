@@ -26,7 +26,7 @@ export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
     super(info, options);
 
     if (options && options.iModelConnection && options.rulesetId)
-      this.reactElement = <UnifiedSelectionPropertyGridWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
+      this.reactNode = <UnifiedSelectionPropertyGridWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
   }
 }
 

@@ -16,7 +16,7 @@ public;ActivityCenterField
 public;ActivityMessageCancelledEvent 
 public;ActivityMessageEventArgs
 public;ActivityMessageUpdatedEvent 
-internal;addPanelWidgets(state: NineZoneState, frontstage: FrontstageDef | undefined, side: WidgetPanelSide): NineZoneState
+internal;addPanelWidgets(state: NineZoneState, frontstage: FrontstageDef | undefined, side: PanelSide): NineZoneState
 internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray
 alpha;AnalysisAnimationTimelineDataProvider 
 public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
@@ -209,7 +209,7 @@ beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
 internal;getNestedStagePanelKey: (location: StagePanelLocation_2) => NestedStagePanelKey
 beta;getSelectionContextSyncEventIds(): string[]
 internal;getStagePanelType: (location: StagePanelLocation_2) => StagePanelType
-internal;getWidgetId(side: WidgetPanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes
+internal;getWidgetId(side: PanelSide, key: StagePanelZoneDefKeys): WidgetIdTypes
 public;GroupButton(props: GroupButtonProps): JSX.Element
 internal;GroupButtonItem(props: GroupButtonProps_2): JSX.Element
 public;GroupButtonProps 
@@ -559,7 +559,7 @@ internal;WidgetInfo
 beta;WidgetManager
 internal;WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSettingsProps): JSX.Element
 internal;WidgetPanelsDefaultToolSettingsProps
-internal;WidgetPanelsFrontstage(): JSX.Element | null
+internal;WidgetPanelsFrontstage: React.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
 internal;WidgetPanelsStatusBar(): JSX.Element | null
 internal;WidgetPanelsToolbars(): JSX.Element

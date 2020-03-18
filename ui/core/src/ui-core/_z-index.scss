@@ -5,7 +5,27 @@
 @import "_helpers";
 
 // Order matters, last is top-most on screen.
-$uicore-internal-z-index-layers: widget-grip, dragged-widget, zone-target, zone-outline, toolbar-histories, toolbar-panels, status-popup, status-message, dialog, tooltip, backstage-overlay, backstage;
+$uicore-internal-z-index-layers:
+  view-overlay,
+  widget-grip,
+  dragged-widget,
+  zone-target,
+  zone-outline,
+  toolbar-panels,
+  status-popup,
+  status-message,
+  modal-frontstage-overlay,
+  modal-frontstage,
+  dialog,
+  dialog-popup,
+  tooltip,
+  context-menu-z,
+  dragdrop,
+  cursor-overlay,
+  drag-target,
+  drag-preview,
+  backstage-overlay,
+  backstage;
 
 $uicore-z-index-step: 1000;
 

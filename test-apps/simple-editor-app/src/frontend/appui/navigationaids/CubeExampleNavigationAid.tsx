@@ -15,7 +15,7 @@ import { ConfigurableCreateInfo, ConfigurableUiManager, NavigationAidControl } f
 export class CubeExampleNavigationAidControl extends NavigationAidControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <CubeExampleNavigationAid />;
+    this.reactNode = <CubeExampleNavigationAid />;
   }
 
   public getSize(): string | undefined { return "96px"; }

@@ -115,13 +115,13 @@ export class DataGridFilterParser {
     2: {value: "Title 10000", label: "Title 10000"}
     length: 3
     */
-    const filterData = filter.filterTerm as unknown as TableDistinctValue[];
-    if (filterData.length) {
-      filterData.forEach((distinctValue: TableDistinctValue) => {
-        filterDescriptor.distinctFilter.addDistinctValue(distinctValue.value);
-      });
-    } else {
-      filterDescriptor.clear();
+    if (filter.filterTerm) {
+      const filterData = filter.filterTerm as unknown as TableDistinctValue[];
+      if (filterData.length) {
+        filterData.forEach((distinctValue: TableDistinctValue) => {
+          filterDescriptor.distinctFilter.addDistinctValue(distinctValue.value);
+        });
+      }
     }
     await onApplyFilter();
   }
@@ -131,8 +131,10 @@ export class DataGridFilterParser {
     SingleSelect filters
     filter.filterTerm: {value: 1, label: "Red"}
     */
-    const filterData = filter.filterTerm as unknown as TableDistinctValue;
-    filterDescriptor.distinctFilter.addDistinctValue(filterData.value);
+    if (filter.filterTerm) {
+      const filterData = filter.filterTerm as unknown as TableDistinctValue;
+      filterDescriptor.distinctFilter.addDistinctValue(filterData.value);
+    }
     await onApplyFilter();
   }
 
@@ -145,40 +147,45 @@ export class DataGridFilterParser {
     3: {type: 4, value: 5}  // < 5
     length: 4
     */
-    this._numericTimer.setOnExecute(async () => {
-      const filterData = filter.filterTerm as unknown as NumericFilterData[];
-      if (filterData.length) {
-        filterDescriptor.fieldFilter.logicalOperator = FilterCompositionLogicalOperator.Or;
+    if (filter.filterTerm) {
+      this._numericTimer.setOnExecute(async () => {
+        const filterData = filter.filterTerm as unknown as NumericFilterData[];
+        if (filterData.length) {
+          filterDescriptor.fieldFilter.logicalOperator = FilterCompositionLogicalOperator.Or;
 
-        filterData.forEach((numericFilterData: NumericFilterData) => {
-          switch (numericFilterData.type) {
-            case NumericFilterType.ExactMatch:
-              const exactMatchData = numericFilterData as unknown as NumericExactMatchData;
-              filterDescriptor.fieldFilter.addFieldValue(exactMatchData.value, FilterOperator.IsEqualTo);
-              break;
-            case NumericFilterType.GreaterThan:
-              const greaterThanData = numericFilterData as unknown as NumericGreaterThanData;
-              filterDescriptor.fieldFilter.addFieldValue(greaterThanData.value, FilterOperator.IsGreaterThan);
-              break;
-            case NumericFilterType.LessThan:
-              const lessThanData = numericFilterData as unknown as NumericLessThanData;
-              filterDescriptor.fieldFilter.addFieldValue(lessThanData.value, FilterOperator.IsLessThan);
-              break;
-            case NumericFilterType.Range:
-              const rangeData = numericFilterData as unknown as NumericRangeData;
-              filterDescriptor.fieldFilter.addFieldValue(rangeData, FilterOperator.Range);
-              break;
-            default:
-              Logger.logError(UiComponents.loggerCategory(this), `parseNumeric: Unknown numeric filter data type - ${numericFilterData.type}`);
-              break;
-          }
-        });
-        await onApplyFilter();
-      }
-    });
+          filterData.forEach((numericFilterData: NumericFilterData) => {
+            switch (numericFilterData.type) {
+              case NumericFilterType.ExactMatch:
+                const exactMatchData = numericFilterData as unknown as NumericExactMatchData;
+                filterDescriptor.fieldFilter.addFieldValue(exactMatchData.value, FilterOperator.IsEqualTo);
+                break;
+              case NumericFilterType.GreaterThan:
+                const greaterThanData = numericFilterData as unknown as NumericGreaterThanData;
+                filterDescriptor.fieldFilter.addFieldValue(greaterThanData.value, FilterOperator.IsGreaterThan);
+                break;
+              case NumericFilterType.LessThan:
+                const lessThanData = numericFilterData as unknown as NumericLessThanData;
+                filterDescriptor.fieldFilter.addFieldValue(lessThanData.value, FilterOperator.IsLessThan);
+                break;
+              case NumericFilterType.Range:
+                const rangeData = numericFilterData as unknown as NumericRangeData;
+                filterDescriptor.fieldFilter.addFieldValue(rangeData, FilterOperator.Range);
+                break;
+              default:
+                Logger.logError(UiComponents.loggerCategory(this), `parseNumeric: Unknown numeric filter data type - ${numericFilterData.type}`);
+                break;
+            }
+          });
+          await onApplyFilter();
+        }
+      });
 
-    this._numericTimer.delay = DataGridFilterParser._timerTimeout;
-    this._numericTimer.start();
+      this._numericTimer.delay = DataGridFilterParser._timerTimeout;
+      this._numericTimer.start();
+    } else {
+      this._numericTimer.stop();
+      await onApplyFilter();
+    }
   }
 
   private static async parseText(filter: ReactDataGridFilter, filterDescriptor: ColumnFilterDescriptor, onApplyFilter: () => Promise<void>): Promise<void> {
@@ -186,14 +193,19 @@ export class DataGridFilterParser {
     Input filter
     filter.filterTerm: 1000
     */
-    this._textTimer.setOnExecute(async () => {
-      const filterData = filter.filterTerm as unknown as string;
-      filterDescriptor.fieldFilter.addFieldValue(filterData, FilterOperator.Contains, false);
-      await onApplyFilter();
-    });
+    if (filter.filterTerm) {
+      this._textTimer.setOnExecute(async () => {
+        const filterData = filter.filterTerm as unknown as string;
+        filterDescriptor.fieldFilter.addFieldValue(filterData, FilterOperator.Contains, false);
+        await onApplyFilter();
+      });
 
-    this._textTimer.delay = DataGridFilterParser._timerTimeout;
-    this._textTimer.start();
+      this._textTimer.delay = DataGridFilterParser._timerTimeout;
+      this._textTimer.start();
+    } else {
+      this._textTimer.stop();
+      await onApplyFilter();
+    }
   }
 
 }

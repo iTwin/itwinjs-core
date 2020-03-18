@@ -191,7 +191,7 @@ export class Zone extends React.Component<ZoneProps> {
       } else if (zDef.widgetCount === 1 && zDef.widgetDefs[0].widgetType !== WidgetType.Rectangular) {
         /** Return free-form nzWidgetProps */
         const widgetDef = zDef.widgetDefs[0];
-        widgetElement = (widgetDef.isVisible) ? widgetDef.reactElement : null;
+        widgetElement = (widgetDef.isVisible) ? widgetDef.reactNode : null;
       }
     }
 

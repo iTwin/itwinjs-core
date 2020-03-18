@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, Config, IModelHubError } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, IModelHubError } from "@bentley/imodeljs-clients";
 import { ElementAspectProps, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
@@ -45,12 +45,6 @@ describe("ElementAspectPerformance", () => {
     const configData = require(path.join(__dirname, "CSPerfConfig.json"));
     const projectId = configData.projectId;
     const imodelId = configData.aspectIModelId;
-
-    const myAppConfig = {
-      imjs_buddi_resolve_url_using_region: 102,
-      imjs_default_relying_party_uri: "https://connect-wsg20.bentley.com",
-    };
-    Config.App.merge(myAppConfig);
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     iModelDbHub = await BriefcaseIModelDb.open(requestContext, projectId, imodelId, OpenParams.fixedVersion(), IModelVersion.latest());

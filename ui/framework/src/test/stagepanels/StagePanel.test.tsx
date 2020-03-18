@@ -36,7 +36,7 @@ describe("StagePanel", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div />;
+      this.reactNode = <div />;
     }
   }
 

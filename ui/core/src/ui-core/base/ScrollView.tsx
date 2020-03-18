@@ -11,7 +11,8 @@ import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
 /** Scroll View React functional component.
- * This has the 'overflow-y: auto' CSS property and has a height and width of 100%.
+ * Scrolls content vertically and
+ * has the 'overflow-y: auto' CSS property and has a height and width of 100%.
  * @public
  */
 export function ScrollView(props: CommonDivProps) {

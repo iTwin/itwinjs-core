@@ -224,7 +224,7 @@ export class FrontstageDef {
     }
 
     if (contentControl) {
-      ContentViewManager.setActiveContent(contentControl.reactElement, true);
+      ContentViewManager.setActiveContent(contentControl.reactNode, true);
       if (contentControl.viewport)
         IModelApp.viewManager.setSelectedView(contentControl.viewport);
       activated = true;
@@ -246,7 +246,7 @@ export class FrontstageDef {
     let activated = false;
     const contentControl = this.contentControls.find((control: ContentControl) => control.viewport === viewport);
     if (contentControl) {
-      ContentViewManager.setActiveContent(contentControl.reactElement, true);
+      ContentViewManager.setActiveContent(contentControl.reactNode, true);
       activated = true;
     }
 

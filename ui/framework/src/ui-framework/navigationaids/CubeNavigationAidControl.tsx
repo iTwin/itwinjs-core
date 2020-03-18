@@ -20,7 +20,7 @@ export class CubeNavigationAidControl extends NavigationAidControl {
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <CubeNavigationAid iModelConnection={options.imodel} viewport={options.viewport} />;
+    this.reactNode = <CubeNavigationAid iModelConnection={options.imodel} viewport={options.viewport} />;
   }
 
   public getSize(): string | undefined { return "96px"; }

@@ -158,7 +158,7 @@ export class StagePanel extends React.Component<StagePanelProps> {
           display: runtimeProps.panel.isCollapsed ? "none" : "block",
         }}
       >
-        {widgetDef.reactElement}
+        {widgetDef.reactNode}
       </div>
     );
   }

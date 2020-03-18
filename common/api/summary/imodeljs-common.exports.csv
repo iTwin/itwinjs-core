@@ -66,7 +66,9 @@ internal;CompositeTileHeader
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 internal;class ContentIdProvider
 public;ContextRealityModelProps
+beta;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
 public;CreateIModelProps 
+beta;CreateSnapshotIModelProps 
 internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 internal;enum CurrentImdlVersion

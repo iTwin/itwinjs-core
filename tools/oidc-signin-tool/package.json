@@ -1,6 +1,6 @@
 {
   "name": "@bentley/oidc-signin-tool",
-  "version": "2.0.0-dev.31",
+  "version": "2.0.0-dev.34",
   "description": "OIDC Signin Helper",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -29,16 +29,16 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.0.0-dev.31",
-    "@bentley/certa": "2.0.0-dev.31",
-    "@bentley/config-loader": "2.0.0-dev.31",
-    "@bentley/geometry-core": "2.0.0-dev.31",
-    "@bentley/imodeljs-clients": "2.0.0-dev.31",
+    "@bentley/bentleyjs-core": "2.0.0-dev.34",
+    "@bentley/certa": "2.0.0-dev.34",
+    "@bentley/config-loader": "2.0.0-dev.34",
+    "@bentley/geometry-core": "2.0.0-dev.34",
+    "@bentley/imodeljs-clients": "2.0.0-dev.34",
     "openid-client": "^3.7.2",
     "puppeteer": "chrome-stable"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.31",
+    "@bentley/build-tools": "2.0.0-dev.34",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^5.2.5",
@@ -48,7 +48,7 @@
     "chai-as-promised": "^7",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"

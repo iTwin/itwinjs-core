@@ -14,8 +14,10 @@ import classnames from "classnames";
 import { PlayButton } from "./PlayerButton";
 import { Slider, Rail, Handles, Ticks, SliderItem, GetHandleProps } from "react-compound-slider";
 import ReactResizeDetector from "react-resize-detector";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { Popup, CommonProps } from "@bentley/ui-core";
+
 import { DayPicker } from "./DayPicker";
-import { Popup, Position, CommonProps } from "@bentley/ui-core";
 import { SolarDataProvider } from "./interfaces";
 import { SpeedTimeline } from "./SpeedTimeline";
 import { SaturationPicker } from "../color/SaturationPicker";
@@ -653,7 +655,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
             <span>{formattedTime}</span>
             <span className="icon icon-calendar" />
           </button>
-          <Popup style={{ border: "none" }} offset={11} target={this._datePicker} isOpen={this.state.isDateOpened} onClose={this._onCloseDayPicker} position={Position.Top}>
+          <Popup style={{ border: "none" }} offset={11} target={this._datePicker} isOpen={this.state.isDateOpened} onClose={this._onCloseDayPicker} position={RelativePosition.Top}>
             <DayPicker active={this.props.dataProvider.day} hours={currentDate.getUTCHours()} minutes={currentDate.getUTCMinutes()}
               onTimeChange={this._onTimeChanged} onDayChange={this._onDayClick} />
           </Popup>
@@ -674,7 +676,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
           <button data-testid="shadow-settings-button" title={this._settingLabel} className="shadow-settings-button" ref={(element) => this._settings = element} onClick={this._onOpenSettingsPopup}>
             <span className="icon icon-settings" />
           </button>
-          <Popup className="shadow-settings-popup" target={this._settings} offset={11} isOpen={this.state.isSettingsOpened} onClose={this._onCloseSettingsPopup} position={Position.Top}>
+          <Popup className="shadow-settings-popup" target={this._settings} offset={11} isOpen={this.state.isSettingsOpened} onClose={this._onCloseSettingsPopup} position={RelativePosition.Top}>
             <div className="shadow-settings-popup-container" >
               <div className="shadow-settings-header">{this._settingsPopupTitle}</div>
               <div className="shadow-settings-color">

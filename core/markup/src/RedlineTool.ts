@@ -76,7 +76,7 @@ export abstract class RedlineTool extends MarkupTool {
   }
 
   protected provideToolAssistance(mainInstrKey: string, singlePoint: boolean = false): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, CoreTools.translate(mainInstrKey));
+    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.i18n.translate(mainInstrKey));
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
@@ -104,7 +104,7 @@ export class LineTool extends RedlineTool {
   public static toolId = "Markup.Line";
   public static iconSpec = "icon-line";
 
-  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint"); }
+  protected showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -127,7 +127,7 @@ export class RectangleTool extends RedlineTool {
 
   constructor(protected _cornerRadius?: number) { super(); } // Specify radius to create a rectangle with rounded corners.
 
-  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner"); }
+  protected showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner")); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -172,7 +172,7 @@ export class PolygonTool extends RedlineTool {
     if (!inscribe) { const theta = delta * 0.5; angle -= theta; radius /= Math.cos(theta); }
     const rtmp = Point3d.create();
     const stmp = Point3d.create();
-    for (let i = 0; i < numSides; i++ , angle += delta) {
+    for (let i = 0; i < numSides; i++, angle += delta) {
       rtmp.x = radius * Math.cos(angle);
       rtmp.y = radius * Math.sin(angle);
       rtmp.z = 0.0;
@@ -206,7 +206,7 @@ export class CloudTool extends RedlineTool {
   public static iconSpec = "icon-cloud";
   protected _cloud?: MarkupElement;
 
-  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner"); }
+  protected showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner")); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -269,7 +269,7 @@ export class EllipseTool extends RedlineTool {
   public static toolId = "Markup.Ellipse";
   public static iconSpec = "icon-ellipse";
 
-  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner"); }
+  protected showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner")); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -301,7 +301,7 @@ export class ArrowTool extends RedlineTool {
    */
   constructor(protected _arrowPos?: string) { super(); }
 
-  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint"); }
+  protected showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
 
   protected getOrCreateArrowMarker(color: string): Marker {
     // NOTE: Flashing doesn't currently affect markers, need support for "context-stroke" and "context-fill". For now encode color in name...
@@ -351,7 +351,7 @@ export class DistanceTool extends ArrowTool {
   public static iconSpec = "icon-distance";
   protected readonly _startPointWorld = new Point3d();
 
-  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint"); }
+  protected showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
   protected setupAndPromptForNextAction(): void { IModelApp.accuSnap.enableSnap(true); IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None; super.setupAndPromptForNextAction(); }
 
   protected getFormattedDistance(distance: number): string | undefined {
@@ -412,7 +412,7 @@ export class SketchTool extends RedlineTool {
   public static iconSpec = "icon-draw";
   protected _minDistSquared = 100;
 
-  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint"); }
+  protected showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -447,7 +447,7 @@ export class SymbolTool extends RedlineTool {
   constructor(protected _symbolData?: string, protected _applyCurrentStyle?: boolean) { super(); }
 
   public onInstall(): boolean { if (undefined === this._symbolData) return false; return super.onInstall(); }
-  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? (MarkupTool.toolKey + "Symbol.Prompts.FirstPoint") : "ElementSet.Prompts.OppositeCorner", true); }
+  protected showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? (MarkupTool.toolKey + "Symbol.Prompts.FirstPoint") : CoreTools.tools + "ElementSet.Prompts.OppositeCorner", true); }
 
   protected createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (undefined === this._symbolData)

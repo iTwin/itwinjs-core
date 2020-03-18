@@ -5,8 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { WidgetTabs, WidgetPanelContext, WidgetIdContext, createNineZoneState, addPanelWidget, NineZoneContext } from "../../ui-ninezone";
-import { addTab } from "../../ui-ninezone/base/NineZone";
+import { WidgetTabs, PanelSideContext, WidgetIdContext, createNineZoneState, addPanelWidget, addTab, NineZoneProvider, WidgetStateContext } from "../../ui-ninezone";
 import { createDOMRect } from "../Utils";
 
 describe("WidgetTabs", () => {
@@ -21,13 +20,39 @@ describe("WidgetTabs", () => {
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1");
     const { container } = render(
-      <NineZoneContext.Provider value={nineZone}>
-        <WidgetPanelContext.Provider value="left">
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <PanelSideContext.Provider value="left">
           <WidgetIdContext.Provider value="w1">
-            <WidgetTabs />
+            <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+              <WidgetTabs />
+            </WidgetStateContext.Provider>
           </WidgetIdContext.Provider>
-        </WidgetPanelContext.Provider>
-      </NineZoneContext.Provider>,
+        </PanelSideContext.Provider>
+      </NineZoneProvider>,
+    );
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should render with active tab", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", { activeTabId: "t1" });
+    nineZone = addTab(nineZone, "w1", "t1");
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <PanelSideContext.Provider value="left">
+          <WidgetIdContext.Provider value="w1">
+            <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+              <WidgetTabs />
+            </WidgetStateContext.Provider>
+          </WidgetIdContext.Provider>
+        </PanelSideContext.Provider>
+      </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -40,13 +65,18 @@ describe("WidgetTabs", () => {
     nineZone = addTab(nineZone, "w1", "t3");
     sandbox.stub(Element.prototype, "getBoundingClientRect").returns(createDOMRect({ width: 100 }));
     const { container } = render(
-      <NineZoneContext.Provider value={nineZone}>
-        <WidgetPanelContext.Provider value="left">
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <PanelSideContext.Provider value="left">
           <WidgetIdContext.Provider value="w1">
-            <WidgetTabs />
+            <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+              <WidgetTabs />
+            </WidgetStateContext.Provider>
           </WidgetIdContext.Provider>
-        </WidgetPanelContext.Provider>
-      </NineZoneContext.Provider>,
+        </PanelSideContext.Provider>
+      </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });
@@ -56,13 +86,18 @@ describe("WidgetTabs", () => {
     nineZone = addPanelWidget(nineZone, "top", "w1", { minimized: true });
     nineZone = addTab(nineZone, "w1", "t1");
     const { container } = render(
-      <NineZoneContext.Provider value={nineZone}>
-        <WidgetPanelContext.Provider value="top">
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <PanelSideContext.Provider value="top">
           <WidgetIdContext.Provider value="w1">
-            <WidgetTabs />
+            <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+              <WidgetTabs />
+            </WidgetStateContext.Provider>
           </WidgetIdContext.Provider>
-        </WidgetPanelContext.Provider>
-      </NineZoneContext.Provider>,
+        </PanelSideContext.Provider>
+      </NineZoneProvider>,
     );
     container.firstChild!.should.matchSnapshot();
   });

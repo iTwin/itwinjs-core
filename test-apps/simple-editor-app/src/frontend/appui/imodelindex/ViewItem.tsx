@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ThumbnailProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { CommonProps, LoadingSpinner } from "@bentley/ui-core";

@@ -6,7 +6,7 @@
  * @module Base
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, useRefEffect } from "@bentley/ui-core";
 import "./PointerCaptor.scss";
@@ -83,27 +83,28 @@ export const usePointerCaptor = <T extends HTMLElement>(
   onPointerDown?: (e: PointerEvent) => void,
   onPointerMove?: (e: PointerEvent) => void,
   onPointerUp?: (e: PointerEvent) => void,
+  captured?: boolean,
 ) => {
   const isDown = React.useRef(false);
   React.useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
-      isDown.current && onPointerMove && onPointerMove(e);
+      (isDown.current || captured) && onPointerMove && onPointerMove(e);
     };
     document.addEventListener("pointermove", handlePointerMove);
     return () => {
       document.removeEventListener("pointermove", handlePointerMove);
     };
-  }, [onPointerMove]);
+  }, [captured, onPointerMove]);
   React.useEffect(() => {
     const handlePointerUp = (e: PointerEvent) => {
-      isDown.current && onPointerUp && onPointerUp(e);
+      (isDown.current || captured) && onPointerUp && onPointerUp(e);
       isDown.current = false;
     };
     document.addEventListener("pointerup", handlePointerUp);
     return () => {
       document.removeEventListener("pointerup", handlePointerUp);
     };
-  }, [onPointerUp]);
+  }, [captured, onPointerUp]);
   const setRef = useRefEffect((instance: T | null) => {
     const handlePointerDown = (e: PointerEvent) => {
       e.preventDefault();

@@ -15,7 +15,7 @@ export class MobxDemoWidgetControl extends WidgetControl {
 
     const model = new MobxDemoModel();
 
-    this.reactElement = (
+    this.reactNode = (
       <MobxProvider model={model}>
         <MobxDemoViewController />
       </MobxProvider>

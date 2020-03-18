@@ -137,7 +137,7 @@ describe("SavedViewLayout", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div />;
+      this.reactNode = <div />;
 
       this.viewport = viewportMock.object;
     }

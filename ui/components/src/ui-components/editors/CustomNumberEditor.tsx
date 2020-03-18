@@ -294,7 +294,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
  */
 export class CustomNumberPropertyEditor extends PropertyEditorBase {
 
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <CustomNumberEditor />;
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/config-loader",
-  "version": "2.0.0-dev.31",
+  "version": "2.0.0-dev.34",
   "description": "Configuration loader",
   "license": "MIT",
   "repository": {
@@ -27,14 +27,14 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "chalk": "^2.4.1",
+    "chalk": "^3.0.0",
     "json5": "^2.1.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.0.0-dev.31",
+    "@bentley/build-tools": "2.0.0-dev.34",
     "@types/json5": "0.0.30",
     "@types/node": "10.14.1",
-    "rimraf": "^2.6.2",
+    "rimraf": "^3.0.2",
     "tslint": "^5.11.0",
     "tslint-etc": "^1.5.2",
     "typescript": "~3.7.4"

@@ -103,7 +103,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
     const editorName = propDescription.editor !== undefined ? propDescription.editor.name : undefined;
     this._propertyEditor = PropertyEditorManager.createEditor(propDescription.typename, editorName, propDescription.dataController);
-    editorNode = this._propertyEditor.reactElement;
+    editorNode = this._propertyEditor.reactNode;
 
     // istanbul ignore else
     if (React.isValidElement(editorNode)) {

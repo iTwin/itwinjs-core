@@ -11,7 +11,8 @@ import { CommonDivProps } from "../utils/Props";
 import { Div } from "./Div";
 
 /** Flex Wrap Container React functional component.
- * This has the 'display: flex' and 'flex-wrap: wrap' CSS properties.
+ * Wraps content onto multiple lines and
+ * has the 'display: flex' and 'flex-wrap: wrap' CSS properties.
  * @public
  */
 export function FlexWrapContainer(props: CommonDivProps) {

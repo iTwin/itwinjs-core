@@ -24,7 +24,7 @@ export class UnifiedSelectionTableWidgetControl extends WidgetControl {
     super(info, options);
 
     if (options && options.iModelConnection && options.rulesetId)
-      this.reactElement = <UnifiedSelectionTableWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
+      this.reactNode = <UnifiedSelectionTableWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
   }
 }
 

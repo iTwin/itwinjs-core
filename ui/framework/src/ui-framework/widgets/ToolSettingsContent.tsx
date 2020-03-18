@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import ReactResizeDetector from "react-resize-detector";
 import { WidgetContent, HorizontalAnchor, ToolSettingsWidgetMode } from "@bentley/ui-ninezone";

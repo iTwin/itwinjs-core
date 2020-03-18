@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { XAndY } from "@bentley/geometry-core";
 import { RelativePosition } from "@bentley/ui-abstract";

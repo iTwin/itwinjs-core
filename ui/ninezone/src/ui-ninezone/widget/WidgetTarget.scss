@@ -1,0 +1,82 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/index";
+
+.nz-widget-widgetTarget {
+  $size: 0.5em;
+
+  position: relative;
+  @include uicore-z-index(drag-target);
+
+  &.nz-left, &.nz-right {
+    &:after {
+      width: 100%;
+    }
+
+    &.nz-first, &.nz-last {
+      &:after {
+        height: 2 * $size;
+      }
+    }
+
+    &:not(.nz-first) {
+      &:not(.nz-last) {
+        &:after {
+          height: $size;
+          transform: translateY(-50%);
+        }
+      }
+    }
+
+    &.nz-last {
+      &:after {
+        transform: translateY(-100%);
+      }
+    }
+  }
+
+  &.nz-top, &.nz-bottom {
+    &.nz-first, &.nz-last {
+      &:after {
+        width: 2 * $size;
+      }
+    }
+
+    &:after {
+      height: 100%;
+    }
+
+    &:not(.nz-first) {
+      &:not(.nz-last) {
+        &:after {
+          width: $size;
+          transform: translateX(-50%);
+        }
+      }
+    }
+
+    &.nz-last {
+      &:after {
+        transform: translateX(-100%);
+      }
+    }
+  }
+
+  &.nz-hidden {
+    display: none;
+  }
+
+  &:after {
+    content: '';
+    position: absolute;
+  }
+
+  &.nz-targeted {
+    &:after {
+      background: rgb(140, 210, 255);
+      opacity: 0.5;
+    }
+  }
+}

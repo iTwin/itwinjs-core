@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import {
   DialogItemsManager, DialogItem, DialogItemValue, DialogItemSyncArgs, DialogRow, DialogPropertySyncItem, PrimitiveValue,
   PropertyValueFormat,
@@ -108,7 +108,7 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
         newValueMap.set(propertyUpdateName, updatedDialogItem);
         this.setState({ valueMap: newValueMap }, () => {
           const syncItem: DialogPropertySyncItem = { value: commit.newValue as DialogItemValue, propertyName: propertyUpdateName, isDisabled: updatedDialogItem.isDisabled };
-          this._itemsManager.applyUiPropertyChange (syncItem);
+          this._itemsManager.applyUiPropertyChange(syncItem);
         });
       }
     }

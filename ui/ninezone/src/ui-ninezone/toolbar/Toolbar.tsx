@@ -6,7 +6,7 @@
  * @module Toolbar
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps, flattenChildren } from "@bentley/ui-core";
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
@@ -232,3 +232,4 @@ export const getToolbarItemProps = <TProps extends {}>(props: TProps): ToolbarIt
  */
 // tslint:disable-next-line: variable-name
 export const ToolbarDirectionContext = React.createContext<Direction>(Direction.Bottom);
+ToolbarDirectionContext.displayName = "nz:ToolbarDirectionContext";

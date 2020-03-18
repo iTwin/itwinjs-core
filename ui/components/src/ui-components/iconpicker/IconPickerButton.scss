@@ -37,7 +37,7 @@
 
 .components-iconpicker-popup {
   border: 1px solid $buic-inputs-border;
-  z-index: 99999;
+  @include uicore-z-index(dialog-popup);
 
   .components-iconpicker-popup-container {
     color: $buic-foreground-body;

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { UiCore } from "../UiCore";
 import { Omit } from "../utils/typeUtils";
@@ -71,10 +71,16 @@ export interface DialogButtonDef {
  * @public
  */
 export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title">, CommonProps {
-  /** whether to show dialog or not */
+  /** Indicates whether to show dialog or not */
   opened: boolean;
-  /** Default alignment of dialog. Default: DialogAlignment.Center */
-  alignment?: DialogAlignment;
+
+  /** Indicates whether the user can resize dialog with cursor. Default: false */
+  resizable?: boolean;
+  /** Indicates whether the user can move dialog with cursor. Default: false */
+  movable?: boolean;
+  /** Indicates whether the content should be inset. Default: true */
+  inset?: boolean;
+
   /** Whether the hide the header. Default: false */
   hideHeader?: boolean;
   /** Override for the header */
@@ -85,44 +91,33 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   footer?: string | JSX.Element;
   /** List of DialogButtonDef objects specifying buttons and associated onClick events */
   buttonCluster?: DialogButtonDef[];
+
+  /** Default alignment of dialog. Default: DialogAlignment.Center */
+  alignment?: DialogAlignment;
+  /** Initial x/left position of dialog in px. */
+  x?: number;
+  /** Initial y/top position of dialog in px. */
+  y?: number;
+
   /** onClick event for X button for dialog */
   onClose?: () => void;
   /** 'keyup' event for Esc key */
   onEscape?: () => void;
-  /** triggered when a click is triggered outside of this dialog. */
+  /** Triggered when a click is triggered outside of this dialog. */
   onOutsideClick?: (event: MouseEvent) => any;
-  /** minimum width that the dialog may be resized to. Default: 300 */
-  minWidth?: number;
-  /** minimum height that the dialog may be resized to. Default: 100 */
-  minHeight?: number;
-  /** maximum width that the dialog may be resized to. */
-  maxWidth?: number;
-  /** maximum height that the dialog may be resized to. */
-  maxHeight?: number;
-  /** initial x/left position of dialog. Displayed in px if value is a number, otherwise displayed in specified CSS unit. */
-  x?: number;
-  /** initial y/top position of dialog. Displayed in px if value is a number, otherwise displayed in specified CSS unit. */
-  y?: number;
-  /** initial width of dialog. Displayed in px if value is a number, otherwise displayed in specified CSS unit. Default: "50%" */
+
+  /** Initial width of dialog. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. Default: "50%" */
   width?: string | number;
-  /** initial height of dialog. Displayed in px if value is a number, otherwise displayed in specified CSS unit. */
+  /** Initial height of dialog. Displayed in px if value is a number; otherwise, displayed in specified CSS unit. */
   height?: string | number;
-  /** Custom CSS Style for overlay */
-  backgroundStyle?: React.CSSProperties;
-  /** Custom CSS Style for title */
-  titleStyle?: React.CSSProperties;
-  /** Custom CSS Style for footer */
-  footerStyle?: React.CSSProperties;
-  /** Whether user can resize dialog with cursor. Default: false */
-  resizable?: boolean;
-  /** Whether user can move dialog with cursor. Default: false */
-  movable?: boolean;
-  /** Whether the content should be inset. Default: true */
-  inset?: boolean;
-  /** Custom CSS class name for the content */
-  contentClassName?: string;
-  /** Custom CSS Style for the content */
-  contentStyle?: React.CSSProperties;
+  /** Minimum width that the dialog may be resized to. Default: 300 */
+  minWidth?: number;
+  /** Minimum height that the dialog may be resized to. Default: 100 */
+  minHeight?: number;
+  /** Maximum width that the dialog may be resized to. */
+  maxWidth?: number;
+  /** Maximum height that the dialog may be resized to. */
+  maxHeight?: number;
 
   /** Whether to show background overlay. Default: true.
    * @note Modeless dialogs require an id and an implementation of onModelessPointerDown.
@@ -132,6 +127,17 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
   modelessId?: string;
   /** Pointer Down event handler when modeless (modal = false) */
   onModelessPointerDown?: (event: React.PointerEvent, id: string) => void;
+
+  /** Custom CSS Style for overlay */
+  backgroundStyle?: React.CSSProperties;
+  /** Custom CSS Style for title */
+  titleStyle?: React.CSSProperties;
+  /** Custom CSS Style for footer */
+  footerStyle?: React.CSSProperties;
+  /** Custom CSS class name for the content */
+  contentClassName?: string;
+  /** Custom CSS Style for the content */
+  contentStyle?: React.CSSProperties;
 }
 
 /** @internal */

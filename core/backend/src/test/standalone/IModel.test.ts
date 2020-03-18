@@ -1788,14 +1788,22 @@ describe("iModel", () => {
 
   });
 
+  function hasClassView(db: IModelDb, name: string): boolean {
+    try {
+      return db.withPreparedSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
+    } catch (e) {
+      return false;
+    }
+  }
+
   it("Snapshot iModel properties", () => {
     const snapshotRootSubjectName = "Snapshot";
     const snapshotFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot1.bim");
     const snapshotFile2: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
     const snapshotFile3: string = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
-    const snapshotDb1 = SnapshotIModelDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName } });
-    const snapshotDb2 = SnapshotIModelDb.createFrom(snapshotDb1, snapshotFile2);
-    const snapshotDb3 = SnapshotIModelDb.createFrom(imodel1, snapshotFile3);
+    let snapshotDb1 = SnapshotIModelDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
+    let snapshotDb2 = SnapshotIModelDb.createFrom(snapshotDb1, snapshotFile2);
+    let snapshotDb3 = SnapshotIModelDb.createFrom(imodel1, snapshotFile3, { createClassViews: true });
     assert.isTrue(snapshotDb1 instanceof SnapshotIModelDb);
     assert.isTrue(snapshotDb2 instanceof SnapshotIModelDb);
     assert.isTrue(snapshotDb3 instanceof SnapshotIModelDb);
@@ -1828,6 +1836,21 @@ describe("iModel", () => {
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();
+    snapshotDb1 = SnapshotIModelDb.open(snapshotFile1);
+    snapshotDb2 = SnapshotIModelDb.open(snapshotFile2);
+    snapshotDb3 = SnapshotIModelDb.open(snapshotFile3);
+    assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
+    assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
+    assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");
+    assert.isTrue(hasClassView(snapshotDb1, "bis.Element"));
+    assert.isTrue(hasClassView(snapshotDb1, "bis.ElementAspect"));
+    assert.isTrue(hasClassView(snapshotDb1, "bis.Model"));
+    assert.isTrue(hasClassView(snapshotDb1, "bis.ElementRefersToElements"));
+    assert.isFalse(hasClassView(snapshotDb2, "bis.Element"));
+    assert.isTrue(hasClassView(snapshotDb3, "bis.Element"));
+    snapshotDb1.close();
+    snapshotDb2.close();
+    snapshotDb3.close();
   });
 
   it("Password-protected Snapshot iModels", () => {
@@ -1845,9 +1868,10 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
     assert.isFalse(snapshotDb1.nativeDb.isEncrypted());
+    assert.isFalse(hasClassView(snapshotDb1, "bis.Element"));
 
     // create snapshot from scratch and give it a password
-    let snapshotDb2 = SnapshotIModelDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password" });
+    let snapshotDb2 = SnapshotIModelDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
     assert.equal(snapshotDb2.briefcase.briefcaseId, BriefcaseId.Snapshot);
     const subjectName2 = "TestSubject2";
     const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
@@ -1859,6 +1883,7 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb2.nativeDb.isEncrypted());
     assert.exists(snapshotDb2.elements.getElement(subjectId2));
+    assert.isTrue(hasClassView(snapshotDb2, "bis.Element"));
 
     // create a new snapshot from a non-password-protected snapshot and then give it a password
     let snapshotDb3 = SnapshotIModelDb.createFrom(imodel1, snapshotFile3, { password: "password" });

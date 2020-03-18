@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { IModelReadRpcInterface, ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
 import { BeEvent } from "@bentley/bentleyjs-core";

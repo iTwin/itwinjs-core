@@ -3,17 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/index";
+@import "../prefix";
+@import "variables";
 
 .nz-widget-tab {
   user-select: none;
   white-space: nowrap;
+
+  > span {
+    font-size: $nz-widget-tab-font-size;
+  }
 
   &.nz-overflown {
     cursor: pointer;
     display: flex;
     position: relative;
 
-    span {
+    > span {
       margin-right: 3em;
     }
 
@@ -43,6 +49,7 @@
     align-items: center;
     position: relative;
     border: 0 solid $buic-background-5;
+    height: $nz-widget-tab-height;
 
     &.nz-active {
       background: $buic-background-3;
@@ -61,19 +68,18 @@
         height: 0.15em;
       }
 
-      &:last-child {
+      &.nz-last, &.nz-last-not-overflown {
         border-right-width: 1px;
-      }
-
-      & + .nz-widget-tab,
-      & + .nz-widget-overflow {
-        border-left-width: 1px;
       }
     }
 
     &:not(.nz-active) {
       color: $buic-foreground-muted;
       border-right-width: 1px;
+
+      &.nz-first-inactive {
+        border-left-width: 1px;
+      }
 
       &.nz-minimized {
         padding-bottom: 1px;
@@ -84,8 +90,8 @@
       }
     }
 
-    &:first-child {
-      border-top-left-radius: 2px;
+    &.nz-first {
+      border-top-left-radius: $nz-widget-tab-border-radius;
     }
 
     &:hover {

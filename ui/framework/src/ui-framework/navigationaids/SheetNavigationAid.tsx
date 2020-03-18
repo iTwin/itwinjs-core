@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { Spinner, SpinnerSize, CommonProps } from "@bentley/ui-core";
@@ -30,7 +30,7 @@ export class SheetNavigationAidControl extends NavigationAidControl {
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <SheetNavigationAid iModelConnection={options.imodel} />;
+    this.reactNode = <SheetNavigationAid iModelConnection={options.imodel} />;
   }
 
   public getSize(): string | undefined { return "96px"; }

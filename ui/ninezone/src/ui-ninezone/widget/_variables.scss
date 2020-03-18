@@ -38,3 +38,8 @@ $nz-widget-min-size: $nz-tab-height + 10px;
     #{$property}: -$nz-resize-grip-size-large / 2;
   }
 }
+
+// 2.0
+$nz-widget-tab-font-size: 0.9em;
+$nz-widget-tab-height: 2em;
+$nz-widget-tab-border-radius: 2px;

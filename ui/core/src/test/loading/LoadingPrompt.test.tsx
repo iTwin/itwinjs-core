@@ -30,19 +30,19 @@ describe("<LoadingPrompt />", () => {
   });
 
   it("renders with text and message, and deterministic", () => {
-    shallow(<LoadingPrompt title="title" message="description" isDeterministic={true} />).should.matchSnapshot();
+    shallow(<LoadingPrompt title="title" message="description" isDeterminate={true} />).should.matchSnapshot();
   });
 
   it("renders with text and message, and deterministic", () => {
-    shallow(<LoadingPrompt title="title" message="description" isDeterministic={true} percent={50} />).should.matchSnapshot();
+    shallow(<LoadingPrompt title="title" message="description" isDeterminate={true} percent={50} />).should.matchSnapshot();
   });
 
   it("renders with text and message, and deterministic", () => {
-    shallow(<LoadingPrompt title="title" message="description" isDeterministic={true} percent={50} showCancel={true} />).should.matchSnapshot();
+    shallow(<LoadingPrompt title="title" message="description" isDeterminate={true} percent={50} showCancel={true} />).should.matchSnapshot();
   });
 
   it("renders with text and message, and deterministic", () => {
-    shallow(<LoadingPrompt title="title" message="description" isDeterministic={true} showStatus={true} percent={50} status="updating" />).should.matchSnapshot();
+    shallow(<LoadingPrompt title="title" message="description" isDeterminate={true} showStatus={true} percent={50} status="updating" />).should.matchSnapshot();
   });
 
 });

@@ -36,12 +36,20 @@ describe("LocalizationHelper", () => {
       expect(translated).to.be.eq(key);
     });
 
-    it("trims key if needed", () => {
-      const key = "@NotLocalized@";
-      i18nMock.setup((x) => x.translate("NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
+    it("trims key", () => {
+      const key = "@namespace:NotLocalized@";
+      i18nMock.setup((x) => x.translate("namespace:NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       i18nMock.setup((x) => x.translate(moq.It.isAny(), moq.It.isAny())).returns((origValue) => origValue);
       const translated = localizationHelper.translate(key);
       expect(translated).to.be.eq("LocalizedValue");
+    });
+
+    it("translates string containing multiple keys", () => {
+      const text = "Front @namespace:firstKey@ and @namespace:secondKey@ End";
+      i18nMock.setup((x) => x.translate("namespace:firstKey", moq.It.isAny())).returns(() => "FirstLocalizedValue");
+      i18nMock.setup((x) => x.translate("namespace:secondKey", moq.It.isAny())).returns(() => "SecondLocalizedValue");
+      const translated = localizationHelper.translate(text);
+      expect(translated).to.be.eq("Front FirstLocalizedValue and SecondLocalizedValue End");
     });
 
   });
@@ -50,8 +58,8 @@ describe("LocalizationHelper", () => {
 
     it("translates labelDefinition", () => {
       const node = createRandomECInstancesNode();
-      node.label.rawValue = "NotLocalized";
-      i18nMock.setup((x) => x.translate("NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
+      node.label.rawValue = "@namespace:NotLocalized@";
+      i18nMock.setup((x) => x.translate("namespace:NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       localizationHelper.getLocalizedNodes([node]);
       expect(node.label.rawValue).to.be.eq("LocalizedValue");
     });
@@ -62,9 +70,9 @@ describe("LocalizationHelper", () => {
 
     it("translates contentItem labelDefinitions", () => {
       const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
-      contentItem.label.rawValue = "NotLocalized";
+      contentItem.label.rawValue = "@namespace:NotLocalized@";
       const content = new Content(createRandomDescriptor(), [contentItem]);
-      i18nMock.setup((x) => x.translate("NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
+      i18nMock.setup((x) => x.translate("namespace:NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       localizationHelper.getLocalizedContent(content);
       expect(content.contentSet[0]!.label.rawValue).to.be.eq("LocalizedValue");
     });
@@ -75,8 +83,8 @@ describe("LocalizationHelper", () => {
 
     it("translates labelDefinition", () => {
       const labelDefinition = createRandomLabelDefinition();
-      labelDefinition.rawValue = "NotLocalized";
-      i18nMock.setup((x) => x.translate("NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
+      labelDefinition.rawValue = "@namespace:NotLocalized@";
+      i18nMock.setup((x) => x.translate("namespace:NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       localizationHelper.getLocalizedLabelDefinition(labelDefinition);
       expect(labelDefinition.rawValue).to.be.eq("LocalizedValue");
     });
@@ -84,14 +92,14 @@ describe("LocalizationHelper", () => {
     it("translates labelDefinition with composite value", () => {
       const compositeValue = createRandomLabelCompositeValue();
       compositeValue.values.forEach((value) => {
-        value.rawValue = "NotLocalized";
+        value.rawValue = "@namespace:NotLocalized@";
       });
       const labelDefinition: LabelDefinition = {
         displayValue: "Display",
         rawValue: compositeValue,
         typeName: "composite",
       };
-      i18nMock.setup((x) => x.translate("NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
+      i18nMock.setup((x) => x.translate("namespace:NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       localizationHelper.getLocalizedLabelDefinition(labelDefinition);
       compositeValue.values.forEach((value) => {
         expect(value.rawValue).to.be.eq("LocalizedValue");
@@ -117,8 +125,8 @@ describe("LocalizationHelper", () => {
 
     it("translates labelDefinitions", () => {
       const labelDefinitions = [createRandomLabelDefinition(), createRandomLabelDefinition()];
-      labelDefinitions.forEach((labelDefinition) => labelDefinition.rawValue = "NotLocalized");
-      i18nMock.setup((x) => x.translate("NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
+      labelDefinitions.forEach((labelDefinition) => labelDefinition.rawValue = "@namespace:NotLocalized@");
+      i18nMock.setup((x) => x.translate("namespace:NotLocalized", moq.It.isAny())).returns(() => "LocalizedValue");
       localizationHelper.getLocalizedLabelDefinitions(labelDefinitions);
       labelDefinitions.forEach((labelDefinition) => {
         expect(labelDefinition.rawValue).to.be.eq("LocalizedValue");

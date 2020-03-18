@@ -82,7 +82,7 @@ export interface FieldDefinitions {
 /** Properties that define [[Form]] including the callback to be called when the Submit button is pressed.
  * @beta
  */
-interface IFormProps {
+export interface FormProps {
   /** Required async callback the processes the Form data and throws and Error if the data cannot be processed.  */
   handleFormSubmit: (values: FieldValues) => Promise<void>;
   /** Definition used to create each Field in the Form. */
@@ -145,12 +145,12 @@ interface IFormProps {
  * }
  * @beta
  */
-export class Form extends React.Component<IFormProps, FormState> {
+export class Form extends React.Component<FormProps, FormState> {
   private _submitButtonLabel = UiCore.translate("form.submitButtonLabel");
   private _errorPrefix = UiCore.translate("form.errorPrefix");
   private _errorSuffix = UiCore.translate("form.errorSuffix");
 
-  constructor(props: IFormProps) {
+  constructor(props: FormProps) {
     super(props);
 
     // set initial values for field values

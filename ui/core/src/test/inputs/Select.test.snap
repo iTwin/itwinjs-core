@@ -3,13 +3,6 @@
 exports[`<Select /> renders array options correctly 1`] = `
 <select
   className="uicore-inputs-select"
-  options={
-    Array [
-      "Option 1",
-      "Option 2",
-      "Option 3",
-    ]
-  }
 >
   <option
     key="0"
@@ -35,7 +28,6 @@ exports[`<Select /> renders array options correctly 1`] = `
 exports[`<Select /> renders correctly 1`] = `
 <select
   className="uicore-inputs-select"
-  options={Array []}
 />
 `;
 
@@ -43,20 +35,12 @@ exports[`<Select /> renders defaultValue correctly 1`] = `
 <select
   className="uicore-inputs-select"
   defaultValue="test"
-  options={Array []}
 />
 `;
 
 exports[`<Select /> renders object options correctly 1`] = `
 <select
   className="uicore-inputs-select"
-  options={
-    Object {
-      "option1": "Option 1",
-      "option2": "Option 2",
-      "option3": "Option3",
-    }
-  }
 >
   <option
     key="option1"
@@ -82,7 +66,7 @@ exports[`<Select /> renders object options correctly 1`] = `
 exports[`<Select /> renders placeholder correctly 1`] = `
 <select
   className="uicore-inputs-select"
-  options={Array []}
+  defaultValue="placeholder"
   placeholder="test"
   required={true}
 >
@@ -90,8 +74,7 @@ exports[`<Select /> renders placeholder correctly 1`] = `
     className="placeholder"
     disabled={true}
     key=""
-    selected={true}
-    value=""
+    value="placeholder"
   >
     test
   </option>
@@ -101,14 +84,12 @@ exports[`<Select /> renders placeholder correctly 1`] = `
 exports[`<Select /> renders status correctly 1`] = `
 <select
   className="uicore-inputs-select"
-  options={Array []}
 />
 `;
 
 exports[`<Select /> renders value correctly 1`] = `
 <select
   className="uicore-inputs-select"
-  options={Array []}
   value="test"
 />
 `;

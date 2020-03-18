@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { UiFramework, IModelInfo, ProjectInfo, ProjectScope } from "@bentley/ui-framework";
 import { IModelList } from "./IModelList";
 import { ProjectDropdown } from "./ProjectDropdown";

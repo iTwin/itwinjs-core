@@ -1,0 +1,13 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WidgetTarget should render targeted 1`] = `
+<div
+  class="nz-widget-widgetTarget nz-hidden nz-targeted nz-left"
+/>
+`;
+
+exports[`WidgetTarget should render with cursor type 1`] = `
+<div
+  class="nz-widget-widgetTarget nz-hidden nz-left nz-widgetPanels-cursorOverlay_cursor nz-grabbing"
+/>
+`;

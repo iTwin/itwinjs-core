@@ -97,7 +97,7 @@ export class VerticalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    super.reactElement = <VerticalPropertyGridWidget />;
+    super.reactNode = <VerticalPropertyGridWidget />;
   }
 }
 
@@ -144,7 +144,7 @@ export class HorizontalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = (
+    this.reactNode = (
       <WidgetContent
         anchor={HorizontalAnchor.Right}
         content={
@@ -202,7 +202,7 @@ export class HorizontalPropertyGridContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <HorizontalPropertyGridContent />;
+    this.reactNode = <HorizontalPropertyGridContent />;
   }
 }
 

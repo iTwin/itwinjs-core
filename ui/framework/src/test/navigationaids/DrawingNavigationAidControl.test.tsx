@@ -38,11 +38,11 @@ describe("DrawingNavigationAidControl", () => {
 
     const navigationWidgetDef = widgetDef as NavigationWidgetDef; // tslint:disable-line:deprecation
 
-    const reactElement = navigationWidgetDef.reactElement;
-    expect(reactElement).to.not.be.undefined;
-
-    const reactNode = navigationWidgetDef.renderCornerItem();
+    const reactNode = navigationWidgetDef.reactNode;
     expect(reactNode).to.not.be.undefined;
+
+    const cornerNode = navigationWidgetDef.renderCornerItem();
+    expect(cornerNode).to.not.be.undefined;
   });
 
 });

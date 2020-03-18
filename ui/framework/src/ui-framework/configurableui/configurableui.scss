@@ -37,7 +37,7 @@
   cursor: grabbing;
   position: fixed;
   pointer-events: none;
-  z-index: 9999;
+  @include uicore-z-index(dragdrop);
   left: 0;
   top: 0;
   height: 100%;

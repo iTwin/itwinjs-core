@@ -1,0 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../scrollbar";
+
+.nz-widget-content {
+  overflow: auto;
+  flex-grow: 1;
+  flex-basis: 0;
+
+  @include nz-scrollbar;
+}

@@ -28,6 +28,7 @@ import { SampleExpandableBlock } from "./SampleExpandableBlock";
 
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg";
+import { SampleContextMenu } from "./SampleContextMenu";
 
 /** Creates a Component Example */
 export const createComponentExample = (title: string, description: string | undefined, content: React.ReactNode): ComponentExampleProps => {
@@ -84,6 +85,15 @@ export class ComponentExamplesProvider {
     };
   }
 
+  private static get contextMenuSample(): ComponentExampleCategory {
+    return {
+      title: "ContextMenu",
+      examples: [
+        createComponentExample("ContextMenu", undefined, <UnderlinedButton onClick={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
+      ],
+    };
+  }
+
   private static get expandableListBlockSamples(): ComponentExampleCategory {
     return {
       title: "ExpandableList/Block",
@@ -91,16 +101,16 @@ export class ComponentExamplesProvider {
         createComponentExample("ExpandableList", "ExpandableList with one ExpandableBlock",
           <ExpandableList className="uicore-full-width">
             <SampleExpandableBlock title="Test" isExpanded={true} onClick={() => { }}>
-              Hello
+              Hello World!
             </SampleExpandableBlock>
-          </ExpandableList >),
+          </ExpandableList>),
         createComponentExample("ExpandableList w/ singleExpandOnly", "ExpandableList with singleExpandOnly prop",
           <ExpandableList className="uicore-full-width" singleExpandOnly={true} defaultActiveBlock={0}>
-            <ExpandableBlock title="Test0" isExpanded={false} onClick={() => { }}>
-              Hello0
-            </ExpandableBlock>
             <ExpandableBlock title="Test1" isExpanded={false} onClick={() => { }}>
-              Hello1
+              Hello World 1
+            </ExpandableBlock>
+            <ExpandableBlock title="Test2" isExpanded={false} onClick={() => { }}>
+              Hello World 2
             </ExpandableBlock>
           </ExpandableList>),
       ],
@@ -122,6 +132,7 @@ export class ComponentExamplesProvider {
 
         createComponentExample("Basic Select", "Basic Select component", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} />),
         createComponentExample("Disabled Select", "Select with disabled prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} disabled />),
+        createComponentExample("Placeholder Select", "Select with placeholder prop", <Select options={["Option 1", "Option 2", "Option 3", "Option 4"]} placeholder="Pick an option" />),
 
         createComponentExample("Basic Textarea", "Textarea with placeholder", <Textarea placeholder="Basic Textarea" />),
         createComponentExample("Disabled Textarea", "Textarea with disabled prop", <Textarea placeholder="Disabled Textarea" disabled />),
@@ -153,13 +164,13 @@ export class ComponentExamplesProvider {
         createComponentExample("LoadingStatus", undefined, <LoadingStatus message="Loading status..." percent={50} />),
         createComponentExample("Basic LoadingPrompt", undefined, <LoadingPrompt title="Title" />),
         createComponentExample("LoadingPrompt with message", undefined, <LoadingPrompt title="Title" message="This is the message" />),
-        createComponentExample("Deterministic LoadingPrompt", undefined, <LoadingPrompt title="Title" message="This is the message" isDeterministic={true} />),
-        createComponentExample("Deterministic LoadingPrompt with percent", undefined,
-          <LoadingPrompt title="Title" message="This is the message" isDeterministic={true} percent={50} />),
-        createComponentExample("Deterministic LoadingPrompt with cancel", undefined,
-          <LoadingPrompt title="Title" message="This is the message" isDeterministic={true} percent={50} showCancel={true} />),
-        createComponentExample("Deterministic LoadingPrompt with status", undefined,
-          <LoadingPrompt title="Title" message="This is the message" isDeterministic={true} showStatus={true} percent={50} status="updating..." />),
+        createComponentExample("Determinate LoadingPrompt", undefined, <LoadingPrompt title="Title" message="This is the message" isDeterminate={true} />),
+        createComponentExample("Determinate LoadingPrompt with percent", undefined,
+          <LoadingPrompt title="Title" message="This is the message" isDeterminate={true} percent={50} />),
+        createComponentExample("Determinate LoadingPrompt with cancel", undefined,
+          <LoadingPrompt title="Title" message="This is the message" isDeterminate={true} percent={50} showCancel={true} />),
+        createComponentExample("Determinate LoadingPrompt with status", undefined,
+          <LoadingPrompt title="Title" message="This is the message" isDeterminate={true} showStatus={true} percent={50} status="Updating..." />),
       ],
     };
   }
@@ -168,7 +179,9 @@ export class ComponentExamplesProvider {
     return {
       title: "SearchBox",
       examples: [
-        createComponentExample("SearchBox", undefined, <SearchBox placeholder="Search" onValueChanged={(_value: string) => { }} />),
+        createComponentExample("SearchBox", undefined,
+          // tslint:disable-next-line: no-console
+          <SearchBox placeholder="Search" onValueChanged={(value: string) => console.log(`Search text: ${value}`)} />),
       ],
     };
   }
@@ -202,11 +215,11 @@ export class ComponentExamplesProvider {
       title: "SplitButton",
       examples: [
         createComponentExample("Basic SplitButton", "Basic SplitButton",
-          <SplitButton label="Split Button">
+          <SplitButton label="Split Button" onClick={() => { }}>
             {this.splitButtonMenuItems.map((node) => node)}
           </SplitButton>),
         createComponentExample("SplitButton with border", "SplitButton with drawBorder prop",
-          <SplitButton label="Split Button" drawBorder>
+          <SplitButton label="Split Button" drawBorder icon="icon-placeholder" onClick={() => { }}>
             {this.splitButtonMenuItems.map((node) => node)}
           </SplitButton>),
       ],
@@ -264,7 +277,7 @@ export class ComponentExamplesProvider {
             <a>Link 1</a>
             <a>Link 2</a>
           </FeaturedTile>),
-        createComponentExample("Featured Tile", undefined, <MinimalTile title="Minimal Tile" icon="icon-placeholder" />),
+        createComponentExample("Minimal Tile", undefined, <MinimalTile title="Minimal Tile" icon="icon-placeholder" />),
         createComponentExample("Featured Minimal Tile", undefined, <MinimalFeaturedTile title="Minimal Featured Tile" icon="icon-placeholder" />),
         createComponentExample("Tile stepNum={0}", undefined, <MinimalFeaturedTile stepNum={0} title="Tile stepNum={0}" icon="icon-placeholder" />),
         createComponentExample("Tile stepNum={6}", undefined, <MinimalFeaturedTile stepNum={6} title="Tile stepNum={6}" icon="icon-placeholder" />),
@@ -293,6 +306,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.badgeSamples,
       ComponentExamplesProvider.buttonSamples,
       ComponentExamplesProvider.checkListBoxSamples,
+      ComponentExamplesProvider.contextMenuSample,
       ComponentExamplesProvider.expandableListBlockSamples,
       ComponentExamplesProvider.inputsSamples,
       ComponentExamplesProvider.loadingSamples,

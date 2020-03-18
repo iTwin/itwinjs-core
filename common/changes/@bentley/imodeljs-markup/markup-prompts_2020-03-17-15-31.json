@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-markup",
+      "comment": "#282930 Fix markup prompts.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "Brien.Bastings@bentley.com"
+}

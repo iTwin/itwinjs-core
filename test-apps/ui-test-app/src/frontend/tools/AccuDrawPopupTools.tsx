@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, FitViewTool, WindowAreaTool, ZoomViewTool, PanViewTool, RotateViewTool, SelectionTool } from "@bentley/imodeljs-frontend";
-import { BadgeType, AbstractMenuItemProps, AbstractToolbarProps } from "@bentley/ui-abstract";
+import { BadgeType, AbstractMenuItemProps, AbstractToolbarProps, RelativePosition } from "@bentley/ui-abstract";
 import { CommandItemDef, ActionButtonItemDef } from "@bentley/ui-framework";
 
 export class AccuDrawPopupTools {
@@ -236,6 +236,19 @@ export class AccuDrawPopupTools {
         IModelApp.uiAdmin.showToolbar(
           this._markerToolbar(), IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
           this._toolbarItemExecuted, this._toolbarCancel);
+      },
+    });
+  }
+
+  public static get showToolbarOnViewport() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showToolbar", execute: () => {
+        const viewport = IModelApp.viewManager.selectedView;
+        if (viewport) {
+          IModelApp.uiAdmin.showToolbar(
+            this._markerToolbar(), IModelApp.uiAdmin.createXAndY(200, 200), IModelApp.uiAdmin.createXAndY(8, 8),
+            this._toolbarItemExecuted, this._toolbarCancel, RelativePosition.BottomRight, viewport.parentDiv);
+        }
       },
     });
   }

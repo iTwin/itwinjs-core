@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FloatingWidgets should render 1`] = `
+<div
+  class="nz-widget-widget nz-widget-floatingWidget"
+  style="min-height: 300px; min-width: 200px; max-height: 300px; max-width: 200px; left: 0px; top: 100px;"
+>
+  <div
+    class="nz-widget-titleBar"
+  >
+    <div
+      class="nz-handle"
+    />
+    <div
+      class="nz-widget-tabs"
+    >
+      <div
+        class="nz-widget-overflow nz-hidden"
+      >
+        <div
+          class="nz-button"
+        >
+          <div
+            class="nz-icon"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widget-content"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-left"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-top"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-right"
+  />
+  <div
+    class="nz-widget-floatingWidget_handle nz-bottom"
+  />
+</div>
+`;

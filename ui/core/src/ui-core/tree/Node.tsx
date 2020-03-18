@@ -6,7 +6,7 @@
  * @module Tree
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { Checkbox, CheckboxProps } from "../inputs/checkbox/Checkbox";
 import { CheckBoxState } from "../enums/CheckBoxState";

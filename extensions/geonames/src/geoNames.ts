@@ -245,7 +245,7 @@ export class GeoNameExtension extends Extension {
 }
 
 // This variable is set by webPack when building a extension.
-declare var PLUGIN_NAME: string;
+declare let PLUGIN_NAME: string;
 
 // Register the extension with the extensionAdmin.
 IModelApp.extensionAdmin.register(new GeoNameExtension(PLUGIN_NAME));

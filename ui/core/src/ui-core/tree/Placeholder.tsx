@@ -6,7 +6,7 @@
  * @module Tree
  */
 
-import * as classnames from "classnames";
+import classnames from "classnames";
 import * as React from "react";
 import { LEVEL_OFFSET } from "./Node";
 import "./Placeholder.scss";

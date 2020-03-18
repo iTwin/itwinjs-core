@@ -166,7 +166,7 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
  */
 // istanbul ignore next
 export class IconPropertyEditor extends PropertyEditorBase {
-  public get reactElement(): React.ReactNode {
+  public get reactNode(): React.ReactNode {
     return <IconEditor />;
   }
 }

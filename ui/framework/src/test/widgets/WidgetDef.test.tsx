@@ -23,7 +23,7 @@ describe("WidgetDef", () => {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.reactElement = <div />;
+      this.reactNode = <div />;
     }
   }
 
@@ -83,7 +83,7 @@ describe("WidgetDef", () => {
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
     expect(widgetDef.getWidgetControl(ConfigurableUiControlType.Widget)).to.not.be.undefined;
-    expect(widgetDef.reactElement).to.not.be.undefined;
+    expect(widgetDef.reactNode).to.not.be.undefined;
   });
 
   it("labelKey and tooltipKey should return translated string", () => {
@@ -104,8 +104,8 @@ describe("WidgetDef", () => {
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
-    widgetDef.reactElement = <div />;
-    expect(widgetDef.reactElement).to.not.be.undefined;
+    widgetDef.reactNode = <div />;
+    expect(widgetDef.reactNode).to.not.be.undefined;
   });
 
   it("widgetControl using constructor classId", () => {
@@ -118,7 +118,7 @@ describe("WidgetDef", () => {
     expect(widgetControl).to.not.be.undefined;
     if (widgetControl)
       expect(widgetControl.classId).to.eq("TestWidget");
-    expect(widgetDef.reactElement).to.not.be.undefined;
+    expect(widgetDef.reactNode).to.not.be.undefined;
   });
 
   it("setWidgetState", () => {

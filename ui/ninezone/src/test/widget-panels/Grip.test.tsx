@@ -4,110 +4,186 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
-import { act, renderHook } from "@testing-library/react-hooks";
+import { act, fireEvent, render } from "@testing-library/react";
+import { renderHook } from "@testing-library/react-hooks";
 import {
-  WidgetPanelGrip, useResizeGrip, WidgetPanelContext, createNineZoneState, addPanelWidget, NineZoneContext,
-  NineZoneDispatch, NineZoneDispatchContext, TOGGLE_PANEL_COLLAPSED,
+  WidgetPanelGrip, createNineZoneState, addPanelWidget, NineZoneDispatch, PANEL_TOGGLE_COLLAPSED, NineZoneProvider, PanelStateContext, PANEL_RESIZE, useResizeGrip,
 } from "../../ui-ninezone";
+import { Point } from "@bentley/ui-core";
 
 describe("WidgetPanelGrip", () => {
-  it("should dispatch TOGGLE_PANEL_COLLAPSED", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should render resizing", () => {
+    const nineZone = createNineZoneState();
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <PanelStateContext.Provider value={nineZone.panels.left}>
+          <WidgetPanelGrip />
+        </PanelStateContext.Provider>
+      </NineZoneProvider>,
+    );
+    const grip = container.getElementsByClassName("nz-widgetPanels-grip")[0];
+    act(() => {
+      fireEvent.pointerDown(grip);
+      fireEvent.pointerMove(grip);
+    });
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should dispatch PANEL_TOGGLE_COLLAPSED", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", {});
     render(
-      <NineZoneDispatchContext.Provider value={dispatch}>
-        <NineZoneContext.Provider value={nineZone}>
-          <WidgetPanelContext.Provider value="left">
-            <WidgetPanelGrip />
-          </WidgetPanelContext.Provider>
-        </NineZoneContext.Provider>
-      </NineZoneDispatchContext.Provider>,
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <PanelStateContext.Provider value={nineZone.panels.left}>
+          <WidgetPanelGrip />
+        </PanelStateContext.Provider>
+      </NineZoneProvider>,
     );
+    const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
     act(() => {
-      const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
       fireEvent.doubleClick(grip);
     });
     dispatch.calledOnceWithExactly(sinon.match({
-      type: TOGGLE_PANEL_COLLAPSED,
+      type: PANEL_TOGGLE_COLLAPSED,
       side: "left",
     })).should.true;
+  });
+
+  it("should start resize via timer and dispatch PANEL_RESIZE", () => {
+    const fakeTimers = sandbox.useFakeTimers();
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <PanelStateContext.Provider value={nineZone.panels.left}>
+          <WidgetPanelGrip />
+        </PanelStateContext.Provider>
+      </NineZoneProvider>,
+    );
+    const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
+    act(() => {
+      fireEvent.pointerDown(grip);
+    });
+    act(() => {
+      fakeTimers.tick(300);
+    });
+    act(() => {
+      const event = document.createEvent("MouseEvent");
+      event.initEvent("pointermove");
+      sinon.stub(event, "clientX").get(() => 10);
+      fireEvent(document, event);
+    });
+    dispatch.calledOnceWithExactly(sinon.match({
+      type: PANEL_RESIZE,
+      side: "left",
+      resizeBy: 10,
+    })).should.true;
+  });
+
+  it("should not start resize w/o pointer down", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <PanelStateContext.Provider value={nineZone.panels.left}>
+          <WidgetPanelGrip />
+        </PanelStateContext.Provider>
+      </NineZoneProvider>,
+    );
+    const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
+    act(() => {
+      fireEvent.pointerMove(grip);
+    });
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should reset initial position on pointer up", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", {});
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        <PanelStateContext.Provider value={nineZone.panels.left}>
+          <WidgetPanelGrip />
+        </PanelStateContext.Provider>
+      </NineZoneProvider>,
+    );
+    const grip = document.getElementsByClassName("nz-widgetPanels-grip")[0];
+    act(() => {
+      fireEvent.pointerDown(grip);
+      fireEvent.pointerMove(grip);
+      fireEvent.pointerUp(grip);
+    });
+    container.firstChild!.should.matchSnapshot();
   });
 });
 
 describe("useResizeGrip", () => {
-  it("should invoke onResize for left grip", () => {
-    const spy = sinon.stub<NonNullable<Parameters<typeof useResizeGrip>[1]>>();
-    const { result } = renderHook(() => useResizeGrip("left", spy));
-    const element = document.createElement("div");
-    act(() => {
-      result.current[0](element);
-      StartResize(element);
-      Resize(100, 0);
-    });
-    spy.calledOnceWithExactly(100).should.true;
-  });
+  function Wrapper(props: { children?: React.ReactNode }) {
+    const nineZone = createNineZoneState();
+    return (
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={sinon.spy()}
+      >
+        {props.children}
+      </NineZoneProvider>
+    );
+  }
 
   it("should invoke onResize for top grip", () => {
     const spy = sinon.stub<NonNullable<Parameters<typeof useResizeGrip>[1]>>();
-    const { result } = renderHook(() => useResizeGrip("top", spy));
+    const { result } = renderHook(() => useResizeGrip("top", spy), {
+      wrapper: Wrapper,
+    });
     const element = document.createElement("div");
     act(() => {
-      result.current[0](element);
-      StartResize(element);
-      Resize(100, 50);
+      (result.current[1] as React.MutableRefObject<HTMLDivElement>).current = element;
+      result.current[0](new Point());
+      const event = document.createEvent("MouseEvent");
+      event.initEvent("pointermove");
+      sinon.stub(event, "clientY").get(() => 10);
+      fireEvent(document, event);
     });
-    spy.calledOnceWithExactly(50).should.true;
+    spy.calledOnceWithExactly(10).should.true;
   });
 
-  it("should invoke onResize for right grip", () => {
+  it("should invoke onResize for bottom grip", () => {
     const spy = sinon.stub<NonNullable<Parameters<typeof useResizeGrip>[1]>>();
-    const { result } = renderHook(() => useResizeGrip("right", spy));
+    const { result } = renderHook(() => useResizeGrip("bottom", spy), {
+      wrapper: Wrapper,
+    });
     const element = document.createElement("div");
     act(() => {
-      result.current[0](element);
-      StartResize(element);
-      Resize(100, 50);
+      (result.current[1] as React.MutableRefObject<HTMLDivElement>).current = element;
+      result.current[0](new Point());
+      const event = document.createEvent("MouseEvent");
+      event.initEvent("pointermove");
+      sinon.stub(event, "clientY").get(() => 10);
+      fireEvent(document, event);
     });
-    spy.calledOnceWithExactly(-100).should.true;
-  });
-
-  it("should not invoke onResize for right grip", () => {
-    const onResize = sinon.stub<NonNullable<Parameters<typeof useResizeGrip>[1]>>();
-    const onEnd = sinon.stub<NonNullable<Parameters<typeof useResizeGrip>[2]>>();
-    const { result } = renderHook(() => useResizeGrip("right", onResize, onEnd));
-    const element = document.createElement("div");
-    act(() => {
-      result.current[0](null);
-      StartResize(element);
-      Resize(10, 10);
-      EndResize();
-    });
-    onResize.notCalled.should.true;
-    onEnd.notCalled.should.true;
+    spy.calledOnceWithExactly(-10).should.true;
   });
 });
-
-/** @internal */
-export function StartResize(element: Element) {
-  const pointerDown = document.createEvent("HTMLEvents");
-  pointerDown.initEvent("pointerdown");
-  element.dispatchEvent(pointerDown);
-}
-
-/** @internal */
-export function Resize(x: number, y: number) {
-  const pointerDown = document.createEvent("MouseEvent");
-  pointerDown.initEvent("pointermove");
-  sinon.stub(pointerDown, "clientX").get(() => x);
-  sinon.stub(pointerDown, "clientY").get(() => y);
-  document.dispatchEvent(pointerDown);
-}
-
-/** @internal */
-export function EndResize() {
-  const pointerUp = document.createEvent("HTMLEvents");
-  pointerUp.initEvent("pointerup");
-  document.dispatchEvent(pointerUp);
-}

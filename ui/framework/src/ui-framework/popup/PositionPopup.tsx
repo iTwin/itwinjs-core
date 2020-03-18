@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 
 import { CommonProps, PointProps, SizeProps, Size, CommonDivProps, Div } from "@bentley/ui-core";
 

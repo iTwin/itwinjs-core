@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import classnames from "classnames";
-import { CommonProps, Popup, Position } from "@bentley/ui-core";
+import { RelativePosition } from "@bentley/ui-abstract";
+import { CommonProps, Popup } from "@bentley/ui-core";
 import "./ContextMenu.scss";
 
 /** Properties for [[ContextMenuItem]] component
@@ -69,7 +70,7 @@ export interface ContextMenuProps extends CommonProps {
   /** Show or hide the context menu */
   isOpened: boolean;
   /** Position the context menu relative to the parent */
-  position: Position;
+  position: RelativePosition;
   /** List of context menu items */
   items?: MenuItem[];
   /** Called when the mouse is clicked outside the context menu */

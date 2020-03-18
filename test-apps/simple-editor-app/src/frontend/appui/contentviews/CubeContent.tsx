@@ -15,7 +15,7 @@ class CubeContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <CubeContent />;
+    this.reactNode = <CubeContent />;
   }
 
   /** Get the NavigationAidControl associated with this ContentControl */

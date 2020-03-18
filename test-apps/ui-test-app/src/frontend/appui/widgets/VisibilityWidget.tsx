@@ -14,7 +14,7 @@ import "./VisibilityWidget.scss";
 export class VisibilityWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
-    this.reactElement = <VisibilityTreeComponent imodel={options.iModelConnection} activeView={IModelApp.viewManager.selectedView} enablePreloading={options.enablePreloading}
+    this.reactNode = <VisibilityTreeComponent imodel={options.iModelConnection} activeView={IModelApp.viewManager.selectedView} enablePreloading={options.enablePreloading}
       config={options.config} />;
   }
 }
