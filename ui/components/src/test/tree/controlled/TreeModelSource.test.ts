@@ -104,6 +104,25 @@ describe("TreeModelSource", () => {
       expect(changes.modifiedNodeIds[0]).to.be.eq(inputNode.id);
     });
 
+    it("clears model and adds new nodes", () => {
+      modelSource.modifyModel((model) => {
+        model.clearChildren(undefined);
+      });
+      expect(modelSource.getVisibleNodes().getNumNodes()).to.be.eq(0);
+      const newInput: TreeModelNodeInput = {
+        id: faker.random.uuid(),
+        isExpanded: faker.random.boolean(),
+        item: { id: faker.random.uuid(), label: PropertyRecord.fromString(faker.random.word(), "label") },
+        label: PropertyRecord.fromString(faker.random.word(), "label"),
+        isLoading: faker.random.boolean(),
+        isSelected: faker.random.boolean(),
+      };
+      modelSource.modifyModel((model) => {
+        model.setChildren(undefined, [newInput], 0);
+      });
+      expect(modelSource.getVisibleNodes().getNumNodes()).to.be.eq(1);
+    });
+
   });
 
   describe("getModel", () => {

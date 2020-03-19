@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { PrimitiveValue, PropertyValueFormat, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs, TreeModelNode } from "../../../../ui-components";
 
 /** Properties for [[TreeNodeEditor]] component
@@ -57,26 +57,14 @@ export function TreeNodeEditor(props: TreeNodeEditorProps) {
   );
 }
 
-function createPropertyRecord(label: string | PropertyRecord, typename: string = "text", editor?: string) {
-  const createPrimitiveValue = (value: string): PrimitiveValue => ({
-    valueFormat: PropertyValueFormat.Primitive,
-    value,
-    displayValue: value,
-  });
-
-  const v = typeof label === "string" ? createPrimitiveValue(label) : label.value;
-
-  const p: PropertyDescription = {
+function createPropertyRecord(label: PropertyRecord) {
+  const property: PropertyDescription = {
     name: "tree-node-editor",
     displayLabel: "Tree Node Editor",
-    typename,
+    typename: label.property.typename,
   };
 
-  // istanbul ignore if
-  if (editor)
-    p.editor = { name: editor, params: [] };
-
-  const record = new PropertyRecord(v, p);
+  const record = new PropertyRecord(label.value, property);
   record.description = "";
   record.isReadonly = false;
 

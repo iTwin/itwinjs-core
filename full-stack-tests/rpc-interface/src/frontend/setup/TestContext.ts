@@ -9,7 +9,7 @@ import { OpenAPIInfo, BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { Config, AccessToken } from "@bentley/imodeljs-clients";
 import { NoRenderApp, IModelApp } from "@bentley/imodeljs-frontend";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-signin-tool/lib/frontend";
+import { getAccessTokenFromBackend, TestUserCredentials, TestOidcConfiguration } from "@bentley/oidc-signin-tool/lib/frontend";
 
 import { Settings, getRpcInterfaces } from "../../common/Settings";
 import { IModelSession } from "./IModelSession";
@@ -68,7 +68,11 @@ export class TestContext {
       this.adminUserAccessToken = await getAccessTokenFromBackend({
         email: this.settings.users[0].email,
         password: this.settings.users[0].password,
-      } as TestUserCredentials);
+      } as TestUserCredentials, {
+        clientId: this.settings.oidcClientId,
+        redirectUri: this.settings.oidcRedirect,
+        scope: this.settings.oidcScopes,
+      } as TestOidcConfiguration);
     }
 
     const iModelData = this.settings.iModel;

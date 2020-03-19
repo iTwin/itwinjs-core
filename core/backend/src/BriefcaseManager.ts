@@ -1235,11 +1235,7 @@ export class BriefcaseManager {
    * @param encryptionPropsString `JSON.stringify(IModelEncryptionProps) | undefined`
    */
   public static openStandalone(pathname: string, openMode: OpenMode, encryptionPropsString?: string): BriefcaseEntry {
-    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname, undefined, undefined, undefined, openMode)))
-      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open standalone iModel at ${pathname} again - it has already been opened once`, Logger.logError, loggerCategory);
-
     const nativeDb = new IModelHost.platform.DgnDb();
-
     const res = nativeDb.openIModel(pathname, openMode, undefined, encryptionPropsString);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, "Could not open standalone iModel", Logger.logError, loggerCategory, () => ({ pathname }));
@@ -1247,16 +1243,11 @@ export class BriefcaseManager {
     const briefcaseId: number = nativeDb.getBriefcaseId();
     const briefcase = new BriefcaseEntry("", nativeDb.getDbGuid(), nativeDb.getParentChangeSetId(), pathname, OpenParams.standalone(openMode), briefcaseId);
     briefcase.setNativeDb(nativeDb);
-
-    BriefcaseManager._cache.addBriefcase(briefcase);
     return briefcase;
   }
 
   /** Create a standalone iModel from the local disk */
   public static createStandalone(fileName: string, args: CreateIModelProps & IModelEncryptionProps): BriefcaseEntry {
-    if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(fileName, undefined, undefined, undefined, OpenMode.ReadWrite)))
-      throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, "Could not create standalone iModel. File already exists", Logger.logError, loggerCategory, () => ({ fileName }));
-
     const nativeDb = new IModelHost.platform.DgnDb();
     const argsString = JSON.stringify(args);
 
@@ -1270,16 +1261,7 @@ export class BriefcaseManager {
 
     const briefcase = new BriefcaseEntry("", nativeDb.getDbGuid(), "", fileName, OpenParams.standalone(OpenMode.ReadWrite), BriefcaseId.LegacyStandalone);
     briefcase.setNativeDb(nativeDb);
-    BriefcaseManager._cache.addBriefcase(briefcase);
     return briefcase;
-  }
-
-  /** Close the standalone briefcase */
-  public static closeStandalone(briefcase: BriefcaseEntry) {
-    assert(briefcase.openParams.isSnapshot, "Can use IModelDb.closeStandalone() only to close a snapshot iModel. Use IModelDb.close() instead");
-    BriefcaseManager.closeBriefcase(briefcase, true);
-    if (BriefcaseManager._cache.findBriefcase(briefcase))
-      BriefcaseManager._cache.deleteBriefcase(briefcase);
   }
 
   /** Deletes a file

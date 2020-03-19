@@ -53,6 +53,14 @@ describe("TreeEventHandler", () => {
 
   });
 
+  describe("modelSource", () => {
+
+    it("returns modelSource", () => {
+      expect(eventHandler.modelSource).to.be.deep.eq(modelSourceMock.object);
+    });
+
+  });
+
   describe("onNodeExpanded", () => {
 
     it("calls TreeMutator expandNode", () => {

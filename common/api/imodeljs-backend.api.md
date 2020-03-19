@@ -508,8 +508,8 @@ export class BriefcaseIModelDb extends IModelDb {
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
     // @internal
     get eventSink(): EventSink | undefined;
-    // (undocumented)
-    static find(iModelToken: IModelToken): BriefcaseIModelDb;
+    // @internal
+    static findByToken(iModelToken: IModelToken): BriefcaseIModelDb;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
@@ -529,6 +529,8 @@ export class BriefcaseIModelDb extends IModelDb {
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @internal (undocumented)
     protected setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry): void;
+    // @internal
+    static tryFindByToken(iModelToken: IModelToken): BriefcaseIModelDb | undefined;
 }
 
 // @internal
@@ -537,7 +539,6 @@ export class BriefcaseManager {
     // (undocumented)
     static get cacheDir(): string;
     static close(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, keepBriefcase: KeepBriefcase): Promise<void>;
-    static closeStandalone(briefcase: BriefcaseEntry): void;
     static get connectClient(): ConnectClient;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<string>;
     static createStandalone(fileName: string, args: CreateIModelProps & IModelEncryptionProps): BriefcaseEntry;
@@ -2268,7 +2269,7 @@ export class IModelCloneContext {
 // @public
 export abstract class IModelDb extends IModel {
     // @internal
-    protected constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams);
+    protected constructor(nativeDb: IModelJsNative.DgnDb, briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams);
     abandonChanges(): void;
     // @internal (undocumented)
     get briefcase(): BriefcaseEntry;
@@ -2316,6 +2317,8 @@ export abstract class IModelDb extends IModel {
     get isReadonly(): boolean;
     get isSnapshot(): boolean;
     // @internal
+    get isStandalone(): boolean;
+    // @internal
     protected static logUsage(requestContext: AuthorizedClientRequestContext, contextId: string, iModelDb: IModelDb): Promise<void>;
     // (undocumented)
     static readonly maxLimit = 10000;
@@ -2348,6 +2351,7 @@ export abstract class IModelDb extends IModel {
     protected setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry): void;
     // (undocumented)
     readonly tiles: IModelDb.Tiles;
+    static tryFind(iModelToken: IModelToken): IModelDb | undefined;
     // @beta (undocumented)
     readonly txns: TxnManager;
     updateEcefLocation(ecef: EcefLocation): void;
@@ -2457,6 +2461,7 @@ export class IModelExporter {
     exportFonts(): void;
     exportModel(modeledElementId: Id64String): void;
     exportModelContents(modelId: Id64String, elementClassFullName?: string): void;
+    exportRelationship(relClassFullName: string, relInstanceId: Id64String): void;
     exportRelationships(baseRelClassFullName: string): void;
     exportRepositoryLinks(): void;
     exportSubModels(parentModelId: Id64String): void;
@@ -3628,9 +3633,10 @@ export class SnapshotIModelDb extends IModelDb {
     close(): void;
     static createEmpty(snapshotFile: string, options: CreateEmptySnapshotIModelProps): SnapshotIModelDb;
     static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotIModelDb;
-    // @internal (undocumented)
-    static find(iModelToken: IModelToken): SnapshotIModelDb;
+    get filePath(): string;
     static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb;
+    // @internal
+    static tryFindByPath(filePath: string): SnapshotIModelDb | undefined;
 }
 
 // @public
@@ -3802,7 +3808,9 @@ export enum SqliteValueType {
 // @internal
 export class StandaloneIModelDb extends IModelDb {
     close(): void;
+    get filePath(): string;
     static open(filePath: string, openMode?: OpenMode): StandaloneIModelDb;
+    static tryFindByPath(filePath: string): StandaloneIModelDb | undefined;
 }
 
 // @internal
@@ -4030,8 +4038,8 @@ export class UlasUtilities {
     static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
     // @deprecated (undocumented)
     static markFeature(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): BentleyStatus;
-    static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): void;
-    static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): void;
+    static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startDateZ?: Date, endDateZ?: Date, additionalData?: AdditionalFeatureData): Promise<void>;
+    static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): Promise<void>;
     // @deprecated (undocumented)
     static trackUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): BentleyStatus;
 }

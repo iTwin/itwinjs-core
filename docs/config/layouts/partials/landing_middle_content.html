@@ -17,11 +17,14 @@
     </div>
     <div class="middle-content-media" style="order:2;">
       {{#each this.video}}
+      <img class='middle-content-youtube' src="{{this.url}}">
+      <!--
       <iframe class='middle-content-youtube' src="{{this.url}}" frameborder="0"
           allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      -->
       {{/each}}
-    {{else}}
-    <div class=" middle-content-text" style="order:1;">
+      {{else}}
+      <div class=" middle-content-text" style="order:1;">
         {{#if this.header}}
         <h4> {{{this.header}}} </h4>
         <span class="gradient"></span>
@@ -31,76 +34,76 @@
           {{{this.content}}}
         </p>
         {{/if}}
+      </div>
+      <iframe class='middle-content-media' src="{{this.video}}" frameborder="0"
+        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      {{/if_even}}
     </div>
-    <iframe class='middle-content-media' src="{{this.video}}" frameborder="0"
-      allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-    {{/if_even}}
+    {{/each}}
   </div>
-  {{/each}}
-</div>
-<div id="demo-container">
-  <div class="try-imodeljs-text" style="margin-top:56px;">
-    <h4> Try iModel.js now </h4>
-  </div>
-  <img src="landing-page/assets/placeholder_viewer_690x431.png" class="example-view-demonstrator">
-  <div class="overlay">
-    <script>
-      // Detect browser, from: https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser/9851769
-      // Opera 8.0+
-      var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
+  <div id="demo-container">
+    <div class="try-imodeljs-text" style="margin-top:56px;">
+      <h4> Try iModel.js now </h4>
+    </div>
+    <img src="landing-page/assets/placeholder_viewer_690x431.png" class="example-view-demonstrator">
+    <div class="overlay">
+      <script>
+        // Detect browser, from: https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser/9851769
+        // Opera 8.0+
+        var isOpera = (!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(' OPR/') >= 0;
 
-      // Firefox 1.0+
-      var isFirefox = typeof InstallTrigger !== 'undefined';
+        // Firefox 1.0+
+        var isFirefox = typeof InstallTrigger !== 'undefined';
 
-      // Safari 3.0+ "[object HTMLElementConstructor]"
-      var isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
+        // Safari 3.0+ "[object HTMLElementConstructor]"
+        var isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
 
-      // Internet Explorer 6-11
-      var isIE = /*@cc_on!@*/false || !!document.documentMode;
+        // Internet Explorer 6-11
+        var isIE = /*@cc_on!@*/false || !!document.documentMode;
 
-      // Edge 20+
-      var isEdge = !isIE && !!window.StyleMedia;
+        // Edge 20+
+        var isEdge = !isIE && !!window.StyleMedia;
 
-      // Chrome 1+
-      var isChrome = !!window.chrome && !!window.chrome.webstore;
+        // Chrome 1+
+        var isChrome = !!window.chrome && !!window.chrome.webstore;
 
-      // Blink engine detection
-      var isBlink = (isChrome || isOpera) && !!window.CSS;
+        // Blink engine detection
+        var isBlink = (isChrome || isOpera) && !!window.CSS;
 
-      function replaceViewer(e) {
-        if (isIE || isEdge) {
-          document.getElementById("viewiModelBtn").innerHTML = "Sorry, the browser you are using is not supported. Please open the iModel.js viewer with one of the following browsers:<br>Firefox, Chrome, Safari";
-        } else {
-          var page = document.location.pathname + "/landing-page-public-viewer-demonstrator";
-          ga('send', 'pageview', page);
-          document.getElementById("demo-container").innerHTML = "<iframe src='./learning/public-viewer-demonstrator/' class='iframe-viewer'></iframe>";
+        function replaceViewer(e) {
+          if (isIE || isEdge) {
+            document.getElementById("viewiModelBtn").innerHTML = "Sorry, the browser you are using is not supported. Please open the iModel.js viewer with one of the following browsers:<br>Firefox, Chrome, Safari";
+          } else {
+            var page = document.location.pathname + "/landing-page-public-viewer-demonstrator";
+            ga('send', 'pageview', page);
+            document.getElementById("demo-container").innerHTML = "<iframe src='./learning/public-viewer-demonstrator/' class='iframe-viewer'></iframe>";
+          }
+          e.preventDefault();
         }
-        e.preventDefault();
+      </script>
+
+      <a id="viewiModelBtn" class="btn btn-outline-secondary mb-2" href="javascript:;" role="button" target="_blank"
+        onclick="replaceViewer(event)">Open iModel.js Viewer Example</a>
+
+    </div>
+  </div>
+
+  <script>
+    // LaunchDarkly script for turning off the viewer.
+    $(document).ready(function () {
+      var shouldShow = ldclient.variation(featureFlags.LandingPageViewer);
+      if (shouldShow === undefined) {
+        ldclient.on('ready', function () {
+          shouldShow = ldclient.variation(featureFlags.LandingPageViewer);
+          if (!shouldShow) {
+            $('#viewiModelBtn').html('Under Construction').addClass('disabled').removeAttr('href').removeAttr('onclick');
+            $('.try-imodeljs-text').html('<h4> We are working on it. Check back later. </h4>');
+          }
+        });
       }
-    </script>
-
-    <a id="viewiModelBtn" class="btn btn-outline-secondary mb-2" href="javascript:;" role="button" target="_blank"
-      onclick="replaceViewer(event)">Open iModel.js Viewer Example</a>
-
-  </div>
-</div>
-
-<script>
-  // LaunchDarkly script for turning off the viewer.
-  $(document).ready(function () {
-    var shouldShow = ldclient.variation(featureFlags.LandingPageViewer);
-    if (shouldShow === undefined) {
-      ldclient.on('ready', function () {
-        shouldShow = ldclient.variation(featureFlags.LandingPageViewer);
-        if (!shouldShow) {
-          $('#viewiModelBtn').html('Under Construction').addClass('disabled').removeAttr('href').removeAttr('onclick');
-          $('.try-imodeljs-text').html('<h4> We are working on it. Check back later. </h4>');
-        }
-      });
-    }
-    else if (!shouldShow) {
-      $('#viewiModelBtn').html('Under Construction').addClass('disabled').removeAttr('href').removeAttr('onclick');
-      $('.try-imodeljs-text').html('<h4> We are working on it. Check back later. </h4>');
-    }
-  });
-</script>
+      else if (!shouldShow) {
+        $('#viewiModelBtn').html('Under Construction').addClass('disabled').removeAttr('href').removeAttr('onclick');
+        $('.try-imodeljs-text').html('<h4> We are working on it. Check back later. </h4>');
+      }
+    });
+  </script>

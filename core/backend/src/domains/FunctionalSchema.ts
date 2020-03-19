@@ -35,16 +35,14 @@ export class FunctionalSchema extends Schema {
   public static async importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) {
     // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     requestContext.enter();
-    if (!iModelDb.isSnapshot) {
+    if (iModelDb instanceof BriefcaseIModelDb) {
       if (!(requestContext instanceof AuthorizedClientRequestContext)) {
         throw new IModelError(AuthStatus.Error, "Importing the schema requires an AuthorizedClientRequestContext");
       }
-      if (iModelDb instanceof BriefcaseIModelDb) {
-        await iModelDb.concurrencyControl.lockSchema(requestContext);
-        requestContext.enter();
-      }
+      await iModelDb.concurrencyControl.lockSchema(requestContext);
+      requestContext.enter();
     }
-    const stat = iModelDb.briefcase.nativeDb.importFunctionalSchema();
+    const stat = iModelDb.nativeDb.importFunctionalSchema();
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing Functional schema", Logger.logError, loggerCategory);
     }

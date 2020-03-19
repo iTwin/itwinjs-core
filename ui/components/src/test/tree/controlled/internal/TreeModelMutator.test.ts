@@ -36,6 +36,14 @@ describe("TreeModelMutator", () => {
       .verifiable(moq.Times.once());
   });
 
+  describe("modelSource", () => {
+
+    it("returns modelSource", () => {
+      expect(modelMutator.modelSource).to.be.deep.eq(treeModelSourceMock.object);
+    });
+
+  });
+
   describe("expandNode", () => {
 
     beforeEach(() => {

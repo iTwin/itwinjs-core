@@ -12,7 +12,7 @@ import { Element, GeometricElement3d } from "./Element";
 import { ElementAspect, ElementMultiAspect } from "./ElementAspect";
 import { IModelDb } from "./IModelDb";
 import { Model } from "./Model";
-import { Relationship, RelationshipProps } from "./Relationship";
+import { Relationship, RelationshipProps, SourceAndTarget } from "./Relationship";
 
 const loggerCategory: string = BackendLoggerCategory.IModelImporter;
 
@@ -296,23 +296,17 @@ export class IModelImporter {
       Logger.logInfo(loggerCategory, `Ignoring ${relationshipProps.classFullName} instance because of invalid RelationshipProps.targetId`);
       return Id64.invalid;
     }
-    try {
-      // check for an existing relationship
-      const relSourceAndTarget = { sourceId: relationshipProps.sourceId, targetId: relationshipProps.targetId };
-      const relationship = this.targetDb.relationships.getInstance(relationshipProps.classFullName, relSourceAndTarget);
-      // if relationship found, update it
+    // check for an existing relationship
+    const relSourceAndTarget: SourceAndTarget = { sourceId: relationshipProps.sourceId, targetId: relationshipProps.targetId };
+    const relationship: Relationship | undefined = this.targetDb.relationships.tryGetInstance(relationshipProps.classFullName, relSourceAndTarget);
+    if (undefined !== relationship) { // if relationship found, update it
       relationshipProps.id = relationship.id;
       if (this.hasRelationshipChanged(relationship, relationshipProps)) {
         this.onUpdateRelationship(relationshipProps);
       }
       return relationshipProps.id;
-    } catch (error) {
-      // catch NotFound error and insert relationship
-      if ((error instanceof IModelError) && (IModelStatus.NotFound === error.errorNumber)) {
-        return this.onInsertRelationship(relationshipProps);
-      } else {
-        throw error;
-      }
+    } else {
+      return this.onInsertRelationship(relationshipProps);
     }
   }
 

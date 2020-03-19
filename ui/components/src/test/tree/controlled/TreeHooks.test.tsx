@@ -14,7 +14,8 @@ import {
 import { VisibleTreeNodes, TreeModel, MutableTreeModel } from "../../../ui-components/tree/controlled/TreeModel";
 import { TreeModelSource, TreeModelChanges } from "../../../ui-components/tree/controlled/TreeModelSource";
 import { TreeDataProviderRaw, TreeDataProvider } from "../../../ui-components/tree/TreeDataProvider";
-import { TreeEventHandler } from "../../../ui-components/tree/controlled/TreeEventHandler";
+import { TreeEventHandler, TreeEventHandlerParams } from "../../../ui-components/tree/controlled/TreeEventHandler";
+import { ITreeNodeLoader } from "../../../ui-components/tree/controlled/TreeNodeLoader";
 
 describe("useVisibleTreeNodes", () => {
   const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
@@ -200,7 +201,7 @@ describe("useTreeModelSource", () => {
 
 describe("useTreeEventsHandler", () => {
 
-  it("creates and disposes events handler", () => {
+  it("creates and disposes events handler using factory function", () => {
     const disposeSpy = sinon.spy();
     const handler = { dispose: disposeSpy };
     const factory = sinon.mock().returns(handler);
@@ -210,6 +211,20 @@ describe("useTreeEventsHandler", () => {
     );
     expect(factory).to.be.calledOnce;
     expect(result.current).to.eq(handler);
+    expect(disposeSpy).to.not.be.called;
+    unmount();
+    expect(disposeSpy).to.be.calledOnce;
+  });
+
+  it("creates and disposes events handler using event handler params", () => {
+    const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();
+    const modelSourceMock = moq.Mock.ofType<TreeModelSource>();
+    const { result, unmount } = renderHook(
+      (props: { params: TreeEventHandlerParams }) => useTreeEventsHandler(props.params),
+      { initialProps: { params: { nodeLoader: nodeLoaderMock.object, modelSource: modelSourceMock.object } } },
+    );
+    expect(result.current).to.not.be.undefined;
+    const disposeSpy = sinon.spy(result.current, "dispose");
     expect(disposeSpy).to.not.be.called;
     unmount();
     expect(disposeSpy).to.be.calledOnce;

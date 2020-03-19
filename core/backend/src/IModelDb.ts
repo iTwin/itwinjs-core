@@ -19,7 +19,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import * as os from "os";
-import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BinaryPropertyTypeConverter } from "./BinaryPropertyTypeConverter";
 import { BriefcaseEntry, BriefcaseId, BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
@@ -169,9 +168,16 @@ export abstract class IModelDb extends IModel {
   /** Check if this iModel has been opened read-only or not. */
   public get isReadonly(): boolean { return this.openParams.openMode === OpenMode.Readonly; }
 
+  /** Get the in-memory handle of the native Db
+   * @internal
+   */
+  public get nativeDb(): IModelJsNative.DgnDb { return this._nativeDb; }
+  private _nativeDb: IModelJsNative.DgnDb;
+
   /** @internal */
-  protected constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
+  protected constructor(nativeDb: IModelJsNative.DgnDb, briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
     super(iModelToken);
+    this._nativeDb = nativeDb;
     this.openParams = openParams;
     this.setupBriefcaseEntry(briefcaseEntry);
     this.initializeIModelDb();
@@ -179,8 +185,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected initializeIModelDb() {
     const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
-    const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
-    super.initialize(name, props);
+    super.initialize(props.rootSubject.name, props);
   }
 
   private static _ulasClient: UlasClient;
@@ -204,18 +209,20 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Returns true if this is an iModel from iModelHub (briefcase)
-   * @see [[open]]
+   * @see [[BriefcaseIModelDb.open]]
    */
-  public get isBriefcase(): boolean {
-    return this.briefcase.openParams.isBriefcase;
-  }
+  public get isBriefcase(): boolean { return this instanceof BriefcaseIModelDb; }
 
   /** Returns true if this is a *snapshot* iModel
-   * @see [[openSnapshot]]
+   * @see [[SnapshotIModelDb.open]]
    */
-  public get isSnapshot(): boolean {
-    return this.briefcase.openParams.isSnapshot;
-  }
+  public get isSnapshot(): boolean { return this instanceof SnapshotIModelDb; }
+
+  /** Returns true if this is a *standalone* iModel
+   * @see [[StandaloneIModelDb.open]]
+   * @internal
+   */
+  public get isStandalone(): boolean { return this instanceof StandaloneIModelDb; }
 
   /** @internal */
   protected setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry) {
@@ -227,12 +234,8 @@ export abstract class IModelDb extends IModel {
   protected clearBriefcaseEntry(): void {
     this.briefcase.iModelDb = undefined;
     this._briefcase = undefined;
+    (this as any)._nativeDb = undefined;
   }
-
-  /** Get the in-memory handle of the native Db
-   * @internal
-   */
-  public get nativeDb(): IModelJsNative.DgnDb { return this.briefcase.nativeDb; }
 
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return new BriefcaseId(!this.isOpen ? BriefcaseId.Illegal : this.briefcase.briefcaseId); }
@@ -259,10 +262,10 @@ export abstract class IModelDb extends IModel {
     return stmt;
   }
 
-  /** Check if the connection to the briefcase is valid or not
+  /** Return `true` if the underlying nativeDb is open and valid.
    * @internal
    */
-  public get isOpen(): boolean { return undefined !== this._briefcase; }
+  public get isOpen(): boolean { return undefined !== this.nativeDb; }
 
   /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
    *
@@ -491,7 +494,7 @@ export abstract class IModelDb extends IModel {
    */
   public prepareSqliteStatement(sql: string): SqliteStatement {
     const stmt = new SqliteStatement();
-    stmt.prepare(this.briefcase.nativeDb, sql);
+    stmt.prepare(this.nativeDb, sql);
     return stmt;
   }
 
@@ -623,8 +626,8 @@ export abstract class IModelDb extends IModel {
    */
   public async importSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext, schemaFileNames: string[]): Promise<void> {
     requestContext.enter();
-    if (this.isSnapshot) {
-      const status = this.briefcase.nativeDb.importSchemas(schemaFileNames);
+    if (this.isSnapshot || this.isStandalone) {
+      const status = this.nativeDb.importSchemas(schemaFileNames);
       if (DbResult.BE_SQLITE_OK !== status) {
         throw new IModelError(status, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
       }
@@ -641,7 +644,7 @@ export abstract class IModelDb extends IModel {
       requestContext.enter();
     }
 
-    const stat = this.briefcase.nativeDb.importSchemas(schemaFileNames);
+    const stat = this.nativeDb.importSchemas(schemaFileNames);
     if (DbResult.BE_SQLITE_OK !== stat) {
       throw new IModelError(stat, "Error importing schema", Logger.logError, loggerCategory, () => ({ schemaFileNames }));
     }
@@ -663,16 +666,31 @@ export abstract class IModelDb extends IModel {
     }
   }
 
-  /** Find an already open IModelDb. Used by the remoting logic.
-   * @throws [[IModelError]] if an open IModelDb matching the token is not found.
+  /** Find an already open IModelDb (considers all subclasses).
+   * @note This method is intended for use by RPC implementations.
+   * @throws [[IModelNotFoundResponse]] if an open IModelDb matching the token is not found.
    */
   public static find(iModelToken: IModelToken): IModelDb {
-    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
-    if (!briefcaseEntry || !briefcaseEntry.iModelDb || !briefcaseEntry.isOpen) {
-      Logger.logError(loggerCategory, "IModelDb not found in the in-memory briefcase cache", () => iModelToken);
-      throw new IModelNotFoundResponse();
+    const iModelDb: IModelDb | undefined = IModelDb.tryFind(iModelToken);
+    if (undefined === iModelDb) {
+      Logger.logError(loggerCategory, "IModelDb not found in the in-memory cache", () => iModelToken);
+      throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
-    return briefcaseEntry.iModelDb;
+    return iModelDb;
+  }
+
+  /** Find an already open IModelDb (considers all subclasses).
+   * @returns The matching IModelDb or `undefined`.
+   */
+  public static tryFind(iModelToken: IModelToken): IModelDb | undefined {
+    const briefcaseDb: BriefcaseIModelDb | undefined = BriefcaseIModelDb.tryFindByToken(iModelToken);
+    if (briefcaseDb) {
+      return briefcaseDb;
+    } else if (!iModelToken.key) {
+      return undefined;
+    }
+    const snapshotDb: SnapshotIModelDb | undefined = SnapshotIModelDb.tryFindByPath(iModelToken.key);
+    return snapshotDb ? snapshotDb : StandaloneIModelDb.tryFindByPath(iModelToken.key);
   }
 
   /** Get the ClassMetaDataRegistry for this iModel.
@@ -1910,7 +1928,7 @@ export class BriefcaseIModelDb extends IModelDb {
   private initializeEventSink() { if (this.iModelToken.key) { this._eventSink = EventSinkManager.get(this.iModelToken.key); } }
 
   private constructor(briefcaseEntry: BriefcaseEntry, iModelToken: IModelToken, openParams: OpenParams) {
-    super(briefcaseEntry, iModelToken, openParams);
+    super(briefcaseEntry.nativeDb, briefcaseEntry, iModelToken, openParams);
     this.setDefaultConcurrentControlAndPolicy();
     this.initializeEventSink();
   }
@@ -2091,8 +2109,29 @@ export class BriefcaseIModelDb extends IModelDb {
     }
   }
 
-  public static find(iModelToken: IModelToken): BriefcaseIModelDb {
-    return super.find(iModelToken) as BriefcaseIModelDb;
+  /** Find an already open BriefcaseIModelDb. Should only be used by RPC implementations.
+   * @throws [[IModelNotFoundResponse]] if an open BriefcaseIModelDb matching the token is not found.
+   * @internal
+   */
+  public static findByToken(iModelToken: IModelToken): BriefcaseIModelDb {
+    const briefcaseDb: BriefcaseIModelDb | undefined = BriefcaseIModelDb.tryFindByToken(iModelToken);
+    if (undefined === briefcaseDb) {
+      Logger.logError(loggerCategory, "BriefcaseIModelDb not found in the in-memory cache", () => iModelToken);
+      throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
+    }
+    return briefcaseDb;
+  }
+
+  /** Used to find open BriefcaseIModelDbs.
+   * @returns The matching BriefcaseIModelDb or `undefined`.
+   * @internal
+   */
+  public static tryFindByToken(iModelToken: IModelToken): BriefcaseIModelDb | undefined {
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    if (!briefcaseEntry || !briefcaseEntry.iModelDb || !briefcaseEntry.isOpen) {
+      return undefined;
+    }
+    return (briefcaseEntry.iModelDb instanceof BriefcaseIModelDb) ? briefcaseEntry.iModelDb : undefined;
   }
 
   /** Pull and Merge changes from iModelHub
@@ -2120,11 +2159,11 @@ export class BriefcaseIModelDb extends IModelDb {
    */
   public async pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void> {
     requestContext.enter();
-    if (this.briefcase.nativeDb.hasUnsavedChanges())
+    if (this.nativeDb.hasUnsavedChanges())
       return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Invalid to call pushChanges when there are unsaved changes", Logger.logError, loggerCategory, () => this.iModelToken));
     else if (this.openParams.syncMode !== SyncMode.PullAndPush)
       throw new IModelError(BentleyStatus.ERROR, "Invalid to call pushChanges when the IModel was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => this.iModelToken);
-    else if (!this.briefcase.nativeDb.hasSavedChanges())
+    else if (!this.nativeDb.hasSavedChanges())
       return Promise.resolve(); // nothing to push
 
     await this.concurrencyControl.onPushChanges(requestContext);
@@ -2242,13 +2281,21 @@ export class BriefcaseIModelDb extends IModelDb {
  * @beta
  */
 export class SnapshotIModelDb extends IModelDb {
+  /** Keep track of open snapshots to support `tryFind` for RPC purposes */
+  private static readonly _openDbs = new Map<string, SnapshotIModelDb>();
+  private _filePath: string;
+  /** The full path to the snapshot iModel file. */
+  public get filePath(): string { return this._filePath; }
+
   // WIP: remove BriefcaseEntry from this constructor
   private constructor(briefcaseEntry: BriefcaseEntry, openParams: OpenParams) {
     const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openParams.openMode);
-    super(briefcaseEntry, iModelToken, openParams);
+    super(briefcaseEntry.nativeDb, briefcaseEntry, iModelToken, openParams);
     if (!this.getBriefcaseId().isSnapshot) {
       throw new IModelError(IModelStatus.BadRequest, "Not a snapshot iModel", Logger.logError, loggerCategory);
     }
+    this._filePath = iModelToken.key!;
+    SnapshotIModelDb._openDbs.set(this.filePath, this);
   }
 
   /** Create an *empty* local [Snapshot]($docs/learning/backend/AccessingIModels.md#snapshot-imodels) iModel file.
@@ -2326,6 +2373,9 @@ export class SnapshotIModelDb extends IModelDb {
    * @beta
    */
   public static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb {
+    if (SnapshotIModelDb.tryFindByPath(filePath)) {
+      throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open snapshot iModel at ${filePath} again - it has already been opened once`, Logger.logError, loggerCategory);
+    }
     const encryptionPropsString: string | undefined = encryptionProps ? JSON.stringify(encryptionProps) : undefined;
     const briefcaseEntry: BriefcaseEntry = BriefcaseManager.openStandalone(filePath, OpenMode.Readonly, encryptionPropsString);
     return new SnapshotIModelDb(briefcaseEntry, OpenParams.openSnapshot());
@@ -2344,14 +2394,18 @@ export class SnapshotIModelDb extends IModelDb {
     }
     this.clearStatementCache(); // clear cache held in JavaScript
     this.clearSqliteStatementCache(); // clear cache held in JavaScript
-    BriefcaseManager.closeStandalone(this.briefcase);
+    this.nativeDb.closeIModel();
     this.clearBriefcaseEntry(); // WIP: should not need to call this for snapshots
+    SnapshotIModelDb._openDbs.delete(this.filePath);
+    (this as any)._nativeDb = undefined;
   }
 
-  // WIP: have method that uses the filePath instead
-  /** @internal */
-  public static find(iModelToken: IModelToken): SnapshotIModelDb {
-    return super.find(iModelToken) as SnapshotIModelDb;
+  /** Used to find open snapshot iModels.
+   * @returns The matching StandaloneIModelDb or `undefined`.
+   * @internal
+   */
+  public static tryFindByPath(filePath: string): SnapshotIModelDb | undefined {
+    return SnapshotIModelDb._openDbs.get(filePath);
   }
 }
 
@@ -2370,10 +2424,18 @@ export class SnapshotIModelDb extends IModelDb {
  * @internal
  */
 export class StandaloneIModelDb extends IModelDb {
+  /** Keep track of open standalone iModels to support `tryFind` for RPC purposes */
+  private static readonly _openDbs = new Map<string, StandaloneIModelDb>();
+  private _filePath: string;
+  /** The full path to the snapshot iModel file. */
+  public get filePath(): string { return this._filePath; }
+
   // WIP: remove BriefcaseEntry from this constructor
   private constructor(briefcaseEntry: BriefcaseEntry, openParams: OpenParams) {
     const iModelToken = new IModelToken(briefcaseEntry.getKey(), undefined, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openParams.openMode);
-    super(briefcaseEntry, iModelToken, openParams);
+    super(briefcaseEntry.nativeDb, briefcaseEntry, iModelToken, openParams);
+    this._filePath = iModelToken.key!;
+    StandaloneIModelDb._openDbs.set(this.filePath, this);
   }
 
   // WIP: enable createEmpty after new/high FutureStandalone briefcaseId is available
@@ -2404,7 +2466,17 @@ export class StandaloneIModelDb extends IModelDb {
   public close(): void {
     this.clearStatementCache(); // clear cache held in JavaScript
     this.clearSqliteStatementCache(); // clear cache held in JavaScript
-    BriefcaseManager.closeStandalone(this.briefcase);
-    this.clearBriefcaseEntry();
+    this.nativeDb.closeIModel();
+    this.clearBriefcaseEntry(); // WIP: should not need to call this for standalone
+    StandaloneIModelDb._openDbs.delete(this.filePath);
+    (this as any)._nativeDb = undefined;
+  }
+
+  /** Used to find open standalone iModels.
+   * @returns The matching StandaloneIModelDb or `undefined`.
+   * @internal
+   */
+  public static tryFindByPath(filePath: string): StandaloneIModelDb | undefined {
+    return StandaloneIModelDb._openDbs.get(filePath);
   }
 }

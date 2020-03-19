@@ -68,13 +68,13 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     if (iModelToken.openMode === OpenMode.Readonly)
       return Promise.resolve(true); // Close is a no-op for ReadOnly connections.
 
-    await BriefcaseIModelDb.find(iModelToken).close(requestContext, KeepBriefcase.No);
+    await BriefcaseIModelDb.findByToken(iModelToken).close(requestContext, KeepBriefcase.No);
     return Promise.resolve(true);
   }
 
   public async queryRows(tokenProps: IModelTokenProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority): Promise<QueryResponse> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    const iModelDb = IModelDb.find(iModelToken);
+    const iModelDb: IModelDb = IModelDb.find(iModelToken);
     return iModelDb.queryRows(ecsql, bindings, limit, quota, priority);
   }
 

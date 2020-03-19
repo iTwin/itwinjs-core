@@ -56,6 +56,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _partialRequest: SerializedRpcRequest | undefined = undefined;
   private _partialFulfillment: RpcRequestFulfillment | undefined = undefined;
   private _partialData: Uint8Array[] = [];
+  private _port: number = 0;
 
   public static async encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks> {
     const serialized = await request.protocol.serialize(request);
@@ -91,12 +92,13 @@ export class MobileRpcProtocol extends RpcProtocol {
       throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol require 'port' parameter");
     }
 
-    this.connect(MobileRpcConfiguration.args.port, false);
+    this._port = MobileRpcConfiguration.args.port;
+    this.connect(this._port, false);
 
     (window as any)._imodeljs_rpc_reconnect = (port: number) => {
       this.socket.close();
-      window.location.hash = window.location.hash.replace(`port=${MobileRpcConfiguration.args.port}`, `port=${port}`);
-      MobileRpcConfiguration.args.port = port;
+      window.location.hash = window.location.hash.replace(`port=${this._port}`, `port=${port}`);
+      this._port = port;
       this.connect(port, true);
     };
   }
