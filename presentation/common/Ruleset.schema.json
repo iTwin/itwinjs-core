@@ -2329,6 +2329,10 @@
           "description": "ID of a category specified through `PropertyCategorySpecification` in this scope.",
           "type": "string"
         },
+        "doNotHideOtherPropertiesOnDisplayOverride": {
+          "description": "Flag to control behavior of `isDisplayed` override when it's set to `true`.\nBy default, forcing property display hides all other properties.\nSetting `doNotHideOtherPropertiesOnDisplayOverride` to `true` disables that behavior and\nprevents forcing property display of one property from hiding other properties.",
+          "type": "boolean"
+        },
         "editor": {
           "$ref": "#/definitions/PropertyEditorSpecification",
           "description": "Custom property editor specification"

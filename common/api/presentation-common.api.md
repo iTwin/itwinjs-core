@@ -1151,6 +1151,7 @@ export namespace PropertyInfo {
 // @public
 export interface PropertyOverrides {
     categoryId?: string;
+    doNotHideOtherPropertiesOnDisplayOverride?: boolean;
     editor?: PropertyEditorSpecification;
     isDisplayed?: boolean;
     labelOverride?: string;
