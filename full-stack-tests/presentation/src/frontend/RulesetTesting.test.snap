@@ -16,54 +16,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "Physical Object [0-38]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "Physical Object",
-                              "rawValue": "Physical Object",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-38]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "38",
-                                    "rawValue": "38",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "Physical Object [0-38]",
                         "valueFormat": 0,
                       },
                     },
@@ -73,54 +30,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "Physical Object [0-39]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "Physical Object",
-                              "rawValue": "Physical Object",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-39]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "39",
-                                    "rawValue": "39",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "Physical Object [0-39]",
                         "valueFormat": 0,
                       },
                     },
@@ -130,54 +44,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1K]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1K]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1K",
-                                    "rawValue": "1K",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1K]",
                         "valueFormat": 0,
                       },
                     },
@@ -187,54 +58,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1L]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1L]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1L",
-                                    "rawValue": "1L",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1L]",
                         "valueFormat": 0,
                       },
                     },
@@ -244,54 +72,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1M]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1M]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1M",
-                                    "rawValue": "1M",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1M]",
                         "valueFormat": 0,
                       },
                     },
@@ -301,54 +86,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1N]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1N]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1N",
-                                    "rawValue": "1N",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1N]",
                         "valueFormat": 0,
                       },
                     },
@@ -358,54 +100,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1O]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1O]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1O",
-                                    "rawValue": "1O",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1O]",
                         "valueFormat": 0,
                       },
                     },
@@ -415,54 +114,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1P]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1P]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1P",
-                                    "rawValue": "1P",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1P]",
                         "valueFormat": 0,
                       },
                     },
@@ -472,54 +128,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1Q]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1Q]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1Q",
-                                    "rawValue": "1Q",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1Q]",
                         "valueFormat": 0,
                       },
                     },
@@ -529,54 +142,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1R]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1R]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1R",
-                                    "rawValue": "1R",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1R]",
                         "valueFormat": 0,
                       },
                     },
@@ -586,54 +156,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1S]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1S]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1S",
-                                    "rawValue": "1S",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1S]",
                         "valueFormat": 0,
                       },
                     },
@@ -643,54 +170,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1T]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1T]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1T",
-                                    "rawValue": "1T",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1T]",
                         "valueFormat": 0,
                       },
                     },
@@ -700,54 +184,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1U]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1U]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1U",
-                                    "rawValue": "1U",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1U]",
                         "valueFormat": 0,
                       },
                     },
@@ -757,54 +198,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1V]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1V]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1V",
-                                    "rawValue": "1V",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1V]",
                         "valueFormat": 0,
                       },
                     },
@@ -814,54 +212,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1W]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1W]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1W",
-                                    "rawValue": "1W",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1W]",
                         "valueFormat": 0,
                       },
                     },
@@ -871,54 +226,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1X]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1X]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1X",
-                                    "rawValue": "1X",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1X]",
                         "valueFormat": 0,
                       },
                     },
@@ -928,54 +240,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1Y]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1Y]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1Y",
-                                    "rawValue": "1Y",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1Y]",
                         "valueFormat": 0,
                       },
                     },
@@ -985,54 +254,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-1Z]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-1Z]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "1Z",
-                                    "rawValue": "1Z",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-1Z]",
                         "valueFormat": 0,
                       },
                     },
@@ -1042,54 +268,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2A]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2A]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2A",
-                                    "rawValue": "2A",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2A]",
                         "valueFormat": 0,
                       },
                     },
@@ -1099,54 +282,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2B]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2B]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2B",
-                                    "rawValue": "2B",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2B]",
                         "valueFormat": 0,
                       },
                     },
@@ -1156,54 +296,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2C]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2C]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2C",
-                                    "rawValue": "2C",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2C]",
                         "valueFormat": 0,
                       },
                     },
@@ -1213,54 +310,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2D]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2D]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2D",
-                                    "rawValue": "2D",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2D]",
                         "valueFormat": 0,
                       },
                     },
@@ -1270,54 +324,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2E]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2E]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2E",
-                                    "rawValue": "2E",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2E]",
                         "valueFormat": 0,
                       },
                     },
@@ -1327,54 +338,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2F]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2F]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2F",
-                                    "rawValue": "2F",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2F]",
                         "valueFormat": 0,
                       },
                     },
@@ -1384,54 +352,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2G]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2G]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2G",
-                                    "rawValue": "2G",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2G]",
                         "valueFormat": 0,
                       },
                     },
@@ -1441,54 +366,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2H]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2H]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2H",
-                                    "rawValue": "2H",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2H]",
                         "valueFormat": 0,
                       },
                     },
@@ -1498,54 +380,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2I]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2I]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2I",
-                                    "rawValue": "2I",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2I]",
                         "valueFormat": 0,
                       },
                     },
@@ -1555,54 +394,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2J]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2J]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2J",
-                                    "rawValue": "2J",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2J]",
                         "valueFormat": 0,
                       },
                     },
@@ -1612,54 +408,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2K]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2K]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2K",
-                                    "rawValue": "2K",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2K]",
                         "valueFormat": 0,
                       },
                     },
@@ -1669,54 +422,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2L]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2L]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2L",
-                                    "rawValue": "2L",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2L]",
                         "valueFormat": 0,
                       },
                     },
@@ -1726,54 +436,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2M]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2M]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2M",
-                                    "rawValue": "2M",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2M]",
                         "valueFormat": 0,
                       },
                     },
@@ -1783,54 +450,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2N]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2N]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2N",
-                                    "rawValue": "2N",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2N]",
                         "valueFormat": 0,
                       },
                     },
@@ -1840,54 +464,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2O]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2O]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2O",
-                                    "rawValue": "2O",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2O]",
                         "valueFormat": 0,
                       },
                     },
@@ -1897,54 +478,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2P]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2P]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2P",
-                                    "rawValue": "2P",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2P]",
                         "valueFormat": 0,
                       },
                     },
@@ -1954,54 +492,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2Q]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2Q]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2Q",
-                                    "rawValue": "2Q",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2Q]",
                         "valueFormat": 0,
                       },
                     },
@@ -2011,54 +506,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2R]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2R]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2R",
-                                    "rawValue": "2R",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2R]",
                         "valueFormat": 0,
                       },
                     },
@@ -2068,54 +520,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2S]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2S]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2S",
-                                    "rawValue": "2S",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2S]",
                         "valueFormat": 0,
                       },
                     },
@@ -2125,54 +534,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2T]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2T]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2T",
-                                    "rawValue": "2T",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2T]",
                         "valueFormat": 0,
                       },
                     },
@@ -2182,54 +548,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2U]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2U]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2U",
-                                    "rawValue": "2U",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2U]",
                         "valueFormat": 0,
                       },
                     },
@@ -2239,54 +562,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2V]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2V]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2V",
-                                    "rawValue": "2V",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2V]",
                         "valueFormat": 0,
                       },
                     },
@@ -2296,54 +576,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2W]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2W]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2W",
-                                    "rawValue": "2W",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2W]",
                         "valueFormat": 0,
                       },
                     },
@@ -2353,54 +590,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2X]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2X]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2X",
-                                    "rawValue": "2X",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2X]",
                         "valueFormat": 0,
                       },
                     },
@@ -2410,54 +604,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2Y]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2Y]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2Y",
-                                    "rawValue": "2Y",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2Y]",
                         "valueFormat": 0,
                       },
                     },
@@ -2467,54 +618,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-2Z]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-2Z]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "2Z",
-                                    "rawValue": "2Z",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-2Z]",
                         "valueFormat": 0,
                       },
                     },
@@ -2524,54 +632,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-20]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-20]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "20",
-                                    "rawValue": "20",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-20]",
                         "valueFormat": 0,
                       },
                     },
@@ -2581,54 +646,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-21]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-21]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "21",
-                                    "rawValue": "21",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-21]",
                         "valueFormat": 0,
                       },
                     },
@@ -2638,54 +660,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-22]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-22]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "22",
-                                    "rawValue": "22",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-22]",
                         "valueFormat": 0,
                       },
                     },
@@ -2695,54 +674,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-23]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-23]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "23",
-                                    "rawValue": "23",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-23]",
                         "valueFormat": 0,
                       },
                     },
@@ -2752,54 +688,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-24]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-24]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "24",
-                                    "rawValue": "24",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-24]",
                         "valueFormat": 0,
                       },
                     },
@@ -2809,54 +702,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-25]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-25]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "25",
-                                    "rawValue": "25",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-25]",
                         "valueFormat": 0,
                       },
                     },
@@ -2866,54 +716,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-26]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-26]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "26",
-                                    "rawValue": "26",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-26]",
                         "valueFormat": 0,
                       },
                     },
@@ -2923,54 +730,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-27]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-27]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "27",
-                                    "rawValue": "27",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-27]",
                         "valueFormat": 0,
                       },
                     },
@@ -2980,54 +744,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-28]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-28]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "28",
-                                    "rawValue": "28",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-28]",
                         "valueFormat": 0,
                       },
                     },
@@ -3037,54 +758,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-29]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-29]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "29",
-                                    "rawValue": "29",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-29]",
                         "valueFormat": 0,
                       },
                     },
@@ -3094,54 +772,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-30]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-30]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "30",
-                                    "rawValue": "30",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-30]",
                         "valueFormat": 0,
                       },
                     },
@@ -3151,54 +786,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-31]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-31]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "31",
-                                    "rawValue": "31",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-31]",
                         "valueFormat": 0,
                       },
                     },
@@ -3208,54 +800,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-32]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-32]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "32",
-                                    "rawValue": "32",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-32]",
                         "valueFormat": 0,
                       },
                     },
@@ -3265,54 +814,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-33]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-33]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "33",
-                                    "rawValue": "33",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-33]",
                         "valueFormat": 0,
                       },
                     },
@@ -3322,54 +828,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-34]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-34]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "34",
-                                    "rawValue": "34",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-34]",
                         "valueFormat": 0,
                       },
                     },
@@ -3379,54 +842,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-35]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-35]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "35",
-                                    "rawValue": "35",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-35]",
                         "valueFormat": 0,
                       },
                     },
@@ -3436,54 +856,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-36]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-36]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "36",
-                                    "rawValue": "36",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-36]",
                         "valueFormat": 0,
                       },
                     },
@@ -3493,54 +870,11 @@ Array [
                       "property": Object {
                         "displayLabel": "Label",
                         "name": "node_label",
-                        "typename": "composite",
+                        "typename": "string",
                       },
                       "value": Object {
                         "displayValue": "TestClass [0-37]",
-                        "value": Object {
-                          "parts": Array [
-                            Object {
-                              "displayValue": "TestClass",
-                              "rawValue": "TestClass",
-                              "typeName": "string",
-                            },
-                            Object {
-                              "displayValue": "[0-37]",
-                              "rawValue": Object {
-                                "parts": Array [
-                                  Object {
-                                    "displayValue": "[",
-                                    "rawValue": "[",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "0",
-                                    "rawValue": "0",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "-",
-                                    "rawValue": "-",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "37",
-                                    "rawValue": "37",
-                                    "typeName": "string",
-                                  },
-                                  Object {
-                                    "displayValue": "]",
-                                    "rawValue": "]",
-                                    "typeName": "string",
-                                  },
-                                ],
-                                "separator": "",
-                              },
-                              "typeName": "composite",
-                            },
-                          ],
-                          "separator": " ",
-                        },
+                        "value": "TestClass [0-37]",
                         "valueFormat": 0,
                       },
                     },
