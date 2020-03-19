@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { shallow } from "enzyme";
-import { WidgetPanelsToolSettings, useToolSettings, FrontstageManager, FrontstageDef, ZoneDef } from "../../ui-framework";
+import { WidgetPanelsToolSettings, useToolSettings, FrontstageManager, FrontstageDef, ZoneDef, ToolSettingsEntry, ToolUiProvider, ConfigurableCreateInfo } from "../../ui-framework";
 
 describe("WidgetPanelsToolSettings", () => {
   const sandbox = sinon.createSandbox();
@@ -49,17 +49,31 @@ describe("useToolSettings", () => {
   });
 
   it("should update tool settings", () => {
-    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => <></>);
+    const node = <></>;
+    const entries: ToolSettingsEntry[] = [{ labelNode: "Date", editorNode: <input type="date" /> }];
+
+    class Tool1UiProvider extends ToolUiProvider {
+      constructor(info: ConfigurableCreateInfo, options: any) {
+        super(info, options);
+        this.toolSettingsNode = node;
+        this.horizontalToolSettingNodes = this.getHorizontalToolSettings();
+      }
+
+      private getHorizontalToolSettings(): ToolSettingsEntry[] | undefined {
+        return entries;
+      }
+    }
+
+    sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
     const sut = renderHook(() => useToolSettings());
 
-    const node = <></>;
     act(() => {
-      sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => node);
+      sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => new Tool1UiProvider(new ConfigurableCreateInfo("test", "test", "test"), undefined));
       FrontstageManager.onToolActivatedEvent.emit({
         toolId: "",
       });
     });
 
-    sut.result.current!.should.eq(node);
+    sut.result.current!.should.eq(entries);
   });
 });

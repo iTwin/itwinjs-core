@@ -2068,7 +2068,8 @@ export class FrontstageManager {
     static get activeNestedFrontstage(): FrontstageDef | undefined;
     static get activeToolId(): string;
     static get activeToolInformation(): ToolInformation | undefined;
-    static get activeToolSettingsNode(): React.ReactNode | undefined;
+    // @internal
+    static get activeToolSettingsProvider(): ToolUiProvider | undefined;
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
     static clearFrontstageDefs(): void;
     static closeModalFrontstage(): void;
@@ -4801,6 +4802,23 @@ export interface ToolItemProps extends ItemProps, CommandHandler {
     toolId: string;
 }
 
+// @beta
+export interface ToolSettingsEntry {
+    // (undocumented)
+    editorNode: React.ReactNode;
+    // (undocumented)
+    labelNode: React.ReactNode;
+}
+
+// @beta
+export function ToolSettingsGrid({ settings }: ToolSettingsGripProps): JSX.Element;
+
+// @beta
+export interface ToolSettingsGripProps {
+    // (undocumented)
+    settings?: ToolSettingsEntry[];
+}
+
 // @internal
 export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
     constructor(props: ToolSettingsZoneProps);
@@ -4858,6 +4876,9 @@ export class ToolUiProvider extends ConfigurableUiControl {
     get dataProvider(): UiDataProvider | undefined;
     set dataProvider(d: UiDataProvider | undefined);
     getType(): ConfigurableUiControlType;
+    // @beta
+    get horizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
+    set horizontalToolSettingNodes(r: ToolSettingsEntry[] | undefined);
     get toolSettingsNode(): React.ReactNode;
     set toolSettingsNode(r: React.ReactNode);
     }
@@ -5089,7 +5110,7 @@ export interface UserProfileBackstageItemProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function useToolSettings(): React.ReactNode;
+export function useToolSettings(): ToolSettingsEntry[] | undefined;
 
 // @beta
 export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];

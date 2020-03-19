@@ -487,6 +487,9 @@ public;ToolIconChangedEventArgs
 public;ToolInformation
 public;ToolItemDef 
 public;ToolItemProps 
+beta;ToolSettingsEntry
+beta;ToolSettingsGrid({ settings }: ToolSettingsGripProps): JSX.Element
+beta;ToolSettingsGripProps
 internal;ToolSettingsZone 
 internal;ToolSettingsZoneProps 
 internal;ToolUiManager
@@ -516,7 +519,7 @@ internal;useGroupedItems: (items: readonly BackstageItem[]) => GroupedItems
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
-internal;useToolSettings(): React.ReactNode
+internal;useToolSettings(): ToolSettingsEntry[] | undefined
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider

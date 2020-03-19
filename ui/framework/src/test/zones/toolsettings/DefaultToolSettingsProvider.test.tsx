@@ -238,7 +238,7 @@ describe("DefaultToolUiSettingsProvider", () => {
         }
       }
 
-      const toolSettingsNode = FrontstageManager.activeToolSettingsNode;
+      const toolSettingsNode = FrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
 
       const renderedComponent = render(toolSettingsNode as React.ReactElement<any>);
@@ -273,7 +273,7 @@ describe("DefaultToolUiSettingsProvider", () => {
 
       // simulate sync from tool
       const newUseLengthValue: DialogItemValue = { value: false };
-      const syncItem: DialogPropertySyncItem = {value: newUseLengthValue, propertyName: useLengthDescription.name, isDisabled: false };
+      const syncItem: DialogPropertySyncItem = { value: newUseLengthValue, propertyName: useLengthDescription.name, isDisabled: false };
       const syncArgs = { toolId: testToolId, syncProperties: [syncItem] } as SyncToolSettingsPropertiesEventArgs;
       ToolUiManager.onSyncToolSettingsProperties.emit(syncArgs);
 
@@ -327,7 +327,7 @@ describe("DefaultToolUiSettingsProvider", () => {
         }
       }
 
-      const toolSettingsNode = FrontstageManager.activeToolSettingsNode;
+      const toolSettingsNode = FrontstageManager.activeToolSettingsProvider?.toolSettingsNode;
       expect(toolSettingsNode).to.not.be.undefined;
 
       const renderedComponent = render(toolSettingsNode as React.ReactElement<any>);

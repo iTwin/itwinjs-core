@@ -39,7 +39,7 @@ describe("Frontstage", () => {
   });
 
   beforeEach(() => {
-    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+    sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
   });
 
   afterEach(() => {

@@ -259,11 +259,7 @@ exports[`DockedToolSettings should render panel container 1`] = `
     <div
       class="panel-container"
     >
-      <div
-        class="nz-toolSettings-setting nz-overflown"
-      >
-        Entry 3
-      </div>
+      Entry 3
     </div>
   </div>
 </div>

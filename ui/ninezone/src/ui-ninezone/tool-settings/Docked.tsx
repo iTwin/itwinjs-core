@@ -12,7 +12,19 @@ import { CommonProps, useRefs, useResizeObserver, useOnOutsideClick } from "@ben
 import { DockedToolSettingsOverflow } from "./Overflow";
 import { ToolSettingsOverflowPanel } from "./Panel";
 import { DockedToolSettingsHandle } from "./Handle";
+import { assert } from "../../ui-ninezone";
 import "./Docked.scss";
+
+/** This component takes a DockedToolSetting "wrapper" component and extract only the label and editor components from it */
+function OverflowLabeAndEditor({ wrapper }: { wrapper: React.ReactNode }) {
+  assert(React.isValidElement(wrapper));
+  const wrapperChildren = (wrapper as React.ReactElement<any>).props.children;
+  return (
+    <>
+      {wrapperChildren && React.Children.map(wrapperChildren, (child: React.ReactNode) => child)}
+    </>
+  );
+}
 
 /** Properties of [[DockedToolSettings]] component.
  * @internal future
@@ -80,6 +92,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
     "nz-toolSettings-docked",
     props.className,
   );
+  // istanbul ignore next
   return (
     <div
       className={className}
@@ -134,7 +147,7 @@ export function DockedToolSettings(props: DockedToolSettingsProps) {
                     onResize: () => { },
                   }}
                 >
-                  {child}
+                  <OverflowLabeAndEditor wrapper={child} />
                 </DockedToolSettingsEntryContext.Provider>
               );
             })}

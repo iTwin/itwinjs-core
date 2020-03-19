@@ -83,6 +83,7 @@
     "file": "File"
   },
   "tool1": {
+    "date": "Date",
     "month": "Month",
     "number": "Number",
     "password": "Password",

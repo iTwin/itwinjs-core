@@ -9,8 +9,6 @@
 import { UiEvent } from "@bentley/ui-core";
 import { IModelApp, InteractiveTool } from "@bentley/imodeljs-frontend";
 import { DialogItem, DialogPropertySyncItem } from "@bentley/ui-abstract";
-import { Logger } from "@bentley/bentleyjs-core";
-import { UiFramework } from "../../UiFramework";
 import { SyncUiEventDispatcher } from "../../syncui/SyncUiEventDispatcher";
 
 // -----------------------------------------------------------------------------
@@ -43,13 +41,8 @@ export class ToolUiManager {
   private static _activeToolLabel: string = "";
   private static _activeToolDescription: string = "";
 
+  // istanbul ignore next
   private static syncToolSettingsProperties(toolId: string, syncProperties: DialogPropertySyncItem[]): void {
-    // istanbul ignore next
-    if (toolId !== ToolUiManager._toolIdForToolSettings) {
-      Logger.logError(UiFramework.loggerCategory(this), `Sync tool with UI - ToolId ${toolId} does not match id of cached properties ${ToolUiManager._toolIdForToolSettings}`);
-      return;
-    }
-
     ToolUiManager.onSyncToolSettingsProperties.emit({ toolId, syncProperties });
   }
 

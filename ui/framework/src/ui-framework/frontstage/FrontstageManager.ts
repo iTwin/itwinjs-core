@@ -26,6 +26,7 @@ import { UiShowHideManager } from "../utils/UiShowHideManager";
 import { UiFramework } from "../UiFramework";
 import { ContentGroup } from "../content/ContentGroup";
 import { PanelStateChangedEvent } from "../stagepanels/StagePanelDef";
+import { ToolUiProvider } from "../zones/toolsettings/ToolUiProvider";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -359,16 +360,11 @@ export class FrontstageManager {
 
   /** Gets the Tool Setting React node of the active tool.
    * @return  Tool Setting React node of the active tool, or undefined if there is no active tool or Tool Settings for the active tool.
+   * @internal
    */
-  public static get activeToolSettingsNode(): React.ReactNode | undefined {
+  public static get activeToolSettingsProvider(): ToolUiProvider | undefined {
     const activeToolInformation = FrontstageManager.activeToolInformation;
-    const toolUiProvider = (activeToolInformation) ? activeToolInformation.toolUiProvider : /* istanbul ignore next */ undefined;
-
-    // istanbul ignore else
-    if (toolUiProvider && toolUiProvider.toolSettingsNode)
-      return toolUiProvider.toolSettingsNode;
-
-    return undefined;
+    return (activeToolInformation) ? activeToolInformation.toolUiProvider : /* istanbul ignore next */ undefined;
   }
 
   /** Sets the active layout, content group and active content.

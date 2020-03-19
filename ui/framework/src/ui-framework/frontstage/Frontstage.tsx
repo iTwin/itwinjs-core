@@ -555,7 +555,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
           key={this.state.widgetKey}
           mode={this.props.toolSettingsMode}
         >
-          {FrontstageManager.activeToolSettingsNode}
+          {FrontstageManager.activeToolSettingsProvider && FrontstageManager.activeToolSettingsProvider.toolSettingsNode}
         </ToolSettingsContent>
       ), this._content);
     }
