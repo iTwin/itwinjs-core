@@ -107,8 +107,10 @@ export const [
 export function TreeRenderer(props: TreeRendererProps) {
   const coreTreeRef = useRef<CoreTree>(null);
   const previousVisibleNodes = usePrevious(props.visibleNodes);
+  const previousNodeHeight = usePrevious(props.nodeHeight);
   const variableSizeListRef = useRef<VariableSizeList>(null);
-  if (previousVisibleNodes !== undefined && previousVisibleNodes !== props.visibleNodes) {
+  if ((previousVisibleNodes !== undefined && previousVisibleNodes !== props.visibleNodes)
+    || (previousNodeHeight !== undefined && previousNodeHeight !== props.nodeHeight)) {
     /* istanbul ignore else */
     if (variableSizeListRef.current) {
       variableSizeListRef.current.resetAfterIndex(0, false);

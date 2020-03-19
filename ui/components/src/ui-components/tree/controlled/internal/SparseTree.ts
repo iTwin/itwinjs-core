@@ -101,7 +101,7 @@ export class SparseTree<T extends Node> {
     }
 
     if (parentId === undefined) {
-      this._rootNodes.setLength(0);
+      this._rootNodes = new SparseArray<string>();
       return;
     }
     if (deleteParent) {
