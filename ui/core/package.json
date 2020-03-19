@@ -107,7 +107,6 @@
     "jsdom-global": "3.0.2",
     "mocha": "^5.2.0",
     "nyc": "^14.0.0",
-    "resize-observer-polyfill": "1.5.1",
     "raf": "^3.4.0",
     "rimraf": "^3.0.2",
     "sinon": "^7.5.0",
@@ -132,6 +131,7 @@
     "react-autosuggest": "^9.4.3",
     "react-dom": "^16.8.0",
     "react-compound-slider": "^2.5.0",
+    "resize-observer-polyfill": "1.5.1",
     "svg-sprite-loader": "^3.8.0"
   },
   "nyc": {
