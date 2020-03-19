@@ -6,18 +6,19 @@
  * @module Dialog
  */
 
-import { DialogItem, DialogPropertySyncItem, DialogItemValue } from "./DialogItem";
+import { BaseDialogItem, DialogItem, DialogPropertySyncItem, DialogItemValue } from "./DialogItem";
 import { PropertyEditorParams, PropertyEditorParamTypes, SuppressLabelEditorParams} from "../properties/EditorParams";
 import { BeUiEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "../properties/Record";
 import { PropertyValueFormat, PrimitiveValue } from "../properties/Value";
+import { UiDataProvider } from "./UiDataProvider";
 
 /** DialogRow is the interface that groups dialog items into rows for building UI
  * @beta
  */
 export interface DialogRow {
   priority: number;
-  records: DialogItem[];
+  items: DialogItem[];
 }
 /** Arguments of [[DialogItemsManager.onChanged]] event.
  * @beta
@@ -37,25 +38,27 @@ export interface DialogItemSyncArgs {
 /** Items manager to generate UI items for Dialogs
  * @beta
  */
-export class DialogItemsManager  {
+export class DialogItemsManager extends  UiDataProvider {
   private _items: ReadonlyArray<DialogItem> = [];
   public rows: DialogRow[] = [];
-  public valueMap = new Map<string, DialogItem>();  // allows easy lookup of record given the property name
+  public valueMap = new Map<string, PropertyRecord>();  // allows easy lookup of record given the property name
   /** Event raised when the list of dialog items has changed */
   public readonly onItemsChanged = new BeUiEvent<(args: DialogItemsChangedArgs) => void>();
   public readonly onPropertiesChanged = new BeUiEvent<DialogItemSyncArgs>();
   public readonly onDataChanged = new BeUiEvent<DialogPropertySyncItem>();
   // istanbul ignore next
   public applyUiPropertyChange = (_item: DialogPropertySyncItem): void => {};
+  public isToolSettingsManager = (): boolean => {
+    return false;
+  }
   constructor (items?: ReadonlyArray<DialogItem>) {
+    super ();
     // istanbul ignore else
-    if (items) {
+    if (items)
       this.loadItemsInternal (items, false);
-      this.layoutDialogRows();
-    }
+
     this.onPropertiesChanged.addListener(this.updateItemProperties);
   }
-
   private loadItemsInternal(items: ReadonlyArray<DialogItem>, sendItemChanged: boolean) {
     this._items = items;
     this.layoutDialogRows();
@@ -95,23 +98,26 @@ export class DialogItemsManager  {
 
     this.rows = [];
     this._items.forEach((item) => {
-      this.valueMap.set(item.property.name, item);
+      const record  = DialogItemsManager.getPropertyRecord(item);
+      this.valueMap.set(item.property.name, record);
     // istanbul ignore else
-      if (item.lockProperty)
-        this.valueMap.set(item.lockProperty.property.name, item.lockProperty as DialogItem);
+      if (item.lockProperty) {
+        const lockRecord = DialogItemsManager.getPropertyRecord(item.lockProperty as DialogItem);
+        this.valueMap.set(item.lockProperty.property.name, lockRecord);
+      }
 
       const row = this.rows.find((value) => value.priority === item.editorPosition.rowPriority);
       if (row) {
-        row.records.push(item);
+        row.items.push(item);
       } else {
-        this.rows.push({priority: item.editorPosition.rowPriority, records: [item]});
+        this.rows.push({priority: item.editorPosition.rowPriority, items: [item]});
       }
     });
 
     // sort rows
     this.rows.sort((a: DialogRow, b: DialogRow) => a.priority - b.priority);
     // sort records
-    this.rows.forEach((row: DialogRow) => row.records.sort((a: DialogItem, b: DialogItem) => a.editorPosition.columnIndex - b.editorPosition.columnIndex));
+    this.rows.forEach((row: DialogRow) => row.items.sort((a: DialogItem, b: DialogItem) => a.editorPosition.columnIndex - b.editorPosition.columnIndex));
     return this.rows.length > 0;
   }
 
@@ -129,24 +135,32 @@ export class DialogItemsManager  {
     return !!item.lockProperty;
   }
 
-  public static getPropertyRecord = (dialogItem: DialogItem): PropertyRecord => {
+  public static getItemDisabledState (baseDialogItem: BaseDialogItem): boolean {
+    const dialogItem = baseDialogItem as DialogItem;
+    // istanbul ignore else
+    if (dialogItem === undefined || dialogItem.lockProperty === undefined)
+      return !!baseDialogItem.isDisabled;
+    const value = dialogItem.lockProperty.value;
+    // istanbul ignore next
+    if (value === undefined)
+      return !!baseDialogItem.isDisabled;
+
+    return !value.value as boolean;
+  }
+  public static getPropertyRecord = (dialogItem: BaseDialogItem): PropertyRecord => {
     const propertyValue = { valueFormat: PropertyValueFormat.Primitive, value: dialogItem.value.value, displayValue: dialogItem.value.displayValue };
     const record = new PropertyRecord(propertyValue as PrimitiveValue, dialogItem.property);
-    record.isDisabled = !!dialogItem.isDisabled;
+    record.isDisabled = DialogItemsManager.getItemDisabledState (dialogItem);
     return record;
   }
 
   public static onlyContainButtonGroupEditors(row: DialogRow): boolean {
-    for (const record of row.records) {
+    for (const item of row.items) {
       // istanbul ignore else
-      if (DialogItemsManager.hasAssociatedLockProperty(record) || undefined === record.property.editor || "enum-buttongroup" !== record.property.editor.name || DialogItemsManager.editorWantsLabel(record))
+      if (DialogItemsManager.hasAssociatedLockProperty(item) || undefined === item.property.editor || "enum-buttongroup" !== item.property.editor.name || DialogItemsManager.editorWantsLabel(item))
         return false;
     }
     return true;
-  }
-
-  /* istanbul ignore next */
-  public execute(): void {
   }
 
 }

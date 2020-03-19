@@ -84,6 +84,12 @@ const buttonGroupItem: DialogItem = {value: buttonGroupValue, property: getButto
 const dialogItems: DialogItem[] = [item1, item2, buttonGroupItem];
 
 describe("DialogItemsManager", () => {
+  describe("isToolSettingsManager", () => {
+    it("should not be a tool settings manager", () => {
+      const sut = new DialogItemsManager();
+      expect(sut.isToolSettingsManager()).to.be.false;
+    });
+  });
   describe("items", () => {
     it("should raise onItemsChanged event when new items are set", () => {
       const sut = new DialogItemsManager();

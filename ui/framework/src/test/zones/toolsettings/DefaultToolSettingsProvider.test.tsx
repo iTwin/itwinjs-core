@@ -7,9 +7,8 @@ import { expect } from "chai";
 import { render, cleanup } from "@testing-library/react";
 
 import TestUtils from "../../TestUtils";
-import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools, ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../../../ui-framework";
+import { ConfigurableUiManager, DefaultToolSettingsProvider, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps, CoreTools, ToolUiManager, SyncToolSettingsPropertiesEventArgs } from "../../../ui-framework";
 import { DialogItemValue, DialogItem, PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams, DialogPropertySyncItem, ButtonGroupEditorParams } from "@bentley/ui-abstract";
-import { DefaultToolSettingsProvider } from "../../../ui-framework/zones/toolsettings/DefaultToolSettingsProvider";
 
 describe("DefaultToolUiSettingsProvider", () => {
 
@@ -319,6 +318,12 @@ describe("DefaultToolUiSettingsProvider", () => {
 
         if (toolUiProvider) {
           expect(toolUiProvider.toolSettingsNode).to.not.be.undefined;
+          // simulate property update
+          const newlengthValue: DialogItemValue = {value: 7.5};
+          const lengthSyncItem: DialogPropertySyncItem = {value: newlengthValue, propertyName: lengthDescription.name};
+          const defaultProvider = toolUiProvider as DefaultToolSettingsProvider;
+          if (defaultProvider)
+            defaultProvider.applyUiPropertyChange(lengthSyncItem);
         }
       }
 

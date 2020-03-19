@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-abstract",
+      "comment": "Create a BaseDialogItem so that a lock toggle associated with another tool settings or dialog item does not require unnecessary members such as EditorPosition.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-abstract",
+  "email": "Nancy.McCall@Bentley.com"
+}

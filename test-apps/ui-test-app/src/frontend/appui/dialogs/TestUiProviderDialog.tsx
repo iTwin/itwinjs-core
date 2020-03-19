@@ -110,14 +110,6 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
       followUp();
     };
   }
-  public componentDidMount() {
-    this._itemsManager.onDataChanged.addListener(this.applyUiPropertyChange);
-  }
-
-  public componentWillUnmount() {
-    this._itemsManager.onDataChanged.removeListener(this.applyUiPropertyChange);
-  }
-
   private static _optionsName = "enumAsPicklist";
   private static _getEnumAsPicklistDescription = (): PropertyDescription => {
     return {
@@ -369,7 +361,8 @@ export class TestUiProviderDialog extends React.Component<TestUiProviderDialogPr
   }
 
   private showColorInfoFromUi(updatedValue: DialogPropertySyncItem) {
-    const msg = `Property '${updatedValue.propertyName}' updated to value ${this.colorDef.toRgbString()}`;
+    const tempColorDef = new ColorDef(updatedValue.value.value as number);
+    const msg = `Property '${updatedValue.propertyName}' updated to value ${tempColorDef.toRgbString()}`;
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 

@@ -1458,7 +1458,7 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    static hasAssociatedLockProperty(record: DialogItem): boolean;
+    static hasAssociatedLockProperty(item: DialogItem): boolean;
     get itemsManager(): DialogItemsManager;
     set itemsManager(itemsManager: DialogItemsManager);
     // (undocumented)
@@ -1469,13 +1469,11 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
 export class DefaultToolSettingsProvider extends ToolUiProvider {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
-    execute(): void;
-    // (undocumented)
-    getEditorRecord: (dialogItem: DialogItem) => PropertyRecord;
+    applyUiPropertyChange(syncItem: DialogPropertySyncItem): void;
     // (undocumented)
     onInitialize(): void;
     // (undocumented)
-    rows: TsRow[];
+    toolSettingsDP: ToolSettingsDataProvider;
     // (undocumented)
     valueMap: Map<string, DialogItem>;
 }
@@ -5542,7 +5540,7 @@ export function WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSe
 // @internal (undocumented)
 export interface WidgetPanelsDefaultToolSettingsProps {
     // (undocumented)
-    dataProvider: DefaultToolSettingsProvider;
+    itemsManager: DialogItemsManager;
 }
 
 // @internal (undocumented)
