@@ -283,6 +283,7 @@ beta;StatusMessageProps
 alpha;Tab 
 alpha;TabGroup 
 alpha;TabGroupProps 
+internal;TabIdContext: React.Context
 alpha;TabMode
 alpha;TabModeHelpers
 alpha;TabProps 
@@ -371,6 +372,7 @@ internal;useTabTarget(args: UseTabTargetArgs): (isTargeted: boolean) => void
 internal;UseTabTargetArgs
 internal;useTarget
 internal;useToolSettingsEntry(): DockedToolSettingsEntryContextArgs
+internal;useTransientState(onSave?: () => void, onRestore?: () => void): void
 internal;useWidgetTarget(args: UseWidgetTargetArgs): (isTargeted: boolean) => void
 internal;UseWidgetTargetArgs
 beta;VerticalAnchor
@@ -387,8 +389,15 @@ internal;WIDGET_TAB_DRAG_END = "WIDGET_TAB_DRAG_END"
 internal;WIDGET_TAB_DRAG_START = "WIDGET_TAB_DRAG_START"
 alpha;WidgetContent 
 internal;WidgetContentComponent: React.NamedExoticComponent
+internal;WidgetContentContainersContext: React.Context
+internal;WidgetContentManager: React.NamedExoticComponent
+internal;WidgetContentManagerContext: React.Context
+internal;WidgetContentManagerContextArgs
+internal;WidgetContentManagerProps
 internal;WidgetContentNodeContext: React.Context
 alpha;WidgetContentProps 
+internal;WidgetContentRenderer: React.NamedExoticComponent
+internal;WidgetContentRenderers: React.NamedExoticComponent
 internal;WidgetDragAction
 internal;WidgetDragEndAction
 internal;WidgetIdContext: React.Context

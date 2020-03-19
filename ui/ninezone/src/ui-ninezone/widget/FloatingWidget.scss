@@ -20,6 +20,12 @@
 
     @include uicore-z-index(drag-preview);
   }
+
+  &.nz-minimized {
+    .nz-widget-floatingWidget_handle {
+      visibility: hidden;
+    }
+  }
 }
 
 .nz-widget-floatingWidget_handle {

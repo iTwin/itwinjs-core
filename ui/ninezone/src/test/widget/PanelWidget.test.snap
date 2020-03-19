@@ -27,9 +27,6 @@ exports[`PanelWidget should render 1`] = `
       </div>
     </div>
   </div>
-  <div
-    class="nz-widget-content"
-  />
 </div>
 `;
 
@@ -59,8 +56,5 @@ exports[`PanelWidget should render minimized 1`] = `
       </div>
     </div>
   </div>
-  <div
-    class="nz-widget-content"
-  />
 </div>
 `;

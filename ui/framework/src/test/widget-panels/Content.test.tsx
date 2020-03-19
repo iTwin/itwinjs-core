@@ -38,27 +38,4 @@ describe("WidgetContent", () => {
     );
     container.firstChild!.should.matchSnapshot();
   });
-
-  it("should not render w/o active tab", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "leftStart");
-    const frontstage = new FrontstageDef();
-    const widget = new WidgetDef({
-      id: "w1",
-    });
-    sandbox.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);
-    sandbox.stub(frontstage, "findWidgetDef").returns(widget);
-    sandbox.stub(widget, "reactNode").get(() => <>Content</>);
-    const { container } = render(
-      <NineZoneProvider
-        dispatch={sinon.stub<NineZoneDispatch>()}
-        state={nineZone}
-      >
-        <WidgetStateContext.Provider value={nineZone.widgets.leftStart}>
-          <WidgetContent />
-        </WidgetStateContext.Provider>
-      </NineZoneProvider>,
-    );
-    (container.firstChild === null).should.true;
-  });
 });

@@ -352,18 +352,14 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       } else if (isTabTargetWidgetState(target)) {
         state.panels[target.side].widgets.splice(target.widgetIndex, 0, target.newWidgetId);
         state.widgets[target.newWidgetId] = {
-          activeTabId: undefined,
+          ...draggedWidget,
           id: target.newWidgetId,
-          minimized: false,
-          tabs: draggedWidget.tabs,
         };
       } else {
         state.panels[target.side].widgets = [target.newWidgetId];
         state.widgets[target.newWidgetId] = {
-          activeTabId: undefined,
+          ...draggedWidget,
           id: target.newWidgetId,
-          minimized: false,
-          tabs: draggedWidget.tabs,
         };
       }
       delete state.widgets[action.floatingWidgetId];
@@ -431,12 +427,17 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         tabId,
         position: action.position,
       };
-      const tabs = state.widgets[action.widgetId].tabs;
+      const widget = state.widgets[action.widgetId];
+      const tabs = widget.tabs;
       const index = tabs.indexOf(action.id);
       if (index < 0)
         return;
 
       tabs.splice(index, 1);
+      if (tabId === widget.activeTabId) {
+        widget.activeTabId = widget.tabs.length > 0 ? widget.tabs[0] : undefined;
+      }
+
       if (tabs.length === 0) {
         if (action.floatingWidgetId !== undefined) {
           delete state.floatingWidgets[action.floatingWidgetId];
@@ -464,7 +465,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       } else if (isTabTargetPanelState(target)) {
         state.panels[target.side].widgets.push(target.newWidgetId);
         state.widgets[target.newWidgetId] = {
-          activeTabId: undefined,
+          activeTabId: action.id,
           id: target.newWidgetId,
           minimized: false,
           tabs: [action.id],
@@ -472,7 +473,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       } else if (isTabTargetWidgetState(target)) {
         state.panels[target.side].widgets.splice(target.widgetIndex, 0, target.newWidgetId);
         state.widgets[target.newWidgetId] = {
-          activeTabId: undefined,
+          activeTabId: action.id,
           id: target.newWidgetId,
           minimized: false,
           tabs: [action.id],
@@ -553,7 +554,10 @@ export function addTab(state: NineZoneState, widgetId: WidgetState["id"], id: Ta
     ...tabArgs,
   };
   return produce(state, (stateDraft) => {
-    stateDraft.widgets[widgetId].tabs.push(tab.id);
+    const widget = stateDraft.widgets[widgetId];
+    if (!widget.activeTabId)
+      widget.activeTabId = id;
+    widget.tabs.push(tab.id);
     stateDraft.tabs[id] = tab;
   });
 }

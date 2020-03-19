@@ -1,24 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`WidgetPanelGrip should not start resize via move w/o pointer down 1`] = `
-<div
-  class="nz-widgetPanels-grip nz-left"
->
-  <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
-  <div
-    class="nz-dot"
-  />
-</div>
-`;
-
 exports[`WidgetPanelGrip should not start resize w/o pointer down 1`] = `
 <div
   class="nz-widgetPanels-grip nz-left"

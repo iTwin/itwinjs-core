@@ -170,7 +170,6 @@ describe("initializeNineZoneState", () => {
     sinon.stub(frontstage, "centerLeft").get(() => centerLeft);
     sinon.stub(centerLeft, "widgetDefs").get(() => [widgetDef]);
     const state = initializeNineZoneState(frontstage);
-    state.widgets.leftStart.minimized.should.false;
     state.widgets.leftStart.activeTabId!.should.eq("w1");
   });
 });

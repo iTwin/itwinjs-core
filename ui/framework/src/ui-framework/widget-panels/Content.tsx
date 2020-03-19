@@ -6,7 +6,7 @@
  * @module Widget
  */
 import * as React from "react";
-import { WidgetStateContext, assert } from "@bentley/ui-ninezone";
+import { TabIdContext } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetDef } from "../widgets/WidgetDef";
 
@@ -22,9 +22,8 @@ export function WidgetContent() {
 
 /** @internal */
 export function useWidgetDef(): WidgetDef | undefined {
-  const widget = React.useContext(WidgetStateContext);
-  assert(widget);
+  const tabId = React.useContext(TabIdContext);
   const frontstage = useActiveFrontstageDef();
-  const widgetDef = widget.activeTabId ? frontstage?.findWidgetDef(widget.activeTabId) : undefined;
+  const widgetDef = frontstage?.findWidgetDef(tabId);
   return widgetDef;
 }

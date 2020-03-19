@@ -161,6 +161,14 @@ export class HorizontalPropertyGridWidgetControl extends WidgetControl {
   }
 }
 
+export class HorizontalPropertyGridWidgetControl2 extends WidgetControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    this.reactElement = <HorizontalPropertyGridWidget style={{ overflow: "unset" }} />;
+  }
+}
+
 class HorizontalPropertyGridWidget extends React.Component<{ style?: React.CSSProperties }> {
   private _dataProvider: SamplePropertyDataProvider;
 

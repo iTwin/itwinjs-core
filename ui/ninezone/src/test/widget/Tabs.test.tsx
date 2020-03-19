@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
+import produce from "immer";
 import { render } from "@testing-library/react";
 import { WidgetTabs, PanelSideContext, WidgetIdContext, createNineZoneState, addPanelWidget, addTab, NineZoneProvider, WidgetStateContext } from "../../ui-ninezone";
 import { createDOMRect } from "../Utils";
@@ -19,6 +20,9 @@ describe("WidgetTabs", () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1");
     nineZone = addTab(nineZone, "w1", "t1");
+    nineZone = produce(nineZone, (draft) => {
+      draft.widgets.w1.activeTabId = undefined;
+    });
     const { container } = render(
       <NineZoneProvider
         state={nineZone}

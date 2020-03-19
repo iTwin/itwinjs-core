@@ -210,6 +210,19 @@ describe("NineZoneStateReducer", () => {
       });
       newState.widgets.w1.minimized.should.false;
     });
+
+    it("should not update state in floating widget", () => {
+      let state = createNineZoneState();
+      state = addFloatingWidget(state, "w1", undefined, { activeTabId: "t1" });
+      state = addTab(state, "w1", "t1");
+      const newState = NineZoneStateReducer(state, {
+        type: WIDGET_TAB_CLICK,
+        side: undefined,
+        widgetId: "w1",
+        id: "t1",
+      });
+      newState.should.eq(state);
+    });
   });
 
   describe("WIDGET_TAB_DOUBLE_CLICK", () => {
@@ -299,6 +312,21 @@ describe("NineZoneStateReducer", () => {
         floatingWidgetId: "fw1",
       });
       newState.widgets.fw1.minimized.should.true;
+    });
+
+    it("should activate tab", () => {
+      let state = createNineZoneState();
+      state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t1" });
+      state = addTab(state, "fw1", "t1");
+      state = addTab(state, "fw1", "t2");
+      const newState = NineZoneStateReducer(state, {
+        type: WIDGET_TAB_DOUBLE_CLICK,
+        id: "t2",
+        side: undefined,
+        widgetId: "fw1",
+        floatingWidgetId: "fw1",
+      });
+      newState.widgets.fw1.activeTabId!.should.eq("t2");
     });
   });
 
@@ -495,6 +523,22 @@ describe("NineZoneStateReducer", () => {
         widgetId: "fw1",
       });
       (!!newState.floatingWidgets.fw1).should.false;
+    });
+
+    it("should keep active tab", () => {
+      let state = createNineZoneState();
+      state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t1" });
+      state = addTab(state, "fw1", "t1");
+      state = addTab(state, "fw1", "t2");
+      const newState = NineZoneStateReducer(state, {
+        type: WIDGET_TAB_DRAG_START,
+        floatingWidgetId: "fw1",
+        id: "t2",
+        position: new Point(100, 200).toProps(),
+        side: undefined,
+        widgetId: "fw1",
+      });
+      newState.widgets.fw1.activeTabId!.should.eq("t1");
     });
   });
 

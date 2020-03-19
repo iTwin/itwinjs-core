@@ -26,7 +26,7 @@ exports[`WidgetTab should render last not overflown 1`] = `
 
 exports[`WidgetTab should render minimized 1`] = `
 <div
-  class="nz-widget-tab nz-minimized"
+  class="nz-widget-tab nz-active nz-minimized"
 >
   <span />
 </div>
@@ -34,7 +34,7 @@ exports[`WidgetTab should render minimized 1`] = `
 
 exports[`WidgetTab should render overflown 1`] = `
 <div
-  class="nz-widget-tab"
+  class="nz-widget-tab nz-active"
 >
   <span />
 </div>

@@ -12,6 +12,7 @@ import { NineZoneState, TabsState, WidgetsState, PanelsState, FloatingWidgetsSta
 import { CursorType } from "../widget-panels/CursorOverlay";
 import { DragProvider, DraggedWidgetContext, DraggedResizeHandleContext, DraggedPanelSideContext } from "./DragManager";
 import { PanelSide } from "../widget-panels/Panel";
+import { WidgetContentManager } from "../widget/ContentManager";
 
 /** @internal future */
 export type NineZoneDispatch = (action: NineZoneActionTypes) => void;
@@ -36,7 +37,9 @@ export function NineZoneProvider(props: NineZoneProviderProps) {
                   <FloatingWidgetsStateContext.Provider value={props.state.floatingWidgets}>
                     <DragProvider>
                       <CursorTypeProvider>
-                        {props.children}
+                        <WidgetContentManager>
+                          {props.children}
+                        </WidgetContentManager>
                       </CursorTypeProvider>
                     </DragProvider>
                   </FloatingWidgetsStateContext.Provider>

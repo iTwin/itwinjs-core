@@ -29,3 +29,115 @@ exports[`WidgetPanels should render 1`] = `
   </div>
 </div>
 `;
+
+exports[`WidgetPanels should render widget content 1`] = `
+<div
+  class="nz-widgetPanels-panels"
+>
+  <div
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom"
+  />
+  <div
+    class="nz-widgetPanels-content nz-pinned-left nz-pinned-right nz-pinned-top nz-pinned-bottom"
+  />
+  <div
+    class="nz-widgetPanels-panel nz-left nz-span-top nz-span-bottom"
+  >
+    <div>
+      <div
+        class="nz-content"
+      >
+        <div
+          class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+        />
+        <div
+          class="nz-widget-widget nz-widget-panelWidget"
+          style="flex-grow: 1;"
+        >
+          <div
+            class="nz-widget-titleBar"
+          >
+            <div
+              class="nz-handle"
+            />
+            <div
+              class="nz-widget-tabs"
+            >
+              <div
+                class="nz-widget-tabTarget nz-hidden"
+              />
+              <div
+                class="nz-widget-tab nz-active nz-first nz-last"
+              >
+                <span />
+              </div>
+              <div
+                class="nz-widget-tabTarget nz-hidden"
+              />
+              <div
+                class="nz-widget-overflow nz-hidden"
+              >
+                <div
+                  class="nz-button"
+                >
+                  <div
+                    class="nz-icon"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="nz-widget-content-container"
+          >
+            <div
+              class="nz-widget-contentRenderer"
+            >
+              <div
+                class="nz-widget-content"
+              >
+                <div>
+                  Hello World!
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+        />
+      </div>
+      <div
+        class="nz-widgetPanels-grip nz-left"
+      >
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+        <div
+          class="nz-dot"
+        />
+      </div>
+    </div>
+  </div>
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-right"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-top"
+  />
+  <div
+    class="nz-widgetPanels-panelTarget nz-hidden nz-bottom"
+  />
+  <div
+    class="nz-widget-floatingTab nz-hidden"
+  >
+    <span />
+  </div>
+</div>
+`;

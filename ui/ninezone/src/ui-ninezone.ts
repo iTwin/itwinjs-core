@@ -97,6 +97,8 @@ export * from "./ui-ninezone/utilities/DisabledResizeHandles";
 export * from "./ui-ninezone/utilities/SafeAreaInsets";
 
 export * from "./ui-ninezone/widget/Content";
+export * from "./ui-ninezone/widget/ContentManager";
+export * from "./ui-ninezone/widget/ContentRenderer";
 export * from "./ui-ninezone/widget/FloatingTab";
 export * from "./ui-ninezone/widget/FloatingWidget";
 export * from "./ui-ninezone/widget/FloatingWidgets";
