@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-common",
+      "comment": "Added doNotHideOtherPropertiesOnDisplayOverride flag which controls display override behavior for hiding other properties",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "Ainoras.Zukauskas@bentley.com"
+}

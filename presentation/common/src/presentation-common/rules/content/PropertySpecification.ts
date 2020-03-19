@@ -23,6 +23,13 @@ export interface PropertyOverrides {
   isDisplayed?: boolean;
   /** Custom property editor specification */
   editor?: PropertyEditorSpecification;
+  /**
+   * Flag to control behavior of `isDisplayed` override when it's set to `true`.
+   * By default, forcing property display hides all other properties.
+   * Setting `doNotHideOtherPropertiesOnDisplayOverride` to `true` disables that behavior and
+   * prevents forcing property display of one property from hiding other properties.
+   */
+  doNotHideOtherPropertiesOnDisplayOverride?: boolean;
 }
 
 /**

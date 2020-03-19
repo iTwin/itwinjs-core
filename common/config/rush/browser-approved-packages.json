@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/imodeljs-backend",
-      "allowedCategories": [ "backend", "common", "extensions", "internal", "tools" ]
+      "allowedCategories": [ "backend", "extensions", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-clients",
@@ -72,7 +72,7 @@
     },
     {
       "name": "@bentley/imodeljs-clients-backend",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@bentley/imodeljs-common",
@@ -292,10 +292,6 @@
     },
     {
       "name": "commander",
-      "allowedCategories": [ "internal", "tools" ]
-    },
-    {
-      "name": "comment-json",
       "allowedCategories": [ "tools" ]
     },
     {
@@ -360,7 +356,7 @@
     },
     {
       "name": "electron",
-      "allowedCategories": [ "backend", "common", "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "electron-chromedriver",
@@ -500,7 +496,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "frontend", "internal", "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "jsdom-global",
@@ -544,10 +540,6 @@
     },
     {
       "name": "make-dir",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "merge-json",
       "allowedCategories": [ "tools" ]
     },
     {
@@ -833,10 +825,6 @@
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "ssri",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "style-loader",

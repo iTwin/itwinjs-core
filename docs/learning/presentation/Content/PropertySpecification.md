@@ -12,6 +12,7 @@ Name | Required? | Type | Default | Meaning
 `categoryId` | No | `string` | `undefined` | ID of a category specified through `PropertyCategorySpecification` in this scope.
 `isDisplayed` | No | `boolean` | `undefined` | Display override. `true` to force display, `false` to force hide, `undefined` to use default.
 `editor` | No | `PropertyEditorSpecification` | `undefined` | Custom property editor [specification](./PropertyEditorSpecification).
+`doNotHideOtherPropertiesOnDisplayOverride` | No | `boolean` | `undefined` | Flag to control behavior of `isDisplayed` override when it's set to `true`. By default, forcing property display hides all other properties. Setting `doNotHideOtherPropertiesOnDisplayOverride` to true disables that behavior and prevents forcing property display of one property from hiding other properties.
 
 ## Examples
 
@@ -24,6 +25,7 @@ Name | Required? | Type | Default | Meaning
   "isDisplayed": true,
   "editor": {
     "editorName": "custom_editor"
-  }
+  },
+  "doNotHideOtherPropertiesOnDisplayOverride": true
 }
 ```
