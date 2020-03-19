@@ -36,8 +36,9 @@ export class IModeljsLibraryExportsPlugin {
         const pkgName = JSON.stringify(module.___IMJS_NAME);
         return new ConcatSource(
           source,
-          `\nif ((typeof window !== "undefined") && window && !window.${IMJS_GLOBAL_LIBS}) window.${IMJS_GLOBAL_LIBS} = [];`,
-          `\nif ((typeof window !== "undefined") && window && !window.${IMJS_GLOBAL_LIBS_VERS}) window.${IMJS_GLOBAL_LIBS_VERS} = [];`,
+          `\nif ((typeof window !== "undefined") && window && !window.${IMJS_GLOBAL_OBJECT}) window.${IMJS_GLOBAL_OBJECT} = {};`,
+          `\nif ((typeof window !== "undefined") && window && !window.${IMJS_GLOBAL_LIBS}) window.${IMJS_GLOBAL_LIBS} = {};`,
+          `\nif ((typeof window !== "undefined") && window && !window.${IMJS_GLOBAL_LIBS_VERS}) window.${IMJS_GLOBAL_LIBS_VERS} = {};`,
           `\nwindow.${IMJS_GLOBAL_LIBS}[${pkgName}] = __webpack_require__(${JSON.stringify(module.id)});`,
           `\nwindow.${IMJS_GLOBAL_LIBS_VERS}[${pkgName}] = ${JSON.stringify(module.___IMJS_VER)};\n`,
         );
