@@ -531,7 +531,7 @@ export class IModelExporter {
   }
 
   /** Export a relationship from the source iModel. */
-  private exportRelationship(relClassFullName: string, relInstanceId: Id64String): void {
+  public exportRelationship(relClassFullName: string, relInstanceId: Id64String): void {
     let isUpdate: boolean | undefined;
     if (undefined !== this._sourceDbChanges) { // is changeSet information available?
       if (this._sourceDbChanges.relationship.insertIds.has(relInstanceId)) {
