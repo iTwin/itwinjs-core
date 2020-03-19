@@ -147,7 +147,7 @@ dependencies:
   '@types/webpack-sources': 0.1.6
   '@types/xmldom': 0.1.29
   '@types/yargs': 12.0.16
-  '@typescript-eslint/parser': 2.24.0_eslint@6.8.0+typescript@3.7.5
+  '@typescript-eslint/parser': 2.22.0_eslint@6.8.0+typescript@3.7.5
   '@ungap/url-search-params': 0.1.4
   app-root-path: 2.2.1
   autoprefixer: 8.6.5
@@ -3061,10 +3061,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-XAvHLwG7UQ+8M4caKIH0ZozIOYay5fQkAgyIXegXT9jPtdIGdhga+sUEdAr1CiG46aB+c64xQEYyEzlwWVTNzA==
-  /@typescript-eslint/experimental-utils/2.24.0_eslint@6.8.0+typescript@3.7.5:
+  /@typescript-eslint/experimental-utils/2.22.0_eslint@6.8.0+typescript@3.7.5:
     dependencies:
       '@types/json-schema': 7.0.4
-      '@typescript-eslint/typescript-estree': 2.24.0_typescript@3.7.5
+      '@typescript-eslint/typescript-estree': 2.22.0_typescript@3.7.5
       eslint: 6.8.0
       eslint-scope: 5.0.0
     dev: false
@@ -3074,12 +3074,12 @@ packages:
       eslint: '*'
       typescript: '*'
     resolution:
-      integrity: sha512-DXrwuXTdVh3ycNCMYmWhUzn/gfqu9N0VzNnahjiDJvcyhfBy4gb59ncVZVxdp5XzBC77dCncu0daQgOkbvPwBw==
-  /@typescript-eslint/parser/2.24.0_eslint@6.8.0+typescript@3.7.5:
+      integrity: sha512-sJt1GYBe6yC0dWOQzXlp+tiuGglNhJC9eXZeC8GBVH98Zv9jtatccuhz0OF5kC/DwChqsNfghHx7OlIDQjNYAQ==
+  /@typescript-eslint/parser/2.22.0_eslint@6.8.0+typescript@3.7.5:
     dependencies:
       '@types/eslint-visitor-keys': 1.0.0
-      '@typescript-eslint/experimental-utils': 2.24.0_eslint@6.8.0+typescript@3.7.5
-      '@typescript-eslint/typescript-estree': 2.24.0_typescript@3.7.5
+      '@typescript-eslint/experimental-utils': 2.22.0_eslint@6.8.0+typescript@3.7.5
+      '@typescript-eslint/typescript-estree': 2.22.0_typescript@3.7.5
       eslint: 6.8.0
       eslint-visitor-keys: 1.1.0
     dev: false
@@ -3092,8 +3092,8 @@ packages:
       typescript:
         optional: true
     resolution:
-      integrity: sha512-H2Y7uacwSSg8IbVxdYExSI3T7uM1DzmOn2COGtCahCC3g8YtM1xYAPi2MAHyfPs61VKxP/J/UiSctcRgw4G8aw==
-  /@typescript-eslint/typescript-estree/2.24.0_typescript@3.7.5:
+      integrity: sha512-FaZKC1X+nvD7qMPqKFUYHz3H0TAioSVFGvG29f796Nc5tBluoqfHgLbSFKsh7mKjRoeTm8J9WX2Wo9EyZWjG7w==
+  /@typescript-eslint/typescript-estree/2.22.0_typescript@3.7.5:
     dependencies:
       debug: 4.1.1
       eslint-visitor-keys: 1.1.0
@@ -3111,7 +3111,7 @@ packages:
       typescript:
         optional: true
     resolution:
-      integrity: sha512-RJ0yMe5owMSix55qX7Mi9V6z2FDuuDpN6eR5fzRJrp+8in9UF41IGNQHbg5aMK4/PjVaEQksLvz0IA8n+Mr/FA==
+      integrity: sha512-2HFZW2FQc4MhIBB8WhDm9lVFaBDy6h9jGrJ4V2Uzxe/ON29HCHBTj3GkgcsgMWfsl2U5as+pTOr30Nibaw7qRQ==
   /@ungap/url-search-params/0.1.4:
     dev: false
     resolution:
@@ -18583,7 +18583,7 @@ packages:
       '@types/object-hash': 1.3.1
       '@types/sinon': 7.5.2
       '@types/sinon-chai': 3.2.3
-      '@typescript-eslint/parser': 2.24.0_eslint@6.8.0+typescript@3.7.5
+      '@typescript-eslint/parser': 2.22.0_eslint@6.8.0+typescript@3.7.5
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
       chai-jest-snapshot: 2.0.0_chai@4.2.0
@@ -18607,7 +18607,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-backend'
     resolution:
-      integrity: sha512-rVZkdHSw8i9lcgxxS5GmtUaceLGWrrJXwRo6U1SlJ2/aHXYa+ACP4vcH0uYvi2uQ+eIgcICkpoMk/GCKvoeJUw==
+      integrity: sha512-Jd8Od5FzjJsypyiI/cboxFZh1bU+zO/dsS/TOqlAK0uLE0DDUT/PO6s9y79EBbEaqHiWVn8eee009bdygmarQA==
       tarball: 'file:projects/presentation-backend.tgz'
     version: 0.0.0
   'file:projects/presentation-common.tgz':
@@ -18621,7 +18621,7 @@ packages:
       '@types/sinon': 7.5.2
       '@types/sinon-chai': 3.2.3
       '@types/source-map-support': 0.4.2
-      '@typescript-eslint/parser': 2.24.0_eslint@6.8.0+typescript@3.7.5
+      '@typescript-eslint/parser': 2.22.0_eslint@6.8.0+typescript@3.7.5
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
       chai-jest-snapshot: 2.0.0_chai@4.2.0
@@ -18647,7 +18647,7 @@ packages:
     dev: false
     name: '@rush-temp/presentation-common'
     resolution:
-      integrity: sha512-J6OLgwKKZx1kSVK3e8/bu0b0gqMTVuRqEElw7uH5m2zPkf/rVZCNDrCoEXXrANe7OoseYZ5J92G8fR9sSa/aGQ==
+      integrity: sha512-ParDy2foC9YMNxM/iMDsfQKgha47RSDtQZpmRA8TVn9SaQMpLqdXjLYAaSwVCbg7gCwKdY54kVICTudFn7z02A==
       tarball: 'file:projects/presentation-common.tgz'
     version: 0.0.0
   'file:projects/presentation-components.tgz_react-test-renderer@16.13.0':
@@ -18665,7 +18665,7 @@ packages:
       '@types/sinon': 7.5.2
       '@types/sinon-chai': 3.2.3
       '@types/testing-library__react-hooks': 3.2.0
-      '@typescript-eslint/parser': 2.24.0_eslint@6.8.0+typescript@3.7.5
+      '@typescript-eslint/parser': 2.22.0_eslint@6.8.0+typescript@3.7.5
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
       chai-jest-snapshot: 2.0.0_chai@4.2.0
@@ -18699,7 +18699,7 @@ packages:
     peerDependencies:
       react-test-renderer: '*'
     resolution:
-      integrity: sha512-6m5Tt76B6YRYZqUP20lC9QJA3zq+msrxD96LyZacsTpYhNVIBgn0iTmhpSz/r9PFUyBqiShWAWnZVAjKjzirSg==
+      integrity: sha512-a3/BDirQXeBAduZaS+KOvBFAT9OAjPR70l2g7WYtbPl/VlZfCs0uCykUEyud96g5CKDdYAeqGG6hFUaXTjMiBA==
       tarball: 'file:projects/presentation-components.tgz'
     version: 0.0.0
   'file:projects/presentation-frontend.tgz_jsdom@11.12.0':
@@ -18714,7 +18714,7 @@ packages:
       '@types/node': 10.14.1
       '@types/sinon': 7.5.2
       '@types/sinon-chai': 3.2.3
-      '@typescript-eslint/parser': 2.24.0_eslint@6.8.0+typescript@3.7.5
+      '@typescript-eslint/parser': 2.22.0_eslint@6.8.0+typescript@3.7.5
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
       chai-jest-snapshot: 2.0.0_chai@4.2.0
@@ -18742,7 +18742,7 @@ packages:
     peerDependencies:
       jsdom: '*'
     resolution:
-      integrity: sha512-IRueu0ClqyiBCsXDifxCCTBr5Gvbt/M9Bi8ITuotZdQHgmM7VBnkf6zyeNS8WFEj+LWFZsmxdB8LWIBYUjXxgA==
+      integrity: sha512-wKzP0jEJMKf9S22cxxM/mErfs1kLZUcCZ+7Ibfat4jNoAas+x1OjqMpFGYmIse4Bc5pl0c5oJTEq3vJzvUE3Lw==
       tarball: 'file:projects/presentation-frontend.tgz'
     version: 0.0.0
   'file:projects/presentation-full-stack-tests.tgz_jsdom@11.12.0':
@@ -18821,7 +18821,7 @@ packages:
       '@types/mocha': 5.2.7
       '@types/rimraf': 2.0.3
       '@types/sinon': 7.5.2
-      '@typescript-eslint/parser': 2.24.0_eslint@6.8.0+typescript@3.7.5
+      '@typescript-eslint/parser': 2.22.0_eslint@6.8.0+typescript@3.7.5
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
       chai-jest-snapshot: 2.0.0_chai@4.2.0
@@ -18846,7 +18846,7 @@ packages:
     peerDependencies:
       jsdom: '*'
     resolution:
-      integrity: sha512-xQumVKBN/POAaPm90NGgeOcdeqa46CmO+Q7Ihq0G2gIJYObgegG409+uPu6xZWV7UrMSwS8pM3ZUG9ZZ5eVGzQ==
+      integrity: sha512-8bymNhl8+YrW0kPrEcsw3Of3A7IwSkcwIqTjxK+eH+MzFPOmSvJ3QCaVr9cBUXStqpgM+wPgOhdq5cDu/+H6Eg==
       tarball: 'file:projects/presentation-testing.tgz'
     version: 0.0.0
   'file:projects/projectlocation-extension.tgz':
@@ -19090,7 +19090,7 @@ packages:
       '@types/sinon': 7.5.2
       '@types/sinon-chai': 3.2.3
       '@types/testing-library__react-hooks': 3.2.0
-      '@typescript-eslint/parser': 2.24.0_eslint@6.8.0+typescript@3.7.5
+      '@typescript-eslint/parser': 2.22.0_eslint@6.8.0+typescript@3.7.5
       callable-instance2: 1.0.0
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
@@ -19149,7 +19149,7 @@ packages:
       prop-types: '*'
       react-test-renderer: '*'
     resolution:
-      integrity: sha512-QfsB7x3FWu5gVfRDlNV5D8XOPjpE8DnOlikDsiB4ZCPHPxa+lBSHDRwFMpC5rVVR8xvfFkHqWukxPWSP8makpQ==
+      integrity: sha512-taU4O+RCzxkqQYTMc2GlhWrB0Z7FIqMRvFO9m1MuTNxH390/w7E5/EM+4IR+jSAHDZb9FXbJlSpyiVeCilcMrQ==
       tarball: 'file:projects/ui-components.tgz'
     version: 0.0.0
   'file:projects/ui-core.tgz_react-test-renderer@16.13.0':
@@ -19171,7 +19171,7 @@ packages:
       '@types/sinon': 7.5.2
       '@types/sinon-chai': 3.2.3
       '@types/testing-library__react-hooks': 3.2.0
-      '@typescript-eslint/parser': 2.24.0_eslint@6.8.0+typescript@3.7.5
+      '@typescript-eslint/parser': 2.22.0_eslint@6.8.0+typescript@3.7.5
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
       chai-jest-snapshot: 2.0.0_chai@4.2.0
@@ -19213,7 +19213,7 @@ packages:
     peerDependencies:
       react-test-renderer: '*'
     resolution:
-      integrity: sha512-mvlgMD4kS5mc3HzsEkYDRp3+4kIh5K1fdstJO0rYXcJrLbKez7Cjpt2SnFaS8gUMHM1Vx+lqOPTzXJTDk7X59Q==
+      integrity: sha512-lZyJ0hFgtcsi+CWXZeEy2z//Zs/HLGzzgPfLSWoi+dpTpunRF/5YivobJa5Dfq9QM5kVnmbcBJVpMpHDUPp3ag==
       tarball: 'file:projects/ui-core.tgz'
     version: 0.0.0
   'file:projects/ui-framework.tgz_react-test-renderer@16.13.0':
@@ -19241,7 +19241,7 @@ packages:
       '@types/sinon': 7.5.2
       '@types/sinon-chai': 3.2.3
       '@types/testing-library__react-hooks': 3.2.0
-      '@typescript-eslint/parser': 2.24.0_eslint@6.8.0+typescript@3.7.5
+      '@typescript-eslint/parser': 2.22.0_eslint@6.8.0+typescript@3.7.5
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
       chai-jest-snapshot: 2.0.0_chai@4.2.0
@@ -19290,7 +19290,7 @@ packages:
     peerDependencies:
       react-test-renderer: '*'
     resolution:
-      integrity: sha512-ccnneDilQKB94tuvGZ5Y1ige528No4FPA4zGiNF5ZH4KukgdG9+IgYcHsGpJB/wZoYT5t7aWAVkKLD+UxjPJSA==
+      integrity: sha512-OiImD5xn077vSQWl7nOxhecVFNo+4exk5JR0Z7EAJkUziMqWZ8xaD6PDS1zBVTmW6B4MtEqS0RGYIN9ws4tcZQ==
       tarball: 'file:projects/ui-framework.tgz'
     version: 0.0.0
   'file:projects/ui-ninezone.tgz_react-test-renderer@16.13.0':
@@ -19317,7 +19317,7 @@ packages:
       '@types/webpack': 4.41.7
       '@types/webpack-dev-server': 3.10.1
       '@types/webpack-merge': 4.1.5
-      '@typescript-eslint/parser': 2.24.0_eslint@6.8.0+typescript@3.7.5
+      '@typescript-eslint/parser': 2.22.0_eslint@6.8.0+typescript@3.7.5
       chai: 4.2.0
       chai-as-promised: 7.1.1_chai@4.2.0
       chai-jest-snapshot: 2.0.0_chai@4.2.0
@@ -19375,7 +19375,7 @@ packages:
     peerDependencies:
       react-test-renderer: '*'
     resolution:
-      integrity: sha512-u8XrXgLdr2lYRD2n0E+oN13vgIvwHhbPYy2xno6OklAZb7NJWcPFMhHKCmtHSvR8bK+oHN5Kyr1+W4kItYp8EA==
+      integrity: sha512-TOpPq4wOaZCt221Iz0wiGg8HrVYPoSD8a9HbX2qJdwCmU0HmY/Xudv0wsFZQ/sBex/AFFHWkdvZb9SmNmRjM8w==
       tarball: 'file:projects/ui-ninezone.tgz'
     version: 0.0.0
   'file:projects/ui-test-app.tgz':
@@ -19571,6 +19571,7 @@ packages:
       integrity: sha512-0ZWSFpKeNgAeuRjPKh2lLocRt6osZL+s1p+4YNGAmaDgQerENlCivB4d67RhcEPdQaflU/UaWwI5K8gIzOIzHw==
       tarball: 'file:projects/wms-extension-example.tgz'
     version: 0.0.0
+registry: ''
 specifiers:
   '@azure/storage-blob': 10.4.0
   '@babel/core': 7.7.4
@@ -19720,7 +19721,7 @@ specifiers:
   '@types/webpack-sources': ^0.1.6
   '@types/xmldom': ^0.1.29
   '@types/yargs': ^12.0.5
-  '@typescript-eslint/parser': ^2.10.0
+  '@typescript-eslint/parser': 2.22.0
   '@ungap/url-search-params': ^0.1.2
   app-root-path: ^2.0.1
   autoprefixer: ^8.6.5
