@@ -76,4 +76,5 @@ describe("NativeApp (#integration)", () => {
       }
     });
   });
+
 });

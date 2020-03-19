@@ -18,6 +18,7 @@ import { BentleyStatus } from '@bentley/bentleyjs-core';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
 import { CalloutProps } from '@bentley/imodeljs-common';
 import { Camera } from '@bentley/imodeljs-common';
+import { CancelRequest } from '@bentley/imodeljs-clients';
 import { CategoryProps } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ChangeData } from '@bentley/imodeljs-common';
@@ -127,6 +128,7 @@ import { Placement2d } from '@bentley/imodeljs-common';
 import { Placement3d } from '@bentley/imodeljs-common';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
+import { ProgressCallback } from '@bentley/imodeljs-clients';
 import { PropertyCallback } from '@bentley/imodeljs-common';
 import { QueryLimit } from '@bentley/imodeljs-common';
 import { QueryParams } from '@bentley/imodeljs-common';
@@ -439,10 +441,12 @@ export class BisCoreSchema extends Schema {
 export class BriefcaseEntry {
     constructor(contextId: GuidString, iModelId: GuidString, targetChangeSetId: GuidString, pathname: string, openParams: OpenParams, briefcaseId: number);
     briefcaseId: number;
+    cancelDownloadRequest: CancelRequest;
     conflictError?: ConflictingCodesError;
     contextId: string;
     get currentChangeSetId(): GuidString;
     get currentChangeSetIndex(): number;
+    downloadProgress?: ProgressCallback;
     fileId?: string;
     getDebugInfo(): any;
     getKey(): string;
@@ -498,6 +502,8 @@ export class BriefcaseId {
 
 // @public
 export class BriefcaseIModelDb extends IModelDb {
+    // @internal
+    static cancelDownloadBriefcase(iModelToken: IModelToken): boolean;
     // @internal (undocumented)
     protected clearBriefcaseEntry(): void;
     close(requestContext: AuthorizedClientRequestContext, keepBriefcase?: KeepBriefcase): Promise<void>;
@@ -510,6 +516,7 @@ export class BriefcaseIModelDb extends IModelDb {
     get eventSink(): EventSink | undefined;
     // @internal
     static findByToken(iModelToken: IModelToken): BriefcaseIModelDb;
+    static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void>;
     readonly onBeforeClose: BeEvent<() => void>;
     readonly onChangesetApplied: BeEvent<() => void>;
     static readonly onCreate: BeEvent<(_requestContext: AuthorizedClientRequestContext, _contextId: string, _args: CreateIModelProps) => void>;
@@ -529,6 +536,8 @@ export class BriefcaseIModelDb extends IModelDb {
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @internal (undocumented)
     protected setupBriefcaseEntry(briefcaseEntry: BriefcaseEntry): void;
+    // @internal
+    static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
     // @internal
     static tryFindByToken(iModelToken: IModelToken): BriefcaseIModelDb | undefined;
 }
@@ -3266,6 +3275,8 @@ export class OpenParams {
     timeout?: number | undefined);
     // @beta (undocumented)
     static createSnapshot(): OpenParams;
+    // @internal
+    downloadProgress?: ProgressCallback;
     equals(other: OpenParams): boolean;
     static fixedVersion(): OpenParams;
     get isBriefcase(): boolean;

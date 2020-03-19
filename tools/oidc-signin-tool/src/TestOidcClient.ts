@@ -99,7 +99,7 @@ export class TestOidcClient implements IAuthorizationClient {
       await this.initialize();
 
     // tslint:disable-next-line:no-console
-    console.log(`Starting OIDC signin for ${this._user.email} ...`);
+    // console.log(`Starting OIDC signin for ${this._user.email} ...`);
 
     const [authParams, callbackChecks] = this.createAuthParams(this._config.scope);
     const authorizationUrl = this._client.authorizationUrl(authParams);
@@ -138,7 +138,7 @@ export class TestOidcClient implements IAuthorizationClient {
     await browser.close();
 
     // tslint:disable-next-line:no-console
-    console.log(`Finished OIDC signin for ${this._user.email} ...`);
+    // console.log(`Finished OIDC signin for ${this._user.email} ...`);
 
     return this.tokenSetToAccessToken(tokenSet);
   }

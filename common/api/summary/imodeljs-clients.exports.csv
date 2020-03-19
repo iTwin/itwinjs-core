@@ -18,6 +18,7 @@ internal;BriefcaseDeletedEvent
 beta;class BriefcaseEvent 
 internal;BriefcaseHandler
 internal;BriefcaseQuery 
+beta;CancelRequest
 beta;ChangeSet 
 internal;ChangeSetCreatedEvent 
 beta;ChangeSetHandler
@@ -132,6 +133,7 @@ internal;ParseEvent(response: Response): IModelHubEvent
 internal;ParseGlobalEvent(response: Response, handler?: IModelBaseHandler, sasToken?: string): IModelHubGlobalEvent
 internal;Permission 
 internal;ProductVersion
+beta;ProgressCallback = (progress: ProgressInfo) => void
 beta;ProgressInfo
 beta;Project 
 alpha;ProjectShareClient 
@@ -174,6 +176,7 @@ internal;UrlDiscoveryClient
 internal;UsageLogEntry
 internal;UsageLogEntryJson
 internal;UsageType
+internal;UserCancelledError 
 beta;UserInfo
 alpha;UserInfoHandler
 alpha;UserInfoQuery 

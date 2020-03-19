@@ -8,9 +8,9 @@
 
 import { GuidString, Logger, PerfLogger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { FileHandler } from "../FileHandler";
+import { FileHandler, CancelRequest } from "../FileHandler";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
-import { ProgressInfo } from "../Request";
+import { ProgressCallback } from "../Request";
 import { WsgQuery } from "../WsgQuery";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -168,12 +168,13 @@ export class CheckpointHandler {
    * @param checkpoint Checkpoint to download. This needs to include a download link. See [[CheckpointQuery.selectDownloadUrl]].
    * @param path Path where checkpoint file should be downloaded, including filename.
    * @param progressCallback Callback for tracking progress.
+   * @param cancelRequest Request used to cancel download
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.NotSupportedInBrowser]($bentley) if called in a browser.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.FileHandlerNotSet]($bentley) if [[FileHandler]] instance was not set for [[IModelClient]].
    * @throws [[ResponseError]] if the checkpoint cannot be downloaded.
    */
-  public async download(requestContext: AuthorizedClientRequestContext, checkpoint: Checkpoint, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async download(requestContext: AuthorizedClientRequestContext, checkpoint: Checkpoint, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     requestContext.enter();
     ArgumentCheck.defined("checkpoint", checkpoint);
     ArgumentCheck.defined("path", path);
@@ -191,7 +192,7 @@ export class CheckpointHandler {
     Object.assign(checkpointForLog, checkpoint);
     checkpointForLog.downloadUrl = CheckpointHandler.getSafeUrlForLogging(checkpointForLog.downloadUrl!);
     const perfLogger = new PerfLogger("Downloading checkpoint", () => ({ ...checkpointForLog, path }));
-    await this._fileHandler.downloadFile(requestContext, checkpoint.downloadUrl, path, parseInt(checkpoint.fileSize!, 10), progressCallback);
+    await this._fileHandler.downloadFile(requestContext, checkpoint.downloadUrl, path, parseInt(checkpoint.fileSize!, 10), progressCallback, cancelRequest);
     requestContext.enter();
     perfLogger.dispose();
   }

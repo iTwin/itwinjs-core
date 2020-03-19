@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { OpenMode, GuidString, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { BriefcaseQuery, Briefcase as HubBriefcase, AuthorizedClientRequestContext, HubIModel } from "@bentley/imodeljs-clients";
+import { OpenMode, GuidString, Logger, LogLevel, BriefcaseStatus } from "@bentley/bentleyjs-core";
+import { IModelVersion, IModelToken } from "@bentley/imodeljs-common";
+import { BriefcaseQuery, Briefcase as HubBriefcase, AuthorizedClientRequestContext, HubIModel, ProgressInfo, UserCancelledError } from "@bentley/imodeljs-clients";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelTestUtils, TestIModelInfo } from "../IModelTestUtils";
 import {
@@ -15,6 +15,8 @@ import {
 } from "../../imodeljs-backend";
 import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
+import * as readline from "readline";
+import * as os from "os";
 
 async function createIModelOnHub(requestContext: AuthorizedBackendRequestContext, projectId: GuidString, iModelName: string): Promise<string> {
   let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
@@ -675,4 +677,74 @@ describe("BriefcaseManager (#integration)", () => {
     await iModelPullAndPush.close(userContext2, KeepBriefcase.No);
     await testUtility.deleteTestIModel();
   });
+
+  it("should be able to show progress when downloading a briefcase (#integration)", async () => {
+    const testIModelName = "Stadium Dataset 1";
+    const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
+
+    const openParams = OpenParams.pullOnly();
+
+    let numProgressCalls: number = 0;
+
+    readline.clearLine(process.stdout, 0);
+    readline.moveCursor(process.stdout, -20, 0);
+    openParams.downloadProgress = (progress: ProgressInfo) => {
+      const percent = progress.percent === undefined ? 0 : progress.percent;
+      const message = `${testIModelName} Download Progress ... ${percent.toFixed(2)}%`;
+      process.stdout.write(message);
+      readline.moveCursor(process.stdout, -1 * message.length, 0);
+      if (percent >= 100) {
+        process.stdout.write(os.EOL);
+      }
+      numProgressCalls++;
+    };
+
+    const iModelToken = await BriefcaseIModelDb.startDownloadBriefcase(requestContext, testProjectId, testIModelId, openParams, IModelVersion.latest());
+    requestContext.enter();
+
+    await BriefcaseIModelDb.finishDownloadBriefcase(requestContext, iModelToken);
+    requestContext.enter();
+
+    const iModel = await BriefcaseIModelDb.openBriefcase(requestContext, iModelToken);
+    requestContext.enter();
+
+    await iModel.close(requestContext, KeepBriefcase.No);
+    assert.isTrue(numProgressCalls > 19000);
+  });
+
+  it("Should be able to cancel an in progress download (#integration)", async () => {
+    const testIModelName = "Stadium Dataset 1";
+    const testIModelId = await HubUtility.queryIModelIdByName(requestContext, testProjectId, testIModelName);
+
+    const openParams = OpenParams.pullOnly();
+    let iModelToken: IModelToken;
+    let cancelled1: boolean = false;
+
+    openParams.downloadProgress = (progress: ProgressInfo) => {
+      if (progress.percent === undefined)
+        return;
+      if (progress.percent > 50) {
+        cancelled1 = BriefcaseIModelDb.cancelDownloadBriefcase(iModelToken);
+        requestContext.enter();
+      }
+    };
+
+    iModelToken = await BriefcaseIModelDb.startDownloadBriefcase(requestContext, testProjectId, testIModelId, openParams, IModelVersion.latest());
+    requestContext.enter();
+
+    let cancelled2: boolean = false;
+    try {
+      await BriefcaseIModelDb.finishDownloadBriefcase(requestContext, iModelToken);
+      requestContext.enter();
+    } catch (err) {
+      requestContext.enter();
+      assert.equal(err.errorNumber, BriefcaseStatus.DownloadCancelled);
+      assert.isTrue(err instanceof UserCancelledError);
+      cancelled2 = true;
+    }
+
+    assert.isTrue(cancelled1);
+    assert.isTrue(cancelled2);
+  });
+
 });

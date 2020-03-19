@@ -9,7 +9,8 @@
 import {
   Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
   ChangesType, Briefcase, HubCode, IModelHubError, AuthorizedClientRequestContext, CheckpointQuery, Checkpoint,
-  BriefcaseQuery, ChangeSetQuery, ConflictingCodesError, IModelClient, HubIModel,
+  BriefcaseQuery, ChangeSetQuery, ConflictingCodesError, IModelClient, HubIModel, CancelRequest, ProgressCallback,
+  UserCancelledError,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/imodelbank/IModelBankClient";
 import { AzureFileHandler, IOSAzureFileHandler } from "@bentley/imodeljs-clients-backend";
@@ -247,6 +248,18 @@ export class BriefcaseEntry {
     return typeof this.reversedChangeSetId !== "undefined";
   }
 
+  /** Progress downloading the briefcase
+   * @internal
+   */
+  public downloadProgress?: ProgressCallback;
+
+  /** Cancel downloading of briefcase
+   * @internal
+   */
+  public cancelDownloadRequest: CancelRequest = {
+    cancel: () => false,
+  };
+
   /** Get debug information on this briefcase
    * @internal
    */
@@ -469,11 +482,11 @@ export class BriefcaseManager {
     return this._cache.findBriefcaseByChangeSetId(iModelId, changeSetId);
   }
 
-  private static initializeFixedVersionBriefcaseOnDisk(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): BriefcaseEntry | undefined {
+  private static initializeFixedVersionBriefcaseOnDisk(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, openParams: OpenParams): BriefcaseEntry | undefined {
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
     if (!IModelJsFs.existsSync(pathname))
       return;
-    const briefcase = this.initializeBriefcase(requestContext, contextId, iModelId, changeSetId, pathname, OpenParams.fixedVersion(), BriefcaseId.LegacyStandalone);
+    const briefcase = this.initializeBriefcase(requestContext, contextId, iModelId, changeSetId, pathname, openParams, BriefcaseId.LegacyStandalone);
     return briefcase;
   }
 
@@ -628,7 +641,7 @@ export class BriefcaseManager {
     requestContext.enter();
 
     if (openParams.syncMode === SyncMode.FixedVersion)
-      return this.downloadFixedVersion(requestContext, contextId, iModelId, changeSetId);
+      return this.downloadFixedVersion(requestContext, contextId, iModelId, changeSetId, openParams);
 
     const unlock = await this._asyncMutex.lock();
     try {
@@ -687,7 +700,7 @@ export class BriefcaseManager {
       throw new IModelError(res, `Unable to reopen briefcase at ${briefcase.pathname}`, Logger.logError, loggerCategory, () => briefcase.getDebugInfo());
   }
 
-  private static async downloadFixedVersion(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): Promise<BriefcaseEntry> {
+  private static async downloadFixedVersion(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, openParams: OpenParams): Promise<BriefcaseEntry> {
     requestContext.enter();
 
     /*
@@ -703,14 +716,14 @@ export class BriefcaseManager {
     }
 
     // Find matching briefcase on disk if available (and add it to the cache)
-    const diskBriefcase = this.initializeFixedVersionBriefcaseOnDisk(requestContext, contextId, iModelId, changeSetId);
+    const diskBriefcase = this.initializeFixedVersionBriefcaseOnDisk(requestContext, contextId, iModelId, changeSetId, openParams);
     if (diskBriefcase) {
       Logger.logTrace(loggerCategory, "BriefcaseManager.downloadFixedVersion - opening briefcase from disk", () => diskBriefcase.getDebugInfo());
       return diskBriefcase;
     }
 
     // Create a new briefcase (and it to the cache)
-    const newBriefcase = this.createFixedVersionBriefcase(requestContext, contextId, iModelId, changeSetId);
+    const newBriefcase = this.createFixedVersionBriefcase(requestContext, contextId, iModelId, changeSetId, openParams);
     Logger.logTrace(loggerCategory, "BriefcaseManager.downloadFixedVersion - creating a new briefcase", () => newBriefcase.getDebugInfo());
     return newBriefcase;
   }
@@ -807,18 +820,21 @@ export class BriefcaseManager {
   }
 
   private static initializeBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, pathname: string, openParams: OpenParams, briefcaseId: number): BriefcaseEntry | undefined {
+    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, openParams, briefcaseId);
+
     const nativeDb = new IModelHost.platform.DgnDb();
     const res = nativeDb.openIModel(pathname, openParams.openMode);
-    if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, `Cannot open briefcase at ${pathname}`, Logger.logError, loggerCategory, () => ({ iModelId, pathname, openParams }));
-
-    const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, openParams, briefcaseId);
+    if (DbResult.BE_SQLITE_OK !== res) {
+      Logger.logError(loggerCategory, "Cannot open briefcase. Deleting it to allow retries.", () => briefcase.getDebugInfo());
+      BriefcaseManager.deleteBriefcaseFromLocalDisk(briefcase);
+      return undefined;
+    }
     briefcase.setNativeDb(nativeDb); // Note: Sets briefcaseId, currentChangeSetId in BriefcaseEntry by reading the values from nativeDb
     assert(briefcase.isOpen);
 
     const briefcaseValidity = this.validateBriefcase(briefcase, briefcase.targetChangeSetId, briefcaseId);
-
     if (briefcaseValidity === BriefcaseValidity.Recreate) {
+      Logger.logError(loggerCategory, "Deleting briefcase to recreate.", () => briefcase.getDebugInfo());
       BriefcaseManager.closeBriefcase(briefcase, false);
       BriefcaseManager.deleteBriefcaseFromLocalDisk(briefcase);
       return undefined;
@@ -827,7 +843,7 @@ export class BriefcaseManager {
     assert(!this._cache.findBriefcase(briefcase), "Attempting to open or create briefcase twice");
     BriefcaseManager._cache.addBriefcase(briefcase);
 
-    briefcase.isPending = this.finishInitializeBriefcase(requestContext as AuthorizedClientRequestContext, briefcase);
+    briefcase.isPending = this.finishInitializeBriefcase(requestContext, briefcase);
     return briefcase;
   }
 
@@ -920,9 +936,10 @@ export class BriefcaseManager {
     briefcase.fileId = hubBriefcases[0].fileId!.toString();
   }
 
-  private static createFixedVersionBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString): BriefcaseEntry {
+  private static createFixedVersionBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, openParams: OpenParams): BriefcaseEntry {
     const pathname = this.buildFixedVersionBriefcasePath(iModelId, changeSetId);
     const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, OpenParams.fixedVersion(), BriefcaseId.LegacyStandalone);
+    briefcase.downloadProgress = openParams.downloadProgress;
 
     briefcase.isPending = this.finishCreateBriefcase(requestContext, briefcase);
 
@@ -935,6 +952,7 @@ export class BriefcaseManager {
   private static createVariableVersionBriefcase(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, changeSetId: GuidString, briefcaseId: number, openParams: OpenParams): BriefcaseEntry {
     const pathname = this.buildVariableVersionBriefcasePath(iModelId, briefcaseId, openParams.syncMode!);
     const briefcase = new BriefcaseEntry(contextId, iModelId, changeSetId, pathname, openParams, briefcaseId);
+    briefcase.downloadProgress = openParams.downloadProgress;
 
     briefcase.isPending = this.finishCreateBriefcase(requestContext, briefcase);
 
@@ -983,7 +1001,8 @@ export class BriefcaseManager {
       const checkpoint = checkpoints[0];
       if (checkpoint.fileId)
         briefcase.fileId = checkpoint.fileId.toString();
-      await BriefcaseManager.downloadCheckpoint(requestContext, checkpoint, briefcase.pathname);
+
+      await BriefcaseManager.downloadCheckpoint(requestContext, checkpoint, briefcase.pathname, briefcase.downloadProgress, briefcase.cancelDownloadRequest);
       requestContext.enter();
 
       const perfLogger = new PerfLogger("Opening iModel - setting up context/iModel/briefcase ids", () => briefcase.getDebugInfo());
@@ -1027,7 +1046,9 @@ export class BriefcaseManager {
       // Close the briefcase to complete the download/initialization
       BriefcaseManager.closeBriefcase(briefcase, false);
     } catch (error) {
-      Logger.logError(loggerCategory, "Setting up a briefcase fails. Deleting it to allow retries", () => briefcase.getDebugInfo());
+      requestContext.enter();
+      Logger.logWarning(loggerCategory, "Error downloading briefcase - deleting it", () => briefcase.getDebugInfo());
+
       await BriefcaseManager.deleteBriefcase(requestContext, briefcase);
       requestContext.enter();
 
@@ -1065,15 +1086,19 @@ export class BriefcaseManager {
   }
 
   /** Downloads the checkpoint file */
-  private static async downloadCheckpoint(requestContext: AuthorizedClientRequestContext, checkpoint: Checkpoint, seedPathname: string): Promise<void> {
+  private static async downloadCheckpoint(requestContext: AuthorizedClientRequestContext, checkpoint: Checkpoint, seedPathname: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     requestContext.enter();
     if (IModelJsFs.existsSync(seedPathname))
       return;
-    return BriefcaseManager.imodelClient.checkpoints.download(requestContext, checkpoint, seedPathname)
-      .catch(async () => {
-        requestContext.enter();
-        throw new IModelError(BriefcaseStatus.CannotDownload, "Could not download checkpoint", Logger.logError, loggerCategory);
-      });
+
+    try {
+      await BriefcaseManager.imodelClient.checkpoints.download(requestContext, checkpoint, seedPathname, progressCallback, cancelRequest);
+    } catch (error) {
+      requestContext.enter();
+      if (!(error instanceof UserCancelledError))
+        Logger.logError(loggerCategory, "Could not download checkpoint");
+      throw error;
+    }
   }
 
   /** Deletes a briefcase from the local disk (if it exists) */

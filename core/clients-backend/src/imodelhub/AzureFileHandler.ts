@@ -6,8 +6,8 @@
  * @module iModelHub
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, ProgressInfo, request, RequestOptions, ResponseError } from "@bentley/imodeljs-clients";
+import { Logger, BriefcaseStatus } from "@bentley/bentleyjs-core";
+import { ArgumentCheck, AuthorizedClientRequestContext, FileHandler, ProgressInfo, ProgressCallback, request, RequestOptions, ResponseError, CancelRequest, UserCancelledError } from "@bentley/imodeljs-clients";
 import { Transform, TransformCallback, PassThrough } from "stream";
 import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
 import WriteStreamAtomic = require("fs-write-stream-atomic");
@@ -142,8 +142,7 @@ export class AzureFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
 
-  private async downloadFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number,
-    progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  private async downloadFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback): Promise<void> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Using AzCopy with verison ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
 
@@ -183,8 +182,7 @@ export class AzureFileHandler implements FileHandler {
     }
   }
 
-  private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number,
-    progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
 
     let bufferedStream: Transform;
     if (this.useBufferedDownload(downloadToPathname)) {
@@ -195,17 +193,20 @@ export class AzureFileHandler implements FileHandler {
 
     const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
     let bytesWritten: number = 0;
+    let cancelled: boolean = false;
 
     if (progressCallback) {
       fileStream.on("drain", () => {
-        progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
+        if (!cancelled)
+          progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
       });
       fileStream.on("finish", () => {
-        progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? bytesWritten / fileSize : 0 });
+        if (!cancelled)
+          progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
       });
     }
 
-    return new Promise((resolve, reject) => {
+    const promise = new Promise<void>((resolve, reject) => {
       const downloadCallback = ((res: http.IncomingMessage) => {
         res.pipe(bufferedStream)
           .on("data", (chunk: any) => {
@@ -213,23 +214,48 @@ export class AzureFileHandler implements FileHandler {
           })
           .pipe(fileStream)
           .on("error", (error: any) => {
+            if (cancelRequest !== undefined)
+              cancelRequest.cancel = () => false;
+            if (error instanceof UserCancelledError) {
+              reject(error);
+              return;
+            }
             const parsedError = ResponseError.parse(error);
             reject(parsedError);
           })
           .on("finish", () => {
+            if (cancelRequest !== undefined)
+              cancelRequest.cancel = () => false;
             resolve();
           });
-      });
 
+        if (cancelRequest !== undefined) {
+          cancelRequest.cancel = () => {
+            cancelled = true;
+            res.destroy(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
+            return true;
+          };
+        }
+      });
       const clientRequest = downloadUrl.startsWith("https:") ?
         https.get(downloadUrl, downloadCallback) : http.get(downloadUrl, downloadCallback);
 
       clientRequest.on("error", (error: any) => {
+        if (cancelRequest !== undefined)
+          cancelRequest.cancel = () => false;
+        if (error instanceof UserCancelledError) {
+          reject(error);
+          return;
+        }
         const parsedError = ResponseError.parse(error);
         reject(parsedError);
       });
+
     });
+
+    return promise;
   }
+
   /**
    * Make url safe for logging by removing sensitive information
    * @param url input url that will be strip of search and query parameters and replace them by ... for security reason
@@ -252,8 +278,7 @@ export class AzureFileHandler implements FileHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    * @throws [[ResponseError]] if the file cannot be downloaded.
    */
-  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number,
-    progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
     requestContext.enter();
     const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(downloadUrl);
@@ -269,13 +294,15 @@ export class AzureFileHandler implements FileHandler {
       if (AzCopy.isAvaliable) {
         await this.downloadFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback);
       } else {
-        await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback);
+        await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
       }
     } catch (err) {
       requestContext.enter();
       if (fs.existsSync(downloadToPathname))
         fs.unlinkSync(downloadToPathname); // Just in case there was a partial download, delete the file
-      Logger.logError(loggerCategory, `Error downloading file`);
+
+      if (!(err instanceof UserCancelledError))
+        Logger.logError(loggerCategory, `Error downloading file`);
       return Promise.reject(err);
     }
     requestContext.enter();
@@ -286,7 +313,7 @@ export class AzureFileHandler implements FileHandler {
     return Base64.encode(blockId.toString(16).padStart(5, "0"));
   }
 
-  private async uploadChunk(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: (progress: ProgressInfo) => void) {
+  private async uploadChunk(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
     requestContext.enter();
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
@@ -322,7 +349,7 @@ export class AzureFileHandler implements FileHandler {
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    * @throws [[ResponseError]] if the file cannot be uploaded.
    */
-  public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     const safeToLogUrl = AzureFileHandler.getSafeUrlForLogging(uploadUrlString);
     requestContext.enter();
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
@@ -336,7 +363,7 @@ export class AzureFileHandler implements FileHandler {
     try {
       let blockList = '<?xml version=\"1.0\" encoding=\"utf-8\"?><BlockList>';
       let i = 0;
-      const callback = (progress: ProgressInfo) => {
+      const callback: ProgressCallback = (progress: ProgressInfo) => {
         const uploaded = i * chunkSize + progress.loaded;
         progressCallback!({ loaded: uploaded, percent: uploaded / fileSize, total: fileSize });
       };

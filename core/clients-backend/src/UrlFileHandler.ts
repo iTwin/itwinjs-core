@@ -5,7 +5,8 @@
 /** @packageDocumentation
  * @module Utils
  */
-import { ProgressInfo, FileHandler, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
+import { BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
+import { FileHandler, AuthorizedClientRequestContext, CancelRequest, ProgressCallback, UserCancelledError } from "@bentley/imodeljs-clients";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as https from "https";
@@ -34,48 +35,74 @@ export class UrlFileHandler implements FileHandler {
     fs.mkdirSync(dirPath);
   }
 
-  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     requestContext.enter();
     if (fs.existsSync(downloadToPathname))
       fs.unlinkSync(downloadToPathname);
 
     UrlFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
 
-    return new Promise<void>((resolve, reject) => {
+    const target = new WriteStreamAtomic(downloadToPathname);
+
+    const promise = new Promise<void>((resolve, reject) => {
+      let cancelled: boolean = false;
+
       const callback = (response: http.IncomingMessage) => {
         if (response.statusCode !== 200) {
+          if (cancelRequest !== undefined)
+            cancelRequest.cancel = () => false;
           reject();
         } else {
           const passThroughStream = new PassThrough();
           let bytesWritten: number = 0;
-          const target = new WriteStreamAtomic(downloadToPathname);
-          target.on("error", (err) => {
-            reject(err);
-          });
 
-          target.on("close", () => {
-            if (progressCallback) {
-              fileSize = fileSize || fs.statSync(downloadToPathname).size;
-              progressCallback({ percent: 100, total: fileSize, loaded: fileSize });
-            }
-            resolve();
-          });
+          if (progressCallback) {
+            target.on("drain", () => {
+              if (!cancelled)
+                progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
+            });
+            target.on("finish", () => {
+              if (!cancelled) {
+                fileSize = fileSize || fs.statSync(downloadToPathname).size;
+                progressCallback({ percent: 100, total: fileSize, loaded: fileSize });
+              }
+            });
+          }
 
           response
             .pipe(passThroughStream)
             .on("data", (chunk: any) => {
               bytesWritten += chunk.length;
-              if (progressCallback)
-                progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
             })
-            .pipe(target);
+            .pipe(target)
+            .on("error", (error: any) => {
+              if (cancelRequest !== undefined)
+                cancelRequest.cancel = () => false;
+              reject(error);
+            })
+            .on("finish", () => {
+              if (cancelRequest !== undefined)
+                cancelRequest.cancel = () => false;
+              resolve();
+            });
+
+          if (cancelRequest !== undefined) {
+            cancelRequest.cancel = () => {
+              cancelled = true;
+              response.destroy(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
+              return true;
+            };
+          }
         }
       };
+
       downloadUrl.startsWith("https:") ? https.get(downloadUrl, callback) : http.get(downloadUrl, callback);
     });
+
+    return promise;
   }
 
-  public async uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const uploadUrl = new URL(uploadUrlString);
       const fileSize = this.getFileSize(uploadFromPathname);

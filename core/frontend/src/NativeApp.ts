@@ -87,6 +87,40 @@ export class NativeApp {
     await NativeAppRpcInterface.getClient().downloadBriefcase(iModelToken.toJSON());
   }
 
+  public static async startDownloadBriefcase(contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
+    // openMode: OpenMode = OpenMode.Readonly
+    if (!IModelApp.initialized)
+      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling startDownloadBriefcase");
+
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    requestContext.enter();
+
+    const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
+    requestContext.enter();
+
+    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
+
+    await NativeAppRpcInterface.getClient().startDownloadBriefcase(iModelToken.toJSON());
+    return iModelToken;
+  }
+
+  public static async finishDownloadBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<void> {
+    if (!IModelApp.initialized)
+      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startDownloadBriefcase first");
+
+    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
+    await NativeAppRpcInterface.getClient().finishDownloadBriefcase(iModelToken.toJSON());
+  }
+
+  public static async cancelDownloadBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<boolean> {
+    if (!IModelApp.initialized)
+      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startDownloadBriefcase first");
+
+    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
+    const status = await NativeAppRpcInterface.getClient().cancelDownloadBriefcase(iModelToken.toJSON());
+    return status;
+  }
+
   public static async openBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<IModelConnection> {
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");

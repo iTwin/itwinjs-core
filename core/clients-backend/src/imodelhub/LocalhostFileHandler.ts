@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { FileHandler, AuthorizedClientRequestContext, ProgressInfo } from "@bentley/imodeljs-clients";
+import { FileHandler, AuthorizedClientRequestContext, ProgressCallback } from "@bentley/imodeljs-clients";
 import { ClientsBackendLoggerCategory } from "../ClientsBackendLoggerCategory";
 import * as https from "https";
 import * as pathLib from "path";
@@ -31,7 +31,7 @@ export class LocalhostHandler implements FileHandler {
    * @param fileSize Size of the file that's being downloaded.
    * @param progressCallback Callback for tracking progress.
    */
-  public async downloadFile(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: (progress: ProgressInfo) => void): Promise<void> {
+  public async downloadFile(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback): Promise<void> {
     Logger.logTrace(loggerCategory, `Downloading file from '${downloadUrl}' to '${path}'.`);
     await fs.copy(url.fileURLToPath(downloadUrl), path);
     if (progress) {
@@ -51,7 +51,7 @@ export class LocalhostHandler implements FileHandler {
    * @param path Path of the file to be uploaded.
    * @param progressCallback Callback for tracking progress.
    */
-  public async uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: (progress: ProgressInfo) => void): Promise<void> {
+  public async uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void> {
     Logger.logTrace(loggerCategory, `Uploading file '${path}' to '${uploadUrlString}'.`);
     await fs.copy(path, url.fileURLToPath(uploadUrlString));
     if (progress) {

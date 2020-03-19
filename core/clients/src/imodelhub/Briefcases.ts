@@ -8,9 +8,9 @@
 
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
-import { FileHandler } from "../FileHandler";
+import { FileHandler, CancelRequest } from "../FileHandler";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
-import { ProgressInfo } from "../Request";
+import { ProgressCallback } from "../Request";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { WsgQuery } from "../WsgQuery";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -257,12 +257,13 @@ export class BriefcaseHandler {
    * @param briefcase Briefcase to download. This needs to include a download link. See [[BriefcaseQuery.selectDownloadUrl]].
    * @param path Path where briefcase file should be downloaded, including filename.
    * @param progressCallback Callback for tracking progress.
+   * @param cancelRequest Request used to cancel download
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.NotSupportedInBrowser]($bentley) if called in a browser.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.FileHandlerNotSet]($bentley) if [[FileHandler]] instance was not set for [[IModelClient]].
    * @throws [[ResponseError]] if the briefcase cannot be downloaded.
    */
-  public async download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, "Started downloading briefcase", () => ({ ...briefcase, path }));
     ArgumentCheck.defined("briefcase", briefcase);
@@ -277,7 +278,7 @@ export class BriefcaseHandler {
     if (!briefcase.downloadUrl)
       return Promise.reject(IModelHubClientError.missingDownloadUrl("briefcase"));
 
-    await this._fileHandler.downloadFile(requestContext, briefcase.downloadUrl, path, parseInt(briefcase.fileSize!, 10), progressCallback);
+    await this._fileHandler.downloadFile(requestContext, briefcase.downloadUrl, path, parseInt(briefcase.fileSize!, 10), progressCallback, cancelRequest);
     requestContext.enter();
     Logger.logTrace(loggerCategory, "Finished downloading briefcase", () => ({ ...briefcase, path }));
   }

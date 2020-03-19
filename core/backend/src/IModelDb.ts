@@ -9,7 +9,7 @@ import {
   AuthStatus, BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
   Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType, ProgressCallback } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
   EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
@@ -84,6 +84,12 @@ export class OpenParams {
   ) {
     this.validate();
   }
+
+  /**
+   * Optional callback to monitor progress of downloading the IModelDb.
+   * @internal
+   */
+  public downloadProgress?: ProgressCallback;
 
   /** Returns true if the OpenParams open a briefcase iModel */
   public get isBriefcase(): boolean { return this.syncMode !== undefined; }
@@ -1966,7 +1972,10 @@ export class BriefcaseIModelDb extends IModelDb {
       requestContext.enter();
       const perfLogger = new PerfLogger("Opening iModel", () => ({ contextId, iModelId, ...openParams }));
 
-      const iModelToken: IModelToken = await this.downloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+      const iModelToken = await this.startDownloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+      requestContext.enter();
+
+      await this.finishDownloadBriefcase(requestContext, iModelToken);
       requestContext.enter();
 
       iModelDb = await this.openBriefcase(requestContext, iModelToken);
@@ -2000,11 +2009,32 @@ export class BriefcaseIModelDb extends IModelDb {
    * @param requestContext The client request context.
    * @param contextId Id of the Connect Project or Asset containing the iModel
    * @param iModelId Id of the iModel
-   * @param version Version of the iModel to open
    * @param openParams Parameters to open the iModel
+   * @param version Version of the iModel to open
    * @internal
    */
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
+    requestContext.enter();
+
+    const iModelToken = await this.startDownloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+    requestContext.enter();
+
+    await this.finishDownloadBriefcase(requestContext, iModelToken);
+    requestContext.enter();
+
+    return iModelToken;
+  }
+
+  /**
+   * Start downloading a briefcase
+   * @param requestContext The client request context.
+   * @param contextId Id of the Connect Project or Asset containing the iModel
+   * @param iModelId Id of the iModel
+   * @param openParams Parameters to open the iModel
+   * @param version Version of the iModel to open
+   * @internal
+   */
+  public static async startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
     requestContext.enter();
 
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, BriefcaseManager.imodelClient);
@@ -2021,10 +2051,37 @@ export class BriefcaseIModelDb extends IModelDb {
     }
 
     const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, iModelId, changeSetId, openParams.openMode);
+    return iModelToken;
+  }
+
+  /**
+   * Cancel the request to download a briefcase
+   * @internal
+   */
+  public static cancelDownloadBriefcase(iModelToken: IModelToken): boolean {
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    if (briefcaseEntry === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot cancel download for a briefcase that not started to download", Logger.logError, loggerCategory, () => iModelToken);
+
+    if (briefcaseEntry.isPending === undefined)
+      return false; // Cannot cancel a briefcase that's been completely downloaded
+    return briefcaseEntry.cancelDownloadRequest.cancel();
+  }
+
+  /**
+   * Finish downloading the briefcase
+   * @param briefcase
+   */
+  public static async finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void> {
+    requestContext.enter();
+
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    if (briefcaseEntry === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot finish download for a briefcase that not started to download", Logger.logError, loggerCategory, () => iModelToken);
 
     // If the briefcase has already been downloaded
     if (briefcaseEntry.isPending === undefined)
-      return iModelToken;
+      return;
 
     // Setup the async-s after the download completes
     const perfLogger = new PerfLogger("IModelDb.downloadBriefcase", () => briefcaseEntry.getDebugInfo());
@@ -2043,7 +2100,7 @@ export class BriefcaseIModelDb extends IModelDb {
       perfLogger.dispose();
     }
 
-    return iModelToken;
+    return;
   }
 
   /** Open a previously downloaded briefcase

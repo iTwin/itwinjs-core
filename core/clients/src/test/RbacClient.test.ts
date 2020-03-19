@@ -3,19 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { ConnectClient, Project, ConnectRequestQueryOptions } from "../ConnectClient";
 import { RbacClient, IModelHubPermission, Permission } from "../RbacClient";
 import { TestConfig } from "./TestConfig";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
-describe("RbacClient (#integration)", () => {
+// VSTS#291161: Re-enable tests after oidc-signin-tool fixes
+describe.skip("RbacClient (#integration)", () => {
   const connectClient = new ConnectClient();
   const rbacClient = new RbacClient();
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function (this: Mocha.IHookCallbackContext) {
     this.enableTimeouts(false);
-    requestContext = await TestConfig.getAuthorizedClientRequestContext();
+    requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
   });
 
   it("should get the permissions for any service for the specified project (#integration)", async function (this: Mocha.ITestCallbackContext) {

@@ -5299,10 +5299,14 @@ export enum ModifyElementSource {
 // @internal
 export class NativeApp {
     // (undocumented)
+    static cancelDownloadBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<boolean>;
+    // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
     // (undocumented)
     static downloadBriefcase(contextId: string, iModelId: string, version?: IModelVersion): Promise<void>;
+    // (undocumented)
+    static finishDownloadBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<void>;
     static getBriefcases(): Promise<BriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
@@ -5316,6 +5320,8 @@ export class NativeApp {
     static overrideInternetConnectivity(status?: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
     static shutdown(): Promise<void>;
+    // (undocumented)
+    static startDownloadBriefcase(contextId: string, iModelId: string, version?: IModelVersion): Promise<IModelToken>;
     // (undocumented)
     static startup(opts?: IModelAppOptions): Promise<void>;
     }
