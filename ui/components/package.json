@@ -59,6 +59,7 @@
     "@bentley/imodeljs-i18n": "^2.0.0-dev.37",
     "@bentley/imodeljs-common": "^2.0.0-dev.37",
     "@bentley/imodeljs-frontend": "^2.0.0-dev.37",
+    "@bentley/ui-abstract": "2.0.0-dev.37",
     "@bentley/ui-core": "^2.0.0-dev.37"
   },
   "//devDependencies": [

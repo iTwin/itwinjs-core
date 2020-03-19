@@ -67,6 +67,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
+    "@bentley/ui-abstract": "2.0.0-dev.37",
     "@bentley/bentleyjs-core": "^2.0.0-dev.37",
     "@bentley/geometry-core": "^2.0.0-dev.37",
     "@bentley/imodeljs-clients": "^2.0.0-dev.37",
@@ -90,6 +91,7 @@
     "@bentley/imodeljs-quantity": "2.0.0-dev.37",
     "@bentley/webpack-tools": "2.0.0-dev.37",
     "@bentley/webgl-compatibility": "2.0.0-dev.37",
+    "@bentley/ui-abstract": "2.0.0-dev.37",
     "@types/chai": "^4.1.4",
     "@types/js-base64": "^2.3.1",
     "@types/mocha": "^5.2.5",
@@ -111,7 +113,6 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/ui-abstract": "2.0.0-dev.37",
     "fuse.js": "^3.3.0",
     "js-base64": "^2.4.5",
     "ldclient-js": "^2.6.0",

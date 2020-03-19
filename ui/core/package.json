@@ -58,6 +58,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
+    "@bentley/ui-abstract": "2.0.0-dev.26",
     "@bentley/bentleyjs-core": "^2.0.0-dev.37",
     "@bentley/geometry-core": "^2.0.0-dev.37",
     "@bentley/imodeljs-i18n": "^2.0.0-dev.37"
