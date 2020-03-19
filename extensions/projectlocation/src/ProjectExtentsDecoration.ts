@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, ClipVector, ClipShape, Range1d, PolygonOps, Vector3d, Transform, Range3d, Matrix3d, Angle, AxisOrder, Arc3d, Ray3d, AxisIndex } from "@bentley/geometry-core";
+import { Point3d, ClipVector, ClipShape, Range1d, PolygonOps, Vector3d, Transform, Range3d, Matrix3d, Angle, AxisOrder, Arc3d, Ray3d, AxisIndex, Constant } from "@bentley/geometry-core";
 import { ColorDef, Cartographic, EcefLocation } from "@bentley/imodeljs-common";
 import {
   DecorateContext,
@@ -51,6 +51,10 @@ function updateMapDisplay(vp: ScreenViewport, turnOnMap: boolean): void {
     vp.invalidateRenderPlan();
 }
 
+class ProjectExtentsControlArrow extends ViewClipControlArrow {
+  public extentValid = true;
+}
+
 /** @alpha Controls to modify project extents shown using view clip */
 export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider {
   private static _decorator?: ProjectExtentsClipDecoration;
@@ -59,12 +63,15 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   protected _clipShape?: ClipShape;
   protected _clipShapeExtents?: Range1d;
   protected _clipRange?: Range3d;
+  protected _extentsLengthValid = true;
+  protected _extentsWidthValid = true;
+  protected _extentsHeightValid = true;
   protected _ecefLocation?: EcefLocation;
   protected _origin?: Cartographic; // ### TODO Make cartographic origin part of EcefLocation and persist...
   protected _allowEcefLocationChange = false;
   protected _hasGCSDefined?: boolean;
   protected _controlIds: string[] = [];
-  protected _controls: ViewClipControlArrow[] = [];
+  protected _controls: ProjectExtentsControlArrow[] = [];
   protected _monumentPoint?: Point3d;
   protected _northDirection?: Ray3d;
   protected _monumentId?: string;
@@ -135,6 +142,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
 
     this._clipRange.extendArray(shapePtsLo);
     this._clipRange.extendArray(shapePtsHi);
+
     return true;
   }
 
@@ -168,15 +176,24 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       const faceCenter = midPtLo.interpolate(0.5, midPtHi);
       const edgeTangent = Vector3d.createStartEnd(shapePtsLo[i], shapePtsLo[i + 1]);
       const faceNormal = edgeTangent.crossProduct(shapeArea.direction); faceNormal.normalizeInPlace();
-      this._controls[i] = new ViewClipControlArrow(faceCenter, faceNormal, 0.75);
+      this._controls[i] = new ProjectExtentsControlArrow(faceCenter, faceNormal, 0.75);
+      this._controls[i].extentValid = (faceNormal.isParallelTo(Vector3d.unitX(), true) ? this._extentsLengthValid : this._extentsWidthValid);
     }
 
     const zFillColor = ColorDef.from(150, 150, 250);
-    this._controls[numControls - 2] = new ViewClipControlArrow(shapeArea.origin, Vector3d.unitZ(-1.0), 0.75, zFillColor, undefined, "zLow");
-    this._controls[numControls - 1] = new ViewClipControlArrow(shapeArea.origin.plusScaled(Vector3d.unitZ(), shapePtsLo[0].distance(shapePtsHi[0])), Vector3d.unitZ(), 0.75, zFillColor, undefined, "zHigh");
+    this._controls[numControls - 2] = new ProjectExtentsControlArrow(shapeArea.origin, Vector3d.unitZ(-1.0), 0.75, zFillColor, undefined, "zLow");
+    this._controls[numControls - 1] = new ProjectExtentsControlArrow(shapeArea.origin.plusScaled(Vector3d.unitZ(), shapePtsLo[0].distance(shapePtsHi[0])), Vector3d.unitZ(), 0.75, zFillColor, undefined, "zHigh");
+    this._controls[numControls - 2].extentValid = this._extentsHeightValid;
+    this._controls[numControls - 1].extentValid = this._extentsHeightValid;
 
     return true;
   }
+
+  /** Allow project extents for map projections to be larger since curvature of the earth is accounted for. */
+  protected get maxExtentLength(): number { return (((this._hasGCSDefined && !this._allowEcefLocationChange) ? 350 : 20) * Constant.oneKilometer); }
+
+  /** Impose some reasonable height limit for project extents. */
+  protected get maxExtentHeight(): number { return (2 * Constant.oneKilometer); }
 
   protected async hasValidGCS(): Promise<boolean> {
     if (!this.iModel.isGeoLocated || this.iModel.noGcsDefined)
@@ -204,6 +221,12 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       return false;
 
     this._allowEcefLocationChange = !(await this.hasValidGCS());
+
+    if (undefined !== this._clipRange) {
+      this._extentsLengthValid = (this._clipRange.xLength() < this.maxExtentLength);
+      this._extentsWidthValid = (this._clipRange.yLength() < this.maxExtentLength);
+      this._extentsHeightValid = (this._clipRange.zLength() < this.maxExtentHeight);
+    }
 
     // Show controls if only range box and it's controls are selected, selection set doesn't include any other elements...
     let showControls = false;
@@ -274,6 +297,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     let toolTipHtml = "";
 
     if (hit.sourceId === this._monumentId) {
+      toolTipHtml += translateMessage("ModifyGeolocation") + "<br>";
+
       const coordFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
       if (undefined !== coordFormatterSpec) {
         const pointAdjusted = this._monumentPoint!.minus(this.iModel.globalOrigin);
@@ -296,15 +321,19 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       }
 
     } else if (hit.sourceId === this._northId) {
+      toolTipHtml += translateMessage("ModifyNorthDirection") + "<br>";
+
       const angleFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
       if (undefined !== angleFormatterSpec) {
         const formattedAngle = IModelApp.quantityFormatter.formatQuantity(this.getClockwiseAngleToNorth().radians, angleFormatterSpec);
-        toolTipHtml += translateMessageBold("North") + formattedAngle + "<br>";
+        toolTipHtml += translateMessageBold("Angle") + formattedAngle + "<br>";
       }
 
     } else if (hit.sourceId === this._clipId) {
+      const extentsValid = (this._extentsLengthValid && this._extentsWidthValid && this._extentsHeightValid);
+      toolTipHtml += translateMessage(extentsValid ? "ProjectExtents" : "LargeProjectExtents") + "<br>";
+
       const distanceFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
-      toolTipHtml += translateMessage("ProjectExtents") + "<br>";
       if (undefined !== distanceFormatterSpec && undefined !== this._clipRange) {
         const formattedLength = IModelApp.quantityFormatter.formatQuantity(this._clipRange.xLength(), distanceFormatterSpec);
         const formattedWidth = IModelApp.quantityFormatter.formatQuantity(this._clipRange.yLength(), distanceFormatterSpec);
@@ -318,14 +347,46 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       const arrowIndex = this._controlIds.indexOf(hit.sourceId);
       if (-1 !== arrowIndex) {
         toolTipHtml += translateMessage("ModifyProjectExtents") + "<br>";
-        const heightFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate);
-        if (undefined !== heightFormatterSpec && undefined !== this._clipRange && this.iModel.isGeoLocated) {
+
+        const distanceFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+        if (undefined !== distanceFormatterSpec && undefined !== this._clipRange) {
           const arrowControl = this._controls[arrowIndex];
-          if (undefined !== arrowControl.name) {
-            const heightPt = ("zLow" === arrowControl.name ? this._clipRange.low : this._clipRange.high);
-            const cartographic = this.iModel.spatialToCartographicFromEcef(heightPt);
-            const formattedAltitude = IModelApp.quantityFormatter.formatQuantity(cartographic.height, heightFormatterSpec);
-            toolTipHtml += translateCoreMeasureBold("Altitude") + formattedAltitude + "<br>";
+
+          let arrowLabel = "";
+          let arrowLength = 0.0;
+          let arrowLengthMax = 0.0;
+
+          if (arrowControl.direction.isParallelTo(Vector3d.unitX(), true)) {
+            arrowLabel = "Length";
+            arrowLength = this._clipRange.xLength();
+            if (!this._extentsLengthValid)
+              arrowLengthMax = this.maxExtentLength;
+          } else if (arrowControl.direction.isParallelTo(Vector3d.unitY(), true)) {
+            arrowLabel = "Width";
+            arrowLength = this._clipRange.yLength();
+            if (!this._extentsWidthValid)
+              arrowLengthMax = this.maxExtentLength;
+          } else {
+            arrowLabel = "Height";
+            arrowLength = this._clipRange.zLength();
+            if (!this._extentsHeightValid)
+              arrowLengthMax = this.maxExtentHeight;
+
+            const coordFormatterSpec = (this.iModel.isGeoLocated ? IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate) : undefined);
+            if (undefined !== coordFormatterSpec) {
+              const heightPt = ("zLow" === arrowControl.name ? this._clipRange.low : this._clipRange.high);
+              const cartographic = this.iModel.spatialToCartographicFromEcef(heightPt);
+              const formattedAltitude = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
+              toolTipHtml += translateCoreMeasureBold("Altitude") + formattedAltitude + "<br>";
+            }
+          }
+
+          const formattedLength = IModelApp.quantityFormatter.formatQuantity(arrowLength, distanceFormatterSpec);
+          toolTipHtml += translateMessageBold(arrowLabel) + formattedLength + "<br>";
+
+          if (0.0 !== arrowLengthMax) {
+            const formattedMaxLength = IModelApp.quantityFormatter.formatQuantity(arrowLengthMax, distanceFormatterSpec);
+            toolTipHtml += translateMessageBold("MaxExtent") + formattedMaxLength + "<br>";
           }
         }
       }
@@ -363,7 +424,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       return Ray3d.create(origin, Vector3d.unitY());
 
     const cartographic = this.iModel.spatialToCartographicFromEcef(origin);
-    cartographic.latitude += Angle.createDegrees(0.1).radians;
+    cartographic.latitude += Angle.createDegrees(0.01).radians;
     const pt2 = this.iModel.cartographicToSpatialFromEcef(cartographic);
     const northVec = Vector3d.createStartEnd(origin, pt2);
     northVec.z = 0.0;
@@ -452,6 +513,65 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     context.addDecorationFromBuilder(monumentPointBuilder);
   }
 
+  protected drawAreaTooLargeIndicator(context: DecorateContext): void {
+    if ((this._extentsLengthValid && this._extentsWidthValid) || undefined === this._clipRange)
+      return;
+
+    const corners = this._clipRange.corners();
+    const indices = Range3d.faceCornerIndices(5);
+    const points: Point3d[] = [];
+
+    for (const index of indices)
+      points.push(corners[index]);
+
+    const areaWarnColor = ColorDef.red.clone(); areaWarnColor.setAlpha(50);
+    const areaWarnBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+
+    areaWarnBuilder.setSymbology(areaWarnColor, areaWarnColor, 1);
+    areaWarnBuilder.addShape(points);
+    context.addDecorationFromBuilder(areaWarnBuilder);
+  }
+
+  protected drawExtentTooLargeIndicator(context: DecorateContext, worldPoint: Point3d, sizePixels: number): void {
+    const position = context.viewport.worldToView(worldPoint); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const drawDecoration = (ctx: CanvasRenderingContext2D) => {
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "rgba(255,0,0,.75)";
+      ctx.fillStyle = "rgba(255,255,255,.75)";
+      ctx.shadowColor = "black";
+      ctx.shadowBlur = 5;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -sizePixels);
+      ctx.lineTo(-sizePixels, sizePixels);
+      ctx.lineTo(sizePixels, sizePixels);
+      ctx.lineTo(0, -sizePixels);
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -sizePixels);
+      ctx.lineTo(-sizePixels, sizePixels);
+      ctx.lineTo(sizePixels, sizePixels);
+      ctx.lineTo(0, -sizePixels);
+      ctx.stroke();
+
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 3;
+
+      ctx.beginPath();
+      ctx.moveTo(0, -sizePixels * 0.2);
+      ctx.lineTo(0, sizePixels * 0.3);
+      ctx.moveTo(0, (sizePixels * 0.3) + 4);
+      ctx.lineTo(0, (sizePixels * 0.3) + 4.5);
+      ctx.stroke();
+
+    };
+    context.addCanvasDecoration({ position, drawDecoration });
+  }
+
   public decorate(context: DecorateContext): void {
     if (this._suspendDecorator)
       return;
@@ -474,6 +594,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       this.drawMonumentPoint(context, this._monumentPoint, 1.0, this._monumentId);
 
     ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents!, ColorDef.white.adjustForContrast(context.viewport.view.backgroundColor), 3, this._clipId);
+    this.drawAreaTooLargeIndicator(context);
 
     if (!this._isActive)
       return;
@@ -529,6 +650,14 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       arrowHidBuilder.setSymbology(fillHidColorOvr, fillHidColorOvr, 1);
       arrowHidBuilder.addShape(hidPts);
       context.addDecorationFromBuilder(arrowHidBuilder);
+
+      if (this._controls[iFace].extentValid)
+        continue;
+
+      const warnPixels = 15.0;
+      const warnOffset = vp.viewingSpace.getPixelSizeAtPoint(anchorRay.origin) * warnPixels * 1.5;
+      const warnOrigin = anchorRay.origin.plusScaled(anchorRay.direction, -warnOffset);
+      this.drawExtentTooLargeIndicator(context, warnOrigin, warnPixels);
     }
   }
 
