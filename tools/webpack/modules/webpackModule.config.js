@@ -205,6 +205,12 @@ function getConfig(env) {
         commonjs: 'react-redux',
         amd: 'react-redux'
       },
+      'resize-observer-polyfill': {
+        root: 'ResizeObserver',
+        commonjs2: 'resize-observer-polyfill',
+        commonjs: 'resize-observer-polyfill',
+        amd: 'resize-observer-polyfill'
+      },
       'redux': {
         root: 'Redux',
         commonjs2: 'redux',

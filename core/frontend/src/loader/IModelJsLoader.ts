@@ -198,7 +198,7 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
   if (options.loadUiComponents) {
     await thirdPartyRootPromise;
     // load the rest of the third party modules that depend on react and redux.
-    await ScriptLoader.loadPackagesParallel(["react-dom", "inspire-tree", "react-dnd", "react-dnd-html5-backend", "react-redux"], options);
+    await ScriptLoader.loadPackagesParallel(["react-dom", "inspire-tree", "react-dnd", "react-dnd-html5-backend", "react-redux", "resize-observer-polyfill"], options);
     await ScriptLoader.loadPackage(options.prefixVersion("ui-core"));
     await ScriptLoader.loadPackage(options.prefixVersion("ui-components"));
     if (options.loadECPresentation) {
