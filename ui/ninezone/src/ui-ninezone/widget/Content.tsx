@@ -12,8 +12,17 @@ import { useTransientState } from "./ContentRenderer";
 import { Point } from "@bentley/ui-core";
 import "./Content.scss";
 
-/** @internal */
-export const WidgetContentComponent = React.memo(function WidgetContentComponent(props: { children?: React.ReactNode }) { // tslint:disable-line: no-shadowed-variable variable-name
+/** Properties of [[ScrollableWidgetContent]] component.
+ * @internal future
+ */
+export interface ScrollableWidgetContentProps {
+  children?: React.ReactNode;
+}
+
+/** Component that enables widget content scrolling.
+ * @internal future
+ */
+export const ScrollableWidgetContent = React.memo<ScrollableWidgetContentProps>(function ScrollableWidgetContent(props) { // tslint:disable-line: no-shadowed-variable variable-name
   const scrollPosition = React.useRef(new Point());
   const ref = React.useRef<HTMLDivElement>(null);
   const onSave = React.useCallback(() => {

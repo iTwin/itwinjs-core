@@ -95,12 +95,8 @@ exports[`WidgetPanels should render widget content 1`] = `
             <div
               class="nz-widget-contentRenderer"
             >
-              <div
-                class="nz-widget-content"
-              >
-                <div>
-                  Hello World!
-                </div>
+              <div>
+                Hello World!
               </div>
             </div>
           </div>

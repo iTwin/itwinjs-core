@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl, WidgetControl } from "@bentley/ui-framework";
-import { WidgetContent, HorizontalAnchor } from "@bentley/ui-ninezone";
+import { WidgetContent, HorizontalAnchor, ScrollableWidgetContent } from "@bentley/ui-ninezone";
 import { Orientation } from "@bentley/ui-core";
 
 import {
@@ -165,7 +165,11 @@ export class HorizontalPropertyGridWidgetControl2 extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <HorizontalPropertyGridWidget style={{ overflow: "unset" }} />;
+    this.reactNode = (
+      <ScrollableWidgetContent
+        children={<HorizontalPropertyGridWidget style={{ overflow: "unset" }} />}
+      />
+    );
   }
 }
 

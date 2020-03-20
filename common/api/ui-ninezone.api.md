@@ -1564,6 +1564,15 @@ export interface ScrollableToolSettingsProps extends CommonProps {
     children?: React.ReactNode;
 }
 
+// @internal
+export const ScrollableWidgetContent: React.NamedExoticComponent<ScrollableWidgetContentProps>;
+
+// @internal
+export interface ScrollableWidgetContentProps {
+    // (undocumented)
+    children?: React.ReactNode;
+}
+
 // @internal (undocumented)
 export function sideToCursorType(side: PanelSide): CursorType;
 
@@ -2511,9 +2520,6 @@ export class WidgetContent extends React.PureComponent<WidgetContentProps> {
     // (undocumented)
     render(): JSX.Element;
     }
-
-// @internal (undocumented)
-export const WidgetContentComponent: React.NamedExoticComponent<object>;
 
 // @internal (undocumented)
 export const WidgetContentContainer: React.NamedExoticComponent<object>;

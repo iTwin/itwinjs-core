@@ -251,6 +251,8 @@ beta;SafeAreaInsets
 internal;SafeAreaInsetsHelpers
 beta;ScrollableToolSettings 
 beta;ScrollableToolSettingsProps 
+internal;ScrollableWidgetContent: React.NamedExoticComponent
+internal;ScrollableWidgetContentProps
 internal;sideToCursorType(side: PanelSide): CursorType
 beta;Snap 
 beta;SnapMode 
@@ -388,7 +390,6 @@ internal;WIDGET_TAB_DRAG = "WIDGET_TAB_DRAG"
 internal;WIDGET_TAB_DRAG_END = "WIDGET_TAB_DRAG_END"
 internal;WIDGET_TAB_DRAG_START = "WIDGET_TAB_DRAG_START"
 alpha;WidgetContent 
-internal;WidgetContentComponent: React.NamedExoticComponent
 internal;WidgetContentContainer: React.NamedExoticComponent
 internal;WidgetContentContainersContext: React.Context
 internal;WidgetContentManager: React.NamedExoticComponent

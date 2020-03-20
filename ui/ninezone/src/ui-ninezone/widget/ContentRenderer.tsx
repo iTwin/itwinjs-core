@@ -12,7 +12,6 @@ import { WidgetContentManagerContext, WidgetContentContainersContext } from "./C
 import { TabsStateContext } from "../base/NineZone";
 import { WidgetContentNodeContext } from "../widget-panels/Panels";
 import { TabState } from "../base/NineZoneState";
-import { WidgetContentComponent } from "./Content";
 import "./ContentRenderer.scss";
 
 /** @internal */
@@ -58,9 +57,7 @@ export const WidgetContentRenderer = React.memo(function WidgetContentRenderer(p
   }, [props.renderTo, widgetContentManager, props.tabId]);
   return ReactDOM.createPortal(
     <TabIdContext.Provider value={props.tabId}>
-      <WidgetContentComponent>
-        {widgetContent}
-      </WidgetContentComponent>
+      {widgetContent}
     </TabIdContext.Provider>,
     container.current,
   );

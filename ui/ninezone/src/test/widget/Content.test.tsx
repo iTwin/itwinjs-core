@@ -5,10 +5,10 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, render } from "@testing-library/react";
-import { WidgetContentManagerContext, TabState, TabIdContext, WidgetContentComponent } from "../../ui-ninezone";
+import { WidgetContentManagerContext, TabState, TabIdContext, ScrollableWidgetContent } from "../../ui-ninezone";
 import { EventEmitter } from "../../ui-ninezone/base/Event";
 
-describe("WidgetContentComponent", () => {
+describe("ScrollableWidgetContent", () => {
   it("should save and restore scroll position", () => {
     const onSaveTransientState = new EventEmitter<(tabId: TabState["id"]) => void>();
     const onRestoreTransientState = new EventEmitter<(tabId: TabState["id"]) => void>();
@@ -18,7 +18,7 @@ describe("WidgetContentComponent", () => {
       onSaveTransientState,
     }}>
       <TabIdContext.Provider value="t1">
-        <WidgetContentComponent />
+        <ScrollableWidgetContent />
       </TabIdContext.Provider>
     </WidgetContentManagerContext.Provider>,
     );
