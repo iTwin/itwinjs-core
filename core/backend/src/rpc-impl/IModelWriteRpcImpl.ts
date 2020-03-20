@@ -136,7 +136,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     requestContext.enter();
     const parentChangeSetId = iModelDb.briefcase.parentChangeSetId;
     if (doPush)
-      await iModelDb.pushChanges(requestContext, () => comment);
+      await iModelDb.pushChanges(requestContext, comment);
     return parentChangeSetId;
   }
 

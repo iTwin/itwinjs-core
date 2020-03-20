@@ -210,6 +210,19 @@ describe("NineZoneStateReducer", () => {
       });
       newState.widgets.w1.minimized.should.false;
     });
+
+    it("should not update state in floating widget", () => {
+      let state = createNineZoneState();
+      state = addFloatingWidget(state, "w1", undefined, { activeTabId: "t1" });
+      state = addTab(state, "w1", "t1");
+      const newState = NineZoneStateReducer(state, {
+        type: WIDGET_TAB_CLICK,
+        side: undefined,
+        widgetId: "w1",
+        id: "t1",
+      });
+      newState.should.eq(state);
+    });
   });
 
   describe("WIDGET_TAB_DOUBLE_CLICK", () => {
@@ -300,6 +313,21 @@ describe("NineZoneStateReducer", () => {
       });
       newState.widgets.fw1.minimized.should.true;
     });
+
+    it("should activate tab", () => {
+      let state = createNineZoneState();
+      state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t1" });
+      state = addTab(state, "fw1", "t1");
+      state = addTab(state, "fw1", "t2");
+      const newState = NineZoneStateReducer(state, {
+        type: WIDGET_TAB_DOUBLE_CLICK,
+        id: "t2",
+        side: undefined,
+        widgetId: "fw1",
+        floatingWidgetId: "fw1",
+      });
+      newState.widgets.fw1.activeTabId!.should.eq("t2");
+    });
   });
 
   describe("PANEL_WIDGET_DRAG_START", () => {
@@ -315,6 +343,20 @@ describe("NineZoneStateReducer", () => {
       });
       (!!newState.floatingWidgets.newId).should.true;
       newState.panels.left.widgets.length.should.eq(0);
+    });
+
+    it("should keep one widget expanded", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1");
+      state = addPanelWidget(state, "left", "w2", { minimized: true });
+      const newState = NineZoneStateReducer(state, {
+        type: PANEL_WIDGET_DRAG_START,
+        bounds: new Rectangle().toProps(),
+        id: "w1",
+        newFloatingWidgetId: "newId",
+        side: "left",
+      });
+      newState.widgets.w2.minimized.should.false;
     });
   });
 
@@ -495,6 +537,38 @@ describe("NineZoneStateReducer", () => {
         widgetId: "fw1",
       });
       (!!newState.floatingWidgets.fw1).should.false;
+    });
+
+    it("should keep active tab", () => {
+      let state = createNineZoneState();
+      state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t2" });
+      state = addTab(state, "fw1", "t1");
+      state = addTab(state, "fw1", "t2");
+      const newState = NineZoneStateReducer(state, {
+        type: WIDGET_TAB_DRAG_START,
+        floatingWidgetId: "fw1",
+        id: "t2",
+        position: new Point(100, 200).toProps(),
+        side: undefined,
+        widgetId: "fw1",
+      });
+      newState.widgets.fw1.activeTabId!.should.eq("t1");
+    });
+
+    it("should keep one widget expanded", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1", { activeTabId: "t1" });
+      state = addPanelWidget(state, "left", "w2", { minimized: true });
+      state = addTab(state, "w1", "t1");
+      const newState = NineZoneStateReducer(state, {
+        type: WIDGET_TAB_DRAG_START,
+        floatingWidgetId: undefined,
+        id: "t1",
+        position: new Point(100, 200).toProps(),
+        side: "left",
+        widgetId: "w1",
+      });
+      newState.widgets.w2.minimized.should.false;
     });
   });
 

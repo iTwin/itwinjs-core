@@ -50,7 +50,7 @@ describe("FrontstageComposer", () => {
   });
 
   beforeEach(() => {
-    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+    sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
   });
 
   afterEach(() => {
@@ -241,7 +241,7 @@ describe("FrontstageComposer", () => {
   it("should hide tool settings widget", async () => {
     const wrapper = mount<FrontstageComposer>(<FrontstageComposer />);
 
-    sandbox.stub(FrontstageManager, "activeToolSettingsNode").get(() => undefined);
+    sandbox.stub(FrontstageManager, "activeToolSettingsProvider").get(() => undefined);
     const hideWidgetSpy = sandbox.spy(FrontstageManager.NineZoneManager, "hideWidget");
 
     FrontstageManager.onToolActivatedEvent.emit({ toolId: "" });

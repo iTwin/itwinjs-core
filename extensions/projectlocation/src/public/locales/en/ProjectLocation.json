@@ -42,12 +42,16 @@
     "NotAllowed": "A valid projected coordinate system already exists",
     "NotGeolocated": "Not geolocated",
     "ProjectExtents": "Project Extents",
+    "LargeProjectExtents": "Project Extents Too Large",
     "ModifyProjectExtents": "Modify Project Extents",
+    "ModifyGeolocation": "Modify/Add Geolocation",
+    "ModifyNorthDirection": "Modify North Direction",
+    "MaxExtent": "Recommended Maximum",
     "Length": "Length",
     "Width": "Width",
     "Height": "Height",
     "Latitude": "Latitude",
     "Longitude": "Longitude",
-    "North": "North"
+    "Angle": "Angle"
   }
 }

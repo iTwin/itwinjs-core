@@ -105,7 +105,7 @@ export interface RequestOptions {
   redirects?: number;
   errorCallback?: (response: any) => ResponseError;
   retryCallback?: (error: any, response: any) => boolean;
-  progressCallback?: (progress: ProgressInfo) => void;
+  progressCallback?: ProgressCallback;
   agent?: https.Agent;
   retries?: number;
   useCorsProxy?: boolean;
@@ -127,6 +127,9 @@ export interface ProgressInfo {
   total?: number;
   loaded: number;
 }
+
+/** @beta */
+export type ProgressCallback = (progress: ProgressInfo) => void;
 
 /** @beta */
 export class RequestGlobalOptions {

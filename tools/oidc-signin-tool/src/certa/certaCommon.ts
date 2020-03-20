@@ -10,7 +10,7 @@ import { TestUserCredentials, TestOidcConfiguration } from "../TestUsers";
 // Shared by both the frontend and backend side of the tests
 export const getTokenCallbackName = "getToken";
 
-export type SerializedAccessToken = [string, unknown];
+export type SerializedAccessToken = [string, any];
 export function serializeToken(token: AccessToken): SerializedAccessToken {
   return [
     token.toTokenString(IncludePrefix.Yes),
@@ -20,7 +20,7 @@ export function serializeToken(token: AccessToken): SerializedAccessToken {
 
 function deserializeToken([tokenStr, userInfo]: SerializedAccessToken): AccessToken {
   const token = AccessToken.fromTokenString(tokenStr);
-  token.setUserInfo(UserInfo.fromJson(userInfo)!);
+  token.setUserInfo(new UserInfo(userInfo.id, userInfo.email, userInfo.profile, userInfo.organization, userInfo.featureTracking));
   return token;
 }
 

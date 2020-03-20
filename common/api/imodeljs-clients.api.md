@@ -157,7 +157,7 @@ export class BriefcaseHandler {
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
     create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<Briefcase>;
     delete(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, briefcaseId: number): Promise<void>;
-    download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    download(requestContext: AuthorizedClientRequestContext, briefcase: Briefcase, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: BriefcaseQuery): Promise<Briefcase[]>;
     }
 
@@ -168,6 +168,11 @@ export class BriefcaseQuery extends WsgQuery {
     ownedByMe(): this;
     selectApplicationData(): this;
     selectDownloadUrl(): this;
+}
+
+// @beta
+export interface CancelRequest {
+    cancel(): boolean;
 }
 
 // @beta
@@ -209,8 +214,8 @@ export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
 export class ChangeSetHandler {
     // @internal
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-    create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet>;
-    download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet>;
+    download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: ProgressCallback): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: ChangeSetQuery): Promise<ChangeSet[]>;
     }
 
@@ -276,7 +281,7 @@ export class Checkpoint extends WsgInstance {
 // @alpha
 export class CheckpointHandler {
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
-    download(requestContext: AuthorizedClientRequestContext, checkpoint: Checkpoint, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    download(requestContext: AuthorizedClientRequestContext, checkpoint: Checkpoint, path: string, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, query?: CheckpointQuery): Promise<Checkpoint[]>;
     }
 
@@ -719,12 +724,12 @@ export interface FileHandler {
     // (undocumented)
     agent: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: (progress: ProgressInfo) => void): Promise<void>;
+    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: (progress: ProgressInfo) => void): Promise<void>;
+    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 }
 
 // @internal
@@ -928,7 +933,7 @@ export interface IModelCreateOptions {
     description?: string;
     extent?: number[];
     path?: string;
-    progressCallback?: (progress: ProgressInfo) => void;
+    progressCallback?: ProgressCallback;
     template?: CloneIModelTemplate | EmptyIModelTemplate;
     timeOutInMilliseconds?: number;
 }
@@ -953,7 +958,7 @@ export class IModelHandler {
     constructor(handler: IModelsHandler);
     create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
     delete(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<void>;
-    download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: ProgressCallback): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<HubIModel>;
     getInitializationState(requestContext: AuthorizedClientRequestContext, contextId: string): Promise<InitializationState>;
     update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
@@ -1048,7 +1053,7 @@ export class IModelsHandler {
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler);
     create(requestContext: AuthorizedClientRequestContext, contextId: string, name: string, createOptions?: IModelCreateOptions): Promise<HubIModel>;
     delete(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: GuidString): Promise<void>;
-    download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void>;
     get(requestContext: AuthorizedClientRequestContext, contextId: string, query?: IModelQuery): Promise<HubIModel[]>;
     getInitializationState(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<InitializationState>;
     update(requestContext: AuthorizedClientRequestContext, contextId: string, imodel: HubIModel): Promise<HubIModel>;
@@ -1323,6 +1328,9 @@ export interface ProductVersion {
     // (undocumented)
     sub2?: number;
 }
+
+// @beta (undocumented)
+export type ProgressCallback = (progress: ProgressInfo) => void;
 
 // @beta (undocumented)
 export interface ProgressInfo {
@@ -1630,7 +1638,7 @@ export interface RequestOptions {
     // (undocumented)
     parser?: any;
     // (undocumented)
-    progressCallback?: (progress: ProgressInfo) => void;
+    progressCallback?: ProgressCallback;
     // (undocumented)
     qs?: any | RequestQueryOptions;
     // (undocumented)
@@ -1940,6 +1948,11 @@ export enum UsageType {
     Production = 0,
     // (undocumented)
     Trial = 1
+}
+
+// @internal
+export class UserCancelledError extends BentleyError {
+    constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
 }
 
 // @beta

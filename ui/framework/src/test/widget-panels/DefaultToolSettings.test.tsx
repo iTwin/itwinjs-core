@@ -6,46 +6,47 @@ import * as React from "react";
 import { shallow } from "enzyme";
 import * as moq from "typemoq";
 import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
-import { WidgetPanelsDefaultToolSettings, DefaultToolSettingsProvider } from "../../ui-framework";
+import { WidgetPanelsDefaultToolSettings } from "../../ui-framework";
+import { DialogItemsManager } from "@bentley/ui-abstract";
 
 describe("WidgetPanelsDefaultToolSettings", () => {
   it("should render", () => {
-    const provider = moq.Mock.ofType<DefaultToolSettingsProvider>();
-    const row = moq.Mock.ofType<DefaultToolSettingsProvider["rows"][0]>();
-    const record = moq.Mock.ofType<DefaultToolSettingsProvider["rows"][0]["records"][0]>();
-    provider.setup((x) => x.rows).returns(() => [row.object]);
-    row.setup((x) => x.records).returns(() => [record.object]);
+    const manager = moq.Mock.ofType<DialogItemsManager>();
+    const row = moq.Mock.ofType<DialogItemsManager["rows"][0]>();
+    const item = moq.Mock.ofType<DialogItemsManager["rows"][0]["items"][0]>();
+    manager.setup((x) => x.rows).returns(() => [row.object]);
+    row.setup((x) => x.items).returns(() => [item.object]);
     const wrapper = shallow(
       <WidgetPanelsDefaultToolSettings
-        dataProvider={provider.object}
+        itemsManager={manager.object}
       />,
     );
     wrapper.should.matchSnapshot();
   });
 
   it("should handle commit", () => {
-    const provider = moq.Mock.ofType<DefaultToolSettingsProvider>();
-    const row = moq.Mock.ofType<DefaultToolSettingsProvider["rows"][0]>();
-    const record = moq.Mock.ofType<DefaultToolSettingsProvider["rows"][0]["records"][0]>();
-    provider.setup((x) => x.rows).returns(() => [row.object]);
-    row.setup((x) => x.records).returns(() => [record.object]);
+    const manager = moq.Mock.ofType<DialogItemsManager>();
+    const row = moq.Mock.ofType<DialogItemsManager["rows"][0]>();
+    const item = moq.Mock.ofType<DialogItemsManager["rows"][0]["items"][0]>();
+    manager.setup((x) => x.rows).returns(() => [row.object]);
+    row.setup((x) => x.items).returns(() => [item.object]);
     const wrapper = shallow(
       <WidgetPanelsDefaultToolSettings
-        dataProvider={provider.object}
+        itemsManager={manager.object}
       />,
     );
     (() => wrapper.find(EditorContainer).prop("onCommit")(moq.Mock.ofType<PropertyUpdatedArgs>().object)).should.not.throw();
   });
 
   it("should handle cancel", () => {
-    const provider = moq.Mock.ofType<DefaultToolSettingsProvider>();
-    const row = moq.Mock.ofType<DefaultToolSettingsProvider["rows"][0]>();
-    const record = moq.Mock.ofType<DefaultToolSettingsProvider["rows"][0]["records"][0]>();
-    provider.setup((x) => x.rows).returns(() => [row.object]);
-    row.setup((x) => x.records).returns(() => [record.object]);
+    const manager = moq.Mock.ofType<DialogItemsManager>();
+    const row = moq.Mock.ofType<DialogItemsManager["rows"][0]>();
+    const item = moq.Mock.ofType<DialogItemsManager["rows"][0]["items"][0]>();
+    manager.setup((x) => x.rows).returns(() => [row.object]);
+    row.setup((x) => x.items).returns(() => [item.object]);
     const wrapper = shallow(
       <WidgetPanelsDefaultToolSettings
-        dataProvider={provider.object}
+        itemsManager={manager.object}
       />,
     );
     (() => wrapper.find(EditorContainer).prop("onCancel")()).should.not.throw();

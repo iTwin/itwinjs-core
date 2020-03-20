@@ -4,7 +4,9 @@ exports[`WidgetTab should render active 1`] = `
 <div
   class="nz-widget-tab nz-active"
 >
-  <span />
+  <span
+    title=""
+  />
 </div>
 `;
 
@@ -12,7 +14,9 @@ exports[`WidgetTab should render first inactive 1`] = `
 <div
   class="nz-widget-tab nz-active nz-first-inactive"
 >
-  <span />
+  <span
+    title=""
+  />
 </div>
 `;
 
@@ -20,7 +24,9 @@ exports[`WidgetTab should render last not overflown 1`] = `
 <div
   class="nz-widget-tab nz-active nz-last-not-overflown"
 >
-  <span />
+  <span
+    title=""
+  />
 </div>
 `;
 
@@ -28,7 +34,9 @@ exports[`WidgetTab should render minimized 1`] = `
 <div
   class="nz-widget-tab nz-minimized"
 >
-  <span />
+  <span
+    title=""
+  />
 </div>
 `;
 
@@ -36,6 +44,8 @@ exports[`WidgetTab should render overflown 1`] = `
 <div
   class="nz-widget-tab"
 >
-  <span />
+  <span
+    title=""
+  />
 </div>
 `;

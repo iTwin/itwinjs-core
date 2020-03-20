@@ -10,7 +10,7 @@ import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { FileHandler } from "../FileHandler";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
-import { ProgressInfo } from "../Request";
+import { ProgressInfo, ProgressCallback } from "../Request";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError } from "./Errors";
@@ -387,7 +387,7 @@ export class ChangeSetHandler {
    * @param progressCallback Callback for tracking progress.
    * @throws [[ResponseError]] if the download fails.
    */
-  public async download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async download(requestContext: AuthorizedClientRequestContext, changeSets: ChangeSet[], path: string, progressCallback?: ProgressCallback): Promise<void> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, `Downloading ${changeSets.length} changesets`);
     ArgumentCheck.nonEmptyArray("changeSets", changeSets);
@@ -416,7 +416,7 @@ export class ChangeSetHandler {
         const downloadPath: string = fileHandler.join(path, changeSet.fileName!);
 
         let previouslyDownloaded = 0;
-        const callback = (progress: ProgressInfo) => {
+        const callback: ProgressCallback = (progress: ProgressInfo) => {
           downloadedSize += (progress.loaded - previouslyDownloaded);
           previouslyDownloaded = progress.loaded;
           progressCallback!({ loaded: downloadedSize, total: totalSize, percent: downloadedSize / totalSize });
@@ -445,7 +445,7 @@ export class ChangeSetHandler {
    * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId is not set to the correct file id. That file id should match to the value written to the Briefcase file. See [IModelDb.setGuid]($backend).
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
+  public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changeSet: ChangeSet, path: string, progressCallback?: ProgressCallback): Promise<ChangeSet> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Started uploading ChangeSet", () => ({ iModelId, ...changeSet }));
     ArgumentCheck.defined("requestContext", requestContext);

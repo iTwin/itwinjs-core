@@ -25,16 +25,23 @@ export interface EditorPosition {
   columnSpan?: number;
 }
 
+/** BaseDialogItem contains only the members necessary to create a PropertyRecord.
+ * @beta
+ */
+export interface BaseDialogItem {
+  readonly value: DialogItemValue;
+  readonly property: PropertyDescription;
+  readonly isDisabled?: boolean;
+}
 /** DialogItem is the specification that the display engine turns into a UI item
  * @beta
  */
-export interface DialogItem {
+export interface DialogItem extends BaseDialogItem {
   readonly value: DialogItemValue;
   readonly property: PropertyDescription;
   readonly editorPosition: EditorPosition;
   readonly isDisabled?: boolean;
-  readonly isReadonly?: boolean;
-  readonly lockProperty?: DialogItem;
+  readonly lockProperty?: BaseDialogItem;
 }
 
 /** DialogPropertyItem us the specification to use if you are defining the components directly, e.g., in React

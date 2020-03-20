@@ -31,7 +31,7 @@
     ".nycrc": "json",
     "certa.json": "jsonc"
   },
-  "cSpell.enabledLanguageIds": [
+  "cSpell.enableFiletypes": [
     "c",
     "cpp",
     "csharp",

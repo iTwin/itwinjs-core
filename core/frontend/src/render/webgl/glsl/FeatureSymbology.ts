@@ -600,7 +600,7 @@ const computeFeatureOverrides = `
                                   value.z * 256.0);
 
   feature_ignore_material = 0.0 != extractNthFeatureBit(flags, kOvrBit_IgnoreMaterial);
-  use_material = !feature_ignore_material;
+  use_material = use_material && !feature_ignore_material;
 
   v_feature_emphasis += kEmphFlag_Flash * extractNthFeatureBit(flags, kOvrBit_Flashed);
 `;

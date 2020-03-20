@@ -37,7 +37,6 @@ public;Category
 public;CategoryOwnsSubCategories 
 public;CategorySelector 
 internal;ChangedElementsDb 
-public;ChangeSetDescriber = (endTxnId: TxnIdString) => string
 internal;ChangeSetToken
 beta;ChangeSummary
 beta;ChangeSummaryExtractContext

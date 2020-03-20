@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Change to make ui-abstract a peer dependency, this required updating some test apps to explicitly defing ui-abstract as a dependency.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "bill.steinbock@bentley.com"
+}

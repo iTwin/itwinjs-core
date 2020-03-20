@@ -118,40 +118,56 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
+    let iModelName: string;
+    let iModelDir: string;
+    let iModelId: GuidString;
+    let destIModelName: string;
+
     const projectName = "iModelJsIntegrationTest";
     const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     console.log(`Uploading test iModels into ${projectName}: ${projectId}`); // tslint:disable-line:no-console
 
-    let iModelName = "ReadOnlyTest";
-    let iModelDir = path.join(iModelRootDir, iModelName);
+    iModelName = "ReadOnlyTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
+    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
 
     iModelName = "ReadWriteTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
+    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
 
     iModelName = "NoVersionsTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
+    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
 
     iModelName = "ConnectionReadTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
+    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
 
     iModelName = "Stadium Dataset 1";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
-    console.log(`Uploaded test iModel ${iModelName}`); // tslint:disable-line:no-console
+    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
+
+    iModelName = "PhotoTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir);
+    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
+    console.log(`Uploaded test iModel ${iModelName}: ${iModelId}`); // tslint:disable-line:no-console
 
     iModelName = "seedFileTest";
-    let destIModelName = "ReadOnlyFullStackTest";
+    destIModelName = "ReadOnlyFullStackTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(requestContext, projectName, iModelDir, destIModelName);
-    let iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, destIModelName);
+    iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, destIModelName);
     console.log(`Uploaded test iModel ${destIModelName}: ${iModelId}`); // tslint:disable-line:no-console
 
     iModelName = "seedFileTest";
@@ -287,7 +303,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const modelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "DummyTestModel");
     assert(!!modelId);
     iModelDb.saveChanges("Dummy change set");
-    await iModelDb.pushChanges(requestContext);
+    await iModelDb.pushChanges(requestContext, "test");
 
     // Create a named version on the just uploaded change set
     const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(requestContext, iModelId.toString(), BriefcaseManager.imodelClient);

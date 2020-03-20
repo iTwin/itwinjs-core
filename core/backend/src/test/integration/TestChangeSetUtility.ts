@@ -69,7 +69,7 @@ export class TestChangeSetUtility {
     await this.addTestElements();
 
     // Push changes to the hub
-    await this._iModel.pushChanges(this._requestContext, () => "Setup test model");
+    await this._iModel.pushChanges(this._requestContext, "Setup test model");
 
     return this._iModel;
   }
@@ -78,7 +78,7 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await this.addTestElements();
-    await this._iModel.pushChanges(this._requestContext, () => "Added test elements");
+    await this._iModel.pushChanges(this._requestContext, "Added test elements");
   }
 
   public async deleteTestIModel(): Promise<void> {

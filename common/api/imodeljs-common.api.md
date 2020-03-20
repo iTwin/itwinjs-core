@@ -3707,11 +3707,13 @@ export interface ModelSelectorProps extends DefinitionElementProps {
 
 // @internal
 export abstract class NativeAppRpcInterface extends RpcInterface {
+    cancelDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<boolean>;
     cancelTileContentRequests(_iModelToken: IModelTokenProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     closeBriefcase(_iModelToken: IModelTokenProps): Promise<boolean>;
     downloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps>;
     fetchEvents(_iModelToken: IModelTokenProps, _maxToFetch: number): Promise<QueuedEvent[]>;
+    finishDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<void>;
     getBriefcases(): Promise<BriefcaseProps[]>;
     static getClient(): NativeAppRpcInterface;
     getConfig(): Promise<any>;
@@ -3720,6 +3722,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     log(_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any): Promise<void>;
     openBriefcase(_iModelToken: IModelTokenProps): Promise<IModelProps>;
     overrideInternetConnectivity(_overriddenBy: OverriddenBy, _status?: InternetConnectivityStatus): Promise<void>;
+    startDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps>;
     // (undocumented)
     storageGet(_storageId: string, _key: string): Promise<StorageValue | undefined>;
     // (undocumented)

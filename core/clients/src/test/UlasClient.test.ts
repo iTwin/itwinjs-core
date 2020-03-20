@@ -4,20 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { GuidString, Guid, BentleyStatus } from "@bentley/bentleyjs-core";
-import { TestUsers, getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
+import { TestUsers, getAccessTokenFromBackend, TestOidcConfiguration } from "@bentley/oidc-signin-tool/lib/frontend";
+import { Config } from "../Config";
 import { AccessToken } from "../Token";
 import { UlasClient, UsageLogEntry, FeatureLogEntry, FeatureStartedLogEntry, FeatureEndedLogEntry, LogPostingResponse, UsageType } from "../ulas/UlasClient";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 
 import * as os from "os";
 
-describe("UlasClient - SAML Token (#integration)", () => {
+describe.skip("UlasClient - SAML Token (#integration)", () => {
   const client: UlasClient = new UlasClient();
   let accessToken: AccessToken;
 
   before(async () => {
+    const oidcConfig: TestOidcConfiguration = {
+      clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
+      redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
+      scope: Config.App.getString("imjs_oidc_ulas_test_scopes"),
+    };
+
     // Need to cast to any and then back to AccessToken because of circular dependency with the oidc-signin-tool
-    accessToken = (await getAccessTokenFromBackend(TestUsers.regular) as any) as AccessToken;
+    accessToken = (await getAccessTokenFromBackend(TestUsers.regular, oidcConfig) as any) as AccessToken;
   });
 
   it("Post usage log (#integration)", async () => {

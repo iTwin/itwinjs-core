@@ -16,6 +16,7 @@ import { PanelsStateContext } from "../base/NineZone";
 import { FloatingWidgets } from "../widget/FloatingWidgets";
 import { FloatingTab } from "../widget/FloatingTab";
 import { AppContent } from "./AppContent";
+import { WidgetContentRenderers } from "../widget/ContentRenderer";
 import "./Panels.scss";
 
 /** Properties of [[WidgetPanels]] component.
@@ -60,6 +61,7 @@ const WidgetPanelsComponent = React.memo<CommonProps>(function WidgetPanelsCompo
       className={className}
       style={props.style}
     >
+      <WidgetContentRenderers />
       <AppContent />
       <CenterContent />
       {panelSides.map((side) => {

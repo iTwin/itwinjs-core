@@ -9,9 +9,12 @@
 .nz-widget-tab {
   user-select: none;
   white-space: nowrap;
+  max-width: 9em;
 
   > span {
     font-size: $nz-widget-tab-font-size;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 
   &.nz-overflown {

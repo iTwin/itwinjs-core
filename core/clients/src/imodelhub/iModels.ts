@@ -10,7 +10,7 @@ import { GuidString, IModelHubStatus, Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "../AuthorizedClientRequestContext";
 import { FileHandler } from "../FileHandler";
 import { ClientsLoggerCategory } from "../ClientsLoggerCategory";
-import { ProgressInfo } from "../Request";
+import { ProgressCallback } from "../Request";
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck, IModelHubClientError, IModelHubError } from "./Errors";
@@ -198,7 +198,7 @@ class SeedFileHandler {
    * @param seedPath Path of the SeedFile to be uploaded.
    * @param progressCallback Callback for tracking progress.
    */
-  public async uploadSeedFile(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
+  public async uploadSeedFile(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, seedPath: string, seedFileDescription?: string, progressCallback?: ProgressCallback): Promise<SeedFile> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Started uploading seed file", () => ({ iModelId, seedPath }));
 
@@ -270,7 +270,7 @@ export interface IModelCreateOptions {
   /** Description of the iModel on the Hub. */
   description?: string;
   /** Callback for tracking progress. */
-  progressCallback?: (progress: ProgressInfo) => void;
+  progressCallback?: ProgressCallback;
   /**
    * Time to wait for iModel initialization. When it times out the initialization will continue, but the promise will be rejected.
    * Default is 2 minutes.
@@ -643,7 +643,7 @@ export class IModelsHandler {
    * @param progressCallback Callback for tracking progress.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async download(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, path: string, progressCallback?: ProgressCallback): Promise<void> {
     requestContext.enter();
     Logger.logInfo(loggerCategory, "Started downloading seed file", () => ({ iModelId }));
     ArgumentCheck.defined("requestContext", requestContext);
@@ -789,7 +789,7 @@ export class IModelHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+  public async download(requestContext: AuthorizedClientRequestContext, contextId: string, path: string, progressCallback?: ProgressCallback): Promise<void> {
     const imodel = await this.get(requestContext, contextId);
     await this._handler.download(requestContext, imodel.id!, path, progressCallback);
   }

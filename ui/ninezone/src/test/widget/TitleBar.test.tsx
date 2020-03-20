@@ -7,8 +7,8 @@ import * as sinon from "sinon";
 import produce from "immer";
 import { act, render, fireEvent } from "@testing-library/react";
 import {
-  createNineZoneState, NineZoneProvider, addPanelWidget, NineZoneDispatch, FloatingWidget, WIDGET_DRAG_END, WidgetIdContext, PanelSideContext,
-  PanelTarget, WidgetTabTarget,
+  createNineZoneState, NineZoneProvider, addPanelWidget, NineZoneDispatch, FloatingWidget, WIDGET_DRAG_END, WidgetIdContext,
+  PanelTarget, WidgetTabTarget, PanelStateContext,
 } from "../../ui-ninezone";
 import { Rectangle } from "@bentley/ui-core";
 import * as NineZoneModule from "../../ui-ninezone/base/NineZone";
@@ -124,9 +124,9 @@ describe("WidgetTitleBar", () => {
           floatingWidget={nineZone.floatingWidgets.w1!}
           widget={nineZone.widgets.w1}
         />
-        <PanelSideContext.Provider value="right">
+        <PanelStateContext.Provider value={nineZone.panels.right}>
           <PanelTarget />
-        </PanelSideContext.Provider>
+        </PanelStateContext.Provider>
       </NineZoneProvider>,
     );
     const titleBar = container.getElementsByClassName("nz-widget-titleBar")[0];

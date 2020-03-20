@@ -1039,7 +1039,7 @@ export abstract class Viewport implements IDisposable {
     return this.displayStyle.globeMode === GlobeMode.Ellipsoid && view.isGlobalView;
   }
 
-  /** This setting controls the color overrride for pixels outside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
+  /** This setting controls the color override for pixels outside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
    * @note The transparency component of the color object is ignored.
    * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
    * @beta
@@ -1050,7 +1050,7 @@ export abstract class Viewport implements IDisposable {
     this.invalidateRenderPlan();
   }
 
-  /** This setting controls the color overrride for pixels inside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
+  /** This setting controls the color override for pixels inside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
    * @note The transparency component of the color object is ignored.
    * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
    * @beta
@@ -2574,9 +2574,9 @@ export class ScreenViewport extends Viewport {
   public static animation = {
     /** Duration of animations of viewing operations. */
     time: {
-      fast: BeDuration.fromSeconds(.75),
-      normal: BeDuration.fromSeconds(1.25),
-      slow: BeDuration.fromSeconds(2.0),
+      fast: BeDuration.fromSeconds(.5),
+      normal: BeDuration.fromSeconds(1.0),
+      slow: BeDuration.fromSeconds(1.25),
       wheel: BeDuration.fromSeconds(.175), // zooming with the wheel
     },
     /** The easing function to use for view animations. */
@@ -2603,7 +2603,7 @@ export class ScreenViewport extends Viewport {
       /** zoom out/in only if the beginning and ending view's range, each expanded by this factor, overlap. */
       margin: 2.5,
       /** multiply the duration of the animation by this factor if perform a zoom out. */
-      durationFactor: 2,
+      durationFactor: 1.5,
     },
   };
 

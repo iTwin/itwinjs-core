@@ -307,7 +307,15 @@ exports[`ReviewToolWidget ReviewToolWidget should render correctly 1`] = `
         "isActive": false,
         "isDisabled": undefined,
         "isEnabled": true,
-        "isHidden": undefined,
+        "isHidden": ConditionalBooleanValue {
+          "_value": undefined,
+          "syncEventIds": Array [
+            "activecontentchanged",
+            "activeviewportchanged",
+            "viewstatechanged",
+          ],
+          "testFunc": [Function],
+        },
         "isPressed": false,
         "isVisible": true,
         "items": Array [
@@ -904,7 +912,15 @@ exports[`ReviewToolWidget ReviewToolWidget with bentley B should render 1`] = `
         "isActive": false,
         "isDisabled": undefined,
         "isEnabled": true,
-        "isHidden": undefined,
+        "isHidden": ConditionalBooleanValue {
+          "_value": undefined,
+          "syncEventIds": Array [
+            "activecontentchanged",
+            "activeviewportchanged",
+            "viewstatechanged",
+          ],
+          "testFunc": [Function],
+        },
         "isPressed": false,
         "isVisible": true,
         "items": Array [
@@ -1393,7 +1409,15 @@ exports[`ReviewToolWidget ReviewToolWidget with suffix and prefix items should r
         "isActive": false,
         "isDisabled": undefined,
         "isEnabled": true,
-        "isHidden": undefined,
+        "isHidden": ConditionalBooleanValue {
+          "_value": undefined,
+          "syncEventIds": Array [
+            "activecontentchanged",
+            "activeviewportchanged",
+            "viewstatechanged",
+          ],
+          "testFunc": [Function],
+        },
         "isPressed": false,
         "isVisible": true,
         "items": Array [

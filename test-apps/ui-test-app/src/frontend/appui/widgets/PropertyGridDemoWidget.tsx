@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl, WidgetControl } from "@bentley/ui-framework";
-import { WidgetContent, HorizontalAnchor } from "@bentley/ui-ninezone";
+import { WidgetContent, HorizontalAnchor, ScrollableWidgetContent } from "@bentley/ui-ninezone";
 import { Orientation } from "@bentley/ui-core";
 
 import {
@@ -158,6 +158,18 @@ export class HorizontalPropertyGridWidgetControl extends WidgetControl {
   public restoreTransientState() {
     this._ref.current && this._ref.current.forceUpdate();
     return true;
+  }
+}
+
+export class HorizontalPropertyGridWidgetControl2 extends WidgetControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    this.reactNode = (
+      <ScrollableWidgetContent
+        children={<HorizontalPropertyGridWidget style={{ overflow: "unset" }} />}
+      />
+    );
   }
 }
 

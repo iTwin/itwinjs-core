@@ -114,6 +114,44 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   }
 
   /**
+   * Starts downloading a briefcase
+   * @param tokenProps context for imodel to download.
+   * @returns briefcase id of the briefcase that is downloaded.
+   * @note this api can be call only in connected mode where internet is available.
+   */
+  public async startDownloadBriefcase(tokenProps: IModelTokenProps): Promise<IModelTokenProps> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+
+    BriefcaseManager.initializeBriefcaseCacheFromDisk();
+
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const openParams: OpenParams = OpenParams.pullOnly();
+    const iModelVersion = IModelVersion.asOfChangeSet(iModelToken.changeSetId!);
+    const db = await BriefcaseIModelDb.startDownloadBriefcase(requestContext, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    return db.toJSON();
+  }
+
+  /**
+   * Finishes downloading a briefcase
+   * @param tokenProps context for imodel to download.
+   */
+  public async finishDownloadBriefcase(tokenProps: IModelTokenProps): Promise<void> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    await BriefcaseIModelDb.finishDownloadBriefcase(requestContext, iModelToken);
+  }
+
+  /**
+   * Cancels downloading a briefcase
+   * @param tokenProps context for imodel to download.
+   */
+  public async cancelDownloadBriefcase(tokenProps: IModelTokenProps): Promise<boolean> {
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    const status = BriefcaseIModelDb.cancelDownloadBriefcase(iModelToken);
+    return status;
+  }
+
+  /**
    * Opens briefcase on the backend. The briefcase must be present or download before call this api.
    * @param tokenProps Context for imodel to open.
    * @returns briefcase id of briefcase.

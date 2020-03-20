@@ -6,6 +6,13 @@
 @import "../widgetopacity";
 
 div.nz-navigation-widget {
+  transition: visibility 0.5s ease, opacity 0.5s ease;
+
+  &.nz-hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+
   display: grid;
   box-sizing: border-box;
   height: 100%;

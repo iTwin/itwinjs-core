@@ -6,15 +6,42 @@
 import {
   IModelApp, PrimitiveTool,
   BeButtonEvent, EventHandled,
-  ToolAssistance, ToolAssistanceImage,
+  ToolAssistance, ToolAssistanceImage, NotifyMessageDetails, OutputMessagePriority,
 } from "@bentley/imodeljs-frontend";
 
 import { Point3d } from "@bentley/geometry-core";
+import { ColorDef } from "@bentley/imodeljs-common";
+import { DialogItemValue, DialogPropertySyncItem } from "@bentley/ui-abstract";
 
 export class Tool1 extends PrimitiveTool {
   public static toolId = "Tool1";
   public static iconSpec = "icon-placeholder";
   public readonly points: Point3d[] = [];
+  private _weight = 1;
+  public get weight() { return this._weight; }
+  public set weight(value: number) {
+    this._weight = value;
+
+    const msg = `Weight set to ${value}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+  }
+
+  private syncColorInUi(): void {
+    const syncColorValue: DialogItemValue = { value: this._color.tbgr };
+    const syncColor: DialogPropertySyncItem = { value: syncColorValue, propertyName: "color" };
+    this.syncToolSettingsProperties([syncColor]);
+  }
+
+  private _color = ColorDef.green;
+  public get color() { return this._color; }
+  public set color(value: ColorDef) {
+    this._color = value;
+
+    const msg = `Color set to ${value.toRgbString()}`;
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
+
+    this.syncColorInUi();
+  }
 
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }

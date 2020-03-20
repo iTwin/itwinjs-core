@@ -29,8 +29,8 @@ IModelJsConfig.init(true, true, Config.App);
  */
 async function signin(user: TestUserCredentials, oidcConfig?: TestOidcConfiguration): Promise<AccessToken> {
   // Handle OIDC signin
-  console.log("Starting OIDC signin...");
-  console.time("Finished OIDC signin in");
+  // console.log("Starting OIDC signin...");
+  // console.time("Finished OIDC signin in");
 
   let token: AccessToken;
   if (undefined === oidcConfig || null === oidcConfig) {
@@ -43,7 +43,7 @@ async function signin(user: TestUserCredentials, oidcConfig?: TestOidcConfigurat
   if (undefined === token)
     throw new Error("Failed to get access token");
 
-  console.timeEnd("Finished OIDC signin in");
+  // console.timeEnd("Finished OIDC signin in");
 
   return token;
 }

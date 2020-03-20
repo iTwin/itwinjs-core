@@ -196,7 +196,7 @@ describe("IModelWriteTest (#integration)", () => {
     const el1 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
     // const el2 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
     firstIModel.saveChanges("firstUser created model, category, and two elements");
-    await firstIModel.pushChanges(firstUserRequestContext);
+    await firstIModel.pushChanges(firstUserRequestContext, "test");
 
     // secondUser: pull and merge
     await secondIModel.pullAndMergeChanges(secondUserRequestContext);
@@ -217,7 +217,7 @@ describe("IModelWriteTest (#integration)", () => {
       el1cc.userLabel = el1cc.userLabel + " -> changed by firstUser";
       firstIModel.elements.updateElement(el1cc);
       firstIModel.saveChanges("firstUser modified el1.userLabel");
-      await firstIModel.pushChanges(firstUserRequestContext);
+      await firstIModel.pushChanges(firstUserRequestContext, "test");
     }
 
     // secondUser: modify el1.userLabel
@@ -234,7 +234,7 @@ describe("IModelWriteTest (#integration)", () => {
       const el1after = secondIModel.elements.getElement(el1);
       assert.equal(el1after.userLabel, expectedValueofEl1UserLabel);
 
-      await secondIModel.pushChanges(secondUserRequestContext);
+      await secondIModel.pushChanges(secondUserRequestContext, "test");
     }
 
     // Make sure a neutral observer sees secondUser's change.
@@ -366,7 +366,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Push the changes to the hub
     const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    await rwIModel.pushChanges(adminRequestContext);
+    await rwIModel.pushChanges(adminRequestContext, "test");
     const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
     assert(!!postPushChangeSetId);
     expect(prePushChangeSetId !== postPushChangeSetId);
@@ -482,7 +482,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Push the changes to the hub
     const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    await rwIModel.pushChanges(adminRequestContext);
+    await rwIModel.pushChanges(adminRequestContext, "test");
     const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
     assert(!!postPushChangeSetId);
     expect(prePushChangeSetId !== postPushChangeSetId);
@@ -666,7 +666,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Push the changes to the hub
     const prePushChangeSetId = rwIModel.iModelToken.changeSetId;
-    await rwIModel.pushChanges(adminRequestContext);
+    await rwIModel.pushChanges(adminRequestContext, "test");
     const postPushChangeSetId = rwIModel.iModelToken.changeSetId;
     assert(!!postPushChangeSetId);
     expect(prePushChangeSetId !== postPushChangeSetId);

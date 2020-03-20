@@ -171,6 +171,16 @@ export enum BadgeType {
 }
 
 // @beta
+export interface BaseDialogItem {
+    // (undocumented)
+    readonly isDisabled?: boolean;
+    // (undocumented)
+    readonly property: PropertyDescription;
+    // (undocumented)
+    readonly value: DialogItemValue;
+}
+
+// @beta
 export interface BasePropertyEditorParams {
     // (undocumented)
     type: string;
@@ -311,15 +321,13 @@ export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
 }
 
 // @beta
-export interface DialogItem {
+export interface DialogItem extends BaseDialogItem {
     // (undocumented)
     readonly editorPosition: EditorPosition;
     // (undocumented)
     readonly isDisabled?: boolean;
     // (undocumented)
-    readonly isReadonly?: boolean;
-    // (undocumented)
-    readonly lockProperty?: DialogItem;
+    readonly lockProperty?: BaseDialogItem;
     // (undocumented)
     readonly property: PropertyDescription;
     // (undocumented)
@@ -333,18 +341,20 @@ export interface DialogItemsChangedArgs {
 }
 
 // @beta
-export class DialogItemsManager {
+export class DialogItemsManager extends UiDataProvider {
     constructor(items?: ReadonlyArray<DialogItem>);
     // (undocumented)
     applyUiPropertyChange: (_item: DialogPropertySyncItem) => void;
     // (undocumented)
     static editorWantsLabel(item: DialogItem): boolean;
     // (undocumented)
-    execute(): void;
+    static getItemDisabledState(baseDialogItem: BaseDialogItem): boolean;
     // (undocumented)
-    static getPropertyRecord: (dialogItem: DialogItem) => PropertyRecord;
+    static getPropertyRecord: (dialogItem: BaseDialogItem) => PropertyRecord;
     // (undocumented)
     static hasAssociatedLockProperty(item: DialogItem): boolean;
+    // (undocumented)
+    isToolSettingsManager: () => boolean;
     // (undocumented)
     get items(): ReadonlyArray<DialogItem>;
     set items(items: ReadonlyArray<DialogItem>);
@@ -362,7 +372,7 @@ export class DialogItemsManager {
     // (undocumented)
     updateItemProperties: (syncItems: DialogItemSyncArgs) => void;
     // (undocumented)
-    valueMap: Map<string, DialogItem>;
+    valueMap: Map<string, PropertyRecord>;
 }
 
 // @beta
@@ -396,9 +406,9 @@ export interface DialogPropertySyncItem extends DialogPropertyItem {
 // @beta
 export interface DialogRow {
     // (undocumented)
-    priority: number;
+    items: DialogItem[];
     // (undocumented)
-    records: DialogItem[];
+    priority: number;
 }
 
 // @beta

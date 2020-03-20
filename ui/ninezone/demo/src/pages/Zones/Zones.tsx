@@ -4,24 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
+import { GroupButton, ActionButton } from "@bentley/ui-abstract";
+import { Point } from "@bentley/ui-core";
+import { ToolbarWithOverflow, ToolbarItem } from "@bentley/ui-components";
 import ToolSettings from "./ToolSettings";
 import { ToolSettingProps } from "./ToolSetting";
 import { WidgetPanels } from "@src/widget-panels/Panels";
 import { AppButton } from "@src/widget/tools/button/App";
 import { ToolsArea } from "@src/widget/ToolsArea";
 import { NavigationArea } from "@src/widget/NavigationArea";
-
 import { Direction } from "@src/utilities/Direction";
 import { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
-import { ToolbarWithOverflow, ToolbarItem } from "@bentley/ui-components";
 import { NineZoneProvider, NineZoneDispatchContext } from "@src/base/NineZone";
 import {
-  NineZoneStateReducer, createNineZoneState, addPanelWidget, addTab, PANEL_TOGGLE_PINNED, PANEL_TOGGLE_SPAN,
-  PANEL_TOGGLE_COLLAPSED,
+  NineZoneStateReducer, createNineZoneState, addPanelWidget, addTab, PANEL_TOGGLE_PINNED, PANEL_TOGGLE_SPAN, PANEL_TOGGLE_COLLAPSED,
 } from "@src/base/NineZoneState";
-import { GroupButton, ActionButton } from "@bentley/ui-abstract";
+
 import { PanelSideContext, PanelPinnedContext, PanelSpanContext, isHorizontalPanelSide } from "@src/widget-panels/Panel";
-import { WidgetStateContext } from "@src/widget/Widget";
+import { assert } from "@src/base/assert";
+import { TabIdContext, useTransientState } from "@src/widget/ContentRenderer";
 import "./Zones.scss";
 
 let id = 0;
@@ -138,7 +139,7 @@ function DemoToolWidget() {
         overflowExpandsTo={Direction.Right}
         items={horizontalTools.map((tool: SimpleTool, index: number) => getToolbarItem(tool, index))}
         panelAlignment={ToolbarPanelAlignment.Start}
-        useDragInteraction={true}
+        useDragInteraction
       />
     }
 
@@ -149,7 +150,7 @@ function DemoToolWidget() {
         overflowExpandsTo={Direction.Top}
         items={verticalTools.map((tool: SimpleTool, index: number) => getToolbarItem(tool, index))}
         panelAlignment={ToolbarPanelAlignment.Start}
-        useDragInteraction={true}
+        useDragInteraction
       />
     }
   />;
@@ -180,8 +181,7 @@ function DemoNavigationWidget() {
         expandsTo={Direction.Bottom}
         overflowExpandsTo={Direction.Left}
         items={horizontalTools.map((tool: SimpleTool, index: number) => getToolbarItem(tool, index))}
-        useDragInteraction={true}
-      /*  panelAlignment={ToolbarPanelAlignment.End} */
+        useDragInteraction
       />
     }
 
@@ -192,7 +192,7 @@ function DemoNavigationWidget() {
         overflowExpandsTo={Direction.Top}
         items={verticalTools.map((tool: SimpleTool, index: number) => getToolbarItem(tool, index))}
         panelAlignment={ToolbarPanelAlignment.Start}
-        useDragInteraction={true}
+        useDragInteraction
       />
     }
   />;
@@ -278,19 +278,19 @@ export default function Zones() {
   const { settings, remove, removeFromStart, add, addToStart, update } = useSettings();
   const [state, dispatch] = React.useReducer(NineZoneStateReducer, {}, () => {
     let initialState = createNineZoneState();
-    initialState = addPanelWidget(initialState, "left", "topLeft");
-    initialState = addPanelWidget(initialState, "left", "centerLeft");
-    initialState = addPanelWidget(initialState, "left", "bottomLeft");
-    initialState = addPanelWidget(initialState, "right", "topRight");
-    initialState = addPanelWidget(initialState, "top", "topPanel");
-    initialState = addPanelWidget(initialState, "bottom", "bottomPanel1");
-    initialState = addPanelWidget(initialState, "bottom", "bottomPanel2");
-    initialState = addPanelWidget(initialState, "bottom", "bottomPanel3");
+    initialState = addPanelWidget(initialState, "left", "topLeft", { activeTabId: "topLeft_1" });
+    initialState = addPanelWidget(initialState, "left", "centerLeft", { activeTabId: "centerLeft_1" });
+    initialState = addPanelWidget(initialState, "left", "bottomLeft", { activeTabId: "bottomLeft_1" });
+    initialState = addPanelWidget(initialState, "right", "topRight", { activeTabId: "topRight_1" });
+    initialState = addPanelWidget(initialState, "top", "topPanel", { activeTabId: "topPanel_1" });
+    initialState = addPanelWidget(initialState, "bottom", "bottomPanel1", { activeTabId: "bottomPanel1_1" });
+    initialState = addPanelWidget(initialState, "bottom", "bottomPanel2", { activeTabId: "bottomPanel2_1" });
+    initialState = addPanelWidget(initialState, "bottom", "bottomPanel3", { activeTabId: "bottomPanel3_1" });
     initialState = addTab(initialState, "topLeft", "topLeft_1", { label: "Tab 1" });
     initialState = addTab(initialState, "topLeft", "topLeft_2", { label: "Tab 2" });
     initialState = addTab(initialState, "topLeft", "topLeft_3", { label: "Tab 3" });
     initialState = addTab(initialState, "topLeft", "topLeft_4", { label: "Tab 4" });
-    initialState = addTab(initialState, "bottomLeft", "bottomLeft_1", { label: "Tab 1" });
+    initialState = addTab(initialState, "bottomLeft", "bottomLeft_1", { label: "Tab 1 Of Bottom Left Widget" });
     initialState = addTab(initialState, "centerLeft", "centerLeft_1", { label: "Tab 1" });
     initialState = addTab(initialState, "topRight", "topRight_1", { label: "Tab 1" });
     initialState = addTab(initialState, "topPanel", "topPanel_1", { label: "Tab 1" });
@@ -339,14 +339,43 @@ export default function Zones() {
 
 export function WidgetContent() {
   const side = React.useContext(PanelSideContext);
-  const widget = React.useContext(WidgetStateContext);
+  const tabId = React.useContext(TabIdContext);
   const pinned = React.useContext(PanelPinnedContext);
   const span = React.useContext(PanelSpanContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
+  const scrollViewRef = React.useRef<HTMLDivElement>(null);
+  const scrollPosition = React.useRef(new Point());
+  const [state, setState] = React.useState(false);
+  const onSave = React.useCallback(() => {
+    assert(scrollViewRef.current);
+    scrollPosition.current = new Point(scrollViewRef.current.scrollLeft, scrollViewRef.current.scrollTop);
+  }, []);
+  const onRestore = React.useCallback(() => {
+    assert(scrollViewRef.current);
+    scrollViewRef.current.scrollLeft = scrollPosition.current.x;
+    scrollViewRef.current.scrollTop = scrollPosition.current.y;
+  }, []);
+  useTransientState(onSave, onRestore);
   return (
     <>
-      {widget?.activeTabId === undefined ? "No active tab" : `Active tab=${widget?.activeTabId}`}
+      Active tab={tabId}
       <br />
+      <button onClick={() => setState((prev) => !prev)}>state={String(state)}</button>
+      <br />
+      <div
+        className="nzdemo-scroll-view"
+        ref={scrollViewRef}
+      >
+        <div>Entry 1</div>
+        <div>Entry 2</div>
+        <div>Entry 3</div>
+        <div>Entry 4</div>
+        <div>Entry 5</div>
+        <div>Entry 6</div>
+        <div>Entry 7</div>
+        <div>Entry 8</div>
+        <div>Entry 9</div>
+      </div>
       {side && <>
         <button
           onClick={() => dispatch({

@@ -18,8 +18,6 @@ import { assert } from "../base/assert";
 import { TabsStateContext } from "../base/NineZone";
 import "./Tabs.scss";
 
-// tslint:disable: no-console
-
 /** @internal */
 export const WidgetTabs = React.memo(function WidgetTabs() { // tslint:disable-line: variable-name no-shadowed-variable
   const tabs = React.useContext(TabsStateContext);
@@ -29,7 +27,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // tslint:disable-l
   const children = React.useMemo<React.ReactNode>(() => {
     const activeIndex = widget.activeTabId ? widget.tabs.indexOf(widget.activeTabId) : undefined;
     return widget.tabs.map((tabId, index, array) => {
-      const firstInactive = activeIndex === undefined ? undefined : activeIndex + 1 === index;
+      const firstInactive = activeIndex === undefined ? false : activeIndex + 1 === index;
       return (
         <React.Fragment
           key={tabId}

@@ -17,6 +17,7 @@ import { ContentControlActivatedEventArgs, ContentControl } from "../content/Con
 import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../UiFramework";
+import { CommonProps } from "@bentley/ui-core";
 
 function createNavigationAidControl(activeContentControl: ContentControl | undefined, navigationAidId: string): NavigationAidControl | undefined {
   // istanbul ignore else
@@ -92,7 +93,7 @@ export function NavigationAidHost(props: NavigationAidHostProps) {
 /** Properties for the [[NavigationWidgetComposer]] React components
  * @beta
  */
-export interface NavigationWidgetComposerProps {
+export interface NavigationWidgetComposerProps extends CommonProps {
   /** Optional Horizontal Toolbar */
   horizontalToolbar?: React.ReactNode;
   /** Optional Vertical Toolbar */
@@ -107,13 +108,13 @@ export interface NavigationWidgetComposerProps {
  * @beta
  */
 export function NavigationWidgetComposer(props: NavigationWidgetComposerProps) {
-  const navigationAidHost = props.navigationAidHost ? props.navigationAidHost : <NavigationAidHost />;
-
+  const { navigationAidHost, horizontalToolbar, verticalToolbar, ...otherProps } = props;
   return (
     <NavigationArea
-      navigationAid={navigationAidHost}
-      horizontalToolbar={props.horizontalToolbar}
-      verticalToolbar={props.verticalToolbar}
+      navigationAid={navigationAidHost ? navigationAidHost : <NavigationAidHost />}
+      horizontalToolbar={horizontalToolbar}
+      verticalToolbar={verticalToolbar}
+      {...otherProps}
       onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
     />
   );

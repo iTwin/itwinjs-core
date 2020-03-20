@@ -24,11 +24,10 @@ export interface ToolSettingProps extends CommonProps {
  * @internal future
  */
 export function DockedToolSetting(props: ToolSettingProps) {
-  const { isOverflown, onResize } = useToolSettingsEntry();
+  const { onResize } = useToolSettingsEntry();
   const ref = useResizeObserver<HTMLDivElement>(onResize);
   const className = classnames(
     "nz-toolSettings-setting",
-    isOverflown && "nz-overflown",
     props.className,
   );
   return (

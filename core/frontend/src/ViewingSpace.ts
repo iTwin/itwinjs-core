@@ -6,7 +6,6 @@
  * @module Views
  */
 
-import { assert } from "@bentley/bentleyjs-core";
 import {
   AxisOrder,
   ClipPlaneContainment,
@@ -229,7 +228,8 @@ export class ViewingSpace {
   public calcNpcToView(): Map4d {
     const corners = this.getViewCorners();
     const map = Map4d.createBoxMap(NpcCorners[Npc._000], NpcCorners[Npc._111], corners.low, corners.high);
-    assert(undefined !== map, "undefined npcToViewMap");
+
+    // The map may be undefined if the view rect's width or height is zero.
     return undefined === map ? Map4d.createIdentity() : map;
   }
 

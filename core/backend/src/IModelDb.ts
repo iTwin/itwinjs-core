@@ -5,11 +5,13 @@
 /** @packageDocumentation
  * @module iModels
  */
+
+// cspell:ignore ulas postrc pollrc
 import {
   AuthStatus, BeDuration, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString,
   Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, PerfLogger,
 } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType } from "@bentley/imodeljs-clients";
+import { AuthorizedClientRequestContext, UlasClient, UsageLogEntry, UsageType, ProgressCallback } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps, CreateIModelProps, CreateSnapshotIModelProps, DisplayStyleProps,
   EcefLocation, ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
@@ -45,11 +47,6 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
  */
 export type TxnIdString = string;
 
-/** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId.
- * @public
- */
-export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
-
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub
  * @public
  */
@@ -84,6 +81,12 @@ export class OpenParams {
   ) {
     this.validate();
   }
+
+  /**
+   * Optional callback to monitor progress of downloading the IModelDb.
+   * @internal
+   */
+  public downloadProgress?: ProgressCallback;
 
   /** Returns true if the OpenParams open a briefcase iModel */
   public get isBriefcase(): boolean { return this.syncMode !== undefined; }
@@ -792,7 +795,7 @@ export abstract class IModelDb extends IModel {
 
     const val = this.nativeDb.getECClassMetaData(className[0], className[1]);
     if (val.error)
-      throw new IModelError(val.error.status, "Error getting class meta data for: " + classFullName, Logger.logError, loggerCategory, () => ({ ...this._token, classFullName }));
+      throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`, Logger.logError, loggerCategory, () => ({ ...this._token, classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(val.result!));
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -1679,7 +1682,7 @@ export namespace IModelDb {
       }
 
       if (undefined !== ret.error) {
-        reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
+        reject(new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`));
       } else if (typeof ret.result !== "number") { // if type is not a number, it's the TileContent interface
         const res = ret.result as IModelJsNative.TileContent;
         let iModelId = this._iModel.iModelToken.iModelId;
@@ -1783,16 +1786,22 @@ export class TxnManager {
    */
   public readonly onAfterUndoRedo = new BeEvent<(_action: TxnAction) => void>();
 
-  /** Determine if there are currently any reversible (undoable) changes to this IModelDb. */
+  /** Determine whether undo is possible, optionally permitting undoing txns from previous sessions.
+   * @param allowCrossSessions if true, allow undoing from previous sessions.
+   */
+  public checkUndoPossible(allowCrossSessions?: boolean) { return this._nativeDb.isUndoPossible(allowCrossSessions); }
+
+  /** Determine if there are currently any reversible (undoable) changes from this editing session. */
   public get isUndoPossible(): boolean { return this._nativeDb.isUndoPossible(); }
 
-  /** Determine if there are currently any reinstatable (redoable) changes to this IModelDb */
+  /** Determine if there are currently any reinstatable (redoable) changes */
   public get isRedoPossible(): boolean { return this._nativeDb.isRedoPossible(); }
 
   /** Get the description of the operation that would be reversed by calling reverseTxns(1).
    * This is useful for showing the operation that would be undone, for example in a menu.
+   * @param allowCrossSessions if true, allow undo from previous sessions.
    */
-  public getUndoString(): string { return this._nativeDb.getUndoString(); }
+  public getUndoString(allowCrossSessions?: boolean): string { return this._nativeDb.getUndoString(allowCrossSessions); }
 
   /** Get a description of the operation that would be reinstated by calling reinstateTxn.
    * This is useful for showing the operation that would be redone, in a pull-down menu for example.
@@ -1816,13 +1825,14 @@ export class TxnManager {
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
    *  be reinstated together when/if ReinstateTxn is called.
+   * @param allowCrossSessions if true, allow undo from previous sessions.
    * @note If there are any outstanding uncommitted changes, they are reversed.
    * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
-  public reverseTxns(numOperations: number): IModelStatus {
-    const status = this._nativeDb.reverseTxns(numOperations);
+  public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
+    const status = this._nativeDb.reverseTxns(numOperations, allowCrossSessions);
     if (this._iModel instanceof BriefcaseIModelDb) {
       this._iModel.concurrencyControl.onUndoRedo();
     }
@@ -1837,16 +1847,18 @@ export class TxnManager {
 
   /** Reverse all changes back to a previously saved TxnId.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
+   * @param allowCrossSessions if true, allow undo from previous sessions.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus { return this._nativeDb.reverseTo(txnId, allowCrossSessions); }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
+   * @param allowCrossSessions if true, allow undo from previous sessions.
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus { return this._nativeDb.cancelTo(txnId, allowCrossSessions); }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
@@ -1855,8 +1867,10 @@ export class TxnManager {
    */
   public reinstateTxn(): IModelStatus { return this._nativeDb.reinstateTxn(); }
 
-  /** Get the Id of the first transaction, if any. */
-  public queryFirstTxnId(): TxnIdString { return this._nativeDb.queryFirstTxnId(); }
+  /** Get the Id of the first transaction, if any.
+   * @param allowCrossSessions if true, allow undo from previous sessions.
+   */
+  public queryFirstTxnId(allowCrossSessions?: boolean): TxnIdString { return this._nativeDb.queryFirstTxnId(allowCrossSessions); }
 
   /** Get the successor of the specified TxnId */
   public queryNextTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryNextTxnId(txnId); }
@@ -1874,36 +1888,13 @@ export class TxnManager {
   public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
-  public get hasPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
+  public get hasPendingTxns(): boolean { return this._nativeDb.hasSavedChanges(); }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
   public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
 
   /** Query if there are un-saved or un-pushed local changes. */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
-
-  /** Make a description of the changeset by combining all local txn comments. */
-  public describeChangeSet(endTxnId?: TxnIdString): string {
-    if (endTxnId === undefined)
-      endTxnId = this.getCurrentTxnId();
-
-    const changes = [];
-    const seen = new Set<string>();
-    let txnId = this.queryFirstTxnId();
-
-    while (this.isTxnIdValid(txnId)) {
-      const txnDesc = this.getTxnDescription(txnId);
-      if ((txnDesc.length === 0) || seen.has(txnDesc)) {
-        txnId = this.queryNextTxnId(txnId);
-        continue;
-      }
-
-      changes.push(txnDesc);
-      seen.add(txnDesc);
-      txnId = this.queryNextTxnId(txnId);
-    }
-    return JSON.stringify(changes);
-  }
 }
 
 /** A local copy of an iModel from iModelHub.
@@ -1966,7 +1957,10 @@ export class BriefcaseIModelDb extends IModelDb {
       requestContext.enter();
       const perfLogger = new PerfLogger("Opening iModel", () => ({ contextId, iModelId, ...openParams }));
 
-      const iModelToken: IModelToken = await this.downloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+      const iModelToken = await this.startDownloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+      requestContext.enter();
+
+      await this.finishDownloadBriefcase(requestContext, iModelToken);
       requestContext.enter();
 
       iModelDb = await this.openBriefcase(requestContext, iModelToken);
@@ -1996,15 +1990,36 @@ export class BriefcaseIModelDb extends IModelDb {
     return iModelDb;
   }
 
-  /** Download an iModel from iModelHub, and cache it locally as a briefcase.
+  /** Download an iModel briefcase from iModelHub, and cache it locally.
    * @param requestContext The client request context.
-   * @param contextId Id of the Connect Project or Asset containing the iModel
+   * @param contextId Id of the Project or Asset containing the iModel
    * @param iModelId Id of the iModel
-   * @param version Version of the iModel to open
    * @param openParams Parameters to open the iModel
+   * @param version Version of the iModel to download
    * @internal
    */
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
+    requestContext.enter();
+
+    const iModelToken = await this.startDownloadBriefcase(requestContext, contextId, iModelId, openParams, version);
+    requestContext.enter();
+
+    await this.finishDownloadBriefcase(requestContext, iModelToken);
+    requestContext.enter();
+
+    return iModelToken;
+  }
+
+  /**
+   * Start downloading a briefcase
+   * @param requestContext The client request context.
+   * @param contextId Id of the Connect Project or Asset containing the iModel
+   * @param iModelId Id of the iModel
+   * @param openParams Parameters to open the iModel
+   * @param version Version of the iModel to open
+   * @internal
+   */
+  public static async startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
     requestContext.enter();
 
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, BriefcaseManager.imodelClient);
@@ -2016,15 +2031,42 @@ export class BriefcaseIModelDb extends IModelDb {
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
-      Logger.logError(loggerCategory, "Failed to start IModelDb.downloadBriefcase", () => ({ contextId, iModelId, ...openParams }));
+      Logger.logError(loggerCategory, "IModelDb.downloadBriefcase start failed", () => ({ contextId, iModelId, ...openParams }));
       throw error;
     }
 
     const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, iModelId, changeSetId, openParams.openMode);
+    return iModelToken;
+  }
+
+  /**
+   * Cancel the request to download a briefcase
+   * @internal
+   */
+  public static cancelDownloadBriefcase(iModelToken: IModelToken): boolean {
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    if (briefcaseEntry === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot cancel download for a briefcase that not started to download", Logger.logError, loggerCategory, () => iModelToken);
+
+    if (briefcaseEntry.isPending === undefined)
+      return false; // Cannot cancel a briefcase that's been completely downloaded
+    return briefcaseEntry.cancelDownloadRequest.cancel();
+  }
+
+  /**
+   * Finish downloading the briefcase
+   * @param briefcase
+   */
+  public static async finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void> {
+    requestContext.enter();
+
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    if (briefcaseEntry === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot finish download for a briefcase that not started to download", Logger.logError, loggerCategory, () => iModelToken);
 
     // If the briefcase has already been downloaded
     if (briefcaseEntry.isPending === undefined)
-      return iModelToken;
+      return;
 
     // Setup the async-s after the download completes
     const perfLogger = new PerfLogger("IModelDb.downloadBriefcase", () => briefcaseEntry.getDebugInfo());
@@ -2036,14 +2078,14 @@ export class BriefcaseIModelDb extends IModelDb {
     } catch (error) {
       // Note: If the briefcase download fails, the entry is cleared from the cache and the next call for the same briefcase will be a fresh attempt
       requestContext.enter();
-      Logger.logError(loggerCategory, "Failed to finish IModelDb.downloadBriefcase", () => briefcaseEntry.getDebugInfo());
+      Logger.logError(loggerCategory, "IModelDb.downloadBriefcase failed", () => briefcaseEntry.getDebugInfo());
       throw error;
     } finally {
       briefcaseEntry.isPending = undefined;
       perfLogger.dispose();
     }
 
-    return iModelToken;
+    return;
   }
 
   /** Open a previously downloaded briefcase
@@ -2152,23 +2194,22 @@ export class BriefcaseIModelDb extends IModelDb {
 
   /** Push changes to iModelHub. Locks are released and codes are marked as used as part of a successful push.
    * @param requestContext The client request context.
-   * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
+   * @param description The changeset description
    * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
    * @note This function is a no-op if there are no changes to push.
    * @beta
    */
-  public async pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void> {
+  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void> {
     requestContext.enter();
     if (this.nativeDb.hasUnsavedChanges())
-      return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Invalid to call pushChanges when there are unsaved changes", Logger.logError, loggerCategory, () => this.iModelToken));
-    else if (this.openParams.syncMode !== SyncMode.PullAndPush)
-      throw new IModelError(BentleyStatus.ERROR, "Invalid to call pushChanges when the IModel was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => this.iModelToken);
-    else if (!this.nativeDb.hasSavedChanges())
+      return Promise.reject(new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes", Logger.logError, loggerCategory, () => this.iModelToken));
+    if (this.openParams.syncMode !== SyncMode.PullAndPush)
+      throw new IModelError(BentleyStatus.ERROR, "IModel was not opened with SyncMode = PullAndPush", Logger.logError, loggerCategory, () => this.iModelToken);
+    if (!this.nativeDb.hasSavedChanges())
       return Promise.resolve(); // nothing to push
 
     await this.concurrencyControl.onPushChanges(requestContext);
 
-    const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
     await BriefcaseManager.pushChanges(requestContext, this.briefcase, description);
     requestContext.enter();
     this.iModelToken.changeSetId = this.briefcase.currentChangeSetId;

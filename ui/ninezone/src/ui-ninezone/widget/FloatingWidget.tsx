@@ -2,19 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Widget */
+/** @packageDocumentation
+ * @module Widget
+ */
 
 import * as React from "react";
 import classnames from "classnames";
+import { Rectangle, CommonProps, Point, PointProps } from "@bentley/ui-core";
 import { Widget, WidgetProvider } from "./Widget";
 import { FloatingWidgetState, WidgetState, FLOATING_WIDGET_RESIZE } from "../base/NineZoneState";
-import { Rectangle, CommonProps, Point, PointProps } from "@bentley/ui-core";
 import { WidgetTitleBar } from "./TitleBar";
-import { WidgetContentComponent } from "./Content";
 import { assert } from "../base/assert";
 import { useIsDraggedItem, useDragResizeHandle, UseDragResizeHandleArgs } from "../base/DragManager";
-import "./FloatingWidget.scss";
 import { NineZoneDispatchContext } from "../base/NineZone";
+import { WidgetContentContainer } from "./ContentContainer";
+import "./FloatingWidget.scss";
 
 /** @internal */
 export type FloatingWidgetResizeHandle = "left" | "right" | "top" | "bottom";
@@ -27,24 +29,30 @@ export interface FloatingWidgetProps {
 
 /** @internal */
 export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // tslint:disable-line: variable-name no-shadowed-variable
-  const { id } = props.floatingWidget;
-  const bounds = Rectangle.create(props.floatingWidget.bounds);
-  const height = bounds.getHeight();
-  const width = bounds.getWidth();
-  const style = React.useMemo(() => ({
-    minHeight: props.widget.minimized ? 0 : height,
-    minWidth: props.widget.minimized ? 0 : width,
-    maxHeight: height,
-    maxWidth: width,
-    left: bounds.left,
-    top: bounds.top,
-  }), [bounds.left, bounds.top, height, props.widget.minimized, width]);
+  const { id, bounds } = props.floatingWidget;
+  const { minimized } = props.widget;
+  const style = React.useMemo(() => {
+    const { left, top } = bounds;
+    const boundsRect = Rectangle.create(bounds);
+    const height = boundsRect.getHeight();
+    const width = boundsRect.getWidth();
+    return {
+      height: minimized ? undefined : height,
+      width,
+      left,
+      top,
+    };
+  }, [bounds, minimized]);
+  const className = React.useMemo(() => classnames(
+    minimized && "nz-minimized",
+  ), [minimized]);
   return (
     <FloatingWidgetIdContext.Provider value={id}>
       <WidgetProvider
         widget={props.widget}
       >
         <FloatingWidgetComponent
+          className={className}
           style={style}
         />
       </WidgetProvider>
@@ -74,7 +82,7 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
       style={props.style}
     >
       <WidgetTitleBar />
-      <WidgetContentComponent />
+      <WidgetContentContainer />
       <FloatingWidgetHandle handle="left" />
       <FloatingWidgetHandle handle="top" />
       <FloatingWidgetHandle handle="right" />

@@ -2,6 +2,7 @@
 
 exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`] = `
 <NavigationWidgetComposer
+  className="nz-hidden"
   horizontalToolbar={
     <ToolbarComposer
       items={
@@ -9,7 +10,15 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
           Object {
             "badgeType": undefined,
             "execute": [Function],
-            "icon": "icon-gyroscope",
+            "icon": ConditionalStringValue {
+              "_value": undefined,
+              "stringGetter": [Function],
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+            },
             "id": "View.Rotate",
             "internalData": Map {},
             "isActive": false,
@@ -112,7 +121,15 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
             "internalData": Map {},
             "isActive": false,
             "isDisabled": undefined,
-            "isHidden": undefined,
+            "isHidden": ConditionalBooleanValue {
+              "_value": undefined,
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+              "testFunc": [Function],
+            },
             "itemPriority": 10,
             "label": "",
           },
@@ -124,7 +141,15 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
             "internalData": Map {},
             "isActive": false,
             "isDisabled": undefined,
-            "isHidden": undefined,
+            "isHidden": ConditionalBooleanValue {
+              "_value": undefined,
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+              "testFunc": [Function],
+            },
             "itemPriority": 20,
             "label": "",
           },
@@ -139,6 +164,7 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
 
 exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix items should render correctly 1`] = `
 <NavigationWidgetComposer
+  className="nz-hidden"
   horizontalToolbar={
     <ToolbarComposer
       items={
@@ -146,7 +172,15 @@ exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix item
           Object {
             "badgeType": undefined,
             "execute": [Function],
-            "icon": "icon-gyroscope",
+            "icon": ConditionalStringValue {
+              "_value": undefined,
+              "stringGetter": [Function],
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+            },
             "id": "View.Rotate",
             "internalData": Map {},
             "isActive": false,
@@ -273,7 +307,15 @@ exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix item
             "internalData": Map {},
             "isActive": false,
             "isDisabled": undefined,
-            "isHidden": undefined,
+            "isHidden": ConditionalBooleanValue {
+              "_value": undefined,
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+              "testFunc": [Function],
+            },
             "itemPriority": 10,
             "label": "",
           },
@@ -285,7 +327,15 @@ exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix item
             "internalData": Map {},
             "isActive": false,
             "isDisabled": undefined,
-            "isHidden": undefined,
+            "isHidden": ConditionalBooleanValue {
+              "_value": undefined,
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+              "testFunc": [Function],
+            },
             "itemPriority": 20,
             "label": "",
           },

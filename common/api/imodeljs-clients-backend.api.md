@@ -6,6 +6,7 @@
 
 import { AccessToken } from '@bentley/imodeljs-clients';
 import { AuthorizedClientRequestContext } from '@bentley/imodeljs-clients';
+import { CancelRequest } from '@bentley/imodeljs-clients';
 import { Client } from 'openid-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { FileHandler } from '@bentley/imodeljs-clients';
@@ -13,7 +14,7 @@ import * as https from 'https';
 import { IAuthorizationClient } from '@bentley/imodeljs-clients';
 import { Issuer } from 'openid-client';
 import { OidcClient } from '@bentley/imodeljs-clients';
-import { ProgressInfo } from '@bentley/imodeljs-clients';
+import { ProgressCallback } from '@bentley/imodeljs-clients';
 import { TokenSet } from 'openid-client';
 import { Transform } from 'stream';
 import { TransformCallback } from 'stream';
@@ -25,12 +26,12 @@ export class AzureFileHandler implements FileHandler {
     // (undocumented)
     agent: https.Agent;
     basename(filePath: string): string;
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
-    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     }
 
 // @internal
@@ -144,13 +145,13 @@ export class UrlFileHandler implements FileHandler {
     agent: https.Agent;
     basename(filePath: string): string;
     // (undocumented)
-    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
     exists(filePath: string): boolean;
     getFileSize(filePath: string): number;
     isDirectory(filePath: string): boolean;
     join(...paths: string[]): string;
     // (undocumented)
-    uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void>;
+    uploadFile(_requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void>;
     // (undocumented)
     protected _uploadMethod: string;
 }

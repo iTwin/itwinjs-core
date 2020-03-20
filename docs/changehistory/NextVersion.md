@@ -219,6 +219,9 @@ The following items that were marked as @deprecated in the 1.x timeframe have be
 * Removed `UiFramework.getDefaultRulesetId()` and `UiFramework.setDefaultRulesetId()`. Each component
 should decide what ruleset it wants to use.
 
+* Custom registered ToolUiProviders should now return a 'horizontalToolSettingNodes' property that contain an array of ToolSettingsEntry items.
+These items define the label and editor to use for each value when the Tool Settings container is in its default Horizontal orientation. The existing 'toolSettingsNode' property is still used to specify the UI if the Tool Settings are shown in a floating/rectangular container.
+
 ### API changes in `ui-core` package
 
 #### Removal of deprecated APIs

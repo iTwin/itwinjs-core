@@ -41,6 +41,7 @@ div.uifw-default-toolsettings-property-lock input[type="checkbox"] {
 div.uifw-default-toolsettings-inline-editor-group {
   display: flex;
   flex-wrap: nowrap;
+  justify-content: center;
 }
 
 div.uifw-default-toolsettings-inline-editor-group .uifw-default-toolsettings-label {
@@ -49,12 +50,9 @@ div.uifw-default-toolsettings-inline-editor-group .uifw-default-toolsettings-lab
 }
 
 div.uifw-default-toolsettings-inline-editor-group .uifw-default-toolsettings-editor {
-  margin-right: 6px;
+  margin-left: 3px;
+  margin-right: 3px;
   margin-bottom: 3px;
-
-  &:last-child {
-    margin-right: 0px;
-  }
 }
 
 div.uifw-default-toolsettings-lock-and-label {

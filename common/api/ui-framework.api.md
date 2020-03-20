@@ -1458,7 +1458,7 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    static hasAssociatedLockProperty(record: DialogItem): boolean;
+    static hasAssociatedLockProperty(item: DialogItem): boolean;
     get itemsManager(): DialogItemsManager;
     set itemsManager(itemsManager: DialogItemsManager);
     // (undocumented)
@@ -1469,13 +1469,11 @@ export class DefaultReactDisplay extends React.Component<DefaultDisplayProps, De
 export class DefaultToolSettingsProvider extends ToolUiProvider {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
-    execute(): void;
-    // (undocumented)
-    getEditorRecord: (dialogItem: DialogItem) => PropertyRecord;
+    applyUiPropertyChange(syncItem: DialogPropertySyncItem): void;
     // (undocumented)
     onInitialize(): void;
     // (undocumented)
-    rows: TsRow[];
+    toolSettingsDP: ToolSettingsDataProvider;
     // (undocumented)
     valueMap: Map<string, DialogItem>;
 }
@@ -2070,7 +2068,8 @@ export class FrontstageManager {
     static get activeNestedFrontstage(): FrontstageDef | undefined;
     static get activeToolId(): string;
     static get activeToolInformation(): ToolInformation | undefined;
-    static get activeToolSettingsNode(): React.ReactNode | undefined;
+    // @internal
+    static get activeToolSettingsProvider(): ToolUiProvider | undefined;
     static addFrontstageProvider(frontstageProvider: FrontstageProvider): void;
     static clearFrontstageDefs(): void;
     static closeModalFrontstage(): void;
@@ -3305,7 +3304,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 export function NavigationWidgetComposer(props: NavigationWidgetComposerProps): JSX.Element;
 
 // @beta
-export interface NavigationWidgetComposerProps {
+export interface NavigationWidgetComposerProps extends CommonProps {
     horizontalToolbar?: React.ReactNode;
     navigationAidHost?: React.ReactNode;
     verticalToolbar?: React.ReactNode;
@@ -4803,6 +4802,23 @@ export interface ToolItemProps extends ItemProps, CommandHandler {
     toolId: string;
 }
 
+// @beta
+export interface ToolSettingsEntry {
+    // (undocumented)
+    editorNode: React.ReactNode;
+    // (undocumented)
+    labelNode: React.ReactNode;
+}
+
+// @beta
+export function ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element;
+
+// @beta
+export interface ToolSettingsGridProps {
+    // (undocumented)
+    settings?: ToolSettingsEntry[];
+}
+
 // @internal
 export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps, ToolSettingsZoneState> {
     constructor(props: ToolSettingsZoneProps);
@@ -4860,6 +4876,9 @@ export class ToolUiProvider extends ConfigurableUiControl {
     get dataProvider(): UiDataProvider | undefined;
     set dataProvider(d: UiDataProvider | undefined);
     getType(): ConfigurableUiControlType;
+    // @beta
+    get horizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
+    set horizontalToolSettingNodes(r: ToolSettingsEntry[] | undefined);
     get toolSettingsNode(): React.ReactNode;
     set toolSettingsNode(r: React.ReactNode);
     }
@@ -4879,7 +4898,7 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
 export function ToolWidgetComposer(props: ToolWidgetComposerProps): JSX.Element;
 
 // @beta
-export interface ToolWidgetComposerProps {
+export interface ToolWidgetComposerProps extends CommonProps {
     cornerItem?: React.ReactNode;
     horizontalToolbar?: React.ReactNode;
     verticalToolbar?: React.ReactNode;
@@ -5091,13 +5110,16 @@ export interface UserProfileBackstageItemProps extends CommonProps {
 }
 
 // @internal (undocumented)
-export function useToolSettings(): React.ReactNode;
+export function useToolSettings(): ToolSettingsEntry[] | undefined;
 
 // @beta
 export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
 
 // @beta
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
+
+// @internal (undocumented)
+export function useUiVisibility(): boolean;
 
 // @alpha
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {
@@ -5542,7 +5564,7 @@ export function WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSe
 // @internal (undocumented)
 export interface WidgetPanelsDefaultToolSettingsProps {
     // (undocumented)
-    dataProvider: DefaultToolSettingsProvider;
+    itemsManager: DialogItemsManager;
 }
 
 // @internal (undocumented)

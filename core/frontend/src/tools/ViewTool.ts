@@ -1136,7 +1136,6 @@ class ViewRotate extends HandleWithInertia {
       ptNpc.setFrom(this._anchorPtNpc);
 
     const currentFrustum = vp.getFrustum(CoordSystem.World, false);
-    vp.getFrustum(CoordSystem.World, false, this._activeFrustum);
     const frustumChange = !currentFrustum.equals(this._activeFrustum);
     if (frustumChange)
       this._frustum.setFrom(currentFrustum);
@@ -3735,8 +3734,8 @@ export class SetupCameraTool extends PrimitiveTool {
       { propertyName: SetupCameraTool._targetHeightName, value: this._targetHeightValue },
     ]);
 
-    const useCameraHeight = { value: this._useCameraHeightValue, property: SetupCameraTool._getUseCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 0 } };
-    const useTargetHeight = { value: this._useTargetHeightValue, property: SetupCameraTool._getUseTargetHeightDescription(), editorPosition: { rowPriority: 2, columnIndex: 0 } };
+    const useCameraHeight = { value: this._useCameraHeightValue, property: SetupCameraTool._getUseCameraHeightDescription() };
+    const useTargetHeight = { value: this._useTargetHeightValue, property: SetupCameraTool._getUseTargetHeightDescription() };
 
     const toolSettings = new Array<DialogItem>();
     toolSettings.push({ value: this._cameraHeightValue, property: this._getCameraHeightDescription(), editorPosition: { rowPriority: 1, columnIndex: 2 }, lockProperty: useCameraHeight });

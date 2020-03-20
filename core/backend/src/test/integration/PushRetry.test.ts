@@ -203,7 +203,7 @@ describe("PushRetry", () => {
       utils.createRequestUrl(ScopeType.iModel, pushRetryIModelId!, "ChangeSet", "?$top=1&$orderby=Index+desc"),
       responseFunction, 5, undefined, undefined, 409);
 
-    await pushRetryIModel.pushChanges(requestContext);
+    await pushRetryIModel.pushChanges(requestContext, "test");
     ResponseBuilder.clearMocks();
     await BriefcaseManager.imodelClient.iModels.delete(requestContext, testProjectId, pushRetryIModelId!);
   });
@@ -229,7 +229,7 @@ describe("PushRetry", () => {
       response, 5, undefined, undefined, 409);
 
     try {
-      await pushRetryIModel.pushChanges(requestContext);
+      await pushRetryIModel.pushChanges(requestContext, "test");
     } catch (error) {
       assert.exists(error);
       assert.equal(error.name, "UnknownPushError");

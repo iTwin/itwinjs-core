@@ -125,6 +125,27 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
   public async downloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps> { return this.forward(arguments); }
 
   /**
+   * Starts download of a briefcase. The call require internet connection and must have valid token.
+   * @param _iModelToken IModel context information.
+   * @returns IModelTokenProps which allow to create IModelConnection.
+   */
+  public async startDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps> { return this.forward(arguments); }
+
+  /**
+   * Finishes download of a briefcase. The call require internet connection and must have valid token.
+   * @param _iModelToken IModel context information.
+   * @returns IModelTokenProps which allow to create IModelConnection.
+   */
+  public async finishDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<void> { return this.forward(arguments); }
+
+  /**
+   * Cancels download of a briefcase. The call require internet connection and must have valid token.
+   * @param _iModelToken IModel context information.
+   * @returns IModelTokenProps which allow to create IModelConnection.
+   */
+  public async cancelDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<boolean> { return this.forward(arguments); }
+
+  /**
    * Opens briefcase. This api can be called offline. It opens the briefcase on disk.
    * @param _iModelToken IModel context information.
    * @returns IModelTokenProps which allow to create IModelConnection.

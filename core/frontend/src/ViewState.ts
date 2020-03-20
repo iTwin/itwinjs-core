@@ -1017,7 +1017,7 @@ export abstract class ViewState extends ElementState {
   }
 
   private _maxGlobalScopeFactor = 0;
-  /** The maximum global scope is not persistent, but maintained as highest historal global scope factor.  this can be used to  determine
+  /** The maximum global scope is not persistent, but maintained as highest global scope factor. This can be used to determine
    * if the view is of a limited area or if it has ever viewed the entire globe and therefore may be assumed to view it again
    * and therefore may warrant resources for displaying the globe, such as an expanded viewing frustum and preloading globe map tiles.
    * A value greater than one indicates that the viewport has been used to view globally at least once.
@@ -1839,7 +1839,7 @@ export class SpatialViewState extends ViewState3d {
     return extents;
   }
 
-  /** Compute world-space range apprioriate for fitting the view. If that range is null, use the displayed extents. */
+  /** Compute world-space range appropriate for fitting the view. If that range is null, use the displayed extents. */
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new Range3d();

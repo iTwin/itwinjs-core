@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/projectlocation-extension",
+      "comment": "Add visual indicators when project extents exceeds recommend maximum size.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/projectlocation-extension",
+  "email": "Brien.Bastings@bentley.com"
+}

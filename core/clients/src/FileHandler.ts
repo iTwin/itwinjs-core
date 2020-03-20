@@ -5,9 +5,28 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { ProgressInfo } from "./Request";
+import { BentleyError, LogFunction, GetMetaDataFunction } from "@bentley/bentleyjs-core";
+import { ProgressCallback } from "./Request";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import * as https from "https";
+
+/** Interface to cancel a request
+ * @beta
+ */
+export interface CancelRequest {
+  /** Returns true if cancel request was acknowledged */
+  cancel(): boolean;
+}
+
+/** Error thrown when user cancelled operation
+ * @internal
+ */
+export class UserCancelledError extends BentleyError {
+  public constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction) {
+    super(errorNumber, message, log, category, getMetaData);
+    this.name = "User cancelled operation";
+  }
+}
 
 /** Handler for file system, and upload / download. TODO: Move this to parent directory -- it is not iModelHub-specific.
  * @beta
@@ -22,7 +41,7 @@ export interface FileHandler {
    * @param fileSize Size of the file that's being downloaded.
    * @param progressCallback Callback for tracking progress.
    */
-  downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: (progress: ProgressInfo) => void): Promise<void>;
+  downloadFile(requestContext: AuthorizedClientRequestContext, downloadUrl: string, path: string, fileSize?: number, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void>;
 
   /**
    * Upload a file.
@@ -31,7 +50,7 @@ export interface FileHandler {
    * @param path Path of the file to be uploaded.
    * @param progressCallback Callback for tracking progress.
    */
-  uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: (progress: ProgressInfo) => void): Promise<void>;
+  uploadFile(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, path: string, progress?: ProgressCallback): Promise<void>;
 
   /**
    * Get size of a file.

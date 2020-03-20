@@ -9,27 +9,26 @@
 import * as React from "react";
 import { EditorContainer } from "@bentley/ui-components";
 import { DockedToolSetting } from "@bentley/ui-ninezone";
-import { DefaultToolSettingsProvider } from "../zones/toolsettings/DefaultToolSettingsProvider";
+import { DialogItemsManager } from "@bentley/ui-abstract";
 
 /** @internal */
 export interface WidgetPanelsDefaultToolSettingsProps {
-  dataProvider: DefaultToolSettingsProvider;
+  itemsManager: DialogItemsManager;
 }
 
 /** @internal */
 export function WidgetPanelsDefaultToolSettings(props: WidgetPanelsDefaultToolSettingsProps) {
-  return (<>{props.dataProvider.rows.map((row) => {
-    return row.records.map((record) => {
-      const editorRecord = props.dataProvider.getEditorRecord (record);
-      // istanbul ignore else
-      if (editorRecord)
-        editorRecord.isDisabled = !!record.isDisabled;
+  return (<>{props.itemsManager.rows.map((row) => {
+    return row.items.map((item) => {
+      const record = DialogItemsManager.getPropertyRecord(item);
+      if (record === undefined)
+        return;
       return (
         <DockedToolSetting
-          key={record.property.name}
+          key={item.property.name}
         >
           <EditorContainer
-            propertyRecord={editorRecord}
+            propertyRecord={record}
             setFocus={false}
             onCommit={() => { }}
             onCancel={() => { }}

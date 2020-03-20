@@ -211,7 +211,7 @@ export function createTabState(id: TabState["id"]): TabState;
 export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState;
 
 // @internal (undocumented)
-export function createWidgetState(id: WidgetState["id"]): WidgetState;
+export function createWidgetState(id: WidgetState["id"], args?: Partial<WidgetState>): WidgetState;
 
 // @internal
 export class Css {
@@ -1564,6 +1564,15 @@ export interface ScrollableToolSettingsProps extends CommonProps {
     children?: React.ReactNode;
 }
 
+// @internal
+export const ScrollableWidgetContent: React.NamedExoticComponent<ScrollableWidgetContentProps>;
+
+// @internal
+export interface ScrollableWidgetContentProps {
+    // (undocumented)
+    children?: React.ReactNode;
+}
+
 // @internal (undocumented)
 export function sideToCursorType(side: PanelSide): CursorType;
 
@@ -1846,6 +1855,9 @@ export interface TabGroupProps extends CommonProps {
     isCollapsed?: boolean;
     verticalAnchor: VerticalAnchor;
 }
+
+// @internal (undocumented)
+export const TabIdContext: React.Context<string>;
 
 // @alpha
 export enum TabMode {
@@ -2431,6 +2443,9 @@ export function useTarget<T extends Element>(onTargeted: (targeted: boolean) => 
 export function useToolSettingsEntry(): DockedToolSettingsEntryContextArgs;
 
 // @internal (undocumented)
+export function useTransientState(onSave?: () => void, onRestore?: () => void): void;
+
+// @internal (undocumented)
 export function useWidgetTarget(args: UseWidgetTargetArgs): (isTargeted: boolean) => void;
 
 // @internal (undocumented)
@@ -2507,7 +2522,32 @@ export class WidgetContent extends React.PureComponent<WidgetContentProps> {
     }
 
 // @internal (undocumented)
-export const WidgetContentComponent: React.NamedExoticComponent<object>;
+export const WidgetContentContainer: React.NamedExoticComponent<object>;
+
+// @internal (undocumented)
+export const WidgetContentContainersContext: React.Context<WidgetContentContainers>;
+
+// @internal (undocumented)
+export const WidgetContentManager: React.NamedExoticComponent<WidgetContentManagerProps>;
+
+// @internal (undocumented)
+export const WidgetContentManagerContext: React.Context<WidgetContentManagerContextArgs>;
+
+// @internal (undocumented)
+export interface WidgetContentManagerContextArgs {
+    // (undocumented)
+    getWidgetContentContainerRef: (tabId: TabState["id"]) => React.Ref<Element>;
+    // (undocumented)
+    onRestoreTransientState: EventEmitter<(tabId: TabState["id"]) => void>;
+    // (undocumented)
+    onSaveTransientState: EventEmitter<(tabId: TabState["id"]) => void>;
+}
+
+// @internal (undocumented)
+export interface WidgetContentManagerProps {
+    // (undocumented)
+    children?: React.ReactNode;
+}
 
 // @internal (undocumented)
 export const WidgetContentNodeContext: React.Context<React.ReactNode>;
@@ -2518,6 +2558,12 @@ export interface WidgetContentProps extends CommonProps, NoChildrenProps {
     containerRef?: React.Ref<HTMLDivElement>;
     content?: React.ReactNode;
 }
+
+// @internal (undocumented)
+export const WidgetContentRenderer: React.NamedExoticComponent<WidgetContentRendererProps>;
+
+// @internal (undocumented)
+export const WidgetContentRenderers: React.NamedExoticComponent<object>;
 
 // @internal
 export interface WidgetDragAction {

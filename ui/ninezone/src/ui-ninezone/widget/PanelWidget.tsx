@@ -2,17 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @module Widget */
+/** @packageDocumentation
+ * @module Widget
+ */
 
 import classnames from "classnames";
 import * as React from "react";
+import { CommonProps } from "@bentley/ui-core";
 import { WidgetsStateContext } from "../base/NineZone";
 import { WidgetState } from "../base/NineZoneState";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
 import { Widget, WidgetProvider } from "./Widget";
 import { WidgetTitleBar } from "./TitleBar";
-import { WidgetContentComponent } from "./Content";
-import { CommonProps } from "@bentley/ui-core";
+import { WidgetContentContainer } from "./ContentContainer";
 import "./PanelWidget.scss";
 
 /** @internal */
@@ -51,7 +53,7 @@ const PanelWidgetComponent = React.memo<CommonProps>(function PanelWidgetCompone
       style={props.style}
     >
       <WidgetTitleBar />
-      <WidgetContentComponent />
+      <WidgetContentContainer />
     </Widget>
   );
 });

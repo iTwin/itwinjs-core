@@ -19,6 +19,7 @@ beta;BackstageItemType
 beta;BackstageItemUtilities
 beta;BackstageStageLauncher 
 beta;BadgeType
+beta;BaseDialogItem
 beta;BasePropertyEditorParams
 beta;BasePropertyValue
 beta;class BaseQuantityDescription 
@@ -33,9 +34,9 @@ beta;ConditionalBooleanValue
 beta;ConditionalStringValue
 beta;CustomButtonDefinition 
 beta;CustomFormattedNumberParams 
-beta;DialogItem
+beta;DialogItem 
 beta;DialogItemsChangedArgs
-beta;DialogItemsManager
+beta;DialogItemsManager 
 beta;DialogItemSyncArgs
 beta;DialogItemValue
 beta;DialogPropertyItem
