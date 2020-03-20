@@ -61,7 +61,7 @@ export function useToolSettings() {
 /** Defines the ToolSettingsEntry entries that are used to populate a grid layout of ToolSetting properties.
  * @beta
  */
-export interface ToolSettingsGripProps {
+export interface ToolSettingsGridProps {
   // label node which potentially can contain a lock node as well.
   settings?: ToolSettingsEntry[];
 }
@@ -71,7 +71,7 @@ export interface ToolSettingsGripProps {
  * editor column.
  * @beta
  */
-export function ToolSettingsGrid({ settings }: ToolSettingsGripProps) {
+export function ToolSettingsGrid({ settings }: ToolSettingsGridProps) {
   return (
     <div className="uifw-standard-toolsettings-two-column-grid">
       {settings && settings.map((setting: ToolSettingsEntry, index: number) => {

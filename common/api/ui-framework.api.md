@@ -4811,10 +4811,10 @@ export interface ToolSettingsEntry {
 }
 
 // @beta
-export function ToolSettingsGrid({ settings }: ToolSettingsGripProps): JSX.Element;
+export function ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element;
 
 // @beta
-export interface ToolSettingsGripProps {
+export interface ToolSettingsGridProps {
     // (undocumented)
     settings?: ToolSettingsEntry[];
 }

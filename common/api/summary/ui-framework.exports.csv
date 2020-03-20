@@ -488,8 +488,8 @@ public;ToolInformation
 public;ToolItemDef 
 public;ToolItemProps 
 beta;ToolSettingsEntry
-beta;ToolSettingsGrid({ settings }: ToolSettingsGripProps): JSX.Element
-beta;ToolSettingsGripProps
+beta;ToolSettingsGrid({ settings }: ToolSettingsGridProps): JSX.Element
+beta;ToolSettingsGridProps
 internal;ToolSettingsZone 
 internal;ToolSettingsZoneProps 
 internal;ToolUiManager
