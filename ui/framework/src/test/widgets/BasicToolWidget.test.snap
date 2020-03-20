@@ -162,7 +162,15 @@ exports[`BasicToolWidget BasicToolWidget should render correctly 1`] = `
             "internalData": Map {},
             "isActive": false,
             "isDisabled": undefined,
-            "isHidden": undefined,
+            "isHidden": ConditionalBooleanValue {
+              "_value": undefined,
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+              "testFunc": [Function],
+            },
             "itemPriority": 30,
             "items": Array [
               Object {
@@ -482,7 +490,15 @@ exports[`BasicToolWidget BasicToolWidget with bentley B should render 1`] = `
             "internalData": Map {},
             "isActive": false,
             "isDisabled": undefined,
-            "isHidden": undefined,
+            "isHidden": ConditionalBooleanValue {
+              "_value": undefined,
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+              "testFunc": [Function],
+            },
             "itemPriority": 30,
             "items": Array [
               Object {
@@ -732,7 +748,15 @@ exports[`BasicToolWidget BasicToolWidget with suffix and prefix items should ren
             "internalData": Map {},
             "isActive": false,
             "isDisabled": undefined,
-            "isHidden": undefined,
+            "isHidden": ConditionalBooleanValue {
+              "_value": undefined,
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+              "testFunc": [Function],
+            },
             "itemPriority": 30,
             "items": Array [
               Object {

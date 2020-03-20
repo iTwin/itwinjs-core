@@ -27,7 +27,7 @@ import { BaseItemState } from "./shared/ItemDefBase";
 import { ContentViewManager } from "./content/ContentViewManager";
 import { UiFramework } from "./UiFramework";
 import { getSelectionContextSyncEventIds, selectionContextStateFunc, getIsHiddenIfSelectionNotActive } from "./selection/SelectionContextItemDef";
-import { ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
 import { ToolbarPopupContext } from "@bentley/ui-components";
 import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../ui-framework";
 
@@ -108,7 +108,12 @@ export class CoreTools {
   public static get rotateViewCommand() {
     return new ToolItemDef({
       toolId: RotateViewTool.toolId,
-      iconSpec: RotateViewTool.iconSpec,
+      iconSpec: new ConditionalStringValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl?.viewport?.view.is2d())
+          return "icon-rotate-left";
+        return "icon-gyroscope";
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       label: RotateViewTool.flyover,
       description: RotateViewTool.description,
       execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },
@@ -121,6 +126,10 @@ export class CoreTools {
       iconSpec: WalkViewTool.iconSpec,
       label: WalkViewTool.flyover,
       description: WalkViewTool.description,
+      isHidden: new ConditionalBooleanValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        return !!activeContentControl?.viewport?.view.is2d();
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       execute: () => { IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -143,6 +152,10 @@ export class CoreTools {
       iconSpec: ViewToggleCameraTool.iconSpec,
       label: ViewToggleCameraTool.flyover,
       description: ViewToggleCameraTool.description,
+      isHidden: new ConditionalBooleanValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        return !!activeContentControl?.viewport?.view.is2d();
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       execute: () => { IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
@@ -286,6 +299,10 @@ export class CoreTools {
       groupId: "sectionTools-group",
       labelKey: "UiFramework:tools.sectionTools",
       iconSpec: "icon-section-tool",
+      isHidden: new ConditionalBooleanValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        return !!activeContentControl?.viewport?.view.is2d();
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       items: [this.sectionByPlaneCommandItemDef, this.sectionByElementCommandItemDef, this.sectionByRangeCommandItemDef, this.sectionByShapeCommandItemDef],
       itemsInColumn: 4,
     });
