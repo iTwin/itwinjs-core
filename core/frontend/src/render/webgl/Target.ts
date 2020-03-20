@@ -219,12 +219,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public displayRealityTilePreload = false;
   public displayRealityTileRanges = false;
   public logRealityTiles = false;
+
   public freezeRealityTiles = false;
   public get shadowFrustum(): Frustum | undefined {
     const map = this.solarShadowMap;
     return map.isEnabled && map.isReady ? map.frustum : undefined;
   }
+
   public get debugControl(): RenderTargetDebugControl { return this; }
+
+  public get viewRect(): ViewRect {
+    return this.renderRect;
+  }
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -572,10 +578,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.updateSolarShadows(undefined);
     }
 
-    if (!this.assignDC()) {
-      assert(false);
+    if (!this.assignDC())
       return;
-    }
 
     this.terrainTransparency = plan.terrainTransparency;
 
@@ -655,9 +659,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public drawFrame(sceneMilSecElapsed?: number): void {
     assert(this.renderSystem.frameBufferStack.isEmpty);
-    if (undefined === this._scene) {
+    if (undefined === this._scene)
       return;
-    }
+
+    if (!this.assignDC())
+      return;
 
     this.paintScene(sceneMilSecElapsed);
     this.drawOverlayDecorations();
@@ -871,16 +877,24 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private assignDC(): boolean {
     if (!this._dcAssigned) {
-      this._dcAssigned = this._assignDC();
+      if (!this._assignDC())
+        return false;
+
       const rect = this.viewRect;
+      if (rect.width < 1 || rect.height < 1)
+        return false;
+
       this.uniforms.viewRect.update(rect.width, rect.height);
+      this._dcAssigned = true;
     }
 
-    assert(this._dcAssigned);
-    return this._dcAssigned;
+    return true;
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void {
+    if (!this.assignDC())
+      return;
+
     // if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics)
     this.beginPerfMetricFrame(undefined, true);
 
@@ -1058,14 +1072,15 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * If wantRect.right or wantRect.bottom is -1, that means "read the entire image".
    */
   public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
+    if (!this.assignDC())
+      return undefined;
+
     // Determine capture rect and validate
     const actualViewRect = this.renderRect; // already has device pixel ratio applied
     const wantRect = (wantRectIn.right === -1 || wantRectIn.bottom === -1) ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
     const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1);
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
       return undefined;
-
-    this.assignDC();
 
     // Read pixels. Note ViewRect thinks (0,0) = top-left. gl.readPixels expects (0,0) = bottom-left.
     const bytesPerPixel = 4;
@@ -1274,31 +1289,28 @@ export class OnScreenTarget extends Target {
     return window.devicePixelRatio || 1.0;
   }
 
-  public get viewRect(): ViewRect {
-    assert(0 < this.renderRect.width && 0 < this.renderRect.height, "Zero-size view rect");
-    assert(Math.floor(this.renderRect.width) === this.renderRect.width && Math.floor(this.renderRect.height) === this.renderRect.height, "fractional view rect dimensions");
-    return this.renderRect;
+  public setViewRect(_rect: ViewRect, _temporary: boolean): void {
+    assert(false);
   }
 
-  public setViewRect(_rect: ViewRect, _temporary: boolean): void { assert(false); }
-
   protected _assignDC(): boolean {
-    assert(undefined === this._fbo);
+    dispose(this._fbo);
 
-    const rect = this.viewRect; // updates the render rect to be the client width and height
+    const rect = this.viewRect;
     const color = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === color) {
+    if (undefined === color)
       return false;
-    }
 
     this._fbo = FrameBuffer.create([color]);
-    if (undefined === this._fbo) {
+    if (undefined === this._fbo)
       return false;
-    }
 
     const tx = this._fbo.getColor(0);
     assert(undefined !== tx.getHandle());
     this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
+    if (undefined === this._blitGeom)
+      dispose(this._fbo);
+
     return undefined !== this._blitGeom;
   }
 
@@ -1428,9 +1440,10 @@ export class OffScreenTarget extends Target {
     super(rect);
   }
 
-  public get viewRect(): ViewRect { return this.renderRect; }
+  public onResized(): void {
+    assert(false); // offscreen viewport's dimensions are set once, in constructor.
+  }
 
-  public onResized(): void { assert(false); } // offscreen viewport's dimensions are set once, in constructor.
   public updateViewRect(): boolean { return false; } // offscreen target does not dynamically resize the view rect
 
   public setViewRect(rect: ViewRect, temporary: boolean): void {
@@ -1450,7 +1463,7 @@ export class OffScreenTarget extends Target {
   }
 
   protected _assignDC(): boolean {
-    if (!this.updateViewRect() && this._fbo !== undefined)
+    if (this._fbo !== undefined)
       return true;
 
     const rect = this.viewRect;

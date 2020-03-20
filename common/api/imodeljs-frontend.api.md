@@ -5486,8 +5486,6 @@ export class OffScreenTarget extends Target {
     setViewRect(rect: ViewRect, temporary: boolean): void;
     // (undocumented)
     updateViewRect(): boolean;
-    // (undocumented)
-    get viewRect(): ViewRect;
 }
 
 // @internal
@@ -5576,8 +5574,6 @@ export class OnScreenTarget extends Target {
     setViewRect(_rect: ViewRect, _temporary: boolean): void;
     // (undocumented)
     updateViewRect(): boolean;
-    // (undocumented)
-    get viewRect(): ViewRect;
     }
 
 // @beta
@@ -8064,6 +8060,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     useLogZ: boolean;
     // (undocumented)
     vcSupportIntersectingVolumes: boolean;
+    // (undocumented)
+    get viewRect(): ViewRect;
     // (undocumented)
     get visibleEdgeOverrides(): EdgeOverrides | undefined;
     // (undocumented)
