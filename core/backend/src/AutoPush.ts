@@ -302,7 +302,7 @@ export class AutoPush {
     // We are either in lull or we have put off this push long enough. Start to push accumulated changes now.
     this.onPushStart();
     this.getRequestContext()
-      .then(async (requestContext: AuthorizedBackendRequestContext) => this.iModel.pushChanges(requestContext))
+      .then(async (requestContext: AuthorizedBackendRequestContext) => this.iModel.pushChanges(requestContext, "auto-push"))
       .then(() => this.onPushEnd())
       .catch((reason) => this.onPushEndWithError(reason));
 

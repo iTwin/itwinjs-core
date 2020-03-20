@@ -81,7 +81,7 @@ describe("IModelTransformerHub (#integration)", () => {
         IModelTransformerUtils.populateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
-        await sourceDb.pushChanges(requestContext, () => "Populate source");
+        await sourceDb.pushChanges(requestContext, "Populate source");
 
         // Use IModelExporter.exportChanges to verify the changes to the sourceDb
         const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-1.txt");
@@ -115,7 +115,7 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
-        await targetDb.pushChanges(requestContext, () => "Import #1");
+        await targetDb.pushChanges(requestContext, "Import #1");
         IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
@@ -169,14 +169,14 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         assert.isFalse(targetDb.briefcase.nativeDb.hasSavedChanges());
-        await targetDb.pushChanges(requestContext, () => "Should not actually push because there are no changes");
+        await targetDb.pushChanges(requestContext, "Should not actually push because there are no changes");
       }
 
       if (true) { // update source db, then import again
         IModelTransformerUtils.updateSourceDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
-        await sourceDb.pushChanges(requestContext, () => "Update source");
+        await sourceDb.pushChanges(requestContext, "Update source");
 
         // Use IModelExporter.exportChanges to verify the changes to the sourceDb
         const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-2.txt");
@@ -211,7 +211,7 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
-        await targetDb.pushChanges(requestContext, () => "Import #2");
+        await targetDb.pushChanges(requestContext, "Import #2");
         IModelTransformerUtils.assertUpdatesInTargetDb(targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
@@ -277,7 +277,7 @@ describe("IModelTransformerHub (#integration)", () => {
       await sourceDb.concurrencyControl.request(requestContext);
       assert.isTrue(sourceDb.nativeDb.hasSavedChanges(), "Expect importSchemas to have saved changes");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
-      await sourceDb.pushChanges(requestContext, () => "Import schemas to upgrade BisCore"); // should actually push schema changes
+      await sourceDb.pushChanges(requestContext, "Import schemas to upgrade BisCore"); // should actually push schema changes
       assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
 
       // import schemas again to test common scenario of not knowing whether schemas are up-to-date or not..
@@ -287,7 +287,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isFalse(sourceDb.nativeDb.hasSavedChanges(), "Expect importSchemas to be a no-op");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect importSchemas to be a no-op");
       sourceDb.saveChanges(); // will be no changes to save in this case
-      await sourceDb.pushChanges(requestContext, () => "Import schemas again"); // will be no changes to push in this case
+      await sourceDb.pushChanges(requestContext, "Import schemas again"); // will be no changes to push in this case
       assert.isTrue(sourceDb.concurrencyControl.hasSchemaLock); // NOTE - pushChanges does not currently release locks if there are no changes to push. It probably should.
 
       // populate sourceDb
@@ -295,7 +295,7 @@ describe("IModelTransformerHub (#integration)", () => {
       IModelTransformerUtils.assertTeamIModelContents(sourceDb, "Test");
       await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
-      await sourceDb.pushChanges(requestContext, () => "Populate Source");
+      await sourceDb.pushChanges(requestContext, "Populate Source");
       assert.isFalse(sourceDb.concurrencyControl.hasSchemaLock);
 
       // open/upgrade targetDb
@@ -308,7 +308,7 @@ describe("IModelTransformerHub (#integration)", () => {
       // push targetDb schema changes
       await targetDb.concurrencyControl.request(requestContext);
       targetDb.saveChanges();
-      await targetDb.pushChanges(requestContext, () => "Upgrade BisCore");
+      await targetDb.pushChanges(requestContext, "Upgrade BisCore");
 
       // import sourceDb changes into targetDb
       const transformer = new IModelTransformer(new IModelExporter(sourceDb), targetDb);
@@ -317,7 +317,7 @@ describe("IModelTransformerHub (#integration)", () => {
       IModelTransformerUtils.assertTeamIModelContents(targetDb, "Test");
       await targetDb.concurrencyControl.request(requestContext);
       targetDb.saveChanges();
-      await targetDb.pushChanges(requestContext, () => "Import changes from sourceDb");
+      await targetDb.pushChanges(requestContext, "Import changes from sourceDb");
 
       // close iModel briefcases
       await sourceDb.close(requestContext, KeepBriefcase.No);

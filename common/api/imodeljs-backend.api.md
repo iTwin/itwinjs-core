@@ -529,7 +529,7 @@ export class BriefcaseIModelDb extends IModelDb {
     // @beta
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @beta
-    pushChanges(requestContext: AuthorizedClientRequestContext, describer?: ChangeSetDescriber): Promise<void>;
+    pushChanges(requestContext: AuthorizedClientRequestContext, description: string): Promise<void>;
     // @beta
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @beta
@@ -661,9 +661,6 @@ export class ChangedElementsDb implements IDisposable {
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
     processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, rulesetId: string, startChangesetId: GuidString, endChangesetId: GuidString, filterSpatial?: boolean, rulesetDir?: string, tempDir?: string): Promise<DbResult>;
 }
-
-// @public
-export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
 
 // @internal
 export class ChangeSetToken {
@@ -3985,14 +3982,14 @@ export type TxnIdString = string;
 export class TxnManager {
     constructor(_iModel: IModelDb);
     beginMultiTxnOperation(): DbResult;
-    cancelTo(txnId: TxnIdString): IModelStatus;
-    describeChangeSet(endTxnId?: TxnIdString): string;
+    cancelTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus;
+    checkUndoPossible(allowCrossSessions?: boolean): boolean;
     endMultiTxnOperation(): DbResult;
     getCurrentTxnId(): TxnIdString;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
-    getUndoString(): string;
+    getUndoString(allowCrossSessions?: boolean): string;
     get hasFatalError(): boolean;
     get hasLocalChanges(): boolean;
     get hasPendingTxns(): boolean;
@@ -4019,15 +4016,15 @@ export class TxnManager {
     protected _onRootChanged(props: RelationshipProps): void;
     // @internal (undocumented)
     protected _onValidateOutput(props: RelationshipProps): void;
-    queryFirstTxnId(): TxnIdString;
+    queryFirstTxnId(allowCrossSessions?: boolean): TxnIdString;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     reinstateTxn(): IModelStatus;
     reportError(error: ValidationError): void;
     reverseAll(): IModelStatus;
     reverseSingleTxn(): IModelStatus;
-    reverseTo(txnId: TxnIdString): IModelStatus;
-    reverseTxns(numOperations: number): IModelStatus;
+    reverseTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus;
+    reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus;
     readonly validationErrors: ValidationError[];
 }
 

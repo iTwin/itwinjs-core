@@ -592,7 +592,7 @@ describe("BriefcaseManager (#integration)", () => {
     // User2 should NOT be able to push the changes
     let errorThrown = false;
     try {
-      await iModelPullOnly.pushChanges(userContext2);
+      await iModelPullOnly.pushChanges(userContext2, "test change");
     } catch (err) {
       errorThrown = true;
     }
@@ -669,7 +669,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isTrue(iModelPullAndPush.nativeDb.hasSavedChanges());
 
     // User2 should be able to push the changes now
-    await iModelPullAndPush.pushChanges(userContext2);
+    await iModelPullAndPush.pushChanges(userContext2, "test change");
     const changeSetIdPullAndPush4 = iModelPullAndPush.iModelToken.changeSetId;
     assert.notStrictEqual(changeSetIdPullAndPush4, changeSetIdPullAndPush3);
 

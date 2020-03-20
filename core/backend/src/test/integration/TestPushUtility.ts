@@ -189,7 +189,7 @@ export class TestPushUtility {
   private async pushTestChangeSet() {
     const description = TestPushUtility.getChangeSetDescription(this._currentLevel);
     if (this._iModelDb instanceof BriefcaseIModelDb) {
-      await this._iModelDb!.pushChanges(this._requestContext!, () => description);
+      await this._iModelDb!.pushChanges(this._requestContext!, description);
     }
   }
 

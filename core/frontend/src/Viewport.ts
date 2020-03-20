@@ -1039,7 +1039,7 @@ export abstract class Viewport implements IDisposable {
     return this.displayStyle.globeMode === GlobeMode.Ellipsoid && view.isGlobalView;
   }
 
-  /** This setting controls the color overrride for pixels outside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
+  /** This setting controls the color override for pixels outside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
    * @note The transparency component of the color object is ignored.
    * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
    * @beta
@@ -1050,7 +1050,7 @@ export abstract class Viewport implements IDisposable {
     this.invalidateRenderPlan();
   }
 
-  /** This setting controls the color overrride for pixels inside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
+  /** This setting controls the color override for pixels inside a clip region. If defined, those pixels will be shown using this color; otherwise, no color override occurs and clipping proceeds as normal.
    * @note The transparency component of the color object is ignored.
    * @note The render system will hold a reference to the provided color object. If you want to later modify the original color object, pass in a clone to this setter.
    * @beta

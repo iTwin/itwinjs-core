@@ -91,7 +91,7 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   //    You *must* push this to the iModel right now.
   briefcase.saveChanges();
   await briefcase.pullAndMergeChanges(requestContext);
-  await briefcase.pushChanges(requestContext);
+  await briefcase.pushChanges(requestContext, "bridge test");
 
   // II. Import data
 
@@ -145,7 +145,7 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   //    Note that you pull and merge first, in case another user has pushed.
   briefcase.saveChanges();
   await briefcase.pullAndMergeChanges(requestContext);
-  await briefcase.pushChanges(requestContext);
+  await briefcase.pushChanges(requestContext, "bridge test");
 }
 // __PUBLISH_EXTRACT_END__
 

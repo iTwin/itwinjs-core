@@ -421,7 +421,7 @@ export class BriefcaseManager {
   public static getChangedElementsPathName(iModelId: GuidString): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
 
   /**
-   * Intialize the cache of previously downloaded briefcases for native applications.
+   * Initialize the cache of previously downloaded briefcases for native applications.
    * @param requestContext Context of the authorized user
    * @internal
    */
@@ -1996,23 +1996,23 @@ export class BriefcaseManager {
   public static async pushChanges(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean = true): Promise<void> {
     requestContext.enter();
     for (let i = 0; i < 5; ++i) {
-      let pushed: boolean = false;
+      let pushed = false;
       let error: any;
       try {
-        await BriefcaseManager.pushChangesOnce(requestContext, briefcase, description, relinquishCodesLocks || false);
+        await BriefcaseManager.pushChangesOnce(requestContext, briefcase, description, relinquishCodesLocks);
         requestContext.enter();
         pushed = true;
       } catch (err) {
         requestContext.enter();
         error = err;
       }
-      if (pushed) {
-        return Promise.resolve();
-      }
+      if (pushed)
+        return;
+
       if (!BriefcaseManager.shouldRetryPush(error)) {
         return Promise.reject(error);
       }
-      const delay: number = Math.floor(Math.random() * 4800) + 200;
+      const delay = Math.floor(Math.random() * 4800) + 200;
       await new Promise((resolve: any) => setTimeout(resolve, delay));
     }
   }

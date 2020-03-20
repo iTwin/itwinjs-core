@@ -76,7 +76,7 @@ async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientReques
   try {
     // get the time to push a meta data change of an imodel to imodel hub
     const startTime1 = new Date().getTime();
-    await iModelPullAndPush.pushChanges(requestContext);
+    await iModelPullAndPush.pushChanges(requestContext, "test change");
     const endTime1 = new Date().getTime();
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
     reporter.addEntry("ImodelChangesetPerformance", "PushMetaChangeToHub", "Execution time(s)", elapsedTime1, { Description: "meta changes to hub", Operation: "Push" });
@@ -128,7 +128,7 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
 
   // get the time to push a data change of an imodel to imodel hub
   const startTime1 = new Date().getTime();
-  await rwIModel.pushChanges(requestContext).catch();
+  await rwIModel.pushChanges(requestContext, "test change").catch();
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   reporter.addEntry("ImodelChangesetPerformance", "PushDataChangeToHub", "Execution time(s)", elapsedTime1, { Description: "data changes to hub", Operation: "Push" });
@@ -155,7 +155,7 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   rwIModel.saveChanges("schema change pushed");
   await rwIModel.pullAndMergeChanges(requestContext);
   const startTime1 = new Date().getTime();
-  await rwIModel.pushChanges(requestContext);
+  await rwIModel.pushChanges(requestContext, "test change");
   const endTime1 = new Date().getTime();
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   reporter.addEntry("ImodelChangesetPerformance", "PushSchemaChangeToHub", "Execution time(s)", elapsedTime1, { Description: "schema changes to hub", Operation: "Push" });
@@ -197,7 +197,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, rwIModel);
   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
   rwIModel.saveChanges("User created model, category and one physical element");
-  await rwIModel.pushChanges(requestContext).catch();
+  await rwIModel.pushChanges(requestContext, "test change").catch();
   const firstCount = getElementCount(rwIModel);
   assert.equal(firstCount, 7);
 
@@ -207,7 +207,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
     i = i + 1;
   }
   rwIModel.saveChanges("added more elements to imodel");
-  await rwIModel.pushChanges(requestContext).catch();
+  await rwIModel.pushChanges(requestContext, "test change").catch();
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 
@@ -242,7 +242,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, rwIModel);
   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
   rwIModel.saveChanges("User created model, category and one physical element");
-  await rwIModel.pushChanges(requestContext).catch();
+  await rwIModel.pushChanges(requestContext, "test change").catch();
   const firstCount = getElementCount(rwIModel);
   assert.equal(firstCount, 7);
 
@@ -252,7 +252,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
     i = i + 1;
   }
   rwIModel.saveChanges("added more elements to imodel");
-  await rwIModel.pushChanges(requestContext).catch();
+  await rwIModel.pushChanges(requestContext, "test change").catch();
   const secondCount = getElementCount(rwIModel);
   assert.equal(secondCount, 11);
 

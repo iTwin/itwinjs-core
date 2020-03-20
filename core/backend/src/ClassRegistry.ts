@@ -20,13 +20,13 @@ export class ClassRegistry {
   /** @internal */
   public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
   /** @internal */
-  public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "metadata not found for " + className); }
+  public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, `metadata not found for ${className}`); }
   /** @internal */
   public static register(entityClass: typeof Entity, schema: typeof Schema) {
     entityClass.schema = schema;
-    const key = (schema.schemaName + ":" + entityClass.className).toLowerCase();
+    const key = (`${schema.schemaName}:${entityClass.className}`).toLowerCase();
     if (this._classMap.has(key)) {
-      const errMsg = "Class " + key + " is already registered. Make sure static className member is correct on JavaScript class " + entityClass.name;
+      const errMsg = `Class ${key} is already registered. Make sure static className member is correct on JavaScript class ${entityClass.name}`;
       Logger.logError("imodeljs-frontend.classRegistry", errMsg);
       throw new Error(errMsg);
     }
@@ -49,7 +49,7 @@ export class ClassRegistry {
     const bisClassName = name[1];
 
     if (0 === entityMetaData.baseClasses.length) // metadata must contain a superclass
-      throw new IModelError(IModelStatus.BadArg, "class " + name + " has no superclass");
+      throw new IModelError(IModelStatus.BadArg, `class ${name} has no superclass`);
 
     // make sure schema exists
     let schema = Schemas.getRegisteredSchema(bisSchemaName);
@@ -59,7 +59,7 @@ export class ClassRegistry {
     // this method relies on the caller having previously created/registered all superclasses
     const superclass = this._classMap.get(entityMetaData.baseClasses[0].toLowerCase());
     if (undefined === superclass)
-      throw new IModelError(IModelStatus.NotFound, "cannot find superclass for class " + name);
+      throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${name}`);
 
     const generatedClass = class extends superclass { public static get className() { return bisClassName; } };
     // the above line creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.

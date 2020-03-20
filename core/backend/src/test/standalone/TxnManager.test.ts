@@ -12,6 +12,7 @@ import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhys
 describe("TxnManager", () => {
   let imodel: StandaloneIModelDb;
   let props: TestPhysicalObjectProps;
+  let testFileName: string;
   const requestContext = new BackendRequestContext();
 
   const performUpgrade = (pathname: string): DbResult => {
@@ -24,7 +25,7 @@ describe("TxnManager", () => {
 
   before(async () => {
     IModelTestUtils.registerTestBimSchema();
-    const testFileName = IModelTestUtils.prepareOutputFile("TxnManager", "TxnManagerTest.bim");
+    testFileName = IModelTestUtils.prepareOutputFile("TxnManager", "TxnManagerTest.bim");
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const schemaFileName = IModelTestUtils.resolveAssetFile("TestBim.ecschema.xml");
     IModelJsFs.copySync(seedFileName, testFileName);
@@ -64,7 +65,7 @@ describe("TxnManager", () => {
 
     assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
 
-    const txns = imodel.txns;
+    let txns = imodel.txns;
     assert.isFalse(txns.hasPendingTxns);
 
     const change1Msg = "change 1";
@@ -198,7 +199,8 @@ describe("TxnManager", () => {
     toModify.placement.origin.x += 1;
     toModify.placement.origin.y += 1;
     toModify.update();
-    imodel.saveChanges("save update to modify guid");
+    const saveUpdateMsg = "save update to modify guid";
+    imodel.saveChanges(saveUpdateMsg);
     model = models.getModel(modelId);
     assert.notEqual(guid2, model.geometryGuid, "update placement should change guid");
 
@@ -222,12 +224,42 @@ describe("TxnManager", () => {
     await BeDuration.wait(300); // for lastMod...
     const guid4 = model.geometryGuid;
     toModify.delete();
-    imodel.saveChanges("save deletion of element");
+    const deleteTxnMsg = "save deletion of element";
+    imodel.saveChanges(deleteTxnMsg);
     assert.throws(() => elements.getElement(modifyId));
     model = models.getModel(modelId);
     expect(model.geometryGuid).not.to.equal(guid4);
     const lastMod3 = models.queryLastModifiedTime(modelId);
     expect(lastMod3).not.to.equal(lastMod2);
+
+    assert.isTrue(txns.isUndoPossible);
+    assert.isTrue(txns.checkUndoPossible(true));
+    assert.isTrue(txns.checkUndoPossible(false));
+    assert.isTrue(txns.checkUndoPossible());
+
+    // test the ability to undo/redo from previous sessions
+    imodel.close();
+    imodel = StandaloneIModelDb.open(testFileName, OpenMode.ReadWrite);
+    imodel.nativeDb.enableTxnTesting();
+    txns = imodel.txns;
+
+    assert.isFalse(txns.isUndoPossible);
+    assert.isTrue(txns.checkUndoPossible(true));
+    assert.isFalse(txns.checkUndoPossible(false));
+    assert.isFalse(txns.checkUndoPossible());
+    assert.equal(deleteTxnMsg, txns.getUndoString(true));
+    assert.equal("", txns.getUndoString());
+
+    assert.equal(IModelStatus.Success, txns.reverseTxns(1, true), "reverse from previous session");
+    assert.equal(saveUpdateMsg, txns.getUndoString(true));
+    assert.equal(deleteTxnMsg, txns.getRedoString());
+    assert.equal(IModelStatus.Success, txns.reinstateTxn());
+    assert.equal(IModelStatus.Success, txns.cancelTo(txns.queryFirstTxnId(true), true), "cancel all committed txns");
+    assert.isFalse(txns.checkUndoPossible(true));
+    assert.isFalse(txns.isRedoPossible);
+    assert.isFalse(txns.isUndoPossible);
+    assert.isFalse(txns.hasUnsavedChanges);
+    assert.isFalse(txns.hasPendingTxns);
   });
 
   it("Element drives element events", async () => {

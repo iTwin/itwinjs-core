@@ -570,7 +570,7 @@ describe("ChangeSummary (#integration)", () => {
     iModel.saveChanges("Updated element1 as the parent of element3");
 
     // Push changes to the hub
-    await iModel.pushChanges(managerRequestContext, () => "Setup test model");
+    await iModel.pushChanges(managerRequestContext, "Setup test model");
 
     // Modify the hierarchy to element3 -> element2
     element3.parent = new ElementOwnsChildElements(elementId2);
@@ -578,7 +578,7 @@ describe("ChangeSummary (#integration)", () => {
     iModel.saveChanges("Updated element2 as the parent of element3");
 
     // Push changes to the hub
-    await iModel.pushChanges(managerRequestContext, () => "Updated parent element");
+    await iModel.pushChanges(managerRequestContext, "Updated parent element");
 
     // Validate that the second change summary captures the change to the parent correctly
     try {

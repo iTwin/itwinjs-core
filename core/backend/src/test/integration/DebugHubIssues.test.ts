@@ -303,7 +303,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const modelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "DummyTestModel");
     assert(!!modelId);
     iModelDb.saveChanges("Dummy change set");
-    await iModelDb.pushChanges(requestContext);
+    await iModelDb.pushChanges(requestContext, "test");
 
     // Create a named version on the just uploaded change set
     const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(requestContext, iModelId.toString(), BriefcaseManager.imodelClient);
