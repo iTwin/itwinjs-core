@@ -2574,9 +2574,9 @@ export class ScreenViewport extends Viewport {
   public static animation = {
     /** Duration of animations of viewing operations. */
     time: {
-      fast: BeDuration.fromSeconds(.75),
-      normal: BeDuration.fromSeconds(1.25),
-      slow: BeDuration.fromSeconds(2.0),
+      fast: BeDuration.fromSeconds(.5),
+      normal: BeDuration.fromSeconds(1.0),
+      slow: BeDuration.fromSeconds(1.25),
       wheel: BeDuration.fromSeconds(.175), // zooming with the wheel
     },
     /** The easing function to use for view animations. */
@@ -2603,7 +2603,7 @@ export class ScreenViewport extends Viewport {
       /** zoom out/in only if the beginning and ending view's range, each expanded by this factor, overlap. */
       margin: 2.5,
       /** multiply the duration of the animation by this factor if perform a zoom out. */
-      durationFactor: 2,
+      durationFactor: 1.5,
     },
   };
 
