@@ -3304,7 +3304,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 export function NavigationWidgetComposer(props: NavigationWidgetComposerProps): JSX.Element;
 
 // @beta
-export interface NavigationWidgetComposerProps {
+export interface NavigationWidgetComposerProps extends CommonProps {
     horizontalToolbar?: React.ReactNode;
     navigationAidHost?: React.ReactNode;
     verticalToolbar?: React.ReactNode;
@@ -4898,7 +4898,7 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
 export function ToolWidgetComposer(props: ToolWidgetComposerProps): JSX.Element;
 
 // @beta
-export interface ToolWidgetComposerProps {
+export interface ToolWidgetComposerProps extends CommonProps {
     cornerItem?: React.ReactNode;
     horizontalToolbar?: React.ReactNode;
     verticalToolbar?: React.ReactNode;
@@ -5117,6 +5117,9 @@ export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2
 
 // @beta
 export const useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[];
+
+// @internal (undocumented)
+export function useUiVisibility(): boolean;
 
 // @alpha
 export const useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filterInfo?: VisibilityTreeFilterInfo | undefined, onFilterApplied?: ((filteredDataProvider: IPresentationTreeDataProvider, matchesCount: number) => void) | undefined) => {

@@ -7,11 +7,13 @@
  */
 
 import * as React from "react";
+import classnames from "classnames";
 import { CoreTools } from "../CoreToolDefinitions";
 import { NavigationWidgetComposer } from "./NavigationWidgetComposer";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolbarUsage, ToolbarOrientation, CommonToolbarItem } from "@bentley/ui-abstract";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
+import { useUiVisibility } from "./BasicToolWidget";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[DefaultNavigationWidget]].
  * @beta
@@ -69,8 +71,13 @@ export function BasicNavigationWidget(props: BasicNavigationWidgetProps) {
     }
   }, [props.additionalHorizontalItems, props.additionalVerticalItems, getHorizontalToolbarItems, getVerticalToolbarItems]);
 
+  const uiIsVisible = useUiVisibility();
+  const className = classnames(
+    !uiIsVisible && "nz-hidden",
+  );
+
   return (
-    <NavigationWidgetComposer
+    <NavigationWidgetComposer className={className}
       horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
     />

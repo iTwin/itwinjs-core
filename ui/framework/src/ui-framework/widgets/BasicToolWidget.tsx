@@ -7,12 +7,14 @@
  */
 
 import * as React from "react";
+import classnames from "classnames";
 import { CoreTools } from "../CoreToolDefinitions";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
 import { ToolWidgetComposer, BackstageAppButton } from "./ToolWidgetComposer";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolbarUsage, ToolbarOrientation, CommonToolbarItem } from "@bentley/ui-abstract";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
+import { UiFramework, UiVisibilityEventArgs } from "../UiFramework";
 
 /** Properties that can be used to append items to the default set of toolbar items of [[ReviewToolWidget]].
  * @beta
@@ -28,12 +30,25 @@ export interface BasicToolWidgetProps {
   additionalVerticalItems?: CommonToolbarItem[];
 }
 
+/** @internal */
+// istanbul ignore next
+export function useUiVisibility() {
+  const [uiIsVisible, setUiIsVisible] = React.useState(UiFramework.getIsUiVisible());
+  React.useEffect(() => {
+    const handleUiVisibilityChanged = ((args: UiVisibilityEventArgs): void => setUiIsVisible(args.visible));
+    UiFramework.onUiVisibilityChanged.addListener(handleUiVisibilityChanged);
+    return () => {
+      UiFramework.onUiVisibilityChanged.removeListener(handleUiVisibilityChanged);
+    };
+  }, []);
+  return uiIsVisible;
+}
+
 /** Default Tool Widget for standard "review" applications. Provides standard tools to review, and measure elements.
  * This definition will also show a overflow button if there is not enough room to display all the toolbar buttons.
  * @beta
  */
 export function BasicToolWidget(props: BasicToolWidgetProps) {
-
   const getHorizontalToolbarItems = React.useCallback(
     (useCategoryAndModelsContextTools: boolean): CommonToolbarItem[] => {
       const items: CommonToolbarItem[] = [];
@@ -83,8 +98,13 @@ export function BasicToolWidget(props: BasicToolWidgetProps) {
     }
   }, [props.showCategoryAndModelsContextTools, props.additionalHorizontalItems, props.additionalVerticalItems, getHorizontalToolbarItems, getVerticalToolbarItems]);
 
+  const uiIsVisible = useUiVisibility();
+  const className = classnames(
+    !uiIsVisible && "nz-hidden",
+  );
+
   return (
-    <ToolWidgetComposer
+    <ToolWidgetComposer className={className}
       cornerItem={<BackstageAppButton icon={props.icon} />}
       horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Vertical} />}

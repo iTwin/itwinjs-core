@@ -319,7 +319,7 @@ beta;NavigationAidHost(props: NavigationAidHostProps): JSX.Element
 beta;NavigationAidHostProps
 public;NavigationWidget 
 beta;NavigationWidgetComposer(props: NavigationWidgetComposerProps): JSX.Element
-beta;NavigationWidgetComposerProps
+beta;NavigationWidgetComposerProps 
 public;NavigationWidgetDef 
 public;NavigationWidgetProps 
 public;NavigationWidgetPropsEx 
@@ -496,7 +496,7 @@ internal;ToolUiManager
 public;ToolUiProvider 
 public;ToolWidget 
 beta;ToolWidgetComposer(props: ToolWidgetComposerProps): JSX.Element
-beta;ToolWidgetComposerProps
+beta;ToolWidgetComposerProps 
 public;ToolWidgetDef 
 public;ToolWidgetProps 
 public;ToolWidgetPropsEx 
@@ -522,6 +522,7 @@ public;UserProfileBackstageItemProps
 internal;useToolSettings(): ToolSettingsEntry[] | undefined
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
+internal;useUiVisibility(): boolean
 alpha;useVisibilityTreeFiltering: (nodeLoader: AbstractTreeNodeLoaderWithProvider
 alpha;useVisibilityTreeRenderer: (iconsEnabled: boolean, descriptionsEnabled: boolean) => (props: TreeRendererProps) => JSX.Element
 internal;useWidgetDef(): WidgetDef | undefined

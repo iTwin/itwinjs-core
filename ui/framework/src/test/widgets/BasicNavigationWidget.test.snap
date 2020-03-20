@@ -2,6 +2,7 @@
 
 exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`] = `
 <NavigationWidgetComposer
+  className="nz-hidden"
   horizontalToolbar={
     <ToolbarComposer
       items={
@@ -163,6 +164,7 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
 
 exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix items should render correctly 1`] = `
 <NavigationWidgetComposer
+  className="nz-hidden"
   horizontalToolbar={
     <ToolbarComposer
       items={

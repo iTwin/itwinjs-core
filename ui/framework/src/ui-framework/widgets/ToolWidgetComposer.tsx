@@ -10,7 +10,7 @@ import * as React from "react";
 
 import { ToolsArea, AppButton } from "@bentley/ui-ninezone";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { Icon } from "@bentley/ui-core";
+import { Icon, CommonProps } from "@bentley/ui-core";
 
 import widgetIconSvg from "@bentley/icons-generic/icons/home.svg";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
@@ -55,7 +55,7 @@ export function BackstageAppButton(props: BackstageAppButtonProps) {
 /** Properties for the [[ToolbarComposer]] React components
  * @beta
  */
-export interface ToolWidgetComposerProps {
+export interface ToolWidgetComposerProps extends CommonProps {
   /** Optional Corner Item which for most stages is the [[BackstageAppButton]] used to toggle the display of the backstage menu. */
   cornerItem?: React.ReactNode;
   /** Optional Horizontal Toolbar */
@@ -71,11 +71,13 @@ export interface ToolWidgetComposerProps {
  * @beta
  */
 export function ToolWidgetComposer(props: ToolWidgetComposerProps) {
+  const { cornerItem, horizontalToolbar, verticalToolbar, ...otherProps } = props;
   return (
     <ToolsArea
-      button={props.cornerItem}
-      horizontalToolbar={props.horizontalToolbar}
-      verticalToolbar={props.verticalToolbar}
+      button={cornerItem}
+      horizontalToolbar={horizontalToolbar}
+      verticalToolbar={verticalToolbar}
+      {...otherProps}
       onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
     />
   );
