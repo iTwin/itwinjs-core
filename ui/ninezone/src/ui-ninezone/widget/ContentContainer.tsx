@@ -7,6 +7,7 @@
  */
 
 import * as React from "react";
+import classnames from "classnames";
 import { WidgetStateContext } from "./Widget";
 import { assert } from "../base/assert";
 import { WidgetContentManagerContext } from "./ContentManager";
@@ -20,9 +21,13 @@ export const WidgetContentContainer = React.memo(function WidgetContentContainer
   if (!widget.activeTabId)
     return null;
   const ref = widgetContentManager.getWidgetContentContainerRef(widget.activeTabId);
+  const className = classnames(
+    "nz-widget-content-container",
+    widget.minimized && "nz-minimized",
+  );
   return (
     <div
-      className="nz-widget-content-container"
+      className={className}
       ref={ref as React.Ref<HTMLDivElement>}
     />
   );

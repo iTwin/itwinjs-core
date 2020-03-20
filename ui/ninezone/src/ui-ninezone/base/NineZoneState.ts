@@ -332,6 +332,14 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const panel = state.panels[action.side];
       const widgetIndex = panel.widgets.indexOf(action.id);
       panel.widgets.splice(widgetIndex, 1);
+
+      const expandedWidget = panel.widgets.find((widgetId) => {
+        return state.widgets[widgetId].minimized === false;
+      });
+      if (!expandedWidget && panel.widgets.length > 0) {
+        const firstWidget = state.widgets[panel.widgets[0]];
+        firstWidget.minimized = false;
+      }
       return;
     }
     case WIDGET_DRAG: {
@@ -446,6 +454,14 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           const widgets = state.panels[action.side].widgets;
           const widgetIndex = widgets.indexOf(action.widgetId);
           widgets.splice(widgetIndex, 1);
+
+          const expandedWidget = widgets.find((widgetId) => {
+            return state.widgets[widgetId].minimized === false;
+          });
+          if (!expandedWidget && widgets.length > 0) {
+            const firstWidget = state.widgets[widgets[0]];
+            firstWidget.minimized = false;
+          }
         }
       }
       return;
@@ -518,12 +534,13 @@ export function createNineZoneState(): NineZoneState {
 }
 
 /** @internal */
-export function createWidgetState(id: WidgetState["id"]): WidgetState {
+export function createWidgetState(id: WidgetState["id"], args?: Partial<WidgetState>): WidgetState {
   return {
     activeTabId: undefined,
     id,
     minimized: false,
     tabs: [],
+    ...args,
   };
 }
 
@@ -537,10 +554,7 @@ export function createTabState(id: TabState["id"]): TabState {
 
 /** @internal */
 export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], widgetArgs?: Partial<WidgetState>): NineZoneState {
-  const widget = {
-    ...createWidgetState(id),
-    ...widgetArgs,
-  };
+  const widget = createWidgetState(id, widgetArgs);
   return produce(state, (stateDraft) => {
     stateDraft.widgets[widget.id] = castDraft(widget);
     stateDraft.panels[side].widgets.push(widget.id);
@@ -554,10 +568,7 @@ export function addTab(state: NineZoneState, widgetId: WidgetState["id"], id: Ta
     ...tabArgs,
   };
   return produce(state, (stateDraft) => {
-    const widget = stateDraft.widgets[widgetId];
-    if (!widget.activeTabId)
-      widget.activeTabId = id;
-    widget.tabs.push(tab.id);
+    stateDraft.widgets[widgetId].tabs.push(tab.id);
     stateDraft.tabs[id] = tab;
   });
 }

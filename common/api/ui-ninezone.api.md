@@ -211,7 +211,7 @@ export function createTabState(id: TabState["id"]): TabState;
 export function createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState;
 
 // @internal (undocumented)
-export function createWidgetState(id: WidgetState["id"]): WidgetState;
+export function createWidgetState(id: WidgetState["id"], args?: Partial<WidgetState>): WidgetState;
 
 // @internal
 export class Css {
@@ -2514,6 +2514,9 @@ export class WidgetContent extends React.PureComponent<WidgetContentProps> {
 
 // @internal (undocumented)
 export const WidgetContentComponent: React.NamedExoticComponent<object>;
+
+// @internal (undocumented)
+export const WidgetContentContainer: React.NamedExoticComponent<object>;
 
 // @internal (undocumented)
 export const WidgetContentContainersContext: React.Context<WidgetContentContainers>;

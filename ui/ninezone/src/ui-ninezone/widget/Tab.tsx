@@ -85,7 +85,11 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
     initialPointerPosition.current = new Point(e.clientX, e.clientY);
     dragStartTimer.current.start();
   }, []);
-  const handlePointerMove = React.useCallback(() => {
+  const handlePointerMove = React.useCallback((e: PointerEvent) => {
+    assert(initialPointerPosition.current);
+    const distance = initialPointerPosition.current.getDistanceTo({ x: e.clientX, y: e.clientY });
+    if (distance < 10)
+      return;
     handleTabDragStart();
   }, [handleTabDragStart]);
   const handlePointerUp = React.useCallback(() => {
@@ -140,7 +144,7 @@ export const WidgetTab = React.memo<WidgetTabProps>(function WidgetTab(props) { 
       className={className}
       ref={refs}
     >
-      <span>{tab.label}</span>
+      <span title={tab.label}>{tab.label}</span>
       {!widgetTabsEntryContext && <div className="nz-icon" />}
     </div>
   );

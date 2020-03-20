@@ -7,4 +7,8 @@
   flex-basis: 0;
   min-height: 0;
   min-width: 0;
+
+  &.nz-minimized {
+    overflow: hidden;
+  }
 }

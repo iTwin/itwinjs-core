@@ -5,26 +5,20 @@
 @import "~@bentley/ui-core/lib/ui-core/index";
 
 .nz-widget-widgetTarget {
-  $size: 0.5em;
-
+  $size: 1em;
+  $zIndex: uicore-get-z-index(drag-target) + 1;
   position: relative;
-  @include uicore-z-index(drag-target);
+  z-index: $zIndex;
 
   &.nz-left, &.nz-right {
     &:after {
       width: 100%;
-    }
-
-    &.nz-first, &.nz-last {
-      &:after {
-        height: 2 * $size;
-      }
+      height: $size;
     }
 
     &:not(.nz-first) {
       &:not(.nz-last) {
         &:after {
-          height: $size;
           transform: translateY(-50%);
         }
       }
@@ -38,20 +32,14 @@
   }
 
   &.nz-top, &.nz-bottom {
-    &.nz-first, &.nz-last {
-      &:after {
-        width: 2 * $size;
-      }
-    }
-
     &:after {
       height: 100%;
+      width: $size;
     }
 
     &:not(.nz-first) {
       &:not(.nz-last) {
         &:after {
-          width: $size;
           transform: translateX(-50%);
         }
       }

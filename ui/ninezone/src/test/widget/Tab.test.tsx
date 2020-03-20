@@ -215,12 +215,45 @@ describe("WidgetTab", () => {
     const tab = document.getElementsByClassName("nz-widget-tab")[0];
     act(() => {
       fireEvent.pointerDown(tab);
-      fireEvent.pointerMove(document);
+
+      const moveEvent = document.createEvent("MouseEvent");
+      moveEvent.initEvent("pointermove");
+      sinon.stub(moveEvent, "clientX").get(() => 10);
+      sinon.stub(moveEvent, "clientY").get(() => 10);
+      fireEvent(document, moveEvent);
     });
     dispatch.calledOnceWithExactly(sinon.match({
       type: WIDGET_TAB_DRAG_START,
       widgetId: "w1",
       id: "t1",
     })).should.true;
+  });
+
+  it("should not dispatch WIDGET_TAB_DRAG_START on pointer move if pointer moved less than 10px", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1");
+    nineZone = addTab(nineZone, "w1", "t1");
+    render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <WidgetTab tab={nineZone.tabs.t1} />
+        </WidgetStateContext.Provider>
+      </NineZoneProvider>,
+    );
+    const tab = document.getElementsByClassName("nz-widget-tab")[0];
+    act(() => {
+      fireEvent.pointerDown(tab);
+
+      const moveEvent = document.createEvent("MouseEvent");
+      moveEvent.initEvent("pointermove");
+      sinon.stub(moveEvent, "clientX").get(() => 5);
+      sinon.stub(moveEvent, "clientY").get(() => 0);
+      fireEvent(document, moveEvent);
+    });
+    dispatch.notCalled.should.true;
   });
 });

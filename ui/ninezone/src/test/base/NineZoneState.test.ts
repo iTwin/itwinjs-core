@@ -344,6 +344,20 @@ describe("NineZoneStateReducer", () => {
       (!!newState.floatingWidgets.newId).should.true;
       newState.panels.left.widgets.length.should.eq(0);
     });
+
+    it("should keep one widget expanded", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1");
+      state = addPanelWidget(state, "left", "w2", { minimized: true });
+      const newState = NineZoneStateReducer(state, {
+        type: PANEL_WIDGET_DRAG_START,
+        bounds: new Rectangle().toProps(),
+        id: "w1",
+        newFloatingWidgetId: "newId",
+        side: "left",
+      });
+      newState.widgets.w2.minimized.should.false;
+    });
   });
 
   describe("WIDGET_DRAG", () => {
@@ -527,7 +541,7 @@ describe("NineZoneStateReducer", () => {
 
     it("should keep active tab", () => {
       let state = createNineZoneState();
-      state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t1" });
+      state = addFloatingWidget(state, "fw1", undefined, { activeTabId: "t2" });
       state = addTab(state, "fw1", "t1");
       state = addTab(state, "fw1", "t2");
       const newState = NineZoneStateReducer(state, {
@@ -539,6 +553,22 @@ describe("NineZoneStateReducer", () => {
         widgetId: "fw1",
       });
       newState.widgets.fw1.activeTabId!.should.eq("t1");
+    });
+
+    it("should keep one widget expanded", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "w1", { activeTabId: "t1" });
+      state = addPanelWidget(state, "left", "w2", { minimized: true });
+      state = addTab(state, "w1", "t1");
+      const newState = NineZoneStateReducer(state, {
+        type: WIDGET_TAB_DRAG_START,
+        floatingWidgetId: undefined,
+        id: "t1",
+        position: new Point(100, 200).toProps(),
+        side: "left",
+        widgetId: "w1",
+      });
+      newState.widgets.w2.minimized.should.false;
     });
   });
 

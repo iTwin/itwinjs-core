@@ -36,7 +36,7 @@ internal;createPanelsState(): PanelsState
 internal;createPanelState(side: PanelSide): PanelState
 internal;createTabState(id: TabState["id"]): TabState
 internal;createVerticalPanelState(side: VerticalPanelSide): VerticalPanelState
-internal;createWidgetState(id: WidgetState["id"]): WidgetState
+internal;createWidgetState(id: WidgetState["id"], args?: Partial
 internal;Css
 internal;CssProperties
 internal;CursorOverlay(): JSX.Element | null
@@ -389,6 +389,7 @@ internal;WIDGET_TAB_DRAG_END = "WIDGET_TAB_DRAG_END"
 internal;WIDGET_TAB_DRAG_START = "WIDGET_TAB_DRAG_START"
 alpha;WidgetContent 
 internal;WidgetContentComponent: React.NamedExoticComponent
+internal;WidgetContentContainer: React.NamedExoticComponent
 internal;WidgetContentContainersContext: React.Context
 internal;WidgetContentManager: React.NamedExoticComponent
 internal;WidgetContentManagerContext: React.Context

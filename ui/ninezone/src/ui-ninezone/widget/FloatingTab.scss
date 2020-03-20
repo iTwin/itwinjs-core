@@ -17,6 +17,7 @@
   border-radius: $nz-widget-tab-border-radius;
   color: $buic-foreground-accessory;
   pointer-events: none;
+  opacity: $nz-dragged-widget-opacity;
 
   @include uicore-z-index(drag-preview);
 

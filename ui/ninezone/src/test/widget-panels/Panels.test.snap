@@ -17,10 +17,10 @@ exports[`WidgetPanels should render 1`] = `
     class="nz-widgetPanels-panelTarget nz-hidden nz-right"
   />
   <div
-    class="nz-widgetPanels-panelTarget nz-hidden nz-top"
+    class="nz-widgetPanels-panelTarget nz-hidden nz-span nz-top"
   />
   <div
-    class="nz-widgetPanels-panelTarget nz-hidden nz-bottom"
+    class="nz-widgetPanels-panelTarget nz-hidden nz-span nz-bottom"
   />
   <div
     class="nz-widget-floatingTab nz-hidden"
@@ -69,7 +69,9 @@ exports[`WidgetPanels should render widget content 1`] = `
               <div
                 class="nz-widget-tab nz-active nz-first nz-last"
               >
-                <span />
+                <span
+                  title=""
+                />
               </div>
               <div
                 class="nz-widget-tabTarget nz-hidden"
@@ -129,10 +131,10 @@ exports[`WidgetPanels should render widget content 1`] = `
     class="nz-widgetPanels-panelTarget nz-hidden nz-right"
   />
   <div
-    class="nz-widgetPanels-panelTarget nz-hidden nz-top"
+    class="nz-widgetPanels-panelTarget nz-hidden nz-span nz-top"
   />
   <div
-    class="nz-widgetPanels-panelTarget nz-hidden nz-bottom"
+    class="nz-widgetPanels-panelTarget nz-hidden nz-span nz-bottom"
   />
   <div
     class="nz-widget-floatingTab nz-hidden"
