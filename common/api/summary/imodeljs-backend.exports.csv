@@ -27,7 +27,7 @@ public;BackendLoggerCategory
 public;BackendRequestContext 
 public;BisCoreSchema 
 internal;BriefcaseEntry
-public;BriefcaseId
+public;BriefcaseId = number
 public;BriefcaseIModelDb 
 internal;BriefcaseManager
 public;CachedECSqlStatement
@@ -247,6 +247,7 @@ public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
 public;RepositoryLink 
 public;RepositoryModel 
+public;ReservedBriefcaseId
 public;class RoleElement 
 public;RoleModel 
 public;Schema

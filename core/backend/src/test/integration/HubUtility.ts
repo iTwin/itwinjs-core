@@ -6,7 +6,7 @@ import { assert, ChangeSetApplyOption, ChangeSetStatus, GuidString, Logger, Open
 import { AuthorizedClientRequestContext, Briefcase as HubBriefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Project, Version, VersionQuery } from "@bentley/imodeljs-clients";
 import * as os from "os";
 import * as path from "path";
-import { BriefcaseId, BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, StandaloneIModelDb } from "../../imodeljs-backend";
+import { BriefcaseEntry, BriefcaseManager, ChangeSetToken, IModelDb, IModelJsFs, ReservedBriefcaseId, StandaloneIModelDb } from "../../imodeljs-backend";
 
 /** Utility to work with the iModel Hub */
 export class HubUtility {
@@ -194,7 +194,7 @@ export class HubUtility {
 
     changeSets.forEach((changeSet) => {
       if (changeSet.id === whichCs) {
-        BriefcaseManager.dumpChangeSet(iModel.briefcase, changeSet);
+        BriefcaseManager.dumpChangeSet(iModel.nativeDb, changeSet);
         return;
       }
     });
@@ -202,7 +202,7 @@ export class HubUtility {
     throw new Error(whichCs + " - .cs file not found in directory " + dir);
   }
 
-  /** Get the pathname of the briefcasein the supplied directory - assumes a standard layout of the supplied directory */
+  /** Get the pathname of the briefcase in the supplied directory - assumes a standard layout of the supplied directory */
   public static getBriefcasePathname(iModelDir: string): string {
     const seedPathname = HubUtility.getSeedPathname(iModelDir);
     return path.join(iModelDir, path.basename(seedPathname));
@@ -391,8 +391,7 @@ export class HubUtility {
     IModelJsFs.copySync(seedPathname, iModelPathname);
 
     const iModel = StandaloneIModelDb.open(iModelPathname, OpenMode.ReadWrite);
-    iModel.briefcase.nativeDb.setBriefcaseId(BriefcaseId.LegacyStandalone);
-    iModel.briefcase.briefcaseId = BriefcaseId.LegacyStandalone;
+    iModel.nativeDb.setBriefcaseId(ReservedBriefcaseId.LegacyStandalone);
     iModel.close();
 
     return iModelPathname;
@@ -405,7 +404,8 @@ export class HubUtility {
     // Apply change sets one by one to debug any issues
     for (const changeSet of changeSets) {
       const tempChangeSets = [changeSet];
-      const status: ChangeSetStatus = BriefcaseManager.applyStandaloneChangeSets(iModel.briefcase, tempChangeSets, applyOption);
+      const briefcaseEntry = new BriefcaseEntry("", iModel.nativeDb.getDbGuid(), "", iModel.nativeDb.getFilePath(), iModel.openParams, iModel.getBriefcaseId());
+      const status: ChangeSetStatus = BriefcaseManager.applyStandaloneChangeSets(briefcaseEntry, tempChangeSets, applyOption);
       if (status === ChangeSetStatus.Success) {
         Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status, applyOption }));
       } else {
@@ -420,9 +420,9 @@ export class HubUtility {
   }
 
   /** Dumps change sets */
-  public static dumpStandaloneChangeSets(iModel: IModelDb, changeSets: ChangeSetToken[]) {
+  public static dumpStandaloneChangeSets(iModelDb: IModelDb, changeSets: ChangeSetToken[]) {
     changeSets.forEach((changeSet) => {
-      BriefcaseManager.dumpChangeSet(iModel.briefcase, changeSet);
+      BriefcaseManager.dumpChangeSet(iModelDb.nativeDb, changeSet);
     });
   }
 

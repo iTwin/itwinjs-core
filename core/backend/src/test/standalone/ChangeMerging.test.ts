@@ -6,13 +6,13 @@ import { ChangeSetApplyOption, ChangeSetStatus, Id64String, OpenMode } from "@be
 import { IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
-import { BriefcaseId, ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelJsFs, IModelHost, IModelJsNative, SpatialCategory, StandaloneIModelDb } from "../../imodeljs-backend";
+import { ChangeSetToken, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsFs, IModelJsNative, ReservedBriefcaseId, SpatialCategory, StandaloneIModelDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 // Combine all local Txns and generate a changeset file. Then delete all local Txns.
 function createChangeSet(imodel: IModelDb): ChangeSetToken {
-  const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = imodel.briefcase!.nativeDb!.startCreateChangeSet();
+  const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = imodel.nativeDb.startCreateChangeSet();
   if (res.error)
     throw new IModelError(res.error.status, "Error in startCreateChangeSet");
 
@@ -24,7 +24,7 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
   IModelJsFs.copySync(token.pathname, csFileName);
   token.pathname = csFileName;
 
-  const status: ChangeSetStatus = imodel.briefcase!.nativeDb!.finishCreateChangeSet();
+  const status: ChangeSetStatus = imodel.nativeDb.finishCreateChangeSet();
   if (ChangeSetStatus.Success !== status)
     throw new IModelError(status, "Error in finishCreateChangeSet");
 
@@ -32,7 +32,7 @@ function createChangeSet(imodel: IModelDb): ChangeSetToken {
 }
 
 function applyOneChangeSet(imodel: IModelDb, csToken: ChangeSetToken) {
-  const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(imodel.briefcase!.nativeDb!, JSON.stringify([csToken]), ChangeSetApplyOption.Merge);
+  const status: ChangeSetStatus = IModelHost.platform.ApplyChangeSetsRequest.doApplySync(imodel.nativeDb, JSON.stringify([csToken]), ChangeSetApplyOption.Merge);
   assert.equal(status, ChangeSetStatus.Success);
 }
 
@@ -68,12 +68,12 @@ describe("ChangeMerging", () => {
     const secondDb = StandaloneIModelDb.open(secondFileName, OpenMode.ReadWrite);
     const neutralDb = StandaloneIModelDb.open(neutralFileName, OpenMode.ReadWrite);
     assert.isTrue(firstDb !== secondDb);
-    firstDb.nativeDb.setBriefcaseId(BriefcaseId.FutureStandalone);
-    secondDb.nativeDb.setBriefcaseId(BriefcaseId.FutureStandalone);
-    neutralDb.nativeDb.setBriefcaseId(BriefcaseId.FutureStandalone);
+    firstDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.FutureStandalone);
+    secondDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.FutureStandalone);
+    neutralDb.nativeDb.setBriefcaseId(ReservedBriefcaseId.FutureStandalone);
 
-    firstDb.briefcase.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);
-    secondDb.briefcase.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);
+    firstDb.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);
+    secondDb.nativeDb.setBriefcaseManagerOptimisticConcurrencyControlPolicy(new ConcurrencyControl.OptimisticPolicy().conflictResolution);
     // // Note: neutral observer's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
 
     const csHistory: ChangeSetToken[] = [];

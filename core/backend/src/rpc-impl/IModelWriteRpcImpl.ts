@@ -93,7 +93,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
 
   public async getParentChangeset(tokenProps: IModelTokenProps): Promise<string> {
     const iModelToken = IModelToken.fromJSON(tokenProps);
-    return IModelDb.find(iModelToken).briefcase.parentChangeSetId;
+    return BriefcaseIModelDb.findByToken(iModelToken).briefcase.parentChangeSetId;
   }
 
   public async updateProjectExtents(tokenProps: IModelTokenProps, newExtents: AxisAlignedBox3dProps): Promise<void> {

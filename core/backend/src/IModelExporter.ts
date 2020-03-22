@@ -16,7 +16,7 @@ import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSumma
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, GeometricElement, RepositoryLink } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
-import { IModelDb } from "./IModelDb";
+import { BriefcaseIModelDb, IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
 
@@ -202,6 +202,9 @@ export class IModelExporter {
    */
   public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
     requestContext.enter();
+    if (!(this.sourceDb instanceof BriefcaseIModelDb)) {
+      return Promise.reject(new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory));
+    }
     if ((undefined === this.sourceDb.briefcase.parentChangeSetId) || ("" === this.sourceDb.briefcase.parentChangeSetId)) {
       this.exportAll(); // no changesets, so revert to exportAll
       return Promise.resolve();
@@ -579,7 +582,7 @@ class ChangedInstanceIds {
   public relationship = new ChangedInstanceOps();
   public font = new ChangedInstanceOps();
   private constructor() { }
-  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: IModelDb, startChangeSetId: GuidString): Promise<ChangedInstanceIds> {
+  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseIModelDb, startChangeSetId: GuidString): Promise<ChangedInstanceIds> {
     requestContext.enter();
     const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
     // NOTE: ChangeSummaryManager.downloadChangeSets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangeSets)

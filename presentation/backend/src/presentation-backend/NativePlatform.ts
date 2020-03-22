@@ -104,7 +104,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       this.handleVoidResult(this._nativeAddon.setupSupplementalRulesetDirectories(directories));
     }
     public getImodelAddon(imodel: IModelDb): any {
-      if (!imodel.briefcase || !imodel.nativeDb)
+      if (!imodel.nativeDb)
         throw new PresentationError(PresentationStatus.InvalidArgument, "imodel");
       return imodel.nativeDb;
     }

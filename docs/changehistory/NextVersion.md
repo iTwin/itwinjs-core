@@ -91,6 +91,10 @@ The following renames are required:
 * `IModelDb.openSnapshot` --> [SnapshotIModelDb.open]($backend)
 * `IModelDb.closeSnapshot` --> [SnapshotIModelDb.close]($backend)
 
+### BriefcaseId / ReservedBriefcaseId
+
+The former `BriefcaseId` class has been replaced by the [BriefcaseId]($backend) type (which is just `number`) and the [ReservedBriefcaseId]($backend) enumeration.
+
 ### GeometryStream iteration
 
 The [GeometryStreamIteratorEntry]($common) exposed by a [GeometryStreamIterator]($common) has been simplified down to only four members. Access the geometric primitive associated with the entry by type-switching on its `type` property. For example, code that previously looked like:

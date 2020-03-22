@@ -646,7 +646,7 @@ export class ConcurrencyControl {
           continue;
         // If the lock is held by this briefcase, but at a lower level, then it *might* be available for an upgrade.
         // Wait and see if we encounter a conflicting claim by another briefcase later in the list.
-        if (lock.briefcaseId === briefcaseId.value)
+        if (lock.briefcaseId === briefcaseId)
           continue;
         // This lock is held by some other briefcase at some level.
         // If we are requesting it at a higher level, then our request would be denied.

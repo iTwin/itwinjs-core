@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { SnapshotIModelDb } from "@bentley/imodeljs-backend";
-import { IModelError } from "@bentley/imodeljs-common";
 import { PresentationManagerMode } from "@bentley/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@bentley/presentation-backend/lib/presentation-backend/NativePlatform";
 import { PresentationError } from "@bentley/presentation-common";
@@ -46,7 +45,7 @@ describe("NativePlatform", () => {
 
   it("throws on closed imodel", async () => {
     imodel.close();
-    expect(() => nativePlatform.getImodelAddon(imodel)).to.throw(IModelError);
+    expect(() => nativePlatform.getImodelAddon(imodel)).to.throw(Error);
   });
 
   it("throws on empty options", async () => {
