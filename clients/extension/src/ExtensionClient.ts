@@ -18,7 +18,7 @@ export class ExtensionClient extends Client {
   }
 
   protected getUrlSearchKey(): string {
-    return "iModelPluginService.URL";
+    return "iModelExtensionService.URL";
   }
 
   public async getUrl(requestContext: ClientRequestContext): Promise<string> {
