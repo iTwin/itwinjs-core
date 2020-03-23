@@ -490,6 +490,8 @@ export class BriefcaseIModelDb extends IModelDb {
     get concurrencyControl(): ConcurrencyControl;
     static create(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, args: CreateIModelProps): Promise<BriefcaseIModelDb>;
     // @internal
+    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void>;
+    // @internal
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, openParams?: OpenParams, version?: IModelVersion): Promise<IModelToken>;
     // @internal
     get eventSink(): EventSink | undefined;
@@ -530,6 +532,7 @@ export class BriefcaseManager {
     static createStandaloneChangeSet(iModelDb: IModelDb): ChangeSetToken;
     // (undocumented)
     static deleteAllBriefcases(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<void[] | undefined>;
+    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void>;
     static download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry>;
     static downloadChangeSets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, fromChangeSetId: string, toChangeSetId: string): Promise<ChangeSet[]>;
     static dumpChangeSet(nativeDb: IModelJsNative.DgnDb, changeSetToken: ChangeSetToken): void;

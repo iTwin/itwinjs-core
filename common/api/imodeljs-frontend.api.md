@@ -117,6 +117,7 @@ import { IModelClient } from '@bentley/imodeljs-clients';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelProps } from '@bentley/imodeljs-common';
 import { IModelToken } from '@bentley/imodeljs-common';
+import { IModelTokenProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
@@ -5299,14 +5300,16 @@ export enum ModifyElementSource {
 // @internal
 export class NativeApp {
     // (undocumented)
-    static cancelDownloadBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<boolean>;
+    static cancelDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<boolean>;
     // (undocumented)
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage, deleteId: boolean): Promise<void>;
     // (undocumented)
-    static downloadBriefcase(contextId: string, iModelId: string, version?: IModelVersion): Promise<void>;
+    static deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<void>;
     // (undocumented)
-    static finishDownloadBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<void>;
+    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version?: IModelVersion): Promise<IModelTokenProps>;
+    // (undocumented)
+    static finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<void>;
     static getBriefcases(): Promise<BriefcaseProps[]>;
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
@@ -5314,14 +5317,14 @@ export class NativeApp {
     // (undocumented)
     static onMemoryWarning: BeEvent<() => void>;
     // (undocumented)
-    static openBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<IModelConnection>;
+    static openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<IModelConnection>;
     static openStorage(name: string): Promise<Storage>;
     // (undocumented)
     static overrideInternetConnectivity(status?: InternetConnectivityStatus): Promise<void>;
     // (undocumented)
     static shutdown(): Promise<void>;
     // (undocumented)
-    static startDownloadBriefcase(contextId: string, iModelId: string, version?: IModelVersion): Promise<IModelToken>;
+    static startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version?: IModelVersion): Promise<IModelTokenProps>;
     // (undocumented)
     static startup(opts?: IModelAppOptions): Promise<void>;
     }

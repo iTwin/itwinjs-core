@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module NativeApp */
 import { BeEvent, IModelStatus, BentleyStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { NativeAppRpcInterface, InternetConnectivityStatus, OverriddenBy, Events, RpcRegistry, IModelError, IModelVersion, IModelToken, BriefcaseProps, StorageValue } from "@bentley/imodeljs-common";
+import { NativeAppRpcInterface, InternetConnectivityStatus, OverriddenBy, Events, RpcRegistry, IModelError, IModelVersion, IModelToken, IModelTokenProps, BriefcaseProps, StorageValue } from "@bentley/imodeljs-common";
 import { EventSourceManager } from "./EventSource";
-import { Config } from "@bentley/imodeljs-clients";
+import { Config, AuthorizedClientRequestContext } from "@bentley/imodeljs-clients";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelConnection } from "./IModelConnection";
 import { NativeAppLogger } from "./NativeAppLogger";
 /**
@@ -71,62 +70,67 @@ export class NativeApp {
     IModelApp.shutdown();
   }
 
-  public static async downloadBriefcase(contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+  public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<IModelTokenProps> {
+    requestContext.enter();
+
     // openMode: OpenMode = OpenMode.Readonly
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
-
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
 
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
     requestContext.enter();
 
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
-
-    await NativeAppRpcInterface.getClient().downloadBriefcase(iModelToken.toJSON());
+    requestContext.useContextForRpc = true;
+    const retIModelToken = await NativeAppRpcInterface.getClient().downloadBriefcase(iModelToken.toJSON());
+    return retIModelToken;
   }
 
-  public static async startDownloadBriefcase(contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<IModelToken> {
-    // openMode: OpenMode = OpenMode.Readonly
+  public static async startDownloadBriefcase(requestContext: AuthorizedClientRequestContext, contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<IModelTokenProps> {
+    requestContext.enter();
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling startDownloadBriefcase");
 
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    requestContext.enter();
-
     const changeSetId: string = await version.evaluateChangeSet(requestContext, iModelId, IModelApp.iModelClient);
     requestContext.enter();
 
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
-
-    await NativeAppRpcInterface.getClient().startDownloadBriefcase(iModelToken.toJSON());
-    return iModelToken;
+    requestContext.useContextForRpc = true;
+    const retIModelToken = await NativeAppRpcInterface.getClient().startDownloadBriefcase(iModelToken.toJSON());
+    return retIModelToken;
   }
 
-  public static async finishDownloadBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<void> {
+  public static async finishDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<void> {
+    requestContext.enter();
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startDownloadBriefcase first");
-
-    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
-    await NativeAppRpcInterface.getClient().finishDownloadBriefcase(iModelToken.toJSON());
+    requestContext.useContextForRpc = true;
+    await NativeAppRpcInterface.getClient().finishDownloadBriefcase(iModelToken);
   }
 
-  public static async cancelDownloadBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<boolean> {
+  public static async cancelDownloadBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<boolean> {
+    requestContext.enter();
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startDownloadBriefcase first");
-
-    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
-    const status = await NativeAppRpcInterface.getClient().cancelDownloadBriefcase(iModelToken.toJSON());
+    requestContext.useContextForRpc = true;
+    const status = await NativeAppRpcInterface.getClient().cancelDownloadBriefcase(iModelToken);
     return status;
   }
 
-  public static async openBriefcase(contextId: string, iModelId: string, changeSetId: string): Promise<IModelConnection> {
+  public static async deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<void> {
+    requestContext.enter();
+    if (!IModelApp.initialized)
+      throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startDownloadBriefcase first");
+    requestContext.useContextForRpc = true;
+    await NativeAppRpcInterface.getClient().deleteBriefcase(iModelToken);
+  }
+
+  public static async openBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelTokenProps): Promise<IModelConnection> {
+    requestContext.enter();
     if (!IModelApp.initialized)
       throw new IModelError(BentleyStatus.ERROR, "Call NativeApp.startup() before calling downloadBriefcase");
-
-    const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId);
-    const token = await NativeAppRpcInterface.getClient().openBriefcase(iModelToken.toJSON());
+    const token = await NativeAppRpcInterface.getClient().openBriefcase(iModelToken);
+    requestContext.useContextForRpc = true;
     return IModelConnection.createForNativeAppBriefcase(token, OpenMode.ReadWrite);
   }
 

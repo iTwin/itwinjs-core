@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { using } from "@bentley/bentleyjs-core";
-import { NativeApp, IModelApp, NativeAppLogger } from "@bentley/imodeljs-frontend";
+import { NativeApp, IModelApp, NativeAppLogger, AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { BriefcaseProps } from "@bentley/imodeljs-common";
 import { Config } from "@bentley/imodeljs-clients";
 import { TestUsers, TestAuthorizationClient } from "@bentley/oidc-signin-tool/lib/TestUsers";
@@ -44,14 +44,16 @@ describe("NativeApp (#integration)", () => {
     const testProjectId = await TestUtility.getTestProjectId(testProjectName);
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
-    await NativeApp.downloadBriefcase(testProjectId, testIModelId);
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+
+    const iModelToken = await NativeApp.downloadBriefcase(requestContext, testProjectId, testIModelId);
     await using(new OfflineScope(), async (scope: OfflineScope) => {
       const briefcases = await NativeApp.getBriefcases();
       const rs = briefcases.filter((_: BriefcaseProps) => _.iModelId === testIModelId);
       assert(rs.length > 0);
       assert.isNumber(rs[0].fileSize);
       assert(rs[0].fileSize! > 0);
-      const conn = await NativeApp.openBriefcase("", rs[0].iModelId!, rs[0].changeSetId!);
+      const conn = await NativeApp.openBriefcase(requestContext, iModelToken);
       const rowCount = await conn.queryRowCount("SELECT ECInstanceId FROM bis.Element");
       assert.notEqual(rowCount, 0);
       assert.equal(scope.rejected.length, 0);
@@ -68,13 +70,75 @@ describe("NativeApp (#integration)", () => {
     const testProjectId = await TestUtility.getTestProjectId(testProjectName);
     const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
 
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+
     await using(new OfflineScope(), async (_scope: OfflineScope) => {
       try {
-        await NativeApp.downloadBriefcase(testProjectId, testIModelId);
+        await NativeApp.downloadBriefcase(requestContext, testProjectId, testIModelId);
         assert(false, "downloadBriefcase() should fail in offlineScope");
       } catch {
       }
     });
+  });
+
+  it("should be able to start and finish downloading a briefcase (#integration)", async () => {
+    // Redirect native log to backend. Logger must be config.
+    NativeAppLogger.initialize();
+    const testProjectName = "iModelJsIntegrationTest";
+    const testIModelName = "Stadium Dataset 1";
+
+    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    const testProjectId = await TestUtility.getTestProjectId(testProjectName);
+    const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+
+    const iModelToken = await NativeApp.startDownloadBriefcase(requestContext, testProjectId, testIModelId);
+    requestContext.enter();
+
+    await NativeApp.finishDownloadBriefcase(requestContext, iModelToken);
+    requestContext.enter();
+
+    const iModel = await NativeApp.openBriefcase(requestContext, iModelToken);
+    requestContext.enter();
+
+    await iModel.close();
+    requestContext.enter();
+
+    await NativeApp.deleteBriefcase(requestContext, iModelToken);
+  });
+
+  it("Should be able to cancel an in progress download (#integration)", async () => {
+    NativeAppLogger.initialize();
+    const testProjectName = "iModelJsIntegrationTest";
+    const testIModelName = "Stadium Dataset 1";
+
+    await TestUtility.initializeTestProject(testProjectName, TestUsers.regular);
+    const testProjectId = await TestUtility.getTestProjectId(testProjectName);
+    const testIModelId = await TestUtility.getTestIModelId(testProjectId, testIModelName);
+
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+
+    const iModelToken = await NativeApp.startDownloadBriefcase(requestContext, testProjectId, testIModelId);
+    requestContext.enter();
+
+    let cancelled1: boolean = false;
+    setTimeout(async () => {
+      cancelled1 = await NativeApp.cancelDownloadBriefcase(requestContext, iModelToken);
+      requestContext.enter();
+    }, 10000);
+
+    let cancelled2: boolean = false;
+    try {
+      await NativeApp.finishDownloadBriefcase(requestContext, iModelToken);
+      requestContext.enter();
+    } catch (err) {
+      requestContext.enter();
+      cancelled2 = true;
+    }
+
+    assert.isTrue(cancelled1);
+    assert.isTrue(cancelled2);
   });
 
 });

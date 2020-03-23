@@ -190,6 +190,15 @@ export class NativeAppRpcImpl extends RpcInterface implements NativeAppRpcInterf
   }
 
   /**
+   * Deletes briefcase on the backend
+   */
+  public async deleteBriefcase(tokenProps: IModelTokenProps): Promise<void> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const iModelToken = IModelToken.fromJSON(tokenProps);
+    await BriefcaseIModelDb.deleteBriefcase(requestContext, iModelToken);
+  }
+
+  /**
    * Return list of briefcase available on disk
    * @returns briefcases
    * @note The ContextId in empty and should remain empty when pass to openBriefcase() call.

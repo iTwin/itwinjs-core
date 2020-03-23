@@ -637,7 +637,7 @@ export class BriefcaseManager {
 
   private static _asyncMutex = new AsyncMutex();
 
-  /** Open a briefcase */
+  /** Download a briefcase */
   public static async download(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, openParams: OpenParams, changeSetId: GuidString): Promise<BriefcaseEntry> {
     requestContext.enter();
 
@@ -1155,7 +1155,7 @@ export class BriefcaseManager {
   }
 
   /** Deletes a briefcase, and releases its references in iModelHub if necessary */
-  private static async deleteBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void> {
+  public static async deleteBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseEntry): Promise<void> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, "Started deleting briefcase", () => briefcase.getDebugInfo());
     BriefcaseManager.closeBriefcase(briefcase, false);

@@ -228,7 +228,7 @@ export abstract class IModelDb extends IModel {
   /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
    * @param ecsql The ECSQL statement to prepare
    * @returns the prepared statement
-   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   * @throws [[IModelError]] if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   private getPreparedStatement(ecsql: string): ECSqlStatement {
     const cachedStatement = this._statementCache.find(ecsql);
@@ -296,7 +296,7 @@ export abstract class IModelDb extends IModel {
    * The values in either the array or object must match the respective types of the parameters.
    * See "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" for details.
    * @returns Return row count.
-   * @throws [IModelError]($common) If the statement is invalid
+   * @throws [[IModelError]] If the statement is invalid
    */
   public async queryRowCount(ecsql: string, bindings?: any[] | object): Promise<number> {
     for await (const row of this.query(`select count(*) nRows from (${ecsql})`, bindings)) {
@@ -405,7 +405,7 @@ export abstract class IModelDb extends IModel {
    * priority of query in queue so that small and quicker queries can be prioritized over others.
    * @returns Returns the query result as an *AsyncIterableIterator<any>*  which lazy load result as needed
    * See [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned rows.
-   * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
+   * @throws [[IModelError]] If there was any error while submitting, preparing or stepping into query
    */
   public async * query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority): AsyncIterableIterator<any> {
     let result: QueryResponse;
@@ -481,7 +481,7 @@ export abstract class IModelDb extends IModel {
   /** Get a prepared SQLite SQL statement - may require preparing the statement, if not found in the cache.
    * @param sql The SQLite SQL statement to prepare
    * @returns the prepared statement
-   * @throws IModelError if the statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
+   * @throws [[IModelError]] if the statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist. The error.message property will describe the property.
    */
   private getPreparedSqlStatement(sql: string): SqliteStatement {
     const cachedStatement: CachedSqliteStatement | undefined = this._sqliteStatementCache.find(sql);
@@ -502,7 +502,7 @@ export abstract class IModelDb extends IModel {
   /** Query for a set of entity ids, given an EntityQueryParams
    * @param params The query parameters. The `limit` and `offset` members should be used to page results.
    * @returns an Id64Set with results of query
-   * @throws [IModelError]($common) if the generated statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
+   * @throws [[IModelError]] if the generated statement is invalid or [IModelDb.maxLimit]($backend) exceeded when collecting ids.
    *
    * *Example:*
    * ``` ts
@@ -600,7 +600,7 @@ export abstract class IModelDb extends IModel {
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
    * @param requestContext The client request context
    * @param schemaFileName  Full path to an ECSchema.xml file that is to be imported.
-   * @throws IModelError if the schema lock cannot be obtained or there is a problem importing the schema.
+   * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * @see querySchemaVersion
    */
@@ -728,7 +728,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
-   * @throws [IModelError]($common) if the metadata cannot be found nor loaded.
+   * @throws [[IModelError]] if the metadata cannot be found nor loaded.
    */
   public getMetaData(classFullName: string): EntityMetaData {
     let metadata = this.classMetaDataRegistry.find(classFullName);
@@ -959,7 +959,7 @@ export namespace IModelDb {
 
     /** Get the ModelProps with the specified identifier.
      * @param modelId The Model identifier.
-     * @throws [IModelError]($common) if the model is not found or cannot be loaded.
+     * @throws [[IModelError]] if the model is not found or cannot be loaded.
      * @see tryGetModelProps
      */
     public getModelProps<T extends ModelProps>(modelId: Id64String): T {
@@ -970,7 +970,7 @@ export namespace IModelDb {
     /** Get the ModelProps with the specified identifier.
      * @param modelId The Model identifier.
      * @returns The ModelProps or `undefined` if the model is not found.
-     * @throws [IModelError]($common) if the model cannot be loaded.
+     * @throws [[IModelError]] if the model cannot be loaded.
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModelProps
      */
@@ -995,7 +995,7 @@ export namespace IModelDb {
 
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
-     * @throws [IModelError]($common) if the model is not found or cannot be loaded.
+     * @throws [[IModelError]] if the model is not found or cannot be loaded.
      * @see tryGetModel
      */
     public getModel<T extends Model>(modelId: Id64String): T {
@@ -1005,7 +1005,7 @@ export namespace IModelDb {
     /** Get the Model with the specified identifier.
      * @param modelId The Model identifier.
      * @returns The Model or `undefined` if the model is not found.
-     * @throws [IModelError]($common) if the model cannot be loaded.
+     * @throws [[IModelError]] if the model cannot be loaded.
      * @note Useful for cases when a model may or may not exist and throwing an `Error` would be overkill.
      * @see getModel
      */
@@ -1017,7 +1017,7 @@ export namespace IModelDb {
     /** Read the properties for a Model as a json string.
      * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
      * @returns a json string with the properties of the model.
-     * @throws [IModelError]($common) if the model is not found or cannot be loaded.
+     * @throws [[IModelError]] if the model is not found or cannot be loaded.
      * @see tryGetModelJson
      * @internal
      */
@@ -1032,7 +1032,7 @@ export namespace IModelDb {
     /** Read the properties for a Model as a json string.
      * @param modelIdArg a json string with the identity of the model to load. Must have either "id" or "code".
      * @returns a json string with the properties of the model or `undefined` if the model is not found.
-     * @throws [IModelError]($common) if the model exists, but cannot be loaded.
+     * @throws [[IModelError]] if the model exists, but cannot be loaded.
      * @see getModelJson
      */
     private tryGetModelJson(modelIdArg: string): string | undefined {
@@ -1049,7 +1049,7 @@ export namespace IModelDb {
     /** Get the sub-model of the specified Element.
      * See [[IModelDb.Elements.queryElementIdByCode]] for more on how to find an element by Code.
      * @param modeledElementId Identifies the modeled element.
-     * @throws [IModelError]($common) if the sub-model is not found or cannot be loaded.
+     * @throws [[IModelError]] if the sub-model is not found or cannot be loaded.
      * @see tryGetSubModel
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T {
@@ -1146,7 +1146,7 @@ export namespace IModelDb {
     /** Read element data from the iModel as JSON
      * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @returns The JSON properties of the element.
-     * @throws [IModelError]($common) if the element is not found or cannot be loaded.
+     * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementJson
      * @internal
      */
@@ -1161,7 +1161,7 @@ export namespace IModelDb {
     /** Read element data from the iModel as JSON
      * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @returns The JSON properties of the element or `undefined` if the element is not found.
-     * @throws [IModelError]($common) if the element exists, but cannot be loaded.
+     * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @see getElementJson
      */
     private tryGetElementJson<T extends ElementProps>(elementIdArg: string): T | undefined {
@@ -1176,7 +1176,7 @@ export namespace IModelDb {
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
-     * @throws [IModelError]($common) if the element is not found or cannot be loaded.
+     * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
     public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
@@ -1189,7 +1189,7 @@ export namespace IModelDb {
 
     /** Get properties of an Element by Id, FederationGuid, or Code
      * @returns The properties of the element or `undefined` if the element is not found.
-     * @throws [IModelError]($common) if the element exists, but cannot be loaded.
+     * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElementProps
      */
@@ -1204,7 +1204,7 @@ export namespace IModelDb {
 
     /** Get an element by Id, FederationGuid, or Code
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
-     * @throws [IModelError]($common) if the element is not found or cannot be loaded.
+     * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElement
      */
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
@@ -1218,7 +1218,7 @@ export namespace IModelDb {
     /** Get an element by Id, FederationGuid, or Code
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
      * @returns The element or `undefined` if the element is not found.
-     * @throws [IModelError]($common) if the element exists, but cannot be loaded.
+     * @throws [[IModelError]] if the element exists, but cannot be loaded.
      * @note Useful for cases when an element may or may not exist and throwing an `Error` would be overkill.
      * @see getElement
      */
@@ -2041,6 +2041,25 @@ export class BriefcaseIModelDb extends IModelDb {
   }
 
   /**
+   * Delete a previously downloaded briefcase
+   * @param requestContext
+   * @param iModelToken
+   * @throws [[IModelError]] If unable to delete the briefcase. The briefcase must have been completely downloaded and must be closed.
+   * @internal
+   */
+  public static async deleteBriefcase(requestContext: AuthorizedClientRequestContext, iModelToken: IModelToken): Promise<void> {
+    const briefcaseEntry = BriefcaseManager.findBriefcaseByToken(iModelToken);
+    if (briefcaseEntry === undefined)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot delete a briefcase that not been downloaded", Logger.logError, loggerCategory, () => iModelToken);
+    if (briefcaseEntry.isPending)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot delete a briefcase that's being downloaded", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+    if (briefcaseEntry.isOpen)
+      throw new IModelError(IModelStatus.BadRequest, "Cannot delete a briefcase that's open", Logger.logError, loggerCategory, () => briefcaseEntry.getDebugInfo());
+
+    await BriefcaseManager.deleteBriefcase(requestContext, briefcaseEntry);
+  }
+
+  /**
    * Finish downloading the briefcase
    * @param briefcase
    */
@@ -2410,7 +2429,7 @@ export class SnapshotIModelDb extends IModelDb {
 
   /** Open a read-only iModel *snapshot*.
    * @see [[close]]
-   * @throws [IModelError]($common) If the file is not found or is not a valid *snapshot*.
+   * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    * @beta
    */
   public static open(filePath: string, encryptionProps?: IModelEncryptionProps): SnapshotIModelDb {
@@ -2428,7 +2447,7 @@ export class SnapshotIModelDb extends IModelDb {
 
   /** Close this local read-only iModel *snapshot*, if it is currently open.
    * > Note: A *snapshot* cannot be modified after this function is called.
-   * @throws IModelError if the iModel is not open, or is not a *snapshot*.
+   * @throws [[IModelError]] if the iModel is not open, or is not a *snapshot*.
    * @beta
    */
   public close(): void {
@@ -2529,7 +2548,7 @@ export class StandaloneIModelDb extends IModelDb {
   }
 
   /** Close this standalone iModel, if it is currently open
-   * @throws IModelError if the iModel is not open, or is not standalone
+   * @throws [[IModelError]] if the iModel is not open, or is not standalone
    */
   public close(): void {
     if (!this.isOpen) {

@@ -507,11 +507,15 @@ export class IModelApp {
       let userId: string | undefined;
       if (IModelApp.authorizationClient) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
-        const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
-        authorization = accessToken.toTokenString(IncludePrefix.Yes);
-        const userInfo = accessToken.getUserInfo();
-        if (userInfo)
-          userId = userInfo.id;
+        try {
+          const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
+          authorization = accessToken.toTokenString(IncludePrefix.Yes);
+          const userInfo = accessToken.getUserInfo();
+          if (userInfo)
+            userId = userInfo.id;
+        } catch (err) {
+          // The application may go offline
+        }
       }
       return {
         id,

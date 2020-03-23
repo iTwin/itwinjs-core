@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Added NativeApp.deleteBriefcase, avoided authorization exceptions when offline. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ramanujam.Raman@bentley.com"
+}

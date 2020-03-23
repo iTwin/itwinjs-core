@@ -134,7 +134,7 @@ export class EventSource {
   }
 }
 
-/** Registery for event sources
+/** Registry for event sources
  * @internal
  */
 export abstract class EventSourceManager {

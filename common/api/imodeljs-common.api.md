@@ -3711,6 +3711,7 @@ export abstract class NativeAppRpcInterface extends RpcInterface {
     cancelTileContentRequests(_iModelToken: IModelTokenProps, _contentIds: TileTreeContentIds[]): Promise<void>;
     checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     closeBriefcase(_iModelToken: IModelTokenProps): Promise<boolean>;
+    deleteBriefcase(_iModelToken: IModelTokenProps): Promise<void>;
     downloadBriefcase(_iModelToken: IModelTokenProps): Promise<IModelTokenProps>;
     fetchEvents(_iModelToken: IModelTokenProps, _maxToFetch: number): Promise<QueuedEvent[]>;
     finishDownloadBriefcase(_iModelToken: IModelTokenProps): Promise<void>;
