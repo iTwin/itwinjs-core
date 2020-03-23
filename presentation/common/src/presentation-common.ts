@@ -21,7 +21,7 @@ export { RulesetsFactory } from "./presentation-common/RulesetsFactory";
 export { LoggingNamespaces } from "./presentation-common/Logging";
 export {
   Omit, Subtract, ValuesDictionary,
-  getInstancesCount, LOCALES_DIRECTORY, DEFAULT_KEYS_BATCH_SIZE,
+  getInstancesCount, DEFAULT_KEYS_BATCH_SIZE,
 } from "./presentation-common/Utils";
 export { AsyncTasksTracker } from "./presentation-common/AsyncTasks";
 export {

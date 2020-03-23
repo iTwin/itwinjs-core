@@ -760,9 +760,6 @@ export interface LabelRequestOptions<TIModel> extends RequestOptions<TIModel> {
 // @public
 export type LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit<LabelRequestOptions<IModelToken>, "imodel">;
 
-// @internal (undocumented)
-export const LOCALES_DIRECTORY: string;
-
 // @public
 export enum LoggingNamespaces {
     // (undocumented)

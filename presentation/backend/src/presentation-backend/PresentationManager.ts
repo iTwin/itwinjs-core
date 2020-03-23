@@ -16,11 +16,13 @@ import {
   ContentRequestOptions, SelectionInfo, Content, Descriptor,
   DescriptorOverrides, Paged, KeySet, InstanceKey, LabelRequestOptions,
   SelectionScopeRequestOptions, SelectionScope, DefaultContentDisplayTypes,
-  ContentFlags, Ruleset, RulesetVariable, RequestPriority, LabelDefinition, LOCALES_DIRECTORY,
+  ContentFlags, Ruleset, RulesetVariable, RequestPriority, LabelDefinition,
 } from "@bentley/presentation-common";
+import { getLocalesDirectory } from "@bentley/presentation-common/lib/presentation-common/Utils";
 import { NativePlatformDefinition, createDefaultNativePlatform, NativePlatformRequestTypes } from "./NativePlatform";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
+import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 
 /**
  * Presentation manager working mode.
@@ -215,7 +217,7 @@ export class PresentationManager {
   }
 
   private setupRulesetDirectories(props?: PresentationManagerProps) {
-    const supplementalRulesetDirectories = [path.join(__dirname, "..", "assets", "supplemental-presentation-rules")];
+    const supplementalRulesetDirectories = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "supplemental-presentation-rules")];
     if (props && props.supplementalRulesetDirectories) {
       props.supplementalRulesetDirectories.forEach((dir) => {
         if (-1 === supplementalRulesetDirectories.indexOf(dir))
@@ -830,7 +832,7 @@ const skipTransients = (callback: (id: Id64String) => void) => {
 };
 
 const createLocaleDirectoryList = (props?: PresentationManagerProps) => {
-  const localeDirectories = [LOCALES_DIRECTORY];
+  const localeDirectories = [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)];
   if (props && props.localeDirectories) {
     props.localeDirectories.forEach((dir) => {
       if (-1 === localeDirectories.indexOf(dir))

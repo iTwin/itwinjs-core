@@ -109,7 +109,6 @@ public;LabelOverride
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRequestOptions
 public;LabelRpcRequestOptions = PresentationRpcRequestOptions & Omit
-internal;LOCALES_DIRECTORY: string
 public;LoggingNamespaces
 public;MultiSchemaClassesSpecification
 public;NavigationRule = RootNodeRule | ChildNodeRule

@@ -26,8 +26,9 @@ import {
   HierarchyRequestOptions, Paged, ContentRequestOptions, ContentFlags,
   PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription,
   KindOfQuantityInfo, DefaultContentDisplayTypes, LabelRequestOptions, InstanceKey,
-  Ruleset, VariableValueTypes, RequestPriority, LOCALES_DIRECTORY, LabelDefinition,
+  Ruleset, VariableValueTypes, RequestPriority, LabelDefinition,
 } from "@bentley/presentation-common";
+import { getLocalesDirectory } from "@bentley/presentation-common/lib/presentation-common/Utils";
 import { PropertyInfoJSON } from "@bentley/presentation-common/lib/presentation-common/EC";
 import { NodeKeyJSON, NodeKey } from "@bentley/presentation-common/lib/presentation-common/hierarchy/Key";
 import { NodeJSON } from "@bentley/presentation-common/lib/presentation-common/hierarchy/Node";
@@ -40,6 +41,7 @@ import { NativePlatformDefinition, NativePlatformRequestTypes } from "../present
 import { PresentationManager, PresentationManagerMode } from "../presentation-backend/PresentationManager";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
+import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 
 describe("PresentationManager", () => {
 
@@ -97,7 +99,7 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly(
             "",
-            [LOCALES_DIRECTORY],
+            [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
             IModelHost.platform.ECPresentationManagerMode.ReadWrite,
           );
@@ -118,7 +120,7 @@ describe("PresentationManager", () => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly(
             props.id,
-            [LOCALES_DIRECTORY, testLocale],
+            [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT), testLocale],
             testTaskAllocations,
             IModelHost.platform.ECPresentationManagerMode.ReadOnly,
           );
@@ -150,7 +152,7 @@ describe("PresentationManager", () => {
 
       it("sets up supplemental ruleset directories if supplied", () => {
         const dirs = ["test1", "test2", "test2"];
-        const addonDirs = [path.join(__dirname, "../assets/supplemental-presentation-rules"), "test1", "test2"];
+        const addonDirs = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "supplemental-presentation-rules"), "test1", "test2"];
         addon
           .setup((x) => x.setupSupplementalRulesetDirectories(addonDirs))
           .verifiable();
